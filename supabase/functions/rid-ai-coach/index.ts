@@ -679,6 +679,40 @@ serve(async (req) => {
         } catch(e) {}
         
         console.log(`✅ Federation competitions context: ${federationCompetitionsContext.length} chars`);
+        
+        // 🥊 BRACKETS & LIVE DATA (competition_matches + competition_rings)
+        for (const comp of compsData) {
+          try {
+            const matchesRes = await fetch(
+              `${SUPABASE_URL}/rest/v1/competition_matches?competition_id=eq.${comp.id}&select=*,athlete1:app_users!competition_matches_athlete1_id_fkey(name),athlete2:app_users!competition_matches_athlete2_id_fkey(name),category:federation_competition_categories!competition_matches_category_id_fkey(name)&order=round_number.desc,match_number.asc`,
+              { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+            );
+            const matchesData = await matchesRes.json();
+            if (Array.isArray(matchesData) && matchesData.length > 0) {
+              federationCompetitionsContext += `\n  🥊 ΖΕΥΓΑΡΩΜΑΤΑ/BRACKETS (${matchesData.length} αγώνες):\n`;
+              matchesData.forEach((m: any) => {
+                const winner = m.winner_id ? (m.winner_id === m.athlete1_id ? m.athlete1?.name : m.athlete2?.name) : null;
+                const status = m.status === 'completed' ? '✅' : m.is_bye ? '⏭️ BYE' : '⏳';
+                federationCompetitionsContext += `    ${status} R${m.round_number} #${m.match_number}: ${m.athlete1?.name || 'TBD'} vs ${m.athlete2?.name || 'TBD'}${winner ? ` → Νικητής: ${winner}` : ''} ${m.result_type ? `(${m.result_type})` : ''} [${m.category?.name || ''}]\n`;
+              });
+            }
+          } catch(e) {}
+
+          try {
+            const ringsRes = await fetch(
+              `${SUPABASE_URL}/rest/v1/competition_rings?competition_id=eq.${comp.id}&select=*&order=ring_number.asc`,
+              { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+            );
+            const ringsData = await ringsRes.json();
+            if (Array.isArray(ringsData) && ringsData.length > 0) {
+              federationCompetitionsContext += `\n  📺 LIVE RINGS (${ringsData.length}):\n`;
+              ringsData.forEach((r: any) => {
+                federationCompetitionsContext += `    Ring ${r.ring_number} (${r.ring_name || '-'}): ${r.is_active ? '🔴 LIVE' : '⚪ OFF'} | YouTube: ${r.youtube_live_url || '-'} | Αγώνες: ${r.match_range_start || '?'}-${r.match_range_end || '?'}\n`;
+              });
+            }
+          } catch(e) {}
+        }
+        
       } catch(e) { console.log('⚠️ Error loading federation competitions:', e); }
     }
 
@@ -4580,7 +4614,11 @@ COACH DATA - Έχεις πρόσβαση σε:
 - 📊 ΠΡΟΟΔΟΣ ΑΘΛΗΤΩΝ COACH με αναλυτικά αποτελέσματα τεστ (Force/Velocity, Endurance, Jump, Anthropometric, 1RM)` : isFederation && !targetUserId ? `
 
 🏛️ ΛΕΙΤΟΥΡΓΙΑ FEDERATION MODE 🏛️
-Είσαι σε FEDERATION MODE και έχεις εποπτικό ρόλο σε συλλόγους και αθλητές!
+Είσαι σε FEDERATION MODE και έχεις τον ρόλο του ΣΥΝΤΟΝΙΣΤΗ/ΟΡΓΑΝΩΤΗ!
+
+⚠️ ΣΗΜΑΝΤΙΚΟ: ΔΕΝ είσαι προπονητής ή διατροφολόγος σε αυτό το mode.
+Είσαι ΟΡΓΑΝΩΤΙΚΟΣ ΒΟΗΘΟΣ της ομοσπονδίας. Απαντάς με επαγγελματικό, οργανωτικό ύφος.
+Βοηθάς με: διοργάνωση αγώνων, κλήρωση/ζευγαρώματα, live streaming, ranking, διαχείριση συλλόγων, συνδρομές, στατιστικά.
 
 FEDERATION DATA - Έχεις πρόσβαση σε:
 ✅ Λίστα συνδεδεμένων συλλόγων (coaches)
@@ -4591,6 +4629,8 @@ FEDERATION DATA - Έχεις πρόσβαση σε:
 ✅ Αποδείξεις της ομοσπονδίας (ποσά, ημερομηνίες, σωματεία)
 ✅ 🏆 ΑΓΩΝΕΣ ομοσπονδίας (ημερομηνίες, κατηγορίες, δηλώσεις, αποτελέσματα)
 ✅ 🏅 RANKING αθλητών (πόντοι, μετάλλια, κατάταξη ανά κατηγορία)
+✅ 🥊 ΖΕΥΓΑΡΩΜΑΤΑ/BRACKETS (κλήρωση, αγώνες, νικητές, γύροι)
+✅ 📺 LIVE RINGS (ρινγκ, YouTube streams, τρέχοντες αγώνες)
 
 ΣΗΜΑΝΤΙΚΟ: Μπορείς να απαντήσεις ερωτήσεις όπως:
 - "Πόσους συλλόγους έχω;"
@@ -4600,20 +4640,21 @@ FEDERATION DATA - Έχεις πρόσβαση σε:
 - "Πόσες ενεργές συνδρομές έχω;"
 - "Ποιες συνδρομές είναι απλήρωτες;"
 - "Σύνοψη εσόδων/εξόδων"
-- "Πόσα έσοδα είχα αυτόν τον μήνα;"
-- "Δείξε μου τις αποδείξεις"
 - "Ποιοι αγώνες μετράνε για ranking;"
 - "Ποιος είναι πρώτος στο ranking;"
-- "Δείξε μου τα αποτελέσματα του αγώνα Χ"
-- "Πόσες δηλώσεις έχει ο αγώνας;"
-- "Ποιοι αθλητές δήλωσαν στον αγώνα;"
+- "Ποιοι είναι τα ζευγαρώματα στην κατηγορία Χ;"
+- "Ποιος κέρδισε στον αγώνα #5;"
+- "Πόσα rings έχει η διοργάνωση;"
+- "Ποιος αγωνίζεται τώρα στο ring 1;"
 
 Το context που έχεις περιλαμβάνει:
 - 🏛️ ΟΜΟΣΠΟΝΔΙΑ - ΔΕΔΟΜΕΝΑ με λίστα συλλόγων, αθλητών και αναλυτικά τεστ
 - 💳 ΣΥΝΔΡΟΜΕΣ ΟΜΟΣΠΟΝΔΙΑΣ με στατιστικά, οικονομικά και λίστα
 - 🧾 ΑΠΟΔΕΙΞΕΙΣ ΟΜΟΣΠΟΝΔΙΑΣ με ποσά και λεπτομέρειες
 - 🏆 ΑΓΩΝΕΣ ΟΜΟΣΠΟΝΔΙΑΣ με κατηγορίες, δηλώσεις και αποτελέσματα
-- 🏅 RANKING αθλητών με πόντους και μετάλλια` : ` Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, ΟΛΟ το ημερολόγιο και ΟΛΑ τα αποτελέσματα προπόνησης (workout completions + exercise results) του χρήστη.`}
+- 🏅 RANKING αθλητών με πόντους και μετάλλια
+- 🥊 ΖΕΥΓΑΡΩΜΑΤΑ/BRACKETS με γύρους, νικητές και αποτελέσματα
+- 📺 LIVE RINGS με κατάσταση streaming` : ` Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, ΟΛΟ το ημερολόγιο και ΟΛΑ τα αποτελέσματα προπόνησης (workout completions + exercise results) του χρήστη.`}
 
 ΣΗΜΕΡΙΝΗ ΗΜΕΡΟΜΗΝΙΑ: ${currentDateStr}
 ΤΡΕΧΩΝ ΜΗΝΑΣ: ${currentMonth}

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -198,19 +199,20 @@ function shuffleAvoidingSameClub(athletes: { athleteId: string; clubId: string }
   return arr;
 }
 
-function getRoundName(roundNumber: number): string {
-  if (roundNumber === 1) return 'Τελικός';
-  if (roundNumber === 2) return 'Ημιτελικοί';
-  if (roundNumber === 4) return 'Προημιτελικοί';
+function getRoundName(roundNumber: number, t: any): string {
+  if (roundNumber === 1) return t('federation.brackets.final');
+  if (roundNumber === 2) return t('federation.brackets.semifinals');
+  if (roundNumber === 4) return t('federation.brackets.quarterfinals');
   if (roundNumber === 8) return '1/8';
   if (roundNumber === 16) return '1/16';
-  return `Γύρος ${roundNumber}`;
+  return `${t('federation.brackets.round')} ${roundNumber}`;
 }
 
 const FederationBrackets = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { userProfile } = useRoleCheck();
+  const { t } = useTranslation();
 
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [selectedCompId, setSelectedCompId] = useState<string>('');
@@ -316,7 +318,7 @@ const FederationBrackets = () => {
 
     const { error } = await supabase.from('competition_matches').insert(toInsert);
     if (error) {
-      toast.error('Σφάλμα κατά τη δημιουργία κλήρωσης');
+      toast.error(t('federation.brackets.errorGenerating'));
       console.error(error);
     } else {
       toast.success('Η κλήρωση δημιουργήθηκε επιτυχώς!');
@@ -446,7 +448,7 @@ const FederationBrackets = () => {
                 <Button variant="outline" size="sm" onClick={() => setIsMobileOpen(true)} className="rounded-none">
                   <Menu className="h-5 w-5" />
                 </Button>
-                <h1 className="text-lg font-semibold">Κλήρωση</h1>
+                <h1 className="text-lg font-semibold">{t('federation.brackets.mobileTitle')}</h1>
               </div>
             </div>
           </div>
@@ -454,18 +456,18 @@ const FederationBrackets = () => {
           <main className="flex-1 p-4 lg:p-6 overflow-auto">
             <div className="hidden lg:flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Κλήρωση Αγώνων</h1>
-                <p className="text-sm text-muted-foreground">Ζευγαρώματα αθλητών ανά κατηγορία</p>
+                <h1 className="text-2xl font-bold text-foreground">{t('federation.brackets.title')}</h1>
+                <p className="text-sm text-muted-foreground">{t('federation.brackets.subtitle')}</p>
               </div>
             </div>
 
             {/* Filters */}
             <div className="flex flex-wrap gap-4 mb-6">
               <div className="w-full sm:w-64">
-                <Label className="text-sm mb-1 block">Διοργάνωση</Label>
+                <Label className="text-sm mb-1 block">{t('federation.brackets.competition')}</Label>
                 <Select value={selectedCompId} onValueChange={setSelectedCompId}>
                   <SelectTrigger className="rounded-none">
-                    <SelectValue placeholder="Επιλέξτε διοργάνωση" />
+                    <SelectValue placeholder={t('federation.brackets.selectCompetition')} />
                   </SelectTrigger>
                   <SelectContent>
                     {competitions.map(c => (
@@ -476,10 +478,10 @@ const FederationBrackets = () => {
               </div>
 
               <div className="w-full sm:w-64">
-                <Label className="text-sm mb-1 block">Κατηγορία</Label>
+                <Label className="text-sm mb-1 block">{t('federation.brackets.category')}</Label>
                 <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId} disabled={!selectedCompId}>
                   <SelectTrigger className="rounded-none">
-                    <SelectValue placeholder="Επιλέξτε κατηγορία" />
+                    <SelectValue placeholder={t('federation.brackets.selectCategory')} />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map(c => (
@@ -493,7 +495,7 @@ const FederationBrackets = () => {
                 <div className="flex items-end">
                   <Button onClick={handleGenerateBracket} className="rounded-none bg-foreground text-background hover:bg-foreground/90">
                     <Shuffle className="h-4 w-4 mr-2" />
-                    Κλήρωση
+                    {t('federation.brackets.generateDraw')}
                   </Button>
                 </div>
               )}
@@ -502,7 +504,7 @@ const FederationBrackets = () => {
                 <div className="flex items-end">
                   <Button variant="outline" onClick={() => setResetDialogOpen(true)} className="rounded-none text-destructive border-destructive">
                     <RotateCcw className="h-4 w-4 mr-2" />
-                    Επανάληψη Κλήρωσης
+                    {t('federation.brackets.resetDraw')}
                   </Button>
                 </div>
               )}
@@ -513,8 +515,8 @@ const FederationBrackets = () => {
               <Card className="rounded-none mb-6">
                 <CardContent className="p-4">
                   <p className="text-sm text-muted-foreground">
-                    <strong>{registrations.length}</strong> δηλωμένοι αθλητές σε αυτή την κατηγορία.
-                    Πατήστε "Κλήρωση" για τυχαία ζευγαρώματα.
+                    <strong>{registrations.length}</strong> {t('federation.brackets.registeredAthletes')}
+                    {' '}{t('federation.brackets.clickDrawInfo')}
                   </p>
                 </CardContent>
               </Card>
@@ -523,7 +525,7 @@ const FederationBrackets = () => {
             {selectedCategoryId && registrations.length < 2 && matches.length === 0 && (
               <Card className="rounded-none">
                 <CardContent className="p-8 text-center text-muted-foreground">
-                  Χρειάζονται τουλάχιστον 2 δηλωμένοι αθλητές για κλήρωση
+                  {t('federation.brackets.minAthletesNeeded')}
                 </CardContent>
               </Card>
             )}
@@ -536,9 +538,9 @@ const FederationBrackets = () => {
                     <div key={roundNum} className="flex-shrink-0 w-72">
                       <div className="bg-muted px-4 py-2 mb-3 border border-border">
                         <h3 className="font-semibold text-sm text-foreground">
-                          {getRoundName(roundNum)}
+                          {getRoundName(roundNum, t)}
                         </h3>
-                        <span className="text-xs text-muted-foreground">{rounds[roundNum].length} αγώνες</span>
+                        <span className="text-xs text-muted-foreground">{rounds[roundNum].length} {t('federation.brackets.matches')}</span>
                       </div>
 
                       <div className="space-y-3" style={{
@@ -650,7 +652,7 @@ const FederationBrackets = () => {
         <Dialog open={winnerDialog.open} onOpenChange={() => setWinnerDialog(null)}>
           <DialogContent className="rounded-none max-w-md">
             <DialogHeader>
-              <DialogTitle>Επιλογή Νικητή</DialogTitle>
+              <DialogTitle>{t('federation.brackets.selectWinner')}</DialogTitle>
             </DialogHeader>
 
             <div className="space-y-4">
@@ -683,26 +685,26 @@ const FederationBrackets = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs">Τύπος Αποτελέσματος</Label>
+                  <Label className="text-xs">{t('federation.brackets.resultType')}</Label>
                   <Select value={resultType} onValueChange={setResultType}>
                     <SelectTrigger className="rounded-none">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="points">Πόντοι</SelectItem>
+                      <SelectItem value="points">{t('federation.brackets.points')}</SelectItem>
                       <SelectItem value="ko">KO</SelectItem>
                       <SelectItem value="tko">TKO</SelectItem>
-                      <SelectItem value="dq">Αποβολή (DQ)</SelectItem>
+                      <SelectItem value="dq">{t('federation.brackets.disqualification')}</SelectItem>
                       <SelectItem value="rsc">RSC</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-xs">Σκορ (προαιρετικά)</Label>
+                  <Label className="text-xs">{t('federation.brackets.score')}</Label>
                   <Input
                     value={scoreText}
                     onChange={(e) => setScoreText(e.target.value)}
-                    placeholder="π.χ. 3-0"
+                    placeholder={t('federation.brackets.scorePlaceholder')}
                     className="rounded-none"
                   />
                 </div>
@@ -710,13 +712,13 @@ const FederationBrackets = () => {
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => setWinnerDialog(null)} className="rounded-none">Ακύρωση</Button>
+              <Button variant="outline" onClick={() => setWinnerDialog(null)} className="rounded-none">{t('federation.common.cancel')}</Button>
               <Button
                 onClick={handleSelectWinner}
                 disabled={!selectedWinnerId}
                 className="rounded-none bg-foreground text-background hover:bg-foreground/90"
               >
-                Καταχώρηση
+                {t('federation.brackets.submit')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -727,15 +729,15 @@ const FederationBrackets = () => {
       <AlertDialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
         <AlertDialogContent className="rounded-none">
           <AlertDialogHeader>
-            <AlertDialogTitle>Επανάληψη Κλήρωσης;</AlertDialogTitle>
+            <AlertDialogTitle>{t('federation.brackets.resetConfirmTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Αυτή η ενέργεια θα διαγράψει όλα τα ζευγαρώματα και τα αποτελέσματα αυτής της κατηγορίας. Δεν μπορεί να αναιρεθεί.
+              {t('federation.brackets.resetConfirmDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-none">{t('federation.common.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleResetBracket} className="bg-destructive hover:bg-destructive/90 rounded-none">
-              Διαγραφή & Επανάληψη
+              {t('federation.brackets.deleteAndReset')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

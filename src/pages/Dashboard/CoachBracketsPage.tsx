@@ -13,20 +13,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useTranslation } from "react-i18next";
 
-function getRoundName(roundNumber: number): string {
-  if (roundNumber === 1) return 'Τελικός';
-  if (roundNumber === 2) return 'Ημιτελικοί';
-  if (roundNumber === 4) return 'Προημιτελικοί';
+function getRoundName(roundNumber: number, t: any): string {
+  if (roundNumber === 1) return t('federation.brackets.final');
+  if (roundNumber === 2) return t('federation.brackets.semifinals');
+  if (roundNumber === 4) return t('federation.brackets.quarterfinals');
   if (roundNumber === 8) return '1/8';
   if (roundNumber === 16) return '1/16';
-  return `Γύρος ${roundNumber}`;
+  return `${t('federation.brackets.round')} ${roundNumber}`;
 }
 
 const CoachBracketsPage = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { userProfile } = useRoleCheck();
+  const { t } = useTranslation();
 
   const [competitions, setCompetitions] = useState<any[]>([]);
   const [selectedCompId, setSelectedCompId] = useState('');
@@ -148,30 +150,30 @@ const CoachBracketsPage = () => {
               <Button variant="outline" size="sm" onClick={() => setIsMobileOpen(true)} className="rounded-none">
                 <Menu className="h-5 w-5" />
               </Button>
-              <h1 className="text-lg font-semibold">Κλήρωση</h1>
+              <h1 className="text-lg font-semibold">{t('federation.brackets.mobileTitle')}</h1>
             </div>
           </div>
 
           <main className="flex-1 p-4 lg:p-6 overflow-auto">
             <div className="hidden lg:block mb-6">
-              <h1 className="text-2xl font-bold text-foreground">Κλήρωση Αγώνων</h1>
-              <p className="text-sm text-muted-foreground">Προβολή ζευγαρωμάτων ανά κατηγορία</p>
+              <h1 className="text-2xl font-bold text-foreground">{t('federation.brackets.title')}</h1>
+              <p className="text-sm text-muted-foreground">{t('federation.brackets.subtitle')}</p>
             </div>
 
             <div className="flex flex-wrap gap-4 mb-6">
               <div className="w-full sm:w-64">
-                <Label className="text-sm mb-1 block">Διοργάνωση</Label>
+                <Label className="text-sm mb-1 block">{t('federation.brackets.competition')}</Label>
                 <Select value={selectedCompId} onValueChange={setSelectedCompId}>
-                  <SelectTrigger className="rounded-none"><SelectValue placeholder="Επιλέξτε διοργάνωση" /></SelectTrigger>
+                  <SelectTrigger className="rounded-none"><SelectValue placeholder={t('federation.brackets.selectCompetition')} /></SelectTrigger>
                   <SelectContent>
                     {competitions.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div className="w-full sm:w-64">
-                <Label className="text-sm mb-1 block">Κατηγορία</Label>
+                <Label className="text-sm mb-1 block">{t('federation.brackets.category')}</Label>
                 <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId} disabled={!selectedCompId}>
-                  <SelectTrigger className="rounded-none"><SelectValue placeholder="Επιλέξτε κατηγορία" /></SelectTrigger>
+                  <SelectTrigger className="rounded-none"><SelectValue placeholder={t('federation.brackets.selectCategory')} /></SelectTrigger>
                   <SelectContent>
                     {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                   </SelectContent>
@@ -182,7 +184,7 @@ const CoachBracketsPage = () => {
             {matches.length === 0 && selectedCategoryId && !loading && (
               <Card className="rounded-none">
                 <CardContent className="p-8 text-center text-muted-foreground">
-                  Δεν έχει γίνει ακόμα κλήρωση για αυτή την κατηγορία
+                  {t('federation.brackets.noDraw')}
                 </CardContent>
               </Card>
             )}
@@ -193,8 +195,8 @@ const CoachBracketsPage = () => {
                   {sortedRoundNumbers.map((roundNum) => (
                     <div key={roundNum} className="flex-shrink-0 w-72">
                       <div className="bg-muted px-4 py-2 mb-3 border border-border">
-                        <h3 className="font-semibold text-sm">{getRoundName(roundNum)}</h3>
-                        <span className="text-xs text-muted-foreground">{rounds[roundNum].length} αγώνες</span>
+                        <h3 className="font-semibold text-sm">{getRoundName(roundNum, t)}</h3>
+                        <span className="text-xs text-muted-foreground">{rounds[roundNum].length} {t('federation.brackets.matches')}</span>
                       </div>
                       <div className="space-y-3">
                         {rounds[roundNum].map((match: any) => (
