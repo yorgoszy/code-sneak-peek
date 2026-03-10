@@ -663,12 +663,16 @@ const CoachCompetitionsContent: React.FC = () => {
                         Εκπρόθεσμες: {format(new Date(comp.late_registration_deadline), 'd MMM yyyy', { locale: el })}
                         {isDeadlinePassed(comp.late_registration_deadline) 
                           ? ' (Έληξε)'
-                          : isInLatePeriod(comp) && (
-                            <span className="inline-flex items-center gap-0.5">
-                              <Clock className="h-3 w-3" />
-                              {getCountdownText(comp.late_registration_deadline)}
-                            </span>
-                          )
+                          : isInLatePeriod(comp) && (() => {
+                            const info = getCountdownInfo(comp.late_registration_deadline);
+                            const colorClass = info.urgency === 'critical' ? 'text-destructive' : info.urgency === 'warning' ? 'text-[#cb8954]' : 'text-[#cb8954]';
+                            return (
+                              <span className={`inline-flex items-center gap-0.5 ${colorClass} font-medium`}>
+                                <Clock className="h-3 w-3" />
+                                {info.text}
+                              </span>
+                            );
+                          })()
                         }
                       </p>
                     )}
