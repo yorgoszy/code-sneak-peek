@@ -577,8 +577,8 @@ const FederationBrackets = () => {
               </div>
             </div>
 
-            {/* Filters */}
-            <div className="flex flex-wrap gap-4 mb-6">
+            {/* Competition selector */}
+            <div className="mb-6">
               <div className="w-full sm:w-64">
                 <Label className="text-sm mb-1 block">{t('federation.brackets.competition')}</Label>
                 <Select value={selectedCompId} onValueChange={setSelectedCompId}>
@@ -592,39 +592,69 @@ const FederationBrackets = () => {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
 
-              <div className="w-full sm:w-64">
-                <Label className="text-sm mb-1 block">{t('federation.brackets.category')}</Label>
-                <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId} disabled={!selectedCompId}>
-                  <SelectTrigger className="rounded-none">
-                    <SelectValue placeholder={t('federation.brackets.selectCategory')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map(c => (
-                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+            {/* Category selector - grouped by gender and age */}
+            {selectedCompId && categories.length > 0 && (
+              <div className="mb-6">
+                <Label className="text-sm mb-2 block">{t('federation.brackets.category')}</Label>
+                <div className="flex gap-4">
+                  {/* Άνδρες */}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
+                      {t('federation.brackets.men', 'Άνδρες')}
+                    </div>
+                    {groupByAge(categories.filter(c => c.gender === 'male')).map(g => (
+                      <BracketAgeGroup
+                        key={`male-${g.age}`}
+                        age={g.age}
+                        cats={g.cats}
+                        selectedCategoryId={selectedCategoryId}
+                        onSelectCategory={setSelectedCategoryId}
+                        registrationCounts={registrationCounts}
+                      />
                     ))}
-                  </SelectContent>
-                </Select>
+                  </div>
+                  {/* Γυναίκες */}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
+                      {t('federation.brackets.women', 'Γυναίκες')}
+                    </div>
+                    {groupByAge(categories.filter(c => c.gender === 'female')).map(g => (
+                      <BracketAgeGroup
+                        key={`female-${g.age}`}
+                        age={g.age}
+                        cats={g.cats}
+                        selectedCategoryId={selectedCategoryId}
+                        onSelectCategory={setSelectedCategoryId}
+                        registrationCounts={registrationCounts}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
+            )}
 
-              {selectedCategoryId && matches.length === 0 && registrations.length >= 2 && (
-                <div className="flex items-end">
+            {/* Selected category actions */}
+            {selectedCategoryId && (
+              <div className="flex flex-wrap items-center gap-4 mb-6">
+                <Badge variant="outline" className="rounded-none text-sm py-1 px-3">
+                  {categories.find(c => c.id === selectedCategoryId)?.name}
+                </Badge>
+                {matches.length === 0 && registrations.length >= 2 && (
                   <Button onClick={handleGenerateBracket} className="rounded-none bg-foreground text-background hover:bg-foreground/90">
                     <Shuffle className="h-4 w-4 mr-2" />
                     {t('federation.brackets.generateDraw')}
                   </Button>
-                </div>
-              )}
-
-              {selectedCategoryId && matches.length > 0 && (
-                <div className="flex items-end">
+                )}
+                {matches.length > 0 && (
                   <Button variant="outline" onClick={() => setResetDialogOpen(true)} className="rounded-none text-destructive border-destructive">
                     <RotateCcw className="h-4 w-4 mr-2" />
                     {t('federation.brackets.resetDraw')}
                   </Button>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
             {/* Info */}
             {selectedCategoryId && registrations.length > 0 && matches.length === 0 && (
