@@ -852,9 +852,10 @@ const FederationBrackets = () => {
               // Y-center positions keyed by match id
               const yPositions = new Map<string, number>();
 
-              // First round: evenly spaced
+              // First round: evenly distributed across full height
+              const firstRoundSpacing = (totalH - HEADER_H) / firstRoundCount;
               roundMatchArrays[0]?.forEach((m, i) => {
-                yPositions.set(m.id, HEADER_H + i * (CARD_H + CARD_GAP) + CARD_H / 2);
+                yPositions.set(m.id, HEADER_H + i * firstRoundSpacing + firstRoundSpacing / 2);
               });
 
               // Subsequent rounds: position at midpoint of feeder matches
