@@ -17,21 +17,60 @@ export const useGoogleCalendar = () => {
   };
 
   const connectGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        scopes: 'https://www.googleapis.com/auth/calendar',
-        redirectTo: window.location.origin + window.location.pathname,
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent',
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          scopes: 'https://www.googleapis.com/auth/calendar',
+          redirectTo: window.location.origin + window.location.pathname,
+          skipBrowserRedirect: true,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
-      },
-    });
+      });
 
-    if (error) {
+      if (error) {
+        toast.error('Σφάλμα σύνδεσης με Google');
+        console.error('Google OAuth error:', error);
+        return;
+      }
+
+      if (data?.url) {
+        // Open in popup to bypass iframe cookie restrictions
+        const popup = window.open(data.url, 'google-oauth', 'width=500,height=600,scrollbars=yes');
+        
+        if (!popup) {
+          // Popup blocked - fall back to redirect
+          toast.info('Παρακαλώ επιτρέψτε τα popups ή ανοίξτε την εφαρμογή σε νέο tab');
+          window.open(window.location.href, '_blank');
+          return;
+        }
+
+        toast.info('🔗 Ολοκληρώστε τη σύνδεση στο παράθυρο Google...');
+
+        // Poll for popup close and session change
+        const pollInterval = setInterval(async () => {
+          if (popup.closed) {
+            clearInterval(pollInterval);
+            // Check if we got a session with provider token
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.provider_token) {
+              toast.success('✅ Σύνδεση με Google Calendar επιτυχής!');
+              window.location.reload();
+            }
+          }
+        }, 1000);
+
+        // Timeout after 2 minutes
+        setTimeout(() => {
+          clearInterval(pollInterval);
+        }, 120000);
+      }
+    } catch (err) {
+      console.error('Google OAuth error:', err);
       toast.error('Σφάλμα σύνδεσης με Google');
-      console.error('Google OAuth error:', error);
     }
   };
 
