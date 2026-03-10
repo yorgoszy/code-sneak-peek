@@ -802,7 +802,7 @@ const FederationBrackets = () => {
                           ? `${(sortedRoundNumbers[0] / roundNum - 1) * 40}px`
                           : '0px'
                       }}>
-                        {rounds[roundNum].map((match) => (
+                        {rounds[roundNum].filter(m => !m.is_bye).map((match) => (
                           <Card
                             key={match.id}
                             className={`rounded-none cursor-pointer transition-all hover:shadow-md ${
