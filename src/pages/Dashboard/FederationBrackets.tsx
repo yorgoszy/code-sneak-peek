@@ -819,113 +819,158 @@ const FederationBrackets = () => {
             {/* Bracket Display */}
             {matches.length > 0 && (
               <ScrollArea className="w-full">
-                <div className="flex gap-6 min-w-max pb-4">
-                  {sortedRoundNumbers.map((roundNum) => (
-                    <div key={roundNum} className="flex-shrink-0 w-72">
-                      <div className="bg-muted px-4 py-2 mb-3 border border-border">
-                        <h3 className="font-semibold text-sm text-foreground">
-                          {getRoundName(roundNum, t)}
-                        </h3>
-                        <span className="text-xs text-muted-foreground">{rounds[roundNum].filter(m => !m.is_bye).length} {t('federation.brackets.matches')}</span>
-                      </div>
+                <div className="flex min-w-max pb-4 items-start">
+                  {sortedRoundNumbers.map((roundNum, roundIdx) => {
+                    const roundMatches = rounds[roundNum].filter(m => !m.is_bye);
+                    // Calculate global match numbering offset
+                    let globalMatchOffset = 0;
+                    for (let ri = 0; ri < roundIdx; ri++) {
+                      globalMatchOffset += rounds[sortedRoundNumbers[ri]].filter(m => !m.is_bye).length;
+                    }
 
-                      <div className="space-y-3" style={{
-                        paddingTop: roundNum < sortedRoundNumbers[0]
-                          ? `${(sortedRoundNumbers[0] / roundNum - 1) * 40}px`
-                          : '0px'
-                      }}>
-                        {rounds[roundNum].filter(m => !m.is_bye).map((match) => (
-                          <Card
-                            key={match.id}
-                            className={`rounded-none cursor-pointer transition-all hover:shadow-md ${
-                              match.status === 'completed' ? 'border-l-4 border-l-[#00ffba]' :
-                              match.is_bye ? 'border-l-4 border-l-muted-foreground opacity-60' :
-                              'border-l-4 border-l-border'
-                            }`}
-                            onClick={() => openWinnerDialog(match)}
-                          >
-                            <CardContent className="p-3">
-                              {match.is_bye ? (
-                                <div className="text-center">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <Avatar className="h-6 w-6">
-                                      <AvatarImage src={getAthleteAvatar(match.athlete1) || undefined} />
-                                      <AvatarFallback className="text-xs">
-                                        {match.athlete1?.name?.charAt(0) || '?'}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <span className="text-sm font-medium">{match.athlete1?.name || 'TBD'}</span>
-                                  </div>
-                                  <Badge variant="outline" className="rounded-none text-xs">BYE</Badge>
-                                </div>
-                              ) : (
-                                <div className="space-y-2">
-                                  {/* Athlete 1 */}
-                                  <div className={`flex items-center gap-2 p-1.5 ${
-                                    match.winner_id === match.athlete1_id ? 'bg-[#00ffba]/10 border border-[#00ffba]/30' : ''
-                                  }`}>
-                                    <Avatar className="h-6 w-6">
-                                      <AvatarImage src={getAthleteAvatar(match.athlete1) || undefined} />
-                                      <AvatarFallback className="text-xs">
-                                        {match.athlete1?.name?.charAt(0) || '?'}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex-1 min-w-0">
-                                      <p className={`text-sm truncate ${getSlotDisplayName(match, 'athlete1').isConfirmed ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                                        {getSlotDisplayName(match, 'athlete1').name}
-                                      </p>
-                                      {match.athlete1_club && (
-                                        <p className="text-xs text-muted-foreground truncate">{match.athlete1_club.name}</p>
-                                      )}
-                                    </div>
-                                    {match.winner_id === match.athlete1_id && (
-                                      <Trophy className="h-4 w-4 text-[#cb8954]" />
-                                    )}
-                                  </div>
+                    return (
+                      <React.Fragment key={roundNum}>
+                        <div className="flex-shrink-0 w-64">
+                          {/* Round header */}
+                          <div className="bg-muted px-3 py-1.5 mb-2 border border-border">
+                            <h3 className="font-semibold text-xs text-foreground">
+                              {getRoundName(roundNum, t)}
+                            </h3>
+                            <span className="text-[10px] text-muted-foreground">{roundMatches.length} αγώνες</span>
+                          </div>
 
-                                  <div className="text-center text-xs text-muted-foreground">VS</div>
+                          {/* Matches with vertical spacing to align with bracket flow */}
+                          <div className="flex flex-col" style={{
+                            gap: roundNum < sortedRoundNumbers[0]
+                              ? `${Math.max(8, (sortedRoundNumbers[0] / roundNum - 1) * 60)}px`
+                              : '8px',
+                            paddingTop: roundNum < sortedRoundNumbers[0]
+                              ? `${(sortedRoundNumbers[0] / roundNum - 1) * 36}px`
+                              : '0px'
+                          }}>
+                            {roundMatches.map((match, matchIdx) => {
+                              const globalMatchNum = globalMatchOffset + matchIdx + 1;
+                              const slot1 = getSlotDisplayName(match, 'athlete1');
+                              const slot2 = getSlotDisplayName(match, 'athlete2');
 
-                                  {/* Athlete 2 */}
-                                  <div className={`flex items-center gap-2 p-1.5 ${
-                                    match.winner_id === match.athlete2_id ? 'bg-[#00ffba]/10 border border-[#00ffba]/30' : ''
-                                  }`}>
-                                    <Avatar className="h-6 w-6">
-                                      <AvatarImage src={getAthleteAvatar(match.athlete2) || undefined} />
-                                      <AvatarFallback className="text-xs">
-                                        {match.athlete2?.name?.charAt(0) || '?'}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex-1 min-w-0">
-                                      <p className={`text-sm truncate ${getSlotDisplayName(match, 'athlete2').isConfirmed ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                                        {getSlotDisplayName(match, 'athlete2').name}
-                                      </p>
-                                      {match.athlete2_club && (
-                                        <p className="text-xs text-muted-foreground truncate">{match.athlete2_club.name}</p>
-                                      )}
-                                    </div>
-                                    {match.winner_id === match.athlete2_id && (
-                                      <Trophy className="h-4 w-4 text-[#cb8954]" />
-                                    )}
-                                  </div>
-
-                                  {/* Result info */}
-                                  {match.status === 'completed' && match.result_type && (
-                                    <div className="text-center">
-                                      <Badge variant="secondary" className="rounded-none text-xs uppercase">
+                              return (
+                                <div
+                                  key={match.id}
+                                  className={`border cursor-pointer transition-all hover:shadow-md bg-card ${
+                                    match.status === 'completed' ? 'border-[#00ffba]' : 'border-border'
+                                  }`}
+                                  onClick={() => openWinnerDialog(match)}
+                                >
+                                  {/* Match number header */}
+                                  <div className="flex items-center justify-between px-2 py-0.5 bg-muted/50 border-b border-border">
+                                    <span className="text-[10px] font-bold text-muted-foreground">Αγ. {globalMatchNum}</span>
+                                    {match.status === 'completed' && match.result_type && (
+                                      <Badge variant="secondary" className="rounded-none text-[9px] h-4 px-1 uppercase">
                                         {match.result_type}
                                         {match.athlete1_score && ` ${match.athlete1_score}`}
                                         {match.athlete2_score && ` ${match.athlete2_score}`}
                                       </Badge>
+                                    )}
+                                  </div>
+
+                                  {/* Athlete 1 - Red corner */}
+                                  <div className={`flex items-center gap-1.5 px-2 py-1 border-l-[3px] border-l-red-500 ${
+                                    match.winner_id === match.athlete1_id ? 'bg-[#00ffba]/10' : ''
+                                  }`}>
+                                    <Avatar className="h-5 w-5">
+                                      <AvatarImage src={getAthleteAvatar(match.athlete1) || undefined} />
+                                      <AvatarFallback className="text-[9px] bg-red-100 text-red-700">
+                                        {match.athlete1?.name?.charAt(0) || '?'}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1 min-w-0">
+                                      <p className={`text-[11px] truncate ${slot1.isConfirmed ? 'font-semibold text-red-700' : 'text-muted-foreground italic text-[10px]'}`}>
+                                        {slot1.name}
+                                      </p>
+                                      {match.athlete1_club && (
+                                        <p className="text-[9px] text-muted-foreground truncate">{match.athlete1_club.name}</p>
+                                      )}
                                     </div>
-                                  )}
+                                    {match.winner_id === match.athlete1_id && (
+                                      <Trophy className="h-3 w-3 text-[#cb8954] shrink-0" />
+                                    )}
+                                  </div>
+
+                                  {/* Divider */}
+                                  <div className="border-t border-border/50" />
+
+                                  {/* Athlete 2 - Blue corner */}
+                                  <div className={`flex items-center gap-1.5 px-2 py-1 border-l-[3px] border-l-blue-500 ${
+                                    match.winner_id === match.athlete2_id ? 'bg-[#00ffba]/10' : ''
+                                  }`}>
+                                    <Avatar className="h-5 w-5">
+                                      <AvatarImage src={getAthleteAvatar(match.athlete2) || undefined} />
+                                      <AvatarFallback className="text-[9px] bg-blue-100 text-blue-700">
+                                        {match.athlete2?.name?.charAt(0) || '?'}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1 min-w-0">
+                                      <p className={`text-[11px] truncate ${slot2.isConfirmed ? 'font-semibold text-blue-700' : 'text-muted-foreground italic text-[10px]'}`}>
+                                        {slot2.name}
+                                      </p>
+                                      {match.athlete2_club && (
+                                        <p className="text-[9px] text-muted-foreground truncate">{match.athlete2_club.name}</p>
+                                      )}
+                                    </div>
+                                    {match.winner_id === match.athlete2_id && (
+                                      <Trophy className="h-3 w-3 text-[#cb8954] shrink-0" />
+                                    )}
+                                  </div>
                                 </div>
-                              )}
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Connector lines between rounds */}
+                        {roundIdx < sortedRoundNumbers.length - 1 && (
+                          <div className="flex-shrink-0 w-8 flex items-center justify-center">
+                            <svg width="32" height="100%" className="overflow-visible">
+                              {roundMatches.map((_, i) => {
+                                // Each pair of matches in current round feeds into one match in next round
+                                if (i % 2 === 1) return null;
+                                const cardHeight = 62; // approximate card height
+                                const firstRoundGap = 8;
+                                const currentGap = roundNum < sortedRoundNumbers[0]
+                                  ? Math.max(8, (sortedRoundNumbers[0] / roundNum - 1) * 60)
+                                  : firstRoundGap;
+                                const currentPadTop = roundNum < sortedRoundNumbers[0]
+                                  ? (sortedRoundNumbers[0] / roundNum - 1) * 36
+                                  : 0;
+                                const headerH = 28;
+
+                                const y1 = headerH + currentPadTop + i * (cardHeight + currentGap) + cardHeight / 2;
+                                const y2 = (i + 1 < roundMatches.length)
+                                  ? headerH + currentPadTop + (i + 1) * (cardHeight + currentGap) + cardHeight / 2
+                                  : y1;
+                                const midY = (y1 + y2) / 2;
+
+                                return (
+                                  <g key={i}>
+                                    {/* Line from match i */}
+                                    <line x1="0" y1={y1} x2="16" y2={y1} stroke="currentColor" strokeWidth="1" className="text-border" />
+                                    {/* Line from match i+1 */}
+                                    {i + 1 < roundMatches.length && (
+                                      <line x1="0" y1={y2} x2="16" y2={y2} stroke="currentColor" strokeWidth="1" className="text-border" />
+                                    )}
+                                    {/* Vertical connector */}
+                                    <line x1="16" y1={y1} x2="16" y2={y2} stroke="currentColor" strokeWidth="1" className="text-border" />
+                                    {/* Line to next round */}
+                                    <line x1="16" y1={midY} x2="32" y2={midY} stroke="currentColor" strokeWidth="1" className="text-border" />
+                                  </g>
+                                );
+                              })}
+                            </svg>
+                          </div>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
                 </div>
               </ScrollArea>
             )}
