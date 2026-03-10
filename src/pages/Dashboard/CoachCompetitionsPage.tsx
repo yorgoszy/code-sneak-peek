@@ -624,16 +624,31 @@ const CoachCompetitionsContent: React.FC = () => {
                 {(comp.registration_deadline || comp.late_registration_deadline) && (
                   <div className="space-y-0.5">
                     {comp.registration_deadline && (
-                      <p className={`text-xs ${isDeadlinePassed(comp.registration_deadline) ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
+                      <p className={`text-xs flex items-center gap-1 ${isDeadlinePassed(comp.registration_deadline) ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
                         Εμπρόθεσμες: {format(new Date(comp.registration_deadline), 'd MMM yyyy', { locale: el })}
-                        {isDeadlinePassed(comp.registration_deadline) && ' (Έληξε)'}
+                        {isDeadlinePassed(comp.registration_deadline) 
+                          ? ' (Έληξε)' 
+                          : !isDeadlinePassed(comp.registration_deadline) && (
+                            <span className="inline-flex items-center gap-0.5 text-[#00ffba] font-medium">
+                              <Clock className="h-3 w-3" />
+                              {getCountdownText(comp.registration_deadline)}
+                            </span>
+                          )
+                        }
                       </p>
                     )}
                     {comp.late_registration_deadline && (
-                      <p className={`text-xs ${isDeadlinePassed(comp.late_registration_deadline) ? 'text-destructive font-medium' : 'text-[#cb8954] font-medium'}`}>
+                      <p className={`text-xs flex items-center gap-1 ${isDeadlinePassed(comp.late_registration_deadline) ? 'text-destructive font-medium' : 'text-[#cb8954] font-medium'}`}>
                         Εκπρόθεσμες: {format(new Date(comp.late_registration_deadline), 'd MMM yyyy', { locale: el })}
-                        {isDeadlinePassed(comp.late_registration_deadline) && ' (Έληξε)'}
-                        {isInLatePeriod(comp) && ' ⚠️'}
+                        {isDeadlinePassed(comp.late_registration_deadline) 
+                          ? ' (Έληξε)'
+                          : isInLatePeriod(comp) && (
+                            <span className="inline-flex items-center gap-0.5">
+                              <Clock className="h-3 w-3" />
+                              {getCountdownText(comp.late_registration_deadline)}
+                            </span>
+                          )
+                        }
                       </p>
                     )}
                   </div>
@@ -644,10 +659,13 @@ const CoachCompetitionsContent: React.FC = () => {
 
                 <div className="flex items-center gap-4 text-sm">
                   <span className="flex items-center gap-1">
-                    <Swords className="h-3 w-3" /> {comp.categories_count} κατηγορίες
+                    <Users className="h-3 w-3" /> {comp.my_registrations_count} αθλητές
                   </span>
-                  <span className="flex items-center gap-1">
-                    <Users className="h-3 w-3" /> {comp.my_registrations_count} δηλώσεις
+                  {(comp.my_unpaid_count || 0) > 0 && (
+                    <span className="flex items-center gap-1 text-[#cb8954]">
+                      <CreditCard className="h-3 w-3" /> {comp.my_unpaid_count} εκκρεμείς
+                    </span>
+                  )}
                   </span>
                 </div>
 
