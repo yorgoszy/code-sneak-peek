@@ -13,14 +13,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useTranslation } from "react-i18next";
 
-function getRoundName(roundNumber: number): string {
-  if (roundNumber === 1) return 'Τελικός';
-  if (roundNumber === 2) return 'Ημιτελικοί';
-  if (roundNumber === 4) return 'Προημιτελικοί';
+function getRoundName(roundNumber: number, t: any): string {
+  if (roundNumber === 1) return t('federation.brackets.final');
+  if (roundNumber === 2) return t('federation.brackets.semifinals');
+  if (roundNumber === 4) return t('federation.brackets.quarterfinals');
   if (roundNumber === 8) return '1/8';
   if (roundNumber === 16) return '1/16';
-  return `Γύρος ${roundNumber}`;
+  return `${t('federation.brackets.round')} ${roundNumber}`;
 }
 
 const CoachBracketsPage = () => {
