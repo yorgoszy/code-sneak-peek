@@ -15,6 +15,7 @@ import { FunctionalHistoryTab } from "@/components/progress/FunctionalHistoryTab
 
 
 export default function ProgressTracking() {
+  const { t } = useTranslation();
   const [users, setUsers] = useState<any[]>([]);
   const [exercises, setExercises] = useState<any[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
