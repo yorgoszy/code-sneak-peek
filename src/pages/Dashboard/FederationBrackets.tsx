@@ -76,10 +76,7 @@ function generateBracket(registrations: Registration[]): Omit<Match, 'id' | 'ath
     clubId: r.club_id,
   }));
 
-  // Shuffle athletes but try to avoid same-club matchups in first round
-  const shuffled = shuffleAvoidingSameClub(athletes);
-  const n = shuffled.length;
-
+  const n = athletes.length;
   if (n < 2) return [];
 
   // Calculate bracket size (next power of 2)
@@ -87,25 +84,33 @@ function generateBracket(registrations: Registration[]): Omit<Match, 'id' | 'ath
   const totalRounds = Math.log2(bracketSize);
   const byes = bracketSize - n;
 
+  // Seed athletes trying to avoid same-club matchups
+  const seeded = seedAvoidingSameClub(athletes, bracketSize);
+
   const matches: Omit<Match, 'id' | 'athlete1' | 'athlete2' | 'athlete1_club' | 'athlete2_club'>[] = [];
   let matchOrder = 1;
 
-  // First round
+  // Build all rounds structure first
+  // nextRoundSlots[roundNumber][matchNumber] = { athlete1, athlete2, ... }
+  type Slot = { athleteId: string; clubId: string } | null;
+  const roundSlots: Map<string, { a1: Slot; a2: Slot }> = new Map();
+
+  // Create first round matches
+  const firstRoundNumber = Math.pow(2, totalRounds - 1);
   const firstRoundSize = bracketSize / 2;
-  let athleteIndex = 0;
-  const firstRoundWinners: (typeof athletes[0] | null)[] = [];
 
   for (let i = 0; i < firstRoundSize; i++) {
-    const a1 = athleteIndex < shuffled.length ? shuffled[athleteIndex++] : null;
-    const a2 = athleteIndex < shuffled.length ? shuffled[athleteIndex++] : null;
+    const a1 = seeded[i * 2];
+    const a2 = seeded[i * 2 + 1];
+    const matchNum = i + 1;
 
     if (a1 && !a2) {
-      // Bye
+      // BYE - athlete advances automatically
       matches.push({
         competition_id: '',
         category_id: '',
-        round_number: Math.pow(2, totalRounds - 1),
-        match_number: i + 1,
+        round_number: firstRoundNumber,
+        match_number: matchNum,
         match_order: matchOrder++,
         athlete1_id: a1.athleteId,
         athlete2_id: null,
@@ -119,13 +124,21 @@ function generateBracket(registrations: Registration[]): Omit<Match, 'id' | 'ath
         ring_number: null,
         status: 'completed',
       });
-      firstRoundWinners.push(a1);
+
+      // Propagate bye winner to next round
+      const nextRound = firstRoundNumber / 2;
+      const nextMatchNum = Math.ceil(matchNum / 2);
+      const isFirstSlot = matchNum % 2 === 1;
+      const key = `${nextRound}-${nextMatchNum}`;
+      if (!roundSlots.has(key)) roundSlots.set(key, { a1: null, a2: null });
+      const slot = roundSlots.get(key)!;
+      if (isFirstSlot) slot.a1 = a1; else slot.a2 = a1;
     } else if (a1 && a2) {
       matches.push({
         competition_id: '',
         category_id: '',
-        round_number: Math.pow(2, totalRounds - 1),
-        match_number: i + 1,
+        round_number: firstRoundNumber,
+        match_number: matchNum,
         match_order: matchOrder++,
         athlete1_id: a1.athleteId,
         athlete2_id: a2.athleteId,
@@ -139,24 +152,28 @@ function generateBracket(registrations: Registration[]): Omit<Match, 'id' | 'ath
         ring_number: null,
         status: 'pending',
       });
-      firstRoundWinners.push(null);
     }
   }
 
-  // Subsequent rounds (empty slots for winners)
+  // Subsequent rounds - pre-fill with bye winners
   for (let round = totalRounds - 2; round >= 0; round--) {
-    const roundSize = Math.pow(2, round);
+    const roundNumber = Math.pow(2, round);
+    const roundSize = roundNumber;
     for (let i = 0; i < roundSize; i++) {
+      const matchNum = i + 1;
+      const key = `${roundNumber}-${matchNum}`;
+      const slot = roundSlots.get(key) || { a1: null, a2: null };
+
       matches.push({
         competition_id: '',
         category_id: '',
-        round_number: roundSize,
-        match_number: i + 1,
+        round_number: roundNumber,
+        match_number: matchNum,
         match_order: matchOrder++,
-        athlete1_id: null,
-        athlete2_id: null,
-        athlete1_club_id: null,
-        athlete2_club_id: null,
+        athlete1_id: slot.a1?.athleteId || null,
+        athlete2_id: slot.a2?.athleteId || null,
+        athlete1_club_id: slot.a1?.clubId || null,
+        athlete2_club_id: slot.a2?.clubId || null,
         winner_id: null,
         athlete1_score: null,
         athlete2_score: null,
@@ -171,33 +188,124 @@ function generateBracket(registrations: Registration[]): Omit<Match, 'id' | 'ath
   return matches;
 }
 
-function shuffleAvoidingSameClub(athletes: { athleteId: string; clubId: string }[]) {
-  // Fisher-Yates shuffle
-  const arr = [...athletes];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+// Seed athletes into bracket positions, placing byes strategically and avoiding same-club matchups
+function seedAvoidingSameClub(
+  athletes: { athleteId: string; clubId: string }[],
+  bracketSize: number
+): ({ athleteId: string; clubId: string } | null)[] {
+  const n = athletes.length;
+  const byes = bracketSize - n;
+
+  // Group athletes by club
+  const clubGroups = new Map<string, { athleteId: string; clubId: string }[]>();
+  for (const a of athletes) {
+    if (!clubGroups.has(a.clubId)) clubGroups.set(a.clubId, []);
+    clubGroups.get(a.clubId)!.push(a);
   }
 
-  // Try to fix same-club adjacents (best effort, max 100 attempts)
-  for (let attempt = 0; attempt < 100; attempt++) {
-    let fixed = true;
-    for (let i = 0; i < arr.length - 1; i += 2) {
-      if (arr[i].clubId === arr[i + 1]?.clubId) {
-        // Find a swap candidate
-        for (let j = i + 2; j < arr.length; j++) {
-          if (arr[j].clubId !== arr[i].clubId && (j % 2 === 0 || arr[j - 1]?.clubId !== arr[i + 1]?.clubId)) {
-            [arr[i + 1], arr[j]] = [arr[j], arr[i + 1]];
-            fixed = false;
+  // Sort clubs by size descending (largest club first for better separation)
+  const sortedClubs = [...clubGroups.entries()].sort((a, b) => b[1].length - a[1].length);
+
+  // Distribute athletes trying to maximize distance between same-club members
+  const positions: ({ athleteId: string; clubId: string } | null)[] = new Array(bracketSize).fill(null);
+  const totalPairs = bracketSize / 2;
+
+  // Place athletes pair by pair, trying to avoid same-club in each pair
+  const allAthletes: { athleteId: string; clubId: string }[] = [];
+
+  // Interleave clubs: take one from each club in round-robin
+  let clubIndex = 0;
+  const clubArrays = sortedClubs.map(([, arr]) => {
+    // Shuffle within each club
+    const shuffled = [...arr];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  });
+  const clubPointers = new Array(clubArrays.length).fill(0);
+
+  while (allAthletes.length < n) {
+    let placed = false;
+    for (let attempt = 0; attempt < clubArrays.length; attempt++) {
+      const ci = (clubIndex + attempt) % clubArrays.length;
+      if (clubPointers[ci] < clubArrays[ci].length) {
+        allAthletes.push(clubArrays[ci][clubPointers[ci]++]);
+        clubIndex = (ci + 1) % clubArrays.length;
+        placed = true;
+        break;
+      }
+    }
+    if (!placed) break;
+  }
+
+  // Now place into bracket: athletes in odd positions (0,2,4,...), byes at end
+  // But we want byes spread at the bottom, so place athletes first, nulls after
+  // Then do a swap pass to fix same-club pairs
+  for (let i = 0; i < allAthletes.length; i++) {
+    positions[i] = allAthletes[i];
+  }
+  // Remaining positions are null (byes)
+
+  // Swap pass: ensure no pair (i*2, i*2+1) has same club
+  for (let attempt = 0; attempt < 200; attempt++) {
+    let anySwapped = false;
+    for (let pair = 0; pair < totalPairs; pair++) {
+      const idx1 = pair * 2;
+      const idx2 = pair * 2 + 1;
+      const a1 = positions[idx1];
+      const a2 = positions[idx2];
+      if (a1 && a2 && a1.clubId === a2.clubId) {
+        // Find another athlete to swap with
+        let swapped = false;
+        for (let otherPair = pair + 1; otherPair < totalPairs; otherPair++) {
+          const otherIdx1 = otherPair * 2;
+          const otherIdx2 = otherPair * 2 + 1;
+          const o1 = positions[otherIdx1];
+          const o2 = positions[otherIdx2];
+
+          // Try swapping a2 with o1
+          if (o1 && o1.clubId !== a1.clubId && (!o2 || o2.clubId !== a2.clubId)) {
+            [positions[idx2], positions[otherIdx1]] = [positions[otherIdx1], positions[idx2]];
+            swapped = true;
+            anySwapped = true;
             break;
+          }
+          // Try swapping a2 with o2
+          if (o2 && o2.clubId !== a1.clubId && (!o1 || o1.clubId !== a2.clubId)) {
+            [positions[idx2], positions[otherIdx2]] = [positions[otherIdx2], positions[idx2]];
+            swapped = true;
+            anySwapped = true;
+            break;
+          }
+        }
+        if (!swapped) {
+          // Try swapping a1 instead
+          for (let otherPair = pair + 1; otherPair < totalPairs; otherPair++) {
+            const otherIdx1 = otherPair * 2;
+            const otherIdx2 = otherPair * 2 + 1;
+            const o1 = positions[otherIdx1];
+            const o2 = positions[otherIdx2];
+
+            if (o1 && o1.clubId !== a2.clubId && (!o2 || o2.clubId !== a1.clubId)) {
+              [positions[idx1], positions[otherIdx1]] = [positions[otherIdx1], positions[idx1]];
+              anySwapped = true;
+              break;
+            }
+            if (o2 && o2.clubId !== a2.clubId && (!o1 || o1.clubId !== a1.clubId)) {
+              [positions[idx1], positions[otherIdx2]] = [positions[otherIdx2], positions[idx1]];
+              anySwapped = true;
+              break;
+            }
           }
         }
       }
     }
-    if (fixed) break;
+    if (!anySwapped) break;
   }
 
-  return arr;
+  return positions;
 }
 
 function getRoundName(roundNumber: number, t: any): string {
