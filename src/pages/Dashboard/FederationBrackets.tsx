@@ -33,6 +33,7 @@ interface Category {
   id: string;
   name: string;
   competition_id: string;
+  gender: string;
 }
 
 interface Registration {
