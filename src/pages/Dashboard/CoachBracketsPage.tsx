@@ -150,30 +150,30 @@ const CoachBracketsPage = () => {
               <Button variant="outline" size="sm" onClick={() => setIsMobileOpen(true)} className="rounded-none">
                 <Menu className="h-5 w-5" />
               </Button>
-              <h1 className="text-lg font-semibold">Κλήρωση</h1>
+              <h1 className="text-lg font-semibold">{t('federation.brackets.mobileTitle')}</h1>
             </div>
           </div>
 
           <main className="flex-1 p-4 lg:p-6 overflow-auto">
             <div className="hidden lg:block mb-6">
-              <h1 className="text-2xl font-bold text-foreground">Κλήρωση Αγώνων</h1>
-              <p className="text-sm text-muted-foreground">Προβολή ζευγαρωμάτων ανά κατηγορία</p>
+              <h1 className="text-2xl font-bold text-foreground">{t('federation.brackets.title')}</h1>
+              <p className="text-sm text-muted-foreground">{t('federation.brackets.subtitle')}</p>
             </div>
 
             <div className="flex flex-wrap gap-4 mb-6">
               <div className="w-full sm:w-64">
-                <Label className="text-sm mb-1 block">Διοργάνωση</Label>
+                <Label className="text-sm mb-1 block">{t('federation.brackets.competition')}</Label>
                 <Select value={selectedCompId} onValueChange={setSelectedCompId}>
-                  <SelectTrigger className="rounded-none"><SelectValue placeholder="Επιλέξτε διοργάνωση" /></SelectTrigger>
+                  <SelectTrigger className="rounded-none"><SelectValue placeholder={t('federation.brackets.selectCompetition')} /></SelectTrigger>
                   <SelectContent>
                     {competitions.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div className="w-full sm:w-64">
-                <Label className="text-sm mb-1 block">Κατηγορία</Label>
+                <Label className="text-sm mb-1 block">{t('federation.brackets.category')}</Label>
                 <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId} disabled={!selectedCompId}>
-                  <SelectTrigger className="rounded-none"><SelectValue placeholder="Επιλέξτε κατηγορία" /></SelectTrigger>
+                  <SelectTrigger className="rounded-none"><SelectValue placeholder={t('federation.brackets.selectCategory')} /></SelectTrigger>
                   <SelectContent>
                     {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                   </SelectContent>
@@ -184,7 +184,7 @@ const CoachBracketsPage = () => {
             {matches.length === 0 && selectedCategoryId && !loading && (
               <Card className="rounded-none">
                 <CardContent className="p-8 text-center text-muted-foreground">
-                  Δεν έχει γίνει ακόμα κλήρωση για αυτή την κατηγορία
+                  {t('federation.brackets.noDraw')}
                 </CardContent>
               </Card>
             )}
