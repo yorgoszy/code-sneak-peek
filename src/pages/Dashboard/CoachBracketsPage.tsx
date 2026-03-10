@@ -5,7 +5,7 @@ import { FederationSidebar } from "@/components/FederationSidebar";
 import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Menu, Trophy } from "lucide-react";
+import { Menu, Trophy, ChevronRight, ChevronDown } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -23,6 +23,84 @@ function getRoundName(roundNumber: number, t: any): string {
   if (roundNumber === 16) return '1/16';
   return `${t('federation.brackets.round')} ${roundNumber}`;
 }
+
+// Category grouping utilities
+const AGE_ORDER = ['18-40', 'U23', '16-17', '14-15', '12-13', '10-11', '8-9', '5-7'];
+
+const getWeightLabel = (name: string): string => {
+  const m = name.match(/([-+±]\s*\d+[\d.,]*\s*kg)/i);
+  return m ? m[1] : name;
+};
+
+const getAgeLabel = (name: string): string => {
+  if (/^Ενήλικοι/i.test(name)) return '18-40';
+  if (/^U23/i.test(name)) return 'U23';
+  const match = name.match(/^Νέ(?:οι|ες)\s*(\d+-\d+)/);
+  if (match) return match[1];
+  return name.replace(/([-+±]\s*\d+[\d.,]*\s*kg)/i, '').trim();
+};
+
+const groupByAge = (cats: { id: string; name: string; gender: string }[]) => {
+  const grouped = new Map<string, typeof cats>();
+  cats.forEach(cat => {
+    const age = getAgeLabel(cat.name);
+    if (!grouped.has(age)) grouped.set(age, []);
+    grouped.get(age)!.push(cat);
+  });
+  const orderedKeys = AGE_ORDER.filter(a => grouped.has(a));
+  const remainingKeys = [...grouped.keys()].filter(k => !AGE_ORDER.includes(k));
+  return [...orderedKeys, ...remainingKeys].map(age => ({
+    age,
+    cats: grouped.get(age)!,
+  }));
+};
+
+const CoachBracketAgeGroup: React.FC<{
+  age: string;
+  cats: { id: string; name: string; gender: string }[];
+  selectedCategoryId: string;
+  onSelectCategory: (id: string) => void;
+}> = ({ age, cats, selectedCategoryId, onSelectCategory }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const hasSelected = cats.some(c => c.id === selectedCategoryId);
+  
+  return (
+    <div className="mb-1 border border-border">
+      <button
+        type="button"
+        onClick={() => setIsOpen(prev => !prev)}
+        className={`w-full text-[11px] font-bold px-2 py-2.5 flex items-center justify-between cursor-pointer hover:bg-accent/50 transition-colors select-none ${
+          hasSelected ? 'bg-foreground text-background' : 'text-foreground bg-muted'
+        }`}
+      >
+        <span className="flex items-center gap-2">
+          {isOpen ? <ChevronDown className="h-4 w-4 shrink-0" /> : <ChevronRight className="h-4 w-4 shrink-0" />}
+          {age}
+        </span>
+        <span className={`text-[9px] ${hasSelected ? 'text-background/70' : 'text-muted-foreground'}`}>{cats.length} κατ.</span>
+      </button>
+      {isOpen && (
+        <div>
+          {cats.map(cat => {
+            const isSelected = cat.id === selectedCategoryId;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => onSelectCategory(cat.id)}
+                className={`w-full flex items-center px-3 py-1.5 text-xs border-t border-border/30 cursor-pointer transition-colors text-left ${
+                  isSelected ? 'bg-foreground text-background font-bold' : 'hover:bg-accent/30'
+                }`}
+              >
+                <span className="font-medium">{getWeightLabel(cat.name)}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const CoachBracketsPage = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -70,7 +148,7 @@ const CoachBracketsPage = () => {
     const load = async () => {
       const { data } = await supabase
         .from('federation_competition_categories')
-        .select('id, name')
+        .select('id, name, gender')
         .eq('competition_id', selectedCompId)
         .order('name');
       setCategories(data || []);
@@ -160,7 +238,7 @@ const CoachBracketsPage = () => {
               <p className="text-sm text-muted-foreground">{t('federation.brackets.subtitle')}</p>
             </div>
 
-            <div className="flex flex-wrap gap-4 mb-6">
+            <div className="mb-6">
               <div className="w-full sm:w-64">
                 <Label className="text-sm mb-1 block">{t('federation.brackets.competition')}</Label>
                 <Select value={selectedCompId} onValueChange={setSelectedCompId}>
@@ -170,16 +248,39 @@ const CoachBracketsPage = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="w-full sm:w-64">
-                <Label className="text-sm mb-1 block">{t('federation.brackets.category')}</Label>
-                <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId} disabled={!selectedCompId}>
-                  <SelectTrigger className="rounded-none"><SelectValue placeholder={t('federation.brackets.selectCategory')} /></SelectTrigger>
-                  <SelectContent>
-                    {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
+
+            {selectedCompId && categories.length > 0 && (
+              <div className="mb-6">
+                <Label className="text-sm mb-2 block">{t('federation.brackets.category')}</Label>
+                <div className="flex gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
+                      {t('federation.brackets.men', 'Άνδρες')}
+                    </div>
+                    {groupByAge(categories.filter(c => c.gender === 'male')).map(g => (
+                      <CoachBracketAgeGroup key={`male-${g.age}`} age={g.age} cats={g.cats} selectedCategoryId={selectedCategoryId} onSelectCategory={setSelectedCategoryId} />
+                    ))}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
+                      {t('federation.brackets.women', 'Γυναίκες')}
+                    </div>
+                    {groupByAge(categories.filter(c => c.gender === 'female')).map(g => (
+                      <CoachBracketAgeGroup key={`female-${g.age}`} age={g.age} cats={g.cats} selectedCategoryId={selectedCategoryId} onSelectCategory={setSelectedCategoryId} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {selectedCategoryId && (
+              <div className="mb-6">
+                <Badge variant="outline" className="rounded-none text-sm py-1 px-3">
+                  {categories.find(c => c.id === selectedCategoryId)?.name}
+                </Badge>
+              </div>
+            )}
 
             {matches.length === 0 && selectedCategoryId && !loading && (
               <Card className="rounded-none">

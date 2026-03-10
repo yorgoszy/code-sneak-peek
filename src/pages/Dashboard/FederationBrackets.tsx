@@ -3,7 +3,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Menu, Shuffle, Trophy, ChevronRight, User, Award, RotateCcw } from "lucide-react";
+import { Menu, Shuffle, Trophy, ChevronRight, ChevronDown, User, Award, RotateCcw } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,6 +33,7 @@ interface Category {
   id: string;
   name: string;
   competition_id: string;
+  gender: string;
 }
 
 interface Registration {
@@ -208,6 +209,104 @@ function getRoundName(roundNumber: number, t: any): string {
   return `${t('federation.brackets.round')} ${roundNumber}`;
 }
 
+// Category grouping utilities (same logic as CompetitionRegistrationsDialog)
+const AGE_ORDER = ['18-40', 'U23', '16-17', '14-15', '12-13', '10-11', '8-9', '5-7'];
+
+const getWeightLabel = (name: string): string => {
+  const m = name.match(/([-+±]\s*\d+[\d.,]*\s*kg)/i);
+  return m ? m[1] : name;
+};
+
+const getAgeLabel = (name: string): string => {
+  if (/^Ενήλικοι/i.test(name)) return '18-40';
+  if (/^U23/i.test(name)) return 'U23';
+  const match = name.match(/^Νέ(?:οι|ες)\s*(\d+-\d+)/);
+  if (match) return match[1];
+  return name.replace(/([-+±]\s*\d+[\d.,]*\s*kg)/i, '').trim();
+};
+
+const groupByAge = (cats: Category[]) => {
+  const grouped = new Map<string, Category[]>();
+  cats.forEach(cat => {
+    const age = getAgeLabel(cat.name);
+    if (!grouped.has(age)) grouped.set(age, []);
+    grouped.get(age)!.push(cat);
+  });
+  const orderedKeys = AGE_ORDER.filter(a => grouped.has(a));
+  const remainingKeys = [...grouped.keys()].filter(k => !AGE_ORDER.includes(k));
+  return [...orderedKeys, ...remainingKeys].map(age => ({
+    age,
+    cats: grouped.get(age)!,
+  }));
+};
+
+// Collapsible age group component for category selection
+const BracketAgeGroup: React.FC<{
+  age: string;
+  cats: Category[];
+  selectedCategoryId: string;
+  onSelectCategory: (id: string) => void;
+  registrationCounts: Map<string, number>;
+}> = ({ age, cats, selectedCategoryId, onSelectCategory, registrationCounts }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  const totalRegs = cats.reduce((sum, c) => sum + (registrationCounts.get(c.id) || 0), 0);
+  const hasSelected = cats.some(c => c.id === selectedCategoryId);
+  
+  return (
+    <div className="mb-1 border border-border">
+      <button
+        type="button"
+        onClick={() => setIsOpen(prev => !prev)}
+        className={`w-full text-[11px] font-bold px-2 py-2.5 flex items-center justify-between cursor-pointer hover:bg-accent/50 transition-colors select-none ${
+          hasSelected ? 'bg-foreground text-background' : 'text-foreground bg-muted'
+        }`}
+      >
+        <span className="flex items-center gap-2">
+          {isOpen
+            ? <ChevronDown className="h-4 w-4 shrink-0" />
+            : <ChevronRight className="h-4 w-4 shrink-0" />
+          }
+          {age}
+        </span>
+        <div className="flex items-center gap-1.5">
+          {totalRegs > 0 && (
+            <Badge className={`rounded-none text-[9px] h-4 px-1 ${hasSelected ? 'bg-background text-foreground' : 'bg-foreground text-background'}`}>
+              {totalRegs}
+            </Badge>
+          )}
+          <span className={`text-[9px] ${hasSelected ? 'text-background/70' : 'text-muted-foreground'}`}>{cats.length} κατ.</span>
+        </div>
+      </button>
+      {isOpen && (
+        <div>
+          {cats.map(cat => {
+            const count = registrationCounts.get(cat.id) || 0;
+            const isSelected = cat.id === selectedCategoryId;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => onSelectCategory(cat.id)}
+                className={`w-full flex items-center justify-between px-3 py-1.5 text-xs border-t border-border/30 cursor-pointer transition-colors ${
+                  isSelected ? 'bg-foreground text-background font-bold' : 'hover:bg-accent/30'
+                }`}
+              >
+                <span className="font-medium">{getWeightLabel(cat.name)}</span>
+                {count > 0 && (
+                  <Badge className={`rounded-none text-[9px] h-4 px-1 ${isSelected ? 'bg-background text-foreground' : 'bg-muted text-foreground'}`}>
+                    {count}
+                  </Badge>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const FederationBrackets = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -221,6 +320,7 @@ const FederationBrackets = () => {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(false);
+  const [registrationCounts, setRegistrationCounts] = useState<Map<string, number>>(new Map());
 
   // Winner selection dialog
   const [winnerDialog, setWinnerDialog] = useState<{ match: Match; open: boolean } | null>(null);
@@ -247,17 +347,33 @@ const FederationBrackets = () => {
     load();
   }, [federationId]);
 
-  // Load categories when competition changes
+  // Load categories and registration counts when competition changes
   useEffect(() => {
-    if (!selectedCompId) { setCategories([]); setSelectedCategoryId(''); return; }
+    if (!selectedCompId) { setCategories([]); setSelectedCategoryId(''); setRegistrationCounts(new Map()); return; }
     const load = async () => {
-      const { data } = await supabase
-        .from('federation_competition_categories')
-        .select('id, name, competition_id')
-        .eq('competition_id', selectedCompId)
-        .order('name');
-      setCategories(data || []);
+      const [catRes, regRes] = await Promise.all([
+        supabase
+          .from('federation_competition_categories')
+          .select('id, name, competition_id, gender')
+          .eq('competition_id', selectedCompId)
+          .order('name'),
+        supabase
+          .from('federation_competition_registrations')
+          .select('category_id')
+          .eq('competition_id', selectedCompId)
+          .eq('is_paid', true)
+      ]);
+      setCategories(catRes.data || []);
       setSelectedCategoryId('');
+      
+      // Count registrations per category
+      const counts = new Map<string, number>();
+      (regRes.data || []).forEach((r: any) => {
+        if (r.category_id) {
+          counts.set(r.category_id, (counts.get(r.category_id) || 0) + 1);
+        }
+      });
+      setRegistrationCounts(counts);
     };
     load();
   }, [selectedCompId]);
@@ -461,8 +577,8 @@ const FederationBrackets = () => {
               </div>
             </div>
 
-            {/* Filters */}
-            <div className="flex flex-wrap gap-4 mb-6">
+            {/* Competition selector */}
+            <div className="mb-6">
               <div className="w-full sm:w-64">
                 <Label className="text-sm mb-1 block">{t('federation.brackets.competition')}</Label>
                 <Select value={selectedCompId} onValueChange={setSelectedCompId}>
@@ -476,39 +592,69 @@ const FederationBrackets = () => {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
 
-              <div className="w-full sm:w-64">
-                <Label className="text-sm mb-1 block">{t('federation.brackets.category')}</Label>
-                <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId} disabled={!selectedCompId}>
-                  <SelectTrigger className="rounded-none">
-                    <SelectValue placeholder={t('federation.brackets.selectCategory')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map(c => (
-                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+            {/* Category selector - grouped by gender and age */}
+            {selectedCompId && categories.length > 0 && (
+              <div className="mb-6">
+                <Label className="text-sm mb-2 block">{t('federation.brackets.category')}</Label>
+                <div className="flex gap-4">
+                  {/* Άνδρες */}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
+                      {t('federation.brackets.men', 'Άνδρες')}
+                    </div>
+                    {groupByAge(categories.filter(c => c.gender === 'male')).map(g => (
+                      <BracketAgeGroup
+                        key={`male-${g.age}`}
+                        age={g.age}
+                        cats={g.cats}
+                        selectedCategoryId={selectedCategoryId}
+                        onSelectCategory={setSelectedCategoryId}
+                        registrationCounts={registrationCounts}
+                      />
                     ))}
-                  </SelectContent>
-                </Select>
+                  </div>
+                  {/* Γυναίκες */}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
+                      {t('federation.brackets.women', 'Γυναίκες')}
+                    </div>
+                    {groupByAge(categories.filter(c => c.gender === 'female')).map(g => (
+                      <BracketAgeGroup
+                        key={`female-${g.age}`}
+                        age={g.age}
+                        cats={g.cats}
+                        selectedCategoryId={selectedCategoryId}
+                        onSelectCategory={setSelectedCategoryId}
+                        registrationCounts={registrationCounts}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
+            )}
 
-              {selectedCategoryId && matches.length === 0 && registrations.length >= 2 && (
-                <div className="flex items-end">
+            {/* Selected category actions */}
+            {selectedCategoryId && (
+              <div className="flex flex-wrap items-center gap-4 mb-6">
+                <Badge variant="outline" className="rounded-none text-sm py-1 px-3">
+                  {categories.find(c => c.id === selectedCategoryId)?.name}
+                </Badge>
+                {matches.length === 0 && registrations.length >= 2 && (
                   <Button onClick={handleGenerateBracket} className="rounded-none bg-foreground text-background hover:bg-foreground/90">
                     <Shuffle className="h-4 w-4 mr-2" />
                     {t('federation.brackets.generateDraw')}
                   </Button>
-                </div>
-              )}
-
-              {selectedCategoryId && matches.length > 0 && (
-                <div className="flex items-end">
+                )}
+                {matches.length > 0 && (
                   <Button variant="outline" onClick={() => setResetDialogOpen(true)} className="rounded-none text-destructive border-destructive">
                     <RotateCcw className="h-4 w-4 mr-2" />
                     {t('federation.brackets.resetDraw')}
                   </Button>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
             {/* Info */}
             {selectedCategoryId && registrations.length > 0 && matches.length === 0 && (

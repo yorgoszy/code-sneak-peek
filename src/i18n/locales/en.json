@@ -699,7 +699,9 @@
       "final": "Final",
       "semifinals": "Semifinals",
       "quarterfinals": "Quarterfinals",
-      "round": "Round"
+      "round": "Round",
+      "men": "Men",
+      "women": "Women"
     },
     "overview": {
       "title": "Federation Overview",
