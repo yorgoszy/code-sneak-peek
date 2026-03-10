@@ -652,7 +652,7 @@ const FederationBrackets = () => {
         <Dialog open={winnerDialog.open} onOpenChange={() => setWinnerDialog(null)}>
           <DialogContent className="rounded-none max-w-md">
             <DialogHeader>
-              <DialogTitle>Επιλογή Νικητή</DialogTitle>
+              <DialogTitle>{t('federation.brackets.selectWinner')}</DialogTitle>
             </DialogHeader>
 
             <div className="space-y-4">
