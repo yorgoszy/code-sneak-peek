@@ -866,7 +866,7 @@ const FederationBrackets = () => {
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
                                       <p className="text-sm font-medium truncate">
-                                        {match.athlete1?.name || 'TBD'}
+                                        {getSlotDisplayName(match, 'athlete1')}
                                       </p>
                                       {match.athlete1_club && (
                                         <p className="text-xs text-muted-foreground truncate">{match.athlete1_club.name}</p>
@@ -891,7 +891,7 @@ const FederationBrackets = () => {
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
                                       <p className="text-sm font-medium truncate">
-                                        {match.athlete2?.name || 'TBD'}
+                                        {getSlotDisplayName(match, 'athlete2')}
                                       </p>
                                       {match.athlete2_club && (
                                         <p className="text-xs text-muted-foreground truncate">{match.athlete2_club.name}</p>
