@@ -734,8 +734,8 @@ const FederationBrackets = () => {
               </div>
             </div>
 
-            {/* Category selector - grouped by gender and age */}
-            {selectedCompId && categories.length > 0 && (
+            {/* Category selector - hidden when bracket is displayed */}
+            {selectedCompId && categories.length > 0 && matches.length === 0 && (
               <div className="mb-6">
                 <Label className="text-sm mb-2 block">{t('federation.brackets.category')}</Label>
                 <div className="flex gap-4">
