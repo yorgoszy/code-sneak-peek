@@ -10,6 +10,8 @@ import {
   CreditCard,
   Swords,
   Trophy,
+  Shuffle,
+  Radio,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
