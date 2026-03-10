@@ -237,7 +237,7 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
             <Tabs defaultValue="new" className="w-full">
               <TabsList className="rounded-none w-full bg-gray-100 h-7 sm:h-8">
                 <TabsTrigger value="new" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
-                  Νέα Καταγραφή
+                  {t('progress.newRecord')}
                 </TabsTrigger>
                 <TabsTrigger value="history" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
                   Ιστορικό
