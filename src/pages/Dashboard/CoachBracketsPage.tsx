@@ -195,8 +195,8 @@ const CoachBracketsPage = () => {
                   {sortedRoundNumbers.map((roundNum) => (
                     <div key={roundNum} className="flex-shrink-0 w-72">
                       <div className="bg-muted px-4 py-2 mb-3 border border-border">
-                        <h3 className="font-semibold text-sm">{getRoundName(roundNum)}</h3>
-                        <span className="text-xs text-muted-foreground">{rounds[roundNum].length} αγώνες</span>
+                        <h3 className="font-semibold text-sm">{getRoundName(roundNum, t)}</h3>
+                        <span className="text-xs text-muted-foreground">{rounds[roundNum].length} {t('federation.brackets.matches')}</span>
                       </div>
                       <div className="space-y-3">
                         {rounds[roundNum].map((match: any) => (
