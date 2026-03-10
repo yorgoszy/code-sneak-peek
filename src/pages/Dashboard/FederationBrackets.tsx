@@ -316,8 +316,8 @@ function getRoundName(roundNumber: number, t: any): string {
   if (roundNumber === 1) return t('federation.brackets.final');
   if (roundNumber === 2) return t('federation.brackets.semifinals');
   if (roundNumber === 4) return t('federation.brackets.quarterfinals');
-  if (roundNumber === 8) return '1/8';
-  if (roundNumber === 16) return '1/16';
+  if (roundNumber === 8) return 'Προκριματικοί 1/8';
+  if (roundNumber === 16) return 'Προκριματικοί 1/16';
   return `${t('federation.brackets.round')} ${roundNumber}`;
 }
 
@@ -648,30 +648,32 @@ const FederationBrackets = () => {
 
   const sortedRoundNumbers = Object.keys(rounds).map(Number).sort((a, b) => b - a);
 
-  const getSlotDisplayName = (match: Match, slot: 'athlete1' | 'athlete2'): string => {
+  const getSlotDisplayName = (match: Match, slot: 'athlete1' | 'athlete2'): { name: string; isConfirmed: boolean } => {
+    // If the actual athlete is set in this match, show their name
+    const athleteId = slot === 'athlete1' ? match.athlete1_id : match.athlete2_id;
     const athlete = slot === 'athlete1' ? match.athlete1 : match.athlete2;
-    if (athlete?.name) return athlete.name;
+    if (athleteId && athlete?.name) return { name: athlete.name, isConfirmed: true };
 
+    // Otherwise, find the feeder match from previous round
     const feederRound = match.round_number * 2;
     const feederMatchNumber = slot === 'athlete1'
       ? (match.match_number * 2) - 1
       : match.match_number * 2;
     const feederMatch = rounds[feederRound]?.find((m) => m.match_number === feederMatchNumber);
 
-    if (!feederMatch) return 'TBD';
+    if (!feederMatch) return { name: 'TBD', isConfirmed: false };
 
+    // If feeder match is completed, show winner name
     if (feederMatch.winner_id) {
       const winnerName = feederMatch.athlete1_id === feederMatch.winner_id
         ? feederMatch.athlete1?.name
         : feederMatch.athlete2?.name;
-      return winnerName || 'TBD';
+      return { name: winnerName || 'TBD', isConfirmed: true };
     }
 
-    const feederNames = [feederMatch.athlete1?.name, feederMatch.athlete2?.name].filter(Boolean) as string[];
-    if (feederNames.length === 2) return `${feederNames[0]} / ${feederNames[1]}`;
-    if (feederNames.length === 1) return feederNames[0];
-
-    return 'TBD';
+    // Feeder match NOT completed - show "Νικητής [round] αγ. X"
+    const feederRoundName = getRoundName(feederRound, t);
+    return { name: `Νικητής ${feederRoundName} αγ. ${feederMatchNumber}`, isConfirmed: false };
   };
 
   const renderSidebar = () => (
@@ -869,8 +871,8 @@ const FederationBrackets = () => {
                                       </AvatarFallback>
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-medium truncate">
-                                        {getSlotDisplayName(match, 'athlete1')}
+                                      <p className={`text-sm truncate ${getSlotDisplayName(match, 'athlete1').isConfirmed ? 'font-medium' : 'text-muted-foreground italic'}`}>
+                                        {getSlotDisplayName(match, 'athlete1').name}
                                       </p>
                                       {match.athlete1_club && (
                                         <p className="text-xs text-muted-foreground truncate">{match.athlete1_club.name}</p>
@@ -894,8 +896,8 @@ const FederationBrackets = () => {
                                       </AvatarFallback>
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-medium truncate">
-                                        {getSlotDisplayName(match, 'athlete2')}
+                                      <p className={`text-sm truncate ${getSlotDisplayName(match, 'athlete2').isConfirmed ? 'font-medium' : 'text-muted-foreground italic'}`}>
+                                        {getSlotDisplayName(match, 'athlete2').name}
                                       </p>
                                       {match.athlete2_club && (
                                         <p className="text-xs text-muted-foreground truncate">{match.athlete2_club.name}</p>
