@@ -194,6 +194,8 @@ function App() {
                       <Route path="/dashboard/hrv" element={<ProtectedRoute><HRVPage /></ProtectedRoute>} />
                       <Route path="/dashboard/health-cards" element={<ProtectedRoute><HealthCardsPage /></ProtectedRoute>} />
                       <Route path="/dashboard/coach-competitions" element={<ProtectedRoute><CoachCompetitionsPage /></ProtectedRoute>} />
+                      <Route path="/dashboard/coach-brackets" element={<ProtectedRoute><CoachBracketsPage /></ProtectedRoute>} />
+                      <Route path="/dashboard/coach-live" element={<ProtectedRoute><CoachLivePage /></ProtectedRoute>} />
                       {/* Admin-only routes */}
                       <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />
                       <Route path="/dashboard/users" element={<ProtectedRoute requireAdmin><Users /></ProtectedRoute>} />
