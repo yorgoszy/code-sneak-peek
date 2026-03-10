@@ -1,0 +1,643 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { FederationSidebar } from "@/components/FederationSidebar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Menu, Plus, Settings, Radio, Play, Pause, Trash2, Save, Monitor } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { toast } from "sonner";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+
+interface Competition {
+  id: string;
+  name: string;
+  competition_date: string;
+  status: string;
+}
+
+interface Ring {
+  id: string;
+  competition_id: string;
+  ring_number: number;
+  ring_name: string | null;
+  youtube_live_url: string | null;
+  match_range_start: number | null;
+  match_range_end: number | null;
+  current_match_id: string | null;
+  is_active: boolean;
+  current_match?: {
+    id: string;
+    match_order: number;
+    status: string;
+    athlete1?: { name: string; photo_url: string | null; avatar_url: string | null } | null;
+    athlete2?: { name: string; photo_url: string | null; avatar_url: string | null } | null;
+    athlete1_club?: { name: string } | null;
+    athlete2_club?: { name: string } | null;
+    category?: { name: string } | null;
+  } | null;
+}
+
+interface Match {
+  id: string;
+  match_order: number | null;
+  match_number: number;
+  round_number: number;
+  status: string;
+  athlete1?: { name: string } | null;
+  athlete2?: { name: string } | null;
+  category_id: string;
+}
+
+function getYoutubeEmbedUrl(url: string): string | null {
+  if (!url) return null;
+  // Handle various YouTube URL formats
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/live\/)([a-zA-Z0-9_-]+)/,
+    /youtube\.com\/embed\/([a-zA-Z0-9_-]+)/,
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1`;
+  }
+  // If it's already an embed URL or other format, return as-is
+  if (url.includes('youtube.com/embed')) return url;
+  return url;
+}
+
+const FederationLive = () => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { userProfile } = useRoleCheck();
+
+  const [competitions, setCompetitions] = useState<Competition[]>([]);
+  const [selectedCompId, setSelectedCompId] = useState<string>('');
+  const [rings, setRings] = useState<Ring[]>([]);
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Ring setup dialog
+  const [setupDialogOpen, setSetupDialogOpen] = useState(false);
+  const [ringCount, setRingCount] = useState(3);
+  const [ringConfigs, setRingConfigs] = useState<{
+    ring_number: number;
+    ring_name: string;
+    youtube_live_url: string;
+    match_range_start: string;
+    match_range_end: string;
+  }[]>([]);
+
+  // Edit ring dialog
+  const [editRing, setEditRing] = useState<Ring | null>(null);
+  const [editYoutubeUrl, setEditYoutubeUrl] = useState('');
+  const [editCurrentMatchId, setEditCurrentMatchId] = useState('');
+
+  // Delete dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  const federationId = userProfile?.id;
+
+  useEffect(() => {
+    if (!federationId) return;
+    const load = async () => {
+      const { data } = await supabase
+        .from('federation_competitions')
+        .select('id, name, competition_date, status')
+        .eq('federation_id', federationId)
+        .order('competition_date', { ascending: false });
+      setCompetitions(data || []);
+    };
+    load();
+  }, [federationId]);
+
+  useEffect(() => {
+    if (!selectedCompId) { setRings([]); setMatches([]); return; }
+    loadRings();
+    loadMatches();
+  }, [selectedCompId]);
+
+  const loadRings = useCallback(async () => {
+    if (!selectedCompId) return;
+    setLoading(true);
+    const { data } = await supabase
+      .from('competition_rings')
+      .select('*')
+      .eq('competition_id', selectedCompId)
+      .order('ring_number');
+
+    const ringsData = data || [];
+
+    // Load current match details for each ring
+    const enrichedRings = await Promise.all(ringsData.map(async (ring: any) => {
+      if (!ring.current_match_id) return { ...ring, current_match: null };
+
+      const { data: matchData } = await supabase
+        .from('competition_matches')
+        .select(`
+          id, match_order, status,
+          athlete1:app_users!competition_matches_athlete1_id_fkey(name, photo_url, avatar_url),
+          athlete2:app_users!competition_matches_athlete2_id_fkey(name, photo_url, avatar_url),
+          athlete1_club:app_users!competition_matches_athlete1_club_id_fkey(name),
+          athlete2_club:app_users!competition_matches_athlete2_club_id_fkey(name),
+          category:federation_competition_categories!competition_matches_category_id_fkey(name)
+        `)
+        .eq('id', ring.current_match_id)
+        .single();
+
+      return { ...ring, current_match: matchData };
+    }));
+
+    setRings(enrichedRings as Ring[]);
+    setLoading(false);
+  }, [selectedCompId]);
+
+  const loadMatches = useCallback(async () => {
+    if (!selectedCompId) return;
+    const { data } = await supabase
+      .from('competition_matches')
+      .select(`
+        id, match_order, match_number, round_number, status, category_id,
+        athlete1:app_users!competition_matches_athlete1_id_fkey(name),
+        athlete2:app_users!competition_matches_athlete2_id_fkey(name)
+      `)
+      .eq('competition_id', selectedCompId)
+      .eq('is_bye', false)
+      .order('match_order');
+    setMatches((data as any) || []);
+  }, [selectedCompId]);
+
+  const handleSetupRings = () => {
+    const configs = Array.from({ length: ringCount }, (_, i) => ({
+      ring_number: i + 1,
+      ring_name: `Ring ${i + 1}`,
+      youtube_live_url: '',
+      match_range_start: '',
+      match_range_end: '',
+    }));
+    setRingConfigs(configs);
+    setSetupDialogOpen(true);
+  };
+
+  const handleSaveRings = async () => {
+    const toInsert = ringConfigs.map(rc => ({
+      competition_id: selectedCompId,
+      ring_number: rc.ring_number,
+      ring_name: rc.ring_name || `Ring ${rc.ring_number}`,
+      youtube_live_url: rc.youtube_live_url || null,
+      match_range_start: rc.match_range_start ? parseInt(rc.match_range_start) : null,
+      match_range_end: rc.match_range_end ? parseInt(rc.match_range_end) : null,
+      is_active: true,
+    }));
+
+    const { error } = await supabase.from('competition_rings').insert(toInsert);
+    if (error) {
+      toast.error('Σφάλμα κατά τη δημιουργία rings');
+      console.error(error);
+    } else {
+      toast.success('Τα rings δημιουργήθηκαν!');
+      setSetupDialogOpen(false);
+      loadRings();
+    }
+  };
+
+  const handleDeleteRings = async () => {
+    const { error } = await supabase
+      .from('competition_rings')
+      .delete()
+      .eq('competition_id', selectedCompId);
+    if (error) {
+      toast.error('Σφάλμα');
+    } else {
+      toast.success('Τα rings διαγράφηκαν');
+      setRings([]);
+    }
+    setDeleteDialogOpen(false);
+  };
+
+  const handleUpdateRing = async () => {
+    if (!editRing) return;
+    const { error } = await supabase
+      .from('competition_rings')
+      .update({
+        youtube_live_url: editYoutubeUrl || null,
+        current_match_id: editCurrentMatchId || null,
+      })
+      .eq('id', editRing.id);
+
+    if (error) {
+      toast.error('Σφάλμα');
+    } else {
+      toast.success('Ενημερώθηκε!');
+      setEditRing(null);
+      loadRings();
+    }
+  };
+
+  const openEditRing = (ring: Ring) => {
+    setEditRing(ring);
+    setEditYoutubeUrl(ring.youtube_live_url || '');
+    setEditCurrentMatchId(ring.current_match_id || '');
+  };
+
+  const getAthleteAvatar = (athlete: { name: string; photo_url: string | null; avatar_url: string | null } | null | undefined) => {
+    return athlete?.photo_url || athlete?.avatar_url || undefined;
+  };
+
+  const renderSidebar = () => (
+    <FederationSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+  );
+
+  // Real-time subscription for rings
+  useEffect(() => {
+    if (!selectedCompId) return;
+    const channel = supabase
+      .channel('rings-live')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'competition_rings',
+        filter: `competition_id=eq.${selectedCompId}`,
+      }, () => {
+        loadRings();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [selectedCompId, loadRings]);
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <div className="hidden lg:block">{renderSidebar()}</div>
+
+        {isMobileOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <div className="absolute inset-0 bg-black/50" onClick={() => setIsMobileOpen(false)} />
+            <div className="relative w-64 h-full">{renderSidebar()}</div>
+          </div>
+        )}
+
+        <div className="flex-1 flex flex-col min-w-0">
+          <div className="sticky top-0 z-40 bg-background border-b border-border p-3 lg:hidden">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Button variant="outline" size="sm" onClick={() => setIsMobileOpen(true)} className="rounded-none">
+                  <Menu className="h-5 w-5" />
+                </Button>
+                <h1 className="text-lg font-semibold">Live</h1>
+              </div>
+            </div>
+          </div>
+
+          <main className="flex-1 p-4 lg:p-6 overflow-auto">
+            <div className="hidden lg:flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                  <Radio className="h-6 w-6 text-destructive animate-pulse" />
+                  Live Αγώνες
+                </h1>
+                <p className="text-sm text-muted-foreground">Ζωντανή παρακολούθηση αγώνων ανά ring</p>
+              </div>
+            </div>
+
+            {/* Competition selector */}
+            <div className="flex flex-wrap gap-4 mb-6 items-end">
+              <div className="w-full sm:w-64">
+                <Label className="text-sm mb-1 block">Διοργάνωση</Label>
+                <Select value={selectedCompId} onValueChange={setSelectedCompId}>
+                  <SelectTrigger className="rounded-none">
+                    <SelectValue placeholder="Επιλέξτε διοργάνωση" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {competitions.map(c => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {selectedCompId && rings.length === 0 && (
+                <Button onClick={handleSetupRings} className="rounded-none bg-foreground text-background hover:bg-foreground/90">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Ρύθμιση Rings
+                </Button>
+              )}
+
+              {rings.length > 0 && (
+                <Button variant="outline" onClick={() => setDeleteDialogOpen(true)} className="rounded-none text-destructive border-destructive">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Διαγραφή Rings
+                </Button>
+              )}
+            </div>
+
+            {/* Rings Grid */}
+            {rings.length > 0 && (
+              <div className={`grid gap-6 ${
+                rings.length === 1 ? 'grid-cols-1' :
+                rings.length === 2 ? 'grid-cols-1 lg:grid-cols-2' :
+                'grid-cols-1 lg:grid-cols-2 xl:grid-cols-3'
+              }`}>
+                {rings.map((ring) => (
+                  <Card key={ring.id} className="rounded-none overflow-hidden">
+                    <CardHeader className="p-3 bg-muted border-b border-border">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Monitor className="h-4 w-4 text-muted-foreground" />
+                          <CardTitle className="text-sm">{ring.ring_name || `Ring ${ring.ring_number}`}</CardTitle>
+                          {ring.is_active && (
+                            <Badge variant="outline" className="rounded-none text-xs bg-destructive/10 text-destructive border-destructive/30">
+                              <Radio className="h-3 w-3 mr-1 animate-pulse" />
+                              LIVE
+                            </Badge>
+                          )}
+                        </div>
+                        <Button variant="ghost" size="sm" onClick={() => openEditRing(ring)} className="rounded-none h-7">
+                          <Settings className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+
+                      {ring.match_range_start && ring.match_range_end && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Αγώνες {ring.match_range_start} - {ring.match_range_end}
+                        </p>
+                      )}
+                    </CardHeader>
+
+                    <CardContent className="p-0">
+                      {/* YouTube Embed */}
+                      {ring.youtube_live_url ? (
+                        <AspectRatio ratio={16 / 9}>
+                          <iframe
+                            src={getYoutubeEmbedUrl(ring.youtube_live_url) || ''}
+                            className="w-full h-full"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            title={ring.ring_name || `Ring ${ring.ring_number}`}
+                          />
+                        </AspectRatio>
+                      ) : (
+                        <div className="bg-muted/50 flex items-center justify-center h-48">
+                          <p className="text-sm text-muted-foreground">Δεν έχει οριστεί YouTube Live URL</p>
+                        </div>
+                      )}
+
+                      {/* Current Match Info */}
+                      {ring.current_match ? (
+                        <div className="p-4 border-t border-border">
+                          <div className="text-xs text-muted-foreground mb-2 flex items-center gap-2">
+                            <span>Αγώνας #{ring.current_match.match_order}</span>
+                            {(ring.current_match as any)?.category && (
+                              <Badge variant="secondary" className="rounded-none text-xs">
+                                {(ring.current_match as any).category.name}
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={getAthleteAvatar(ring.current_match.athlete1)} />
+                                <AvatarFallback className="text-xs">
+                                  {ring.current_match.athlete1?.name?.charAt(0) || '?'}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="text-sm font-medium">{ring.current_match.athlete1?.name || 'TBD'}</p>
+                                {ring.current_match.athlete1_club && (
+                                  <p className="text-xs text-muted-foreground">{ring.current_match.athlete1_club.name}</p>
+                                )}
+                              </div>
+                            </div>
+
+                            <span className="text-lg font-bold text-muted-foreground">VS</span>
+
+                            <div className="flex items-center gap-2">
+                              <div className="text-right">
+                                <p className="text-sm font-medium">{ring.current_match.athlete2?.name || 'TBD'}</p>
+                                {ring.current_match.athlete2_club && (
+                                  <p className="text-xs text-muted-foreground">{ring.current_match.athlete2_club.name}</p>
+                                )}
+                              </div>
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={getAthleteAvatar(ring.current_match.athlete2)} />
+                                <AvatarFallback className="text-xs">
+                                  {ring.current_match.athlete2?.name?.charAt(0) || '?'}
+                                </AvatarFallback>
+                              </Avatar>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="p-4 border-t border-border text-center text-sm text-muted-foreground">
+                          Δεν υπάρχει ενεργός αγώνας
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+
+            {selectedCompId && rings.length === 0 && !loading && (
+              <Card className="rounded-none">
+                <CardContent className="p-8 text-center text-muted-foreground">
+                  <Monitor className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                  <p>Δεν έχουν ρυθμιστεί rings για αυτή τη διοργάνωση.</p>
+                  <p className="text-xs mt-1">Πατήστε "Ρύθμιση Rings" για να ξεκινήσετε.</p>
+                </CardContent>
+              </Card>
+            )}
+          </main>
+        </div>
+      </div>
+
+      {/* Ring Setup Dialog */}
+      <Dialog open={setupDialogOpen} onOpenChange={setSetupDialogOpen}>
+        <DialogContent className="rounded-none max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Ρύθμιση Rings</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm">Αριθμός Rings</Label>
+              <div className="flex items-center gap-2 mt-1">
+                {[1, 2, 3, 4, 5].map(n => (
+                  <Button
+                    key={n}
+                    variant={ringCount === n ? 'default' : 'outline'}
+                    size="sm"
+                    className={`rounded-none ${ringCount === n ? 'bg-foreground text-background' : ''}`}
+                    onClick={() => {
+                      setRingCount(n);
+                      setRingConfigs(Array.from({ length: n }, (_, i) => ({
+                        ring_number: i + 1,
+                        ring_name: `Ring ${i + 1}`,
+                        youtube_live_url: '',
+                        match_range_start: '',
+                        match_range_end: '',
+                      })));
+                    }}
+                  >
+                    {n}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {ringConfigs.map((rc, idx) => (
+              <Card key={idx} className="rounded-none">
+                <CardContent className="p-4 space-y-3">
+                  <h4 className="font-medium text-sm">Ring {rc.ring_number}</h4>
+                  <div>
+                    <Label className="text-xs">Όνομα Ring</Label>
+                    <Input
+                      value={rc.ring_name}
+                      onChange={(e) => {
+                        const updated = [...ringConfigs];
+                        updated[idx].ring_name = e.target.value;
+                        setRingConfigs(updated);
+                      }}
+                      className="rounded-none"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">YouTube Live URL</Label>
+                    <Input
+                      value={rc.youtube_live_url}
+                      onChange={(e) => {
+                        const updated = [...ringConfigs];
+                        updated[idx].youtube_live_url = e.target.value;
+                        setRingConfigs(updated);
+                      }}
+                      placeholder="https://youtube.com/live/..."
+                      className="rounded-none"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-xs">Αγώνας από</Label>
+                      <Input
+                        type="number"
+                        value={rc.match_range_start}
+                        onChange={(e) => {
+                          const updated = [...ringConfigs];
+                          updated[idx].match_range_start = e.target.value;
+                          setRingConfigs(updated);
+                        }}
+                        placeholder="1"
+                        className="rounded-none"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Αγώνας έως</Label>
+                      <Input
+                        type="number"
+                        value={rc.match_range_end}
+                        onChange={(e) => {
+                          const updated = [...ringConfigs];
+                          updated[idx].match_range_end = e.target.value;
+                          setRingConfigs(updated);
+                        }}
+                        placeholder="25"
+                        className="rounded-none"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSetupDialogOpen(false)} className="rounded-none">Ακύρωση</Button>
+            <Button onClick={handleSaveRings} className="rounded-none bg-foreground text-background hover:bg-foreground/90">
+              <Save className="h-4 w-4 mr-2" />
+              Αποθήκευση
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Ring Dialog */}
+      {editRing && (
+        <Dialog open={!!editRing} onOpenChange={() => setEditRing(null)}>
+          <DialogContent className="rounded-none max-w-lg">
+            <DialogHeader>
+              <DialogTitle>{editRing.ring_name || `Ring ${editRing.ring_number}`}</DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm">YouTube Live URL</Label>
+                <Input
+                  value={editYoutubeUrl}
+                  onChange={(e) => setEditYoutubeUrl(e.target.value)}
+                  placeholder="https://youtube.com/live/..."
+                  className="rounded-none"
+                />
+              </div>
+
+              <div>
+                <Label className="text-sm">Τρέχων Αγώνας</Label>
+                <Select value={editCurrentMatchId} onValueChange={setEditCurrentMatchId}>
+                  <SelectTrigger className="rounded-none">
+                    <SelectValue placeholder="Επιλέξτε αγώνα" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Κανένας</SelectItem>
+                    {matches
+                      .filter(m => m.status !== 'completed')
+                      .map(m => (
+                        <SelectItem key={m.id} value={m.id}>
+                          #{m.match_order} - {m.athlete1?.name || 'TBD'} vs {m.athlete2?.name || 'TBD'}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setEditRing(null)} className="rounded-none">Ακύρωση</Button>
+              <Button onClick={handleUpdateRing} className="rounded-none bg-foreground text-background hover:bg-foreground/90">
+                <Save className="h-4 w-4 mr-2" />
+                Αποθήκευση
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="rounded-none">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Διαγραφή Rings;</AlertDialogTitle>
+            <AlertDialogDescription>
+              Αυτή η ενέργεια θα διαγράψει όλα τα rings αυτής της διοργάνωσης. Δεν μπορεί να αναιρεθεί.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteRings} className="bg-destructive hover:bg-destructive/90 rounded-none">
+              Διαγραφή
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </SidebarProvider>
+  );
+};
+
+export default FederationLive;
