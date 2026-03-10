@@ -930,7 +930,7 @@ const FederationBrackets = () => {
                                 className={`absolute border cursor-pointer transition-all hover:shadow-lg bg-card ${
                                   match.status === 'completed' ? 'border-[#00ffba] shadow-sm' : 'border-border'
                                 }`}
-                                style={{ left: xOffset, top: yTop, width: COL_W }}
+                                style={{ left: xOffset, top: yTop, width: COL_W, height: CARD_H, overflow: 'hidden' }}
                                 onClick={() => openWinnerDialog(match)}
                               >
                                 {/* Match number header */}
