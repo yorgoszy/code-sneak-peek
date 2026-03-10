@@ -117,7 +117,7 @@ export default function ProgressTracking() {
 
   return (
     <div className="p-2 sm:p-3 md:p-4 lg:p-6 space-y-3 sm:space-y-4 md:space-y-6 max-w-full overflow-x-hidden">
-      <h1 className="text-lg sm:text-xl md:text-2xl font-bold">Καταγραφή Προόδου</h1>
+      <h1 className="text-lg sm:text-xl md:text-2xl font-bold">{t('progress.title')}</h1>
 
       <Tabs defaultValue="force-velocity" className="w-full">
         <TabsList className="rounded-none w-full grid grid-cols-3 lg:grid-cols-5 gap-0.5 sm:gap-1 p-0.5 sm:p-1 h-auto">
@@ -131,10 +131,10 @@ export default function ProgressTracking() {
             Jump Profile
           </TabsTrigger>
           <TabsTrigger value="anthropometric" className="rounded-none text-[10px] sm:text-xs md:text-sm px-1 sm:px-2 py-1.5 sm:py-2">
-            Σωματομετρικά
+            {t('progress.anthropometricTab')}
           </TabsTrigger>
           <TabsTrigger value="functional" className="rounded-none text-[10px] sm:text-xs md:text-sm px-1 sm:px-2 py-1.5 sm:py-2">
-            Λειτουργικά
+            {t('progress.functionalTab')}
           </TabsTrigger>
         </TabsList>
 
