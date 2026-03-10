@@ -170,7 +170,7 @@ export default function ProgressTracking() {
                 {t('progress.newRecord')}
               </TabsTrigger>
               <TabsTrigger value="history" className="rounded-none flex-1 text-[10px] sm:text-xs py-1 px-1 sm:px-2">
-                Ιστορικό
+                {t('progress.historyTab')}
               </TabsTrigger>
             </TabsList>
 
