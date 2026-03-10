@@ -17,6 +17,8 @@ import { RootRedirect } from "@/components/RootRedirect";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
 import Auth from "@/pages/Auth";
 import ResetPassword from "@/pages/ResetPassword";
+const PrivacyPolicy = React.lazy(() => import("@/pages/PrivacyPolicy"));
+const TermsOfService = React.lazy(() => import("@/pages/TermsOfService"));
 import Dashboard from "@/pages/Dashboard";
 import Users from "@/pages/Users";
 import Groups from "@/pages/Groups";
