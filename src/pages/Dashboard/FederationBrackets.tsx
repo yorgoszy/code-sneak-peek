@@ -644,6 +644,32 @@ const FederationBrackets = () => {
 
   const sortedRoundNumbers = Object.keys(rounds).map(Number).sort((a, b) => b - a);
 
+  const getSlotDisplayName = (match: Match, slot: 'athlete1' | 'athlete2'): string => {
+    const athlete = slot === 'athlete1' ? match.athlete1 : match.athlete2;
+    if (athlete?.name) return athlete.name;
+
+    const feederRound = match.round_number * 2;
+    const feederMatchNumber = slot === 'athlete1'
+      ? (match.match_number * 2) - 1
+      : match.match_number * 2;
+    const feederMatch = rounds[feederRound]?.find((m) => m.match_number === feederMatchNumber);
+
+    if (!feederMatch) return 'TBD';
+
+    if (feederMatch.winner_id) {
+      const winnerName = feederMatch.athlete1_id === feederMatch.winner_id
+        ? feederMatch.athlete1?.name
+        : feederMatch.athlete2?.name;
+      return winnerName || 'TBD';
+    }
+
+    const feederNames = [feederMatch.athlete1?.name, feederMatch.athlete2?.name].filter(Boolean) as string[];
+    if (feederNames.length === 2) return `${feederNames[0]} / ${feederNames[1]}`;
+    if (feederNames.length === 1) return feederNames[0];
+
+    return 'TBD';
+  };
+
   const renderSidebar = () => (
     <FederationSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
   );
@@ -840,7 +866,7 @@ const FederationBrackets = () => {
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
                                       <p className="text-sm font-medium truncate">
-                                        {match.athlete1?.name || 'TBD'}
+                                        {getSlotDisplayName(match, 'athlete1')}
                                       </p>
                                       {match.athlete1_club && (
                                         <p className="text-xs text-muted-foreground truncate">{match.athlete1_club.name}</p>
@@ -865,7 +891,7 @@ const FederationBrackets = () => {
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
                                       <p className="text-sm font-medium truncate">
-                                        {match.athlete2?.name || 'TBD'}
+                                        {getSlotDisplayName(match, 'athlete2')}
                                       </p>
                                       {match.athlete2_club && (
                                         <p className="text-xs text-muted-foreground truncate">{match.athlete2_club.name}</p>
