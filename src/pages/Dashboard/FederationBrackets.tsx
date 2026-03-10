@@ -897,8 +897,8 @@ const FederationBrackets = () => {
               });
 
               return (
-                <div className="w-full overflow-x-auto overflow-y-auto border border-border bg-muted/20 p-4" style={{ maxHeight: 'calc(100vh - 200px)' }}>
-                  <div className="relative" style={{ width: totalW, height: totalH }}>
+                <div className="w-full overflow-x-auto overflow-y-auto border border-border bg-muted/10 p-6" style={{ height: 'calc(100vh - 160px)' }}>
+                  <div className="relative" style={{ width: totalW, minHeight: totalH }}>
                     {sortedRoundNumbers.map((roundNum, ri) => {
                       const rMatches = roundMatchArrays[ri];
                       const xOffset = ri * (COL_W + CONNECTOR_W);
