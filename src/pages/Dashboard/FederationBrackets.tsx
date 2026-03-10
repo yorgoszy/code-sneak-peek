@@ -734,8 +734,8 @@ const FederationBrackets = () => {
               </div>
             </div>
 
-            {/* Category selector - grouped by gender and age */}
-            {selectedCompId && categories.length > 0 && (
+            {/* Category selector - hidden when bracket is displayed */}
+            {selectedCompId && categories.length > 0 && matches.length === 0 && (
               <div className="mb-6">
                 <Label className="text-sm mb-2 block">{t('federation.brackets.category')}</Label>
                 <div className="flex gap-4">
@@ -777,10 +777,15 @@ const FederationBrackets = () => {
 
             {/* Selected category actions */}
             {selectedCategoryId && (
-              <div className="flex flex-wrap items-center gap-4 mb-6">
+              <div className="flex flex-wrap items-center gap-4 mb-4">
                 <Badge variant="outline" className="rounded-none text-sm py-1 px-3">
                   {categories.find(c => c.id === selectedCategoryId)?.name}
                 </Badge>
+                {matches.length > 0 && (
+                  <Button variant="outline" size="sm" onClick={() => { setMatches([]); }} className="rounded-none">
+                    ← Αλλαγή κατηγορίας
+                  </Button>
+                )}
                 {matches.length === 0 && registrations.length >= 2 && (
                   <Button onClick={handleGenerateBracket} className="rounded-none bg-foreground text-background hover:bg-foreground/90">
                     <Shuffle className="h-4 w-4 mr-2" />
@@ -819,7 +824,7 @@ const FederationBrackets = () => {
             {/* Bracket Display */}
             {matches.length > 0 && (() => {
               const CARD_H = 110;
-              const CARD_GAP = 200;
+              const CARD_GAP = 40;
               const COL_W = 300;
               const CONNECTOR_W = 60;
               const HEADER_H = 50;
@@ -830,7 +835,10 @@ const FederationBrackets = () => {
               );
               const firstRoundCount = roundMatchArrays[0]?.length || 1;
 
-              const totalH = HEADER_H + firstRoundCount * CARD_H + (firstRoundCount - 1) * CARD_GAP + 40;
+              // Calculate height to fill viewport (minimum based on content)
+              const contentH = HEADER_H + firstRoundCount * CARD_H + (firstRoundCount - 1) * CARD_GAP + 40;
+              const viewportH = Math.max(contentH, 700); // at least 700px
+              const totalH = viewportH;
               const totalW = sortedRoundNumbers.length * (COL_W + CONNECTOR_W);
 
               // Build a lookup: roundNumber -> match_number -> Match
@@ -844,9 +852,10 @@ const FederationBrackets = () => {
               // Y-center positions keyed by match id
               const yPositions = new Map<string, number>();
 
-              // First round: evenly spaced
+              // First round: evenly distributed across full height
+              const firstRoundSpacing = (totalH - HEADER_H) / firstRoundCount;
               roundMatchArrays[0]?.forEach((m, i) => {
-                yPositions.set(m.id, HEADER_H + i * (CARD_H + CARD_GAP) + CARD_H / 2);
+                yPositions.set(m.id, HEADER_H + i * firstRoundSpacing + firstRoundSpacing / 2);
               });
 
               // Subsequent rounds: position at midpoint of feeder matches
@@ -888,8 +897,8 @@ const FederationBrackets = () => {
               });
 
               return (
-                <div className="w-full overflow-x-auto overflow-y-auto border border-border bg-muted/20 p-4" style={{ maxHeight: 'calc(100vh - 200px)' }}>
-                  <div className="relative" style={{ width: totalW, height: totalH }}>
+                <div className="w-full overflow-x-auto overflow-y-auto border border-border bg-muted/10 p-6" style={{ height: 'calc(100vh - 160px)' }}>
+                  <div className="relative" style={{ width: totalW, minHeight: totalH }}>
                     {sortedRoundNumbers.map((roundNum, ri) => {
                       const rMatches = roundMatchArrays[ri];
                       const xOffset = ri * (COL_W + CONNECTOR_W);
