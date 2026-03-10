@@ -685,26 +685,26 @@ const FederationBrackets = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs">Τύπος Αποτελέσματος</Label>
+                  <Label className="text-xs">{t('federation.brackets.resultType')}</Label>
                   <Select value={resultType} onValueChange={setResultType}>
                     <SelectTrigger className="rounded-none">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="points">Πόντοι</SelectItem>
+                      <SelectItem value="points">{t('federation.brackets.points')}</SelectItem>
                       <SelectItem value="ko">KO</SelectItem>
                       <SelectItem value="tko">TKO</SelectItem>
-                      <SelectItem value="dq">Αποβολή (DQ)</SelectItem>
+                      <SelectItem value="dq">{t('federation.brackets.disqualification')}</SelectItem>
                       <SelectItem value="rsc">RSC</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-xs">Σκορ (προαιρετικά)</Label>
+                  <Label className="text-xs">{t('federation.brackets.score')}</Label>
                   <Input
                     value={scoreText}
                     onChange={(e) => setScoreText(e.target.value)}
-                    placeholder="π.χ. 3-0"
+                    placeholder={t('federation.brackets.scorePlaceholder')}
                     className="rounded-none"
                   />
                 </div>
