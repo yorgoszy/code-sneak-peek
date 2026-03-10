@@ -237,7 +237,8 @@ const CoachCompetitionsContent: React.FC = () => {
   const [expandedComp, setExpandedComp] = useState<string | null>(null);
   const [compRegistrations, setCompRegistrations] = useState<Record<string, Registration[]>>({});
   const [paymentLoading, setPaymentLoading] = useState(false);
-  const [, setTick] = useState(0); // For countdown refresh
+  const [, setTick] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Refresh countdown every 60 seconds
   useEffect(() => {
