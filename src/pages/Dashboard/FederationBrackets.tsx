@@ -318,7 +318,7 @@ const FederationBrackets = () => {
 
     const { error } = await supabase.from('competition_matches').insert(toInsert);
     if (error) {
-      toast.error('Σφάλμα κατά τη δημιουργία κλήρωσης');
+      toast.error(t('federation.brackets.errorGenerating'));
       console.error(error);
     } else {
       toast.success('Η κλήρωση δημιουργήθηκε επιτυχώς!');
