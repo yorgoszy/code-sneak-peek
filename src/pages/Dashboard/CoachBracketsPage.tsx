@@ -102,6 +102,7 @@ const CoachBracketAgeGroup: React.FC<{
   );
 };
 
+const CoachBracketsPage = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { userProfile } = useRoleCheck();
