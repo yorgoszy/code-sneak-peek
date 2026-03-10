@@ -32,6 +32,8 @@ import {
   ChevronDown,
   AppWindow,
   GraduationCap,
+  Shuffle,
+  Radio,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -242,6 +244,20 @@ export const CoachSidebar = ({
       icon: Trophy,
       label: "Ranking",
       path: "/dashboard/ranking",
+      badge: null,
+      requiresSubscription: false,
+    },
+    {
+      icon: Shuffle,
+      label: "Κλήρωση",
+      path: effectiveCoachId ? `/dashboard/coach-brackets?coachId=${effectiveCoachId}` : "/dashboard/coach-brackets",
+      badge: null,
+      requiresSubscription: false,
+    },
+    {
+      icon: Radio,
+      label: "Live",
+      path: effectiveCoachId ? `/dashboard/coach-live?coachId=${effectiveCoachId}` : "/dashboard/coach-live",
       badge: null,
       requiresSubscription: false,
     },
