@@ -106,6 +106,8 @@ import FederationVideoAnalysis from "@/pages/Dashboard/FederationVideoAnalysis";
 import FederationSubscriptions from "@/pages/Dashboard/FederationSubscriptions";
 import FederationCompetitions from "@/pages/Dashboard/FederationCompetitions";
 import RankingPage from "@/pages/Dashboard/RankingPage";
+import FederationBrackets from "@/pages/Dashboard/FederationBrackets";
+import FederationLive from "@/pages/Dashboard/FederationLive";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
