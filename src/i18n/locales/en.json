@@ -136,6 +136,16 @@
     "dayShort": "Day"
   },
   "progress": {
+    "title": "Progress Tracking",
+    "athleteTitle": "Athlete Progress Tracking",
+    "newRecord": "New Record",
+    "historyTab": "History",
+    "anthropometricTab": "Anthropometric",
+    "functionalTab": "Functional",
+    "noCoachId": "Coach ID not found.",
+    "noAthletes": "You don't have any athletes yet. Add athletes from the \"My Athletes\" page.",
+    "errorTitle": "Error",
+    "errorLoadingAthletes": "Failed to load athletes.",
     "selectExercises": "Select Exercises",
     "unknownExercise": "Unknown exercise",
     "selectAtLeastOne": "Select at least one exercise",

@@ -30,6 +30,7 @@ type CoachAthlete = {
 
 export default function CoachProgressTracking({ contextCoachId }: CoachProgressTrackingProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const { userProfile, isAdmin } = useRoleCheck();
 

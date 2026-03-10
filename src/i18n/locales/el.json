@@ -136,6 +136,16 @@
     "dayShort": "Ημέρα"
   },
   "progress": {
+    "title": "Καταγραφή Προόδου",
+    "athleteTitle": "Καταγραφή Προόδου Αθλητών",
+    "newRecord": "Νέα Καταγραφή",
+    "historyTab": "Ιστορικό",
+    "anthropometricTab": "Σωματομετρικά",
+    "functionalTab": "Λειτουργικά",
+    "noCoachId": "Δεν βρέθηκε coachId.",
+    "noAthletes": "Δεν έχετε αθλητές ακόμα. Προσθέστε αθλητές από τη σελίδα \"Οι Αθλητές μου\".",
+    "errorTitle": "Σφάλμα",
+    "errorLoadingAthletes": "Αποτυχία φόρτωσης αθλητών.",
     "selectExercises": "Επιλογή Ασκήσεων",
     "unknownExercise": "Άγνωστη άσκηση",
     "selectAtLeastOne": "Επιλέξτε τουλάχιστον μία άσκηση",
