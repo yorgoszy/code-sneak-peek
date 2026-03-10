@@ -199,19 +199,20 @@ function shuffleAvoidingSameClub(athletes: { athleteId: string; clubId: string }
   return arr;
 }
 
-function getRoundName(roundNumber: number): string {
-  if (roundNumber === 1) return 'Τελικός';
-  if (roundNumber === 2) return 'Ημιτελικοί';
-  if (roundNumber === 4) return 'Προημιτελικοί';
+function getRoundName(roundNumber: number, t: any): string {
+  if (roundNumber === 1) return t('federation.brackets.final');
+  if (roundNumber === 2) return t('federation.brackets.semifinals');
+  if (roundNumber === 4) return t('federation.brackets.quarterfinals');
   if (roundNumber === 8) return '1/8';
   if (roundNumber === 16) return '1/16';
-  return `Γύρος ${roundNumber}`;
+  return `${t('federation.brackets.round')} ${roundNumber}`;
 }
 
 const FederationBrackets = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { userProfile } = useRoleCheck();
+  const { t } = useTranslation();
 
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [selectedCompId, setSelectedCompId] = useState<string>('');
