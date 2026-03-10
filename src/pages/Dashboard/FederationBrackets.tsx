@@ -824,7 +824,7 @@ const FederationBrackets = () => {
             {/* Bracket Display */}
             {matches.length > 0 && (() => {
               const CARD_H = 110;
-              const CARD_GAP = 200;
+              const CARD_GAP = 40;
               const COL_W = 300;
               const CONNECTOR_W = 60;
               const HEADER_H = 50;
@@ -835,7 +835,10 @@ const FederationBrackets = () => {
               );
               const firstRoundCount = roundMatchArrays[0]?.length || 1;
 
-              const totalH = HEADER_H + firstRoundCount * CARD_H + (firstRoundCount - 1) * CARD_GAP + 40;
+              // Calculate height to fill viewport (minimum based on content)
+              const contentH = HEADER_H + firstRoundCount * CARD_H + (firstRoundCount - 1) * CARD_GAP + 40;
+              const viewportH = Math.max(contentH, 700); // at least 700px
+              const totalH = viewportH;
               const totalW = sortedRoundNumbers.length * (COL_W + CONNECTOR_W);
 
               // Build a lookup: roundNumber -> match_number -> Match
