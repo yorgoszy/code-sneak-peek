@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { CoachSidebar } from "@/components/CoachSidebar";
+import { FederationSidebar } from "@/components/FederationSidebar";
+import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Menu, Trophy } from "lucide-react";
