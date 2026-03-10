@@ -834,11 +834,11 @@ const FederationBrackets = () => {
                 rounds[rn].filter(m => !m.is_bye).sort((a, b) => a.match_number - b.match_number)
               );
               const firstRoundCount = roundMatchArrays[0]?.length || 1;
+              const maxMatchesInAnyRound = Math.max(...roundMatchArrays.map(r => r.length), 1);
 
-              // Calculate height to fill viewport (minimum based on content)
-              const contentH = HEADER_H + firstRoundCount * CARD_H + (firstRoundCount - 1) * CARD_GAP + 40;
-              const viewportH = Math.max(contentH, 700); // at least 700px
-              const totalH = viewportH;
+              // Calculate height based on the round with the most matches
+              const contentH = HEADER_H + maxMatchesInAnyRound * CARD_H + (maxMatchesInAnyRound - 1) * CARD_GAP + 40;
+              const totalH = Math.max(contentH, 700);
               const totalW = sortedRoundNumbers.length * (COL_W + CONNECTOR_W);
 
               // Build a lookup: roundNumber -> match_number -> Match
