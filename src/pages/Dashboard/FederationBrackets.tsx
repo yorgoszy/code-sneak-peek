@@ -852,54 +852,74 @@ const FederationBrackets = () => {
               // Y-center positions keyed by match id
               const yPositions = new Map<string, number>();
 
-              // First round: evenly distributed across full height
-              const firstRoundSpacing = (totalH - HEADER_H) / firstRoundCount;
-              roundMatchArrays[0]?.forEach((m, i) => {
-                yPositions.set(m.id, HEADER_H + i * firstRoundSpacing + firstRoundSpacing / 2);
-              });
+               // First round: evenly distributed across full height
+               const firstRoundSpacing = (totalH - HEADER_H) / firstRoundCount;
+               roundMatchArrays[0]?.forEach((m, i) => {
+                 yPositions.set(m.id, HEADER_H + i * firstRoundSpacing + firstRoundSpacing / 2);
+               });
 
-              // Subsequent rounds: position at midpoint of feeder matches
-              for (let ri = 1; ri < sortedRoundNumbers.length; ri++) {
-                const prevRound = sortedRoundNumbers[ri - 1];
+               // Collision resolution for first round
+               {
+                 const minSpacing = CARD_H + CARD_GAP;
+                 const sortedByY = [...(roundMatchArrays[0] || [])].sort((a, b) => (yPositions.get(a.id) || 0) - (yPositions.get(b.id) || 0));
+                 for (let j = 1; j < sortedByY.length; j++) {
+                   const prevY = yPositions.get(sortedByY[j - 1].id) || 0;
+                   const currY = yPositions.get(sortedByY[j].id) || 0;
+                   if (currY - prevY < minSpacing) {
+                     yPositions.set(sortedByY[j].id, prevY + minSpacing);
+                   }
+                 }
+               }
 
-                roundMatchArrays[ri].forEach((m, mi) => {
-                  const feederNum1 = m.match_number * 2 - 1;
-                  const feederNum2 = m.match_number * 2;
+               // Subsequent rounds: position at midpoint of feeder matches
+               for (let ri = 1; ri < sortedRoundNumbers.length; ri++) {
+                 const prevRound = sortedRoundNumbers[ri - 1];
 
-                  const feeder1 = matchByRoundAndNum.get(`${prevRound}-${feederNum1}`);
-                  const feeder2 = matchByRoundAndNum.get(`${prevRound}-${feederNum2}`);
+                 roundMatchArrays[ri].forEach((m, mi) => {
+                   const feederNum1 = m.match_number * 2 - 1;
+                   const feederNum2 = m.match_number * 2;
 
-                  const y1 = feeder1 && !feeder1.is_bye ? yPositions.get(feeder1.id) : undefined;
-                  const y2 = feeder2 && !feeder2.is_bye ? yPositions.get(feeder2.id) : undefined;
+                   const feeder1 = matchByRoundAndNum.get(`${prevRound}-${feederNum1}`);
+                   const feeder2 = matchByRoundAndNum.get(`${prevRound}-${feederNum2}`);
 
-                  let yCenter: number;
-                  if (y1 !== undefined && y2 !== undefined) {
-                    yCenter = (y1 + y2) / 2;
-                  } else if (y1 !== undefined) {
-                    yCenter = y1;
-                  } else if (y2 !== undefined) {
-                    yCenter = y2;
-                  } else {
-                    const spacing = totalH / (roundMatchArrays[ri].length + 1);
-                    yCenter = spacing * (mi + 1);
-                  }
-                  yPositions.set(m.id, yCenter);
-                });
+                   const y1 = feeder1 && !feeder1.is_bye ? yPositions.get(feeder1.id) : undefined;
+                   const y2 = feeder2 && !feeder2.is_bye ? yPositions.get(feeder2.id) : undefined;
 
-                // Collision resolution: ensure minimum spacing between matches in same round
-                const minSpacing = CARD_H + CARD_GAP;
-                const roundMatches = roundMatchArrays[ri];
-                const sortedByY = [...roundMatches].sort((a, b) => (yPositions.get(a.id) || 0) - (yPositions.get(b.id) || 0));
-                
-                for (let j = 1; j < sortedByY.length; j++) {
-                  const prevY = yPositions.get(sortedByY[j - 1].id) || 0;
-                  const currY = yPositions.get(sortedByY[j].id) || 0;
-                  if (currY - prevY < minSpacing) {
-                    // Push this match down
-                    yPositions.set(sortedByY[j].id, prevY + minSpacing);
-                  }
-                }
-              }
+                   let yCenter: number;
+                   if (y1 !== undefined && y2 !== undefined) {
+                     yCenter = (y1 + y2) / 2;
+                   } else if (y1 !== undefined) {
+                     yCenter = y1;
+                   } else if (y2 !== undefined) {
+                     yCenter = y2;
+                   } else {
+                     const spacing = totalH / (roundMatchArrays[ri].length + 1);
+                     yCenter = spacing * (mi + 1);
+                   }
+                   yPositions.set(m.id, yCenter);
+                 });
+
+                 // Collision resolution: ensure minimum spacing between matches in same round
+                 const minSpacing = CARD_H + CARD_GAP;
+                 const roundMatches = roundMatchArrays[ri];
+                 const sortedByY = [...roundMatches].sort((a, b) => (yPositions.get(a.id) || 0) - (yPositions.get(b.id) || 0));
+                 
+                 for (let j = 1; j < sortedByY.length; j++) {
+                   const prevY = yPositions.get(sortedByY[j - 1].id) || 0;
+                   const currY = yPositions.get(sortedByY[j].id) || 0;
+                   if (currY - prevY < minSpacing) {
+                     yPositions.set(sortedByY[j].id, prevY + minSpacing);
+                   }
+                 }
+               }
+
+               // Recalculate totalH based on actual positions after collision resolution
+               let maxY = 0;
+               yPositions.forEach(y => {
+                 const bottom = y + CARD_H / 2;
+                 if (bottom > maxY) maxY = bottom;
+               });
+               totalH = Math.max(totalH, maxY + 40);
 
               // Global match numbering across all rounds
               let globalCounter = 1;
