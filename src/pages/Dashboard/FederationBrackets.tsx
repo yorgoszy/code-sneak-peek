@@ -254,7 +254,7 @@ const FederationBrackets = () => {
     const load = async () => {
       const { data } = await supabase
         .from('federation_competition_categories')
-        .select('id, name, competition_id')
+        .select('id, name, competition_id, gender')
         .eq('competition_id', selectedCompId)
         .order('name');
       setCategories(data || []);
