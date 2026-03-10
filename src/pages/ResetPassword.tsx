@@ -20,7 +20,7 @@ export default function ResetPassword() {
 
   useEffect(() => {
     let mounted = true;
-    let timeoutId: NodeJS.Timeout | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     // Keep a ref so timeouts don't read stale state
     const stateRef = { current: (null as boolean | null) };
