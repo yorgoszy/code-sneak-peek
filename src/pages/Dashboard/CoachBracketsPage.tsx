@@ -238,7 +238,7 @@ const CoachBracketsPage = () => {
               <p className="text-sm text-muted-foreground">{t('federation.brackets.subtitle')}</p>
             </div>
 
-            <div className="flex flex-wrap gap-4 mb-6">
+            <div className="mb-6">
               <div className="w-full sm:w-64">
                 <Label className="text-sm mb-1 block">{t('federation.brackets.competition')}</Label>
                 <Select value={selectedCompId} onValueChange={setSelectedCompId}>
@@ -248,16 +248,39 @@ const CoachBracketsPage = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="w-full sm:w-64">
-                <Label className="text-sm mb-1 block">{t('federation.brackets.category')}</Label>
-                <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId} disabled={!selectedCompId}>
-                  <SelectTrigger className="rounded-none"><SelectValue placeholder={t('federation.brackets.selectCategory')} /></SelectTrigger>
-                  <SelectContent>
-                    {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
+
+            {selectedCompId && categories.length > 0 && (
+              <div className="mb-6">
+                <Label className="text-sm mb-2 block">{t('federation.brackets.category')}</Label>
+                <div className="flex gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
+                      {t('federation.brackets.men', 'Άνδρες')}
+                    </div>
+                    {groupByAge(categories.filter(c => c.gender === 'male')).map(g => (
+                      <CoachBracketAgeGroup key={`male-${g.age}`} age={g.age} cats={g.cats} selectedCategoryId={selectedCategoryId} onSelectCategory={setSelectedCategoryId} />
+                    ))}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
+                      {t('federation.brackets.women', 'Γυναίκες')}
+                    </div>
+                    {groupByAge(categories.filter(c => c.gender === 'female')).map(g => (
+                      <CoachBracketAgeGroup key={`female-${g.age}`} age={g.age} cats={g.cats} selectedCategoryId={selectedCategoryId} onSelectCategory={setSelectedCategoryId} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {selectedCategoryId && (
+              <div className="mb-6">
+                <Badge variant="outline" className="rounded-none text-sm py-1 px-3">
+                  {categories.find(c => c.id === selectedCategoryId)?.name}
+                </Badge>
+              </div>
+            )}
 
             {matches.length === 0 && selectedCategoryId && !loading && (
               <Card className="rounded-none">
