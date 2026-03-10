@@ -306,15 +306,17 @@ const CoachCompetitionsContent: React.FC = () => {
 
       const enriched = await Promise.all((comps || []).map(async (comp) => {
         const federation = clubs.find(c => c.federation_id === comp.federation_id);
-        const [catRes, regRes] = await Promise.all([
+        const [catRes, regRes, unpaidRes] = await Promise.all([
           supabase.from('federation_competition_categories').select('id', { count: 'exact', head: true }).eq('competition_id', comp.id),
           supabase.from('federation_competition_registrations').select('id', { count: 'exact', head: true }).eq('competition_id', comp.id).eq('club_id', coachId),
+          supabase.from('federation_competition_registrations').select('id', { count: 'exact', head: true }).eq('competition_id', comp.id).eq('club_id', coachId).eq('is_paid', false),
         ]);
         return {
           ...comp,
           federation_name: (federation?.federation as any)?.name || 'Ομοσπονδία',
           categories_count: catRes.count || 0,
           my_registrations_count: regRes.count || 0,
+          my_unpaid_count: unpaidRes.count || 0,
           counts_for_ranking: comp.counts_for_ranking,
         };
       }));
