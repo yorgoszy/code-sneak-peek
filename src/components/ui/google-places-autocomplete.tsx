@@ -75,9 +75,18 @@ export const GooglePlacesAutocomplete: React.FC<GooglePlacesAutocompleteProps> =
       const place = autocomplete.getPlace();
       if (place) {
         const name = place.name || place.formatted_address || '';
-        const url = place.url || `https://www.google.com/maps/place/?q=place_id:${place.place_id}`;
         const lat = place.geometry?.location?.lat();
         const lng = place.geometry?.location?.lng();
+        
+        // Always use google.com/maps format - maps.google.com/?cid= gets blocked
+        let url: string;
+        if (lat && lng) {
+          url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}&query_place_id=${place.place_id || ''}`;
+        } else if (place.place_id) {
+          url = `https://www.google.com/maps/place/?q=place_id:${place.place_id}`;
+        } else {
+          url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}`;
+        }
         
         onChange(name);
         onPlaceSelect?.({ name, url, lat, lng });
