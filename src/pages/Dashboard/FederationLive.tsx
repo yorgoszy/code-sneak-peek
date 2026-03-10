@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from "react-i18next";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
 import { Button } from "@/components/ui/button";
@@ -61,7 +62,6 @@ interface Match {
 
 function getYoutubeEmbedUrl(url: string): string | null {
   if (!url) return null;
-  // Handle various YouTube URL formats
   const patterns = [
     /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/live\/)([a-zA-Z0-9_-]+)/,
     /youtube\.com\/embed\/([a-zA-Z0-9_-]+)/,
@@ -70,7 +70,6 @@ function getYoutubeEmbedUrl(url: string): string | null {
     const match = url.match(pattern);
     if (match) return `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1`;
   }
-  // If it's already an embed URL or other format, return as-is
   if (url.includes('youtube.com/embed')) return url;
   return url;
 }
@@ -79,6 +78,7 @@ const FederationLive = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { userProfile } = useRoleCheck();
+  const { t } = useTranslation();
 
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [selectedCompId, setSelectedCompId] = useState<string>('');
@@ -86,7 +86,6 @@ const FederationLive = () => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Ring setup dialog
   const [setupDialogOpen, setSetupDialogOpen] = useState(false);
   const [ringCount, setRingCount] = useState(3);
   const [ringConfigs, setRingConfigs] = useState<{
@@ -97,12 +96,9 @@ const FederationLive = () => {
     match_range_end: string;
   }[]>([]);
 
-  // Edit ring dialog
   const [editRing, setEditRing] = useState<Ring | null>(null);
   const [editYoutubeUrl, setEditYoutubeUrl] = useState('');
   const [editCurrentMatchId, setEditCurrentMatchId] = useState('');
-
-  // Delete dialog
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const federationId = userProfile?.id;
@@ -136,11 +132,8 @@ const FederationLive = () => {
       .order('ring_number');
 
     const ringsData = data || [];
-
-    // Load current match details for each ring
     const enrichedRings = await Promise.all(ringsData.map(async (ring: any) => {
       if (!ring.current_match_id) return { ...ring, current_match: null };
-
       const { data: matchData } = await supabase
         .from('competition_matches')
         .select(`
@@ -153,7 +146,6 @@ const FederationLive = () => {
         `)
         .eq('id', ring.current_match_id)
         .single();
-
       return { ...ring, current_match: matchData };
     }));
 
@@ -201,10 +193,10 @@ const FederationLive = () => {
 
     const { error } = await supabase.from('competition_rings').insert(toInsert);
     if (error) {
-      toast.error('Σφάλμα κατά τη δημιουργία rings');
+      toast.error(t('federation.live.ringsCreateError'));
       console.error(error);
     } else {
-      toast.success('Τα rings δημιουργήθηκαν!');
+      toast.success(t('federation.live.ringsCreated'));
       setSetupDialogOpen(false);
       loadRings();
     }
@@ -216,9 +208,9 @@ const FederationLive = () => {
       .delete()
       .eq('competition_id', selectedCompId);
     if (error) {
-      toast.error('Σφάλμα');
+      toast.error(t('federation.common.error'));
     } else {
-      toast.success('Τα rings διαγράφηκαν');
+      toast.success(t('federation.live.ringsDeleted'));
       setRings([]);
     }
     setDeleteDialogOpen(false);
@@ -235,9 +227,9 @@ const FederationLive = () => {
       .eq('id', editRing.id);
 
     if (error) {
-      toast.error('Σφάλμα');
+      toast.error(t('federation.common.error'));
     } else {
-      toast.success('Ενημερώθηκε!');
+      toast.success(t('federation.live.ringUpdated'));
       setEditRing(null);
       loadRings();
     }
@@ -257,7 +249,6 @@ const FederationLive = () => {
     <FederationSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
   );
 
-  // Real-time subscription for rings
   useEffect(() => {
     if (!selectedCompId) return;
     const channel = supabase
@@ -294,7 +285,7 @@ const FederationLive = () => {
                 <Button variant="outline" size="sm" onClick={() => setIsMobileOpen(true)} className="rounded-none">
                   <Menu className="h-5 w-5" />
                 </Button>
-                <h1 className="text-lg font-semibold">Live</h1>
+                <h1 className="text-lg font-semibold">{t('federation.live.mobileTitle')}</h1>
               </div>
             </div>
           </div>
@@ -304,19 +295,19 @@ const FederationLive = () => {
               <div>
                 <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
                   <Radio className="h-6 w-6 text-destructive animate-pulse" />
-                  Live Αγώνες
+                  {t('federation.live.title')}
                 </h1>
-                <p className="text-sm text-muted-foreground">Ζωντανή παρακολούθηση αγώνων ανά ring</p>
+                <p className="text-sm text-muted-foreground">{t('federation.live.subtitle')}</p>
               </div>
             </div>
 
             {/* Competition selector */}
             <div className="flex flex-wrap gap-4 mb-6 items-end">
               <div className="w-full sm:w-64">
-                <Label className="text-sm mb-1 block">Διοργάνωση</Label>
+                <Label className="text-sm mb-1 block">{t('federation.live.competition')}</Label>
                 <Select value={selectedCompId} onValueChange={setSelectedCompId}>
                   <SelectTrigger className="rounded-none">
-                    <SelectValue placeholder="Επιλέξτε διοργάνωση" />
+                    <SelectValue placeholder={t('federation.live.selectCompetition')} />
                   </SelectTrigger>
                   <SelectContent>
                     {competitions.map(c => (
@@ -329,14 +320,14 @@ const FederationLive = () => {
               {selectedCompId && rings.length === 0 && (
                 <Button onClick={handleSetupRings} className="rounded-none bg-foreground text-background hover:bg-foreground/90">
                   <Plus className="h-4 w-4 mr-2" />
-                  Ρύθμιση Rings
+                  {t('federation.live.setupRings')}
                 </Button>
               )}
 
               {rings.length > 0 && (
                 <Button variant="outline" onClick={() => setDeleteDialogOpen(true)} className="rounded-none text-destructive border-destructive">
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Διαγραφή Rings
+                  {t('federation.live.deleteRings')}
                 </Button>
               )}
             </div>
@@ -369,13 +360,12 @@ const FederationLive = () => {
 
                       {ring.match_range_start && ring.match_range_end && (
                         <p className="text-xs text-muted-foreground mt-1">
-                          Αγώνες {ring.match_range_start} - {ring.match_range_end}
+                          {t('federation.live.matches')} {ring.match_range_start} - {ring.match_range_end}
                         </p>
                       )}
                     </CardHeader>
 
                     <CardContent className="p-0">
-                      {/* YouTube Embed */}
                       {ring.youtube_live_url ? (
                         <AspectRatio ratio={16 / 9}>
                           <iframe
@@ -388,15 +378,14 @@ const FederationLive = () => {
                         </AspectRatio>
                       ) : (
                         <div className="bg-muted/50 flex items-center justify-center h-48">
-                          <p className="text-sm text-muted-foreground">Δεν έχει οριστεί YouTube Live URL</p>
+                          <p className="text-sm text-muted-foreground">{t('federation.live.noYoutubeUrl')}</p>
                         </div>
                       )}
 
-                      {/* Current Match Info */}
                       {ring.current_match ? (
                         <div className="p-4 border-t border-border">
                           <div className="text-xs text-muted-foreground mb-2 flex items-center gap-2">
-                            <span>Αγώνας #{ring.current_match.match_order}</span>
+                            <span>{t('federation.live.matchNumber')} #{ring.current_match.match_order}</span>
                             {(ring.current_match as any)?.category && (
                               <Badge variant="secondary" className="rounded-none text-xs">
                                 {(ring.current_match as any).category.name}
@@ -439,7 +428,7 @@ const FederationLive = () => {
                         </div>
                       ) : (
                         <div className="p-4 border-t border-border text-center text-sm text-muted-foreground">
-                          Δεν υπάρχει ενεργός αγώνας
+                          {t('federation.live.noActiveMatch')}
                         </div>
                       )}
                     </CardContent>
@@ -452,8 +441,8 @@ const FederationLive = () => {
               <Card className="rounded-none">
                 <CardContent className="p-8 text-center text-muted-foreground">
                   <Monitor className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                  <p>Δεν έχουν ρυθμιστεί rings για αυτή τη διοργάνωση.</p>
-                  <p className="text-xs mt-1">Πατήστε "Ρύθμιση Rings" για να ξεκινήσετε.</p>
+                  <p>{t('federation.live.noRings')}</p>
+                  <p className="text-xs mt-1">{t('federation.live.noRingsDesc')}</p>
                 </CardContent>
               </Card>
             )}
@@ -465,12 +454,12 @@ const FederationLive = () => {
       <Dialog open={setupDialogOpen} onOpenChange={setSetupDialogOpen}>
         <DialogContent className="rounded-none max-w-lg max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Ρύθμιση Rings</DialogTitle>
+            <DialogTitle>{t('federation.live.ringSetupTitle')}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
             <div>
-              <Label className="text-sm">Αριθμός Rings</Label>
+              <Label className="text-sm">{t('federation.live.numberOfRings')}</Label>
               <div className="flex items-center gap-2 mt-1">
                 {[1, 2, 3, 4, 5].map(n => (
                   <Button
@@ -500,7 +489,7 @@ const FederationLive = () => {
                 <CardContent className="p-4 space-y-3">
                   <h4 className="font-medium text-sm">Ring {rc.ring_number}</h4>
                   <div>
-                    <Label className="text-xs">Όνομα Ring</Label>
+                    <Label className="text-xs">{t('federation.live.ringName')}</Label>
                     <Input
                       value={rc.ring_name}
                       onChange={(e) => {
@@ -512,7 +501,7 @@ const FederationLive = () => {
                     />
                   </div>
                   <div>
-                    <Label className="text-xs">YouTube Live URL</Label>
+                    <Label className="text-xs">{t('federation.live.youtubeUrl')}</Label>
                     <Input
                       value={rc.youtube_live_url}
                       onChange={(e) => {
@@ -526,7 +515,7 @@ const FederationLive = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <Label className="text-xs">Αγώνας από</Label>
+                      <Label className="text-xs">{t('federation.live.matchFrom')}</Label>
                       <Input
                         type="number"
                         value={rc.match_range_start}
@@ -540,7 +529,7 @@ const FederationLive = () => {
                       />
                     </div>
                     <div>
-                      <Label className="text-xs">Αγώνας έως</Label>
+                      <Label className="text-xs">{t('federation.live.matchTo')}</Label>
                       <Input
                         type="number"
                         value={rc.match_range_end}
@@ -560,10 +549,10 @@ const FederationLive = () => {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setSetupDialogOpen(false)} className="rounded-none">Ακύρωση</Button>
+            <Button variant="outline" onClick={() => setSetupDialogOpen(false)} className="rounded-none">{t('federation.common.cancel')}</Button>
             <Button onClick={handleSaveRings} className="rounded-none bg-foreground text-background hover:bg-foreground/90">
               <Save className="h-4 w-4 mr-2" />
-              Αποθήκευση
+              {t('federation.competitions.save')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -579,7 +568,7 @@ const FederationLive = () => {
 
             <div className="space-y-4">
               <div>
-                <Label className="text-sm">YouTube Live URL</Label>
+                <Label className="text-sm">{t('federation.live.youtubeUrl')}</Label>
                 <Input
                   value={editYoutubeUrl}
                   onChange={(e) => setEditYoutubeUrl(e.target.value)}
@@ -589,13 +578,13 @@ const FederationLive = () => {
               </div>
 
               <div>
-                <Label className="text-sm">Τρέχων Αγώνας</Label>
+                <Label className="text-sm">{t('federation.live.currentMatch')}</Label>
                 <Select value={editCurrentMatchId} onValueChange={setEditCurrentMatchId}>
                   <SelectTrigger className="rounded-none">
-                    <SelectValue placeholder="Επιλέξτε αγώνα" />
+                    <SelectValue placeholder={t('federation.live.selectMatch')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Κανένας</SelectItem>
+                    <SelectItem value="">{t('federation.live.none')}</SelectItem>
                     {matches
                       .filter(m => m.status !== 'completed')
                       .map(m => (
@@ -609,10 +598,10 @@ const FederationLive = () => {
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => setEditRing(null)} className="rounded-none">Ακύρωση</Button>
+              <Button variant="outline" onClick={() => setEditRing(null)} className="rounded-none">{t('federation.common.cancel')}</Button>
               <Button onClick={handleUpdateRing} className="rounded-none bg-foreground text-background hover:bg-foreground/90">
                 <Save className="h-4 w-4 mr-2" />
-                Αποθήκευση
+                {t('federation.competitions.save')}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -623,15 +612,15 @@ const FederationLive = () => {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="rounded-none">
           <AlertDialogHeader>
-            <AlertDialogTitle>Διαγραφή Rings;</AlertDialogTitle>
+            <AlertDialogTitle>{t('federation.live.deleteRingsTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Αυτή η ενέργεια θα διαγράψει όλα τα rings αυτής της διοργάνωσης. Δεν μπορεί να αναιρεθεί.
+              {t('federation.live.deleteRingsDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-none">{t('federation.common.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteRings} className="bg-destructive hover:bg-destructive/90 rounded-none">
-              Διαγραφή
+              {t('federation.competitions.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

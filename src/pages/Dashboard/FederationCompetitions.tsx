@@ -47,7 +47,7 @@ const FederationCompetitions = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { userProfile } = useRoleCheck();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,7 +95,6 @@ const FederationCompetitions = () => {
 
       if (error) throw error;
 
-      // Get counts
       const comps = data || [];
       const enriched = await Promise.all(comps.map(async (comp) => {
         const [catRes, regRes] = await Promise.all([
@@ -112,7 +111,7 @@ const FederationCompetitions = () => {
       setCompetitions(enriched);
     } catch (error) {
       console.error('Error fetching competitions:', error);
-      toast.error('Σφάλμα φόρτωσης αγώνων');
+      toast.error(t('federation.competitions.loadError'));
     } finally {
       setLoading(false);
     }
@@ -138,9 +137,9 @@ const FederationCompetitions = () => {
         location_url: formLocationUrl || null,
       }, { onConflict: 'federation_id,name' });
     if (error) {
-      toast.error('Σφάλμα αποθήκευσης τοποθεσίας');
+      toast.error(t('federation.competitions.venueSaveError'));
     } else {
-      toast.success('Τοποθεσία αποθηκεύτηκε');
+      toast.success(t('federation.competitions.venueSaved'));
       fetchSavedVenues();
     }
   };
@@ -173,11 +172,11 @@ const FederationCompetitions = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.type !== 'application/pdf') {
-      toast.error('Μόνο αρχεία PDF επιτρέπονται');
+      toast.error(t('federation.competitions.onlyPdf'));
       return;
     }
     if (file.size > 20 * 1024 * 1024) {
-      toast.error('Το αρχείο δεν πρέπει να υπερβαίνει τα 20MB');
+      toast.error(t('federation.competitions.fileTooLarge'));
       return;
     }
 
@@ -195,10 +194,10 @@ const FederationCompetitions = () => {
         .getPublicUrl(fileName);
 
       setFormPdfUrl(urlData.publicUrl);
-      toast.success('Το PDF ανέβηκε επιτυχώς');
+      toast.success(t('federation.competitions.pdfUploaded'));
     } catch (error) {
       console.error('Error uploading PDF:', error);
-      toast.error('Σφάλμα ανεβάσματος PDF');
+      toast.error(t('federation.competitions.pdfUploadError'));
     } finally {
       setUploadingPdf(false);
     }
@@ -206,7 +205,7 @@ const FederationCompetitions = () => {
 
   const handleCreate = async () => {
     if (!formName || !formDate || !userProfile?.id) {
-      toast.error('Συμπληρώστε τουλάχιστον όνομα και ημερομηνία');
+      toast.error(t('federation.competitions.fillRequired'));
       return;
     }
     setSaving(true);
@@ -225,13 +224,13 @@ const FederationCompetitions = () => {
         counts_for_ranking: formCountsForRanking,
       });
       if (error) throw error;
-      toast.success('Ο αγώνας δημιουργήθηκε');
+      toast.success(t('federation.competitions.created'));
       setCreateDialogOpen(false);
       resetForm();
       fetchCompetitions();
     } catch (error) {
       console.error(error);
-      toast.error('Σφάλμα δημιουργίας αγώνα');
+      toast.error(t('federation.competitions.createError'));
     } finally {
       setSaving(false);
     }
@@ -256,14 +255,14 @@ const FederationCompetitions = () => {
         })
         .eq('id', selectedCompetition.id);
       if (error) throw error;
-      toast.success('Ο αγώνας ενημερώθηκε');
+      toast.success(t('federation.competitions.updated'));
       setEditDialogOpen(false);
       resetForm();
       setSelectedCompetition(null);
       fetchCompetitions();
     } catch (error) {
       console.error(error);
-      toast.error('Σφάλμα ενημέρωσης');
+      toast.error(t('federation.competitions.updateError'));
     } finally {
       setSaving(false);
     }
@@ -274,13 +273,13 @@ const FederationCompetitions = () => {
     try {
       const { error } = await supabase.from('federation_competitions').delete().eq('id', competitionToDelete);
       if (error) throw error;
-      toast.success('Ο αγώνας διαγράφηκε');
+      toast.success(t('federation.competitions.deleted'));
       setDeleteDialogOpen(false);
       setCompetitionToDelete(null);
       fetchCompetitions();
     } catch (error) {
       console.error(error);
-      toast.error('Σφάλμα διαγραφής');
+      toast.error(t('federation.competitions.deleteError'));
     }
   };
 
@@ -306,61 +305,57 @@ const FederationCompetitions = () => {
       completed: 'bg-gray-100 text-gray-800',
       cancelled: 'bg-red-100 text-red-800',
     };
-    const labels: Record<string, string> = {
-      upcoming: 'Επερχόμενος',
-      active: 'Ενεργός',
-      completed: 'Ολοκληρωμένος',
-      cancelled: 'Ακυρωμένος',
-    };
-    return <Badge className={`rounded-none ${styles[status] || ''}`}>{labels[status] || status}</Badge>;
+    const key = `federation.competitions.status${status.charAt(0).toUpperCase() + status.slice(1)}`;
+    return <Badge className={`rounded-none ${styles[status] || ''}`}>{t(key)}</Badge>;
   };
 
   const renderSidebar = () => (
     <FederationSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
   );
 
+  const dateLocale = i18n.language === 'el' ? el : undefined;
+
   const renderForm = () => (
     <div className="space-y-4">
       <div>
-        <Label>Όνομα Αγώνα *</Label>
-        <Input value={formName} onChange={e => setFormName(e.target.value)} placeholder="π.χ. Πανελλήνιο Πρωτάθλημα 2026" className="rounded-none" />
+        <Label>{t('federation.competitions.competitionName')} *</Label>
+        <Input value={formName} onChange={e => setFormName(e.target.value)} placeholder={t('federation.competitions.competitionNamePlaceholder')} className="rounded-none" />
       </div>
       <div>
-        <Label>Περιγραφή</Label>
-        <Textarea value={formDescription} onChange={e => setFormDescription(e.target.value)} placeholder="Περιγραφή αγώνα..." className="rounded-none" />
+        <Label>{t('federation.competitions.description')}</Label>
+        <Textarea value={formDescription} onChange={e => setFormDescription(e.target.value)} placeholder={t('federation.competitions.descriptionPlaceholder')} className="rounded-none" />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <Label>Ημερομηνία Αγώνα *</Label>
+          <Label>{t('federation.competitions.competitionDate')} *</Label>
           <Input type="date" value={formDate} onChange={e => setFormDate(e.target.value)} className="rounded-none" />
         </div>
         <div>
-          <Label>Κατάσταση</Label>
+          <Label>{t('federation.competitions.status')}</Label>
           <Select value={formStatus} onValueChange={setFormStatus}>
             <SelectTrigger className="rounded-none"><SelectValue /></SelectTrigger>
             <SelectContent className="rounded-none">
-              <SelectItem value="upcoming">Επερχόμενος</SelectItem>
-              <SelectItem value="active">Ενεργός</SelectItem>
-              <SelectItem value="completed">Ολοκληρωμένος</SelectItem>
-              <SelectItem value="cancelled">Ακυρωμένος</SelectItem>
+              <SelectItem value="upcoming">{t('federation.competitions.statusUpcoming')}</SelectItem>
+              <SelectItem value="active">{t('federation.competitions.statusActive')}</SelectItem>
+              <SelectItem value="completed">{t('federation.competitions.statusCompleted')}</SelectItem>
+              <SelectItem value="cancelled">{t('federation.competitions.statusCancelled')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
       
-      {/* Τοποθεσία */}
+      {/* Location */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label>Τοποθεσία</Label>
+          <Label>{t('federation.competitions.location')}</Label>
           {formLocation && (
             <Button type="button" variant="ghost" size="sm" onClick={saveVenue} className="rounded-none text-xs gap-1 h-6 px-2">
               <BookmarkPlus className="w-3 h-3" />
-              Αποθήκευση
+              {t('federation.competitions.locationSave')}
             </Button>
           )}
         </div>
         
-        {/* Αποθηκευμένες τοποθεσίες */}
         {savedVenues.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {savedVenues.map(venue => (
@@ -399,12 +394,12 @@ const FederationCompetitions = () => {
               setMapCoords({ lat: place.lat, lng: place.lng });
             }
           }}
-          placeholder="Αναζήτηση τοποθεσίας..."
+          placeholder={t('federation.competitions.locationSearch')}
           showMap={!!mapCoords}
         />
 
         <div>
-          <Label className="text-xs text-muted-foreground">Google Maps Link</Label>
+          <Label className="text-xs text-muted-foreground">{t('federation.competitions.googleMapsLink')}</Label>
           <Input value={formLocationUrl} onChange={e => setFormLocationUrl(e.target.value)} placeholder="https://maps.google.com/..." className="rounded-none text-xs" />
         </div>
       </div>
@@ -412,22 +407,22 @@ const FederationCompetitions = () => {
       {/* Deadlines */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <Label>Λήξη Εμπρόθεσμων Δηλώσεων</Label>
+          <Label>{t('federation.competitions.earlyDeadline')}</Label>
           <Input type="date" value={formDeadline} onChange={e => setFormDeadline(e.target.value)} className="rounded-none" />
         </div>
         <div>
-          <Label>Λήξη Εκπρόθεσμων Δηλώσεων</Label>
+          <Label>{t('federation.competitions.lateDeadline')}</Label>
           <Input type="date" value={formLateDeadline} onChange={e => setFormLateDeadline(e.target.value)} className="rounded-none" />
         </div>
       </div>
       {formDeadline && formLateDeadline && (
         <p className="text-xs text-muted-foreground">
-          Εμπρόθεσμες έως {formDeadline} • Εκπρόθεσμες έως {formLateDeadline}
+          {t('federation.competitions.earlyDeadlineLabel')} {formDeadline} • {t('federation.competitions.lateDeadlineLabel')} {formLateDeadline}
         </p>
       )}
 
       <div>
-        <Label>Κανονισμοί (PDF)</Label>
+        <Label>{t('federation.competitions.regulations')}</Label>
         <div className="flex items-center gap-2">
           <Input type="file" accept=".pdf" onChange={handlePdfUpload} className="rounded-none" disabled={uploadingPdf} />
           {formPdfUrl && (
@@ -438,7 +433,7 @@ const FederationCompetitions = () => {
             </a>
           )}
         </div>
-        {uploadingPdf && <p className="text-xs text-muted-foreground mt-1">Ανέβασμα...</p>}
+        {uploadingPdf && <p className="text-xs text-muted-foreground mt-1">{t('federation.competitions.uploading')}</p>}
       </div>
       <div
         className="flex items-center gap-3 p-3 border border-border cursor-pointer hover:bg-accent/50 transition-colors select-none"
@@ -448,8 +443,8 @@ const FederationCompetitions = () => {
           {formCountsForRanking && <span className="text-background text-xs font-bold">✓</span>}
         </div>
         <div>
-          <span className="text-sm font-medium">Μετράει για Ranking</span>
-          <p className="text-xs text-muted-foreground">Η διοργάνωση θα συμβάλει στην κατάταξη των αθλητών</p>
+          <span className="text-sm font-medium">{t('federation.competitions.countsForRanking')}</span>
+          <p className="text-xs text-muted-foreground">{t('federation.competitions.countsForRankingDesc')}</p>
         </div>
       </div>
     </div>
@@ -474,7 +469,7 @@ const FederationCompetitions = () => {
                 <Button variant="outline" size="sm" onClick={() => setIsMobileOpen(true)} className="rounded-none">
                   <Menu className="h-5 w-5" />
                 </Button>
-                <h1 className="text-lg font-semibold">Αγώνες</h1>
+                <h1 className="text-lg font-semibold">{t('federation.competitions.mobileTitle')}</h1>
               </div>
             </div>
           </div>
@@ -484,16 +479,16 @@ const FederationCompetitions = () => {
             <div className="hidden lg:flex items-center justify-between mb-6">
               <div>
                 <h1 className="text-2xl font-bold flex items-center gap-2">
-                  <Swords className="h-6 w-6" /> Αγώνες
+                  <Swords className="h-6 w-6" /> {t('federation.competitions.title')}
                 </h1>
-                <p className="text-sm text-muted-foreground">Διαχείριση αγώνων και δηλώσεων αθλητών</p>
+                <p className="text-sm text-muted-foreground">{t('federation.competitions.subtitle')}</p>
               </div>
               <div className="flex items-center gap-2">
                 <Button variant="outline" onClick={() => setTemplatesDialogOpen(true)} className="rounded-none">
-                  <Settings className="h-4 w-4 mr-2" /> Διαχείριση Κατηγοριών
+                  <Settings className="h-4 w-4 mr-2" /> {t('federation.competitions.manageCategories')}
                 </Button>
                 <Button onClick={() => { resetForm(); setCreateDialogOpen(true); }} className="rounded-none bg-foreground text-background hover:bg-foreground/90">
-                  <Plus className="h-4 w-4 mr-2" /> Νέος Αγώνας
+                  <Plus className="h-4 w-4 mr-2" /> {t('federation.competitions.newCompetition')}
                 </Button>
               </div>
             </div>
@@ -501,22 +496,22 @@ const FederationCompetitions = () => {
             {/* Mobile buttons */}
             <div className="lg:hidden mb-4 flex gap-2">
               <Button variant="outline" onClick={() => setTemplatesDialogOpen(true)} className="flex-1 rounded-none">
-                <Settings className="h-4 w-4 mr-2" /> Κατηγορίες
+                <Settings className="h-4 w-4 mr-2" /> {t('federation.competitions.categories')}
               </Button>
               <Button onClick={() => { resetForm(); setCreateDialogOpen(true); }} className="flex-1 rounded-none bg-foreground text-background hover:bg-foreground/90">
-                <Plus className="h-4 w-4 mr-2" /> Νέος Αγώνας
+                <Plus className="h-4 w-4 mr-2" /> {t('federation.competitions.newCompetition')}
               </Button>
             </div>
 
             {/* Competition Cards */}
             {loading ? (
-              <div className="text-center py-12 text-muted-foreground">Φόρτωση...</div>
+              <div className="text-center py-12 text-muted-foreground">{t('federation.common.loading')}</div>
             ) : competitions.length === 0 ? (
               <Card className="rounded-none">
                 <CardContent className="py-12 text-center text-muted-foreground">
                   <Swords className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                  <p>Δεν υπάρχουν αγώνες</p>
-                  <p className="text-sm">Δημιουργήστε τον πρώτο αγώνα πατώντας "Νέος Αγώνας"</p>
+                  <p>{t('federation.competitions.noCompetitions')}</p>
+                  <p className="text-sm">{t('federation.competitions.noCompetitionsDesc')}</p>
                 </CardContent>
               </Card>
             ) : (
@@ -539,7 +534,7 @@ const FederationCompetitions = () => {
                     <CardContent className="space-y-3">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Calendar className="h-4 w-4" />
-                        <span>{format(new Date(comp.competition_date), 'd MMMM yyyy', { locale: el })}</span>
+                        <span>{format(new Date(comp.competition_date), 'd MMMM yyyy', { locale: dateLocale })}</span>
                       </div>
                       {comp.location && (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -559,13 +554,13 @@ const FederationCompetitions = () => {
                           {comp.registration_deadline && (
                             <div className="flex items-center gap-1 text-xs text-muted-foreground">
                               <Clock className="h-3 w-3" />
-                              Εμπρόθεσμες: {format(new Date(comp.registration_deadline), 'd MMM yyyy', { locale: el })}
+                              {t('federation.competitions.earlyDeadlineLabel')}: {format(new Date(comp.registration_deadline), 'd MMM yyyy', { locale: dateLocale })}
                             </div>
                           )}
                           {comp.late_registration_deadline && (
                             <div className="flex items-center gap-1 text-xs text-[#cb8954]">
                               <Clock className="h-3 w-3" />
-                              Εκπρόθεσμες: {format(new Date(comp.late_registration_deadline), 'd MMM yyyy', { locale: el })}
+                              {t('federation.competitions.lateDeadlineLabel')}: {format(new Date(comp.late_registration_deadline), 'd MMM yyyy', { locale: dateLocale })}
                             </div>
                           )}
                         </div>
@@ -573,10 +568,10 @@ const FederationCompetitions = () => {
 
                       <div className="flex items-center gap-4 text-sm">
                         <span className="flex items-center gap-1">
-                          <Swords className="h-3 w-3" /> {comp.categories_count} κατηγορίες
+                          <Swords className="h-3 w-3" /> {comp.categories_count} {t('federation.competitions.categoriesCount')}
                         </span>
                         <span className="flex items-center gap-1">
-                          <Users className="h-3 w-3" /> {comp.registrations_count} δηλώσεις
+                          <Users className="h-3 w-3" /> {comp.registrations_count} {t('federation.competitions.registrationsCount')}
                         </span>
                       </div>
 
@@ -586,16 +581,16 @@ const FederationCompetitions = () => {
                           setCategoriesDialogOpen(true);
                         }}>
                           <Swords className="h-3 w-3 mr-1 shrink-0" />
-                          <span className="hidden sm:inline">Κατηγορίες</span>
-                          <span className="sm:hidden">Κατ.</span>
+                          <span className="hidden sm:inline">{t('federation.competitions.categories')}</span>
+                          <span className="sm:hidden">{t('federation.competitions.categoriesShort')}</span>
                         </Button>
                         <Button variant="outline" size="sm" className="rounded-none flex-1 min-w-[80px] text-xs" onClick={() => {
                           setSelectedCompetition(comp);
                           setRegistrationsDialogOpen(true);
                         }}>
                           <Users className="h-3 w-3 mr-1 shrink-0" />
-                          <span className="hidden sm:inline">Δηλώσεις</span>
-                          <span className="sm:hidden">Δηλ.</span>
+                          <span className="hidden sm:inline">{t('federation.competitions.registrations')}</span>
+                          <span className="sm:hidden">{t('federation.competitions.registrationsShort')}</span>
                         </Button>
                         <div className="flex items-center gap-1">
                           {comp.regulations_pdf_url && (
@@ -639,13 +634,13 @@ const FederationCompetitions = () => {
             }
           }}>
           <DialogHeader>
-            <DialogTitle>Νέος Αγώνας</DialogTitle>
+            <DialogTitle>{t('federation.competitions.createDialog')}</DialogTitle>
           </DialogHeader>
           {renderForm()}
           <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setCreateDialogOpen(false)} className="rounded-none">Ακύρωση</Button>
+            <Button variant="outline" onClick={() => setCreateDialogOpen(false)} className="rounded-none">{t('federation.common.cancel')}</Button>
             <Button onClick={handleCreate} disabled={saving} className="rounded-none bg-foreground text-background hover:bg-foreground/90">
-              {saving ? 'Αποθήκευση...' : 'Δημιουργία'}
+              {saving ? t('federation.competitions.saving') : t('federation.competitions.create')}
             </Button>
           </div>
         </DialogContent>
@@ -665,13 +660,13 @@ const FederationCompetitions = () => {
             }
           }}>
           <DialogHeader>
-            <DialogTitle>Επεξεργασία Αγώνα</DialogTitle>
+            <DialogTitle>{t('federation.competitions.editDialog')}</DialogTitle>
           </DialogHeader>
           {renderForm()}
           <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setEditDialogOpen(false)} className="rounded-none">Ακύρωση</Button>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)} className="rounded-none">{t('federation.common.cancel')}</Button>
             <Button onClick={handleEdit} disabled={saving} className="rounded-none bg-foreground text-background hover:bg-foreground/90">
-              {saving ? 'Αποθήκευση...' : 'Αποθήκευση'}
+              {saving ? t('federation.competitions.saving') : t('federation.competitions.save')}
             </Button>
           </div>
         </DialogContent>
@@ -681,15 +676,15 @@ const FederationCompetitions = () => {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="rounded-none">
           <AlertDialogHeader>
-            <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
+            <AlertDialogTitle>{t('federation.competitions.deleteConfirmTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Αυτή η ενέργεια θα διαγράψει τον αγώνα, τις κατηγορίες και όλες τις δηλώσεις. Δεν μπορεί να αναιρεθεί.
+              {t('federation.competitions.deleteConfirmDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-none">{t('federation.common.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90 rounded-none">
-              Διαγραφή
+              {t('federation.competitions.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
