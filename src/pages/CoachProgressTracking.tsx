@@ -74,8 +74,8 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
     } catch (error) {
       console.error('Error fetching coach athletes:', error);
       toast({
-        title: 'Σφάλμα',
-        description: 'Αποτυχία φόρτωσης αθλητών.',
+        title: t('progress.errorTitle'),
+        description: t('progress.errorLoadingAthletes'),
         variant: 'destructive'
       });
     }
