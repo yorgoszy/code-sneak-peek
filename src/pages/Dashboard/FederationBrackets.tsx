@@ -777,10 +777,15 @@ const FederationBrackets = () => {
 
             {/* Selected category actions */}
             {selectedCategoryId && (
-              <div className="flex flex-wrap items-center gap-4 mb-6">
+              <div className="flex flex-wrap items-center gap-4 mb-4">
                 <Badge variant="outline" className="rounded-none text-sm py-1 px-3">
                   {categories.find(c => c.id === selectedCategoryId)?.name}
                 </Badge>
+                {matches.length > 0 && (
+                  <Button variant="outline" size="sm" onClick={() => { setMatches([]); }} className="rounded-none">
+                    ← Αλλαγή κατηγορίας
+                  </Button>
+                )}
                 {matches.length === 0 && registrations.length >= 2 && (
                   <Button onClick={handleGenerateBracket} className="rounded-none bg-foreground text-background hover:bg-foreground/90">
                     <Shuffle className="h-4 w-4 mr-2" />
