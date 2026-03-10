@@ -148,7 +148,7 @@ export default function CoachProgressTracking({ contextCoachId }: CoachProgressT
   if (!effectiveCoachId) {
     return (
       <div className="p-6 text-center text-muted-foreground">
-        Δεν βρέθηκε coachId.
+        {t('progress.noCoachId')}
       </div>
     );
   }
