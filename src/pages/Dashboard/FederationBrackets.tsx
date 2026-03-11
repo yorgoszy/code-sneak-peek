@@ -430,6 +430,11 @@ const FederationBrackets = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   
+  // Filters
+  const [filterGender, setFilterGender] = useState<string>('');
+  const [filterAge, setFilterAge] = useState<string>('');
+  const [filterWeight, setFilterWeight] = useState<string>('');
+  
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(false);
   const [registrationCounts, setRegistrationCounts] = useState<Map<string, number>>(new Map());
