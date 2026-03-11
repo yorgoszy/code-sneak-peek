@@ -19,6 +19,7 @@ import Auth from "@/pages/Auth";
 import ResetPassword from "@/pages/ResetPassword";
 const PrivacyPolicy = React.lazy(() => import("@/pages/PrivacyPolicy"));
 const TermsOfService = React.lazy(() => import("@/pages/TermsOfService"));
+const JudgeScoring = React.lazy(() => import("@/pages/JudgeScoring"));
 import Dashboard from "@/pages/Dashboard";
 import Users from "@/pages/Users";
 import Groups from "@/pages/Groups";
@@ -142,6 +143,7 @@ function App() {
                       <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/privacy" element={<PrivacyPolicy />} />
                       <Route path="/terms" element={<TermsOfService />} />
+                      <Route path="/judge" element={<JudgeScoring />} />
                       <Route path="/shop" element={<Shop />} />
                       <Route path="/online-coaching" element={<OnlineCoaching />} />
                       <Route path="/payment-success" element={<PaymentSuccess />} />

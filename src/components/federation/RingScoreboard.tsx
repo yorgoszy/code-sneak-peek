@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Play, Pause, RotateCcw, Trophy, Clock } from "lucide-react";
+import { Play, Pause, RotateCcw, Trophy, Clock, Link2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -24,6 +23,13 @@ interface MatchData {
   category?: { name: string; min_age: number | null; max_age: number | null } | null;
 }
 
+interface JudgeScore {
+  judge_number: number;
+  round: number;
+  athlete1_score: number;
+  athlete2_score: number;
+}
+
 interface AvailableMatch {
   id: string;
   match_order: number | null;
@@ -39,19 +45,14 @@ interface RingScoreboardProps {
   onMatchChange: (matchId: string) => void;
 }
 
-// Round config based on age category
-function getRoundConfig(minAge: number | null, maxAge: number | null): { rounds: number; roundDurationSec: number; breakDurationSec: number } {
-  // Default: 3 rounds x 3 min, 1 min break
+function getRoundConfig(minAge: number | null, maxAge: number | null) {
   if (!minAge && !maxAge) return { rounds: 3, roundDurationSec: 180, breakDurationSec: 60 };
-
   const age = maxAge || minAge || 18;
-
-  if (age <= 9) return { rounds: 3, roundDurationSec: 60, breakDurationSec: 30 };       // 5-7, 8-9
-  if (age <= 11) return { rounds: 3, roundDurationSec: 60, breakDurationSec: 60 };      // 10-11
-  if (age <= 13) return { rounds: 3, roundDurationSec: 90, breakDurationSec: 60 };      // 12-13
-  if (age <= 15) return { rounds: 3, roundDurationSec: 120, breakDurationSec: 60 };     // 14-15
-  if (age <= 17) return { rounds: 3, roundDurationSec: 120, breakDurationSec: 60 };     // 16-17
-  return { rounds: 3, roundDurationSec: 180, breakDurationSec: 60 };                    // 18-40, U23, 40+
+  if (age <= 9) return { rounds: 3, roundDurationSec: 60, breakDurationSec: 30 };
+  if (age <= 11) return { rounds: 3, roundDurationSec: 60, breakDurationSec: 60 };
+  if (age <= 13) return { rounds: 3, roundDurationSec: 90, breakDurationSec: 60 };
+  if (age <= 17) return { rounds: 3, roundDurationSec: 120, breakDurationSec: 60 };
+  return { rounds: 3, roundDurationSec: 180, breakDurationSec: 60 };
 }
 
 function formatTimer(seconds: number): string {
@@ -67,8 +68,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
   onMatchChange,
 }) => {
   const [match, setMatch] = useState<MatchData | null>(null);
-  const [scores, setScores] = useState<{ r1: number; r2: number; r3: number }>({ r1: 0, r2: 0, r3: 0 });
-  const [scores2, setScores2] = useState<{ r1: number; r2: number; r3: number }>({ r1: 0, r2: 0, r3: 0 });
+  const [judgeScores, setJudgeScores] = useState<JudgeScore[]>([]);
   const [currentRound, setCurrentRound] = useState(1);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
@@ -76,9 +76,9 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
   const [roundConfig, setRoundConfig] = useState({ rounds: 3, roundDurationSec: 180, breakDurationSec: 60 });
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Load match data when currentMatchId changes
+  // Load match data
   useEffect(() => {
-    if (!currentMatchId) { setMatch(null); return; }
+    if (!currentMatchId) { setMatch(null); setJudgeScores([]); return; }
     const loadMatch = async () => {
       const { data } = await supabase
         .from('competition_matches')
@@ -99,17 +99,6 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
         const config = getRoundConfig(cat?.min_age, cat?.max_age);
         setRoundConfig(config);
         setTimeLeft(config.roundDurationSec);
-
-        // Restore scores if saved
-        try {
-          const s1 = data.athlete1_score ? JSON.parse(data.athlete1_score) : { r1: 0, r2: 0, r3: 0 };
-          const s2 = data.athlete2_score ? JSON.parse(data.athlete2_score) : { r1: 0, r2: 0, r3: 0 };
-          setScores(s1);
-          setScores2(s2);
-        } catch {
-          setScores({ r1: 0, r2: 0, r3: 0 });
-          setScores2({ r1: 0, r2: 0, r3: 0 });
-        }
         setCurrentRound(1);
         setIsRunning(false);
         setIsBreak(false);
@@ -117,6 +106,31 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
     };
     loadMatch();
   }, [currentMatchId]);
+
+  // Load judge scores
+  const loadJudgeScores = useCallback(async () => {
+    if (!currentMatchId) return;
+    const { data } = await supabase
+      .from('competition_match_judge_scores')
+      .select('*')
+      .eq('match_id', currentMatchId);
+    setJudgeScores(data || []);
+  }, [currentMatchId]);
+
+  useEffect(() => { loadJudgeScores(); }, [loadJudgeScores]);
+
+  // Real-time judge scores
+  useEffect(() => {
+    if (!currentMatchId) return;
+    const channel = supabase
+      .channel(`judge-scores-${currentMatchId}`)
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'competition_match_judge_scores',
+        filter: `match_id=eq.${currentMatchId}`
+      }, () => loadJudgeScores())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [currentMatchId, loadJudgeScores]);
 
   // Timer logic
   useEffect(() => {
@@ -128,19 +142,15 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
       setTimeLeft(prev => {
         if (prev <= 1) {
           setIsRunning(false);
-          // Round or break ended
           if (isBreak) {
-            // Break ended, start next round
             setIsBreak(false);
             setCurrentRound(r => r + 1);
             return roundConfig.roundDurationSec;
           } else {
-            // Round ended
             if (currentRound < roundConfig.rounds) {
               setIsBreak(true);
               return roundConfig.breakDurationSec;
             }
-            // All rounds done
             return 0;
           }
         }
@@ -160,31 +170,8 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
     setTimeLeft(isBreak ? roundConfig.breakDurationSec : roundConfig.roundDurationSec);
   };
 
-  const handleSaveScores = useCallback(async () => {
-    if (!match) return;
-    const { error } = await supabase
-      .from('competition_matches')
-      .update({
-        athlete1_score: JSON.stringify(scores),
-        athlete2_score: JSON.stringify(scores2),
-      })
-      .eq('id', match.id);
-    if (error) toast.error('Σφάλμα αποθήκευσης');
-  }, [match, scores, scores2]);
-
-  // Auto-save scores on change
-  useEffect(() => {
-    if (!match) return;
-    const t = setTimeout(handleSaveScores, 1000);
-    return () => clearTimeout(t);
-  }, [scores, scores2, handleSaveScores]);
-
-  const totalScore1 = scores.r1 + scores.r2 + scores.r3;
-  const totalScore2 = scores2.r1 + scores2.r2 + scores2.r3;
-
   const handleDeclareWinner = async (winnerId: string) => {
     if (!match) return;
-    await handleSaveScores();
     const { error } = await supabase
       .from('competition_matches')
       .update({
@@ -194,16 +181,35 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
         result_type: 'points',
       })
       .eq('id', match.id);
-
-    if (error) {
-      toast.error('Σφάλμα ορισμού νικητή');
-    } else {
-      toast.success('Ο νικητής καταχωρήθηκε');
-    }
+    if (error) toast.error('Σφάλμα ορισμού νικητή');
+    else toast.success('Ο νικητής καταχωρήθηκε');
   };
 
+  const copyJudgeLink = (judgeNum: number) => {
+    const url = `${window.location.origin}/judge?ring=${ringId}&judge=${judgeNum}`;
+    navigator.clipboard.writeText(url);
+    toast.success(`Link Κριτή ${judgeNum} αντιγράφηκε`);
+  };
+
+  // Calculate aggregated scores from judges
+  const getJudgeScoreForRound = (judgeNum: number, round: number) => {
+    return judgeScores.find(s => s.judge_number === judgeNum && s.round === round);
+  };
+
+  const getRoundTotals = (round: number) => {
+    let a1 = 0, a2 = 0, count = 0;
+    for (let j = 1; j <= 3; j++) {
+      const s = getJudgeScoreForRound(j, round);
+      if (s) { a1 += s.athlete1_score; a2 += s.athlete2_score; count++; }
+    }
+    return { a1, a2, count };
+  };
+
+  const totalA1 = [1, 2, 3].reduce((sum, r) => sum + getRoundTotals(r).a1, 0);
+  const totalA2 = [1, 2, 3].reduce((sum, r) => sum + getRoundTotals(r).a2, 0);
+
   const avatar = (a: any) => a?.photo_url || a?.avatar_url || undefined;
-  const roundKeys = ['r1', 'r2', 'r3'] as const;
+  const matchFinished = match?.status === 'completed' || (currentRound >= roundConfig.rounds && timeLeft === 0 && !isBreak && !isRunning);
 
   if (!currentMatchId) {
     return (
@@ -228,12 +234,10 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
     return <div className="px-2 py-1 border-t border-border text-center text-[10px] text-muted-foreground">Φόρτωση...</div>;
   }
 
-  const matchFinished = match.status === 'completed' || (currentRound >= roundConfig.rounds && timeLeft === 0 && !isBreak && !isRunning);
-
   return (
     <div className="border-t border-border">
-      {/* Match selector row */}
-      <div className="px-2 py-1 border-b border-border bg-muted/30 flex items-center gap-2">
+      {/* Match selector + Judge links */}
+      <div className="px-2 py-1 border-b border-border bg-muted/30 flex items-center gap-1">
         <Select value={currentMatchId} onValueChange={onMatchChange}>
           <SelectTrigger className="rounded-none h-6 text-[10px] flex-1">
             <SelectValue />
@@ -251,6 +255,21 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
             {match.category.name}
           </Badge>
         )}
+        {/* Judge link buttons */}
+        <div className="flex gap-0.5 shrink-0">
+          {[1, 2, 3].map(j => (
+            <Button
+              key={j}
+              variant="ghost"
+              size="sm"
+              className="rounded-none h-5 w-5 p-0 text-[8px]"
+              title={`Copy link Κριτή ${j}`}
+              onClick={() => copyJudgeLink(j)}
+            >
+              <Link2 className="h-2.5 w-2.5" />
+            </Button>
+          ))}
+        </div>
       </div>
 
       {/* Timer & Round */}
@@ -262,125 +281,140 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
           {formatTimer(timeLeft)}
         </div>
         <div className="flex gap-1">
-          <Button
-            variant="outline"
-            size="sm"
-            className="rounded-none h-7 w-7 p-0"
-            onClick={handleStartPause}
-            disabled={matchFinished}
-          >
+          <Button variant="outline" size="sm" className="rounded-none h-7 w-7 p-0" onClick={handleStartPause} disabled={matchFinished}>
             {isRunning ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="rounded-none h-7 w-7 p-0"
-            onClick={handleResetRound}
-          >
+          <Button variant="ghost" size="sm" className="rounded-none h-7 w-7 p-0" onClick={handleResetRound}>
             <RotateCcw className="h-3 w-3" />
           </Button>
         </div>
       </div>
 
-      {/* Athletes & Scores */}
+      {/* Athletes header */}
       <div className="grid grid-cols-[1fr_auto_1fr] gap-0">
-        {/* Blue Corner (Athlete 1) */}
-        <div className="bg-blue-500/10 border-r border-border">
-          <div className="flex items-center gap-1.5 px-2 py-1 border-b border-blue-500/20 bg-blue-500/20">
-            <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
-            <Avatar className="h-5 w-5">
-              <AvatarImage src={avatar(match.athlete1)} />
-              <AvatarFallback className="text-[8px]">{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-              <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete1?.name || 'TBD'}</p>
-              {match.athlete1_club && <p className="text-[8px] text-muted-foreground truncate leading-tight">{match.athlete1_club.name}</p>}
-            </div>
-          </div>
-          <div className="flex items-center gap-1 px-2 py-1">
-            {roundKeys.map((rk, i) => (
-              <div key={rk} className="flex-1 text-center">
-                <label className="text-[8px] text-muted-foreground block">R{i + 1}</label>
-                <Input
-                  type="number"
-                  min={0}
-                  value={scores[rk] || ''}
-                  onChange={(e) => setScores(prev => ({ ...prev, [rk]: parseInt(e.target.value) || 0 }))}
-                  className="rounded-none h-6 text-xs text-center p-0 no-spinners"
-                />
-              </div>
-            ))}
-            <div className="text-center px-1">
-              <label className="text-[8px] text-muted-foreground block">Σύν.</label>
-              <span className="text-sm font-bold text-blue-600">{totalScore1}</span>
-            </div>
+        <div className="bg-blue-500/20 flex items-center gap-1.5 px-2 py-1">
+          <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+          <Avatar className="h-5 w-5">
+            <AvatarImage src={avatar(match.athlete1)} />
+            <AvatarFallback className="text-[8px]">{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete1?.name || 'TBD'}</p>
+            {match.athlete1_club && <p className="text-[8px] text-muted-foreground truncate">{match.athlete1_club.name}</p>}
           </div>
         </div>
-
-        {/* VS / Winner */}
-        <div className="flex flex-col items-center justify-center px-1 bg-muted/20">
+        <div className="flex items-center justify-center px-1 bg-muted/20">
           <span className="text-[10px] font-bold text-muted-foreground">VS</span>
-          {matchFinished && !match.winner_id && (
-            <div className="flex flex-col gap-0.5 mt-1">
-              <Button
-                size="sm"
-                className="rounded-none h-5 text-[8px] px-1 bg-blue-500 hover:bg-blue-600 text-white"
-                onClick={() => match.athlete1_id && handleDeclareWinner(match.athlete1_id)}
-              >
-                <Trophy className="h-2 w-2 mr-0.5" />
-                Μπλε
-              </Button>
-              <Button
-                size="sm"
-                className="rounded-none h-5 text-[8px] px-1 bg-red-500 hover:bg-red-600 text-white"
-                onClick={() => match.athlete2_id && handleDeclareWinner(match.athlete2_id)}
-              >
-                <Trophy className="h-2 w-2 mr-0.5" />
-                Κόκ.
-              </Button>
-            </div>
-          )}
-          {match.winner_id && (
-            <Badge className="rounded-none text-[8px] px-1 py-0 bg-[#00ffba] text-black mt-1">
-              <Trophy className="h-2 w-2 mr-0.5" />
-              Νικητής
-            </Badge>
-          )}
         </div>
-
-        {/* Red Corner (Athlete 2) */}
-        <div className="bg-red-500/10 border-l border-border">
-          <div className="flex items-center gap-1.5 px-2 py-1 border-b border-red-500/20 bg-red-500/20 justify-end">
-            <div className="min-w-0 text-right">
-              <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete2?.name || 'TBD'}</p>
-              {match.athlete2_club && <p className="text-[8px] text-muted-foreground truncate leading-tight">{match.athlete2_club.name}</p>}
-            </div>
-            <Avatar className="h-5 w-5">
-              <AvatarImage src={avatar(match.athlete2)} />
-              <AvatarFallback className="text-[8px]">{match.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
-            </Avatar>
-            <div className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
+        <div className="bg-red-500/20 flex items-center gap-1.5 px-2 py-1 justify-end">
+          <div className="min-w-0 text-right">
+            <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete2?.name || 'TBD'}</p>
+            {match.athlete2_club && <p className="text-[8px] text-muted-foreground truncate">{match.athlete2_club.name}</p>}
           </div>
-          <div className="flex items-center gap-1 px-2 py-1">
-            <div className="text-center px-1">
-              <label className="text-[8px] text-muted-foreground block">Σύν.</label>
-              <span className="text-sm font-bold text-red-600">{totalScore2}</span>
-            </div>
-            {roundKeys.map((rk, i) => (
-              <div key={rk} className="flex-1 text-center">
-                <label className="text-[8px] text-muted-foreground block">R{i + 1}</label>
-                <Input
-                  type="number"
-                  min={0}
-                  value={scores2[rk] || ''}
-                  onChange={(e) => setScores2(prev => ({ ...prev, [rk]: parseInt(e.target.value) || 0 }))}
-                  className="rounded-none h-6 text-xs text-center p-0 no-spinners"
-                />
-              </div>
-            ))}
-          </div>
+          <Avatar className="h-5 w-5">
+            <AvatarImage src={avatar(match.athlete2)} />
+            <AvatarFallback className="text-[8px]">{match.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
+          </Avatar>
+          <div className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
         </div>
       </div>
+
+      {/* Judge scores table */}
+      <div className="px-1 py-1">
+        <table className="w-full text-[9px] border-collapse">
+          <thead>
+            <tr className="border-b border-border">
+              <th className="text-left px-1 py-0.5 text-muted-foreground font-normal"></th>
+              {[1, 2, 3].map(r => (
+                <th key={r} colSpan={2} className="text-center px-0.5 py-0.5 text-muted-foreground font-normal border-l border-border">R{r}</th>
+              ))}
+              <th colSpan={2} className="text-center px-0.5 py-0.5 font-semibold border-l border-border">Σύν.</th>
+            </tr>
+            <tr className="border-b border-border">
+              <th className="px-1 py-0.5"></th>
+              {[1, 2, 3].map(r => (
+                <React.Fragment key={r}>
+                  <th className={`text-center px-0.5 py-0.5 text-blue-600 font-normal ${r === 1 ? 'border-l border-border' : 'border-l border-border'}`}>Μ</th>
+                  <th className="text-center px-0.5 py-0.5 text-red-600 font-normal">Κ</th>
+                </React.Fragment>
+              ))}
+              <th className="text-center px-0.5 py-0.5 text-blue-600 font-semibold border-l border-border">Μ</th>
+              <th className="text-center px-0.5 py-0.5 text-red-600 font-semibold">Κ</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[1, 2, 3].map(j => {
+              let jTotalA1 = 0, jTotalA2 = 0;
+              return (
+                <tr key={j} className="border-b border-border/50">
+                  <td className="px-1 py-0.5 font-medium text-muted-foreground">Κρ.{j}</td>
+                  {[1, 2, 3].map(r => {
+                    const s = getJudgeScoreForRound(j, r);
+                    const a1 = s?.athlete1_score || 0;
+                    const a2 = s?.athlete2_score || 0;
+                    jTotalA1 += a1;
+                    jTotalA2 += a2;
+                    return (
+                      <React.Fragment key={r}>
+                        <td className={`text-center px-0.5 py-0.5 border-l border-border ${s ? 'font-semibold' : 'text-muted-foreground'}`}>
+                          {s ? a1 : '-'}
+                        </td>
+                        <td className={`text-center px-0.5 py-0.5 ${s ? 'font-semibold' : 'text-muted-foreground'}`}>
+                          {s ? a2 : '-'}
+                        </td>
+                      </React.Fragment>
+                    );
+                  })}
+                  <td className="text-center px-0.5 py-0.5 font-bold text-blue-600 border-l border-border">{jTotalA1 || '-'}</td>
+                  <td className="text-center px-0.5 py-0.5 font-bold text-red-600">{jTotalA2 || '-'}</td>
+                </tr>
+              );
+            })}
+            {/* Totals row */}
+            <tr className="bg-muted/30 font-bold">
+              <td className="px-1 py-0.5">Σύνολο</td>
+              {[1, 2, 3].map(r => {
+                const t = getRoundTotals(r);
+                return (
+                  <React.Fragment key={r}>
+                    <td className="text-center px-0.5 py-0.5 text-blue-600 border-l border-border">{t.count > 0 ? t.a1 : '-'}</td>
+                    <td className="text-center px-0.5 py-0.5 text-red-600">{t.count > 0 ? t.a2 : '-'}</td>
+                  </React.Fragment>
+                );
+              })}
+              <td className="text-center px-0.5 py-1 text-sm text-blue-600 border-l border-border">{totalA1 || '-'}</td>
+              <td className="text-center px-0.5 py-1 text-sm text-red-600">{totalA2 || '-'}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* Winner declaration */}
+      {matchFinished && !match.winner_id && (
+        <div className="px-2 py-1 border-t border-border flex items-center justify-center gap-2">
+          <Button
+            size="sm"
+            className="rounded-none h-6 text-[10px] px-2 bg-blue-500 hover:bg-blue-600 text-white"
+            onClick={() => match.athlete1_id && handleDeclareWinner(match.athlete1_id)}
+          >
+            <Trophy className="h-2.5 w-2.5 mr-1" /> Νικητής Μπλε
+          </Button>
+          <Button
+            size="sm"
+            className="rounded-none h-6 text-[10px] px-2 bg-red-500 hover:bg-red-600 text-white"
+            onClick={() => match.athlete2_id && handleDeclareWinner(match.athlete2_id)}
+          >
+            <Trophy className="h-2.5 w-2.5 mr-1" /> Νικητής Κόκ.
+          </Button>
+        </div>
+      )}
+      {match.winner_id && (
+        <div className="px-2 py-1 border-t border-border flex justify-center">
+          <Badge className="rounded-none text-[10px] px-2 py-0.5 bg-[#00ffba] text-black">
+            <Trophy className="h-2.5 w-2.5 mr-1" /> Νικητής καταχωρήθηκε
+          </Badge>
+        </div>
+      )}
 
       {/* Round duration info */}
       <div className="px-2 py-0.5 bg-muted/30 border-t border-border flex items-center justify-center gap-2">
