@@ -201,7 +201,12 @@ const CoachLivePage = () => {
                         </div>
                       )}
 
-                      <ReadOnlyRingScoreboard currentMatchId={ring.current_match_id} />
+                      <ReadOnlyRingScoreboard 
+                        currentMatchId={ring.current_match_id} 
+                        competitionId={selectedCompId}
+                        matchRangeStart={ring.match_range_start}
+                        matchRangeEnd={ring.match_range_end}
+                      />
                     </CardContent>
                   </Card>
                 ))}

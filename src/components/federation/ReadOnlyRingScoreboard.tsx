@@ -25,13 +25,28 @@ interface JudgeScore {
   athlete2_score: number;
 }
 
-interface ReadOnlyRingScoreboardProps {
-  currentMatchId: string | null;
+interface UpcomingMatch {
+  id: string;
+  match_order: number;
+  status: string;
+  athlete1?: { name: string } | null;
+  athlete2?: { name: string } | null;
+  category?: { name: string } | null;
 }
 
-export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({ currentMatchId }) => {
+interface ReadOnlyRingScoreboardProps {
+  currentMatchId: string | null;
+  competitionId?: string;
+  matchRangeStart?: number;
+  matchRangeEnd?: number;
+}
+
+export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({ 
+  currentMatchId, competitionId, matchRangeStart, matchRangeEnd 
+}) => {
   const [match, setMatch] = useState<MatchData | null>(null);
   const [judgeScores, setJudgeScores] = useState<JudgeScore[]>([]);
+  const [upcomingMatches, setUpcomingMatches] = useState<UpcomingMatch[]>([]);
 
   // Load match
   useEffect(() => {
@@ -105,6 +120,34 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({ 
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [currentMatchId]);
+
+  // Load upcoming matches for this ring
+  useEffect(() => {
+    if (!competitionId || !match) { setUpcomingMatches([]); return; }
+    const loadUpcoming = async () => {
+      let query = supabase
+        .from('competition_matches')
+        .select(`
+          id, match_order, status,
+          athlete1:app_users!competition_matches_athlete1_id_fkey(name),
+          athlete2:app_users!competition_matches_athlete2_id_fkey(name),
+          category:federation_competition_categories!competition_matches_category_id_fkey(name)
+        `)
+        .eq('competition_id', competitionId)
+        .gt('match_order', match.match_order)
+        .in('status', ['pending', 'scheduled'])
+        .order('match_order', { ascending: true })
+        .limit(2);
+
+      if (matchRangeStart && matchRangeEnd) {
+        query = query.gte('match_order', matchRangeStart).lte('match_order', matchRangeEnd);
+      }
+
+      const { data } = await query;
+      setUpcomingMatches((data as any) || []);
+    };
+    loadUpcoming();
+  }, [competitionId, match?.match_order, matchRangeStart, matchRangeEnd]);
 
   const getJudgeScoreForRound = (judgeNum: number, round: number) => {
     return judgeScores.find(s => s.judge_number === judgeNum && s.round === round);
@@ -257,6 +300,32 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({ 
             <Trophy className="h-2.5 w-2.5 mr-1" />
             Νικητής: {match.winner_id === match.athlete1_id ? match.athlete1?.name : match.athlete2?.name}
           </Badge>
+        </div>
+      )}
+
+      {/* Upcoming matches */}
+      {upcomingMatches.length > 0 && (
+        <div className="border-t border-border px-3 py-2">
+          <p className="text-[10px] font-semibold text-muted-foreground mb-1.5">Επόμενοι αγώνες</p>
+          <div className="space-y-1">
+            {upcomingMatches.map((um) => (
+              <div key={um.id} className="flex items-center gap-1.5 text-[10px]">
+                <span className="text-muted-foreground font-medium shrink-0">#{um.match_order}</span>
+                {um.category && (
+                  <Badge variant="outline" className="rounded-none text-[8px] px-1 py-0 shrink-0">
+                    {um.category.name}
+                  </Badge>
+                )}
+                <div className="flex items-center gap-1 min-w-0 flex-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                  <span className="truncate font-medium">{um.athlete1?.name || 'TBD'}</span>
+                  <span className="text-muted-foreground shrink-0">vs</span>
+                  <span className="truncate font-medium">{um.athlete2?.name || 'TBD'}</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
