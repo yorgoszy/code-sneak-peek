@@ -391,7 +391,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
               size="sm"
               className="rounded-none h-5 w-5 p-0 text-[8px]"
               title={`Copy link Κριτή ${j}`}
-              onClick={() => copyJudgeLink(j)}
+              onClick={() => openJudgeLink(j)}
             >
               <Link2 className="h-2.5 w-2.5" />
             </Button>
