@@ -504,28 +504,48 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
       </div>
 
       {/* Winner declaration */}
-      {matchFinished && !match.winner_id && (
-        <div className="px-2 py-1 border-t border-border flex items-center justify-center gap-2">
-          <Button
-            size="sm"
-            className="rounded-none h-6 text-[10px] px-2 bg-blue-500 hover:bg-blue-600 text-white"
-            onClick={() => match.athlete1_id && handleDeclareWinner(match.athlete1_id)}
-          >
-            <Trophy className="h-2.5 w-2.5 mr-1" /> Νικητής Μπλε
-          </Button>
-          <Button
-            size="sm"
-            className="rounded-none h-6 text-[10px] px-2 bg-red-500 hover:bg-red-600 text-white"
-            onClick={() => match.athlete2_id && handleDeclareWinner(match.athlete2_id)}
-          >
-            <Trophy className="h-2.5 w-2.5 mr-1" /> Νικητής Κόκ.
-          </Button>
+      {!match.winner_id && (totalA1 > 0 || totalA2 > 0) && (
+        <div className="px-2 py-1 border-t border-border space-y-1">
+          {/* Auto winner button based on scores */}
+          {totalA1 !== totalA2 && (
+            <div className="flex justify-center">
+              <Button
+                size="sm"
+                className="rounded-none h-7 text-[10px] px-3 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+                onClick={handleAutoDeclareWinner}
+              >
+                <Trophy className="h-3 w-3 mr-1" />
+                Νικητής: {totalA1 > totalA2 ? `Μπλε (${totalA1}-${totalA2})` : `Κόκκινη (${totalA2}-${totalA1})`}
+              </Button>
+            </div>
+          )}
+          {/* Manual override for ties or special cases */}
+          <div className="flex items-center justify-center gap-1">
+            <span className="text-[8px] text-muted-foreground">Χειροκίνητα:</span>
+            <Button
+              size="sm"
+              variant="outline"
+              className="rounded-none h-5 text-[8px] px-1.5 border-blue-500 text-blue-600"
+              onClick={() => match.athlete1_id && handleDeclareWinner(match.athlete1_id)}
+            >
+              Μπλε
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="rounded-none h-5 text-[8px] px-1.5 border-red-500 text-red-600"
+              onClick={() => match.athlete2_id && handleDeclareWinner(match.athlete2_id)}
+            >
+              Κόκκινη
+            </Button>
+          </div>
         </div>
       )}
       {match.winner_id && (
         <div className="px-2 py-1 border-t border-border flex justify-center">
           <Badge className="rounded-none text-[10px] px-2 py-0.5 bg-[#00ffba] text-black">
-            <Trophy className="h-2.5 w-2.5 mr-1" /> Νικητής καταχωρήθηκε
+            <Trophy className="h-2.5 w-2.5 mr-1" />
+            Νικητής: {match.winner_id === match.athlete1_id ? match.athlete1?.name : match.athlete2?.name} ({totalA1}-{totalA2})
           </Badge>
         </div>
       )}

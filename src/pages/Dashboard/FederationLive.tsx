@@ -343,6 +343,7 @@ const FederationLive = () => {
     <FederationSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
   );
 
+  // Realtime: rings changes
   useEffect(() => {
     if (!selectedCompId) return;
     const channel = supabase
@@ -359,6 +360,25 @@ const FederationLive = () => {
 
     return () => { supabase.removeChannel(channel); };
   }, [selectedCompId, loadRings]);
+
+  // Realtime: matches changes (bracket updates, winner declarations)
+  useEffect(() => {
+    if (!selectedCompId) return;
+    const channel = supabase
+      .channel('matches-live')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'competition_matches',
+        filter: `competition_id=eq.${selectedCompId}`,
+      }, () => {
+        loadMatches();
+        loadRings();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [selectedCompId, loadMatches, loadRings]);
 
   return (
     <SidebarProvider>
