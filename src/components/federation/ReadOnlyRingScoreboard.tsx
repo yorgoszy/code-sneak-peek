@@ -249,7 +249,7 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
             <AvatarFallback className="text-[8px]">{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <p className="text-xs font-semibold truncate">{match.athlete1?.name || 'TBD'}</p>
+            <p className="text-xs font-semibold truncate">{match.athlete1?.name || '—'}</p>
             {match.athlete1_club && <p className="text-[9px] text-muted-foreground truncate">{match.athlete1_club.name}</p>}
           </div>
         </div>
