@@ -583,6 +583,7 @@ const FederationLive = () => {
                   })}
                 </div>
               </div>
+            </div>
 
             <DialogFooter>
               <Button variant="outline" onClick={() => setEditRing(null)} className="rounded-none">{t('federation.common.cancel')}</Button>
