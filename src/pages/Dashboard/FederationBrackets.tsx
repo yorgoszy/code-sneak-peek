@@ -188,71 +188,144 @@ function generateBracket(registrations: Registration[]): Omit<Match, 'id' | 'ath
   return matches;
 }
 
-// Seed athletes into bracket positions, placing byes strategically and avoiding same-club matchups
+// Seed athletes into bracket positions, maximizing distance between same-club athletes
+// Uses recursive halving: same-club athletes go to opposite halves, then opposite quarters, etc.
 function seedAvoidingSameClub(
   athletes: { athleteId: string; clubId: string }[],
   bracketSize: number
 ): ({ athleteId: string; clubId: string } | null)[] {
   const n = athletes.length;
-  const byes = bracketSize - n;
+  const totalPairs = bracketSize / 2;
 
-  // Group athletes by club
+  // Group athletes by club, sorted by club size descending
   const clubGroups = new Map<string, { athleteId: string; clubId: string }[]>();
   for (const a of athletes) {
     if (!clubGroups.has(a.clubId)) clubGroups.set(a.clubId, []);
     clubGroups.get(a.clubId)!.push(a);
   }
-
-  // Sort clubs by size descending (largest club first for better separation)
   const sortedClubs = [...clubGroups.entries()].sort((a, b) => b[1].length - a[1].length);
 
-  // Distribute athletes trying to maximize distance between same-club members
-  const positions: ({ athleteId: string; clubId: string } | null)[] = new Array(bracketSize).fill(null);
-  const totalPairs = bracketSize / 2;
-
-  // Place athletes pair by pair, trying to avoid same-club in each pair
-  const allAthletes: { athleteId: string; clubId: string }[] = [];
-
-  // Interleave clubs: take one from each club in round-robin
-  let clubIndex = 0;
-  const clubArrays = sortedClubs.map(([, arr]) => {
-    // Shuffle within each club
-    const shuffled = [...arr];
-    for (let i = shuffled.length - 1; i > 0; i--) {
+  // Shuffle within each club
+  for (const [, arr] of sortedClubs) {
+    for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      [arr[i], arr[j]] = [arr[j], arr[i]];
     }
-    return shuffled;
-  });
-  const clubPointers = new Array(clubArrays.length).fill(0);
+  }
 
-  while (allAthletes.length < n) {
-    let placed = false;
-    for (let attempt = 0; attempt < clubArrays.length; attempt++) {
-      const ci = (clubIndex + attempt) % clubArrays.length;
-      if (clubPointers[ci] < clubArrays[ci].length) {
-        allAthletes.push(clubArrays[ci][clubPointers[ci]++]);
-        clubIndex = (ci + 1) % clubArrays.length;
-        placed = true;
-        break;
+  // Recursive bracket segment distribution
+  // Divide the bracket into segments (halves, quarters, etc.)
+  // and distribute same-club athletes across different segments
+  const slots: ({ athleteId: string; clubId: string } | null)[] = new Array(totalPairs).fill(null);
+  
+  // Each slot represents a "pair position" (will become positions i*2 and i*2+1)
+  // We distribute athletes to slots, then assign positions within slots
+  
+  function distributeToSegments(
+    clubAthletes: { athleteId: string; clubId: string }[],
+    segmentIndices: number[][]
+  ): void {
+    if (clubAthletes.length === 0) return;
+    if (segmentIndices.length === 0) return;
+
+    // Distribute athletes round-robin across segments
+    let segIdx = 0;
+    for (const athlete of clubAthletes) {
+      // Find a segment that has an empty slot
+      let placed = false;
+      for (let attempt = 0; attempt < segmentIndices.length; attempt++) {
+        const seg = segmentIndices[(segIdx + attempt) % segmentIndices.length];
+        const emptyIdx = seg.find(i => slots[i] === null);
+        if (emptyIdx !== undefined) {
+          slots[emptyIdx] = athlete;
+          placed = true;
+          segIdx = ((segIdx + attempt) % segmentIndices.length) + 1;
+          break;
+        }
+      }
+      if (!placed) {
+        // Fallback: place in any empty slot
+        const emptyIdx = slots.findIndex(s => s === null);
+        if (emptyIdx >= 0) slots[emptyIdx] = athlete;
       }
     }
-    if (!placed) break;
   }
 
-  // Distribute athletes: one per pair at even indices first, then remaining at odd indices
-  // This ensures byes are spread evenly across pairs instead of grouped at the end
-  // With 9 athletes in 16-bracket: 8 get even positions (one per pair), 1 gets odd position
-  // Result: 1 real match + 7 byes, so all quarterfinal slots are filled
-  for (let i = 0; i < Math.min(allAthletes.length, totalPairs); i++) {
-    positions[i * 2] = allAthletes[i];
-  }
-  // Remaining athletes fill odd positions (creating real matches in those pairs)
-  for (let i = totalPairs; i < allAthletes.length; i++) {
-    positions[(i - totalPairs) * 2 + 1] = allAthletes[i];
+  // Build segment hierarchy: split bracket into 2, then 4, then 8, etc.
+  function buildSegments(indices: number[], depth: number): number[][] {
+    if (depth <= 0 || indices.length <= 1) return [indices];
+    const mid = Math.floor(indices.length / 2);
+    const left = buildSegments(indices.slice(0, mid), depth - 1);
+    const right = buildSegments(indices.slice(mid), depth - 1);
+    // Interleave left and right for better distribution
+    const result: number[][] = [];
+    const maxLen = Math.max(left.length, right.length);
+    for (let i = 0; i < maxLen; i++) {
+      if (i < left.length) result.push(left[i]);
+      if (i < right.length) result.push(right[i]);
+    }
+    return result;
   }
 
-  // Swap pass: ensure no pair (i*2, i*2+1) has same club
+  const allSlotIndices = Array.from({ length: totalPairs }, (_, i) => i);
+  
+  // For each club, determine the appropriate segmentation depth
+  // Largest clubs need the deepest separation
+  for (const [, clubAthletes] of sortedClubs) {
+    const count = clubAthletes.length;
+    if (count <= 0) continue;
+    
+    // Determine how many segments we need (at least as many as athletes)
+    const depth = Math.ceil(Math.log2(Math.max(count, 2)));
+    const segments = buildSegments(allSlotIndices, depth);
+    
+    distributeToSegments(clubAthletes, segments);
+  }
+
+  // Convert slots to final positions array
+  // Each slot i becomes positions i*2 (athlete) and i*2+1 (opponent or null/bye)
+  const positions: ({ athleteId: string; clubId: string } | null)[] = new Array(bracketSize).fill(null);
+  
+  // First pass: place one athlete per pair at even positions
+  const placedAthletes: { athleteId: string; clubId: string }[] = [];
+  const unplacedAthletes: { athleteId: string; clubId: string }[] = [];
+  
+  for (let i = 0; i < totalPairs; i++) {
+    if (slots[i]) {
+      positions[i * 2] = slots[i];
+      placedAthletes.push(slots[i]!);
+    }
+  }
+
+  // Remaining athletes (more than totalPairs) need odd positions
+  // This shouldn't happen with proper slot distribution, but handle it
+  const allPlaced = new Set(placedAthletes.map(a => a.athleteId));
+  for (const [, clubAthletes] of sortedClubs) {
+    for (const a of clubAthletes) {
+      if (!allPlaced.has(a.athleteId)) {
+        unplacedAthletes.push(a);
+      }
+    }
+  }
+
+  // Place remaining athletes at odd positions, avoiding same-club pairs
+  for (const athlete of unplacedAthletes) {
+    let bestIdx = -1;
+    for (let pair = 0; pair < totalPairs; pair++) {
+      const oddIdx = pair * 2 + 1;
+      if (positions[oddIdx] === null) {
+        const partner = positions[pair * 2];
+        if (!partner || partner.clubId !== athlete.clubId) {
+          bestIdx = oddIdx;
+          break;
+        }
+        if (bestIdx < 0) bestIdx = oddIdx; // fallback
+      }
+    }
+    if (bestIdx >= 0) positions[bestIdx] = athlete;
+  }
+
+  // Final swap pass: ensure no pair has same club in round 1
   for (let attempt = 0; attempt < 200; attempt++) {
     let anySwapped = false;
     for (let pair = 0; pair < totalPairs; pair++) {
@@ -261,46 +334,34 @@ function seedAvoidingSameClub(
       const a1 = positions[idx1];
       const a2 = positions[idx2];
       if (a1 && a2 && a1.clubId === a2.clubId) {
-        // Find another athlete to swap with
         let swapped = false;
         for (let otherPair = pair + 1; otherPair < totalPairs; otherPair++) {
-          const otherIdx1 = otherPair * 2;
-          const otherIdx2 = otherPair * 2 + 1;
-          const o1 = positions[otherIdx1];
-          const o2 = positions[otherIdx2];
-
-          // Try swapping a2 with o1
+          const oi1 = otherPair * 2;
+          const oi2 = otherPair * 2 + 1;
+          const o1 = positions[oi1];
+          const o2 = positions[oi2];
           if (o1 && o1.clubId !== a1.clubId && (!o2 || o2.clubId !== a2.clubId)) {
-            [positions[idx2], positions[otherIdx1]] = [positions[otherIdx1], positions[idx2]];
-            swapped = true;
-            anySwapped = true;
-            break;
+            [positions[idx2], positions[oi1]] = [positions[oi1], positions[idx2]];
+            swapped = true; anySwapped = true; break;
           }
-          // Try swapping a2 with o2
           if (o2 && o2.clubId !== a1.clubId && (!o1 || o1.clubId !== a2.clubId)) {
-            [positions[idx2], positions[otherIdx2]] = [positions[otherIdx2], positions[idx2]];
-            swapped = true;
-            anySwapped = true;
-            break;
+            [positions[idx2], positions[oi2]] = [positions[oi2], positions[idx2]];
+            swapped = true; anySwapped = true; break;
           }
         }
         if (!swapped) {
-          // Try swapping a1 instead
           for (let otherPair = pair + 1; otherPair < totalPairs; otherPair++) {
-            const otherIdx1 = otherPair * 2;
-            const otherIdx2 = otherPair * 2 + 1;
-            const o1 = positions[otherIdx1];
-            const o2 = positions[otherIdx2];
-
+            const oi1 = otherPair * 2;
+            const oi2 = otherPair * 2 + 1;
+            const o1 = positions[oi1];
+            const o2 = positions[oi2];
             if (o1 && o1.clubId !== a2.clubId && (!o2 || o2.clubId !== a1.clubId)) {
-              [positions[idx1], positions[otherIdx1]] = [positions[otherIdx1], positions[idx1]];
-              anySwapped = true;
-              break;
+              [positions[idx1], positions[oi1]] = [positions[oi1], positions[idx1]];
+              anySwapped = true; break;
             }
             if (o2 && o2.clubId !== a2.clubId && (!o1 || o1.clubId !== a1.clubId)) {
-              [positions[idx1], positions[otherIdx2]] = [positions[otherIdx2], positions[idx1]];
-              anySwapped = true;
-              break;
+              [positions[idx1], positions[oi2]] = [positions[oi2], positions[idx1]];
+              anySwapped = true; break;
             }
           }
         }
