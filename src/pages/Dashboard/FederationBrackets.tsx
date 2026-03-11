@@ -831,7 +831,7 @@ const FederationBrackets = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
+      <div className="h-screen flex w-full bg-background overflow-hidden">
         <div className="hidden lg:block">{renderSidebar()}</div>
 
         {isMobileOpen && (
@@ -841,7 +841,7 @@ const FederationBrackets = () => {
           </div>
         )}
 
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
           <div className="sticky top-0 z-40 bg-background border-b border-border p-3 lg:hidden">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -853,7 +853,7 @@ const FederationBrackets = () => {
             </div>
           </div>
 
-          <main className="flex-1 p-2 lg:p-3 overflow-auto">
+          <main className="flex-1 p-2 lg:p-3 overflow-auto flex flex-col min-h-0">
             {/* Compact header row: title + competition + actions + filters all in one line */}
             <div className="flex flex-wrap items-center gap-2 mb-2">
               <h1 className="hidden lg:block text-lg font-bold text-foreground whitespace-nowrap">{t('federation.brackets.title')}</h1>
@@ -1051,7 +1051,7 @@ const FederationBrackets = () => {
                });
 
               return (
-                <div className="w-full overflow-x-auto overflow-y-auto border border-border bg-muted/10 p-6" style={{ height: 'calc(100vh - 160px)' }}>
+                <div className="flex-1 min-h-0 overflow-x-auto overflow-y-auto border border-border bg-muted/10 p-3" style={{ height: 'calc(100vh - 80px)' }}>
                   <div className="relative" style={{ width: totalW, minHeight: totalH }}>
                     {sortedRoundNumbers.map((roundNum, ri) => {
                       const rMatches = roundMatchArrays[ri];
