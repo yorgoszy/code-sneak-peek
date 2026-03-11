@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Play, Pause, RotateCcw, Trophy, Clock, Link2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Play, Pause, RotateCcw, Trophy, Clock, Link2, Copy, Check } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -299,10 +301,21 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
     }
   };
 
-  const copyJudgeLink = (judgeNum: number) => {
+  const [judgeLinkDialog, setJudgeLinkDialog] = useState<{ judgeNum: number; url: string } | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const openJudgeLink = (judgeNum: number) => {
     const url = `${window.location.origin}/judge?ring=${ringId}&judge=${judgeNum}`;
-    navigator.clipboard.writeText(url);
-    toast.success(`Link Κριτή ${judgeNum} αντιγράφηκε`);
+    setJudgeLinkDialog({ judgeNum, url });
+    setLinkCopied(false);
+  };
+
+  const handleCopyLink = async () => {
+    if (!judgeLinkDialog) return;
+    await navigator.clipboard.writeText(judgeLinkDialog.url);
+    setLinkCopied(true);
+    toast.success(`Link Κριτή ${judgeLinkDialog.judgeNum} αντιγράφηκε`);
+    setTimeout(() => setLinkCopied(false), 2000);
   };
 
   // Calculate aggregated scores from judges
@@ -349,6 +362,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
   }
 
   return (
+    <>
     <div className="border-t border-border">
       {/* Match selector + Judge links */}
       <div className="px-2 py-1 border-b border-border bg-muted/30 flex items-center gap-1">
@@ -378,7 +392,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
               size="sm"
               className="rounded-none h-5 w-5 p-0 text-[8px]"
               title={`Copy link Κριτή ${j}`}
-              onClick={() => copyJudgeLink(j)}
+              onClick={() => openJudgeLink(j)}
             >
               <Link2 className="h-2.5 w-2.5" />
             </Button>
@@ -558,5 +572,31 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
         </span>
       </div>
     </div>
+
+      {/* Judge QR Link Dialog */}
+      <Dialog open={!!judgeLinkDialog} onOpenChange={() => setJudgeLinkDialog(null)}>
+        <DialogContent className="rounded-none max-w-xs">
+          <DialogHeader>
+            <DialogTitle className="text-center">Κριτής {judgeLinkDialog?.judgeNum}</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center gap-4 py-4">
+            <div className="bg-white p-4">
+              <QRCodeSVG value={judgeLinkDialog?.url || ''} size={200} />
+            </div>
+            <p className="text-[10px] text-muted-foreground break-all text-center px-2">
+              {judgeLinkDialog?.url}
+            </p>
+            <Button
+              variant="outline"
+              className="rounded-none w-full"
+              onClick={handleCopyLink}
+            >
+              {linkCopied ? <Check className="h-4 w-4 mr-2 text-[#00ffba]" /> : <Copy className="h-4 w-4 mr-2" />}
+              {linkCopied ? 'Αντιγράφηκε!' : 'Αντιγραφή Link'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
