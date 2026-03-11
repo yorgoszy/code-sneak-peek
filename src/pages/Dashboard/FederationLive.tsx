@@ -4,7 +4,8 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Menu, Plus, Settings, Radio, Play, Pause, Trash2, Save, Monitor } from "lucide-react";
+import { Menu, Plus, Settings, Radio, Play, Pause, Trash2, Save, Monitor, Copy, Check } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -74,6 +75,40 @@ function getYoutubeEmbedUrl(url: string): string | null {
   if (url.includes('youtube.com/embed')) return url;
   return url;
 }
+
+const JudgeLinkRow: React.FC<{ judgeNum: number; url: string }> = ({ judgeNum, url }) => {
+  const [copied, setCopied] = React.useState(false);
+  const [showQR, setShowQR] = React.useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="border border-border p-2 space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium">Κριτής {judgeNum}</span>
+        <div className="flex items-center gap-1">
+          <Button variant="outline" size="sm" className="rounded-none h-7 text-xs" onClick={handleCopy}>
+            {copied ? <Check className="h-3 w-3 mr-1 text-[#00ffba]" /> : <Copy className="h-3 w-3 mr-1" />}
+            {copied ? 'Copied!' : 'Copy'}
+          </Button>
+          <Button variant="outline" size="sm" className="rounded-none h-7 text-xs" onClick={() => setShowQR(!showQR)}>
+            QR
+          </Button>
+        </div>
+      </div>
+      <p className="text-[10px] text-muted-foreground break-all">{url}</p>
+      {showQR && (
+        <div className="flex justify-center p-3 bg-white">
+          <QRCodeSVG value={url} size={160} />
+        </div>
+      )}
+    </div>
+  );
+};
 
 const FederationLive = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -568,6 +603,19 @@ const FederationLive = () => {
                       ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Judge Links */}
+              <div>
+                <Label className="text-sm mb-2 block">Links Κριτών</Label>
+                <div className="space-y-3">
+                  {[1, 2, 3].map((judgeNum) => {
+                    const judgeUrl = `${window.location.origin}/judge?ring=${editRing.id}&judge=${judgeNum}&comp=${selectedCompId}`;
+                    return (
+                      <JudgeLinkRow key={judgeNum} judgeNum={judgeNum} url={judgeUrl} />
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
