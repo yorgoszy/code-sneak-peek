@@ -16,8 +16,6 @@ interface MatchData {
   athlete2_id: string | null;
   athlete1?: { name: string; photo_url: string | null; avatar_url: string | null } | null;
   athlete2?: { name: string; photo_url: string | null; avatar_url: string | null } | null;
-  athlete1_club?: { name: string } | null;
-  athlete2_club?: { name: string } | null;
   category?: { name: string; min_age: number | null; max_age: number | null } | null;
 }
 
