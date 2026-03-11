@@ -23,7 +23,6 @@ const JudgeScoring: React.FC = () => {
   const [searchParams] = useSearchParams();
   const ringId = searchParams.get('ring');
   const judgeNumber = parseInt(searchParams.get('judge') || '1');
-  const competitionId = searchParams.get('comp');
 
   const [ring, setRing] = useState<any>(null);
   const [match, setMatch] = useState<MatchData | null>(null);
@@ -33,36 +32,65 @@ const JudgeScoring: React.FC = () => {
     3: { a1: 0, a2: 0 },
   });
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Load ring & current match
   const loadRingAndMatch = useCallback(async () => {
     if (!ringId) return;
-    const { data: ringData } = await supabase
-      .from('competition_rings')
-      .select('*')
-      .eq('id', ringId)
-      .single();
 
-    if (!ringData) return;
+    setLoading(true);
+    setLoadError(null);
+
+    const { data: ringData, error: ringError } = await supabase
+      .from('competition_rings')
+      .select('id, ring_name, current_match_id')
+      .eq('id', ringId)
+      .maybeSingle();
+
+    if (ringError) {
+      console.error('❌ Judge ring load error:', ringError);
+      setRing(null);
+      setMatch(null);
+      setLoadError('Σφάλμα φόρτωσης ring');
+      setLoading(false);
+      return;
+    }
+
+    if (!ringData) {
+      setRing(null);
+      setMatch(null);
+      setLoadError('Το ring δεν βρέθηκε');
+      setLoading(false);
+      return;
+    }
+
     setRing(ringData);
 
-    if (!ringData.current_match_id) { setMatch(null); return; }
+    if (!ringData.current_match_id) {
+      setMatch(null);
+      setLoading(false);
+      return;
+    }
 
     const { data: matchData, error: matchError } = await supabase
       .from('competition_matches')
-      .select(`
-        id, match_order, status, athlete1_id, athlete2_id,
-        athlete1:app_users!competition_matches_athlete1_id_fkey(name, photo_url, avatar_url),
-        athlete2:app_users!competition_matches_athlete2_id_fkey(name, photo_url, avatar_url),
-        category:federation_competition_categories!competition_matches_category_id_fkey(name, min_age, max_age)
-      `)
+      .select('id, match_order, status, athlete1_id, athlete2_id')
       .eq('id', ringData.current_match_id)
-      .single();
+      .maybeSingle();
 
     console.log('🥊 Judge match load:', { matchData, matchError });
 
+    if (matchError) {
+      console.error('❌ Judge match load error:', matchError);
+      setMatch(null);
+      setLoadError('Δεν επιτρέπεται πρόσβαση στον αγώνα');
+      setLoading(false);
+      return;
+    }
+
     if (matchData) {
-      setMatch(matchData as any);
+      setMatch(matchData as MatchData);
       // Load existing scores for this judge
       const { data: existingScores } = await supabase
         .from('competition_match_judge_scores')
@@ -79,7 +107,11 @@ const JudgeScoring: React.FC = () => {
       } else {
         setScores({ 1: { a1: 0, a2: 0 }, 2: { a1: 0, a2: 0 }, 3: { a1: 0, a2: 0 } });
       }
+    } else {
+      setMatch(null);
     }
+
+    setLoading(false);
   }, [ringId, judgeNumber]);
 
   useEffect(() => {
