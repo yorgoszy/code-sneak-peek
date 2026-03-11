@@ -502,7 +502,55 @@ const FederationBrackets = () => {
     load();
   }, [selectedCompId]);
 
-  // Load matches for selected category
+  // Reset filters when competition changes
+  useEffect(() => {
+    setFilterGender('');
+    setFilterAge('');
+    setFilterWeight('');
+    setSelectedCategoryId('');
+  }, [selectedCompId]);
+
+  // Derive available filter options from categories
+  const genderOptions = React.useMemo(() => {
+    const genders = new Set(categories.map(c => c.gender));
+    return [...genders].sort();
+  }, [categories]);
+
+  const ageOptions = React.useMemo(() => {
+    if (!filterGender) return [];
+    const filtered = categories.filter(c => c.gender === filterGender);
+    const ages = new Set(filtered.map(c => getAgeLabel(c.name)));
+    return AGE_ORDER.filter(a => ages.has(a)).concat([...ages].filter(a => !AGE_ORDER.includes(a)));
+  }, [categories, filterGender]);
+
+  const weightOptions = React.useMemo(() => {
+    if (!filterGender || !filterAge) return [];
+    const filtered = categories.filter(c => c.gender === filterGender && getAgeLabel(c.name) === filterAge);
+    return filtered.map(c => ({ id: c.id, label: getWeightLabel(c.name), count: registrationCounts.get(c.id) || 0 }));
+  }, [categories, filterGender, filterAge, registrationCounts]);
+
+  // Auto-select category when weight filter changes
+  useEffect(() => {
+    if (filterWeight) {
+      setSelectedCategoryId(filterWeight);
+    } else {
+      setSelectedCategoryId('');
+    }
+  }, [filterWeight]);
+
+  // Reset downstream filters
+  const handleGenderChange = (val: string) => {
+    setFilterGender(val);
+    setFilterAge('');
+    setFilterWeight('');
+  };
+
+  const handleAgeChange = (val: string) => {
+    setFilterAge(val);
+    setFilterWeight('');
+  };
+
+
   useEffect(() => {
     if (!selectedCategoryId || !selectedCompId) { setMatches([]); return; }
     loadCategoryMatches();
