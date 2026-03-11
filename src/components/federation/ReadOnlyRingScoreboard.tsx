@@ -125,17 +125,15 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
   useEffect(() => {
     if (!competitionId || !match) { setUpcomingMatches([]); return; }
     const loadUpcoming = async () => {
+      // First get match IDs and basic info without app_users join (RLS may block)
       let query = supabase
         .from('competition_matches')
         .select(`
-          id, match_order, status,
-          athlete1:app_users!competition_matches_athlete1_id_fkey(name),
-          athlete2:app_users!competition_matches_athlete2_id_fkey(name),
+          id, match_order, status, athlete1_id, athlete2_id,
           category:federation_competition_categories!competition_matches_category_id_fkey(name)
         `)
         .eq('competition_id', competitionId)
         .gt('match_order', match.match_order)
-        .neq('status', 'completed')
         .order('match_order', { ascending: true })
         .limit(2);
 
@@ -143,26 +141,40 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
         query = query.gte('match_order', matchRangeStart).lte('match_order', matchRangeEnd);
       }
 
-      const { data } = await query;
+      const { data: matchesRaw } = await query;
+      if (!matchesRaw || matchesRaw.length === 0) { setUpcomingMatches([]); return; }
+
+      // Fetch athlete names from federation_competition_registrations (bypasses app_users RLS issues)
+      const athleteIds = [
+        ...matchesRaw.map(m => m.athlete1_id).filter(Boolean),
+        ...matchesRaw.map(m => m.athlete2_id).filter(Boolean)
+      ];
       
-      // If no non-completed found, just get next 2 by order
-      if (!data || data.length === 0) {
-        const { data: fallback } = await supabase
-          .from('competition_matches')
-          .select(`
-            id, match_order, status,
-            athlete1:app_users!competition_matches_athlete1_id_fkey(name),
-            athlete2:app_users!competition_matches_athlete2_id_fkey(name),
-            category:federation_competition_categories!competition_matches_category_id_fkey(name)
-          `)
+      let athleteNames: Record<string, string> = {};
+      if (athleteIds.length > 0) {
+        const { data: regs } = await supabase
+          .from('federation_competition_registrations')
+          .select('athlete_id, athlete:app_users!federation_competition_registrations_athlete_id_fkey(name)')
           .eq('competition_id', competitionId)
-          .gt('match_order', match.match_order)
-          .order('match_order', { ascending: true })
-          .limit(2);
-        setUpcomingMatches((fallback as any) || []);
-      } else {
-        setUpcomingMatches((data as any) || []);
+          .in('athlete_id', athleteIds);
+        
+        if (regs) {
+          regs.forEach((r: any) => {
+            if (r.athlete?.name) athleteNames[r.athlete_id] = r.athlete.name;
+          });
+        }
       }
+
+      const enriched = matchesRaw.map(m => ({
+        id: m.id,
+        match_order: m.match_order,
+        status: m.status,
+        category: m.category,
+        athlete1: m.athlete1_id && athleteNames[m.athlete1_id] ? { name: athleteNames[m.athlete1_id] } : null,
+        athlete2: m.athlete2_id && athleteNames[m.athlete2_id] ? { name: athleteNames[m.athlete2_id] } : null,
+      }));
+
+      setUpcomingMatches(enriched);
     };
     loadUpcoming();
   }, [competitionId, match?.match_order, matchRangeStart, matchRangeEnd]);
