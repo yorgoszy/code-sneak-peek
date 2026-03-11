@@ -378,7 +378,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
             <AvatarFallback className="text-[8px]">{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete1?.name || 'TBD'}</p>
+            <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete1?.name || '—'}</p>
             {match.athlete1_club && <p className="text-[8px] text-muted-foreground truncate">{match.athlete1_club.name}</p>}
           </div>
         </div>
