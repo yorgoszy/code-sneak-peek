@@ -422,7 +422,7 @@ const FederationLive = () => {
                           </div>
                         </div>
                       ) : (
-                        <div className="p-2 border-t border-border text-center text-xs text-muted-foreground">
+                        <div className="px-2 py-1 border-t border-border text-center text-[10px] text-muted-foreground">
                           {t('federation.live.noActiveMatch')}
                         </div>
                       )}
