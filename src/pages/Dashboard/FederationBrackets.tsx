@@ -853,20 +853,15 @@ const FederationBrackets = () => {
             </div>
           </div>
 
-          <main className="flex-1 p-4 lg:p-6 overflow-auto">
-            <div className="hidden lg:flex items-center justify-between mb-6">
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">{t('federation.brackets.title')}</h1>
-                <p className="text-sm text-muted-foreground">{t('federation.brackets.subtitle')}</p>
-              </div>
-            </div>
-
-            {/* Competition selector */}
-            <div className="mb-6">
-              <div className="w-full sm:w-64">
-                <Label className="text-sm mb-1 block">{t('federation.brackets.competition')}</Label>
+          <main className="flex-1 p-2 lg:p-3 overflow-auto">
+            {/* Compact header row: title + competition + actions + filters all in one line */}
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <h1 className="hidden lg:block text-lg font-bold text-foreground whitespace-nowrap">{t('federation.brackets.title')}</h1>
+              
+              {/* Competition selector */}
+              <div className="w-44">
                 <Select value={selectedCompId} onValueChange={setSelectedCompId}>
-                  <SelectTrigger className="rounded-none">
+                  <SelectTrigger className="rounded-none h-8 text-xs">
                     <SelectValue placeholder={t('federation.brackets.selectCompetition')} />
                   </SelectTrigger>
                   <SelectContent>
@@ -876,39 +871,32 @@ const FederationBrackets = () => {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
 
-            {/* Competition-level actions: Generate / Reset ALL */}
-            {selectedCompId && categories.length > 0 && (
-              <div className="flex flex-wrap items-center gap-4 mb-4">
-                {!hasAnyMatches && (
-                  <Button 
-                    onClick={handleGenerateAllBrackets} 
-                    disabled={generatingAll}
-                    className="rounded-none bg-foreground text-background hover:bg-foreground/90"
-                  >
-                    <Shuffle className="h-4 w-4 mr-2" />
-                    {generatingAll ? 'Δημιουργία...' : t('federation.brackets.generateDraw')}
-                  </Button>
-                )}
-                {hasAnyMatches && (
-                  <Button variant="outline" onClick={() => setResetDialogOpen(true)} className="rounded-none text-destructive border-destructive">
-                    <RotateCcw className="h-4 w-4 mr-2" />
-                    {t('federation.brackets.resetDraw')}
-                  </Button>
-                )}
-              </div>
-            )}
+              {/* Actions */}
+              {selectedCompId && categories.length > 0 && (
+                <>
+                  {!hasAnyMatches && (
+                    <Button 
+                      onClick={handleGenerateAllBrackets} 
+                      disabled={generatingAll}
+                      size="sm"
+                      className="rounded-none bg-foreground text-background hover:bg-foreground/90 h-8 text-xs"
+                    >
+                      <Shuffle className="h-3 w-3 mr-1" />
+                      {generatingAll ? '...' : t('federation.brackets.generateDraw')}
+                    </Button>
+                  )}
+                  {hasAnyMatches && (
+                    <Button variant="outline" size="sm" onClick={() => setResetDialogOpen(true)} className="rounded-none text-destructive border-destructive h-8 text-xs">
+                      <RotateCcw className="h-3 w-3 mr-1" />
+                      {t('federation.brackets.resetDraw')}
+                    </Button>
+                  )}
 
-            {/* Category filters */}
-            {selectedCompId && categories.length > 0 && (
-              <div className="mb-6">
-                <Label className="text-sm mb-2 block">{hasAnyMatches ? 'Φίλτρα κατηγορίας' : t('federation.brackets.category')}</Label>
-                <div className="flex flex-wrap gap-3">
-                  {/* Gender filter */}
-                  <div className="w-full sm:w-40">
+                  {/* Filters inline */}
+                  <div className="flex items-center gap-1.5 ml-auto">
                     <Select value={filterGender} onValueChange={handleGenderChange}>
-                      <SelectTrigger className="rounded-none">
+                      <SelectTrigger className="rounded-none h-8 text-xs w-28">
                         <SelectValue placeholder="Φύλο" />
                       </SelectTrigger>
                       <SelectContent>
@@ -919,12 +907,9 @@ const FederationBrackets = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
 
-                  {/* Age filter */}
-                  <div className="w-full sm:w-40">
                     <Select value={filterAge} onValueChange={handleAgeChange} disabled={!filterGender}>
-                      <SelectTrigger className="rounded-none">
+                      <SelectTrigger className="rounded-none h-8 text-xs w-24">
                         <SelectValue placeholder="Ηλικία" />
                       </SelectTrigger>
                       <SelectContent>
@@ -933,21 +918,18 @@ const FederationBrackets = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
 
-                  {/* Weight filter */}
-                  <div className="w-full sm:w-48">
                     <Select value={filterWeight} onValueChange={setFilterWeight} disabled={!filterAge}>
-                      <SelectTrigger className="rounded-none">
+                      <SelectTrigger className="rounded-none h-8 text-xs w-32">
                         <SelectValue placeholder="Κιλά" />
                       </SelectTrigger>
                       <SelectContent>
                         {weightOptions.map(w => (
                           <SelectItem key={w.id} value={w.id}>
-                            <span className="flex items-center justify-between gap-2 w-full">
+                            <span className="flex items-center gap-1">
                               <span>{w.label}</span>
                               {w.count > 0 && (
-                                <Badge className="rounded-none text-[9px] h-4 px-1 bg-foreground text-background ml-2">
+                                <Badge className="rounded-none text-[8px] h-3.5 px-1 bg-foreground text-background">
                                   {w.count}
                                 </Badge>
                               )}
@@ -957,14 +939,14 @@ const FederationBrackets = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
-              </div>
-            )}
+                </>
+              )}
+            </div>
 
-            {/* Selected category badge */}
+            {/* Selected category badge - compact */}
             {selectedCategoryId && (
-              <div className="flex flex-wrap items-center gap-4 mb-4">
-                <Badge variant="outline" className="rounded-none text-sm py-1 px-3">
+              <div className="mb-1">
+                <Badge variant="outline" className="rounded-none text-xs py-0.5 px-2">
                   {categories.find(c => c.id === selectedCategoryId)?.name}
                 </Badge>
               </div>
