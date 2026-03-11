@@ -367,7 +367,7 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
                 <div className="flex items-center gap-1 min-w-0 flex-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
                   <span className={`truncate ${um.athlete1?.name ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                    {um.athlete1?.name || um.athlete1_placeholder || 'TBD'}
+                    {um.athlete1?.name || um.athlete1_placeholder || '—'}
                   </span>
                   <span className="text-muted-foreground shrink-0">vs</span>
                   <span className={`truncate ${um.athlete2?.name ? 'font-medium' : 'text-muted-foreground italic'}`}>
