@@ -302,6 +302,32 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
           </Badge>
         </div>
       )}
+
+      {/* Upcoming matches */}
+      {upcomingMatches.length > 0 && (
+        <div className="border-t border-border px-3 py-2">
+          <p className="text-[10px] font-semibold text-muted-foreground mb-1.5">Επόμενοι αγώνες</p>
+          <div className="space-y-1">
+            {upcomingMatches.map((um) => (
+              <div key={um.id} className="flex items-center gap-1.5 text-[10px]">
+                <span className="text-muted-foreground font-medium shrink-0">#{um.match_order}</span>
+                {um.category && (
+                  <Badge variant="outline" className="rounded-none text-[8px] px-1 py-0 shrink-0">
+                    {um.category.name}
+                  </Badge>
+                )}
+                <div className="flex items-center gap-1 min-w-0 flex-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                  <span className="truncate font-medium">{um.athlete1?.name || 'TBD'}</span>
+                  <span className="text-muted-foreground shrink-0">vs</span>
+                  <span className="truncate font-medium">{um.athlete2?.name || 'TBD'}</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
