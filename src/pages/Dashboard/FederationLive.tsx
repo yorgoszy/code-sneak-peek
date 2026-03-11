@@ -199,14 +199,55 @@ const FederationLive = () => {
     const { data } = await supabase
       .from('competition_matches')
       .select(`
-        id, match_order, match_number, round_number, status, category_id,
+        id, match_order, match_number, round_number, status, category_id, athlete1_id, athlete2_id, winner_id,
         athlete1:app_users!competition_matches_athlete1_id_fkey(name),
         athlete2:app_users!competition_matches_athlete2_id_fkey(name)
       `)
       .eq('competition_id', selectedCompId)
       .eq('is_bye', false)
       .order('match_order');
-    setMatches((data as any) || []);
+    
+    const allMatches = (data as any) || [];
+    
+    // Also load bye matches to resolve feeder winners
+    const { data: byeData } = await supabase
+      .from('competition_matches')
+      .select('id, match_order, match_number, round_number, category_id, athlete1_id, winner_id, athlete1:app_users!competition_matches_athlete1_id_fkey(name)')
+      .eq('competition_id', selectedCompId)
+      .eq('is_bye', true);
+    const allWithByes = [...allMatches, ...(byeData || [])];
+    
+    // Compute display names for missing athletes
+    const enriched = allMatches.map((m: any) => {
+      const getFeederDisplay = (slot: 'athlete1' | 'athlete2') => {
+        const idKey = slot === 'athlete1' ? 'athlete1_id' : 'athlete2_id';
+        if (m[idKey] && m[slot]?.name) return m[slot].name;
+        
+        const feederRound = m.round_number * 2;
+        const feederMatchNum = slot === 'athlete1' ? (m.match_number * 2) - 1 : m.match_number * 2;
+        const feeder = allWithByes.find((fm: any) => 
+          fm.category_id === m.category_id && fm.round_number === feederRound && fm.match_number === feederMatchNum
+        );
+        
+        if (feeder) {
+          if (feeder.winner_id) {
+            const winnerName = feeder.athlete1_id === feeder.winner_id 
+              ? feeder.athlete1?.name : feeder.athlete2?.name;
+            if (winnerName) return winnerName;
+          }
+          return `Νικητής αγ. ${feeder.match_order || feederMatchNum}`;
+        }
+        return `Νικητής αγ. ?`;
+      };
+      
+      return {
+        ...m,
+        athlete1_display: getFeederDisplay('athlete1'),
+        athlete2_display: getFeederDisplay('athlete2'),
+      };
+    });
+    
+    setMatches(enriched);
   }, [selectedCompId]);
 
   const handleSetupRings = () => {
