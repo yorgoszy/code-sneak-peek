@@ -681,7 +681,7 @@ const FederationBrackets = () => {
 
     setWinnerDialog(null);
     toast.success('Ο νικητής καταχωρήθηκε!');
-    loadData();
+    loadCategoryMatches();
   };
 
   // Group matches by round
