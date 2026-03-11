@@ -785,10 +785,32 @@ const FederationBrackets = () => {
               </div>
             </div>
 
-            {/* Category selector - hidden when bracket is displayed */}
-            {selectedCompId && categories.length > 0 && matches.length === 0 && (
+            {/* Competition-level actions: Generate / Reset ALL */}
+            {selectedCompId && categories.length > 0 && (
+              <div className="flex flex-wrap items-center gap-4 mb-4">
+                {!hasAnyMatches && (
+                  <Button 
+                    onClick={handleGenerateAllBrackets} 
+                    disabled={generatingAll}
+                    className="rounded-none bg-foreground text-background hover:bg-foreground/90"
+                  >
+                    <Shuffle className="h-4 w-4 mr-2" />
+                    {generatingAll ? 'Δημιουργία...' : t('federation.brackets.generateDraw')}
+                  </Button>
+                )}
+                {hasAnyMatches && (
+                  <Button variant="outline" onClick={() => setResetDialogOpen(true)} className="rounded-none text-destructive border-destructive">
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    {t('federation.brackets.resetDraw')}
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {/* Category selector - always visible for viewing */}
+            {selectedCompId && categories.length > 0 && (
               <div className="mb-6">
-                <Label className="text-sm mb-2 block">{t('federation.brackets.category')}</Label>
+                <Label className="text-sm mb-2 block">{hasAnyMatches ? 'Επιλέξτε κατηγορία για προβολή' : t('federation.brackets.category')}</Label>
                 <div className="flex gap-4">
                   {/* Άνδρες */}
                   <div className="flex-1 min-w-0">
@@ -826,50 +848,13 @@ const FederationBrackets = () => {
               </div>
             )}
 
-            {/* Selected category actions */}
+            {/* Selected category badge */}
             {selectedCategoryId && (
               <div className="flex flex-wrap items-center gap-4 mb-4">
                 <Badge variant="outline" className="rounded-none text-sm py-1 px-3">
                   {categories.find(c => c.id === selectedCategoryId)?.name}
                 </Badge>
-                {matches.length > 0 && (
-                  <Button variant="outline" size="sm" onClick={() => { setMatches([]); }} className="rounded-none">
-                    ← Αλλαγή κατηγορίας
-                  </Button>
-                )}
-                {matches.length === 0 && registrations.length >= 2 && (
-                  <Button onClick={handleGenerateBracket} className="rounded-none bg-foreground text-background hover:bg-foreground/90">
-                    <Shuffle className="h-4 w-4 mr-2" />
-                    {t('federation.brackets.generateDraw')}
-                  </Button>
-                )}
-                {matches.length > 0 && (
-                  <Button variant="outline" onClick={() => setResetDialogOpen(true)} className="rounded-none text-destructive border-destructive">
-                    <RotateCcw className="h-4 w-4 mr-2" />
-                    {t('federation.brackets.resetDraw')}
-                  </Button>
-                )}
               </div>
-            )}
-
-            {/* Info */}
-            {selectedCategoryId && registrations.length > 0 && matches.length === 0 && (
-              <Card className="rounded-none mb-6">
-                <CardContent className="p-4">
-                  <p className="text-sm text-muted-foreground">
-                    <strong>{registrations.length}</strong> {t('federation.brackets.registeredAthletes')}
-                    {' '}{t('federation.brackets.clickDrawInfo')}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
-            {selectedCategoryId && registrations.length < 2 && matches.length === 0 && (
-              <Card className="rounded-none">
-                <CardContent className="p-8 text-center text-muted-foreground">
-                  {t('federation.brackets.minAthletesNeeded')}
-                </CardContent>
-              </Card>
             )}
 
             {/* Bracket Display */}
