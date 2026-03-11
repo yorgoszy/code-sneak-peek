@@ -109,7 +109,7 @@ const CoachLivePage = () => {
     return () => { supabase.removeChannel(channel); };
   }, [selectedCompId, loadRings]);
 
-  const getAvatar = (a: any) => a?.photo_url || a?.avatar_url || undefined;
+  
 
   const role = userProfile?.role;
 
