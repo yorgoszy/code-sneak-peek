@@ -225,7 +225,7 @@ const JudgeScoring: React.FC = () => {
                 <AvatarImage src={avatar(match.athlete1)} />
                 <AvatarFallback>{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
               </Avatar>
-              <p className="text-sm font-semibold truncate">{match.athlete1?.name || 'TBD'}</p>
+              <p className="text-sm font-semibold truncate">{match.athlete1?.name || 'Μπλε γωνία'}</p>
             </div>
             {/* Red corner */}
             <div className="bg-red-500/10 border border-red-500/30 p-3 text-center">
