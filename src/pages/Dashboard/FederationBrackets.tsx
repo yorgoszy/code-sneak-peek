@@ -861,14 +861,14 @@ const FederationBrackets = () => {
       : match.match_number * 2;
     const feederMatch = rounds[feederRound]?.find((m) => m.match_number === feederMatchNumber);
 
-    if (!feederMatch) return { name: 'TBD', isConfirmed: false };
+    if (!feederMatch) return { name: '—', isConfirmed: false };
 
     // If feeder match is completed, show winner name
     if (feederMatch.winner_id) {
       const winnerName = feederMatch.athlete1_id === feederMatch.winner_id
         ? feederMatch.athlete1?.name
         : feederMatch.athlete2?.name;
-      return { name: winnerName || 'TBD', isConfirmed: true };
+      return { name: winnerName || '—', isConfirmed: true };
     }
 
     // Feeder match NOT completed - show "Νικητής αγ. X" using global match_order
@@ -1296,7 +1296,7 @@ const FederationBrackets = () => {
                       <AvatarFallback>{athlete?.name?.charAt(0) || '?'}</AvatarFallback>
                     </Avatar>
                     <div className="text-left">
-                      <p className="font-medium text-sm">{athlete?.name || 'TBD'}</p>
+                      <p className="font-medium text-sm">{athlete?.name || '—'}</p>
                       {club && <p className="text-xs text-muted-foreground">{club.name}</p>}
                     </div>
                     {selectedWinnerId === id && <Trophy className="h-4 w-4 text-[#cb8954] ml-auto" />}

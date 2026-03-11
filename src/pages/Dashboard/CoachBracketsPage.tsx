@@ -221,12 +221,12 @@ const CoachBracketsPage = () => {
     const feederRound = match.round_number * 2;
     const feederMatchNumber = slot === 'athlete1' ? (match.match_number * 2) - 1 : match.match_number * 2;
     const feederMatch = rounds[feederRound]?.find((m) => m.match_number === feederMatchNumber);
-    if (!feederMatch) return { name: 'TBD', isConfirmed: false };
+    if (!feederMatch) return { name: '—', isConfirmed: false };
 
     if (feederMatch.winner_id) {
       const winnerName = feederMatch.athlete1_id === feederMatch.winner_id
         ? feederMatch.athlete1?.name : feederMatch.athlete2?.name;
-      return { name: winnerName || 'TBD', isConfirmed: true };
+      return { name: winnerName || '—', isConfirmed: true };
     }
 
     if (feederMatch.match_order) return { name: `Νικητής αγ. ${feederMatch.match_order}`, isConfirmed: false };
