@@ -341,28 +341,27 @@ const FederationLive = () => {
               }`}>
                 {rings.map((ring) => (
                   <Card key={ring.id} className="rounded-none overflow-hidden">
-                    <CardHeader className="p-3 bg-muted border-b border-border">
+                    <CardHeader className="p-2 px-3 bg-muted border-b border-border">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Monitor className="h-4 w-4 text-muted-foreground" />
-                          <CardTitle className="text-sm">{ring.ring_name || `Ring ${ring.ring_number}`}</CardTitle>
+                          <Monitor className="h-3.5 w-3.5 text-muted-foreground" />
+                          <CardTitle className="text-xs font-semibold">{ring.ring_name || `Ring ${ring.ring_number}`}</CardTitle>
                           {ring.is_active && (
-                            <Badge variant="outline" className="rounded-none text-xs bg-destructive/10 text-destructive border-destructive/30">
-                              <Radio className="h-3 w-3 mr-1 animate-pulse" />
+                            <Badge variant="outline" className="rounded-none text-[10px] px-1.5 py-0 bg-destructive/10 text-destructive border-destructive/30">
+                              <Radio className="h-2.5 w-2.5 mr-0.5 animate-pulse" />
                               LIVE
                             </Badge>
                           )}
+                          {ring.match_range_start && ring.match_range_end && (
+                            <span className="text-[10px] text-muted-foreground">
+                              ({ring.match_range_start}-{ring.match_range_end})
+                            </span>
+                          )}
                         </div>
-                        <Button variant="ghost" size="sm" onClick={() => openEditRing(ring)} className="rounded-none h-7">
-                          <Settings className="h-3.5 w-3.5" />
+                        <Button variant="ghost" size="sm" onClick={() => openEditRing(ring)} className="rounded-none h-6 w-6 p-0">
+                          <Settings className="h-3 w-3" />
                         </Button>
                       </div>
-
-                      {ring.match_range_start && ring.match_range_end && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {t('federation.live.matches')} {ring.match_range_start} - {ring.match_range_end}
-                        </p>
-                      )}
                     </CardHeader>
 
                     <CardContent className="p-0">
@@ -377,49 +376,49 @@ const FederationLive = () => {
                           />
                         </AspectRatio>
                       ) : (
-                        <div className="bg-muted/50 flex items-center justify-center h-48">
-                          <p className="text-sm text-muted-foreground">{t('federation.live.noYoutubeUrl')}</p>
+                        <div className="bg-muted/50 flex items-center justify-center h-32">
+                          <p className="text-xs text-muted-foreground">{t('federation.live.noYoutubeUrl')}</p>
                         </div>
                       )}
 
                       {ring.current_match ? (
-                        <div className="p-4 border-t border-border">
-                          <div className="text-xs text-muted-foreground mb-2 flex items-center gap-2">
-                            <span>{t('federation.live.matchNumber')} #{ring.current_match.match_order}</span>
+                        <div className="p-2 px-3 border-t border-border">
+                          <div className="text-[10px] text-muted-foreground mb-1 flex items-center gap-1.5">
+                            <span>#{ring.current_match.match_order}</span>
                             {(ring.current_match as any)?.category && (
-                              <Badge variant="secondary" className="rounded-none text-xs">
+                              <Badge variant="secondary" className="rounded-none text-[10px] px-1 py-0">
                                 {(ring.current_match as any).category.name}
                               </Badge>
                             )}
                           </div>
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <Avatar className="h-8 w-8">
+                            <div className="flex items-center gap-1.5">
+                              <Avatar className="h-6 w-6">
                                 <AvatarImage src={getAthleteAvatar(ring.current_match.athlete1)} />
-                                <AvatarFallback className="text-xs">
+                                <AvatarFallback className="text-[10px]">
                                   {ring.current_match.athlete1?.name?.charAt(0) || '?'}
                                 </AvatarFallback>
                               </Avatar>
                               <div>
-                                <p className="text-sm font-medium">{ring.current_match.athlete1?.name || 'TBD'}</p>
+                                <p className="text-xs font-medium leading-tight">{ring.current_match.athlete1?.name || 'TBD'}</p>
                                 {ring.current_match.athlete1_club && (
-                                  <p className="text-xs text-muted-foreground">{ring.current_match.athlete1_club.name}</p>
+                                  <p className="text-[10px] text-muted-foreground leading-tight">{ring.current_match.athlete1_club.name}</p>
                                 )}
                               </div>
                             </div>
 
-                            <span className="text-lg font-bold text-muted-foreground">VS</span>
+                            <span className="text-xs font-bold text-muted-foreground mx-1">VS</span>
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1.5">
                               <div className="text-right">
-                                <p className="text-sm font-medium">{ring.current_match.athlete2?.name || 'TBD'}</p>
+                                <p className="text-xs font-medium leading-tight">{ring.current_match.athlete2?.name || 'TBD'}</p>
                                 {ring.current_match.athlete2_club && (
-                                  <p className="text-xs text-muted-foreground">{ring.current_match.athlete2_club.name}</p>
+                                  <p className="text-[10px] text-muted-foreground leading-tight">{ring.current_match.athlete2_club.name}</p>
                                 )}
                               </div>
-                              <Avatar className="h-8 w-8">
+                              <Avatar className="h-6 w-6">
                                 <AvatarImage src={getAthleteAvatar(ring.current_match.athlete2)} />
-                                <AvatarFallback className="text-xs">
+                                <AvatarFallback className="text-[10px]">
                                   {ring.current_match.athlete2?.name?.charAt(0) || '?'}
                                 </AvatarFallback>
                               </Avatar>
@@ -427,7 +426,7 @@ const FederationLive = () => {
                           </div>
                         </div>
                       ) : (
-                        <div className="p-4 border-t border-border text-center text-sm text-muted-foreground">
+                        <div className="p-2 border-t border-border text-center text-xs text-muted-foreground">
                           {t('federation.live.noActiveMatch')}
                         </div>
                       )}
@@ -498,8 +497,24 @@ const FederationLive = () => {
 
             {ringConfigs.map((rc, idx) => (
               <Card key={idx} className="rounded-none">
-                <CardContent className="p-4 space-y-3">
-                  <h4 className="font-medium text-sm">Ring {rc.ring_number}</h4>
+                <CardContent className="p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium text-sm">Ring {rc.ring_number}</h4>
+                    {ringConfigs.length > 1 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="rounded-none h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => {
+                          const updated = ringConfigs.filter((_, i) => i !== idx).map((r, i) => ({ ...r, ring_number: i + 1 }));
+                          setRingConfigs(updated);
+                          setRingCount(updated.length);
+                        }}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
                   <div>
                     <Label className="text-xs">{t('federation.live.ringName')}</Label>
                     <Input
