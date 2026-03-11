@@ -853,7 +853,7 @@ const FederationBrackets = () => {
             </div>
           </div>
 
-          <main className="flex-1 p-2 lg:p-3 overflow-auto">
+          <main className="flex-1 p-2 lg:p-3 overflow-auto flex flex-col min-h-0">
             {/* Compact header row: title + competition + actions + filters all in one line */}
             <div className="flex flex-wrap items-center gap-2 mb-2">
               <h1 className="hidden lg:block text-lg font-bold text-foreground whitespace-nowrap">{t('federation.brackets.title')}</h1>
