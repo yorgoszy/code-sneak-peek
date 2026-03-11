@@ -461,11 +461,11 @@ const FederationBrackets = () => {
     load();
   }, [federationId]);
 
-  // Load categories and registration counts when competition changes
+  // Load categories, registration counts, and check for existing matches when competition changes
   useEffect(() => {
-    if (!selectedCompId) { setCategories([]); setSelectedCategoryId(''); setRegistrationCounts(new Map()); return; }
+    if (!selectedCompId) { setCategories([]); setSelectedCategoryId(''); setRegistrationCounts(new Map()); setHasAnyMatches(false); return; }
     const load = async () => {
-      const [catRes, regRes] = await Promise.all([
+      const [catRes, regRes, matchCountRes] = await Promise.all([
         supabase
           .from('federation_competition_categories')
           .select('id, name, competition_id, gender')
@@ -475,12 +475,17 @@ const FederationBrackets = () => {
           .from('federation_competition_registrations')
           .select('category_id')
           .eq('competition_id', selectedCompId)
-          .eq('is_paid', true)
+          .eq('is_paid', true),
+        supabase
+          .from('competition_matches')
+          .select('id')
+          .eq('competition_id', selectedCompId)
+          .limit(1)
       ]);
       setCategories(catRes.data || []);
       setSelectedCategoryId('');
+      setHasAnyMatches((matchCountRes.data?.length || 0) > 0);
       
-      // Count registrations per category
       const counts = new Map<string, number>();
       (regRes.data || []).forEach((r: any) => {
         if (r.category_id) {
@@ -492,10 +497,10 @@ const FederationBrackets = () => {
     load();
   }, [selectedCompId]);
 
-  // Load registrations and existing matches when category changes
+  // Load matches for selected category
   useEffect(() => {
-    if (!selectedCategoryId || !selectedCompId) { setRegistrations([]); setMatches([]); return; }
-    loadData();
+    if (!selectedCategoryId || !selectedCompId) { setMatches([]); return; }
+    loadCategoryMatches();
   }, [selectedCategoryId, selectedCompId]);
 
   const loadData = useCallback(async () => {
