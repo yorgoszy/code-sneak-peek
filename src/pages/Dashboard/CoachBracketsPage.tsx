@@ -359,7 +359,7 @@ const CoachBracketsPage = () => {
               const HEADER_H = 50;
 
               const roundMatchArrays = sortedRoundNumbers.map(rn =>
-                rounds[rn].filter(m => !m.is_bye).sort((a, b) => a.match_number - b.match_number)
+                rounds[rn].filter(m => !m.is_bye).sort((a, b) => (a.match_order || a.match_number) - (b.match_order || b.match_number))
               );
               const firstRoundCount = roundMatchArrays[0]?.length || 1;
               const maxMatchesInAnyRound = Math.max(...roundMatchArrays.map(r => r.length), 1);
