@@ -260,7 +260,7 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
         </div>
         <div className="bg-red-500/20 flex items-center gap-1.5 px-3 py-2 justify-end">
           <div className="min-w-0 text-right">
-            <p className="text-xs font-semibold truncate">{match.athlete2?.name || '—'}</p>
+            <p className="text-xs font-semibold truncate">{match.athlete2?.name || 'Νικητής προηγούμενου αγώνα'}</p>
             {match.athlete2_club && <p className="text-[9px] text-muted-foreground truncate">{match.athlete2_club.name}</p>}
           </div>
           <Avatar className="h-6 w-6">
