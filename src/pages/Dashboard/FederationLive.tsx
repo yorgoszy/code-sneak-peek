@@ -59,6 +59,11 @@ interface Match {
   status: string;
   athlete1?: { name: string } | null;
   athlete2?: { name: string } | null;
+  athlete1_id?: string | null;
+  athlete2_id?: string | null;
+  winner_id?: string | null;
+  athlete1_display?: string;
+  athlete2_display?: string;
   category_id: string;
 }
 
