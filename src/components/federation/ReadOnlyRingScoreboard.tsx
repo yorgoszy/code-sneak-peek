@@ -164,17 +164,19 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
         if (prevMatches) {
           for (const um of needFeeder) {
             const sameCat = prevMatches.filter((p: any) => p.category_id === (um as any).category_id);
-            const matchInRound = sameCat.filter((p: any) => p.round_number === (um as any).round_number).sort((a: any, b: any) => a.match_number - b.match_number);
-            const prevRound = sameCat.filter((p: any) => p.round_number === (um as any).round_number - 1);
-            const posInRound = matchInRound.findIndex((p: any) => p.id === (um as any).id);
-            if (posInRound >= 0 && prevRound.length > 0) {
-              const sorted = prevRound.sort((a: any, b: any) => a.match_number - b.match_number);
-              if (!(um as any).athlete1_id && sorted[posInRound * 2]) {
-                feederMap[`${(um as any).id}_1`] = sorted[posInRound * 2].match_order;
-              }
-              if (!(um as any).athlete2_id && sorted[posInRound * 2 + 1]) {
-                feederMap[`${(um as any).id}_2`] = sorted[posInRound * 2 + 1].match_order;
-              }
+            const feederRound = (um as any).round_number * 2;
+            const feederRoundMatches = sameCat.filter((p: any) => p.round_number === feederRound);
+
+            const feeder1 = feederRoundMatches.find((p: any) => p.match_number === ((um as any).match_number * 2) - 1)
+              || (feederRoundMatches.length === 1 ? feederRoundMatches[0] : undefined);
+            const feeder2 = feederRoundMatches.find((p: any) => p.match_number === (um as any).match_number * 2)
+              || (feederRoundMatches.length === 1 ? feederRoundMatches[0] : undefined);
+
+            if (!(um as any).athlete1_id && feeder1?.match_order) {
+              feederMap[`${(um as any).id}_1`] = feeder1.match_order;
+            }
+            if (!(um as any).athlete2_id && feeder2?.match_order) {
+              feederMap[`${(um as any).id}_2`] = feeder2.match_order;
             }
           }
         }
