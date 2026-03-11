@@ -110,6 +110,7 @@ const JudgeLinkRow: React.FC<{ judgeNum: number; url: string }> = ({ judgeNum, u
   );
 };
 
+const FederationLive = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { userProfile } = useRoleCheck();
