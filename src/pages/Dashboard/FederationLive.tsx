@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { RingScoreboard } from "@/components/federation/RingScoreboard";
 
 interface Competition {
   id: string;
@@ -241,6 +242,18 @@ const FederationLive = () => {
     setEditCurrentMatchId(ring.current_match_id || '');
   };
 
+  const handleMatchChangeForRing = async (ringId: string, matchId: string) => {
+    const { error } = await supabase
+      .from('competition_rings')
+      .update({ current_match_id: matchId || null })
+      .eq('id', ringId);
+    if (error) {
+      toast.error('Σφάλμα ενημέρωσης');
+    } else {
+      loadRings();
+    }
+  };
+
   const getAthleteAvatar = (athlete: { name: string; photo_url: string | null; avatar_url: string | null } | null | undefined) => {
     return athlete?.photo_url || athlete?.avatar_url || undefined;
   };
@@ -377,55 +390,12 @@ const FederationLive = () => {
                         </div>
                       )}
 
-                      {ring.current_match ? (
-                        <div className="px-2 py-1.5 border-t border-border">
-                          <div className="text-[10px] text-muted-foreground mb-0.5 flex items-center gap-1">
-                            <span>#{ring.current_match.match_order}</span>
-                            {(ring.current_match as any)?.category && (
-                              <Badge variant="secondary" className="rounded-none text-[10px] px-1 py-0">
-                                {(ring.current_match as any).category.name}
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1.5">
-                              <Avatar className="h-6 w-6">
-                                <AvatarImage src={getAthleteAvatar(ring.current_match.athlete1)} />
-                                <AvatarFallback className="text-[10px]">
-                                  {ring.current_match.athlete1?.name?.charAt(0) || '?'}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <p className="text-xs font-medium leading-tight">{ring.current_match.athlete1?.name || 'TBD'}</p>
-                                {ring.current_match.athlete1_club && (
-                                  <p className="text-[10px] text-muted-foreground leading-tight">{ring.current_match.athlete1_club.name}</p>
-                                )}
-                              </div>
-                            </div>
-
-                            <span className="text-xs font-bold text-muted-foreground mx-1">VS</span>
-
-                            <div className="flex items-center gap-1.5">
-                              <div className="text-right">
-                                <p className="text-xs font-medium leading-tight">{ring.current_match.athlete2?.name || 'TBD'}</p>
-                                {ring.current_match.athlete2_club && (
-                                  <p className="text-[10px] text-muted-foreground leading-tight">{ring.current_match.athlete2_club.name}</p>
-                                )}
-                              </div>
-                              <Avatar className="h-6 w-6">
-                                <AvatarImage src={getAthleteAvatar(ring.current_match.athlete2)} />
-                                <AvatarFallback className="text-[10px]">
-                                  {ring.current_match.athlete2?.name?.charAt(0) || '?'}
-                                </AvatarFallback>
-                              </Avatar>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="px-2 py-1 border-t border-border text-center text-[10px] text-muted-foreground">
-                          {t('federation.live.noActiveMatch')}
-                        </div>
-                      )}
+                      <RingScoreboard
+                        ringId={ring.id}
+                        currentMatchId={ring.current_match_id}
+                        matches={matches as any}
+                        onMatchChange={(matchId) => handleMatchChangeForRing(ring.id, matchId)}
+                      />
                     </CardContent>
                   </Card>
                 ))}
