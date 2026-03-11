@@ -2051,6 +2051,47 @@ export type Database = {
           },
         ]
       }
+      competition_match_judge_scores: {
+        Row: {
+          athlete1_score: number
+          athlete2_score: number
+          created_at: string
+          id: string
+          judge_number: number
+          match_id: string
+          round: number
+          updated_at: string
+        }
+        Insert: {
+          athlete1_score?: number
+          athlete2_score?: number
+          created_at?: string
+          id?: string
+          judge_number: number
+          match_id: string
+          round: number
+          updated_at?: string
+        }
+        Update: {
+          athlete1_score?: number
+          athlete2_score?: number
+          created_at?: string
+          id?: string
+          judge_number?: number
+          match_id?: string
+          round?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competition_match_judge_scores_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "competition_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       competition_matches: {
         Row: {
           athlete1_club_id: string | null
