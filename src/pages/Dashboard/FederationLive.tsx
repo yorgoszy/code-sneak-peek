@@ -368,12 +368,12 @@ const FederationLive = () => {
                             className="w-full h-full"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen
-                            title={ring.ring_name || `Ring ${ring.ring_number}`}
+                            title={`Ring ${ring.ring_number}`}
                           />
                         </AspectRatio>
                       ) : (
-                        <div className="bg-muted/50 flex items-center justify-center h-32">
-                          <p className="text-xs text-muted-foreground">{t('federation.live.noYoutubeUrl')}</p>
+                        <div className="bg-muted/50 flex items-center justify-center h-24">
+                          <p className="text-[10px] text-muted-foreground">{t('federation.live.noYoutubeUrl')}</p>
                         </div>
                       )}
 
