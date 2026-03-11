@@ -854,21 +854,26 @@ const FederationBrackets = () => {
     const athlete = slot === 'athlete1' ? match.athlete1 : match.athlete2;
     if (athleteId && athlete?.name) return { name: athlete.name, isConfirmed: true };
 
-    // Otherwise, find the feeder match from previous round
+    // Otherwise, find feeder match(es) from previous round
     const feederRound = match.round_number * 2;
     const feederMatchNumber = slot === 'athlete1'
       ? (match.match_number * 2) - 1
       : match.match_number * 2;
-    const feederMatch = rounds[feederRound]?.find((m) => m.match_number === feederMatchNumber);
 
-    if (!feederMatch) return { name: '—', isConfirmed: false };
+    const feederRoundMatches = (rounds[feederRound] || []).slice().sort((a, b) => a.match_number - b.match_number);
+    const feederMatch = feederRoundMatches.find((m) => m.match_number === feederMatchNumber)
+      || (feederRoundMatches.length === 1 ? feederRoundMatches[0] : undefined);
+
+    if (!feederMatch) return { name: `Νικητής αγ. ${feederMatchNumber}`, isConfirmed: false };
 
     // If feeder match is completed, show winner name
     if (feederMatch.winner_id) {
       const winnerName = feederMatch.athlete1_id === feederMatch.winner_id
         ? feederMatch.athlete1?.name
         : feederMatch.athlete2?.name;
-      return { name: winnerName || '—', isConfirmed: true };
+      if (winnerName) return { name: winnerName, isConfirmed: true };
+      const winnerMatchNumber = feederMatch.match_order || globalMatchNumbers?.get(feederMatch.id) || feederMatchNumber;
+      return { name: `Νικητής αγ. ${winnerMatchNumber}`, isConfirmed: false };
     }
 
     // Feeder match NOT completed - show "Νικητής αγ. X" using global match_order
