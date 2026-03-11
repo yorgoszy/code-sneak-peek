@@ -1085,18 +1085,19 @@ const FederationBrackets = () => {
                    yPositions.set(m.id, yCenter);
                  });
 
-                 // Collision resolution: ensure minimum spacing between matches in same round
-                 const minSpacing = CARD_H + CARD_GAP;
-                 const roundMatches = roundMatchArrays[ri];
-                 const sortedByY = [...roundMatches].sort((a, b) => (yPositions.get(a.id) || 0) - (yPositions.get(b.id) || 0));
-                 
-                 for (let j = 1; j < sortedByY.length; j++) {
-                   const prevY = yPositions.get(sortedByY[j - 1].id) || 0;
-                   const currY = yPositions.get(sortedByY[j].id) || 0;
-                   if (currY - prevY < minSpacing) {
-                     yPositions.set(sortedByY[j].id, prevY + minSpacing);
-                   }
-                 }
+                  // Collision resolution: enforce strict visual order by global match number
+                  const roundMatches = roundMatchArrays[ri];
+                  const sortedByOrder = [...roundMatches].sort(
+                    (a, b) => (a.match_order || a.match_number) - (b.match_order || b.match_number)
+                  );
+
+                  for (let j = 1; j < sortedByOrder.length; j++) {
+                    const prevY = yPositions.get(sortedByOrder[j - 1].id) || 0;
+                    const currY = yPositions.get(sortedByOrder[j].id) || 0;
+                    if (currY - prevY < minSpacing) {
+                      yPositions.set(sortedByOrder[j].id, prevY + minSpacing);
+                    }
+                  }
                }
 
                // Recalculate totalH based on actual positions after collision resolution
