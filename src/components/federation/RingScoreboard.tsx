@@ -36,6 +36,8 @@ interface AvailableMatch {
   status: string;
   athlete1?: { name: string } | null;
   athlete2?: { name: string } | null;
+  athlete1_display?: string;
+  athlete2_display?: string;
 }
 
 interface RingScoreboardProps {
@@ -300,7 +302,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
           <SelectContent>
             {matches.filter(m => m.status !== 'completed').map(m => (
               <SelectItem key={m.id} value={m.id}>
-                #{m.match_order} {m.athlete1?.name || '—'} vs {m.athlete2?.name || '—'}
+                #{m.match_order} {m.athlete1_display || m.athlete1?.name || 'Νικητής'} vs {m.athlete2_display || m.athlete2?.name || 'Νικητής'}
               </SelectItem>
             ))}
           </SelectContent>
@@ -324,7 +326,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
           <SelectContent>
             {matches.filter(m => m.status !== 'completed').map(m => (
               <SelectItem key={m.id} value={m.id}>
-                #{m.match_order} {m.athlete1?.name || '—'} vs {m.athlete2?.name || '—'}
+                #{m.match_order} {m.athlete1_display || m.athlete1?.name || 'Νικητής'} vs {m.athlete2_display || m.athlete2?.name || 'Νικητής'}
               </SelectItem>
             ))}
           </SelectContent>
@@ -378,7 +380,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
             <AvatarFallback className="text-[8px]">{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete1?.name || '—'}</p>
+            <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete1?.name || 'Νικητής προηγούμενου αγώνα'}</p>
             {match.athlete1_club && <p className="text-[8px] text-muted-foreground truncate">{match.athlete1_club.name}</p>}
           </div>
         </div>
@@ -387,7 +389,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
         </div>
         <div className="bg-red-500/20 flex items-center gap-1.5 px-2 py-1 justify-end">
           <div className="min-w-0 text-right">
-            <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete2?.name || '—'}</p>
+            <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete2?.name || 'Νικητής προηγούμενου αγώνα'}</p>
             {match.athlete2_club && <p className="text-[8px] text-muted-foreground truncate">{match.athlete2_club.name}</p>}
           </div>
           <Avatar className="h-5 w-5">
