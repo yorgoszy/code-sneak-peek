@@ -644,7 +644,7 @@ const FederationLive = () => {
                       .filter(m => m.status !== 'completed')
                       .map(m => (
                         <SelectItem key={m.id} value={m.id}>
-                          #{m.match_order ?? '-'} - {m.athlete1?.name || '—'} vs {m.athlete2?.name || '—'}
+                          #{m.match_order ?? '-'} - {m.athlete1_display || m.athlete1?.name || 'Νικητής'} vs {m.athlete2_display || m.athlete2?.name || 'Νικητής'}
                         </SelectItem>
                       ))}
                   </SelectContent>

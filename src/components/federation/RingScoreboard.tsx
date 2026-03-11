@@ -36,6 +36,8 @@ interface AvailableMatch {
   status: string;
   athlete1?: { name: string } | null;
   athlete2?: { name: string } | null;
+  athlete1_display?: string;
+  athlete2_display?: string;
 }
 
 interface RingScoreboardProps {
