@@ -301,10 +301,21 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
     }
   };
 
-  const copyJudgeLink = (judgeNum: number) => {
+  const [judgeLinkDialog, setJudgeLinkDialog] = useState<{ judgeNum: number; url: string } | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const openJudgeLink = (judgeNum: number) => {
     const url = `${window.location.origin}/judge?ring=${ringId}&judge=${judgeNum}`;
-    navigator.clipboard.writeText(url);
-    toast.success(`Link Κριτή ${judgeNum} αντιγράφηκε`);
+    setJudgeLinkDialog({ judgeNum, url });
+    setLinkCopied(false);
+  };
+
+  const handleCopyLink = async () => {
+    if (!judgeLinkDialog) return;
+    await navigator.clipboard.writeText(judgeLinkDialog.url);
+    setLinkCopied(true);
+    toast.success(`Link Κριτή ${judgeLinkDialog.judgeNum} αντιγράφηκε`);
+    setTimeout(() => setLinkCopied(false), 2000);
   };
 
   // Calculate aggregated scores from judges
