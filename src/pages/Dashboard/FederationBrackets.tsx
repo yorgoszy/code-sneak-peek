@@ -929,7 +929,7 @@ const FederationBrackets = () => {
                       </SelectTrigger>
                       <SelectContent>
                         {ageOptions.map(a => (
-                          <SelectItem key={a} value={a}>{a === '18-40' ? 'Ενήλικοι' : a}</SelectItem>
+                          <SelectItem key={a} value={a}>{a}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
