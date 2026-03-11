@@ -334,35 +334,31 @@ const FederationLive = () => {
 
             {/* Rings Grid */}
             {rings.length > 0 && (
-              <div className={`grid gap-6 ${
+              <div className={`grid gap-3 ${
                 rings.length === 1 ? 'grid-cols-1' :
                 rings.length === 2 ? 'grid-cols-1 lg:grid-cols-2' :
                 'grid-cols-1 lg:grid-cols-2 xl:grid-cols-3'
               }`}>
                 {rings.map((ring) => (
                   <Card key={ring.id} className="rounded-none overflow-hidden">
-                    <CardHeader className="p-2 px-3 bg-muted border-b border-border">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Monitor className="h-3.5 w-3.5 text-muted-foreground" />
-                          <CardTitle className="text-xs font-semibold">{ring.ring_name || `Ring ${ring.ring_number}`}</CardTitle>
-                          {ring.is_active && (
-                            <Badge variant="outline" className="rounded-none text-[10px] px-1.5 py-0 bg-destructive/10 text-destructive border-destructive/30">
-                              <Radio className="h-2.5 w-2.5 mr-0.5 animate-pulse" />
-                              LIVE
-                            </Badge>
-                          )}
-                          {ring.match_range_start && ring.match_range_end && (
-                            <span className="text-[10px] text-muted-foreground">
-                              ({ring.match_range_start}-{ring.match_range_end})
-                            </span>
-                          )}
-                        </div>
-                        <Button variant="ghost" size="sm" onClick={() => openEditRing(ring)} className="rounded-none h-6 w-6 p-0">
-                          <Settings className="h-3 w-3" />
-                        </Button>
+                    <div className="flex items-center justify-between px-2 py-1 bg-muted border-b border-border">
+                      <div className="flex items-center gap-1.5">
+                        <Monitor className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-xs font-semibold">Ring {ring.ring_number}</span>
+                        {ring.is_active && (
+                          <Badge variant="outline" className="rounded-none text-[10px] px-1 py-0 bg-destructive/10 text-destructive border-destructive/30 leading-none">
+                            <Radio className="h-2 w-2 mr-0.5 animate-pulse" />
+                            LIVE
+                          </Badge>
+                        )}
+                        {ring.match_range_start && ring.match_range_end && (
+                          <span className="text-[10px] text-muted-foreground">({ring.match_range_start}-{ring.match_range_end})</span>
+                        )}
                       </div>
-                    </CardHeader>
+                      <Button variant="ghost" size="sm" onClick={() => openEditRing(ring)} className="rounded-none h-5 w-5 p-0">
+                        <Settings className="h-3 w-3" />
+                      </Button>
+                    </div>
 
                     <CardContent className="p-0">
                       {ring.youtube_live_url ? (
@@ -372,18 +368,18 @@ const FederationLive = () => {
                             className="w-full h-full"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen
-                            title={ring.ring_name || `Ring ${ring.ring_number}`}
+                            title={`Ring ${ring.ring_number}`}
                           />
                         </AspectRatio>
                       ) : (
-                        <div className="bg-muted/50 flex items-center justify-center h-32">
-                          <p className="text-xs text-muted-foreground">{t('federation.live.noYoutubeUrl')}</p>
+                        <div className="bg-muted/50 flex items-center justify-center h-24">
+                          <p className="text-[10px] text-muted-foreground">{t('federation.live.noYoutubeUrl')}</p>
                         </div>
                       )}
 
                       {ring.current_match ? (
-                        <div className="p-2 px-3 border-t border-border">
-                          <div className="text-[10px] text-muted-foreground mb-1 flex items-center gap-1.5">
+                        <div className="px-2 py-1.5 border-t border-border">
+                          <div className="text-[10px] text-muted-foreground mb-0.5 flex items-center gap-1">
                             <span>#{ring.current_match.match_order}</span>
                             {(ring.current_match as any)?.category && (
                               <Badge variant="secondary" className="rounded-none text-[10px] px-1 py-0">
@@ -426,7 +422,7 @@ const FederationLive = () => {
                           </div>
                         </div>
                       ) : (
-                        <div className="p-2 border-t border-border text-center text-xs text-muted-foreground">
+                        <div className="px-2 py-1 border-t border-border text-center text-[10px] text-muted-foreground">
                           {t('federation.live.noActiveMatch')}
                         </div>
                       )}
@@ -514,18 +510,6 @@ const FederationLive = () => {
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     )}
-                  </div>
-                  <div>
-                    <Label className="text-xs">{t('federation.live.ringName')}</Label>
-                    <Input
-                      value={rc.ring_name}
-                      onChange={(e) => {
-                        const updated = [...ringConfigs];
-                        updated[idx].ring_name = e.target.value;
-                        setRingConfigs(updated);
-                      }}
-                      className="rounded-none"
-                    />
                   </div>
                   <div>
                     <Label className="text-xs">{t('federation.live.youtubeUrl')}</Label>
