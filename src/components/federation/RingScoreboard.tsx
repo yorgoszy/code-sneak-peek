@@ -151,9 +151,15 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
     }
   }, [ringId, persistTimerState]);
 
+  // Track previous match ID to detect match changes
+  const prevMatchIdRef = useRef<string | null>(null);
+
   // Load match data
   useEffect(() => {
     if (!currentMatchId) { setMatch(null); setJudgeScores([]); return; }
+    const matchChanged = prevMatchIdRef.current !== null && prevMatchIdRef.current !== currentMatchId;
+    prevMatchIdRef.current = currentMatchId;
+
     const loadMatch = async () => {
       const { data } = await supabase
         .from('competition_matches')
@@ -173,12 +179,22 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
         const cat = (data as any).category;
         const config = getRoundConfig(cat?.min_age, cat?.max_age);
         setRoundConfig(config);
-        // Restore persisted timer state instead of resetting
-        await restoreTimerState(config);
+
+        if (matchChanged) {
+          // Reset timer for new match
+          setIsRunning(false);
+          setCurrentRound(1);
+          setIsBreak(false);
+          setTimeLeft(config.roundDurationSec);
+          persistTimerState(false, config.roundDurationSec, 1, false);
+        } else {
+          // Restore persisted timer state
+          await restoreTimerState(config);
+        }
       }
     };
     loadMatch();
-  }, [currentMatchId, restoreTimerState]);
+  }, [currentMatchId, restoreTimerState, persistTimerState]);
 
   // Load judge scores
   const loadJudgeScores = useCallback(async () => {
