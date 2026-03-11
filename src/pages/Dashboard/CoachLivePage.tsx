@@ -201,37 +201,7 @@ const CoachLivePage = () => {
                         </div>
                       )}
 
-                      {ring.current_match ? (
-                        <div className="p-4 border-t border-border">
-                          <div className="text-xs text-muted-foreground mb-2 flex items-center gap-2">
-                            <span>Αγώνας #{ring.current_match.match_order}</span>
-                            {ring.current_match.category && (
-                              <Badge variant="secondary" className="rounded-none text-xs">{ring.current_match.category.name}</Badge>
-                            )}
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <Avatar className="h-8 w-8">
-                                <AvatarImage src={getAvatar(ring.current_match.athlete1)} />
-                                <AvatarFallback className="text-xs">{ring.current_match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
-                              </Avatar>
-                              <p className="text-sm font-medium">{ring.current_match.athlete1?.name || 'TBD'}</p>
-                            </div>
-                            <span className="text-lg font-bold text-muted-foreground">VS</span>
-                            <div className="flex items-center gap-2">
-                              <p className="text-sm font-medium">{ring.current_match.athlete2?.name || 'TBD'}</p>
-                              <Avatar className="h-8 w-8">
-                                <AvatarImage src={getAvatar(ring.current_match.athlete2)} />
-                                <AvatarFallback className="text-xs">{ring.current_match.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
-                              </Avatar>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="p-4 border-t border-border text-center text-sm text-muted-foreground">
-                          Δεν υπάρχει ενεργός αγώνας
-                        </div>
-                      )}
+                      <ReadOnlyRingScoreboard currentMatchId={ring.current_match_id} />
                     </CardContent>
                   </Card>
                 ))}
