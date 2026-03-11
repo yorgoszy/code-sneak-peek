@@ -41,9 +41,12 @@ interface ReadOnlyRingScoreboardProps {
   matchRangeEnd?: number;
 }
 
-export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({ currentMatchId }) => {
+export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({ 
+  currentMatchId, competitionId, matchRangeStart, matchRangeEnd 
+}) => {
   const [match, setMatch] = useState<MatchData | null>(null);
   const [judgeScores, setJudgeScores] = useState<JudgeScore[]>([]);
+  const [upcomingMatches, setUpcomingMatches] = useState<UpcomingMatch[]>([]);
 
   // Load match
   useEffect(() => {
