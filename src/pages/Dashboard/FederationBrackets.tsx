@@ -1051,7 +1051,7 @@ const FederationBrackets = () => {
                });
 
               return (
-                <div className="w-full overflow-x-auto overflow-y-auto border border-border bg-muted/10 p-6" style={{ height: 'calc(100vh - 160px)' }}>
+                <div className="flex-1 min-h-0 overflow-x-auto overflow-y-auto border border-border bg-muted/10 p-3" style={{ height: 'calc(100vh - 80px)' }}>
                   <div className="relative" style={{ width: totalW, minHeight: totalH }}>
                     {sortedRoundNumbers.map((roundNum, ri) => {
                       const rMatches = roundMatchArrays[ri];
