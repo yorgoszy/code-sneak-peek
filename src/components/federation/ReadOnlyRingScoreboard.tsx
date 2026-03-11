@@ -25,8 +25,20 @@ interface JudgeScore {
   athlete2_score: number;
 }
 
+interface UpcomingMatch {
+  id: string;
+  match_order: number;
+  status: string;
+  athlete1?: { name: string } | null;
+  athlete2?: { name: string } | null;
+  category?: { name: string } | null;
+}
+
 interface ReadOnlyRingScoreboardProps {
   currentMatchId: string | null;
+  competitionId?: string;
+  matchRangeStart?: number;
+  matchRangeEnd?: number;
 }
 
 export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({ currentMatchId }) => {
