@@ -537,11 +537,22 @@ const FederationBrackets = () => {
       return;
     }
 
+    // Get the current max match_order across ALL categories for this competition
+    const { data: maxOrderData } = await supabase
+      .from('competition_matches')
+      .select('match_order')
+      .eq('competition_id', selectedCompId)
+      .order('match_order', { ascending: false })
+      .limit(1);
+    
+    const currentMaxOrder = maxOrderData?.[0]?.match_order || 0;
+
     const bracket = generateBracket(registrations);
     const toInsert = bracket.map(m => ({
       ...m,
       competition_id: selectedCompId,
       category_id: selectedCategoryId,
+      match_order: (m.match_order || 0) + currentMaxOrder,
     }));
 
     const { error } = await supabase.from('competition_matches').insert(toInsert);
