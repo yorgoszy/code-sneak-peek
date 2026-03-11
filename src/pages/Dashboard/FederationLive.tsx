@@ -498,8 +498,24 @@ const FederationLive = () => {
 
             {ringConfigs.map((rc, idx) => (
               <Card key={idx} className="rounded-none">
-                <CardContent className="p-4 space-y-3">
-                  <h4 className="font-medium text-sm">Ring {rc.ring_number}</h4>
+                <CardContent className="p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium text-sm">Ring {rc.ring_number}</h4>
+                    {ringConfigs.length > 1 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="rounded-none h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => {
+                          const updated = ringConfigs.filter((_, i) => i !== idx).map((r, i) => ({ ...r, ring_number: i + 1 }));
+                          setRingConfigs(updated);
+                          setRingCount(updated.length);
+                        }}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                  </div>
                   <div>
                     <Label className="text-xs">{t('federation.live.ringName')}</Label>
                     <Input
