@@ -648,7 +648,7 @@ const FederationBrackets = () => {
 
   const sortedRoundNumbers = Object.keys(rounds).map(Number).sort((a, b) => b - a);
 
-  const getSlotDisplayName = (match: Match, slot: 'athlete1' | 'athlete2'): { name: string; isConfirmed: boolean } => {
+  const getSlotDisplayName = (match: Match, slot: 'athlete1' | 'athlete2', globalMatchNumbers?: Map<string, number>): { name: string; isConfirmed: boolean } => {
     // If the actual athlete is set in this match, show their name
     const athleteId = slot === 'athlete1' ? match.athlete1_id : match.athlete2_id;
     const athlete = slot === 'athlete1' ? match.athlete1 : match.athlete2;
@@ -671,9 +671,12 @@ const FederationBrackets = () => {
       return { name: winnerName || 'TBD', isConfirmed: true };
     }
 
-    // Feeder match NOT completed - show "Νικητής [round] αγ. X"
-    const feederRoundName = getRoundName(feederRound, t);
-    return { name: `Νικητής ${feederRoundName} αγ. ${feederMatchNumber}`, isConfirmed: false };
+    // Feeder match NOT completed - show "Νικητής αγ. X" using global match number
+    const globalNum = globalMatchNumbers?.get(feederMatch.id);
+    if (globalNum) {
+      return { name: `Νικητής αγ. ${globalNum}`, isConfirmed: false };
+    }
+    return { name: `Νικητής αγ. ${feederMatchNumber}`, isConfirmed: false };
   };
 
   const renderSidebar = () => (
