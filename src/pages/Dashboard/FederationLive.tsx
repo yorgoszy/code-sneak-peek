@@ -334,7 +334,7 @@ const FederationLive = () => {
 
             {/* Rings Grid */}
             {rings.length > 0 && (
-              <div className={`grid gap-6 ${
+              <div className={`grid gap-3 ${
                 rings.length === 1 ? 'grid-cols-1' :
                 rings.length === 2 ? 'grid-cols-1 lg:grid-cols-2' :
                 'grid-cols-1 lg:grid-cols-2 xl:grid-cols-3'
