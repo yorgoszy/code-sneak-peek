@@ -11,9 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-
+import { ReadOnlyRingScoreboard } from "@/components/federation/ReadOnlyRingScoreboard";
 function getYoutubeEmbedUrl(url: string): string | null {
   if (!url) return null;
   const patterns = [
