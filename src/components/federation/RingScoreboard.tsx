@@ -571,5 +571,31 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
         </span>
       </div>
     </div>
+
+      {/* Judge QR Link Dialog */}
+      <Dialog open={!!judgeLinkDialog} onOpenChange={() => setJudgeLinkDialog(null)}>
+        <DialogContent className="rounded-none max-w-xs">
+          <DialogHeader>
+            <DialogTitle className="text-center">Κριτής {judgeLinkDialog?.judgeNum}</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center gap-4 py-4">
+            <div className="bg-white p-4">
+              <QRCodeSVG value={judgeLinkDialog?.url || ''} size={200} />
+            </div>
+            <p className="text-[10px] text-muted-foreground break-all text-center px-2">
+              {judgeLinkDialog?.url}
+            </p>
+            <Button
+              variant="outline"
+              className="rounded-none w-full"
+              onClick={handleCopyLink}
+            >
+              {linkCopied ? <Check className="h-4 w-4 mr-2 text-[#00ffba]" /> : <Copy className="h-4 w-4 mr-2" />}
+              {linkCopied ? 'Αντιγράφηκε!' : 'Αντιγραφή Link'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
