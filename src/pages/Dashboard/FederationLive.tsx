@@ -393,7 +393,10 @@ const FederationLive = () => {
                       <RingScoreboard
                         ringId={ring.id}
                         currentMatchId={ring.current_match_id}
-                        matches={matches as any}
+                        matches={(matches as any[]).filter((m: any) => {
+                          if (!ring.match_range_start || !ring.match_range_end) return true;
+                          return m.match_order >= ring.match_range_start && m.match_order <= ring.match_range_end;
+                        })}
                         onMatchChange={(matchId) => handleMatchChangeForRing(ring.id, matchId)}
                       />
                     </CardContent>
