@@ -132,7 +132,7 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
       let query = supabase
         .from('competition_matches')
         .select(`
-          id, match_order, status, athlete1_id, athlete2_id,
+          id, match_order, match_number, round_number, status, athlete1_id, athlete2_id, is_bye, category_id,
           category:federation_competition_categories!competition_matches_category_id_fkey(name)
         `)
         .eq('competition_id', competitionId)
@@ -147,7 +147,7 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
       const { data: matchesRaw } = await query;
       if (!matchesRaw || matchesRaw.length === 0) { setUpcomingMatches([]); return; }
 
-      // Fetch athlete names from federation_competition_registrations (bypasses app_users RLS issues)
+      // Fetch athlete names
       const athleteIds = [
         ...matchesRaw.map(m => m.athlete1_id).filter(Boolean),
         ...matchesRaw.map(m => m.athlete2_id).filter(Boolean)
@@ -160,7 +160,6 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
           .select('athlete_id, athlete:app_users!federation_competition_registrations_athlete_id_fkey(name)')
           .eq('competition_id', competitionId)
           .in('athlete_id', athleteIds);
-        
         if (regs) {
           regs.forEach((r: any) => {
             if (r.athlete?.name) athleteNames[r.athlete_id] = r.athlete.name;
@@ -168,13 +167,49 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
         }
       }
 
-      const enriched = matchesRaw.map(m => ({
+      // For matches with missing athletes (not byes), find feeder matches
+      const needFeeder = matchesRaw.filter(m => !m.is_bye && (!m.athlete1_id || !m.athlete2_id) && m.round_number > 1);
+      let feederMap: Record<string, number> = {}; // matchId -> feeder match_order
+      if (needFeeder.length > 0) {
+        // Get previous round matches in same category to find feeders
+        const categoryIds = [...new Set(needFeeder.map(m => m.category_id))];
+        const { data: prevMatches } = await supabase
+          .from('competition_matches')
+          .select('id, match_order, match_number, round_number, category_id, winner_id')
+          .eq('competition_id', competitionId)
+          .in('category_id', categoryIds)
+          .order('match_number', { ascending: true });
+        
+        if (prevMatches) {
+          for (const um of needFeeder) {
+            const sameCat = prevMatches.filter(p => p.category_id === um.category_id);
+            const prevRound = sameCat.filter(p => p.round_number === um.round_number - 1);
+            // In a bracket, match N in round R is fed by matches 2N-1 and 2N from round R-1
+            const matchInRound = sameCat.filter(p => p.round_number === um.round_number).sort((a, b) => a.match_number - b.match_number);
+            const posInRound = matchInRound.findIndex(p => p.id === um.id);
+            if (posInRound >= 0 && prevRound.length > 0) {
+              const sorted = prevRound.sort((a, b) => a.match_number - b.match_number);
+              if (!um.athlete1_id && sorted[posInRound * 2]) {
+                feederMap[`${um.id}_1`] = sorted[posInRound * 2].match_order;
+              }
+              if (!um.athlete2_id && sorted[posInRound * 2 + 1]) {
+                feederMap[`${um.id}_2`] = sorted[posInRound * 2 + 1].match_order;
+              }
+            }
+          }
+        }
+      }
+
+      const enriched: UpcomingMatch[] = matchesRaw.map(m => ({
         id: m.id,
         match_order: m.match_order,
         status: m.status,
+        is_bye: m.is_bye || false,
         category: m.category,
         athlete1: m.athlete1_id && athleteNames[m.athlete1_id] ? { name: athleteNames[m.athlete1_id] } : null,
         athlete2: m.athlete2_id && athleteNames[m.athlete2_id] ? { name: athleteNames[m.athlete2_id] } : null,
+        athlete1_placeholder: !m.athlete1_id ? (m.is_bye ? undefined : (feederMap[`${m.id}_1`] ? `Νικητής αγ. ${feederMap[`${m.id}_1`]}` : undefined)) : undefined,
+        athlete2_placeholder: !m.athlete2_id ? (m.is_bye ? undefined : (feederMap[`${m.id}_2`] ? `Νικητής αγ. ${feederMap[`${m.id}_2`]}` : undefined)) : undefined,
       }));
 
       setUpcomingMatches(enriched);
