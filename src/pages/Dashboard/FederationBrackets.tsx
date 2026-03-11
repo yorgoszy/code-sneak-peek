@@ -1027,9 +1027,9 @@ const FederationBrackets = () => {
               const CONNECTOR_W = 60;
               const HEADER_H = 50;
 
-              // Non-bye matches per round, sorted by match_number
+              // Non-bye matches per round, sorted by match_order (global sequence) for top-to-bottom display
               const roundMatchArrays = sortedRoundNumbers.map(rn =>
-                rounds[rn].filter(m => !m.is_bye).sort((a, b) => a.match_number - b.match_number)
+                rounds[rn].filter(m => !m.is_bye).sort((a, b) => (a.match_order || a.match_number) - (b.match_order || b.match_number))
               );
               const firstRoundCount = roundMatchArrays[0]?.length || 1;
               const maxMatchesInAnyRound = Math.max(...roundMatchArrays.map(r => r.length), 1);
