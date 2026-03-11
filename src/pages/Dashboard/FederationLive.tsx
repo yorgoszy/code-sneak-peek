@@ -512,18 +512,6 @@ const FederationLive = () => {
                     )}
                   </div>
                   <div>
-                    <Label className="text-xs">{t('federation.live.ringName')}</Label>
-                    <Input
-                      value={rc.ring_name}
-                      onChange={(e) => {
-                        const updated = [...ringConfigs];
-                        updated[idx].ring_name = e.target.value;
-                        setRingConfigs(updated);
-                      }}
-                      className="rounded-none"
-                    />
-                  </div>
-                  <div>
                     <Label className="text-xs">{t('federation.live.youtubeUrl')}</Label>
                     <Input
                       value={rc.youtube_live_url}
