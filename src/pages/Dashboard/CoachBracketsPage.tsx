@@ -220,13 +220,19 @@ const CoachBracketsPage = () => {
 
     const feederRound = match.round_number * 2;
     const feederMatchNumber = slot === 'athlete1' ? (match.match_number * 2) - 1 : match.match_number * 2;
-    const feederMatch = rounds[feederRound]?.find((m) => m.match_number === feederMatchNumber);
-    if (!feederMatch) return { name: '—', isConfirmed: false };
+
+    const feederRoundMatches = (rounds[feederRound] || []).slice().sort((a, b) => a.match_number - b.match_number);
+    const feederMatch = feederRoundMatches.find((m) => m.match_number === feederMatchNumber)
+      || (feederRoundMatches.length === 1 ? feederRoundMatches[0] : undefined);
+
+    if (!feederMatch) return { name: `Νικητής αγ. ${feederMatchNumber}`, isConfirmed: false };
 
     if (feederMatch.winner_id) {
       const winnerName = feederMatch.athlete1_id === feederMatch.winner_id
         ? feederMatch.athlete1?.name : feederMatch.athlete2?.name;
-      return { name: winnerName || '—', isConfirmed: true };
+      if (winnerName) return { name: winnerName, isConfirmed: true };
+      const winnerMatchNumber = feederMatch.match_order || globalMatchNumbers?.get(feederMatch.id) || feederMatchNumber;
+      return { name: `Νικητής αγ. ${winnerMatchNumber}`, isConfirmed: false };
     }
 
     if (feederMatch.match_order) return { name: `Νικητής αγ. ${feederMatch.match_order}`, isConfirmed: false };

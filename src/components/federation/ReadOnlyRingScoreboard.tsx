@@ -164,17 +164,19 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
         if (prevMatches) {
           for (const um of needFeeder) {
             const sameCat = prevMatches.filter((p: any) => p.category_id === (um as any).category_id);
-            const matchInRound = sameCat.filter((p: any) => p.round_number === (um as any).round_number).sort((a: any, b: any) => a.match_number - b.match_number);
-            const prevRound = sameCat.filter((p: any) => p.round_number === (um as any).round_number - 1);
-            const posInRound = matchInRound.findIndex((p: any) => p.id === (um as any).id);
-            if (posInRound >= 0 && prevRound.length > 0) {
-              const sorted = prevRound.sort((a: any, b: any) => a.match_number - b.match_number);
-              if (!(um as any).athlete1_id && sorted[posInRound * 2]) {
-                feederMap[`${(um as any).id}_1`] = sorted[posInRound * 2].match_order;
-              }
-              if (!(um as any).athlete2_id && sorted[posInRound * 2 + 1]) {
-                feederMap[`${(um as any).id}_2`] = sorted[posInRound * 2 + 1].match_order;
-              }
+            const feederRound = (um as any).round_number * 2;
+            const feederRoundMatches = sameCat.filter((p: any) => p.round_number === feederRound);
+
+            const feeder1 = feederRoundMatches.find((p: any) => p.match_number === ((um as any).match_number * 2) - 1)
+              || (feederRoundMatches.length === 1 ? feederRoundMatches[0] : undefined);
+            const feeder2 = feederRoundMatches.find((p: any) => p.match_number === (um as any).match_number * 2)
+              || (feederRoundMatches.length === 1 ? feederRoundMatches[0] : undefined);
+
+            if (!(um as any).athlete1_id && feeder1?.match_order) {
+              feederMap[`${(um as any).id}_1`] = feeder1.match_order;
+            }
+            if (!(um as any).athlete2_id && feeder2?.match_order) {
+              feederMap[`${(um as any).id}_2`] = feeder2.match_order;
             }
           }
         }
@@ -249,7 +251,7 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
             <AvatarFallback className="text-[8px]">{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <p className="text-xs font-semibold truncate">{match.athlete1?.name || '—'}</p>
+            <p className="text-xs font-semibold truncate">{match.athlete1?.name || 'Νικητής προηγούμενου αγώνα'}</p>
             {match.athlete1_club && <p className="text-[9px] text-muted-foreground truncate">{match.athlete1_club.name}</p>}
           </div>
         </div>
@@ -258,7 +260,7 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
         </div>
         <div className="bg-red-500/20 flex items-center gap-1.5 px-3 py-2 justify-end">
           <div className="min-w-0 text-right">
-            <p className="text-xs font-semibold truncate">{match.athlete2?.name || '—'}</p>
+            <p className="text-xs font-semibold truncate">{match.athlete2?.name || 'Νικητής προηγούμενου αγώνα'}</p>
             {match.athlete2_club && <p className="text-[9px] text-muted-foreground truncate">{match.athlete2_club.name}</p>}
           </div>
           <Avatar className="h-6 w-6">
@@ -367,11 +369,11 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
                 <div className="flex items-center gap-1 min-w-0 flex-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
                   <span className={`truncate ${um.athlete1?.name ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                    {um.athlete1?.name || um.athlete1_placeholder || '—'}
+                    {um.athlete1?.name || um.athlete1_placeholder || 'Νικητής προηγούμενου αγώνα'}
                   </span>
                   <span className="text-muted-foreground shrink-0">vs</span>
                   <span className={`truncate ${um.athlete2?.name ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                    {um.athlete2?.name || um.athlete2_placeholder || '—'}
+                    {um.athlete2?.name || um.athlete2_placeholder || 'Νικητής προηγούμενου αγώνα'}
                   </span>
                   <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
                 </div>
