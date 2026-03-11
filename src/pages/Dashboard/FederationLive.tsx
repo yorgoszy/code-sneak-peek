@@ -458,29 +458,41 @@ const FederationLive = () => {
           </DialogHeader>
 
           <div className="space-y-4">
-            <div>
-              <Label className="text-sm">{t('federation.live.numberOfRings')}</Label>
-              <div className="flex items-center gap-2 mt-1">
-                {[1, 2, 3, 4, 5].map(n => (
-                  <Button
-                    key={n}
-                    variant={ringCount === n ? 'default' : 'outline'}
-                    size="sm"
-                    className={`rounded-none ${ringCount === n ? 'bg-foreground text-background' : ''}`}
-                    onClick={() => {
-                      setRingCount(n);
-                      setRingConfigs(Array.from({ length: n }, (_, i) => ({
-                        ring_number: i + 1,
-                        ring_name: `Ring ${i + 1}`,
-                        youtube_live_url: '',
-                        match_range_start: '',
-                        match_range_end: '',
-                      })));
-                    }}
-                  >
-                    {n}
-                  </Button>
-                ))}
+            <div className="flex items-center justify-between">
+              <Label className="text-sm">{t('federation.live.numberOfRings')}: {ringCount}</Label>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-none h-8 w-8 p-0"
+                  disabled={ringCount <= 1}
+                  onClick={() => {
+                    const n = ringCount - 1;
+                    setRingCount(n);
+                    setRingConfigs(prev => prev.slice(0, n));
+                  }}
+                >
+                  −
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-none h-8 w-8 p-0"
+                  disabled={ringCount >= 10}
+                  onClick={() => {
+                    const n = ringCount + 1;
+                    setRingCount(n);
+                    setRingConfigs(prev => [...prev, {
+                      ring_number: n,
+                      ring_name: `Ring ${n}`,
+                      youtube_live_url: '',
+                      match_range_start: '',
+                      match_range_end: '',
+                    }]);
+                  }}
+                >
+                  +
+                </Button>
               </div>
             </div>
 
