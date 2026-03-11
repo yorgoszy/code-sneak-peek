@@ -75,6 +75,79 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
   const [isBreak, setIsBreak] = useState(false);
   const [roundConfig, setRoundConfig] = useState({ rounds: 3, roundDurationSec: 180, breakDurationSec: 60 });
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const skipPersistRef = useRef(false);
+
+  // Persist timer state to DB
+  const persistTimerState = useCallback(async (running: boolean, remaining: number, round: number, onBreak: boolean) => {
+    if (!ringId) return;
+    const updateData: any = {
+      timer_current_round: round,
+      timer_is_break: onBreak,
+    };
+    if (running) {
+      // Save the moment timer started and how many seconds were left at that moment
+      updateData.timer_running_since = new Date().toISOString();
+      updateData.timer_remaining_seconds = remaining;
+    } else {
+      updateData.timer_running_since = null;
+      updateData.timer_remaining_seconds = remaining;
+    }
+    await supabase.from('competition_rings').update(updateData).eq('id', ringId);
+  }, [ringId]);
+
+  // Restore timer state from DB
+  const restoreTimerState = useCallback(async (config: { rounds: number; roundDurationSec: number; breakDurationSec: number }) => {
+    if (!ringId) return;
+    const { data: ring } = await supabase
+      .from('competition_rings')
+      .select('timer_running_since, timer_remaining_seconds, timer_current_round, timer_is_break')
+      .eq('id', ringId)
+      .single();
+
+    if (!ring) return;
+
+    const round = ring.timer_current_round || 1;
+    const onBreak = ring.timer_is_break || false;
+    setCurrentRound(round);
+    setIsBreak(onBreak);
+
+    if (ring.timer_running_since) {
+      // Timer was running - calculate elapsed time
+      const startedAt = new Date(ring.timer_running_since).getTime();
+      const now = Date.now();
+      const elapsedSec = Math.floor((now - startedAt) / 1000);
+      const savedRemaining = ring.timer_remaining_seconds ?? (onBreak ? config.breakDurationSec : config.roundDurationSec);
+      const remaining = Math.max(0, savedRemaining - elapsedSec);
+      
+      setTimeLeft(remaining);
+      if (remaining > 0) {
+        skipPersistRef.current = true;
+        setIsRunning(true);
+      } else {
+        // Timer expired while away - handle round transition
+        setIsRunning(false);
+        if (onBreak) {
+          const nextRound = round + 1;
+          setIsBreak(false);
+          setCurrentRound(nextRound);
+          setTimeLeft(config.roundDurationSec);
+          persistTimerState(false, config.roundDurationSec, nextRound, false);
+        } else if (round < config.rounds) {
+          setIsBreak(true);
+          setTimeLeft(config.breakDurationSec);
+          persistTimerState(false, config.breakDurationSec, round, true);
+        } else {
+          setTimeLeft(0);
+          persistTimerState(false, 0, round, false);
+        }
+      }
+    } else {
+      // Timer was paused
+      const remaining = ring.timer_remaining_seconds ?? (onBreak ? config.breakDurationSec : config.roundDurationSec);
+      setTimeLeft(remaining);
+      setIsRunning(false);
+    }
+  }, [ringId, persistTimerState]);
 
   // Load match data
   useEffect(() => {
@@ -98,14 +171,12 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
         const cat = (data as any).category;
         const config = getRoundConfig(cat?.min_age, cat?.max_age);
         setRoundConfig(config);
-        setTimeLeft(config.roundDurationSec);
-        setCurrentRound(1);
-        setIsRunning(false);
-        setIsBreak(false);
+        // Restore persisted timer state instead of resetting
+        await restoreTimerState(config);
       }
     };
     loadMatch();
-  }, [currentMatchId]);
+  }, [currentMatchId, restoreTimerState]);
 
   // Load judge scores
   const loadJudgeScores = useCallback(async () => {
@@ -143,14 +214,18 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
         if (prev <= 1) {
           setIsRunning(false);
           if (isBreak) {
+            const nextRound = currentRound + 1;
             setIsBreak(false);
-            setCurrentRound(r => r + 1);
+            setCurrentRound(nextRound);
+            persistTimerState(false, roundConfig.roundDurationSec, nextRound, false);
             return roundConfig.roundDurationSec;
           } else {
             if (currentRound < roundConfig.rounds) {
               setIsBreak(true);
+              persistTimerState(false, roundConfig.breakDurationSec, currentRound, true);
               return roundConfig.breakDurationSec;
             }
+            persistTimerState(false, 0, currentRound, false);
             return 0;
           }
         }
@@ -158,16 +233,20 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
       });
     }, 1000);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [isRunning, isBreak, currentRound, roundConfig]);
+  }, [isRunning, isBreak, currentRound, roundConfig, persistTimerState]);
 
   const handleStartPause = () => {
     if (timeLeft === 0 && currentRound >= roundConfig.rounds && !isBreak) return;
-    setIsRunning(prev => !prev);
+    const newRunning = !isRunning;
+    setIsRunning(newRunning);
+    persistTimerState(newRunning, timeLeft, currentRound, isBreak);
   };
 
   const handleResetRound = () => {
     setIsRunning(false);
-    setTimeLeft(isBreak ? roundConfig.breakDurationSec : roundConfig.roundDurationSec);
+    const newTime = isBreak ? roundConfig.breakDurationSec : roundConfig.roundDurationSec;
+    setTimeLeft(newTime);
+    persistTimerState(false, newTime, currentRound, isBreak);
   };
 
   const handleDeclareWinner = async (winnerId: string) => {
