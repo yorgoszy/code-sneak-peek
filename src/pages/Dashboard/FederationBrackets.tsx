@@ -725,10 +725,11 @@ const FederationBrackets = () => {
         orderedMatches.push(...byeMatches);
       }
 
-      // Step 3: Assign global match_order
-      const allMatchesToInsert = orderedMatches.map((entry, idx) => ({
+      // Step 3: Assign global match_order (only to non-bye matches)
+      let globalOrder = 1;
+      const allMatchesToInsert = orderedMatches.map((entry) => ({
         ...entry.match,
-        match_order: idx + 1,
+        match_order: entry.match.is_bye ? null : globalOrder++,
       }));
 
       if (allMatchesToInsert.length === 0) {
