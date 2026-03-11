@@ -923,14 +923,15 @@ const FederationBrackets = () => {
                });
                totalH = Math.max(totalH, maxY + 40);
 
-              // Global match numbering across all rounds
-              let globalCounter = 1;
-              const globalMatchNumbers = new Map<string, number>();
-              sortedRoundNumbers.forEach(rn => {
-                roundMatchArrays[sortedRoundNumbers.indexOf(rn)].forEach(m => {
-                  globalMatchNumbers.set(m.id, globalCounter++);
-                });
-              });
+               // Global match numbering - use match_order from DB (global across all categories)
+               const globalMatchNumbers = new Map<string, number>();
+               sortedRoundNumbers.forEach(rn => {
+                 roundMatchArrays[sortedRoundNumbers.indexOf(rn)].forEach(m => {
+                   if (m.match_order) {
+                     globalMatchNumbers.set(m.id, m.match_order);
+                   }
+                 });
+               });
 
               return (
                 <div className="w-full overflow-x-auto overflow-y-auto border border-border bg-muted/10 p-6" style={{ height: 'calc(100vh - 160px)' }}>
