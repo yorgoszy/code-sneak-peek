@@ -841,7 +841,7 @@ const FederationBrackets = () => {
           </div>
         )}
 
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
           <div className="sticky top-0 z-40 bg-background border-b border-border p-3 lg:hidden">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
