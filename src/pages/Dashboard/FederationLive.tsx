@@ -493,26 +493,9 @@ const FederationLive = () => {
 
             {ringConfigs.map((rc, idx) => (
               <Card key={idx} className="rounded-none">
-                <CardContent className="p-3 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-sm">Ring {rc.ring_number}</h4>
-                    {ringConfigs.length > 1 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="rounded-none h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => {
-                          const updated = ringConfigs.filter((_, i) => i !== idx).map((r, i) => ({ ...r, ring_number: i + 1 }));
-                          setRingConfigs(updated);
-                          setRingCount(updated.length);
-                        }}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    )}
-                  </div>
-                  <div>
-                    <Label className="text-xs">{t('federation.live.youtubeUrl')}</Label>
+                <CardContent className="p-2 space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-medium text-xs whitespace-nowrap">Ring {rc.ring_number}</h4>
                     <Input
                       value={rc.youtube_live_url}
                       onChange={(e) => {
@@ -520,39 +503,46 @@ const FederationLive = () => {
                         updated[idx].youtube_live_url = e.target.value;
                         setRingConfigs(updated);
                       }}
-                      placeholder="https://youtube.com/live/..."
-                      className="rounded-none"
+                      placeholder="YouTube URL..."
+                      className="rounded-none h-7 text-xs flex-1"
                     />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label className="text-xs">{t('federation.live.matchFrom')}</Label>
-                      <Input
-                        type="number"
-                        value={rc.match_range_start}
-                        onChange={(e) => {
-                          const updated = [...ringConfigs];
-                          updated[idx].match_range_start = e.target.value;
+                    <Input
+                      type="number"
+                      value={rc.match_range_start}
+                      onChange={(e) => {
+                        const updated = [...ringConfigs];
+                        updated[idx].match_range_start = e.target.value;
+                        setRingConfigs(updated);
+                      }}
+                      placeholder="From"
+                      className="rounded-none h-7 text-xs w-16"
+                    />
+                    <span className="text-xs text-muted-foreground">-</span>
+                    <Input
+                      type="number"
+                      value={rc.match_range_end}
+                      onChange={(e) => {
+                        const updated = [...ringConfigs];
+                        updated[idx].match_range_end = e.target.value;
+                        setRingConfigs(updated);
+                      }}
+                      placeholder="To"
+                      className="rounded-none h-7 text-xs w-16"
+                    />
+                    {ringConfigs.length > 1 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="rounded-none h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
+                        onClick={() => {
+                          const updated = ringConfigs.filter((_, i) => i !== idx).map((r, i) => ({ ...r, ring_number: i + 1 }));
                           setRingConfigs(updated);
+                          setRingCount(updated.length);
                         }}
-                        placeholder="1"
-                        className="rounded-none"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs">{t('federation.live.matchTo')}</Label>
-                      <Input
-                        type="number"
-                        value={rc.match_range_end}
-                        onChange={(e) => {
-                          const updated = [...ringConfigs];
-                          updated[idx].match_range_end = e.target.value;
-                          setRingConfigs(updated);
-                        }}
-                        placeholder="25"
-                        className="rounded-none"
-                      />
-                    </div>
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>
