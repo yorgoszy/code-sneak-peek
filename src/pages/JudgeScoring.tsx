@@ -16,8 +16,6 @@ interface MatchData {
   athlete2_id: string | null;
   athlete1?: { name: string; photo_url: string | null; avatar_url: string | null } | null;
   athlete2?: { name: string; photo_url: string | null; avatar_url: string | null } | null;
-  athlete1_club?: { name: string } | null;
-  athlete2_club?: { name: string } | null;
   category?: { name: string; min_age: number | null; max_age: number | null } | null;
 }
 
@@ -50,18 +48,18 @@ const JudgeScoring: React.FC = () => {
 
     if (!ringData.current_match_id) { setMatch(null); return; }
 
-    const { data: matchData } = await supabase
+    const { data: matchData, error: matchError } = await supabase
       .from('competition_matches')
       .select(`
         id, match_order, status, athlete1_id, athlete2_id,
         athlete1:app_users!competition_matches_athlete1_id_fkey(name, photo_url, avatar_url),
         athlete2:app_users!competition_matches_athlete2_id_fkey(name, photo_url, avatar_url),
-        athlete1_club:app_users!competition_matches_athlete1_club_id_fkey(name),
-        athlete2_club:app_users!competition_matches_athlete2_club_id_fkey(name),
         category:federation_competition_categories!competition_matches_category_id_fkey(name, min_age, max_age)
       `)
       .eq('id', ringData.current_match_id)
       .single();
+
+    console.log('🥊 Judge match load:', { matchData, matchError });
 
     if (matchData) {
       setMatch(matchData as any);
@@ -190,7 +188,6 @@ const JudgeScoring: React.FC = () => {
                 <AvatarFallback>{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
               </Avatar>
               <p className="text-sm font-semibold truncate">{match.athlete1?.name || 'TBD'}</p>
-              {match.athlete1_club && <p className="text-[10px] text-muted-foreground">{match.athlete1_club.name}</p>}
             </div>
             {/* Red corner */}
             <div className="bg-red-500/10 border border-red-500/30 p-3 text-center">
@@ -200,7 +197,6 @@ const JudgeScoring: React.FC = () => {
                 <AvatarFallback>{match.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
               </Avatar>
               <p className="text-sm font-semibold truncate">{match.athlete2?.name || 'TBD'}</p>
-              {match.athlete2_club && <p className="text-[10px] text-muted-foreground">{match.athlete2_club.name}</p>}
             </div>
           </div>
 
