@@ -868,7 +868,7 @@ const FederationBrackets = () => {
       const winnerName = feederMatch.athlete1_id === feederMatch.winner_id
         ? feederMatch.athlete1?.name
         : feederMatch.athlete2?.name;
-      return { name: winnerName || 'TBD', isConfirmed: true };
+      return { name: winnerName || '—', isConfirmed: true };
     }
 
     // Feeder match NOT completed - show "Νικητής αγ. X" using global match_order
