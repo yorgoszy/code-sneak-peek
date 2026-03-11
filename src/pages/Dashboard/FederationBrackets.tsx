@@ -1296,7 +1296,7 @@ const FederationBrackets = () => {
                       <AvatarFallback>{athlete?.name?.charAt(0) || '?'}</AvatarFallback>
                     </Avatar>
                     <div className="text-left">
-                      <p className="font-medium text-sm">{athlete?.name || 'TBD'}</p>
+                      <p className="font-medium text-sm">{athlete?.name || '—'}</p>
                       {club && <p className="text-xs text-muted-foreground">{club.name}</p>}
                     </div>
                     {selectedWinnerId === id && <Trophy className="h-4 w-4 text-[#cb8954] ml-auto" />}
