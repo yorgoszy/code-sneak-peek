@@ -954,11 +954,11 @@ const FederationBrackets = () => {
 
             {/* Bracket Display */}
             {matches.length > 0 && (() => {
-              const CARD_H = 110;
-              const CARD_GAP = 40;
-              const COL_W = 300;
-              const CONNECTOR_W = 60;
-              const HEADER_H = 50;
+              const CARD_H = 76;
+              const CARD_GAP = 20;
+              const COL_W = 220;
+              const CONNECTOR_W = 40;
+              const HEADER_H = 36;
 
               // Non-bye matches per round, sorted by match_number
               const roundMatchArrays = sortedRoundNumbers.map(rn =>
