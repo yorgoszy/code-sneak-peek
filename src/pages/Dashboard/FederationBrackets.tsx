@@ -429,7 +429,7 @@ const FederationBrackets = () => {
   const [selectedCompId, setSelectedCompId] = useState<string>('');
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
-  const [registrations, setRegistrations] = useState<Registration[]>([]);
+  
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(false);
   const [registrationCounts, setRegistrationCounts] = useState<Map<string, number>>(new Map());
