@@ -946,8 +946,8 @@ const FederationBrackets = () => {
                             const yCenter = yPositions.get(match.id) || 0;
                             const yTop = yCenter - CARD_H / 2;
                             const globalMatchNum = globalMatchNumbers.get(match.id) || 0;
-                            const slot1 = getSlotDisplayName(match, 'athlete1');
-                            const slot2 = getSlotDisplayName(match, 'athlete2');
+                            const slot1 = getSlotDisplayName(match, 'athlete1', globalMatchNumbers);
+                            const slot2 = getSlotDisplayName(match, 'athlete2', globalMatchNumbers);
 
                             return (
                               <div
