@@ -363,6 +363,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
 
   return (
     <>
+    <div className="border-t border-border">
       {/* Match selector + Judge links */}
       <div className="px-2 py-1 border-b border-border bg-muted/30 flex items-center gap-1">
         <Select value={currentMatchId} onValueChange={onMatchChange}>
