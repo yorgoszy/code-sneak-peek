@@ -137,6 +137,7 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
         `)
         .eq('competition_id', competitionId)
         .gt('match_order', match.match_order)
+        .eq('is_bye', false)
         .order('match_order', { ascending: true })
         .limit(2);
 
