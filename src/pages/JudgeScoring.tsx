@@ -193,11 +193,17 @@ const JudgeScoring: React.FC = () => {
         <p className="text-xs opacity-70">{ring?.ring_name || `Ring`}</p>
       </div>
 
-      {!match ? (
+      {loading ? (
+        <div className="flex items-center justify-center h-[60vh]">
+          <div className="text-center text-muted-foreground">
+            <p className="text-sm">Φόρτωση...</p>
+          </div>
+        </div>
+      ) : !match ? (
         <div className="flex items-center justify-center h-[60vh]">
           <div className="text-center text-muted-foreground">
             <Trophy className="h-12 w-12 mx-auto mb-4 opacity-30" />
-            <p className="text-sm">Αναμονή για αγώνα...</p>
+            <p className="text-sm">{loadError || 'Αναμονή για αγώνα...'}</p>
             <p className="text-xs mt-1">Ο αγώνας θα εμφανιστεί αυτόματα</p>
           </div>
         </div>
@@ -206,7 +212,7 @@ const JudgeScoring: React.FC = () => {
           {/* Match info */}
           <div className="text-center">
             <Badge variant="outline" className="rounded-none text-xs mb-2">
-              Αγώνας #{match.match_order} {match.category?.name && `• ${match.category.name}`}
+              Αγώνας #{match.match_order}
             </Badge>
           </div>
 
