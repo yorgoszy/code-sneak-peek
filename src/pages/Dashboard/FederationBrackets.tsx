@@ -831,7 +831,7 @@ const FederationBrackets = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
+      <div className="h-screen flex w-full bg-background overflow-hidden">
         <div className="hidden lg:block">{renderSidebar()}</div>
 
         {isMobileOpen && (
