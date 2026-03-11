@@ -378,8 +378,8 @@ const FederationLive = () => {
                       )}
 
                       {ring.current_match ? (
-                        <div className="p-2 px-3 border-t border-border">
-                          <div className="text-[10px] text-muted-foreground mb-1 flex items-center gap-1.5">
+                        <div className="px-2 py-1.5 border-t border-border">
+                          <div className="text-[10px] text-muted-foreground mb-0.5 flex items-center gap-1">
                             <span>#{ring.current_match.match_order}</span>
                             {(ring.current_match as any)?.category && (
                               <Badge variant="secondary" className="rounded-none text-[10px] px-1 py-0">
