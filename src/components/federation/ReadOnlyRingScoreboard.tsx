@@ -366,19 +366,14 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
                 )}
                 <div className="flex items-center gap-1 min-w-0 flex-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
-                  <span className="truncate font-medium">
-                    {um.athlete1?.name || um.athlete1_placeholder || (um.is_bye && !um.athlete2 ? um.athlete1?.name || '—' : 'BYE')}
+                  <span className={`truncate ${um.athlete1?.name ? 'font-medium' : 'text-muted-foreground italic'}`}>
+                    {um.athlete1?.name || um.athlete1_placeholder || 'TBD'}
                   </span>
-                  {!um.is_bye && (
-                    <>
-                      <span className="text-muted-foreground shrink-0">vs</span>
-                      <span className="truncate font-medium">
-                        {um.athlete2?.name || um.athlete2_placeholder || 'BYE'}
-                      </span>
-                      <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
-                    </>
-                  )}
-                  {um.is_bye && <span className="text-muted-foreground italic text-[9px] ml-1">BYE</span>}
+                  <span className="text-muted-foreground shrink-0">vs</span>
+                  <span className={`truncate ${um.athlete2?.name ? 'font-medium' : 'text-muted-foreground italic'}`}>
+                    {um.athlete2?.name || um.athlete2_placeholder || 'TBD'}
+                  </span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
                 </div>
               </div>
             ))}
