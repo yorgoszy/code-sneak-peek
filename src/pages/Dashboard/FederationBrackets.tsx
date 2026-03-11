@@ -861,7 +861,7 @@ const FederationBrackets = () => {
       : match.match_number * 2;
     const feederMatch = rounds[feederRound]?.find((m) => m.match_number === feederMatchNumber);
 
-    if (!feederMatch) return { name: 'TBD', isConfirmed: false };
+    if (!feederMatch) return { name: '—', isConfirmed: false };
 
     // If feeder match is completed, show winner name
     if (feederMatch.winner_id) {
