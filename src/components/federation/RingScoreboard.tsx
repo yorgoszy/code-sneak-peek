@@ -300,7 +300,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
           <SelectContent>
             {matches.filter(m => m.status !== 'completed').map(m => (
               <SelectItem key={m.id} value={m.id}>
-                #{m.match_order} {m.athlete1?.name || 'TBD'} vs {m.athlete2?.name || 'TBD'}
+                #{m.match_order} {m.athlete1?.name || '—'} vs {m.athlete2?.name || '—'}
               </SelectItem>
             ))}
           </SelectContent>
