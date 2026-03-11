@@ -282,6 +282,23 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
     else toast.success('Ο νικητής καταχωρήθηκε');
   };
 
+  // Auto-declare winner based on judges' scores when match finishes
+  const handleAutoDeclareWinner = async () => {
+    if (!match || match.winner_id) return;
+    if (totalA1 === 0 && totalA2 === 0) {
+      toast.error('Δεν υπάρχουν βαθμολογίες κριτών');
+      return;
+    }
+    if (totalA1 === totalA2) {
+      toast.error('Ισοπαλία - επιλέξτε νικητή χειροκίνητα');
+      return;
+    }
+    const winnerId = totalA1 > totalA2 ? match.athlete1_id : match.athlete2_id;
+    if (winnerId) {
+      await handleDeclareWinner(winnerId);
+    }
+  };
+
   const copyJudgeLink = (judgeNum: number) => {
     const url = `${window.location.origin}/judge?ring=${ringId}&judge=${judgeNum}`;
     navigator.clipboard.writeText(url);
