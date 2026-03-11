@@ -197,7 +197,6 @@ const JudgeScoring: React.FC = () => {
                 <AvatarFallback>{match.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
               </Avatar>
               <p className="text-sm font-semibold truncate">{match.athlete2?.name || 'TBD'}</p>
-              {match.athlete2_club && <p className="text-[10px] text-muted-foreground">{match.athlete2_club.name}</p>}
             </div>
           </div>
 
