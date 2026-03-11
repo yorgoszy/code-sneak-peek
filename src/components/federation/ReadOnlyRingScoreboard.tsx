@@ -135,7 +135,7 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
         `)
         .eq('competition_id', competitionId)
         .gt('match_order', match.match_order)
-        .in('status', ['pending', 'scheduled'])
+        .neq('status', 'completed')
         .order('match_order', { ascending: true })
         .limit(2);
 
@@ -144,7 +144,25 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
       }
 
       const { data } = await query;
-      setUpcomingMatches((data as any) || []);
+      
+      // If no non-completed found, just get next 2 by order
+      if (!data || data.length === 0) {
+        const { data: fallback } = await supabase
+          .from('competition_matches')
+          .select(`
+            id, match_order, status,
+            athlete1:app_users!competition_matches_athlete1_id_fkey(name),
+            athlete2:app_users!competition_matches_athlete2_id_fkey(name),
+            category:federation_competition_categories!competition_matches_category_id_fkey(name)
+          `)
+          .eq('competition_id', competitionId)
+          .gt('match_order', match.match_order)
+          .order('match_order', { ascending: true })
+          .limit(2);
+        setUpcomingMatches((fallback as any) || []);
+      } else {
+        setUpcomingMatches((data as any) || []);
+      }
     };
     loadUpcoming();
   }, [competitionId, match?.match_order, matchRangeStart, matchRangeEnd]);
