@@ -570,7 +570,19 @@ const FederationLive = () => {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
+
+              {/* Judge Links */}
+              <div>
+                <Label className="text-sm mb-2 block">Links Κριτών</Label>
+                <div className="space-y-3">
+                  {[1, 2, 3].map((judgeNum) => {
+                    const judgeUrl = `${window.location.origin}/judge?ring=${editRing.id}&judge=${judgeNum}&comp=${selectedCompId}`;
+                    return (
+                      <JudgeLinkRow key={judgeNum} judgeNum={judgeNum} url={judgeUrl} />
+                    );
+                  })}
+                </div>
+              </div>
 
             <DialogFooter>
               <Button variant="outline" onClick={() => setEditRing(null)} className="rounded-none">{t('federation.common.cancel')}</Button>
