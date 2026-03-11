@@ -537,11 +537,22 @@ const FederationBrackets = () => {
       return;
     }
 
+    // Get the current max match_order across ALL categories for this competition
+    const { data: maxOrderData } = await supabase
+      .from('competition_matches')
+      .select('match_order')
+      .eq('competition_id', selectedCompId)
+      .order('match_order', { ascending: false })
+      .limit(1);
+    
+    const currentMaxOrder = maxOrderData?.[0]?.match_order || 0;
+
     const bracket = generateBracket(registrations);
     const toInsert = bracket.map(m => ({
       ...m,
       competition_id: selectedCompId,
       category_id: selectedCategoryId,
+      match_order: (m.match_order || 0) + currentMaxOrder,
     }));
 
     const { error } = await supabase.from('competition_matches').insert(toInsert);
@@ -671,7 +682,10 @@ const FederationBrackets = () => {
       return { name: winnerName || 'TBD', isConfirmed: true };
     }
 
-    // Feeder match NOT completed - show "Νικητής αγ. X" using global match number
+    // Feeder match NOT completed - show "Νικητής αγ. X" using global match_order
+    if (feederMatch.match_order) {
+      return { name: `Νικητής αγ. ${feederMatch.match_order}`, isConfirmed: false };
+    }
     const globalNum = globalMatchNumbers?.get(feederMatch.id);
     if (globalNum) {
       return { name: `Νικητής αγ. ${globalNum}`, isConfirmed: false };
@@ -912,14 +926,15 @@ const FederationBrackets = () => {
                });
                totalH = Math.max(totalH, maxY + 40);
 
-              // Global match numbering across all rounds
-              let globalCounter = 1;
-              const globalMatchNumbers = new Map<string, number>();
-              sortedRoundNumbers.forEach(rn => {
-                roundMatchArrays[sortedRoundNumbers.indexOf(rn)].forEach(m => {
-                  globalMatchNumbers.set(m.id, globalCounter++);
-                });
-              });
+               // Global match numbering - use match_order from DB (global across all categories)
+               const globalMatchNumbers = new Map<string, number>();
+               sortedRoundNumbers.forEach(rn => {
+                 roundMatchArrays[sortedRoundNumbers.indexOf(rn)].forEach(m => {
+                   if (m.match_order) {
+                     globalMatchNumbers.set(m.id, m.match_order);
+                   }
+                 });
+               });
 
               return (
                 <div className="w-full overflow-x-auto overflow-y-auto border border-border bg-muted/10 p-6" style={{ height: 'calc(100vh - 160px)' }}>
