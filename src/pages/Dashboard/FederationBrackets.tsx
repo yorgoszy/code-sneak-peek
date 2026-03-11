@@ -550,32 +550,72 @@ const FederationBrackets = () => {
         regsByCategory.get(r.category_id)!.push(r);
       });
 
-      // Generate brackets for each category, accumulating match_order
-      let globalMatchOrder = 0;
-      const allMatchesToInsert: any[] = [];
-
-      // Use category order to ensure consistent numbering
+      // Generate brackets for each category
       const orderedCategories = categories.filter(c => {
         const regs = regsByCategory.get(c.id);
         return regs && regs.length >= 2;
       });
 
+      // Step 1: Generate all brackets per category (without match_order yet)
+      const allBrackets: { categoryId: string; match: any; roundNumber: number; matchNumber: number }[] = [];
       for (const cat of orderedCategories) {
         const catRegs = regsByCategory.get(cat.id)!;
         const bracket = generateBracket(catRegs);
-        
         bracket.forEach(m => {
-          allMatchesToInsert.push({
-            ...m,
-            competition_id: selectedCompId,
-            category_id: cat.id,
-            match_order: globalMatchOrder + (m.match_order || 0),
+          allBrackets.push({
+            categoryId: cat.id,
+            match: { ...m, competition_id: selectedCompId, category_id: cat.id },
+            roundNumber: m.round_number,
+            matchNumber: m.match_number,
           });
         });
-
-        // Advance the global counter by the number of matches in this category
-        globalMatchOrder += bracket.length;
       }
+
+      // Step 2: Order matches so that each athlete has at least ~3-5 matches gap
+      // Strategy: process round by round (highest round_number = first round of tournament)
+      // Within each round, interleave categories so same-category matches are spread apart
+      const roundNumbers = [...new Set(allBrackets.map(b => b.roundNumber))].sort((a, b) => b - a);
+      
+      const orderedMatches: typeof allBrackets = [];
+      for (const rn of roundNumbers) {
+        const roundMatches = allBrackets.filter(b => b.roundNumber === rn && !b.match.is_bye);
+        const byeMatches = allBrackets.filter(b => b.roundNumber === rn && b.match.is_bye);
+        
+        // Group by category
+        const byCat = new Map<string, typeof roundMatches>();
+        roundMatches.forEach(m => {
+          if (!byCat.has(m.categoryId)) byCat.set(m.categoryId, []);
+          byCat.get(m.categoryId)!.push(m);
+        });
+        
+        // Interleave: take one match from each category in round-robin
+        const catArrays = [...byCat.values()];
+        const catPointers = new Array(catArrays.length).fill(0);
+        let remaining = roundMatches.length;
+        let ci = 0;
+        while (remaining > 0) {
+          for (let attempt = 0; attempt < catArrays.length; attempt++) {
+            const idx = (ci + attempt) % catArrays.length;
+            if (catPointers[idx] < catArrays[idx].length) {
+              orderedMatches.push(catArrays[idx][catPointers[idx]++]);
+              remaining--;
+              ci = (idx + 1) % catArrays.length;
+              break;
+            }
+          }
+          // Safety: if no progress, break
+          if (remaining > 0 && catArrays.every((arr, i) => catPointers[i] >= arr.length)) break;
+        }
+        
+        // Bye matches don't need ordering, just append
+        orderedMatches.push(...byeMatches);
+      }
+
+      // Step 3: Assign global match_order
+      const allMatchesToInsert = orderedMatches.map((entry, idx) => ({
+        ...entry.match,
+        match_order: idx + 1,
+      }));
 
       if (allMatchesToInsert.length === 0) {
         toast.error('Δεν υπάρχουν κατηγορίες με τουλάχιστον 2 αθλητές');
