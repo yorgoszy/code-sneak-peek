@@ -900,42 +900,62 @@ const FederationBrackets = () => {
               </div>
             )}
 
-            {/* Category selector - always visible for viewing */}
+            {/* Category filters */}
             {selectedCompId && categories.length > 0 && (
               <div className="mb-6">
-                <Label className="text-sm mb-2 block">{hasAnyMatches ? 'Επιλέξτε κατηγορία για προβολή' : t('federation.brackets.category')}</Label>
-                <div className="flex gap-4">
-                  {/* Άνδρες */}
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
-                      {t('federation.brackets.men', 'Άνδρες')}
-                    </div>
-                    {groupByAge(categories.filter(c => c.gender === 'male')).map(g => (
-                      <BracketAgeGroup
-                        key={`male-${g.age}`}
-                        age={g.age}
-                        cats={g.cats}
-                        selectedCategoryId={selectedCategoryId}
-                        onSelectCategory={setSelectedCategoryId}
-                        registrationCounts={registrationCounts}
-                      />
-                    ))}
+                <Label className="text-sm mb-2 block">{hasAnyMatches ? 'Φίλτρα κατηγορίας' : t('federation.brackets.category')}</Label>
+                <div className="flex flex-wrap gap-3">
+                  {/* Gender filter */}
+                  <div className="w-full sm:w-40">
+                    <Select value={filterGender} onValueChange={handleGenderChange}>
+                      <SelectTrigger className="rounded-none">
+                        <SelectValue placeholder="Φύλο" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {genderOptions.map(g => (
+                          <SelectItem key={g} value={g}>
+                            {g === 'male' ? 'Άνδρες' : 'Γυναίκες'}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  {/* Γυναίκες */}
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-bold text-foreground px-2 py-2 border-b-2 border-foreground mb-1">
-                      {t('federation.brackets.women', 'Γυναίκες')}
-                    </div>
-                    {groupByAge(categories.filter(c => c.gender === 'female')).map(g => (
-                      <BracketAgeGroup
-                        key={`female-${g.age}`}
-                        age={g.age}
-                        cats={g.cats}
-                        selectedCategoryId={selectedCategoryId}
-                        onSelectCategory={setSelectedCategoryId}
-                        registrationCounts={registrationCounts}
-                      />
-                    ))}
+
+                  {/* Age filter */}
+                  <div className="w-full sm:w-40">
+                    <Select value={filterAge} onValueChange={handleAgeChange} disabled={!filterGender}>
+                      <SelectTrigger className="rounded-none">
+                        <SelectValue placeholder="Ηλικία" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ageOptions.map(a => (
+                          <SelectItem key={a} value={a}>{a === '18-40' ? 'Ενήλικοι' : a}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Weight filter */}
+                  <div className="w-full sm:w-48">
+                    <Select value={filterWeight} onValueChange={setFilterWeight} disabled={!filterAge}>
+                      <SelectTrigger className="rounded-none">
+                        <SelectValue placeholder="Κιλά" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {weightOptions.map(w => (
+                          <SelectItem key={w.id} value={w.id}>
+                            <span className="flex items-center justify-between gap-2 w-full">
+                              <span>{w.label}</span>
+                              {w.count > 0 && (
+                                <Badge className="rounded-none text-[9px] h-4 px-1 bg-foreground text-background ml-2">
+                                  {w.count}
+                                </Badge>
+                              )}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </div>
