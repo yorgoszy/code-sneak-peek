@@ -836,8 +836,9 @@ const FederationBrackets = () => {
               const firstRoundCount = roundMatchArrays[0]?.length || 1;
               const maxMatchesInAnyRound = Math.max(...roundMatchArrays.map(r => r.length), 1);
 
-               // Initial height estimate based on the round with the most matches
-               const contentH = HEADER_H + maxMatchesInAnyRound * CARD_H + (maxMatchesInAnyRound - 1) * CARD_GAP + 40;
+               // Initial height: guarantee minimum spacing for all matches
+               const minSpacing = CARD_H + CARD_GAP;
+               const contentH = HEADER_H + maxMatchesInAnyRound * (CARD_H + CARD_GAP) + 40;
                let totalH = Math.max(contentH, 700);
                const totalW = sortedRoundNumbers.length * (COL_W + CONNECTOR_W);
 
@@ -852,24 +853,11 @@ const FederationBrackets = () => {
               // Y-center positions keyed by match id
               const yPositions = new Map<string, number>();
 
-               // First round: evenly distributed across full height
-               const firstRoundSpacing = (totalH - HEADER_H) / firstRoundCount;
+               // First round: use guaranteed minimum spacing
+               const firstRoundSpacing = Math.max((totalH - HEADER_H) / firstRoundCount, minSpacing);
                roundMatchArrays[0]?.forEach((m, i) => {
                  yPositions.set(m.id, HEADER_H + i * firstRoundSpacing + firstRoundSpacing / 2);
                });
-
-               // Collision resolution for first round
-               {
-                 const minSpacing = CARD_H + CARD_GAP;
-                 const sortedByY = [...(roundMatchArrays[0] || [])].sort((a, b) => (yPositions.get(a.id) || 0) - (yPositions.get(b.id) || 0));
-                 for (let j = 1; j < sortedByY.length; j++) {
-                   const prevY = yPositions.get(sortedByY[j - 1].id) || 0;
-                   const currY = yPositions.get(sortedByY[j].id) || 0;
-                   if (currY - prevY < minSpacing) {
-                     yPositions.set(sortedByY[j].id, prevY + minSpacing);
-                   }
-                 }
-               }
 
                // Subsequent rounds: position at midpoint of feeder matches
                for (let ri = 1; ri < sortedRoundNumbers.length; ri++) {
