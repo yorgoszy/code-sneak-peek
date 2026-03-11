@@ -682,7 +682,10 @@ const FederationBrackets = () => {
       return { name: winnerName || 'TBD', isConfirmed: true };
     }
 
-    // Feeder match NOT completed - show "Νικητής αγ. X" using global match number
+    // Feeder match NOT completed - show "Νικητής αγ. X" using global match_order
+    if (feederMatch.match_order) {
+      return { name: `Νικητής αγ. ${feederMatch.match_order}`, isConfirmed: false };
+    }
     const globalNum = globalMatchNumbers?.get(feederMatch.id);
     if (globalNum) {
       return { name: `Νικητής αγ. ${globalNum}`, isConfirmed: false };
