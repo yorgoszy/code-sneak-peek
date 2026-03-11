@@ -242,6 +242,18 @@ const FederationLive = () => {
     setEditCurrentMatchId(ring.current_match_id || '');
   };
 
+  const handleMatchChangeForRing = async (ringId: string, matchId: string) => {
+    const { error } = await supabase
+      .from('competition_rings')
+      .update({ current_match_id: matchId || null })
+      .eq('id', ringId);
+    if (error) {
+      toast.error('Σφάλμα ενημέρωσης');
+    } else {
+      loadRings();
+    }
+  };
+
   const getAthleteAvatar = (athlete: { name: string; photo_url: string | null; avatar_url: string | null } | null | undefined) => {
     return athlete?.photo_url || athlete?.avatar_url || undefined;
   };
