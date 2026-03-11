@@ -76,7 +76,40 @@ function getYoutubeEmbedUrl(url: string): string | null {
   return url;
 }
 
-const FederationLive = () => {
+const JudgeLinkRow: React.FC<{ judgeNum: number; url: string }> = ({ judgeNum, url }) => {
+  const [copied, setCopied] = React.useState(false);
+  const [showQR, setShowQR] = React.useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="border border-border p-2 space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium">Κριτής {judgeNum}</span>
+        <div className="flex items-center gap-1">
+          <Button variant="outline" size="sm" className="rounded-none h-7 text-xs" onClick={handleCopy}>
+            {copied ? <Check className="h-3 w-3 mr-1 text-[#00ffba]" /> : <Copy className="h-3 w-3 mr-1" />}
+            {copied ? 'Copied!' : 'Copy'}
+          </Button>
+          <Button variant="outline" size="sm" className="rounded-none h-7 text-xs" onClick={() => setShowQR(!showQR)}>
+            QR
+          </Button>
+        </div>
+      </div>
+      <p className="text-[10px] text-muted-foreground break-all">{url}</p>
+      {showQR && (
+        <div className="flex justify-center p-3 bg-white">
+          <QRCodeSVG value={url} size={160} />
+        </div>
+      )}
+    </div>
+  );
+};
+
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { userProfile } = useRoleCheck();
