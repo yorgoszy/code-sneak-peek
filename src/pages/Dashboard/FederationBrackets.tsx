@@ -614,30 +614,6 @@ const FederationBrackets = () => {
     }
     setResetDialogOpen(false);
   };
-    if (error) {
-      toast.error(t('federation.brackets.errorGenerating'));
-      console.error(error);
-    } else {
-      toast.success('Η κλήρωση δημιουργήθηκε επιτυχώς!');
-      loadData();
-    }
-  };
-
-  const handleResetBracket = async () => {
-    const { error } = await supabase
-      .from('competition_matches')
-      .delete()
-      .eq('competition_id', selectedCompId)
-      .eq('category_id', selectedCategoryId);
-
-    if (error) {
-      toast.error('Σφάλμα κατά τη διαγραφή');
-    } else {
-      toast.success('Η κλήρωση διαγράφηκε');
-      setMatches([]);
-    }
-    setResetDialogOpen(false);
-  };
 
   const openWinnerDialog = (match: Match) => {
     if (match.status === 'completed' || match.is_bye) return;
