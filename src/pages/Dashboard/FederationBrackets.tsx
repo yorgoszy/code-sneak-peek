@@ -503,12 +503,32 @@ const FederationBrackets = () => {
     loadCategoryMatches();
   }, [selectedCategoryId, selectedCompId]);
 
-  const loadData = useCallback(async () => {
+  const loadCategoryMatches = useCallback(async () => {
     if (!selectedCategoryId || !selectedCompId) return;
     setLoading(true);
+    const { data } = await supabase
+      .from('competition_matches')
+      .select(`
+        *,
+        athlete1:app_users!competition_matches_athlete1_id_fkey(name, photo_url, avatar_url),
+        athlete2:app_users!competition_matches_athlete2_id_fkey(name, photo_url, avatar_url),
+        athlete1_club:app_users!competition_matches_athlete1_club_id_fkey(name),
+        athlete2_club:app_users!competition_matches_athlete2_club_id_fkey(name)
+      `)
+      .eq('competition_id', selectedCompId)
+      .eq('category_id', selectedCategoryId)
+      .order('round_number', { ascending: false })
+      .order('match_number', { ascending: true });
+    setMatches((data as any) || []);
+    setLoading(false);
+  }, [selectedCategoryId, selectedCompId]);
 
-    const [regRes, matchRes] = await Promise.all([
-      supabase
+  // Generate brackets for ALL categories at once with unified numbering
+  const handleGenerateAllBrackets = async () => {
+    setGeneratingAll(true);
+    try {
+      // Load all registrations for all categories
+      const { data: allRegs } = await supabase
         .from('federation_competition_registrations')
         .select(`
           id, athlete_id, club_id, category_id,
@@ -516,53 +536,84 @@ const FederationBrackets = () => {
           club:app_users!federation_competition_registrations_club_id_fkey(name)
         `)
         .eq('competition_id', selectedCompId)
-        .eq('category_id', selectedCategoryId)
-        .eq('is_paid', true),
-      supabase
-        .from('competition_matches')
-        .select(`
-          *,
-          athlete1:app_users!competition_matches_athlete1_id_fkey(name, photo_url, avatar_url),
-          athlete2:app_users!competition_matches_athlete2_id_fkey(name, photo_url, avatar_url),
-          athlete1_club:app_users!competition_matches_athlete1_club_id_fkey(name),
-          athlete2_club:app_users!competition_matches_athlete2_club_id_fkey(name)
-        `)
-        .eq('competition_id', selectedCompId)
-        .eq('category_id', selectedCategoryId)
-        .order('round_number', { ascending: false })
-        .order('match_number', { ascending: true })
-    ]);
+        .eq('is_paid', true);
 
-    setRegistrations((regRes.data as any) || []);
-    setMatches((matchRes.data as any) || []);
-    setLoading(false);
-  }, [selectedCategoryId, selectedCompId]);
+      if (!allRegs?.length) {
+        toast.error('Δεν υπάρχουν δηλώσεις');
+        return;
+      }
 
-  const handleGenerateBracket = async () => {
-    if (registrations.length < 2) {
-      toast.error('Χρειάζονται τουλάχιστον 2 δηλωμένοι αθλητές');
-      return;
+      // Group registrations by category
+      const regsByCategory = new Map<string, Registration[]>();
+      allRegs.forEach((r: any) => {
+        if (!regsByCategory.has(r.category_id)) regsByCategory.set(r.category_id, []);
+        regsByCategory.get(r.category_id)!.push(r);
+      });
+
+      // Generate brackets for each category, accumulating match_order
+      let globalMatchOrder = 0;
+      const allMatchesToInsert: any[] = [];
+
+      // Use category order to ensure consistent numbering
+      const orderedCategories = categories.filter(c => {
+        const regs = regsByCategory.get(c.id);
+        return regs && regs.length >= 2;
+      });
+
+      for (const cat of orderedCategories) {
+        const catRegs = regsByCategory.get(cat.id)!;
+        const bracket = generateBracket(catRegs);
+        
+        bracket.forEach(m => {
+          allMatchesToInsert.push({
+            ...m,
+            competition_id: selectedCompId,
+            category_id: cat.id,
+            match_order: globalMatchOrder + (m.match_order || 0),
+          });
+        });
+
+        // Advance the global counter by the number of matches in this category
+        globalMatchOrder += bracket.length;
+      }
+
+      if (allMatchesToInsert.length === 0) {
+        toast.error('Δεν υπάρχουν κατηγορίες με τουλάχιστον 2 αθλητές');
+        return;
+      }
+
+      const { error } = await supabase.from('competition_matches').insert(allMatchesToInsert);
+      if (error) {
+        toast.error(t('federation.brackets.errorGenerating'));
+        console.error(error);
+      } else {
+        toast.success(`Η κλήρωση δημιουργήθηκε για ${orderedCategories.length} κατηγορίες (${allMatchesToInsert.length} αγώνες)`);
+        setHasAnyMatches(true);
+        if (selectedCategoryId) loadCategoryMatches();
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Σφάλμα κατά τη δημιουργία κλήρωσης');
+    } finally {
+      setGeneratingAll(false);
     }
+  };
 
-    // Get the current max match_order across ALL categories for this competition
-    const { data: maxOrderData } = await supabase
+  const handleResetAllBrackets = async () => {
+    const { error } = await supabase
       .from('competition_matches')
-      .select('match_order')
-      .eq('competition_id', selectedCompId)
-      .order('match_order', { ascending: false })
-      .limit(1);
-    
-    const currentMaxOrder = maxOrderData?.[0]?.match_order || 0;
+      .delete()
+      .eq('competition_id', selectedCompId);
 
-    const bracket = generateBracket(registrations);
-    const toInsert = bracket.map(m => ({
-      ...m,
-      competition_id: selectedCompId,
-      category_id: selectedCategoryId,
-      match_order: (m.match_order || 0) + currentMaxOrder,
-    }));
-
-    const { error } = await supabase.from('competition_matches').insert(toInsert);
+    if (error) {
+      toast.error('Σφάλμα κατά τη διαγραφή');
+    } else {
+      toast.success('Η κλήρωση διαγράφηκε για όλες τις κατηγορίες');
+      setMatches([]);
+      setHasAnyMatches(false);
+    }
+    setResetDialogOpen(false);
+  };
     if (error) {
       toast.error(t('federation.brackets.errorGenerating'));
       console.error(error);
