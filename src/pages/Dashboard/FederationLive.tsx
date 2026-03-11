@@ -553,17 +553,17 @@ const FederationLive = () => {
 
               <div>
                 <Label className="text-sm">{t('federation.live.currentMatch')}</Label>
-                <Select value={editCurrentMatchId} onValueChange={setEditCurrentMatchId}>
+                <Select value={editCurrentMatchId || "none"} onValueChange={(val) => setEditCurrentMatchId(val === "none" ? "" : val)}>
                   <SelectTrigger className="rounded-none">
                     <SelectValue placeholder={t('federation.live.selectMatch')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">{t('federation.live.none')}</SelectItem>
+                    <SelectItem value="none">{t('federation.live.none')}</SelectItem>
                     {matches
                       .filter(m => m.status !== 'completed')
                       .map(m => (
                         <SelectItem key={m.id} value={m.id}>
-                          #{m.match_order} - {m.athlete1?.name || 'TBD'} vs {m.athlete2?.name || 'TBD'}
+                          #{m.match_order ?? '-'} - {m.athlete1?.name || 'TBD'} vs {m.athlete2?.name || 'TBD'}
                         </SelectItem>
                       ))}
                   </SelectContent>
