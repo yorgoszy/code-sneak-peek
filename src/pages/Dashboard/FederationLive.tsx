@@ -341,28 +341,24 @@ const FederationLive = () => {
               }`}>
                 {rings.map((ring) => (
                   <Card key={ring.id} className="rounded-none overflow-hidden">
-                    <CardHeader className="p-2 px-3 bg-muted border-b border-border">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Monitor className="h-3.5 w-3.5 text-muted-foreground" />
-                          <CardTitle className="text-xs font-semibold">{ring.ring_name || `Ring ${ring.ring_number}`}</CardTitle>
-                          {ring.is_active && (
-                            <Badge variant="outline" className="rounded-none text-[10px] px-1.5 py-0 bg-destructive/10 text-destructive border-destructive/30">
-                              <Radio className="h-2.5 w-2.5 mr-0.5 animate-pulse" />
-                              LIVE
-                            </Badge>
-                          )}
-                          {ring.match_range_start && ring.match_range_end && (
-                            <span className="text-[10px] text-muted-foreground">
-                              ({ring.match_range_start}-{ring.match_range_end})
-                            </span>
-                          )}
-                        </div>
-                        <Button variant="ghost" size="sm" onClick={() => openEditRing(ring)} className="rounded-none h-6 w-6 p-0">
-                          <Settings className="h-3 w-3" />
-                        </Button>
+                    <div className="flex items-center justify-between px-2 py-1 bg-muted border-b border-border">
+                      <div className="flex items-center gap-1.5">
+                        <Monitor className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-xs font-semibold">Ring {ring.ring_number}</span>
+                        {ring.is_active && (
+                          <Badge variant="outline" className="rounded-none text-[10px] px-1 py-0 bg-destructive/10 text-destructive border-destructive/30 leading-none">
+                            <Radio className="h-2 w-2 mr-0.5 animate-pulse" />
+                            LIVE
+                          </Badge>
+                        )}
+                        {ring.match_range_start && ring.match_range_end && (
+                          <span className="text-[10px] text-muted-foreground">({ring.match_range_start}-{ring.match_range_end})</span>
+                        )}
                       </div>
-                    </CardHeader>
+                      <Button variant="ghost" size="sm" onClick={() => openEditRing(ring)} className="rounded-none h-5 w-5 p-0">
+                        <Settings className="h-3 w-3" />
+                      </Button>
+                    </div>
 
                     <CardContent className="p-0">
                       {ring.youtube_live_url ? (
