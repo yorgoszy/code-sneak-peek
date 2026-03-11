@@ -121,6 +121,34 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
     return () => { supabase.removeChannel(channel); };
   }, [currentMatchId]);
 
+  // Load upcoming matches for this ring
+  useEffect(() => {
+    if (!competitionId || !match) { setUpcomingMatches([]); return; }
+    const loadUpcoming = async () => {
+      let query = supabase
+        .from('competition_matches')
+        .select(`
+          id, match_order, status,
+          athlete1:app_users!competition_matches_athlete1_id_fkey(name),
+          athlete2:app_users!competition_matches_athlete2_id_fkey(name),
+          category:federation_competition_categories!competition_matches_category_id_fkey(name)
+        `)
+        .eq('competition_id', competitionId)
+        .gt('match_order', match.match_order)
+        .in('status', ['pending', 'scheduled'])
+        .order('match_order', { ascending: true })
+        .limit(2);
+
+      if (matchRangeStart && matchRangeEnd) {
+        query = query.gte('match_order', matchRangeStart).lte('match_order', matchRangeEnd);
+      }
+
+      const { data } = await query;
+      setUpcomingMatches((data as any) || []);
+    };
+    loadUpcoming();
+  }, [competitionId, match?.match_order, matchRangeStart, matchRangeEnd]);
+
   const getJudgeScoreForRound = (judgeNum: number, round: number) => {
     return judgeScores.find(s => s.judge_number === judgeNum && s.round === round);
   };
