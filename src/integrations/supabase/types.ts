@@ -2225,6 +2225,10 @@ export type Database = {
           match_range_start: number | null
           ring_name: string | null
           ring_number: number
+          timer_current_round: number | null
+          timer_is_break: boolean | null
+          timer_remaining_seconds: number | null
+          timer_running_since: string | null
           updated_at: string
           youtube_live_url: string | null
         }
@@ -2238,6 +2242,10 @@ export type Database = {
           match_range_start?: number | null
           ring_name?: string | null
           ring_number: number
+          timer_current_round?: number | null
+          timer_is_break?: boolean | null
+          timer_remaining_seconds?: number | null
+          timer_running_since?: string | null
           updated_at?: string
           youtube_live_url?: string | null
         }
@@ -2251,6 +2259,10 @@ export type Database = {
           match_range_start?: number | null
           ring_name?: string | null
           ring_number?: number
+          timer_current_round?: number | null
+          timer_is_break?: boolean | null
+          timer_remaining_seconds?: number | null
+          timer_running_since?: string | null
           updated_at?: string
           youtube_live_url?: string | null
         }
