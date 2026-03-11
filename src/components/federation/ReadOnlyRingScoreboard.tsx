@@ -29,8 +29,11 @@ interface UpcomingMatch {
   id: string;
   match_order: number;
   status: string;
+  is_bye?: boolean;
   athlete1?: { name: string } | null;
   athlete2?: { name: string } | null;
+  athlete1_placeholder?: string;
+  athlete2_placeholder?: string;
   category?: { name: string } | null;
 }
 
