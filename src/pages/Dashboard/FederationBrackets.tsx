@@ -954,11 +954,11 @@ const FederationBrackets = () => {
 
             {/* Bracket Display */}
             {matches.length > 0 && (() => {
-              const CARD_H = 76;
-              const CARD_GAP = 20;
-              const COL_W = 220;
-              const CONNECTOR_W = 40;
-              const HEADER_H = 36;
+              const CARD_H = 110;
+              const CARD_GAP = 40;
+              const COL_W = 300;
+              const CONNECTOR_W = 60;
+              const HEADER_H = 50;
 
               // Non-bye matches per round, sorted by match_number
               const roundMatchArrays = sortedRoundNumbers.map(rn =>
@@ -1061,13 +1061,13 @@ const FederationBrackets = () => {
                         <React.Fragment key={roundNum}>
                           {/* Round header */}
                           <div
-                            className="absolute bg-foreground text-background px-2 py-1 border border-border"
+                            className="absolute bg-foreground text-background px-3 py-2 border border-border"
                             style={{ left: xOffset, top: 0, width: COL_W }}
                           >
-                            <h3 className="font-bold text-[10px] leading-tight">
+                            <h3 className="font-bold text-xs">
                               {getRoundName(roundNum, t)}
                             </h3>
-                            <span className="text-[9px] opacity-70">{rMatches.length} αγώνες</span>
+                            <span className="text-[10px] opacity-70">{rMatches.length} αγώνες</span>
                           </div>
 
                           {/* Match cards */}
@@ -1088,48 +1088,63 @@ const FederationBrackets = () => {
                                 onClick={() => openWinnerDialog(match)}
                               >
                                 {/* Match number header */}
-                                <div className="flex items-center justify-between px-1.5 py-0.5 bg-muted/50 border-b border-border">
-                                  <span className="text-[9px] font-bold text-foreground">Αγ. {globalMatchNum}</span>
+                                <div className="flex items-center justify-between px-2.5 py-1 bg-muted/50 border-b border-border">
+                                  <span className="text-[11px] font-bold text-foreground">Αγ. {globalMatchNum}</span>
                                   {match.status === 'completed' && match.result_type && (
-                                    <Badge variant="secondary" className="rounded-none text-[8px] h-3 px-1 uppercase">
+                                    <Badge variant="secondary" className="rounded-none text-[9px] h-4 px-1.5 uppercase">
                                       {match.result_type}
+                                      {match.athlete1_score && ` ${match.athlete1_score}`}
+                                      {match.athlete2_score && ` ${match.athlete2_score}`}
                                     </Badge>
                                   )}
                                 </div>
 
                                 {/* Athlete 1 - Red corner */}
-                                <div className={`flex items-center gap-1 px-1.5 py-0.5 border-l-[3px] border-l-red-500 ${
+                                <div className={`flex items-center gap-2 px-2.5 py-1.5 border-l-[3px] border-l-red-500 ${
                                   match.winner_id === match.athlete1_id ? 'bg-[#00ffba]/10' : ''
                                 }`}>
+                                  <Avatar className="h-6 w-6 shrink-0">
+                                    <AvatarImage src={getAthleteAvatar(match.athlete1) || undefined} />
+                                    <AvatarFallback className="text-[10px] bg-red-100 text-red-700">
+                                      {match.athlete1?.name?.charAt(0) || '?'}
+                                    </AvatarFallback>
+                                  </Avatar>
                                   <div className="flex-1 min-w-0">
-                                    <p className={`text-[10px] leading-tight truncate ${slot1.isConfirmed ? 'font-bold text-red-700' : 'text-muted-foreground italic'}`}>
+                                    <p className={`text-[12px] leading-tight truncate ${slot1.isConfirmed ? 'font-bold text-red-700' : 'text-muted-foreground italic text-[11px]'}`}>
                                       {slot1.name}
                                     </p>
                                     {match.athlete1_club && (
-                                      <p className="text-[8px] text-muted-foreground truncate leading-none">{match.athlete1_club.name}</p>
+                                      <p className="text-[10px] text-muted-foreground truncate leading-tight">{match.athlete1_club.name}</p>
                                     )}
                                   </div>
                                   {match.winner_id === match.athlete1_id && (
-                                    <Trophy className="h-3 w-3 text-[#cb8954] shrink-0" />
+                                    <Trophy className="h-3.5 w-3.5 text-[#cb8954] shrink-0" />
                                   )}
                                 </div>
 
+                                {/* Divider */}
                                 <div className="border-t border-border/50" />
 
                                 {/* Athlete 2 - Blue corner */}
-                                <div className={`flex items-center gap-1 px-1.5 py-0.5 border-l-[3px] border-l-blue-500 ${
+                                <div className={`flex items-center gap-2 px-2.5 py-1.5 border-l-[3px] border-l-blue-500 ${
                                   match.winner_id === match.athlete2_id ? 'bg-[#00ffba]/10' : ''
                                 }`}>
+                                  <Avatar className="h-6 w-6 shrink-0">
+                                    <AvatarImage src={getAthleteAvatar(match.athlete2) || undefined} />
+                                    <AvatarFallback className="text-[10px] bg-blue-100 text-blue-700">
+                                      {match.athlete2?.name?.charAt(0) || '?'}
+                                    </AvatarFallback>
+                                  </Avatar>
                                   <div className="flex-1 min-w-0">
-                                    <p className={`text-[10px] leading-tight truncate ${slot2.isConfirmed ? 'font-bold text-blue-700' : 'text-muted-foreground italic'}`}>
+                                    <p className={`text-[12px] leading-tight truncate ${slot2.isConfirmed ? 'font-bold text-blue-700' : 'text-muted-foreground italic text-[11px]'}`}>
                                       {slot2.name}
                                     </p>
                                     {match.athlete2_club && (
-                                      <p className="text-[8px] text-muted-foreground truncate leading-none">{match.athlete2_club.name}</p>
+                                      <p className="text-[10px] text-muted-foreground truncate leading-tight">{match.athlete2_club.name}</p>
                                     )}
                                   </div>
                                   {match.winner_id === match.athlete2_id && (
-                                    <Trophy className="h-3 w-3 text-[#cb8954] shrink-0" />
+                                    <Trophy className="h-3.5 w-3.5 text-[#cb8954] shrink-0" />
                                   )}
                                 </div>
                               </div>
