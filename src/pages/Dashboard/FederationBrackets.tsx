@@ -1200,7 +1200,7 @@ const FederationBrackets = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="rounded-none">{t('federation.common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleResetBracket} className="bg-destructive hover:bg-destructive/90 rounded-none">
+            <AlertDialogAction onClick={handleResetAllBrackets} className="bg-destructive hover:bg-destructive/90 rounded-none">
               {t('federation.brackets.deleteAndReset')}
             </AlertDialogAction>
           </AlertDialogFooter>
