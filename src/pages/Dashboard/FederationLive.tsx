@@ -590,10 +590,10 @@ const FederationLive = () => {
                                 <div className="grid grid-cols-[1fr_auto_1fr] gap-0">
                                   <div className="bg-red-500/20 flex items-center gap-1.5 px-2 py-1">
                                     <Avatar className="h-5 w-5">
-                                      <AvatarFallback className="text-[8px]">{m.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
+                                      <AvatarFallback className="text-[8px]">{m.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
                                     </Avatar>
                                     <div className="min-w-0">
-                                      <p className="text-[10px] font-semibold truncate leading-tight">{m.athlete2?.name || '—'}</p>
+                                      <p className="text-[10px] font-semibold truncate leading-tight">{m.athlete1?.name || '—'}</p>
                                     </div>
                                   </div>
                                   <div className="flex flex-col items-center justify-center px-1 bg-muted/20">
@@ -602,10 +602,10 @@ const FederationLive = () => {
                                   </div>
                                   <div className="bg-blue-500/20 flex items-center gap-1.5 px-2 py-1 justify-end">
                                     <div className="min-w-0 text-right">
-                                      <p className="text-[10px] font-semibold truncate leading-tight">{m.athlete1?.name || '—'}</p>
+                                      <p className="text-[10px] font-semibold truncate leading-tight">{m.athlete2?.name || '—'}</p>
                                     </div>
                                     <Avatar className="h-5 w-5">
-                                      <AvatarFallback className="text-[8px]">{m.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
+                                      <AvatarFallback className="text-[8px]">{m.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
                                     </Avatar>
                                   </div>
                                 </div>
