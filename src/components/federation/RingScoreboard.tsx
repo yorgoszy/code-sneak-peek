@@ -437,7 +437,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {matches.filter(m => m.status !== 'completed').map(m => (
+            {navigableMatches.map(m => (
               <SelectItem key={m.id} value={m.id}>
                 #{m.match_order} {m.athlete1_display || m.athlete1?.name || 'Νικητής'} vs {m.athlete2_display || m.athlete2?.name || 'Νικητής'}
               </SelectItem>
@@ -475,10 +475,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
           className="rounded-none h-7 w-7 p-0 text-foreground"
           title="Προηγούμενος αγώνας"
           onClick={() => {
-            const currentOrder = match?.match_order || 0;
-            const prevMatch = matches
-              .filter(m => (m.match_order || 0) < currentOrder && (m.athlete1 || m.athlete2))
-              .sort((a, b) => (b.match_order || 0) - (a.match_order || 0))[0];
+            const prevMatch = getAdjacentMatch('prev');
             if (prevMatch) {
               onMatchChange(prevMatch.id);
             } else {
@@ -511,10 +508,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
             className="rounded-none h-7 w-7 p-0 text-foreground"
             title="Επόμενος αγώνας"
             onClick={() => {
-              const currentOrder = match?.match_order || 0;
-              const nextMatch = matches
-                .filter(m => (m.match_order || 0) > currentOrder && (m.athlete1 || m.athlete2))
-                .sort((a, b) => (a.match_order || 0) - (b.match_order || 0))[0];
+              const nextMatch = getAdjacentMatch('next');
               if (nextMatch) {
                 onMatchChange(nextMatch.id);
               } else {
