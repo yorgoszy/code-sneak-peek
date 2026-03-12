@@ -42,8 +42,9 @@ interface CompetitionCategoriesDialogProps {
 }
 
 const getAgeGroup = (name: string): string => {
-  if (name.startsWith('Ενήλικοι')) return 'Ενήλικοι 18+';
+  if (name.startsWith('Ενήλικοι')) return 'Ενήλικοι 18-40';
   if (name.startsWith('U23')) return 'U23 (18-23)';
+  if (name.startsWith('Βετεράνοι') || name.startsWith('40+')) return 'Βετεράνοι 40+';
   if (name.startsWith('Νέοι 16-17')) return 'Νέοι 16-17';
   if (name.startsWith('Νέοι 14-15')) return 'Νέοι 14-15';
   if (name.startsWith('Νέοι 12-13')) return 'Νέοι 12-13';
@@ -54,7 +55,7 @@ const getAgeGroup = (name: string): string => {
 };
 
 const AGE_GROUP_ORDER = [
-  'Ενήλικοι 18+', 'U23 (18-23)', 'Νέοι 16-17', 'Νέοι 14-15',
+  'Ενήλικοι 18-40', 'U23 (18-23)', 'Βετεράνοι 40+', 'Νέοι 16-17', 'Νέοι 14-15',
   'Νέοι 12-13', 'Νέοι 10-11', 'Νέοι 8-9', 'Νέοι 5-7', 'Άλλες'
 ];
 
