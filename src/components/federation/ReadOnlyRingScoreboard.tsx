@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useRealtimeJudgeScores } from "@/hooks/useRealtimeJudgeScores";
 
 interface MatchData {
   id: string;

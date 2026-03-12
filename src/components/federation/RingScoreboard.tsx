@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Play, Pause, RotateCcw, Trophy, Clock, Link2, Copy, Check, RefreshCw } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
+import { useRealtimeJudgeScores } from "@/hooks/useRealtimeJudgeScores";
 import { toast } from "sonner";
 
 interface MatchData {

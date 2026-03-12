@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Minimize } from 'lucide-react';
+import { useRealtimeJudgeScores } from '@/hooks/useRealtimeJudgeScores';
 
 interface VideoOverlayScoresProps {
   matchId: string;
