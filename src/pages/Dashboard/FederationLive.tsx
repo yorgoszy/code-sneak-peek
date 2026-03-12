@@ -147,8 +147,27 @@ const FederationLive = () => {
   const [editYoutubeUrl, setEditYoutubeUrl] = useState('');
   const [editCurrentMatchId, setEditCurrentMatchId] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [availableCameras, setAvailableCameras] = useState<MediaDeviceInfo[]>([]);
 
   const federationId = userProfile?.id;
+
+  // Enumerate cameras when setup dialog opens
+  useEffect(() => {
+    if (!setupDialogOpen) return;
+    const loadCameras = async () => {
+      try {
+        // Request permission first to get labels
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        stream.getTracks().forEach(t => t.stop());
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        setAvailableCameras(devices.filter(d => d.kind === 'videoinput'));
+      } catch (err) {
+        console.error('Cannot enumerate cameras:', err);
+        setAvailableCameras([]);
+      }
+    };
+    loadCameras();
+  }, [setupDialogOpen]);
 
   useEffect(() => {
     if (!federationId) return;
