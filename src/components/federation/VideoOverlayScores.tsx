@@ -151,6 +151,23 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
 
   const totalRounds = 3;
 
+  // Determine winner by majority of round wins
+  const getWinner = (): 'a1' | 'a2' | null => {
+    let a1Wins = 0, a2Wins = 0;
+    for (let r = 1; r <= totalRounds; r++) {
+      const s1 = getMajorityScore(r, 'a1');
+      const s2 = getMajorityScore(r, 'a2');
+      if (s1 == null || s2 == null) return null; // not all rounds scored
+      if (s1 > s2) a1Wins++;
+      else if (s2 > s1) a2Wins++;
+    }
+    if (a1Wins > a2Wins) return 'a1';
+    if (a2Wins > a1Wins) return 'a2';
+    return null;
+  };
+
+  const winner = getWinner();
+
   const formatName = (fullName?: string) => {
     if (!fullName) return '—';
     const parts = fullName.trim().split(' ');
