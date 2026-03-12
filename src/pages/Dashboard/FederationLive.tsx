@@ -643,7 +643,7 @@ const FederationLive = () => {
                                     <AvatarFallback className="text-[8px]">{(m.athlete1_display || m.athlete1?.name || '?').charAt(0)}</AvatarFallback>
                                   </Avatar>
                                   <div className="min-w-0">
-                                    <p className="text-[10px] font-semibold truncate leading-tight">{m.athlete1_display || m.athlete1?.name || 'Νικητής προηγούμενου αγώνα'}</p>
+                                    <p className="text-[10px] font-semibold truncate leading-tight">{m.athlete1_display || m.athlete1?.name || 'TBD'}</p>
                                   </div>
                                 </div>
                                 <div className="flex flex-col items-center justify-center px-1 bg-muted/20">
