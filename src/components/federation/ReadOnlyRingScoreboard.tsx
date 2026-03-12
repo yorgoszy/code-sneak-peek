@@ -338,17 +338,16 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
                     })}
                   </tr>
                 ))}
-                {allRoundsScored && (
-                  <tr className="bg-muted/30 font-bold">
-                    <td className="px-1 py-0.5">Σύν.</td>
-                    {[1, 2, 3].map(r => {
-                      const ma = getMajorityScore(r, 'a1');
-                      return (
-                        <td key={r} className="text-center px-0.5 py-0.5 text-blue-600 border-l border-border">{ma !== null ? ma : '-'}</td>
-                      );
-                    })}
-                  </tr>
-                )}
+                <tr className="bg-muted/30 font-bold">
+                  <td className="px-1 py-0.5">Σύν.</td>
+                  {[1, 2, 3].map(r => {
+                    const roundScored = getRoundTotals(r).count === 3;
+                    const ma = roundScored ? getMajorityScore(r, 'a1') : null;
+                    return (
+                      <td key={r} className="text-center px-0.5 py-0.5 text-blue-600 border-l border-border">{ma !== null ? ma : '-'}</td>
+                    );
+                  })}
+                </tr>
               </tbody>
             </table>
           </div>
