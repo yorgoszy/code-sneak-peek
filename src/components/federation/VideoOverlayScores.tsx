@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Minimize } from 'lucide-react';
+import { Minimize, Trophy } from 'lucide-react';
 import { useRealtimeJudgeScores } from '@/hooks/useRealtimeJudgeScores';
 
 interface VideoOverlayScoresProps {
@@ -151,6 +151,23 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
 
   const totalRounds = 3;
 
+  // Determine winner by majority of round wins
+  const getWinner = (): 'a1' | 'a2' | null => {
+    let a1Wins = 0, a2Wins = 0;
+    for (let r = 1; r <= totalRounds; r++) {
+      const s1 = getMajorityScore(r, 'a1');
+      const s2 = getMajorityScore(r, 'a2');
+      if (s1 == null || s2 == null) return null; // not all rounds scored
+      if (s1 > s2) a1Wins++;
+      else if (s2 > s1) a2Wins++;
+    }
+    if (a1Wins > a2Wins) return 'a1';
+    if (a2Wins > a1Wins) return 'a2';
+    return null;
+  };
+
+  const winner = getWinner();
+
   const formatName = (fullName?: string) => {
     if (!fullName) return '—';
     const parts = fullName.trim().split(' ');
@@ -201,26 +218,34 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
             ) : (
               <div className="w-[120px]"></div>
             )}
-            <div className="overlay-timer bg-white/90 text-black text-[9px] font-bold py-0.5 flex items-center justify-center gap-1 leading-none"
-              style={{ width: `calc(${totalRounds} * (1.25rem + 2px) - 2px)` }}>
-              <span className="text-[7px] font-medium uppercase">
-                {isBreak ? 'ΔΙΑΛ.' : `R${currentRound}`}
-              </span>
-              <span className="text-[9px] font-bold">
-                {formatTime(liveSeconds)}
-              </span>
-            </div>
+            {winner ? (
+              <div className="overlay-timer bg-yellow-400 text-black text-[9px] font-bold py-0.5 flex items-center justify-center gap-1 leading-none"
+                style={{ width: `calc(${totalRounds} * (1.25rem + 2px) - 2px)` }}>
+                <Trophy className="h-3 w-3" />
+              </div>
+            ) : (
+              <div className="overlay-timer bg-white/90 text-black text-[9px] font-bold py-0.5 flex items-center justify-center gap-1 leading-none"
+                style={{ width: `calc(${totalRounds} * (1.25rem + 2px) - 2px)` }}>
+                <span className="text-[7px] font-medium uppercase">
+                  {isBreak ? 'ΔΙΑΛ.' : `R${currentRound}`}
+                </span>
+                <span className="text-[9px] font-bold">
+                  {formatTime(liveSeconds)}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Red (athlete2) name + scores row */}
           <div className="flex items-stretch" style={{ gap: '2px' }}>
-            <div className="score-name bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 w-[120px] truncate flex items-center">
+            <div className={`score-name text-white text-[9px] font-bold px-1.5 py-0.5 w-[120px] truncate flex items-center gap-0.5 ${winner === 'a2' ? 'bg-red-600 ring-1 ring-yellow-400' : winner === 'a1' ? 'bg-red-600/40' : 'bg-red-600'}`}>
+              {winner === 'a2' && <Trophy className="h-2.5 w-2.5 text-yellow-400 flex-shrink-0" />}
               {athlete2Name}
             </div>
             {Array.from({ length: totalRounds }, (_, i) => i + 1).map(r => {
               const score = getMajorityScore(r, 'a2');
               return (
-                <div key={r} className="score-round bg-red-600/80 text-white text-[9px] font-bold w-5 text-center py-0.5 flex items-center justify-center">
+                <div key={r} className={`score-round text-white text-[9px] font-bold w-5 text-center py-0.5 flex items-center justify-center ${winner === 'a1' ? 'bg-red-600/40' : 'bg-red-600/80'}`}>
                   {score ?? '-'}
                 </div>
               );
@@ -229,13 +254,14 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
 
           {/* Blue (athlete1) name + scores row */}
           <div className="flex items-stretch" style={{ gap: '2px' }}>
-            <div className="score-name bg-blue-600 text-white text-[9px] font-bold px-1.5 py-0.5 w-[120px] truncate flex items-center">
+            <div className={`score-name text-white text-[9px] font-bold px-1.5 py-0.5 w-[120px] truncate flex items-center gap-0.5 ${winner === 'a1' ? 'bg-blue-600 ring-1 ring-yellow-400' : winner === 'a2' ? 'bg-blue-600/40' : 'bg-blue-600'}`}>
+              {winner === 'a1' && <Trophy className="h-2.5 w-2.5 text-yellow-400 flex-shrink-0" />}
               {athlete1Name}
             </div>
             {Array.from({ length: totalRounds }, (_, i) => i + 1).map(r => {
               const score = getMajorityScore(r, 'a1');
               return (
-                <div key={r} className="score-round bg-blue-600/80 text-white text-[9px] font-bold w-5 text-center py-0.5 flex items-center justify-center">
+                <div key={r} className={`score-round text-white text-[9px] font-bold w-5 text-center py-0.5 flex items-center justify-center ${winner === 'a2' ? 'bg-blue-600/40' : 'bg-blue-600/80'}`}>
                   {score ?? '-'}
                 </div>
               );
