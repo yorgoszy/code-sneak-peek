@@ -19,12 +19,6 @@ interface MatchData {
   category?: { name: string; min_age: number | null; max_age: number | null } | null;
 }
 
-interface JudgeScore {
-  judge_number: number;
-  round: number;
-  athlete1_score: number;
-  athlete2_score: number;
-}
 
 interface UpcomingMatch {
   id: string;
