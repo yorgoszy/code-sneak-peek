@@ -147,8 +147,27 @@ const FederationLive = () => {
   const [editYoutubeUrl, setEditYoutubeUrl] = useState('');
   const [editCurrentMatchId, setEditCurrentMatchId] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [availableCameras, setAvailableCameras] = useState<MediaDeviceInfo[]>([]);
 
   const federationId = userProfile?.id;
+
+  // Enumerate cameras when setup dialog opens
+  useEffect(() => {
+    if (!setupDialogOpen) return;
+    const loadCameras = async () => {
+      try {
+        // Request permission first to get labels
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        stream.getTracks().forEach(t => t.stop());
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        setAvailableCameras(devices.filter(d => d.kind === 'videoinput'));
+      } catch (err) {
+        console.error('Cannot enumerate cameras:', err);
+        setAvailableCameras([]);
+      }
+    };
+    loadCameras();
+  }, [setupDialogOpen]);
 
   useEffect(() => {
     if (!federationId) return;
@@ -743,10 +762,28 @@ const FederationLive = () => {
                         className="rounded-none h-7 text-xs flex-1"
                       />
                     ) : (
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground flex-1">
-                        <Video className="h-3 w-3" />
-                        <span>Local Camera</span>
-                      </div>
+                      <Select
+                        value={rc.camera_device_id || ''}
+                        onValueChange={(val) => {
+                          const updated = [...ringConfigs];
+                          updated[idx].camera_device_id = val;
+                          setRingConfigs(updated);
+                        }}
+                      >
+                        <SelectTrigger className="rounded-none h-7 text-xs flex-1">
+                          <SelectValue placeholder="Επιλέξτε κάμερα..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableCameras.map((cam, i) => (
+                            <SelectItem key={cam.deviceId} value={cam.deviceId}>
+                              {cam.label || `Camera ${i + 1}`}
+                            </SelectItem>
+                          ))}
+                          {availableCameras.length === 0 && (
+                            <div className="px-2 py-1 text-xs text-muted-foreground">Δεν βρέθηκαν κάμερες</div>
+                          )}
+                        </SelectContent>
+                      </Select>
                     )}
 
                     <Input
