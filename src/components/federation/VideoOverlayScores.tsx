@@ -45,8 +45,13 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
 
   // Live countdown timer - synced with ring timer
   useEffect(() => {
-    if (!ringTimer?.timer_running_since || ringTimer.timer_remaining_seconds == null) {
+    // When timer is not running, show static remaining seconds
+    if (!ringTimer?.timer_running_since) {
       setLiveSeconds(ringTimer?.timer_remaining_seconds ?? null);
+      return;
+    }
+    if (ringTimer.timer_remaining_seconds == null) {
+      setLiveSeconds(null);
       return;
     }
     const calcRemaining = () => {
@@ -54,9 +59,9 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
       return Math.max(0, Math.round((ringTimer.timer_remaining_seconds ?? 0) - elapsed));
     };
     setLiveSeconds(calcRemaining());
-    const interval = setInterval(() => setLiveSeconds(calcRemaining()), 1000);
+    const interval = setInterval(() => setLiveSeconds(calcRemaining()), 200);
     return () => clearInterval(interval);
-  }, [ringTimer?.timer_running_since, ringTimer?.timer_remaining_seconds]);
+  }, [ringTimer?.timer_running_since, ringTimer?.timer_remaining_seconds, ringTimer?.timer_current_round, ringTimer?.timer_is_break]);
 
   const getMajorityScore = (round: number, athlete: 'a1' | 'a2'): number | null => {
     const roundScores = judgeScores.filter(s => s.round === round);
