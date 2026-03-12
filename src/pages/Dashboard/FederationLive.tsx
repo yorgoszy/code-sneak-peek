@@ -21,6 +21,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { RingScoreboard } from "@/components/federation/RingScoreboard";
+import { VideoOverlayScores } from "@/components/federation/VideoOverlayScores";
 
 interface Competition {
   id: string;
@@ -540,9 +541,12 @@ const FederationLive = () => {
                             const currentMatch = (matches as any[]).find((m: any) => m.id === ring.current_match_id);
                             if (!currentMatch?.match_order) return null;
                             return (
-                              <div className="absolute top-1 left-1 bg-black/70 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-none pointer-events-none">
-                                #{currentMatch.match_order}
-                              </div>
+                              <>
+                                <div className="absolute top-1 left-1 bg-black/70 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-none pointer-events-none">
+                                  #{currentMatch.match_order}
+                                </div>
+                                <VideoOverlayScores matchId={ring.current_match_id} match={currentMatch} />
+                              </>
                             );
                           })()}
                         </div>
