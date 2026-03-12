@@ -29,7 +29,7 @@ const DEFAULT_TIMER_STATE: RingTimerState = {
 };
 
 export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId, ringId, match, ringLabel }) => {
-  const [judgeScores, setJudgeScores] = useState<any[]>([]);
+  const judgeScores = useRealtimeJudgeScores(matchId, { channelPrefix: 'overlay-scores' });
   const [liveSeconds, setLiveSeconds] = useState<number | null>(null);
   const [timerState, setTimerState] = useState<RingTimerState>(DEFAULT_TIMER_STATE);
   const lastTimerSignatureRef = useRef<string>('');
