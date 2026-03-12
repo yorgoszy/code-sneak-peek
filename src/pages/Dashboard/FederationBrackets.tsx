@@ -969,7 +969,7 @@ const FederationBrackets = () => {
                       <SelectContent>
                         {genderOptions.map(g => (
                           <SelectItem key={g} value={g}>
-                            {g === 'male' ? 'Άνδρες' : 'Γυναίκες'}
+                            {g === 'male' ? t('federation.brackets.men') : t('federation.brackets.women')}
                           </SelectItem>
                         ))}
                       </SelectContent>
