@@ -507,9 +507,14 @@ const FederationLive = () => {
                           <span className="text-[10px] text-muted-foreground">({ring.match_range_start}-{ring.match_range_end})</span>
                         )}
                       </div>
-                      <Button variant="ghost" size="sm" onClick={() => openEditRing(ring)} className="rounded-none h-5 w-5 p-0">
-                        <Settings className="h-3 w-3" />
-                      </Button>
+                      <div className="flex items-center gap-0.5">
+                        <Button variant="ghost" size="sm" onClick={() => handleRefreshSingleRing(ring.id)} className="rounded-none h-5 w-5 p-0" title="Refresh Ring">
+                          <RefreshCw className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => openEditRing(ring)} className="rounded-none h-5 w-5 p-0">
+                          <Settings className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </div>
 
                     <CardContent className="p-0">
