@@ -902,7 +902,7 @@ const FederationLive = () => {
                     <Input value={editYoutubeUrl} onChange={(e) => setEditYoutubeUrl(e.target.value)} placeholder="https://youtube.com/live/..." className="rounded-none h-7 text-xs" />
                   ) : (
                     <Select value={editCameraDeviceId} onValueChange={setEditCameraDeviceId}>
-                      <SelectTrigger className="rounded-none h-7 text-xs"><SelectValue placeholder="Επιλέξτε κάμερα..." /></SelectTrigger>
+                      <SelectTrigger className="rounded-none h-7 text-xs"><SelectValue placeholder={t('federation.live.selectCamera')} /></SelectTrigger>
                       <SelectContent>
                         {availableCameras.map((cam, i) => (
                           <SelectItem key={cam.deviceId} value={cam.deviceId}>{cam.label || `Camera ${i + 1}`}</SelectItem>
