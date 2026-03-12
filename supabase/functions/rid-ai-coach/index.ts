@@ -682,18 +682,23 @@ serve(async (req) => {
         
         // 🥊 BRACKETS & LIVE DATA (competition_matches + competition_rings)
         for (const comp of compsData) {
+          let allMatchesForComp: any[] = [];
           try {
             const matchesRes = await fetch(
-              `${SUPABASE_URL}/rest/v1/competition_matches?competition_id=eq.${comp.id}&select=*,athlete1:app_users!competition_matches_athlete1_id_fkey(name),athlete2:app_users!competition_matches_athlete2_id_fkey(name),category:federation_competition_categories!competition_matches_category_id_fkey(name)&order=round_number.desc,match_number.asc`,
+              `${SUPABASE_URL}/rest/v1/competition_matches?competition_id=eq.${comp.id}&select=*,athlete1:app_users!competition_matches_athlete1_id_fkey(name),athlete2:app_users!competition_matches_athlete2_id_fkey(name),category:federation_competition_categories!competition_matches_category_id_fkey(name),athlete1_club:app_users!competition_matches_athlete1_club_id_fkey(name),athlete2_club:app_users!competition_matches_athlete2_club_id_fkey(name)&order=match_order.asc.nullslast,round_number.desc,match_number.asc`,
               { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
             );
             const matchesData = await matchesRes.json();
             if (Array.isArray(matchesData) && matchesData.length > 0) {
+              allMatchesForComp = matchesData;
               federationCompetitionsContext += `\n  🥊 ΖΕΥΓΑΡΩΜΑΤΑ/BRACKETS (${matchesData.length} αγώνες):\n`;
               matchesData.forEach((m: any) => {
                 const winner = m.winner_id ? (m.winner_id === m.athlete1_id ? m.athlete1?.name : m.athlete2?.name) : null;
                 const status = m.status === 'completed' ? '✅' : m.is_bye ? '⏭️ BYE' : '⏳';
-                federationCompetitionsContext += `    ${status} R${m.round_number} #${m.match_number}: ${m.athlete1?.name || 'TBD'} vs ${m.athlete2?.name || 'TBD'}${winner ? ` → Νικητής: ${winner}` : ''} ${m.result_type ? `(${m.result_type})` : ''} [${m.category?.name || ''}]\n`;
+                const club1 = m.athlete1_club?.name ? ` [${m.athlete1_club.name}]` : '';
+                const club2 = m.athlete2_club?.name ? ` [${m.athlete2_club.name}]` : '';
+                const orderStr = m.match_order ? ` (Σειρά αγώνα: #${m.match_order})` : '';
+                federationCompetitionsContext += `    ${status} R${m.round_number} #${m.match_number}${orderStr}: ${m.athlete1?.name || 'TBD'}${club1} vs ${m.athlete2?.name || 'TBD'}${club2}${winner ? ` → Νικητής: ${winner}` : ''} ${m.result_type ? `(${m.result_type})` : ''} [${m.category?.name || ''}]\n`;
               });
             }
           } catch(e) {}
@@ -707,7 +712,28 @@ serve(async (req) => {
             if (Array.isArray(ringsData) && ringsData.length > 0) {
               federationCompetitionsContext += `\n  📺 LIVE RINGS (${ringsData.length}):\n`;
               ringsData.forEach((r: any) => {
-                federationCompetitionsContext += `    Ring ${r.ring_number} (${r.ring_name || '-'}): ${r.is_active ? '🔴 LIVE' : '⚪ OFF'} | YouTube: ${r.youtube_live_url || '-'} | Αγώνες: ${r.match_range_start || '?'}-${r.match_range_end || '?'}\n`;
+                // Find the current match for this ring
+                const currentMatch = r.current_match_id ? allMatchesForComp.find((m: any) => m.id === r.current_match_id) : null;
+                const currentMatchInfo = currentMatch 
+                  ? `🔴 ΤΡΕΧΩΝ ΑΓΩΝΑΣ: #${currentMatch.match_order || currentMatch.match_number} - ${currentMatch.athlete1?.name || 'TBD'} vs ${currentMatch.athlete2?.name || 'TBD'} [${currentMatch.category?.name || ''}] (R${r.timer_current_round || 1}, ${r.timer_is_break ? 'BREAK' : 'ΑΓΩΝΑΣ'}, ${r.timer_remaining_seconds != null ? r.timer_remaining_seconds + 'sec left' : '-'})` 
+                  : 'Κανένας τρέχων αγώνας';
+                
+                // Find remaining matches for this ring
+                const ringMatches = allMatchesForComp.filter((m: any) => 
+                  m.match_order && m.match_order >= (r.match_range_start || 0) && m.match_order <= (r.match_range_end || 999) && !m.is_bye
+                );
+                const pendingMatches = ringMatches.filter((m: any) => m.status !== 'completed');
+                const currentOrder = currentMatch?.match_order || 0;
+                const upcomingMatches = pendingMatches.filter((m: any) => m.match_order > currentOrder).sort((a: any, b: any) => a.match_order - b.match_order);
+                
+                federationCompetitionsContext += `    Ring ${r.ring_number} (${r.ring_name || '-'}): ${r.is_active ? '🔴 LIVE' : '⚪ OFF'} | Αγώνες: ${r.match_range_start || '?'}-${r.match_range_end || '?'}\n`;
+                federationCompetitionsContext += `      ${currentMatchInfo}\n`;
+                if (upcomingMatches.length > 0) {
+                  federationCompetitionsContext += `      📋 Επόμενοι αγώνες στο ring (${upcomingMatches.length}):\n`;
+                  upcomingMatches.forEach((m: any) => {
+                    federationCompetitionsContext += `        #${m.match_order}: ${m.athlete1?.name || 'TBD'} vs ${m.athlete2?.name || 'TBD'} [${m.category?.name || ''}]\n`;
+                  });
+                }
               });
             }
           } catch(e) {}
@@ -4629,8 +4655,8 @@ FEDERATION DATA - Έχεις πρόσβαση σε:
 ✅ Αποδείξεις της ομοσπονδίας (ποσά, ημερομηνίες, σωματεία)
 ✅ 🏆 ΑΓΩΝΕΣ ομοσπονδίας (ημερομηνίες, κατηγορίες, δηλώσεις, αποτελέσματα)
 ✅ 🏅 RANKING αθλητών (πόντοι, μετάλλια, κατάταξη ανά κατηγορία)
-✅ 🥊 ΖΕΥΓΑΡΩΜΑΤΑ/BRACKETS (κλήρωση, αγώνες, νικητές, γύροι)
-✅ 📺 LIVE RINGS (ρινγκ, YouTube streams, τρέχοντες αγώνες)
+✅ 🥊 ΖΕΥΓΑΡΩΜΑΤΑ/BRACKETS (κλήρωση, αγώνες, νικητές, γύροι, σύλλογοι αθλητών)
+✅ 📺 LIVE RINGS (ρινγκ, τρέχων αγώνας ανά ρινγκ, επόμενοι αγώνες, timer)
 
 ΣΗΜΑΝΤΙΚΟ: Μπορείς να απαντήσεις ερωτήσεις όπως:
 - "Πόσους συλλόγους έχω;"
@@ -4645,7 +4671,22 @@ FEDERATION DATA - Έχεις πρόσβαση σε:
 - "Ποιοι είναι τα ζευγαρώματα στην κατηγορία Χ;"
 - "Ποιος κέρδισε στον αγώνα #5;"
 - "Πόσα rings έχει η διοργάνωση;"
-- "Ποιος αγωνίζεται τώρα στο ring 1;"
+- "Ποιος αγωνίζεται τώρα στο ring 1;" / "Who is fighting now on ring A?"
+- "Πότε παίζει ο Παπαδόπουλος;" / "When does Papadopoulos fight?"
+- "Σε ποιο ρινγκ παίζει ο Γιώργος;"
+- "Σε πόση ώρα παίζει ο αγώνας #20;"
+- "Πόσους αγώνες έχει ο αθλητής Χ;"
+- "Με ποιον σύλλογο παίζει ο αθλητής Χ;"
+
+🕐 ΥΠΟΛΟΓΙΣΜΟΣ ΕΚΤΙΜΩΜΕΝΗΣ ΩΡΑΣ ΑΓΩΝΑ:
+Για να υπολογίσεις πότε θα παίξει ένας αθλητής:
+1. Βρες σε ποιο Ring παίζει ο αγώνας του (βάσει match_order και match_range_start/end του κάθε ring)
+2. Βρες ποιος αγώνας παίζει ΤΩΡΑ σε αυτό το ring (τρέχων αγώνας)
+3. Μέτρα πόσοι αγώνες μεσολαβούν
+4. Κάθε αγώνας = 3 rounds × 2 λεπτά/round + 2 breaks × 1 λεπτό/break + 5 λεπτά αλλαγή αθλητών = ~13 λεπτά
+5. Αριθμός αγώνων μεσολαβούν × 13 λεπτά = εκτιμώμενος χρόνος αναμονής
+6. Αν ο τρέχων αγώνας έχει timer data, πρόσθεσε τον υπολειπόμενο χρόνο
+ΣΗΜΕΙΩΣΗ: Αυτός είναι ένας ΚΑΤΑ ΠΡΟΣΕΓΓΙΣΗ υπολογισμός. Πάντα ανέφερε ότι είναι εκτίμηση.
 
 Το context που έχεις περιλαμβάνει:
 - 🏛️ ΟΜΟΣΠΟΝΔΙΑ - ΔΕΔΟΜΕΝΑ με λίστα συλλόγων, αθλητών και αναλυτικά τεστ
@@ -4653,8 +4694,8 @@ FEDERATION DATA - Έχεις πρόσβαση σε:
 - 🧾 ΑΠΟΔΕΙΞΕΙΣ ΟΜΟΣΠΟΝΔΙΑΣ με ποσά και λεπτομέρειες
 - 🏆 ΑΓΩΝΕΣ ΟΜΟΣΠΟΝΔΙΑΣ με κατηγορίες, δηλώσεις και αποτελέσματα
 - 🏅 RANKING αθλητών με πόντους και μετάλλια
-- 🥊 ΖΕΥΓΑΡΩΜΑΤΑ/BRACKETS με γύρους, νικητές και αποτελέσματα
-- 📺 LIVE RINGS με κατάσταση streaming` : ` Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, ΟΛΟ το ημερολόγιο και ΟΛΑ τα αποτελέσματα προπόνησης (workout completions + exercise results) του χρήστη.`}
+- 🥊 ΖΕΥΓΑΡΩΜΑΤΑ/BRACKETS με γύρους, νικητές, σύλλογοι και αποτελέσματα
+- 📺 LIVE RINGS με τρέχοντα αγώνα, επόμενους αγώνες και timer data` : ` Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, ΟΛΟ το ημερολόγιο και ΟΛΑ τα αποτελέσματα προπόνησης (workout completions + exercise results) του χρήστη.`}
 
 ΣΗΜΕΡΙΝΗ ΗΜΕΡΟΜΗΝΙΑ: ${currentDateStr}
 ΤΡΕΧΩΝ ΜΗΝΑΣ: ${currentMonth}
