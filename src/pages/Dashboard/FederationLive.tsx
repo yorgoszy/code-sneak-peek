@@ -22,6 +22,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { RingScoreboard } from "@/components/federation/RingScoreboard";
 import { VideoOverlayScores } from "@/components/federation/VideoOverlayScores";
+import { CameraFeed } from "@/components/federation/CameraFeed";
 
 interface Competition {
   id: string;
