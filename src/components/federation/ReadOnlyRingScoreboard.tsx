@@ -202,6 +202,23 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
     return judgeScores.find(s => s.judge_number === judgeNum && s.round === round);
   };
 
+  // Majority vote per round
+  const getMajorityScore = (round: number, athlete: 'a1' | 'a2'): number | null => {
+    const scores: number[] = [];
+    for (let j = 1; j <= 3; j++) {
+      const s = getJudgeScoreForRound(j, round);
+      if (s) scores.push(athlete === 'a1' ? s.athlete1_score : s.athlete2_score);
+    }
+    if (scores.length === 0) return null;
+    const freq: Record<number, number> = {};
+    scores.forEach(v => { freq[v] = (freq[v] || 0) + 1; });
+    let maxCount = 0, majorityVal = scores[0];
+    for (const [val, count] of Object.entries(freq)) {
+      if (count > maxCount) { maxCount = count; majorityVal = Number(val); }
+    }
+    return majorityVal;
+  };
+
   const getRoundTotals = (round: number) => {
     let a1 = 0, a2 = 0, count = 0;
     for (let j = 1; j <= 3; j++) {
@@ -211,8 +228,8 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
     return { a1, a2, count };
   };
 
-  const totalA1 = [1, 2, 3].reduce((sum, r) => sum + getRoundTotals(r).a1, 0);
-  const totalA2 = [1, 2, 3].reduce((sum, r) => sum + getRoundTotals(r).a2, 0);
+  const majorityA1 = [1, 2, 3].reduce((sum, r) => sum + (getMajorityScore(r, 'a1') || 0), 0);
+  const majorityA2 = [1, 2, 3].reduce((sum, r) => sum + (getMajorityScore(r, 'a2') || 0), 0);
 
   const avatar = (a: any) => a?.photo_url || a?.avatar_url || undefined;
 
@@ -322,20 +339,21 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
                   </tr>
                 );
               })}
-              {/* Totals */}
+              {/* Totals - majority vote */}
               <tr className="bg-muted/30 font-bold">
                 <td className="px-1 py-0.5">Σύνολο</td>
                 {[1, 2, 3].map(r => {
-                  const t = getRoundTotals(r);
+                  const ma1 = getMajorityScore(r, 'a1');
+                  const ma2 = getMajorityScore(r, 'a2');
                   return (
                     <React.Fragment key={r}>
-                      <td className="text-center px-0.5 py-0.5 text-blue-600 border-l border-border">{t.count > 0 ? t.a1 : '-'}</td>
-                      <td className="text-center px-0.5 py-0.5 text-red-600">{t.count > 0 ? t.a2 : '-'}</td>
+                      <td className="text-center px-0.5 py-0.5 text-blue-600 border-l border-border">{ma1 !== null ? ma1 : '-'}</td>
+                      <td className="text-center px-0.5 py-0.5 text-red-600">{ma2 !== null ? ma2 : '-'}</td>
                     </React.Fragment>
                   );
                 })}
-                <td className="text-center px-0.5 py-1 text-sm text-blue-600 border-l border-border">{totalA1 || '-'}</td>
-                <td className="text-center px-0.5 py-1 text-sm text-red-600">{totalA2 || '-'}</td>
+                <td className="text-center px-0.5 py-1 text-sm text-blue-600 border-l border-border">{majorityA1 || '-'}</td>
+                <td className="text-center px-0.5 py-1 text-sm text-red-600">{majorityA2 || '-'}</td>
               </tr>
             </tbody>
           </table>
@@ -345,10 +363,16 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
       {/* Winner */}
       {match.winner_id && (
         <div className="px-3 py-1.5 border-t border-border flex justify-center">
-          <Badge className="rounded-none text-[10px] px-2 py-0.5 bg-[#00ffba] text-black">
-            <Trophy className="h-2.5 w-2.5 mr-1" />
-            Νικητής: {match.winner_id === match.athlete1_id ? match.athlete1?.name : match.athlete2?.name}
-          </Badge>
+          {(() => {
+            const isBlueWinner = match.winner_id === match.athlete1_id;
+            const winnerName = isBlueWinner ? match.athlete1?.name : match.athlete2?.name;
+            return (
+              <Badge className={`rounded-none text-[10px] px-2 py-0.5 ${isBlueWinner ? 'bg-blue-500 text-white' : 'bg-red-500 text-white'}`}>
+                <Trophy className="h-2.5 w-2.5 mr-1" />
+                Νικητής: {winnerName} ({majorityA1}-{majorityA2})
+              </Badge>
+            );
+          })()}
         </div>
       )}
 

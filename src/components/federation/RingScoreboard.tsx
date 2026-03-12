@@ -314,18 +314,22 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
     else toast.success('Ο νικητής καταχωρήθηκε');
   };
 
-  // Auto-declare winner based on judges' scores when match finishes
+  // Auto-declare winner based on majority vote when all rounds are done
   const handleAutoDeclareWinner = async () => {
     if (!match || match.winner_id) return;
-    if (totalA1 === 0 && totalA2 === 0) {
+    if (!allRoundsScored) {
+      toast.error('Δεν έχουν ολοκληρωθεί όλοι οι γύροι');
+      return;
+    }
+    if (majorityA1 === 0 && majorityA2 === 0) {
       toast.error('Δεν υπάρχουν βαθμολογίες κριτών');
       return;
     }
-    if (totalA1 === totalA2) {
+    if (majorityA1 === majorityA2) {
       toast.error('Ισοπαλία - επιλέξτε νικητή χειροκίνητα');
       return;
     }
-    const winnerId = totalA1 > totalA2 ? match.athlete1_id : match.athlete2_id;
+    const winnerId = majorityA1 > majorityA2 ? match.athlete1_id : match.athlete2_id;
     if (winnerId) {
       await handleDeclareWinner(winnerId);
     }
@@ -353,6 +357,24 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
     return judgeScores.find(s => s.judge_number === judgeNum && s.round === round);
   };
 
+  // Majority vote: returns the most common score among judges for a given round
+  const getMajorityScore = (round: number, athlete: 'a1' | 'a2'): number | null => {
+    const scores: number[] = [];
+    for (let j = 1; j <= 3; j++) {
+      const s = getJudgeScoreForRound(j, round);
+      if (s) scores.push(athlete === 'a1' ? s.athlete1_score : s.athlete2_score);
+    }
+    if (scores.length === 0) return null;
+    // Find most frequent score (majority)
+    const freq: Record<number, number> = {};
+    scores.forEach(v => { freq[v] = (freq[v] || 0) + 1; });
+    let maxCount = 0, majorityVal = scores[0];
+    for (const [val, count] of Object.entries(freq)) {
+      if (count > maxCount) { maxCount = count; majorityVal = Number(val); }
+    }
+    return majorityVal;
+  };
+
   const getRoundTotals = (round: number) => {
     let a1 = 0, a2 = 0, count = 0;
     for (let j = 1; j <= 3; j++) {
@@ -362,6 +384,14 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
     return { a1, a2, count };
   };
 
+  // Majority-based round scores
+  const majorityA1 = [1, 2, 3].reduce((sum, r) => sum + (getMajorityScore(r, 'a1') || 0), 0);
+  const majorityA2 = [1, 2, 3].reduce((sum, r) => sum + (getMajorityScore(r, 'a2') || 0), 0);
+  
+  // Check if all rounds have scores from at least 1 judge
+  const allRoundsScored = [1, 2, 3].every(r => getRoundTotals(r).count > 0);
+  
+  // For backward compat, keep totalA1/A2 as sum-based for display in judge rows
   const totalA1 = [1, 2, 3].reduce((sum, r) => sum + getRoundTotals(r).a1, 0);
   const totalA2 = [1, 2, 3].reduce((sum, r) => sum + getRoundTotals(r).a2, 0);
 
@@ -531,39 +561,46 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
                 </tr>
               );
             })}
-            {/* Totals row */}
+            {/* Totals row - majority vote per round */}
             <tr className="bg-muted/30 font-bold">
               <td className="px-1 py-0.5">Σύνολο</td>
               {[1, 2, 3].map(r => {
-                const t = getRoundTotals(r);
+                const ma1 = getMajorityScore(r, 'a1');
+                const ma2 = getMajorityScore(r, 'a2');
                 return (
                   <React.Fragment key={r}>
-                    <td className="text-center px-0.5 py-0.5 text-blue-600 border-l border-border">{t.count > 0 ? t.a1 : '-'}</td>
-                    <td className="text-center px-0.5 py-0.5 text-red-600">{t.count > 0 ? t.a2 : '-'}</td>
+                    <td className="text-center px-0.5 py-0.5 text-blue-600 border-l border-border">{ma1 !== null ? ma1 : '-'}</td>
+                    <td className="text-center px-0.5 py-0.5 text-red-600">{ma2 !== null ? ma2 : '-'}</td>
                   </React.Fragment>
                 );
               })}
-              <td className="text-center px-0.5 py-1 text-sm text-blue-600 border-l border-border">{totalA1 || '-'}</td>
-              <td className="text-center px-0.5 py-1 text-sm text-red-600">{totalA2 || '-'}</td>
+              <td className="text-center px-0.5 py-1 text-sm text-blue-600 border-l border-border">{majorityA1 || '-'}</td>
+              <td className="text-center px-0.5 py-1 text-sm text-red-600">{majorityA2 || '-'}</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      {/* Winner declaration */}
-      {!match.winner_id && (totalA1 > 0 || totalA2 > 0) && (
+      {/* Winner declaration - only after all rounds are done */}
+      {!match.winner_id && matchFinished && allRoundsScored && (
         <div className="px-2 py-1 border-t border-border space-y-1">
-          {/* Auto winner button based on scores */}
-          {totalA1 !== totalA2 && (
+          {/* Auto winner button based on majority scores */}
+          {majorityA1 !== majorityA2 && (
             <div className="flex justify-center">
-              <Button
-                size="sm"
-                className="rounded-none h-7 text-[10px] px-3 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-                onClick={handleAutoDeclareWinner}
-              >
-                <Trophy className="h-3 w-3 mr-1" />
-                Νικητής: {totalA1 > totalA2 ? `Μπλε (${totalA1}-${totalA2})` : `Κόκκινη (${totalA2}-${totalA1})`}
-              </Button>
+              {(() => {
+                const isBlueWinner = majorityA1 > majorityA2;
+                const winnerName = isBlueWinner ? match.athlete1?.name : match.athlete2?.name;
+                return (
+                  <Button
+                    size="sm"
+                    className={`rounded-none h-7 text-[10px] px-3 ${isBlueWinner ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-red-500 hover:bg-red-600 text-white'}`}
+                    onClick={handleAutoDeclareWinner}
+                  >
+                    <Trophy className="h-3 w-3 mr-1" />
+                    Νικητής: {winnerName} ({majorityA1}-{majorityA2})
+                  </Button>
+                );
+              })()}
             </div>
           )}
           {/* Manual override for ties or special cases */}
@@ -575,7 +612,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
               className="rounded-none h-5 text-[8px] px-1.5 border-blue-500 text-blue-600"
               onClick={() => match.athlete1_id && handleDeclareWinner(match.athlete1_id)}
             >
-              Μπλε
+              {match.athlete1?.name || 'Μπλε'}
             </Button>
             <Button
               size="sm"
@@ -583,17 +620,23 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
               className="rounded-none h-5 text-[8px] px-1.5 border-red-500 text-red-600"
               onClick={() => match.athlete2_id && handleDeclareWinner(match.athlete2_id)}
             >
-              Κόκκινη
+              {match.athlete2?.name || 'Κόκκινη'}
             </Button>
           </div>
         </div>
       )}
       {match.winner_id && (
         <div className="px-2 py-1 border-t border-border flex justify-center">
-          <Badge className="rounded-none text-[10px] px-2 py-0.5 bg-[#00ffba] text-black">
-            <Trophy className="h-2.5 w-2.5 mr-1" />
-            Νικητής: {match.winner_id === match.athlete1_id ? match.athlete1?.name : match.athlete2?.name} ({totalA1}-{totalA2})
-          </Badge>
+          {(() => {
+            const isBlueWinner = match.winner_id === match.athlete1_id;
+            const winnerName = isBlueWinner ? match.athlete1?.name : match.athlete2?.name;
+            return (
+              <Badge className={`rounded-none text-[10px] px-2 py-0.5 ${isBlueWinner ? 'bg-blue-500 text-white' : 'bg-red-500 text-white'}`}>
+                <Trophy className="h-2.5 w-2.5 mr-1" />
+                Νικητής: {winnerName} ({majorityA1}-{majorityA2})
+              </Badge>
+            );
+          })()}
         </div>
       )}
 
