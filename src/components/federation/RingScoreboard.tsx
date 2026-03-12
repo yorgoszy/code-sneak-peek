@@ -527,37 +527,20 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
         </div>
       </div>
 
-      {/* Athletes header - Red=athlete1 (left), Blue=athlete2 (right) matching brackets */}
+      {/* Athletes + Judge scores - unified grid so tables align under names */}
       <div className="grid grid-cols-[1fr_auto_1fr] gap-0">
-        <div className="bg-red-500/20 flex items-center gap-1.5 px-2 py-1">
-          <Avatar className="h-5 w-5">
-            <AvatarImage src={avatar(match.athlete1)} />
-            <AvatarFallback className="text-[8px]">{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
-          </Avatar>
-          <div className="min-w-0">
-            <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete1?.name || athlete1Fallback}</p>
-            {match.athlete1_club && <p className="text-[8px] text-muted-foreground truncate">{match.athlete1_club.name}</p>}
-          </div>
-        </div>
-        <div className="flex items-center justify-center px-1 bg-muted/20">
-          <span className="text-[10px] font-bold text-muted-foreground">VS</span>
-        </div>
-        <div className="bg-blue-500/20 flex items-center gap-1.5 px-2 py-1 justify-end">
-          <div className="min-w-0 text-right">
-            <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete2?.name || athlete2Fallback}</p>
-            {match.athlete2_club && <p className="text-[8px] text-muted-foreground truncate">{match.athlete2_club.name}</p>}
-          </div>
-          <Avatar className="h-5 w-5">
-            <AvatarImage src={avatar(match.athlete2)} />
-            <AvatarFallback className="text-[8px]">{match.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
-          </Avatar>
-        </div>
-      </div>
-
-      {/* Judge scores - split layout aligned with athlete header */}
-      <div className="grid grid-cols-[1fr_auto_1fr] gap-0">
-        {/* Red athlete scores (athlete1) */}
+        {/* RED column: name + scores */}
         <div>
+          <div className="bg-red-500/20 flex items-center gap-1.5 px-2 py-1">
+            <Avatar className="h-5 w-5">
+              <AvatarImage src={avatar(match.athlete1)} />
+              <AvatarFallback className="text-[8px]">{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete1?.name || athlete1Fallback}</p>
+              {match.athlete1_club && <p className="text-[8px] text-muted-foreground truncate">{match.athlete1_club.name}</p>}
+            </div>
+          </div>
           <table className="w-full text-[9px] border-collapse">
             <thead>
               <tr className="border-b border-border">
@@ -595,10 +578,27 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
             </tbody>
           </table>
         </div>
-        {/* Middle spacer to match VS column */}
-        <div className="bg-muted/20"></div>
-        {/* Blue athlete scores (athlete2) */}
+
+        {/* VS spacer column */}
+        <div className="flex flex-col">
+          <div className="flex items-center justify-center px-1 bg-muted/20 py-1">
+            <span className="text-[10px] font-bold text-muted-foreground">VS</span>
+          </div>
+          <div className="flex-1 bg-muted/20"></div>
+        </div>
+
+        {/* BLUE column: name + scores */}
         <div>
+          <div className="bg-blue-500/20 flex items-center gap-1.5 px-2 py-1 justify-end">
+            <div className="min-w-0 text-right">
+              <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete2?.name || athlete2Fallback}</p>
+              {match.athlete2_club && <p className="text-[8px] text-muted-foreground truncate">{match.athlete2_club.name}</p>}
+            </div>
+            <Avatar className="h-5 w-5">
+              <AvatarImage src={avatar(match.athlete2)} />
+              <AvatarFallback className="text-[8px]">{match.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
+            </Avatar>
+          </div>
           <table className="w-full text-[9px] border-collapse">
             <thead>
               <tr className="border-b border-border">
