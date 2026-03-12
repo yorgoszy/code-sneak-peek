@@ -252,10 +252,12 @@ const FederationLive = () => {
     setMatches(enriched);
   }, [selectedCompId]);
 
+  const getRingLetter = (num: number) => String.fromCharCode(64 + num); // 1->A, 2->B, etc.
+
   const handleSetupRings = () => {
     const configs = Array.from({ length: ringCount }, (_, i) => ({
       ring_number: i + 1,
-      ring_name: `Ring ${i + 1}`,
+      ring_name: `Ring ${getRingLetter(i + 1)}`,
       youtube_live_url: '',
       match_range_start: '',
       match_range_end: '',
