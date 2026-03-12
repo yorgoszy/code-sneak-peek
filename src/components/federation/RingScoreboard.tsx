@@ -609,7 +609,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
             <tbody>
               {[1, 2, 3].map(j => (
                 <tr key={j} className="border-b border-border/50">
-                  <td className="px-1 py-0.5 font-medium text-muted-foreground">Κρ.{j}</td>
+                  <td className="px-1 py-0.5 font-medium text-muted-foreground">{t('federation.live.judgeShort')}.{j}</td>
                   {Array.from({ length: roundConfig.rounds }, (_, i) => {
                     const s = getJudgeScoreForRound(j, i + 1);
                     const val = s?.athlete2_score || 0;
