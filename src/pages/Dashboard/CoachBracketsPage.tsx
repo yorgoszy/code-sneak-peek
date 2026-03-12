@@ -55,11 +55,13 @@ const getWeightLabel = (name: string): string => {
 };
 
 const getAgeLabel = (name: string): string => {
-  if (/^Ενήλικοι/i.test(name)) return '18-40';
-  if (/^U23/i.test(name)) return 'U23';
-  if (/^Βετεράνοι|^40\+/i.test(name)) return '40+';
-  const match = name.match(/^Νέ(?:οι|ες)\s*(\d+-\d+)/);
+  if (/Ενήλικοι/i.test(name)) return '18-40';
+  if (/U23/i.test(name)) return 'U23';
+  if (/Βετεράνοι|40\+/i.test(name)) return '40+';
+  const match = name.match(/Νέ(?:οι|ες)\s*(\d+-\d+)/);
   if (match) return match[1];
+  const ageRange = name.match(/(\d+-\d+)/);
+  if (ageRange) return ageRange[1];
   return name.replace(/([-+±]\s*\d+[\d.,]*\s*kg)/i, '').trim();
 };
 
@@ -226,20 +228,20 @@ const CoachBracketsPage = () => {
     const feederMatch = feederRoundMatches.find((m) => m.match_number === feederMatchNumber)
       || (feederRoundMatches.length === 1 ? feederRoundMatches[0] : undefined);
 
-    if (!feederMatch) return { name: `Νικητής αγ. ${feederMatchNumber}`, isConfirmed: false };
+    if (!feederMatch) return { name: `${t('federation.brackets.winnerFight')} ${feederMatchNumber}`, isConfirmed: false };
 
     if (feederMatch.winner_id) {
       const winnerName = feederMatch.athlete1_id === feederMatch.winner_id
         ? feederMatch.athlete1?.name : feederMatch.athlete2?.name;
       if (winnerName) return { name: winnerName, isConfirmed: true };
       const winnerMatchNumber = feederMatch.match_order || globalMatchNumbers?.get(feederMatch.id) || feederMatchNumber;
-      return { name: `Νικητής αγ. ${winnerMatchNumber}`, isConfirmed: false };
+      return { name: `${t('federation.brackets.winnerFight')} ${winnerMatchNumber}`, isConfirmed: false };
     }
 
-    if (feederMatch.match_order) return { name: `Νικητής αγ. ${feederMatch.match_order}`, isConfirmed: false };
+    if (feederMatch.match_order) return { name: `${t('federation.brackets.winnerFight')} ${feederMatch.match_order}`, isConfirmed: false };
     const globalNum = globalMatchNumbers?.get(feederMatch.id);
-    if (globalNum) return { name: `Νικητής αγ. ${globalNum}`, isConfirmed: false };
-    return { name: `Νικητής αγ. ${feederMatchNumber}`, isConfirmed: false };
+    if (globalNum) return { name: `${t('federation.brackets.winnerFight')} ${globalNum}`, isConfirmed: false };
+    return { name: `${t('federation.brackets.winnerFight')} ${feederMatchNumber}`, isConfirmed: false };
   };
 
   const role = userProfile?.role;
@@ -291,12 +293,12 @@ const CoachBracketsPage = () => {
                 <div className="flex items-center gap-1.5 ml-auto">
                   <Select value={filterGender} onValueChange={handleGenderChange}>
                     <SelectTrigger className="rounded-none h-8 text-xs w-28">
-                      <SelectValue placeholder="Φύλο" />
+                      <SelectValue placeholder={t('federation.brackets.genderFilter')} />
                     </SelectTrigger>
                     <SelectContent>
                       {genderOptions.map(g => (
                         <SelectItem key={g} value={g}>
-                          {g === 'male' ? 'Άνδρες' : 'Γυναίκες'}
+                          {g === 'male' ? t('federation.brackets.men') : t('federation.brackets.women')}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -304,7 +306,7 @@ const CoachBracketsPage = () => {
 
                   <Select value={filterAge} onValueChange={handleAgeChange} disabled={!filterGender}>
                     <SelectTrigger className="rounded-none h-8 text-xs w-24">
-                      <SelectValue placeholder="Ηλικία" />
+                      <SelectValue placeholder={t('federation.brackets.ageFilter')} />
                     </SelectTrigger>
                     <SelectContent>
                       {ageOptions.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}
@@ -313,7 +315,7 @@ const CoachBracketsPage = () => {
 
                   <Select value={filterWeight} onValueChange={setFilterWeight} disabled={!filterAge}>
                     <SelectTrigger className="rounded-none h-8 text-xs w-32">
-                      <SelectValue placeholder="Κιλά" />
+                      <SelectValue placeholder={t('federation.brackets.weightFilter')} />
                     </SelectTrigger>
                     <SelectContent>
                       {weightOptions.map(w => (
@@ -444,7 +446,7 @@ const CoachBracketsPage = () => {
                             style={{ left: xOffset, top: 0, width: COL_W }}
                           >
                             <h3 className="font-bold text-xs">{getRoundName(roundNum, t)}</h3>
-                            <span className="text-[10px] opacity-70">{rMatches.length} αγώνες</span>
+                            <span className="text-[10px] opacity-70">{rMatches.length} {t('federation.brackets.matchesCount')}</span>
                           </div>
 
                           {/* Match cards */}
@@ -465,7 +467,7 @@ const CoachBracketsPage = () => {
                               >
                                 {/* Match number header */}
                                 <div className="flex items-center justify-between px-2.5 py-1 bg-muted/50 border-b border-border">
-                                  <span className="text-[11px] font-bold text-foreground">Αγ. {globalMatchNum}</span>
+                                  <span className="text-[11px] font-bold text-foreground">{t('federation.brackets.fight')} {globalMatchNum}</span>
                                   {match.status === 'completed' && match.result_type && (
                                     <Badge variant="secondary" className="rounded-none text-[9px] h-4 px-1.5 uppercase">
                                       {match.result_type}
