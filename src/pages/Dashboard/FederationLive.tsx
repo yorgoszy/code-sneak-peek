@@ -270,7 +270,7 @@ const FederationLive = () => {
     const toInsert = ringConfigs.map(rc => ({
       competition_id: selectedCompId,
       ring_number: rc.ring_number,
-      ring_name: rc.ring_name || `Ring ${rc.ring_number}`,
+      ring_name: rc.ring_name || `Ring ${getRingLetter(rc.ring_number)}`,
       youtube_live_url: rc.youtube_live_url || null,
       match_range_start: rc.match_range_start ? parseInt(rc.match_range_start) : null,
       match_range_end: rc.match_range_end ? parseInt(rc.match_range_end) : null,
