@@ -42,9 +42,8 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
     return scores[Math.floor(scores.length / 2)];
   };
 
-  // Find max round that has scores
-  const maxRound = judgeScores.length > 0 ? Math.max(...judgeScores.map(s => s.round)) : 0;
-  const rounds = Array.from({ length: Math.max(maxRound, 1) }, (_, i) => i + 1);
+  // Always show 3 rounds
+  const totalRounds = 3;
 
   const formatName = (fullName?: string) => {
     if (!fullName) return '—';
@@ -74,13 +73,13 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
         <div className="bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 w-[120px] truncate">
           {athlete2Name}
         </div>
-        {rounds.map(r => {
+        {Array.from({ length: totalRounds }, (_, i) => i + 1).map(r => {
           const score = getMajorityScore(r, 'a2');
-          return score !== null ? (
+          return (
             <div key={r} className="bg-red-600/80 text-white text-[9px] font-bold w-5 text-center py-0.5">
-              {score}
+              {score ?? '-'}
             </div>
-          ) : null;
+          );
         })}
       </div>
       {/* Blue (athlete1) on bottom */}
@@ -93,13 +92,13 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
         <div className="bg-blue-600 text-white text-[9px] font-bold px-1.5 py-0.5 w-[120px] truncate">
           {athlete1Name}
         </div>
-        {rounds.map(r => {
+        {Array.from({ length: totalRounds }, (_, i) => i + 1).map(r => {
           const score = getMajorityScore(r, 'a1');
-          return score !== null ? (
+          return (
             <div key={r} className="bg-blue-600/80 text-white text-[9px] font-bold w-5 text-center py-0.5">
-              {score}
+              {score ?? '-'}
             </div>
-          ) : null;
+          );
         })}
       </div>
     </div>
