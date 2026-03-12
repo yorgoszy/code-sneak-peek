@@ -4,7 +4,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Menu, Plus, Settings, Radio, Play, Pause, Trash2, Save, Monitor, Copy, Check } from "lucide-react";
+import { Menu, Plus, Settings, Radio, Play, Pause, Trash2, Save, Monitor, Copy, Check, RefreshCw } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -335,6 +335,37 @@ const FederationLive = () => {
     }
   };
 
+  const handleRefreshAllRings = async () => {
+    await supabase
+      .from('competition_rings')
+      .update({
+        current_match_id: null,
+        timer_running_since: null,
+        timer_remaining_seconds: null,
+        timer_current_round: 1,
+        timer_is_break: false,
+      })
+      .eq('competition_id', selectedCompId);
+    toast.success('Όλα τα rings ανανεώθηκαν');
+    loadRings();
+    loadMatches();
+  };
+
+  const handleRefreshSingleRing = async (ringId: string) => {
+    await supabase
+      .from('competition_rings')
+      .update({
+        current_match_id: null,
+        timer_running_since: null,
+        timer_remaining_seconds: null,
+        timer_current_round: 1,
+        timer_is_break: false,
+      })
+      .eq('id', ringId);
+    toast.success('Το ring ανανεώθηκε');
+    loadRings();
+  };
+
   const getAthleteAvatar = (athlete: { name: string; photo_url: string | null; avatar_url: string | null } | null | undefined) => {
     return athlete?.photo_url || athlete?.avatar_url || undefined;
   };
@@ -439,6 +470,13 @@ const FederationLive = () => {
               )}
 
               {rings.length > 0 && (
+                <Button variant="outline" onClick={handleRefreshAllRings} className="rounded-none">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh All Rings
+                </Button>
+              )}
+
+              {rings.length > 0 && (
                 <Button variant="outline" onClick={() => setDeleteDialogOpen(true)} className="rounded-none text-destructive border-destructive">
                   <Trash2 className="h-4 w-4 mr-2" />
                   {t('federation.live.deleteRings')}
@@ -469,9 +507,14 @@ const FederationLive = () => {
                           <span className="text-[10px] text-muted-foreground">({ring.match_range_start}-{ring.match_range_end})</span>
                         )}
                       </div>
-                      <Button variant="ghost" size="sm" onClick={() => openEditRing(ring)} className="rounded-none h-5 w-5 p-0">
-                        <Settings className="h-3 w-3" />
-                      </Button>
+                      <div className="flex items-center gap-0.5">
+                        <Button variant="ghost" size="sm" onClick={() => handleRefreshSingleRing(ring.id)} className="rounded-none h-5 w-5 p-0" title="Refresh Ring">
+                          <RefreshCw className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => openEditRing(ring)} className="rounded-none h-5 w-5 p-0">
+                          <Settings className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </div>
 
                     <CardContent className="p-0">

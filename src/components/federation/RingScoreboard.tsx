@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Play, Pause, RotateCcw, Trophy, Clock, Link2, Copy, Check } from "lucide-react";
+import { Play, Pause, RotateCcw, Trophy, Clock, Link2, Copy, Check, RefreshCw } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -277,6 +277,28 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
     persistTimerState(false, newTime, currentRound, isBreak);
   };
 
+  const handleRefreshMatch = async () => {
+    if (!currentMatchId) return;
+    // Reset timer
+    setIsRunning(false);
+    setCurrentRound(1);
+    setIsBreak(false);
+    setTimeLeft(roundConfig.roundDurationSec);
+    persistTimerState(false, roundConfig.roundDurationSec, 1, false);
+    // Delete judge scores for this match
+    await supabase
+      .from('competition_match_judge_scores')
+      .delete()
+      .eq('match_id', currentMatchId);
+    // Reset match status
+    await supabase
+      .from('competition_matches')
+      .update({ status: 'pending', winner_id: null, completed_at: null, result_type: null, athlete1_score: null, athlete2_score: null })
+      .eq('id', currentMatchId);
+    setJudgeScores([]);
+    toast.success('Ο αγώνας ανανεώθηκε');
+  };
+
   const handleDeclareWinner = async (winnerId: string) => {
     if (!match) return;
     const { error } = await supabase
@@ -422,6 +444,9 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
           </Button>
           <Button variant="ghost" size="sm" className="rounded-none h-7 w-7 p-0" onClick={handleResetRound}>
             <RotateCcw className="h-3 w-3" />
+          </Button>
+          <Button variant="ghost" size="sm" className="rounded-none h-7 w-7 p-0 text-destructive" onClick={handleRefreshMatch} title="Refresh Match">
+            <RefreshCw className="h-3 w-3" />
           </Button>
         </div>
       </div>
