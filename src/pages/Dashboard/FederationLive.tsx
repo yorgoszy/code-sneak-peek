@@ -559,18 +559,33 @@ const FederationLive = () => {
                         if (nextMatches.length === 0) return null;
                         
                         return (
-                          <div className="border-t border-border px-2 py-1.5 bg-muted/30">
-                            <p className="text-[10px] font-semibold text-muted-foreground mb-1">Επόμενοι αγώνες</p>
-                            <div className="space-y-1">
-                              {nextMatches.map((m: any) => (
-                                <div key={m.id} className="flex items-center justify-between text-[10px] bg-background border border-border px-2 py-1 rounded-none">
-                                  <span className="text-muted-foreground font-medium">#{m.match_order}</span>
-                                  <span className="truncate mx-1">{m.athlete1?.name || '—'}</span>
-                                  <span className="text-muted-foreground font-bold">vs</span>
-                                  <span className="truncate mx-1">{m.athlete2?.name || '—'}</span>
+                          <div className="border-t border-border">
+                            <p className="text-[10px] font-semibold text-muted-foreground px-2 py-1 bg-muted/30">Επόμενοι αγώνες</p>
+                            {nextMatches.map((m: any) => (
+                              <div key={m.id} className="border-t border-border">
+                                <div className="grid grid-cols-[1fr_auto_1fr] gap-0">
+                                  <div className="bg-blue-500/20 flex items-center gap-1.5 px-2 py-1">
+                                    <Avatar className="h-5 w-5">
+                                      <AvatarFallback className="text-[8px]">{m.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="min-w-0">
+                                      <p className="text-[10px] font-semibold truncate leading-tight">{m.athlete1?.name || '—'}</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center justify-center px-1 bg-muted/20">
+                                    <span className="text-[10px] font-bold text-muted-foreground">VS</span>
+                                  </div>
+                                  <div className="bg-red-500/20 flex items-center gap-1.5 px-2 py-1 justify-end">
+                                    <div className="min-w-0 text-right">
+                                      <p className="text-[10px] font-semibold truncate leading-tight">{m.athlete2?.name || '—'}</p>
+                                    </div>
+                                    <Avatar className="h-5 w-5">
+                                      <AvatarFallback className="text-[8px]">{m.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
+                                    </Avatar>
+                                  </div>
                                 </div>
-                              ))}
-                            </div>
+                              </div>
+                            ))}
                           </div>
                         );
                       })()}
