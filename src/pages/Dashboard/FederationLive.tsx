@@ -122,7 +122,7 @@ const FederationLive = () => {
   const { t } = useTranslation();
 
   const [competitions, setCompetitions] = useState<Competition[]>([]);
-  const [selectedCompId, setSelectedCompId] = useState<string>('');
+  const [selectedCompId, setSelectedCompId] = useState<string>(() => localStorage.getItem('federation-live-comp') || '');
   const [rings, setRings] = useState<Ring[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(false);
@@ -158,6 +158,7 @@ const FederationLive = () => {
   }, [federationId]);
 
   useEffect(() => {
+    if (selectedCompId) localStorage.setItem('federation-live-comp', selectedCompId);
     if (!selectedCompId) { setRings([]); setMatches([]); return; }
     loadRings();
     loadMatches();
