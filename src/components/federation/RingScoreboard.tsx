@@ -462,6 +462,24 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
           <Button variant="ghost" size="sm" className="rounded-none h-7 w-7 p-0 text-destructive" onClick={handleRefreshMatch} title="Refresh Match">
             <RefreshCw className="h-3 w-3" />
           </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="rounded-none h-7 w-7 p-0 text-[#00ffba]"
+            title="Επόμενος αγώνας"
+            onClick={() => {
+              const nextMatch = matches
+                .filter(m => m.status === 'pending' && m.id !== currentMatchId && (m.athlete1 || m.athlete2))
+                .sort((a, b) => (a.match_order || 0) - (b.match_order || 0))[0];
+              if (nextMatch) {
+                onMatchChange(nextMatch.id);
+              } else {
+                toast.info('Δεν υπάρχει επόμενος αγώνας');
+              }
+            }}
+          >
+            <SkipForward className="h-3 w-3" />
+          </Button>
         </div>
       </div>
 
