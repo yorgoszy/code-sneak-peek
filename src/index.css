@@ -397,6 +397,8 @@ html, body {
   font-size: 36px;
   width: 450px;
   padding: 12px 24px;
+  text-align: right;
+  justify-content: flex-end;
 }
 
 [id^="ring-video-"]:fullscreen .overlay-scores .score-name {
