@@ -51,12 +51,12 @@ const getAgeGroup = (name: string): string => {
   if (name.startsWith('Νέοι 10-11')) return 'Νέοι 10-11';
   if (name.startsWith('Νέοι 8-9')) return 'Νέοι 8-9';
   if (name.startsWith('Νέοι 5-7')) return 'Νέοι 5-7';
-  return 'Άλλες';
+  return name;
 };
 
 const AGE_GROUP_ORDER = [
   'Ενήλικοι 18-40', 'U23 (18-23)', 'Βετεράνοι 40+', 'Νέοι 16-17', 'Νέοι 14-15',
-  'Νέοι 12-13', 'Νέοι 10-11', 'Νέοι 8-9', 'Νέοι 5-7', 'Άλλες'
+  'Νέοι 12-13', 'Νέοι 10-11', 'Νέοι 8-9', 'Νέοι 5-7'
 ];
 
 export const CompetitionCategoriesDialog: React.FC<CompetitionCategoriesDialogProps> = ({
