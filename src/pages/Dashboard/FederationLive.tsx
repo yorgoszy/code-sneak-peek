@@ -536,7 +536,7 @@ const FederationLive = () => {
                               className="w-full h-full"
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                               allowFullScreen
-                              title={`Ring ${ring.ring_number}`}
+                              title={ring.ring_name || `Ring ${getRingLetter(ring.ring_number)}`}
                             />
                           </AspectRatio>
                           {ring.current_match_id && (() => {
