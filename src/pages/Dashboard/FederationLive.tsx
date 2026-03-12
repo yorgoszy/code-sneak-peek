@@ -588,24 +588,24 @@ const FederationLive = () => {
                               <div key={m.id}>
                                 {idx > 0 && <div className="h-px bg-white" />}
                                 <div className="grid grid-cols-[1fr_auto_1fr] gap-0">
-                                  <div className="bg-blue-500/20 flex items-center gap-1.5 px-2 py-1">
+                                  <div className="bg-red-500/20 flex items-center gap-1.5 px-2 py-1">
                                     <Avatar className="h-5 w-5">
-                                      <AvatarFallback className="text-[8px]">{m.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
+                                      <AvatarFallback className="text-[8px]">{m.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
                                     </Avatar>
                                     <div className="min-w-0">
-                                      <p className="text-[10px] font-semibold truncate leading-tight">{m.athlete1?.name || '—'}</p>
+                                      <p className="text-[10px] font-semibold truncate leading-tight">{m.athlete2?.name || '—'}</p>
                                     </div>
                                   </div>
                                   <div className="flex flex-col items-center justify-center px-1 bg-muted/20">
                                     <span className="text-[8px] text-muted-foreground font-medium">#{m.match_order}</span>
                                     <span className="text-[10px] font-bold text-muted-foreground">VS</span>
                                   </div>
-                                  <div className="bg-red-500/20 flex items-center gap-1.5 px-2 py-1 justify-end">
+                                  <div className="bg-blue-500/20 flex items-center gap-1.5 px-2 py-1 justify-end">
                                     <div className="min-w-0 text-right">
-                                      <p className="text-[10px] font-semibold truncate leading-tight">{m.athlete2?.name || '—'}</p>
+                                      <p className="text-[10px] font-semibold truncate leading-tight">{m.athlete1?.name || '—'}</p>
                                     </div>
                                     <Avatar className="h-5 w-5">
-                                      <AvatarFallback className="text-[8px]">{m.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
+                                      <AvatarFallback className="text-[8px]">{m.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
                                     </Avatar>
                                   </div>
                                 </div>
