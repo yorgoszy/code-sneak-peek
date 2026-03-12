@@ -52,25 +52,30 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
   const [upcomingMatches, setUpcomingMatches] = useState<UpcomingMatch[]>([]);
 
   // Load match
-  useEffect(() => {
+  const loadMatch = useCallback(async () => {
     if (!currentMatchId) { setMatch(null); setJudgeScores([]); return; }
-    const load = async () => {
-      const { data } = await supabase
-        .from('competition_matches')
-        .select(`
-          id, match_order, status, winner_id, athlete1_id, athlete2_id,
-          athlete1:app_users!competition_matches_athlete1_id_fkey(name, photo_url, avatar_url),
-          athlete2:app_users!competition_matches_athlete2_id_fkey(name, photo_url, avatar_url),
-          athlete1_club:app_users!competition_matches_athlete1_club_id_fkey(name),
-          athlete2_club:app_users!competition_matches_athlete2_club_id_fkey(name),
-          category:federation_competition_categories!competition_matches_category_id_fkey(name, min_age, max_age)
-        `)
-        .eq('id', currentMatchId)
-        .single();
-      if (data) setMatch(data as any);
-    };
-    load();
+    const { data } = await supabase
+      .from('competition_matches')
+      .select(`
+        id, match_order, status, winner_id, athlete1_id, athlete2_id,
+        athlete1:app_users!competition_matches_athlete1_id_fkey(name, photo_url, avatar_url),
+        athlete2:app_users!competition_matches_athlete2_id_fkey(name, photo_url, avatar_url),
+        athlete1_club:app_users!competition_matches_athlete1_club_id_fkey(name),
+        athlete2_club:app_users!competition_matches_athlete2_club_id_fkey(name),
+        category:federation_competition_categories!competition_matches_category_id_fkey(name, min_age, max_age)
+      `)
+      .eq('id', currentMatchId)
+      .single();
+    if (data) {
+      setMatch(data as any);
+    } else {
+      setMatch(null);
+      setJudgeScores([]);
+      setUpcomingMatches([]);
+    }
   }, [currentMatchId]);
+
+  useEffect(() => { loadMatch(); }, [loadMatch]);
 
   // Load judge scores
   const loadJudgeScores = useCallback(async () => {
@@ -97,32 +102,26 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
     return () => { supabase.removeChannel(channel); };
   }, [currentMatchId, loadJudgeScores]);
 
-  // Real-time match updates
+  // Real-time match updates (including deletion from draw reset)
   useEffect(() => {
     if (!currentMatchId) return;
     const channel = supabase
       .channel(`coach-match-${currentMatchId}`)
       .on('postgres_changes', {
-        event: 'UPDATE', schema: 'public', table: 'competition_matches',
+        event: '*', schema: 'public', table: 'competition_matches',
         filter: `id=eq.${currentMatchId}`
-      }, async () => {
-        const { data } = await supabase
-          .from('competition_matches')
-          .select(`
-            id, match_order, status, winner_id, athlete1_id, athlete2_id,
-            athlete1:app_users!competition_matches_athlete1_id_fkey(name, photo_url, avatar_url),
-            athlete2:app_users!competition_matches_athlete2_id_fkey(name, photo_url, avatar_url),
-            athlete1_club:app_users!competition_matches_athlete1_club_id_fkey(name),
-            athlete2_club:app_users!competition_matches_athlete2_club_id_fkey(name),
-            category:federation_competition_categories!competition_matches_category_id_fkey(name, min_age, max_age)
-          `)
-          .eq('id', currentMatchId)
-          .single();
-        if (data) setMatch(data as any);
+      }, (payload) => {
+        if (payload.eventType === 'DELETE') {
+          setMatch(null);
+          setJudgeScores([]);
+          setUpcomingMatches([]);
+        } else {
+          loadMatch();
+        }
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [currentMatchId]);
+  }, [currentMatchId, loadMatch]);
 
   // Load upcoming matches for this ring
   useEffect(() => {

@@ -99,12 +99,14 @@ const CoachLivePage = () => {
     loadRings();
   }, [selectedCompId, loadRings]);
 
-  // Real-time
+  // Real-time: listen to both rings AND matches changes (for draw resets)
   useEffect(() => {
     if (!selectedCompId) return;
     const channel = supabase
       .channel('coach-rings-live')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'competition_rings', filter: `competition_id=eq.${selectedCompId}` }, () => loadRings())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'competition_matches', filter: `competition_id=eq.${selectedCompId}` }, () => loadRings())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'competition_match_judge_scores' }, () => loadRings())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [selectedCompId, loadRings]);
