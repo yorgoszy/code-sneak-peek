@@ -391,11 +391,14 @@ const getWeightLabel = (name: string): string => {
 };
 
 const getAgeLabel = (name: string): string => {
-  if (/^Ενήλικοι/i.test(name)) return '18-40';
-  if (/^U23/i.test(name)) return 'U23';
-  if (/^Βετεράνοι|^40\+/i.test(name)) return '40+';
-  const match = name.match(/^Νέ(?:οι|ες)\s*(\d+-\d+)/);
+  if (/Ενήλικοι/i.test(name)) return '18-40';
+  if (/U23/i.test(name)) return 'U23';
+  if (/Βετεράνοι|40\+/i.test(name)) return '40+';
+  const match = name.match(/Νέ(?:οι|ες)\s*(\d+-\d+)/);
   if (match) return match[1];
+  // Try to match age range pattern anywhere in name
+  const ageRange = name.match(/(\d+-\d+)/);
+  if (ageRange) return ageRange[1];
   return name.replace(/([-+±]\s*\d+[\d.,]*\s*kg)/i, '').trim();
 };
 
@@ -574,8 +577,8 @@ const FederationBrackets = () => {
 
   // Derive available filter options from categories
   const genderOptions = React.useMemo(() => {
-    const genders = new Set(categories.map(c => c.gender));
-    return [...genders].sort();
+    const genders = new Set(categories.map(c => c.gender).filter((g): g is string => g === 'male' || g === 'female'));
+    return (['female', 'male'] as const).filter(g => genders.has(g));
   }, [categories]);
 
   const ageOptions = React.useMemo(() => {
