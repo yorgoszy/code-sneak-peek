@@ -256,19 +256,6 @@ const JudgeScoring: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] text-blue-600 font-medium block mb-1">Μπλε γωνία</label>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={scores[round].a1 || ''}
-                    onChange={(e) => setScores(prev => ({
-                      ...prev,
-                      [round]: { ...prev[round], a1: parseInt(e.target.value) || 0 }
-                    }))}
-                    className="rounded-none h-12 text-xl text-center font-bold"
-                  />
-                </div>
-                <div>
                   <label className="text-[10px] text-red-600 font-medium block mb-1">Κόκκινη γωνία</label>
                   <Input
                     type="number"
@@ -277,6 +264,19 @@ const JudgeScoring: React.FC = () => {
                     onChange={(e) => setScores(prev => ({
                       ...prev,
                       [round]: { ...prev[round], a2: parseInt(e.target.value) || 0 }
+                    }))}
+                    className="rounded-none h-12 text-xl text-center font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-blue-600 font-medium block mb-1">Μπλε γωνία</label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={scores[round].a1 || ''}
+                    onChange={(e) => setScores(prev => ({
+                      ...prev,
+                      [round]: { ...prev[round], a1: parseInt(e.target.value) || 0 }
                     }))}
                     className="rounded-none h-12 text-xl text-center font-bold"
                   />
