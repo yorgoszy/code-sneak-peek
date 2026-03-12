@@ -10,6 +10,14 @@ interface VideoOverlayScoresProps {
     athlete1?: { name: string } | null;
     athlete2?: { name: string } | null;
     match_order?: number;
+    category?: {
+      name?: string;
+      gender?: string | null;
+      min_age?: number | null;
+      max_age?: number | null;
+      min_weight?: number | null;
+      max_weight?: number | null;
+    } | null;
   };
   ringLabel?: string;
 }

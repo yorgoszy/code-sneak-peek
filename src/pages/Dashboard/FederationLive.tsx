@@ -203,7 +203,8 @@ const FederationLive = () => {
       .select(`
         id, match_order, match_number, round_number, status, category_id, athlete1_id, athlete2_id, winner_id,
         athlete1:app_users!competition_matches_athlete1_id_fkey(name),
-        athlete2:app_users!competition_matches_athlete2_id_fkey(name)
+        athlete2:app_users!competition_matches_athlete2_id_fkey(name),
+        category:federation_competition_categories!competition_matches_category_id_fkey(name, gender, min_age, max_age, min_weight, max_weight)
       `)
       .eq('competition_id', selectedCompId)
       .eq('is_bye', false)
