@@ -353,6 +353,24 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
     return judgeScores.find(s => s.judge_number === judgeNum && s.round === round);
   };
 
+  // Majority vote: returns the most common score among judges for a given round
+  const getMajorityScore = (round: number, athlete: 'a1' | 'a2'): number | null => {
+    const scores: number[] = [];
+    for (let j = 1; j <= 3; j++) {
+      const s = getJudgeScoreForRound(j, round);
+      if (s) scores.push(athlete === 'a1' ? s.athlete1_score : s.athlete2_score);
+    }
+    if (scores.length === 0) return null;
+    // Find most frequent score (majority)
+    const freq: Record<number, number> = {};
+    scores.forEach(v => { freq[v] = (freq[v] || 0) + 1; });
+    let maxCount = 0, majorityVal = scores[0];
+    for (const [val, count] of Object.entries(freq)) {
+      if (count > maxCount) { maxCount = count; majorityVal = Number(val); }
+    }
+    return majorityVal;
+  };
+
   const getRoundTotals = (round: number) => {
     let a1 = 0, a2 = 0, count = 0;
     for (let j = 1; j <= 3; j++) {
@@ -362,6 +380,14 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
     return { a1, a2, count };
   };
 
+  // Majority-based round scores
+  const majorityA1 = [1, 2, 3].reduce((sum, r) => sum + (getMajorityScore(r, 'a1') || 0), 0);
+  const majorityA2 = [1, 2, 3].reduce((sum, r) => sum + (getMajorityScore(r, 'a2') || 0), 0);
+  
+  // Check if all rounds have scores from at least 1 judge
+  const allRoundsScored = [1, 2, 3].every(r => getRoundTotals(r).count > 0);
+  
+  // For backward compat, keep totalA1/A2 as sum-based for display in judge rows
   const totalA1 = [1, 2, 3].reduce((sum, r) => sum + getRoundTotals(r).a1, 0);
   const totalA2 = [1, 2, 3].reduce((sum, r) => sum + getRoundTotals(r).a2, 0);
 
