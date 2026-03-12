@@ -85,7 +85,7 @@ function getYoutubeEmbedUrl(url: string): string | null {
   return url;
 }
 
-const JudgeLinkRow: React.FC<{ judgeNum: number; url: string }> = ({ judgeNum, url }) => {
+const JudgeLinkRow: React.FC<{ judgeNum: number; url: string; t: any }> = ({ judgeNum, url, t }) => {
   const [copied, setCopied] = React.useState(false);
   const [showQR, setShowQR] = React.useState(false);
 
