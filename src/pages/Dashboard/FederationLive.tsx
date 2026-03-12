@@ -542,7 +542,7 @@ const FederationLive = () => {
                             if (!currentMatch?.match_order) return null;
                             return (
                               <>
-                                <div className="absolute top-1 left-1 bg-white text-black text-sm font-bold px-2 py-0.5 rounded-none pointer-events-none">
+                                <div className="overlay-match-number absolute top-1 left-1 bg-white text-black text-sm font-bold px-2 py-0.5 rounded-none pointer-events-none">
                                   #{currentMatch.match_order}
                                 </div>
                                 <VideoOverlayScores matchId={ring.current_match_id} match={currentMatch} />

@@ -351,3 +351,40 @@ html, body {
 [data-radix-popper-content-wrapper] {
   pointer-events: auto !important;
 }
+
+/* Fullscreen ring video styles */
+[id^="ring-video-"]:fullscreen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: black;
+}
+
+[id^="ring-video-"]:fullscreen iframe {
+  width: 100vw;
+  height: 100vh;
+  object-fit: contain;
+}
+
+[id^="ring-video-"]:fullscreen .overlay-match-number {
+  font-size: 1.25rem;
+  padding: 0.5rem 1rem;
+}
+
+[id^="ring-video-"]:fullscreen .overlay-scores .score-name {
+  font-size: 14px;
+  width: 200px;
+  padding: 4px 8px;
+}
+
+[id^="ring-video-"]:fullscreen .overlay-scores .score-round {
+  font-size: 14px;
+  width: 28px;
+  padding: 4px 0;
+}
+
+[id^="ring-video-"]:fullscreen .overlay-scores {
+  bottom: 1rem;
+  right: 1rem;
+  gap: 4px;
+}
