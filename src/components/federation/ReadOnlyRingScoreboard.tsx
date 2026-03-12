@@ -319,7 +319,7 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
                 <tr className="border-b border-border">
                   <th className="text-left px-1 py-0.5 text-muted-foreground font-normal"></th>
                   {[1, 2, 3].map(r => (
-                    <th key={r} className="text-center px-0.5 py-0.5 text-muted-foreground font-normal border-l border-border">R{r}</th>
+                    <th key={r} className={`text-center px-0.5 py-0.5 text-muted-foreground font-normal border-l border-border ${r === 2 ? 'bg-muted/40' : ''}`}>R{r}</th>
                   ))}
                 </tr>
               </thead>
@@ -331,7 +331,7 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
                       const s = getJudgeScoreForRound(j, r);
                       const val = s?.athlete1_score || 0;
                       return (
-                        <td key={r} className={`text-center px-0.5 py-0.5 border-l border-border ${s ? 'font-semibold' : 'text-muted-foreground'}`}>
+                        <td key={r} className={`text-center px-0.5 py-0.5 border-l border-border ${r === 2 ? 'bg-muted/40' : ''} ${s ? 'font-semibold' : 'text-muted-foreground'}`}>
                           {s ? val : '-'}
                         </td>
                       );
@@ -344,7 +344,7 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
                     const roundScored = getRoundTotals(r).count === 3;
                     const ma = roundScored ? getMajorityScore(r, 'a1') : null;
                     return (
-                      <td key={r} className="text-center px-0.5 py-0.5 text-blue-600 border-l border-border">{ma !== null ? ma : '-'}</td>
+                      <td key={r} className={`text-center px-0.5 py-0.5 text-blue-600 border-l border-border ${r === 2 ? 'bg-muted/50' : ''}`}>{ma !== null ? ma : '-'}</td>
                     );
                   })}
                 </tr>
