@@ -4538,15 +4538,22 @@ ${athletesList}
       aiKnowledgeString += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
     }
 
-    // Get current date for context
+    // Get current date and time for context (Greece timezone)
     const currentDate = new Date();
     const currentDateStr = currentDate.toLocaleDateString('el-GR', { 
       year: 'numeric', 
       month: 'long', 
       day: 'numeric',
-      weekday: 'long'
+      weekday: 'long',
+      timeZone: 'Europe/Athens'
     });
-    const currentMonth = currentDate.toLocaleDateString('el-GR', { year: 'numeric', month: 'long' });
+    const currentTimeStr = currentDate.toLocaleTimeString('el-GR', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      second: '2-digit',
+      timeZone: 'Europe/Athens'
+    });
+    const currentMonth = currentDate.toLocaleDateString('el-GR', { year: 'numeric', month: 'long', timeZone: 'Europe/Athens' });
     const currentYear = currentDate.getFullYear();
 
     // System prompt με πληροφορίες για τον χρήστη - AI KNOWLEDGE BASE FIRST!
