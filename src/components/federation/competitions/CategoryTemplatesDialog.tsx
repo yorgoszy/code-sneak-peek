@@ -41,7 +41,7 @@ const getAgeGroup = (t: CategoryTemplate): string => {
   if (t.name.startsWith('Νέοι 10-11')) return 'Νέοι 10-11';
   if (t.name.startsWith('Νέοι 8-9')) return 'Νέοι 8-9';
   if (t.name.startsWith('Νέοι 5-7')) return 'Νέοι 5-7';
-  return name;
+  return t.name;
 };
 
 const AGE_GROUP_ORDER = [
