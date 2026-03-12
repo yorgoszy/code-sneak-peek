@@ -544,6 +544,36 @@ const FederationLive = () => {
                         })}
                         onMatchChange={(matchId) => handleMatchChangeForRing(ring.id, matchId)}
                       />
+
+                      {/* Next 2 upcoming matches for this ring */}
+                      {(() => {
+                        const ringMatches = (matches as any[]).filter((m: any) => {
+                          if (!ring.match_range_start || !ring.match_range_end) return true;
+                          return m.match_order >= ring.match_range_start && m.match_order <= ring.match_range_end;
+                        });
+                        const nextMatches = ringMatches
+                          .filter((m: any) => m.status === 'pending' && m.id !== ring.current_match_id && m.athlete1_id && m.athlete2_id)
+                          .sort((a: any, b: any) => (a.match_order || 0) - (b.match_order || 0))
+                          .slice(0, 2);
+                        
+                        if (nextMatches.length === 0) return null;
+                        
+                        return (
+                          <div className="border-t border-border px-2 py-1.5 bg-muted/30">
+                            <p className="text-[10px] font-semibold text-muted-foreground mb-1">Επόμενοι αγώνες</p>
+                            <div className="space-y-1">
+                              {nextMatches.map((m: any) => (
+                                <div key={m.id} className="flex items-center justify-between text-[10px] bg-background border border-border px-2 py-1 rounded-none">
+                                  <span className="text-muted-foreground font-medium">#{m.match_order}</span>
+                                  <span className="truncate mx-1">{m.athlete1?.name || '—'}</span>
+                                  <span className="text-muted-foreground font-bold">vs</span>
+                                  <span className="truncate mx-1">{m.athlete2?.name || '—'}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </CardContent>
                   </Card>
                 ))}
