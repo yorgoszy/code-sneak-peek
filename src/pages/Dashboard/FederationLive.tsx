@@ -886,7 +886,7 @@ const FederationLive = () => {
                   />
                 </div>
                 <div className="shrink-0">
-                  <Label className="text-xs block mb-1">Πηγή</Label>
+                  <Label className="text-xs block mb-1">{t('federation.live.source')}</Label>
                   <div className="flex border border-border rounded-none overflow-hidden">
                     <button type="button" className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${editSourceType === 'youtube' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`} onClick={() => setEditSourceType('youtube')}>YouTube</button>
                     <button type="button" className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${editSourceType === 'camera' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`} onClick={() => setEditSourceType('camera')}>Camera</button>
