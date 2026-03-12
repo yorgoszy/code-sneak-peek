@@ -425,7 +425,7 @@ const FederationLive = () => {
   useEffect(() => {
     if (!selectedCompId) return;
     const channel = supabase
-      .channel('rings-live')
+      .channel(`rings-live-${selectedCompId}`)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
@@ -433,17 +433,18 @@ const FederationLive = () => {
         filter: `competition_id=eq.${selectedCompId}`,
       }, () => {
         loadRings();
+        loadMatches();
       })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [selectedCompId, loadRings]);
+  }, [selectedCompId, loadRings, loadMatches]);
 
   // Realtime: matches changes (bracket updates, winner declarations)
   useEffect(() => {
     if (!selectedCompId) return;
     const channel = supabase
-      .channel('matches-live')
+      .channel(`matches-live-${selectedCompId}`)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
@@ -457,6 +458,17 @@ const FederationLive = () => {
 
     return () => { supabase.removeChannel(channel); };
   }, [selectedCompId, loadMatches, loadRings]);
+
+  // Fallback polling in case realtime events are missed
+  useEffect(() => {
+    if (!selectedCompId) return;
+    const intervalId = window.setInterval(() => {
+      loadRings();
+      loadMatches();
+    }, 5000);
+
+    return () => window.clearInterval(intervalId);
+  }, [selectedCompId, loadRings, loadMatches]);
 
   return (
     <SidebarProvider>

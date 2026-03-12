@@ -756,45 +756,72 @@ const FederationBrackets = () => {
   };
 
   const handleResetAllBrackets = async () => {
-    // First, reset all rings for this competition (clear match, timer, round, scores)
-    await supabase
-      .from('competition_rings')
-      .update({
+    if (!selectedCompId) {
+      toast.error('Δεν έχει επιλεγεί διοργάνωση');
+      return;
+    }
+
+    try {
+      const resetPayload = {
         current_match_id: null,
         timer_running_since: null,
         timer_remaining_seconds: null,
         timer_current_round: 1,
         timer_is_break: false,
-      })
-      .eq('competition_id', selectedCompId);
+        updated_at: new Date().toISOString(),
+      };
 
-    // Delete all judge scores for matches in this competition
-    const { data: matchIds } = await supabase
-      .from('competition_matches')
-      .select('id')
-      .eq('competition_id', selectedCompId);
-    
-    if (matchIds && matchIds.length > 0) {
-      await supabase
-        .from('competition_match_judge_scores')
+      // Reset rings first
+      const { error: resetRingsError } = await supabase
+        .from('competition_rings')
+        .update(resetPayload)
+        .eq('competition_id', selectedCompId);
+
+      if (resetRingsError) throw resetRingsError;
+
+      // Load match ids for cleanup
+      const { data: matchIds, error: matchIdsError } = await supabase
+        .from('competition_matches')
+        .select('id')
+        .eq('competition_id', selectedCompId);
+
+      if (matchIdsError) throw matchIdsError;
+
+      // Delete all judge scores for matches in this competition
+      if (matchIds && matchIds.length > 0) {
+        const { error: deleteScoresError } = await supabase
+          .from('competition_match_judge_scores')
+          .delete()
+          .in('match_id', matchIds.map(m => m.id));
+
+        if (deleteScoresError) throw deleteScoresError;
+      }
+
+      // Delete all matches
+      const { error: deleteMatchesError } = await supabase
+        .from('competition_matches')
         .delete()
-        .in('match_id', matchIds.map(m => m.id));
-    }
+        .eq('competition_id', selectedCompId);
 
-    // Then delete all matches
-    const { error } = await supabase
-      .from('competition_matches')
-      .delete()
-      .eq('competition_id', selectedCompId);
+      if (deleteMatchesError) throw deleteMatchesError;
 
-    if (error) {
-      toast.error('Σφάλμα κατά τη διαγραφή');
-    } else {
-      toast.success('Η κλήρωση διαγράφηκε για όλες τις κατηγορίες');
+      // Touch rings again so Live listeners always receive a fresh update event
+      const { error: touchRingsError } = await supabase
+        .from('competition_rings')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('competition_id', selectedCompId);
+
+      if (touchRingsError) throw touchRingsError;
+
+      toast.success('Η κλήρωση διαγράφηκε και τα rings μηδενίστηκαν');
       setMatches([]);
       setHasAnyMatches(false);
+    } catch (error) {
+      console.error('Reset draw failed:', error);
+      toast.error('Σφάλμα στο reset draw. Δοκίμασε ξανά.');
+    } finally {
+      setResetDialogOpen(false);
     }
-    setResetDialogOpen(false);
   };
 
   const openWinnerDialog = (match: Match) => {
