@@ -4,7 +4,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Menu, Plus, Settings, Radio, Play, Pause, Trash2, Save, Monitor, Copy, Check, RefreshCw, Maximize } from "lucide-react";
+import { Menu, Plus, Settings, Radio, Play, Pause, Trash2, Save, Monitor, Copy, Check, RefreshCw, Maximize, Video } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { RingScoreboard } from "@/components/federation/RingScoreboard";
 import { VideoOverlayScores } from "@/components/federation/VideoOverlayScores";
+import { CameraFeed } from "@/components/federation/CameraFeed";
 
 interface Competition {
   id: string;
@@ -36,6 +37,8 @@ interface Ring {
   ring_number: number;
   ring_name: string | null;
   youtube_live_url: string | null;
+  source_type: string;
+  camera_device_id: string | null;
   match_range_start: number | null;
   match_range_end: number | null;
   current_match_id: string | null;
@@ -133,7 +136,9 @@ const FederationLive = () => {
   const [ringConfigs, setRingConfigs] = useState<{
     ring_number: number;
     ring_name: string;
+    source_type: 'youtube' | 'camera';
     youtube_live_url: string;
+    camera_device_id: string;
     match_range_start: string;
     match_range_end: string;
   }[]>([]);
@@ -259,7 +264,9 @@ const FederationLive = () => {
     const configs = Array.from({ length: ringCount }, (_, i) => ({
       ring_number: i + 1,
       ring_name: `Ring ${getRingLetter(i + 1)}`,
+      source_type: 'youtube' as const,
       youtube_live_url: '',
+      camera_device_id: '',
       match_range_start: '',
       match_range_end: '',
     }));
@@ -272,7 +279,9 @@ const FederationLive = () => {
       competition_id: selectedCompId,
       ring_number: rc.ring_number,
       ring_name: rc.ring_name || `Ring ${getRingLetter(rc.ring_number)}`,
-      youtube_live_url: rc.youtube_live_url || null,
+      source_type: rc.source_type,
+      youtube_live_url: rc.source_type === 'youtube' ? (rc.youtube_live_url || null) : null,
+      camera_device_id: rc.source_type === 'camera' ? (rc.camera_device_id || null) : null,
       match_range_start: rc.match_range_start ? parseInt(rc.match_range_start) : null,
       match_range_end: rc.match_range_end ? parseInt(rc.match_range_end) : null,
       is_active: true,
@@ -529,16 +538,20 @@ const FederationLive = () => {
                     </div>
 
                     <CardContent className="p-0">
-                      {ring.youtube_live_url ? (
+                      {(ring.youtube_live_url || (ring as any).source_type === 'camera') ? (
                         <div id={`ring-video-${ring.id}`} className="relative bg-black group">
                           <AspectRatio ratio={16 / 9}>
-                            <iframe
-                              src={getYoutubeEmbedUrl(ring.youtube_live_url) || ''}
-                              className="w-full h-full"
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                              allowFullScreen
-                              title={ring.ring_name || `Ring ${getRingLetter(ring.ring_number)}`}
-                            />
+                            {(ring as any).source_type === 'camera' ? (
+                              <CameraFeed deviceId={(ring as any).camera_device_id} className="w-full h-full" />
+                            ) : (
+                              <iframe
+                                src={getYoutubeEmbedUrl(ring.youtube_live_url!) || ''}
+                                className="w-full h-full"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                                title={ring.ring_name || `Ring ${getRingLetter(ring.ring_number)}`}
+                              />
+                            )}
                           </AspectRatio>
                           {ring.current_match_id && (() => {
                             const currentMatch = (matches as any[]).find((m: any) => m.id === ring.current_match_id);
@@ -669,7 +682,9 @@ const FederationLive = () => {
                     setRingConfigs(prev => [...prev, {
                       ring_number: n,
                       ring_name: `Ring ${getRingLetter(n)}`,
+                      source_type: 'youtube' as const,
                       youtube_live_url: '',
+                      camera_device_id: '',
                       match_range_start: '',
                       match_range_end: '',
                     }]);
@@ -685,16 +700,52 @@ const FederationLive = () => {
                 <CardContent className="p-2 space-y-1.5">
                   <div className="flex items-center gap-2">
                     <h4 className="font-medium text-xs whitespace-nowrap">Ring {getRingLetter(rc.ring_number)}</h4>
-                    <Input
-                      value={rc.youtube_live_url}
-                      onChange={(e) => {
-                        const updated = [...ringConfigs];
-                        updated[idx].youtube_live_url = e.target.value;
-                        setRingConfigs(updated);
-                      }}
-                      placeholder="YouTube URL..."
-                      className="rounded-none h-7 text-xs flex-1"
-                    />
+                    
+                    {/* Source type toggle */}
+                    <div className="flex border border-border rounded-none overflow-hidden shrink-0">
+                      <button
+                        type="button"
+                        className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${rc.source_type === 'youtube' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
+                        onClick={() => {
+                          const updated = [...ringConfigs];
+                          updated[idx].source_type = 'youtube';
+                          setRingConfigs(updated);
+                        }}
+                      >
+                        YouTube
+                      </button>
+                      <button
+                        type="button"
+                        className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${rc.source_type === 'camera' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
+                        onClick={() => {
+                          const updated = [...ringConfigs];
+                          updated[idx].source_type = 'camera';
+                          setRingConfigs(updated);
+                        }}
+                      >
+                        Camera
+                      </button>
+                    </div>
+
+                    {/* YouTube URL or Camera indicator */}
+                    {rc.source_type === 'youtube' ? (
+                      <Input
+                        value={rc.youtube_live_url}
+                        onChange={(e) => {
+                          const updated = [...ringConfigs];
+                          updated[idx].youtube_live_url = e.target.value;
+                          setRingConfigs(updated);
+                        }}
+                        placeholder="YouTube URL..."
+                        className="rounded-none h-7 text-xs flex-1"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground flex-1">
+                        <Video className="h-3 w-3" />
+                        <span>Local Camera</span>
+                      </div>
+                    )}
+
                     <Input
                       type="number"
                       value={rc.match_range_start}
