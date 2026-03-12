@@ -205,7 +205,11 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
       if (cat.gender) {
         parts.push(cat.gender === 'male' ? 'M' : cat.gender === 'female' ? 'F' : cat.gender);
       }
-      if (cat.min_age != null || cat.max_age != null) {
+      // Extract age range from category name (e.g. "18-40 Άνδρες -57kg") as primary source
+      const nameAgeMatch = cat.name?.match(/(\d{1,2}-\d{1,2})/);
+      if (nameAgeMatch) {
+        parts.push(`${nameAgeMatch[1]}y`);
+      } else if (cat.min_age != null || cat.max_age != null) {
         if (cat.min_age != null && cat.max_age != null) parts.push(`${cat.min_age}-${cat.max_age}y`);
         else if (cat.min_age != null) parts.push(`${cat.min_age}+y`);
         else parts.push(`-${cat.max_age}y`);
