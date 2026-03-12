@@ -109,12 +109,25 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
       {/* Bottom-right overlay: scores stacked vertically, all touching */}
       <div className="overlay-scores absolute bottom-1 right-1 pointer-events-none">
         <div className="flex flex-col" style={{ gap: 0 }}>
-          {/* Match number - white bar above red name, same width as name box */}
-          {match.match_order && (
-            <div className="overlay-match-number bg-white text-black text-[9px] font-bold px-1.5 py-0.5 w-[120px] text-center leading-none">
-              #{match.match_order}
+          {/* Top row: Match number (over name) + Timer (over scores) */}
+          <div className="flex items-stretch" style={{ gap: '2px' }}>
+            {match.match_order ? (
+              <div className="overlay-match-number bg-white text-black text-[9px] font-bold px-1.5 py-0.5 w-[120px] text-center leading-none flex items-center justify-center">
+                #{match.match_order}
+              </div>
+            ) : (
+              <div className="w-[120px]"></div>
+            )}
+            <div className="overlay-timer bg-white/90 text-black text-[9px] font-bold py-0.5 flex items-center justify-center gap-1 leading-none"
+              style={{ width: `calc(${totalRounds} * (1.25rem + 2px) - 2px)` }}>
+              <span className="text-[7px] font-medium uppercase">
+                {isBreak ? 'ΔΙΑΛ.' : `R${currentRound}`}
+              </span>
+              <span className="text-[9px] font-bold">
+                {formatTime(liveSeconds)}
+              </span>
             </div>
-          )}
+          </div>
 
           {/* Red (athlete2) name + scores row */}
           <div className="flex items-stretch" style={{ gap: '2px' }}>
@@ -144,17 +157,6 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
                 </div>
               );
             })}
-          </div>
-
-          {/* Timer row - below blue, spanning full width */}
-          <div className="overlay-timer bg-white/90 text-black text-[9px] font-bold py-0.5 flex items-center justify-center gap-1 leading-none"
-            style={{ width: `calc(120px + ${totalRounds} * (1.25rem + 2px))` }}>
-            <span className="text-[7px] font-medium uppercase">
-              {isBreak ? 'ΔΙΑΛ.' : `R${currentRound}`}
-            </span>
-            <span className="text-[9px] font-bold">
-              {formatTime(liveSeconds)}
-            </span>
           </div>
         </div>
       </div>
