@@ -696,16 +696,52 @@ const FederationLive = () => {
                 <CardContent className="p-2 space-y-1.5">
                   <div className="flex items-center gap-2">
                     <h4 className="font-medium text-xs whitespace-nowrap">Ring {getRingLetter(rc.ring_number)}</h4>
-                    <Input
-                      value={rc.youtube_live_url}
-                      onChange={(e) => {
-                        const updated = [...ringConfigs];
-                        updated[idx].youtube_live_url = e.target.value;
-                        setRingConfigs(updated);
-                      }}
-                      placeholder="YouTube URL..."
-                      className="rounded-none h-7 text-xs flex-1"
-                    />
+                    
+                    {/* Source type toggle */}
+                    <div className="flex border border-border rounded-none overflow-hidden shrink-0">
+                      <button
+                        type="button"
+                        className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${rc.source_type === 'youtube' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
+                        onClick={() => {
+                          const updated = [...ringConfigs];
+                          updated[idx].source_type = 'youtube';
+                          setRingConfigs(updated);
+                        }}
+                      >
+                        YouTube
+                      </button>
+                      <button
+                        type="button"
+                        className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${rc.source_type === 'camera' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
+                        onClick={() => {
+                          const updated = [...ringConfigs];
+                          updated[idx].source_type = 'camera';
+                          setRingConfigs(updated);
+                        }}
+                      >
+                        Camera
+                      </button>
+                    </div>
+
+                    {/* YouTube URL or Camera indicator */}
+                    {rc.source_type === 'youtube' ? (
+                      <Input
+                        value={rc.youtube_live_url}
+                        onChange={(e) => {
+                          const updated = [...ringConfigs];
+                          updated[idx].youtube_live_url = e.target.value;
+                          setRingConfigs(updated);
+                        }}
+                        placeholder="YouTube URL..."
+                        className="rounded-none h-7 text-xs flex-1"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground flex-1">
+                        <Video className="h-3 w-3" />
+                        <span>Local Camera</span>
+                      </div>
+                    )}
+
                     <Input
                       type="number"
                       value={rc.match_range_start}
