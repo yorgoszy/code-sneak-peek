@@ -235,7 +235,7 @@ const CoachBracketsPage = () => {
         ? feederMatch.athlete1?.name : feederMatch.athlete2?.name;
       if (winnerName) return { name: winnerName, isConfirmed: true };
       const winnerMatchNumber = feederMatch.match_order || globalMatchNumbers?.get(feederMatch.id) || feederMatchNumber;
-      return { name: `Νικητής αγ. ${winnerMatchNumber}`, isConfirmed: false };
+      return { name: `${t('federation.brackets.winnerFight')} ${winnerMatchNumber}`, isConfirmed: false };
     }
 
     if (feederMatch.match_order) return { name: `Νικητής αγ. ${feederMatch.match_order}`, isConfirmed: false };
