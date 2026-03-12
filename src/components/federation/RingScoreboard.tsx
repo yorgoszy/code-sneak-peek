@@ -155,7 +155,6 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
   useEffect(() => {
     if (!currentMatchId) { 
       setMatch(null); 
-      setJudgeScores([]); 
       setIsRunning(false);
       setCurrentRound(1);
       setIsBreak(false);
