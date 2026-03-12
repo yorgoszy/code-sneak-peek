@@ -4714,6 +4714,7 @@ FEDERATION DATA - Έχεις πρόσβαση σε:
 - 📺 LIVE RINGS με τρέχοντα αγώνα, επόμενους αγώνες και timer data` : ` Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, ΟΛΟ το ημερολόγιο και ΟΛΑ τα αποτελέσματα προπόνησης (workout completions + exercise results) του χρήστη.`}
 
 ΣΗΜΕΡΙΝΗ ΗΜΕΡΟΜΗΝΙΑ: ${currentDateStr}
+ΤΡΕΧΟΥΣΑ ΩΡΑ (Ελλάδα): ${currentTimeStr}
 ΤΡΕΧΩΝ ΜΗΝΑΣ: ${currentMonth}
 ΤΡΕΧΩΝ ΕΤΟΣ: ${currentYear}
 
