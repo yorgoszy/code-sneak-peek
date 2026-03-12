@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import FederationLive from '@/pages/Dashboard/FederationLive';
+import { useAuth } from '@/contexts/AuthContext';
 
 /**
  * Layout that keeps FederationLive always mounted across federation route navigation.
@@ -10,11 +11,17 @@ import FederationLive from '@/pages/Dashboard/FederationLive';
  */
 export const FederationPersistentLayout: React.FC = () => {
   const location = useLocation();
+  const { session } = useAuth();
   const isLivePage = location.pathname === '/dashboard/federation-live';
+
+  // Don't render FederationLive if not authenticated
+  if (!session) {
+    return <Outlet />;
+  }
 
   return (
     <>
-      <div style={{ display: isLivePage ? 'block' : 'none', height: isLivePage ? 'auto' : 0 }}>
+      <div style={{ display: isLivePage ? 'block' : 'none', height: isLivePage ? 'auto' : 0, overflow: isLivePage ? 'visible' : 'hidden' }}>
         <FederationLive />
       </div>
       {!isLivePage && <Outlet />}
