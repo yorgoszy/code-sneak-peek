@@ -988,7 +988,7 @@ const FederationBrackets = () => {
 
                     <Select value={filterWeight} onValueChange={setFilterWeight} disabled={!filterAge}>
                       <SelectTrigger className="rounded-none h-8 text-xs w-32">
-                        <SelectValue placeholder="Κιλά" />
+                        <SelectValue placeholder={t('federation.brackets.weightFilter')} />
                       </SelectTrigger>
                       <SelectContent>
                         {weightOptions.map(w => (
