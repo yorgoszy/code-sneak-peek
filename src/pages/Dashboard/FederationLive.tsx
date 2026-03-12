@@ -676,7 +676,9 @@ const FederationLive = () => {
                     setRingConfigs(prev => [...prev, {
                       ring_number: n,
                       ring_name: `Ring ${getRingLetter(n)}`,
+                      source_type: 'youtube' as const,
                       youtube_live_url: '',
+                      camera_device_id: '',
                       match_range_start: '',
                       match_range_end: '',
                     }]);
