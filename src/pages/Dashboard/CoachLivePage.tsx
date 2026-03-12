@@ -95,6 +95,7 @@ const CoachLivePage = () => {
   }, [selectedCompId]);
 
   useEffect(() => {
+    if (selectedCompId) localStorage.setItem('coach-live-comp', selectedCompId);
     if (!selectedCompId) { setRings([]); return; }
     loadRings();
   }, [selectedCompId, loadRings]);

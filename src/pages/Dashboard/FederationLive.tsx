@@ -158,6 +158,7 @@ const FederationLive = () => {
   }, [federationId]);
 
   useEffect(() => {
+    if (selectedCompId) localStorage.setItem('federation-live-comp', selectedCompId);
     if (!selectedCompId) { setRings([]); setMatches([]); return; }
     loadRings();
     loadMatches();
