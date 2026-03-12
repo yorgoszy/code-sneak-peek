@@ -496,7 +496,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
               <tr className="border-b border-border">
                 <th className="text-left px-1 py-0.5 text-muted-foreground font-normal"></th>
                 {Array.from({ length: roundConfig.rounds }, (_, i) => (
-                  <th key={i + 1} className="text-center px-0.5 py-0.5 text-muted-foreground font-normal border-l border-border">R{i + 1}</th>
+                  <th key={i + 1} className={`text-center px-0.5 py-0.5 text-muted-foreground font-normal border-l border-border ${i === 1 ? 'bg-muted/40' : ''}`}>R{i + 1}</th>
                 ))}
               </tr>
             </thead>
@@ -508,7 +508,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
                     const s = getJudgeScoreForRound(j, i + 1);
                     const val = s?.athlete2_score || 0;
                     return (
-                      <td key={i + 1} className={`text-center px-0.5 py-0.5 border-l border-border ${s ? 'font-semibold' : 'text-muted-foreground'}`}>
+                      <td key={i + 1} className={`text-center px-0.5 py-0.5 border-l border-border ${i === 1 ? 'bg-muted/40' : ''} ${s ? 'font-semibold' : 'text-muted-foreground'}`}>
                         {s ? val : '-'}
                       </td>
                     );
@@ -521,7 +521,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
                   const roundScored = getRoundTotals(i + 1).count === 3;
                   const ma = roundScored ? getMajorityScore(i + 1, 'a2') : null;
                   return (
-                    <td key={i + 1} className="text-center px-0.5 py-0.5 text-red-600 border-l border-border">{ma !== null ? ma : '-'}</td>
+                    <td key={i + 1} className={`text-center px-0.5 py-0.5 text-red-600 border-l border-border ${i === 1 ? 'bg-muted/50' : ''}`}>{ma !== null ? ma : '-'}</td>
                   );
                 })}
               </tr>
