@@ -561,20 +561,21 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
                 </tr>
               );
             })}
-            {/* Totals row */}
+            {/* Totals row - majority vote per round */}
             <tr className="bg-muted/30 font-bold">
               <td className="px-1 py-0.5">Σύνολο</td>
               {[1, 2, 3].map(r => {
-                const t = getRoundTotals(r);
+                const ma1 = getMajorityScore(r, 'a1');
+                const ma2 = getMajorityScore(r, 'a2');
                 return (
                   <React.Fragment key={r}>
-                    <td className="text-center px-0.5 py-0.5 text-blue-600 border-l border-border">{t.count > 0 ? t.a1 : '-'}</td>
-                    <td className="text-center px-0.5 py-0.5 text-red-600">{t.count > 0 ? t.a2 : '-'}</td>
+                    <td className="text-center px-0.5 py-0.5 text-blue-600 border-l border-border">{ma1 !== null ? ma1 : '-'}</td>
+                    <td className="text-center px-0.5 py-0.5 text-red-600">{ma2 !== null ? ma2 : '-'}</td>
                   </React.Fragment>
                 );
               })}
-              <td className="text-center px-0.5 py-1 text-sm text-blue-600 border-l border-border">{totalA1 || '-'}</td>
-              <td className="text-center px-0.5 py-1 text-sm text-red-600">{totalA2 || '-'}</td>
+              <td className="text-center px-0.5 py-1 text-sm text-blue-600 border-l border-border">{majorityA1 || '-'}</td>
+              <td className="text-center px-0.5 py-1 text-sm text-red-600">{majorityA2 || '-'}</td>
             </tr>
           </tbody>
         </table>
