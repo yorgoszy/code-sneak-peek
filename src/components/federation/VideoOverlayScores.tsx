@@ -197,6 +197,30 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
   const currentRound = timerState.timer_current_round ?? 1;
   const isBreak = timerState.timer_is_break ?? false;
 
+  const buildMatchLabel = () => {
+    const parts: string[] = [];
+    if (match.match_order) parts.push(`#${match.match_order}`);
+    const cat = match.category;
+    if (cat) {
+      if (cat.gender) {
+        parts.push(cat.gender === 'male' ? 'M' : cat.gender === 'female' ? 'F' : cat.gender);
+      }
+      if (cat.min_age != null || cat.max_age != null) {
+        if (cat.min_age != null && cat.max_age != null) parts.push(`${cat.min_age}-${cat.max_age}y`);
+        else if (cat.min_age != null) parts.push(`${cat.min_age}+y`);
+        else parts.push(`-${cat.max_age}y`);
+      }
+      if (cat.min_weight != null || cat.max_weight != null) {
+        if (cat.min_weight != null && cat.max_weight != null) parts.push(`${cat.max_weight}kg`);
+        else if (cat.min_weight != null) parts.push(`+${cat.min_weight}kg`);
+        else parts.push(`-${cat.max_weight}kg`);
+      }
+    }
+    return parts.join(' · ');
+  };
+
+  const matchLabel = buildMatchLabel();
+
   return (
     <>
       {/* Exit fullscreen button - only visible in fullscreen */}
