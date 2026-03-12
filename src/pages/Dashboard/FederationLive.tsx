@@ -493,7 +493,7 @@ const FederationLive = () => {
                 'grid-cols-1 lg:grid-cols-2 xl:grid-cols-3'
               }`}>
                 {rings.map((ring) => (
-                  <Card key={ring.id} className="rounded-none overflow-hidden">
+                  <Card key={ring.id} id={`ring-card-${ring.id}`} className="rounded-none overflow-hidden bg-background">
                     <div className="flex items-center justify-between px-2 py-1 bg-muted border-b border-border">
                       <div className="flex items-center gap-1.5">
                         <Monitor className="h-3 w-3 text-muted-foreground" />
