@@ -599,18 +599,18 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
             <Button
               size="sm"
               variant="outline"
-              className="rounded-none h-5 text-[8px] px-1.5 border-blue-500 text-blue-600"
-              onClick={() => match.athlete1_id && handleDeclareWinner(match.athlete1_id)}
-            >
-              {match.athlete1?.name || 'Μπλε'}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
               className="rounded-none h-5 text-[8px] px-1.5 border-red-500 text-red-600"
               onClick={() => match.athlete2_id && handleDeclareWinner(match.athlete2_id)}
             >
               {match.athlete2?.name || 'Κόκκινη'}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="rounded-none h-5 text-[8px] px-1.5 border-blue-500 text-blue-600"
+              onClick={() => match.athlete1_id && handleDeclareWinner(match.athlete1_id)}
+            >
+              {match.athlete1?.name || 'Μπλε'}
             </Button>
           </div>
         </div>
