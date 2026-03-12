@@ -645,7 +645,7 @@ const FederationLive = () => {
                       {/* Next 2 upcoming matches for this ring */}
                       {nextMatches.length > 0 && (
                         <div className="border-t border-border">
-                          <p className="text-[10px] font-semibold text-muted-foreground px-2 py-1 bg-muted/30">Επόμενοι αγώνες</p>
+                          <p className="text-[10px] font-semibold text-muted-foreground px-2 py-1 bg-muted/30">{t('federation.live.upcomingMatches')}</p>
                           {nextMatches.map((m: Match, idx: number) => (
                             <div key={m.id}>
                               {idx > 0 && <div className="h-px bg-white" />}
