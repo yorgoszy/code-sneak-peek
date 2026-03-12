@@ -277,7 +277,28 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
     persistTimerState(false, newTime, currentRound, isBreak);
   };
 
-  const handleDeclareWinner = async (winnerId: string) => {
+  const handleRefreshMatch = async () => {
+    if (!currentMatchId) return;
+    // Reset timer
+    setIsRunning(false);
+    setCurrentRound(1);
+    setIsBreak(false);
+    setTimeLeft(roundConfig.roundDurationSec);
+    persistTimerState(false, roundConfig.roundDurationSec, 1, false);
+    // Delete judge scores for this match
+    await supabase
+      .from('competition_match_judge_scores')
+      .delete()
+      .eq('match_id', currentMatchId);
+    // Reset match status
+    await supabase
+      .from('competition_matches')
+      .update({ status: 'pending', winner_id: null, completed_at: null, result_type: null, athlete1_score: null, athlete2_score: null })
+      .eq('id', currentMatchId);
+    setJudgeScores([]);
+    toast.success('Ο αγώνας ανανεώθηκε');
+  };
+
     if (!match) return;
     const { error } = await supabase
       .from('competition_matches')
