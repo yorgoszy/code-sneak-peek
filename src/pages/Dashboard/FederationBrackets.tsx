@@ -1157,7 +1157,7 @@ const FederationBrackets = () => {
                               >
                                 {/* Match number header */}
                                 <div className="flex items-center justify-between px-2.5 py-1 bg-muted/50 border-b border-border">
-                                  <span className="text-[11px] font-bold text-foreground">Αγ. {globalMatchNum}</span>
+                                  <span className="text-[11px] font-bold text-foreground">{t('federation.brackets.fight')} {globalMatchNum}</span>
                                   {match.status === 'completed' && match.result_type && (
                                     <Badge variant="secondary" className="rounded-none text-[9px] h-4 px-1.5 uppercase">
                                       {match.result_type}
