@@ -132,7 +132,8 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
 
     const calcRemaining = () => {
       const elapsed = (Date.now() - new Date(timerState.timer_running_since!).getTime()) / 1000;
-      return Math.max(0, Math.round((timerState.timer_remaining_seconds ?? 0) - elapsed));
+      // Use Math.ceil so the overlay never shows a lower second before the ring timer does
+      return Math.max(0, Math.ceil((timerState.timer_remaining_seconds ?? 0) - elapsed));
     };
 
     setLiveSeconds(calcRemaining());
