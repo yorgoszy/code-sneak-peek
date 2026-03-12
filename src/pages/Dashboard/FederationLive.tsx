@@ -527,7 +527,7 @@ const FederationLive = () => {
 
                     <CardContent className="p-0">
                       {ring.youtube_live_url ? (
-                        <div className="relative">
+                        <div id={`ring-video-${ring.id}`} className="relative bg-black group">
                           <AspectRatio ratio={16 / 9}>
                             <iframe
                               src={getYoutubeEmbedUrl(ring.youtube_live_url) || ''}

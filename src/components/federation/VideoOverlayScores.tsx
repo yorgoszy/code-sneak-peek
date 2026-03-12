@@ -62,7 +62,7 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
   const athlete2Club = '';
 
   return (
-    <div className="absolute bottom-1 right-1 pointer-events-none flex flex-col gap-0.5">
+    <div className="absolute bottom-2 right-2 pointer-events-none flex flex-col gap-0.5 fullscreen:bottom-4 fullscreen:right-4">
       {/* Red (athlete2) on top */}
       <div className="flex items-center gap-0.5">
         {athlete2Club && (
