@@ -125,8 +125,8 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
 
   const athlete1Name = formatName(match.athlete1?.name);
   const athlete2Name = formatName(match.athlete2?.name);
-  const currentRound = ringTimer?.timer_current_round ?? 1;
-  const isBreak = ringTimer?.timer_is_break ?? false;
+  const currentRound = timerState.timer_current_round ?? 1;
+  const isBreak = timerState.timer_is_break ?? false;
 
   return (
     <>
