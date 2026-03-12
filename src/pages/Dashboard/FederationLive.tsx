@@ -511,7 +511,7 @@ const FederationLive = () => {
                       </div>
                       <div className="flex items-center gap-0.5">
                         <Button variant="ghost" size="sm" onClick={() => {
-                          const el = document.getElementById(`ring-card-${ring.id}`);
+                          const el = document.getElementById(`ring-video-${ring.id}`);
                           if (el) { if (document.fullscreenElement) document.exitFullscreen(); else el.requestFullscreen(); }
                         }} className="rounded-none h-5 w-5 p-0" title="Fullscreen">
                           <Maximize className="h-3 w-3" />
