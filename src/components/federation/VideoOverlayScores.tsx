@@ -10,6 +10,14 @@ interface VideoOverlayScoresProps {
     athlete1?: { name: string } | null;
     athlete2?: { name: string } | null;
     match_order?: number;
+    category?: {
+      name?: string;
+      gender?: string | null;
+      min_age?: number | null;
+      max_age?: number | null;
+      min_weight?: number | null;
+      max_weight?: number | null;
+    } | null;
   };
   ringLabel?: string;
 }
@@ -189,6 +197,30 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
   const currentRound = timerState.timer_current_round ?? 1;
   const isBreak = timerState.timer_is_break ?? false;
 
+  const buildMatchLabel = () => {
+    const parts: string[] = [];
+    if (match.match_order) parts.push(`#${match.match_order}`);
+    const cat = match.category;
+    if (cat) {
+      if (cat.gender) {
+        parts.push(cat.gender === 'male' ? 'M' : cat.gender === 'female' ? 'F' : cat.gender);
+      }
+      if (cat.min_age != null || cat.max_age != null) {
+        if (cat.min_age != null && cat.max_age != null) parts.push(`${cat.min_age}-${cat.max_age}y`);
+        else if (cat.min_age != null) parts.push(`${cat.min_age}+y`);
+        else parts.push(`-${cat.max_age}y`);
+      }
+      if (cat.min_weight != null || cat.max_weight != null) {
+        if (cat.min_weight != null && cat.max_weight != null) parts.push(`${cat.max_weight}kg`);
+        else if (cat.min_weight != null) parts.push(`+${cat.min_weight}kg`);
+        else parts.push(`-${cat.max_weight}kg`);
+      }
+    }
+    return parts.join(' · ');
+  };
+
+  const matchLabel = buildMatchLabel();
+
   return (
     <>
       {/* Exit fullscreen button - only visible in fullscreen */}
@@ -211,9 +243,9 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
         <div className="flex flex-col" style={{ gap: 0 }}>
           {/* Top row: Match number (over name) + Timer (over scores) */}
           <div className="flex items-stretch" style={{ gap: '2px' }}>
-            {match.match_order ? (
-              <div className="overlay-match-number bg-white text-black text-[9px] font-bold px-1.5 py-0.5 w-[120px] text-center leading-none flex items-center justify-center">
-                #{match.match_order}
+            {matchLabel ? (
+              <div className="overlay-match-number bg-white text-black text-[9px] font-bold px-1.5 py-0.5 w-[120px] text-center leading-none flex items-center justify-center truncate">
+                {matchLabel}
               </div>
             ) : (
               <div className="w-[120px]"></div>
