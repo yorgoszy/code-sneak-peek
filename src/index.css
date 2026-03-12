@@ -371,15 +371,20 @@ html, body {
   z-index: 10;
 }
 
-[id^="ring-video-"]:fullscreen .overlay-match-number {
-  font-size: 1.5rem;
+[id^="ring-video-"]:fullscreen .overlay-ring-label {
+  font-size: 1.25rem;
   padding: 0.5rem 1rem;
 }
 
 [id^="ring-video-"]:fullscreen .overlay-scores {
   bottom: 2rem;
   right: 2rem;
-  gap: 6px;
+}
+
+[id^="ring-video-"]:fullscreen .overlay-scores .overlay-match-number {
+  font-size: 18px;
+  width: 240px;
+  padding: 6px 12px;
 }
 
 [id^="ring-video-"]:fullscreen .overlay-scores .score-name {
@@ -395,12 +400,13 @@ html, body {
 }
 
 [id^="ring-video-"]:fullscreen .overlay-scores .overlay-timer {
-  font-size: 14px;
-  padding: 6px 12px;
+  font-size: 18px;
+  padding: 6px 0;
+  width: calc(3 * (36px + 2px) - 2px);
 }
 
 [id^="ring-video-"]:fullscreen .overlay-scores .overlay-timer span:first-child {
-  font-size: 12px;
+  font-size: 14px;
 }
 
 [id^="ring-video-"]:fullscreen .overlay-scores .overlay-timer span:last-child {
