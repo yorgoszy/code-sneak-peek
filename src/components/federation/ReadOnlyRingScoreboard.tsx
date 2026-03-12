@@ -178,7 +178,7 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
       const s = getJudgeScoreForRound(j, round);
       if (s) scores.push(athlete === 'a1' ? s.athlete1_score : s.athlete2_score);
     }
-    if (scores.length === 0) return null;
+    if (scores.length < 3) return null;
     const freq: Record<number, number> = {};
     scores.forEach(v => { freq[v] = (freq[v] || 0) + 1; });
     let maxCount = 0, majorityVal = scores[0];
