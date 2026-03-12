@@ -479,14 +479,14 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
           variant="ghost"
           size="sm"
           className="rounded-none h-7 w-7 p-0 text-foreground"
-          title="Προηγούμενος αγώνας"
-          onClick={() => {
-            const prevMatch = getAdjacentMatch('prev');
-            if (prevMatch) {
-              onMatchChange(prevMatch.id);
-            } else {
-              toast.info('Δεν υπάρχει προηγούμενος αγώνας');
-            }
+            title={t('federation.live.prevMatch')}
+            onClick={() => {
+              const prevMatch = getAdjacentMatch('prev');
+              if (prevMatch) {
+                onMatchChange(prevMatch.id);
+              } else {
+                toast.info(t('federation.live.noPrevMatch'));
+              }
           }}
         >
           <SkipBack className="h-3 w-3" />
