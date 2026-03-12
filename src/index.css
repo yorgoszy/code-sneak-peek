@@ -387,33 +387,33 @@ html, body {
 }
 
 [id^="ring-video-"]:fullscreen .overlay-scores .overlay-match-number {
-  font-size: 18px;
-  width: 240px;
-  padding: 6px 12px;
+  font-size: 24px;
+  width: 300px;
+  padding: 8px 16px;
 }
 
 [id^="ring-video-"]:fullscreen .overlay-scores .score-name {
-  font-size: 18px;
-  width: 240px;
-  padding: 6px 12px;
+  font-size: 24px;
+  width: 300px;
+  padding: 8px 16px;
 }
 
 [id^="ring-video-"]:fullscreen .overlay-scores .score-round {
-  font-size: 18px;
-  width: 40px;
-  padding: 6px 0;
+  font-size: 24px;
+  width: 52px;
+  padding: 8px 0;
 }
 
 [id^="ring-video-"]:fullscreen .overlay-scores .overlay-timer {
-  font-size: 18px;
-  padding: 6px 0;
-  width: calc(3 * (40px + 2px) - 2px);
+  font-size: 24px;
+  padding: 8px 0;
+  width: calc(3 * (52px + 2px) - 2px);
 }
 
 [id^="ring-video-"]:fullscreen .overlay-scores .overlay-timer span:first-child {
-  font-size: 14px;
+  font-size: 18px;
 }
 
 [id^="ring-video-"]:fullscreen .overlay-scores .overlay-timer span:last-child {
-  font-size: 22px;
+  font-size: 28px;
 }
