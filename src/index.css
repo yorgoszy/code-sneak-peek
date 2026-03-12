@@ -372,7 +372,7 @@ html, body {
 }
 
 [id^="ring-video-"]:fullscreen .overlay-ring-label {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   padding: 0.5rem 1rem;
 }
 
@@ -395,14 +395,14 @@ html, body {
 
 [id^="ring-video-"]:fullscreen .overlay-scores .score-round {
   font-size: 18px;
-  width: 36px;
+  width: 40px;
   padding: 6px 0;
 }
 
 [id^="ring-video-"]:fullscreen .overlay-scores .overlay-timer {
   font-size: 18px;
   padding: 6px 0;
-  width: calc(3 * (36px + 2px) - 2px);
+  width: calc(3 * (40px + 2px) - 2px);
 }
 
 [id^="ring-video-"]:fullscreen .overlay-scores .overlay-timer span:first-child {
@@ -410,5 +410,5 @@ html, body {
 }
 
 [id^="ring-video-"]:fullscreen .overlay-scores .overlay-timer span:last-child {
-  font-size: 20px;
+  font-size: 22px;
 }
