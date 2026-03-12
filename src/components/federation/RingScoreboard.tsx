@@ -465,7 +465,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            className="rounded-none h-7 w-7 p-0 text-[#00ffba]"
+            className="rounded-none h-7 w-7 p-0 text-black dark:text-white"
             title="Επόμενος αγώνας"
             onClick={() => {
               const nextMatch = matches
