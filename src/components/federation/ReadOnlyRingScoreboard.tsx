@@ -245,29 +245,28 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
 
       {/* Athletes */}
       <div className="grid grid-cols-[1fr_auto_1fr] gap-0">
-        <div className="bg-blue-500/20 flex items-center gap-1.5 px-3 py-2">
+        <div className="bg-red-500/20 flex items-center gap-1.5 px-3 py-2">
           <Avatar className="h-6 w-6">
-            <AvatarImage src={avatar(match.athlete1)} />
-            <AvatarFallback className="text-[8px]">{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
+            <AvatarImage src={avatar(match.athlete2)} />
+            <AvatarFallback className="text-[8px]">{match.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <p className="text-xs font-semibold truncate">{match.athlete1?.name || 'Νικητής προηγούμενου αγώνα'}</p>
-            {match.athlete1_club && <p className="text-[9px] text-muted-foreground truncate">{match.athlete1_club.name}</p>}
+            <p className="text-xs font-semibold truncate">{match.athlete2?.name || 'Νικητής προηγούμενου αγώνα'}</p>
+            {match.athlete2_club && <p className="text-[9px] text-muted-foreground truncate">{match.athlete2_club.name}</p>}
           </div>
         </div>
         <div className="flex items-center justify-center px-2 bg-muted/20">
           <span className="text-xs font-bold text-muted-foreground">VS</span>
         </div>
-        <div className="bg-red-500/20 flex items-center gap-1.5 px-3 py-2 justify-end">
+        <div className="bg-blue-500/20 flex items-center gap-1.5 px-3 py-2 justify-end">
           <div className="min-w-0 text-right">
-            <p className="text-xs font-semibold truncate">{match.athlete2?.name || 'Νικητής προηγούμενου αγώνα'}</p>
-            {match.athlete2_club && <p className="text-[9px] text-muted-foreground truncate">{match.athlete2_club.name}</p>}
+            <p className="text-xs font-semibold truncate">{match.athlete1?.name || 'Νικητής προηγούμενου αγώνα'}</p>
+            {match.athlete1_club && <p className="text-[9px] text-muted-foreground truncate">{match.athlete1_club.name}</p>}
           </div>
           <Avatar className="h-6 w-6">
-            <AvatarImage src={avatar(match.athlete2)} />
-            <AvatarFallback className="text-[8px]">{match.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
+            <AvatarImage src={avatar(match.athlete1)} />
+            <AvatarFallback className="text-[8px]">{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
           </Avatar>
-          
         </div>
       </div>
 
