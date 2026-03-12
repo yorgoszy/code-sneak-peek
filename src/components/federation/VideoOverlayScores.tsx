@@ -142,7 +142,7 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
 
   const getMajorityScore = (round: number, athlete: 'a1' | 'a2'): number | null => {
     const roundScores = judgeScores.filter(s => s.round === round);
-    if (roundScores.length === 0) return null;
+    if (roundScores.length < 3) return null;
     const scores = roundScores.map(s => athlete === 'a1' ? s.athlete1_score : s.athlete2_score);
     scores.sort((a: number, b: number) => a - b);
     return scores[Math.floor(scores.length / 2)];
