@@ -515,17 +515,16 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
                   })}
                 </tr>
               ))}
-              {allRoundsScored && (
-                <tr className="bg-muted/30 font-bold">
-                  <td className="px-1 py-0.5">Σύν.</td>
-                  {Array.from({ length: roundConfig.rounds }, (_, i) => {
-                    const ma = getMajorityScore(i + 1, 'a2');
-                    return (
-                      <td key={i + 1} className="text-center px-0.5 py-0.5 text-red-600 border-l border-border">{ma !== null ? ma : '-'}</td>
-                    );
-                  })}
-                </tr>
-              )}
+              <tr className="bg-muted/30 font-bold">
+                <td className="px-1 py-0.5">Σύν.</td>
+                {Array.from({ length: roundConfig.rounds }, (_, i) => {
+                  const roundScored = getRoundTotals(i + 1).count === 3;
+                  const ma = roundScored ? getMajorityScore(i + 1, 'a2') : null;
+                  return (
+                    <td key={i + 1} className="text-center px-0.5 py-0.5 text-red-600 border-l border-border">{ma !== null ? ma : '-'}</td>
+                  );
+                })}
+              </tr>
             </tbody>
           </table>
         </div>
