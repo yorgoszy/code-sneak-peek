@@ -334,12 +334,17 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
       if (s) scores.push(athlete === 'a1' ? s.athlete1_score : s.athlete2_score);
     }
     if (scores.length < 3) return null;
-    // Find most frequent score (majority)
+    // Find most frequent score (majority). If no majority, use median.
     const freq: Record<number, number> = {};
     scores.forEach(v => { freq[v] = (freq[v] || 0) + 1; });
     let maxCount = 0, majorityVal = scores[0];
     for (const [val, count] of Object.entries(freq)) {
       if (count > maxCount) { maxCount = count; majorityVal = Number(val); }
+    }
+    // If no clear majority (all different), use the median
+    if (maxCount === 1) {
+      const sorted = [...scores].sort((a, b) => a - b);
+      majorityVal = sorted[Math.floor(sorted.length / 2)];
     }
     return majorityVal;
   };
