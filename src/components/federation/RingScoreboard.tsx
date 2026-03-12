@@ -581,20 +581,26 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
         </table>
       </div>
 
-      {/* Winner declaration */}
-      {!match.winner_id && (totalA1 > 0 || totalA2 > 0) && (
+      {/* Winner declaration - only after all rounds are done */}
+      {!match.winner_id && matchFinished && allRoundsScored && (
         <div className="px-2 py-1 border-t border-border space-y-1">
-          {/* Auto winner button based on scores */}
-          {totalA1 !== totalA2 && (
+          {/* Auto winner button based on majority scores */}
+          {majorityA1 !== majorityA2 && (
             <div className="flex justify-center">
-              <Button
-                size="sm"
-                className="rounded-none h-7 text-[10px] px-3 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-                onClick={handleAutoDeclareWinner}
-              >
-                <Trophy className="h-3 w-3 mr-1" />
-                Νικητής: {totalA1 > totalA2 ? `Μπλε (${totalA1}-${totalA2})` : `Κόκκινη (${totalA2}-${totalA1})`}
-              </Button>
+              {(() => {
+                const isBlueWinner = majorityA1 > majorityA2;
+                const winnerName = isBlueWinner ? match.athlete1?.name : match.athlete2?.name;
+                return (
+                  <Button
+                    size="sm"
+                    className={`rounded-none h-7 text-[10px] px-3 ${isBlueWinner ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-red-500 hover:bg-red-600 text-white'}`}
+                    onClick={handleAutoDeclareWinner}
+                  >
+                    <Trophy className="h-3 w-3 mr-1" />
+                    Νικητής: {winnerName} ({majorityA1}-{majorityA2})
+                  </Button>
+                );
+              })()}
             </div>
           )}
           {/* Manual override for ties or special cases */}
@@ -606,7 +612,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
               className="rounded-none h-5 text-[8px] px-1.5 border-blue-500 text-blue-600"
               onClick={() => match.athlete1_id && handleDeclareWinner(match.athlete1_id)}
             >
-              Μπλε
+              {match.athlete1?.name || 'Μπλε'}
             </Button>
             <Button
               size="sm"
@@ -614,17 +620,23 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
               className="rounded-none h-5 text-[8px] px-1.5 border-red-500 text-red-600"
               onClick={() => match.athlete2_id && handleDeclareWinner(match.athlete2_id)}
             >
-              Κόκκινη
+              {match.athlete2?.name || 'Κόκκινη'}
             </Button>
           </div>
         </div>
       )}
       {match.winner_id && (
         <div className="px-2 py-1 border-t border-border flex justify-center">
-          <Badge className="rounded-none text-[10px] px-2 py-0.5 bg-[#00ffba] text-black">
-            <Trophy className="h-2.5 w-2.5 mr-1" />
-            Νικητής: {match.winner_id === match.athlete1_id ? match.athlete1?.name : match.athlete2?.name} ({totalA1}-{totalA2})
-          </Badge>
+          {(() => {
+            const isBlueWinner = match.winner_id === match.athlete1_id;
+            const winnerName = isBlueWinner ? match.athlete1?.name : match.athlete2?.name;
+            return (
+              <Badge className={`rounded-none text-[10px] px-2 py-0.5 ${isBlueWinner ? 'bg-blue-500 text-white' : 'bg-red-500 text-white'}`}>
+                <Trophy className="h-2.5 w-2.5 mr-1" />
+                Νικητής: {winnerName} ({majorityA1}-{majorityA2})
+              </Badge>
+            );
+          })()}
         </div>
       )}
 
