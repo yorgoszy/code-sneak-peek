@@ -273,48 +273,8 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
       {/* Judge scores - split layout under each athlete */}
       {judgeScores.length > 0 && (
         <div className="grid grid-cols-2 gap-0">
-          {/* Blue athlete scores */}
+          {/* Red athlete scores (athlete2) */}
           <div className="border-r border-border">
-            <table className="w-full text-[9px] border-collapse">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left px-1 py-0.5 text-muted-foreground font-normal"></th>
-                  {[1, 2, 3].map(r => (
-                    <th key={r} className="text-center px-0.5 py-0.5 text-muted-foreground font-normal border-l border-border">R{r}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {[1, 2, 3].map(j => (
-                  <tr key={j} className="border-b border-border/50">
-                    <td className="px-1 py-0.5 font-medium text-muted-foreground">Κρ.{j}</td>
-                    {[1, 2, 3].map(r => {
-                      const s = getJudgeScoreForRound(j, r);
-                      const val = s?.athlete1_score || 0;
-                      return (
-                        <td key={r} className={`text-center px-0.5 py-0.5 border-l border-border ${s ? 'font-semibold' : 'text-muted-foreground'}`}>
-                          {s ? val : '-'}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-                {allRoundsScored && (
-                  <tr className="bg-muted/30 font-bold">
-                    <td className="px-1 py-0.5">Σύν.</td>
-                    {[1, 2, 3].map(r => {
-                      const ma = getMajorityScore(r, 'a1');
-                      return (
-                        <td key={r} className="text-center px-0.5 py-0.5 text-blue-600 border-l border-border">{ma !== null ? ma : '-'}</td>
-                      );
-                    })}
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          {/* Red athlete scores */}
-          <div>
             <table className="w-full text-[9px] border-collapse">
               <thead>
                 <tr className="border-b border-border">
@@ -346,6 +306,46 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
                       const ma = getMajorityScore(r, 'a2');
                       return (
                         <td key={r} className="text-center px-0.5 py-0.5 text-red-600 border-l border-border">{ma !== null ? ma : '-'}</td>
+                      );
+                    })}
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          {/* Blue athlete scores (athlete1) */}
+          <div>
+            <table className="w-full text-[9px] border-collapse">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left px-1 py-0.5 text-muted-foreground font-normal"></th>
+                  {[1, 2, 3].map(r => (
+                    <th key={r} className="text-center px-0.5 py-0.5 text-muted-foreground font-normal border-l border-border">R{r}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {[1, 2, 3].map(j => (
+                  <tr key={j} className="border-b border-border/50">
+                    <td className="px-1 py-0.5 font-medium text-muted-foreground">Κρ.{j}</td>
+                    {[1, 2, 3].map(r => {
+                      const s = getJudgeScoreForRound(j, r);
+                      const val = s?.athlete1_score || 0;
+                      return (
+                        <td key={r} className={`text-center px-0.5 py-0.5 border-l border-border ${s ? 'font-semibold' : 'text-muted-foreground'}`}>
+                          {s ? val : '-'}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+                {allRoundsScored && (
+                  <tr className="bg-muted/30 font-bold">
+                    <td className="px-1 py-0.5">Σύν.</td>
+                    {[1, 2, 3].map(r => {
+                      const ma = getMajorityScore(r, 'a1');
+                      return (
+                        <td key={r} className="text-center px-0.5 py-0.5 text-blue-600 border-l border-border">{ma !== null ? ma : '-'}</td>
                       );
                     })}
                   </tr>
