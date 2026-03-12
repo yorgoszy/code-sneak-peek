@@ -71,30 +71,6 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
 
   useEffect(() => { loadMatch(); }, [loadMatch]);
 
-  // Load judge scores
-  const loadJudgeScores = useCallback(async () => {
-    if (!currentMatchId) return;
-    const { data } = await supabase
-      .from('competition_match_judge_scores')
-      .select('*')
-      .eq('match_id', currentMatchId);
-    setJudgeScores(data || []);
-  }, [currentMatchId]);
-
-  useEffect(() => { loadJudgeScores(); }, [loadJudgeScores]);
-
-  // Real-time judge scores
-  useEffect(() => {
-    if (!currentMatchId) return;
-    const channel = supabase
-      .channel(`coach-judge-scores-${currentMatchId}`)
-      .on('postgres_changes', {
-        event: '*', schema: 'public', table: 'competition_match_judge_scores',
-        filter: `match_id=eq.${currentMatchId}`
-      }, () => loadJudgeScores())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [currentMatchId, loadJudgeScores]);
 
   // Real-time match updates (including deletion from draw reset)
   useEffect(() => {
