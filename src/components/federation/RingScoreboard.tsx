@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Play, Pause, RotateCcw, Trophy, Clock, Link2, Copy, Check, RefreshCw } from "lucide-react";
+import { Play, Pause, RotateCcw, Trophy, Clock, Link2, Copy, Check, RefreshCw, SkipForward } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeJudgeScores } from "@/hooks/useRealtimeJudgeScores";
@@ -461,6 +461,24 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
           </Button>
           <Button variant="ghost" size="sm" className="rounded-none h-7 w-7 p-0 text-destructive" onClick={handleRefreshMatch} title="Refresh Match">
             <RefreshCw className="h-3 w-3" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="rounded-none h-7 w-7 p-0 text-[#00ffba]"
+            title="Επόμενος αγώνας"
+            onClick={() => {
+              const nextMatch = matches
+                .filter(m => m.status === 'pending' && m.id !== currentMatchId && (m.athlete1 || m.athlete2))
+                .sort((a, b) => (a.match_order || 0) - (b.match_order || 0))[0];
+              if (nextMatch) {
+                onMatchChange(nextMatch.id);
+              } else {
+                toast.info('Δεν υπάρχει επόμενος αγώνας');
+              }
+            }}
+          >
+            <SkipForward className="h-3 w-3" />
           </Button>
         </div>
       </div>
