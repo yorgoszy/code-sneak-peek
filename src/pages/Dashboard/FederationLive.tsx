@@ -264,7 +264,9 @@ const FederationLive = () => {
     const configs = Array.from({ length: ringCount }, (_, i) => ({
       ring_number: i + 1,
       ring_name: `Ring ${getRingLetter(i + 1)}`,
+      source_type: 'youtube' as const,
       youtube_live_url: '',
+      camera_device_id: '',
       match_range_start: '',
       match_range_end: '',
     }));
