@@ -877,7 +877,7 @@ const FederationLive = () => {
               {/* Row 1: Ring Name + Source Type */}
               <div className="flex items-center gap-2">
                 <div className="flex-1">
-                  <Label className="text-xs">Όνομα</Label>
+                  <Label className="text-xs">{t('federation.live.ringName')}</Label>
                   <Input
                     value={editRingName}
                     onChange={(e) => setEditRingName(e.target.value)}
