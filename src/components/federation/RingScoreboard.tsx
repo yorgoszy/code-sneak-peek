@@ -599,12 +599,12 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
           {majorityA1 !== majorityA2 && (
             <div className="flex justify-center">
               {(() => {
-                const isBlueWinner = majorityA1 > majorityA2;
-                const winnerName = isBlueWinner ? match.athlete1?.name : match.athlete2?.name;
+                const isRedWinner = majorityA1 > majorityA2;
+                const winnerName = isRedWinner ? match.athlete1?.name : match.athlete2?.name;
                 return (
                   <Button
                     size="sm"
-                    className={`rounded-none h-7 text-[10px] px-3 ${isBlueWinner ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-red-500 hover:bg-red-600 text-white'}`}
+                    className={`rounded-none h-7 text-[10px] px-3 ${isRedWinner ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
                     onClick={handleAutoDeclareWinner}
                   >
                     <Trophy className="h-3 w-3 mr-1" />
@@ -621,17 +621,17 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
               size="sm"
               variant="outline"
               className="rounded-none h-5 text-[8px] px-1.5 border-red-500 text-red-600"
-              onClick={() => match.athlete2_id && handleDeclareWinner(match.athlete2_id)}
+              onClick={() => match.athlete1_id && handleDeclareWinner(match.athlete1_id)}
             >
-              {match.athlete2?.name || 'Κόκκινη'}
+              {match.athlete1?.name || 'Κόκκινη'}
             </Button>
             <Button
               size="sm"
               variant="outline"
               className="rounded-none h-5 text-[8px] px-1.5 border-blue-500 text-blue-600"
-              onClick={() => match.athlete1_id && handleDeclareWinner(match.athlete1_id)}
+              onClick={() => match.athlete2_id && handleDeclareWinner(match.athlete2_id)}
             >
-              {match.athlete1?.name || 'Μπλε'}
+              {match.athlete2?.name || 'Μπλε'}
             </Button>
           </div>
         </div>
