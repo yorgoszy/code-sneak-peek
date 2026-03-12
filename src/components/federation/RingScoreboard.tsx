@@ -430,7 +430,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
   }
 
   if (!match) {
-    return <div className="px-2 py-1 border-t border-border text-center text-[10px] text-muted-foreground">Φόρτωση...</div>;
+    return <div className="px-2 py-1 border-t border-border text-center text-[10px] text-muted-foreground">{t('federation.live.loading')}</div>;
   }
 
   return (
