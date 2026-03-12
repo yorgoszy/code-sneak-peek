@@ -493,7 +493,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
         </Button>
 
         <Badge variant={isBreak ? "secondary" : "outline"} className="rounded-none text-xs px-2">
-          {isBreak ? 'ΔΙΑΛ.' : `R${currentRound}`}
+          {isBreak ? t('federation.live.break') : `R${currentRound}`}
         </Badge>
         <div className="font-mono text-2xl font-bold tracking-wider text-foreground">
           {formatTimer(timeLeft)}
