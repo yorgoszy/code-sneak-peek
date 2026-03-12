@@ -938,7 +938,7 @@ const FederationLive = () => {
 
               {/* Judge Links */}
               <div>
-                <Label className="text-xs mb-1 block">Links Κριτών</Label>
+                <Label className="text-xs mb-1 block">{t('federation.live.judgeLinks')}</Label>
                 <div className="space-y-2">
                   {[1, 2, 3].map((judgeNum) => {
                     const judgeUrl = `${window.location.origin}/judge?ring=${editRing.id}&judge=${judgeNum}&comp=${selectedCompId}`;
