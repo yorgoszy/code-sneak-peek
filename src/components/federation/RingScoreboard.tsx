@@ -494,7 +494,6 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
       {/* Athletes header */}
       <div className="grid grid-cols-[1fr_auto_1fr] gap-0">
         <div className="bg-blue-500/20 flex items-center gap-1.5 px-2 py-1">
-          <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
           <Avatar className="h-5 w-5">
             <AvatarImage src={avatar(match.athlete1)} />
             <AvatarFallback className="text-[8px]">{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
