@@ -510,75 +510,98 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
         </div>
       </div>
 
-      {/* Judge scores table */}
-      <div className="px-1 py-1">
-        <table className="w-full text-[9px] border-collapse">
-          <thead>
-            <tr className="border-b border-border">
-              <th className="text-left px-1 py-0.5 text-muted-foreground font-normal"></th>
-              {[1, 2, 3].map(r => (
-                <th key={r} colSpan={2} className="text-center px-0.5 py-0.5 text-muted-foreground font-normal border-l border-border">R{r}</th>
-              ))}
-              <th colSpan={2} className="text-center px-0.5 py-0.5 font-semibold border-l border-border">Σύν.</th>
-            </tr>
-            <tr className="border-b border-border">
-              <th className="px-1 py-0.5"></th>
-              {[1, 2, 3].map(r => (
-                <React.Fragment key={r}>
-                  <th className={`text-center px-0.5 py-0.5 text-blue-600 font-normal ${r === 1 ? 'border-l border-border' : 'border-l border-border'}`}>Μ</th>
-                  <th className="text-center px-0.5 py-0.5 text-red-600 font-normal">Κ</th>
-                </React.Fragment>
-              ))}
-              <th className="text-center px-0.5 py-0.5 text-blue-600 font-semibold border-l border-border">Μ</th>
-              <th className="text-center px-0.5 py-0.5 text-red-600 font-semibold">Κ</th>
-            </tr>
-          </thead>
-          <tbody>
-            {[1, 2, 3].map(j => {
-              let jTotalA1 = 0, jTotalA2 = 0;
-              return (
-                <tr key={j} className="border-b border-border/50">
-                  <td className="px-1 py-0.5 font-medium text-muted-foreground">Κρ.{j}</td>
-                  {[1, 2, 3].map(r => {
-                    const s = getJudgeScoreForRound(j, r);
-                    const a1 = s?.athlete1_score || 0;
-                    const a2 = s?.athlete2_score || 0;
-                    jTotalA1 += a1;
-                    jTotalA2 += a2;
-                    return (
-                      <React.Fragment key={r}>
-                        <td className={`text-center px-0.5 py-0.5 border-l border-border ${s ? 'font-semibold' : 'text-muted-foreground'}`}>
-                          {s ? a1 : '-'}
-                        </td>
-                        <td className={`text-center px-0.5 py-0.5 ${s ? 'font-semibold' : 'text-muted-foreground'}`}>
-                          {s ? a2 : '-'}
-                        </td>
-                      </React.Fragment>
-                    );
-                  })}
-                  <td className="text-center px-0.5 py-0.5 font-bold text-blue-600 border-l border-border">{jTotalA1 || '-'}</td>
-                  <td className="text-center px-0.5 py-0.5 font-bold text-red-600">{jTotalA2 || '-'}</td>
-                </tr>
-              );
-            })}
-            {/* Totals row - majority vote per round */}
-            <tr className="bg-muted/30 font-bold">
-              <td className="px-1 py-0.5">Σύνολο</td>
-              {[1, 2, 3].map(r => {
-                const ma1 = getMajorityScore(r, 'a1');
-                const ma2 = getMajorityScore(r, 'a2');
+      {/* Judge scores - split layout under each athlete */}
+      <div className="grid grid-cols-2 gap-0">
+        {/* Blue athlete scores */}
+        <div className="border-r border-border">
+          <table className="w-full text-[9px] border-collapse">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left px-1 py-0.5 text-muted-foreground font-normal"></th>
+                {[1, 2, 3].map(r => (
+                  <th key={r} className="text-center px-0.5 py-0.5 text-muted-foreground font-normal border-l border-border">R{r}</th>
+                ))}
+                <th className="text-center px-0.5 py-0.5 font-semibold border-l border-border text-blue-600">Σύν.</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[1, 2, 3].map(j => {
+                let jTotal = 0;
                 return (
-                  <React.Fragment key={r}>
-                    <td className="text-center px-0.5 py-0.5 text-blue-600 border-l border-border">{ma1 !== null ? ma1 : '-'}</td>
-                    <td className="text-center px-0.5 py-0.5 text-red-600">{ma2 !== null ? ma2 : '-'}</td>
-                  </React.Fragment>
+                  <tr key={j} className="border-b border-border/50">
+                    <td className="px-1 py-0.5 font-medium text-muted-foreground">Κρ.{j}</td>
+                    {[1, 2, 3].map(r => {
+                      const s = getJudgeScoreForRound(j, r);
+                      const val = s?.athlete1_score || 0;
+                      if (s) jTotal += val;
+                      return (
+                        <td key={r} className={`text-center px-0.5 py-0.5 border-l border-border ${s ? 'font-semibold' : 'text-muted-foreground'}`}>
+                          {s ? val : '-'}
+                        </td>
+                      );
+                    })}
+                    <td className="text-center px-0.5 py-0.5 font-bold text-blue-600 border-l border-border">{jTotal || '-'}</td>
+                  </tr>
                 );
               })}
-              <td className="text-center px-0.5 py-1 text-sm text-blue-600 border-l border-border">{majorityA1 || '-'}</td>
-              <td className="text-center px-0.5 py-1 text-sm text-red-600">{majorityA2 || '-'}</td>
-            </tr>
-          </tbody>
-        </table>
+              <tr className="bg-muted/30 font-bold">
+                <td className="px-1 py-0.5">Σύν.</td>
+                {[1, 2, 3].map(r => {
+                  const ma = getMajorityScore(r, 'a1');
+                  return (
+                    <td key={r} className="text-center px-0.5 py-0.5 text-blue-600 border-l border-border">{ma !== null ? ma : '-'}</td>
+                  );
+                })}
+                <td className="text-center px-0.5 py-1 text-sm text-blue-600 border-l border-border font-bold">{majorityA1 || '-'}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        {/* Red athlete scores */}
+        <div>
+          <table className="w-full text-[9px] border-collapse">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left px-1 py-0.5 text-muted-foreground font-normal"></th>
+                {[1, 2, 3].map(r => (
+                  <th key={r} className="text-center px-0.5 py-0.5 text-muted-foreground font-normal border-l border-border">R{r}</th>
+                ))}
+                <th className="text-center px-0.5 py-0.5 font-semibold border-l border-border text-red-600">Σύν.</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[1, 2, 3].map(j => {
+                let jTotal = 0;
+                return (
+                  <tr key={j} className="border-b border-border/50">
+                    <td className="px-1 py-0.5 font-medium text-muted-foreground">Κρ.{j}</td>
+                    {[1, 2, 3].map(r => {
+                      const s = getJudgeScoreForRound(j, r);
+                      const val = s?.athlete2_score || 0;
+                      if (s) jTotal += val;
+                      return (
+                        <td key={r} className={`text-center px-0.5 py-0.5 border-l border-border ${s ? 'font-semibold' : 'text-muted-foreground'}`}>
+                          {s ? val : '-'}
+                        </td>
+                      );
+                    })}
+                    <td className="text-center px-0.5 py-0.5 font-bold text-red-600 border-l border-border">{jTotal || '-'}</td>
+                  </tr>
+                );
+              })}
+              <tr className="bg-muted/30 font-bold">
+                <td className="px-1 py-0.5">Σύν.</td>
+                {[1, 2, 3].map(r => {
+                  const ma = getMajorityScore(r, 'a2');
+                  return (
+                    <td key={r} className="text-center px-0.5 py-0.5 text-red-600 border-l border-border">{ma !== null ? ma : '-'}</td>
+                  );
+                })}
+                <td className="text-center px-0.5 py-1 text-sm text-red-600 border-l border-border font-bold">{majorityA2 || '-'}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Winner declaration - only after all rounds are done */}
