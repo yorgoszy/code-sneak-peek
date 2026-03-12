@@ -415,7 +415,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
       <div className="px-2 py-2 border-t border-border">
         <Select value="" onValueChange={onMatchChange}>
           <SelectTrigger className="rounded-none h-7 text-xs">
-            <SelectValue placeholder="Επιλογή αγώνα..." />
+            <SelectValue placeholder={t('federation.live.selectMatchPlaceholder')} />
           </SelectTrigger>
           <SelectContent>
             {navigableMatches.map(m => (
