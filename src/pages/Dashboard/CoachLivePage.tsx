@@ -175,7 +175,7 @@ const CoachLivePage = () => {
                     <CardHeader className="p-3 bg-muted border-b border-border">
                       <div className="flex items-center gap-2">
                         <Monitor className="h-4 w-4 text-muted-foreground" />
-                        <CardTitle className="text-sm">{ring.ring_name || `Ring ${ring.ring_number}`}</CardTitle>
+                        <CardTitle className="text-sm">{ring.ring_name || `Ring ${String.fromCharCode(64 + ring.ring_number)}`}</CardTitle>
                         {ring.is_active && (
                           <Badge variant="outline" className="rounded-none text-xs bg-destructive/10 text-destructive border-destructive/30">
                             <Radio className="h-3 w-3 mr-1 animate-pulse" />
