@@ -281,8 +281,8 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
         result_type: 'points',
       })
       .eq('id', match.id);
-    if (error) toast.error('Σφάλμα ορισμού νικητή');
-    else toast.success('Ο νικητής καταχωρήθηκε');
+    if (error) toast.error(t('federation.live.winnerError'));
+    else toast.success(t('federation.live.winnerSuccess'));
   };
 
   // Auto-declare winner based on majority vote when all rounds are done
