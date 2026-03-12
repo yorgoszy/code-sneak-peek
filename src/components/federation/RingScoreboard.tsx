@@ -380,6 +380,10 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
   const allRoundsScored = Array.from({ length: roundConfig.rounds }, (_, i) => getRoundTotals(i + 1).count === 3).every(Boolean);
 
   const avatar = (a: any) => a?.photo_url || a?.avatar_url || undefined;
+  // Get display name from the enriched matches prop (has feeder info like "Νικητής αγ. 4")
+  const currentMatchFromProp = matches.find(m => m.id === currentMatchId);
+  const athlete1Fallback = currentMatchFromProp?.athlete1_display || currentMatchFromProp?.athlete1?.name || 'TBD';
+  const athlete2Fallback = currentMatchFromProp?.athlete2_display || currentMatchFromProp?.athlete2?.name || 'TBD';
   const matchFinished = match?.status === 'completed' || (currentRound >= roundConfig.rounds && timeLeft === 0 && !isBreak && !isRunning);
 
   const ringOrderedMatches = [...matches]
@@ -529,7 +533,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
             <AvatarFallback className="text-[8px]">{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete1?.name || 'Νικητής προηγούμενου αγώνα'}</p>
+            <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete1?.name || athlete1Fallback}</p>
             {match.athlete1_club && <p className="text-[8px] text-muted-foreground truncate">{match.athlete1_club.name}</p>}
           </div>
         </div>
@@ -538,7 +542,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
         </div>
         <div className="bg-blue-500/20 flex items-center gap-1.5 px-2 py-1 justify-end">
           <div className="min-w-0 text-right">
-            <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete2?.name || 'Νικητής προηγούμενου αγώνα'}</p>
+            <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete2?.name || athlete2Fallback}</p>
             {match.athlete2_club && <p className="text-[8px] text-muted-foreground truncate">{match.athlete2_club.name}</p>}
           </div>
           <Avatar className="h-5 w-5">

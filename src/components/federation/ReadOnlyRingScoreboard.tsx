@@ -255,7 +255,7 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
             <AvatarFallback className="text-[8px]">{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <p className="text-xs font-semibold truncate">{match.athlete1?.name || 'Νικητής προηγούμενου αγώνα'}</p>
+            <p className="text-xs font-semibold truncate">{match.athlete1?.name || 'TBD'}</p>
             {match.athlete1_club && <p className="text-[9px] text-muted-foreground truncate">{match.athlete1_club.name}</p>}
           </div>
         </div>
@@ -264,7 +264,7 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
         </div>
         <div className="bg-blue-500/20 flex items-center gap-1.5 px-3 py-2 justify-end">
           <div className="min-w-0 text-right">
-            <p className="text-xs font-semibold truncate">{match.athlete2?.name || 'Νικητής προηγούμενου αγώνα'}</p>
+            <p className="text-xs font-semibold truncate">{match.athlete2?.name || 'TBD'}</p>
             {match.athlete2_club && <p className="text-[9px] text-muted-foreground truncate">{match.athlete2_club.name}</p>}
           </div>
           <Avatar className="h-6 w-6">
@@ -415,11 +415,11 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
                 <div className="flex items-center gap-1 min-w-0 flex-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
                   <span className={`truncate ${um.athlete1?.name ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                    {um.athlete1?.name || um.athlete1_placeholder || 'Νικητής προηγούμενου αγώνα'}
+                    {um.athlete1?.name || um.athlete1_placeholder || 'TBD'}
                   </span>
                   <span className="text-muted-foreground shrink-0">vs</span>
                   <span className={`truncate ${um.athlete2?.name ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                    {um.athlete2?.name || um.athlete2_placeholder || 'Νικητής προηγούμενου αγώνα'}
+                    {um.athlete2?.name || um.athlete2_placeholder || 'TBD'}
                   </span>
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
                 </div>
