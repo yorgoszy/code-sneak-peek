@@ -233,17 +233,19 @@ function App() {
                       <Route path="/dashboard/phase-config" element={<ProtectedRoute requireAdmin><PhaseConfigWithSidebar /></ProtectedRoute>} />
                       <Route path="/program-builder" element={<ProtectedRoute requireAdmin><ProgramBuilder /></ProtectedRoute>} />
 
-                      {/* Federation routes */}
-                      <Route path="/dashboard/federation-overview" element={<ProtectedRoute><FederationOverview /></ProtectedRoute>} />
-                      <Route path="/dashboard/federation-users" element={<ProtectedRoute><FederationUsers /></ProtectedRoute>} />
-                      <Route path="/dashboard/federation-progress" element={<ProtectedRoute><FederationProgress /></ProtectedRoute>} />
-                      <Route path="/dashboard/federation-video-analysis" element={<ProtectedRoute><FederationVideoAnalysis /></ProtectedRoute>} />
-                      <Route path="/dashboard/federation-subscriptions" element={<ProtectedRoute><FederationSubscriptions /></ProtectedRoute>} />
-                      <Route path="/dashboard/federation-competitions" element={<ProtectedRoute><FederationCompetitions /></ProtectedRoute>} />
-                      <Route path="/dashboard/federation-brackets" element={<ProtectedRoute><FederationBrackets /></ProtectedRoute>} />
-                      <Route path="/dashboard/federation-live" element={<ProtectedRoute><FederationLive /></ProtectedRoute>} />
-                      <Route path="/dashboard/federation-profile" element={<ProtectedRoute><FederationEditProfile /></ProtectedRoute>} />
-                      <Route path="/dashboard/ranking" element={<ProtectedRoute><RankingPage /></ProtectedRoute>} />
+                      {/* Federation routes - wrapped in persistent layout to keep live streams alive */}
+                      <Route element={<FederationPersistentLayout />}>
+                        <Route path="/dashboard/federation-overview" element={<ProtectedRoute><FederationOverview /></ProtectedRoute>} />
+                        <Route path="/dashboard/federation-users" element={<ProtectedRoute><FederationUsers /></ProtectedRoute>} />
+                        <Route path="/dashboard/federation-progress" element={<ProtectedRoute><FederationProgress /></ProtectedRoute>} />
+                        <Route path="/dashboard/federation-video-analysis" element={<ProtectedRoute><FederationVideoAnalysis /></ProtectedRoute>} />
+                        <Route path="/dashboard/federation-subscriptions" element={<ProtectedRoute><FederationSubscriptions /></ProtectedRoute>} />
+                        <Route path="/dashboard/federation-competitions" element={<ProtectedRoute><FederationCompetitions /></ProtectedRoute>} />
+                        <Route path="/dashboard/federation-brackets" element={<ProtectedRoute><FederationBrackets /></ProtectedRoute>} />
+                        <Route path="/dashboard/federation-live" element={<ProtectedRoute><></></ProtectedRoute>} />
+                        <Route path="/dashboard/federation-profile" element={<ProtectedRoute><FederationEditProfile /></ProtectedRoute>} />
+                        <Route path="/dashboard/ranking" element={<ProtectedRoute><RankingPage /></ProtectedRoute>} />
+                      </Route>
 
                       {/* Protected user routes */}
                       <Route path="/meeting/:roomId" element={<ProtectedRoute><MeetingRoom /></ProtectedRoute>} />
