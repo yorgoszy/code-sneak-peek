@@ -701,7 +701,16 @@
       "quarterfinals": "Προημιτελικοί",
       "round": "Γύρος",
       "men": "Άνδρες",
-      "women": "Γυναίκες"
+      "women": "Γυναίκες",
+      "preliminaries18": "Προκριματικοί 1/8",
+      "preliminaries116": "Προκριματικοί 1/16",
+      "fight": "Αγ.",
+      "winnerFight": "Νικητής αγ.",
+      "winnerPreviousFight": "Νικητής προηγούμενου αγώνα",
+      "matchesCount": "αγώνες",
+      "genderFilter": "Φύλο",
+      "ageFilter": "Ηλικία",
+      "weightFilter": "Κιλά"
     },
     "overview": {
       "title": "Επισκόπηση Ομοσπονδίας",
