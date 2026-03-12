@@ -864,7 +864,7 @@ const FederationBrackets = () => {
     const feederMatch = feederRoundMatches.find((m) => m.match_number === feederMatchNumber)
       || (feederRoundMatches.length === 1 ? feederRoundMatches[0] : undefined);
 
-    if (!feederMatch) return { name: `Νικητής αγ. ${feederMatchNumber}`, isConfirmed: false };
+    if (!feederMatch) return { name: `${t('federation.brackets.winnerFight')} ${feederMatchNumber}`, isConfirmed: false };
 
     // If feeder match is completed, show winner name
     if (feederMatch.winner_id) {
@@ -873,18 +873,18 @@ const FederationBrackets = () => {
         : feederMatch.athlete2?.name;
       if (winnerName) return { name: winnerName, isConfirmed: true };
       const winnerMatchNumber = feederMatch.match_order || globalMatchNumbers?.get(feederMatch.id) || feederMatchNumber;
-      return { name: `Νικητής αγ. ${winnerMatchNumber}`, isConfirmed: false };
+      return { name: `${t('federation.brackets.winnerFight')} ${winnerMatchNumber}`, isConfirmed: false };
     }
 
-    // Feeder match NOT completed - show "Νικητής αγ. X" using global match_order
+    // Feeder match NOT completed - show "Winner fight X" using global match_order
     if (feederMatch.match_order) {
-      return { name: `Νικητής αγ. ${feederMatch.match_order}`, isConfirmed: false };
+      return { name: `${t('federation.brackets.winnerFight')} ${feederMatch.match_order}`, isConfirmed: false };
     }
     const globalNum = globalMatchNumbers?.get(feederMatch.id);
     if (globalNum) {
-      return { name: `Νικητής αγ. ${globalNum}`, isConfirmed: false };
+      return { name: `${t('federation.brackets.winnerFight')} ${globalNum}`, isConfirmed: false };
     }
-    return { name: `Νικητής αγ. ${feederMatchNumber}`, isConfirmed: false };
+    return { name: `${t('federation.brackets.winnerFight')} ${feederMatchNumber}`, isConfirmed: false };
   };
 
   const renderSidebar = () => (
