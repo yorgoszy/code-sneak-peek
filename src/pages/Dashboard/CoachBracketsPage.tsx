@@ -293,7 +293,7 @@ const CoachBracketsPage = () => {
                 <div className="flex items-center gap-1.5 ml-auto">
                   <Select value={filterGender} onValueChange={handleGenderChange}>
                     <SelectTrigger className="rounded-none h-8 text-xs w-28">
-                      <SelectValue placeholder="Φύλο" />
+                      <SelectValue placeholder={t('federation.brackets.genderFilter')} />
                     </SelectTrigger>
                     <SelectContent>
                       {genderOptions.map(g => (
