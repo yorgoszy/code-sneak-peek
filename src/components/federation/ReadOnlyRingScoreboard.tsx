@@ -185,6 +185,10 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
     for (const [val, count] of Object.entries(freq)) {
       if (count > maxCount) { maxCount = count; majorityVal = Number(val); }
     }
+    if (maxCount === 1) {
+      const sorted = [...scores].sort((a, b) => a - b);
+      majorityVal = sorted[Math.floor(sorted.length / 2)];
+    }
     return majorityVal;
   };
 
