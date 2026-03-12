@@ -545,13 +545,8 @@ const FederationLive = () => {
                             return (
                               <VideoOverlayScores 
                                 matchId={ring.current_match_id} 
+                                ringId={ring.id}
                                 match={currentMatch} 
-                                ringTimer={{
-                                  timer_current_round: (ring as any).timer_current_round,
-                                  timer_is_break: (ring as any).timer_is_break,
-                                  timer_remaining_seconds: (ring as any).timer_remaining_seconds,
-                                  timer_running_since: (ring as any).timer_running_since,
-                                }}
                                 ringLabel={ring.ring_name || `Ring ${getRingLetter(ring.ring_number)}`}
                               />
                             );
