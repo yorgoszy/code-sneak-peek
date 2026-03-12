@@ -505,7 +505,25 @@ const FederationLive = () => {
                 rings.length === 2 ? 'grid-cols-1 lg:grid-cols-2' :
                 'grid-cols-1 lg:grid-cols-2 xl:grid-cols-3'
               }`}>
-                {rings.map((ring) => (
+                {rings.map((ring) => {
+                  const ringScopedMatches = (matches as Match[])
+                    .filter((m) => {
+                      if (!ring.match_range_start || !ring.match_range_end) return true;
+                      const order = m.match_order ?? 0;
+                      return order >= ring.match_range_start && order <= ring.match_range_end;
+                    })
+                    .filter((m) => m.status !== 'completed' && typeof m.match_order === 'number')
+                    .sort((a, b) => (a.match_order ?? 0) - (b.match_order ?? 0));
+
+                  const currentIndex = ring.current_match_id
+                    ? ringScopedMatches.findIndex((m) => m.id === ring.current_match_id)
+                    : -1;
+
+                  const nextMatches = currentIndex >= 0
+                    ? ringScopedMatches.slice(currentIndex + 1, currentIndex + 3)
+                    : ringScopedMatches.slice(0, 2);
+
+                  return (
                   <Card key={ring.id} id={`ring-card-${ring.id}`} className="rounded-none overflow-hidden bg-background">
                     <div className="flex items-center justify-between px-2 py-1 bg-muted border-b border-border">
                       <div className="flex items-center gap-1.5">
@@ -575,65 +593,47 @@ const FederationLive = () => {
                       <RingScoreboard
                         ringId={ring.id}
                         currentMatchId={ring.current_match_id}
-                        matches={(matches as any[]).filter((m: any) => {
-                          if (!ring.match_range_start || !ring.match_range_end) return true;
-                          return m.match_order >= ring.match_range_start && m.match_order <= ring.match_range_end;
-                        })}
+                        matches={ringScopedMatches as any[]}
                         onMatchChange={(matchId) => handleMatchChangeForRing(ring.id, matchId)}
                       />
 
                       {/* Next 2 upcoming matches for this ring */}
-                      {(() => {
-                        const ringMatches = (matches as any[]).filter((m: any) => {
-                          if (!ring.match_range_start || !ring.match_range_end) return true;
-                          return m.match_order >= ring.match_range_start && m.match_order <= ring.match_range_end;
-                        });
-                        // Find the current match's order to show only matches AFTER it
-                        const currentMatch = ringMatches.find((m: any) => m.id === ring.current_match_id);
-                        const currentOrder = currentMatch?.match_order || 0;
-                        const nextMatches = ringMatches
-                          .filter((m: any) => (m.match_order || 0) > currentOrder && m.athlete1_id && m.athlete2_id)
-                          .sort((a: any, b: any) => (a.match_order || 0) - (b.match_order || 0))
-                          .slice(0, 2);
-                        
-                        if (nextMatches.length === 0) return null;
-                        
-                        return (
-                          <div className="border-t border-border">
-                            <p className="text-[10px] font-semibold text-muted-foreground px-2 py-1 bg-muted/30">Επόμενοι αγώνες</p>
-                            {nextMatches.map((m: any, idx: number) => (
-                              <div key={m.id}>
-                                {idx > 0 && <div className="h-px bg-white" />}
-                                <div className="grid grid-cols-[1fr_auto_1fr] gap-0">
-                                  <div className="bg-red-500/20 flex items-center gap-1.5 px-2 py-1">
-                                    <Avatar className="h-5 w-5">
-                                      <AvatarFallback className="text-[8px]">{m.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="min-w-0">
-                                      <p className="text-[10px] font-semibold truncate leading-tight">{m.athlete1?.name || '—'}</p>
-                                    </div>
-                                  </div>
-                                  <div className="flex flex-col items-center justify-center px-1 bg-muted/20">
-                                    <span className="text-[8px] text-muted-foreground font-medium">#{m.match_order}</span>
-                                    <span className="text-[10px] font-bold text-muted-foreground">VS</span>
-                                  </div>
-                                  <div className="bg-blue-500/20 flex items-center gap-1.5 px-2 py-1 justify-end">
-                                    <div className="min-w-0 text-right">
-                                      <p className="text-[10px] font-semibold truncate leading-tight">{m.athlete2?.name || '—'}</p>
-                                    </div>
-                                    <Avatar className="h-5 w-5">
-                                      <AvatarFallback className="text-[8px]">{m.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
-                                    </Avatar>
+                      {nextMatches.length > 0 && (
+                        <div className="border-t border-border">
+                          <p className="text-[10px] font-semibold text-muted-foreground px-2 py-1 bg-muted/30">Επόμενοι αγώνες</p>
+                          {nextMatches.map((m: Match, idx: number) => (
+                            <div key={m.id}>
+                              {idx > 0 && <div className="h-px bg-white" />}
+                              <div className="grid grid-cols-[1fr_auto_1fr] gap-0">
+                                <div className="bg-red-500/20 flex items-center gap-1.5 px-2 py-1">
+                                  <Avatar className="h-5 w-5">
+                                    <AvatarFallback className="text-[8px]">{(m.athlete1_display || m.athlete1?.name || '?').charAt(0)}</AvatarFallback>
+                                  </Avatar>
+                                  <div className="min-w-0">
+                                    <p className="text-[10px] font-semibold truncate leading-tight">{m.athlete1_display || m.athlete1?.name || 'Νικητής προηγούμενου αγώνα'}</p>
                                   </div>
                                 </div>
+                                <div className="flex flex-col items-center justify-center px-1 bg-muted/20">
+                                  <span className="text-[8px] text-muted-foreground font-medium">#{m.match_order}</span>
+                                  <span className="text-[10px] font-bold text-muted-foreground">VS</span>
+                                </div>
+                                <div className="bg-blue-500/20 flex items-center gap-1.5 px-2 py-1 justify-end">
+                                  <div className="min-w-0 text-right">
+                                    <p className="text-[10px] font-semibold truncate leading-tight">{m.athlete2_display || m.athlete2?.name || 'Νικητής προηγούμενου αγώνα'}</p>
+                                  </div>
+                                  <Avatar className="h-5 w-5">
+                                    <AvatarFallback className="text-[8px]">{(m.athlete2_display || m.athlete2?.name || '?').charAt(0)}</AvatarFallback>
+                                  </Avatar>
+                                </div>
                               </div>
-                            ))}
-                          </div>
-                        );
-                      })()}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
-                ))}
+                  );
+                })}
               </div>
             )}
 
