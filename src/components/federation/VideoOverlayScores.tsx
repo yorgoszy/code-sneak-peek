@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Minimize } from 'lucide-react';
 
@@ -13,49 +13,107 @@ interface VideoOverlayScoresProps {
   ringLabel?: string;
 }
 
+type RingTimerState = {
+  timer_current_round: number | null;
+  timer_is_break: boolean | null;
+  timer_remaining_seconds: number | null;
+  timer_running_since: string | null;
+};
+
+const DEFAULT_TIMER_STATE: RingTimerState = {
+  timer_current_round: 1,
+  timer_is_break: false,
+  timer_remaining_seconds: null,
+  timer_running_since: null,
+};
+
 export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId, ringId, match, ringLabel }) => {
   const [judgeScores, setJudgeScores] = useState<any[]>([]);
   const [liveSeconds, setLiveSeconds] = useState<number | null>(null);
-  const [timerState, setTimerState] = useState<{
-    timer_current_round: number | null;
-    timer_is_break: boolean | null;
-    timer_remaining_seconds: number | null;
-    timer_running_since: string | null;
-  }>({ timer_current_round: 1, timer_is_break: false, timer_remaining_seconds: null, timer_running_since: null });
+  const [timerState, setTimerState] = useState<RingTimerState>(DEFAULT_TIMER_STATE);
+  const lastTimerSignatureRef = useRef<string>('');
 
-  // Fetch timer state directly from ring
+  const applyTimerState = useCallback((next: Partial<RingTimerState> | null | undefined) => {
+    if (!next) return;
+    const normalized: RingTimerState = {
+      timer_current_round: next.timer_current_round ?? 1,
+      timer_is_break: next.timer_is_break ?? false,
+      timer_remaining_seconds: next.timer_remaining_seconds ?? null,
+      timer_running_since: next.timer_running_since ?? null,
+    };
+
+    const signature = [
+      normalized.timer_current_round,
+      normalized.timer_is_break,
+      normalized.timer_remaining_seconds,
+      normalized.timer_running_since,
+    ].join('|');
+
+    if (signature === lastTimerSignatureRef.current) return;
+    lastTimerSignatureRef.current = signature;
+    setTimerState(normalized);
+  }, []);
+
+  // Initial fetch
   const loadTimerState = useCallback(async () => {
+    if (!ringId) return;
     const { data } = await supabase
       .from('competition_rings')
       .select('timer_current_round, timer_is_break, timer_remaining_seconds, timer_running_since')
       .eq('id', ringId)
-      .single();
-    if (data) {
-      setTimerState(data as any);
-    }
-  }, [ringId]);
+      .maybeSingle();
+
+    applyTimerState(data as RingTimerState | null);
+  }, [ringId, applyTimerState]);
 
   useEffect(() => { loadTimerState(); }, [loadTimerState]);
 
-  // Realtime subscription for ring timer changes
+  // Primary: realtime timer sync
   useEffect(() => {
+    if (!ringId) return;
+
     const channel = supabase
       .channel(`overlay-ring-timer-${ringId}`)
       .on('postgres_changes', {
-        event: 'UPDATE', schema: 'public', table: 'competition_rings',
+        event: '*', schema: 'public', table: 'competition_rings',
         filter: `id=eq.${ringId}`
       }, (payload) => {
-        const newData = payload.new as any;
-        setTimerState({
-          timer_current_round: newData.timer_current_round,
-          timer_is_break: newData.timer_is_break,
-          timer_remaining_seconds: newData.timer_remaining_seconds,
-          timer_running_since: newData.timer_running_since,
-        });
+        if (payload.eventType === 'DELETE') return;
+        applyTimerState(payload.new as RingTimerState);
       })
       .subscribe();
+
     return () => { supabase.removeChannel(channel); };
-  }, [ringId]);
+  }, [ringId, applyTimerState]);
+
+  // Fallback: polling in case realtime event is missed
+  useEffect(() => {
+    if (!ringId) return;
+
+    let active = true;
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const poll = async () => {
+      const { data } = await supabase
+        .from('competition_rings')
+        .select('timer_current_round, timer_is_break, timer_remaining_seconds, timer_running_since')
+        .eq('id', ringId)
+        .maybeSingle();
+
+      applyTimerState(data as RingTimerState | null);
+
+      if (active) {
+        timeoutId = setTimeout(poll, 1000);
+      }
+    };
+
+    timeoutId = setTimeout(poll, 1000);
+
+    return () => {
+      active = false;
+      clearTimeout(timeoutId);
+    };
+  }, [ringId, applyTimerState]);
 
   const loadScores = useCallback(async () => {
     const { data } = await supabase
@@ -78,20 +136,23 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
     return () => { supabase.removeChannel(channel); };
   }, [matchId, loadScores]);
 
-  // Live countdown timer - synced with ring timer via direct subscription
+  // Live countdown timer - synced with ring timer via direct subscription + polling fallback
   useEffect(() => {
     if (!timerState.timer_running_since) {
       setLiveSeconds(timerState.timer_remaining_seconds ?? null);
       return;
     }
+
     if (timerState.timer_remaining_seconds == null) {
       setLiveSeconds(null);
       return;
     }
+
     const calcRemaining = () => {
       const elapsed = (Date.now() - new Date(timerState.timer_running_since!).getTime()) / 1000;
       return Math.max(0, Math.round((timerState.timer_remaining_seconds ?? 0) - elapsed));
     };
+
     setLiveSeconds(calcRemaining());
     const interval = setInterval(() => setLiveSeconds(calcRemaining()), 200);
     return () => clearInterval(interval);
