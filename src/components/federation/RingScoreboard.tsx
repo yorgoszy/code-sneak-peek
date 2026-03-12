@@ -512,13 +512,13 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
             variant="ghost"
             size="sm"
             className="rounded-none h-7 w-7 p-0 text-foreground"
-            title="Επόμενος αγώνας"
+            title={t('federation.live.nextMatch')}
             onClick={() => {
               const nextMatch = getAdjacentMatch('next');
               if (nextMatch) {
                 onMatchChange(nextMatch.id);
               } else {
-                toast.info('Δεν υπάρχει επόμενος αγώνας');
+                toast.info(t('federation.live.noNextMatch'));
               }
             }}
           >
