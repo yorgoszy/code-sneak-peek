@@ -214,7 +214,7 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
   const majorityA1 = getMajorityOfArray(roundMajoritiesA1);
   const majorityA2 = getMajorityOfArray(roundMajoritiesA2);
   
-  const allRoundsScored = [1, 2, 3].every(r => getRoundTotals(r).count > 0);
+  const allRoundsScored = [1, 2, 3].every(r => getRoundTotals(r).count === 3);
 
   const avatar = (a: any) => a?.photo_url || a?.avatar_url || undefined;
 
