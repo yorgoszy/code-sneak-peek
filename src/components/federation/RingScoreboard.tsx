@@ -299,6 +299,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
     toast.success('Ο αγώνας ανανεώθηκε');
   };
 
+  const handleDeclareWinner = async (winnerId: string) => {
     if (!match) return;
     const { error } = await supabase
       .from('competition_matches')
