@@ -228,8 +228,24 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
     return { a1, a2, count };
   };
 
-  const majorityA1 = [1, 2, 3].reduce((sum, r) => sum + (getMajorityScore(r, 'a1') || 0), 0);
-  const majorityA2 = [1, 2, 3].reduce((sum, r) => sum + (getMajorityScore(r, 'a2') || 0), 0);
+  const roundMajoritiesA1 = [1, 2, 3].map(r => getMajorityScore(r, 'a1')).filter((v): v is number => v !== null);
+  const roundMajoritiesA2 = [1, 2, 3].map(r => getMajorityScore(r, 'a2')).filter((v): v is number => v !== null);
+  
+  const getMajorityOfArray = (arr: number[]): number => {
+    if (arr.length === 0) return 0;
+    const freq: Record<number, number> = {};
+    arr.forEach(v => { freq[v] = (freq[v] || 0) + 1; });
+    let maxCount = 0, majorityVal = arr[0];
+    for (const [val, count] of Object.entries(freq)) {
+      if (count > maxCount || (count === maxCount && Number(val) > majorityVal)) { maxCount = count; majorityVal = Number(val); }
+    }
+    return majorityVal;
+  };
+
+  const majorityA1 = getMajorityOfArray(roundMajoritiesA1);
+  const majorityA2 = getMajorityOfArray(roundMajoritiesA2);
+  
+  const allRoundsScored = [1, 2, 3].every(r => getRoundTotals(r).count > 0);
 
   const avatar = (a: any) => a?.photo_url || a?.avatar_url || undefined;
 
