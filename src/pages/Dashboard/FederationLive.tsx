@@ -511,7 +511,7 @@ const FederationLive = () => {
                       </div>
                       <div className="flex items-center gap-0.5">
                         <Button variant="ghost" size="sm" onClick={() => {
-                          const el = document.getElementById(`ring-card-${ring.id}`);
+                          const el = document.getElementById(`ring-video-${ring.id}`);
                           if (el) { if (document.fullscreenElement) document.exitFullscreen(); else el.requestFullscreen(); }
                         }} className="rounded-none h-5 w-5 p-0" title="Fullscreen">
                           <Maximize className="h-3 w-3" />
@@ -527,7 +527,7 @@ const FederationLive = () => {
 
                     <CardContent className="p-0">
                       {ring.youtube_live_url ? (
-                        <div className="relative">
+                        <div id={`ring-video-${ring.id}`} className="relative bg-black group">
                           <AspectRatio ratio={16 / 9}>
                             <iframe
                               src={getYoutubeEmbedUrl(ring.youtube_live_url) || ''}
@@ -542,7 +542,7 @@ const FederationLive = () => {
                             if (!currentMatch?.match_order) return null;
                             return (
                               <>
-                                <div className="absolute top-1 left-1 bg-white text-black text-sm font-bold px-2 py-0.5 rounded-none pointer-events-none">
+                                <div className="overlay-match-number absolute top-1 left-1 bg-white text-black text-sm font-bold px-2 py-0.5 rounded-none pointer-events-none">
                                   #{currentMatch.match_order}
                                 </div>
                                 <VideoOverlayScores matchId={ring.current_match_id} match={currentMatch} />
