@@ -4538,15 +4538,22 @@ ${athletesList}
       aiKnowledgeString += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
     }
 
-    // Get current date for context
+    // Get current date and time for context (Greece timezone)
     const currentDate = new Date();
     const currentDateStr = currentDate.toLocaleDateString('el-GR', { 
       year: 'numeric', 
       month: 'long', 
       day: 'numeric',
-      weekday: 'long'
+      weekday: 'long',
+      timeZone: 'Europe/Athens'
     });
-    const currentMonth = currentDate.toLocaleDateString('el-GR', { year: 'numeric', month: 'long' });
+    const currentTimeStr = currentDate.toLocaleTimeString('el-GR', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      second: '2-digit',
+      timeZone: 'Europe/Athens'
+    });
+    const currentMonth = currentDate.toLocaleDateString('el-GR', { year: 'numeric', month: 'long', timeZone: 'Europe/Athens' });
     const currentYear = currentDate.getFullYear();
 
     // System prompt με πληροφορίες για τον χρήστη - AI KNOWLEDGE BASE FIRST!
@@ -4683,9 +4690,18 @@ FEDERATION DATA - Έχεις πρόσβαση σε:
 1. Βρες σε ποιο Ring παίζει ο αγώνας του (βάσει match_order και match_range_start/end του κάθε ring)
 2. Βρες ποιος αγώνας παίζει ΤΩΡΑ σε αυτό το ring (τρέχων αγώνας)
 3. Μέτρα πόσοι αγώνες μεσολαβούν
-4. Κάθε αγώνας = 3 rounds × 2 λεπτά/round + 2 breaks × 1 λεπτό/break + 5 λεπτά αλλαγή αθλητών = ~13 λεπτά
-5. Αριθμός αγώνων μεσολαβούν × 13 λεπτά = εκτιμώμενος χρόνος αναμονής
-6. Αν ο τρέχων αγώνας έχει timer data, πρόσθεσε τον υπολειπόμενο χρόνο
+4. Υπολόγισε τη ΔΙΑΡΚΕΙΑ ΚΑΘΕ ΑΓΩΝΑ βάσει της κατηγορίας του:
+   - 18-40 (Elite) & U23: 3 rounds × 3:00 + 2 breaks × 1:00 + 5 λεπτά αλλαγή = 16 λεπτά/αγώνα
+   - Βετεράνοι 40+: 3 rounds × 2:00 + 2 breaks × 1:00 + 5 λεπτά αλλαγή = 13 λεπτά/αγώνα
+   - 16-17: 3 rounds × 2:00 + 2 breaks × 1:00 + 5 λεπτά αλλαγή = 13 λεπτά/αγώνα
+   - 14-15: 3 rounds × 2:00 + 2 breaks × 1:00 + 5 λεπτά αλλαγή = 13 λεπτά/αγώνα
+   - 12-13: 3 rounds × 1:30 + 2 breaks × 1:00 + 5 λεπτά αλλαγή = 11.5 λεπτά/αγώνα
+   - 10-11: 3 rounds × 1:00 + 2 breaks × 1:00 + 5 λεπτά αλλαγή = 10 λεπτά/αγώνα
+   - 8-9 & 5-7: 3 rounds × 1:00 + 2 breaks × 0:30 + 5 λεπτά αλλαγή = 9 λεπτά/αγώνα
+   ΑΝ δεν ξέρεις την κατηγορία, χρησιμοποίησε 13 λεπτά ως default.
+5. Άθροισε τις εκτιμώμενες διάρκειες ΟΛΩΝ των ενδιάμεσων αγώνων
+6. Πρόσθεσε τον χρόνο στην ΤΡΕΧΟΥΣΑ ΩΡΑ: ${currentTimeStr}
+7. Δώσε την ΑΚΡΙΒΗ ΕΚΤΙΜΩΜΕΝΗ ΩΡΑ (π.χ. "Εκτιμάται ότι θα παίξεις γύρω στις 15:30")
 ΣΗΜΕΙΩΣΗ: Αυτός είναι ένας ΚΑΤΑ ΠΡΟΣΕΓΓΙΣΗ υπολογισμός. Πάντα ανέφερε ότι είναι εκτίμηση.
 
 Το context που έχεις περιλαμβάνει:
@@ -4698,6 +4714,7 @@ FEDERATION DATA - Έχεις πρόσβαση σε:
 - 📺 LIVE RINGS με τρέχοντα αγώνα, επόμενους αγώνες και timer data` : ` Έχεις πρόσβαση στα προγράμματα, τις ασκήσεις, ΟΛΟ το ημερολόγιο και ΟΛΑ τα αποτελέσματα προπόνησης (workout completions + exercise results) του χρήστη.`}
 
 ΣΗΜΕΡΙΝΗ ΗΜΕΡΟΜΗΝΙΑ: ${currentDateStr}
+ΤΡΕΧΟΥΣΑ ΩΡΑ (Ελλάδα): ${currentTimeStr}
 ΤΡΕΧΩΝ ΜΗΝΑΣ: ${currentMonth}
 ΤΡΕΧΩΝ ΕΤΟΣ: ${currentYear}
 
