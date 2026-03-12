@@ -238,13 +238,14 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
 
           {/* Red (athlete2) name + scores row */}
           <div className="flex items-stretch" style={{ gap: '2px' }}>
-            <div className="score-name bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 w-[120px] truncate flex items-center">
+            <div className={`score-name text-white text-[9px] font-bold px-1.5 py-0.5 w-[120px] truncate flex items-center gap-0.5 ${winner === 'a2' ? 'bg-red-600 ring-1 ring-yellow-400' : winner === 'a1' ? 'bg-red-600/40' : 'bg-red-600'}`}>
+              {winner === 'a2' && <Trophy className="h-2.5 w-2.5 text-yellow-400 flex-shrink-0" />}
               {athlete2Name}
             </div>
             {Array.from({ length: totalRounds }, (_, i) => i + 1).map(r => {
               const score = getMajorityScore(r, 'a2');
               return (
-                <div key={r} className="score-round bg-red-600/80 text-white text-[9px] font-bold w-5 text-center py-0.5 flex items-center justify-center">
+                <div key={r} className={`score-round text-white text-[9px] font-bold w-5 text-center py-0.5 flex items-center justify-center ${winner === 'a1' ? 'bg-red-600/40' : 'bg-red-600/80'}`}>
                   {score ?? '-'}
                 </div>
               );
@@ -253,13 +254,14 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
 
           {/* Blue (athlete1) name + scores row */}
           <div className="flex items-stretch" style={{ gap: '2px' }}>
-            <div className="score-name bg-blue-600 text-white text-[9px] font-bold px-1.5 py-0.5 w-[120px] truncate flex items-center">
+            <div className={`score-name text-white text-[9px] font-bold px-1.5 py-0.5 w-[120px] truncate flex items-center gap-0.5 ${winner === 'a1' ? 'bg-blue-600 ring-1 ring-yellow-400' : winner === 'a2' ? 'bg-blue-600/40' : 'bg-blue-600'}`}>
+              {winner === 'a1' && <Trophy className="h-2.5 w-2.5 text-yellow-400 flex-shrink-0" />}
               {athlete1Name}
             </div>
             {Array.from({ length: totalRounds }, (_, i) => i + 1).map(r => {
               const score = getMajorityScore(r, 'a1');
               return (
-                <div key={r} className="score-round bg-blue-600/80 text-white text-[9px] font-bold w-5 text-center py-0.5 flex items-center justify-center">
+                <div key={r} className={`score-round text-white text-[9px] font-bold w-5 text-center py-0.5 flex items-center justify-center ${winner === 'a2' ? 'bg-blue-600/40' : 'bg-blue-600/80'}`}>
                   {score ?? '-'}
                 </div>
               );
