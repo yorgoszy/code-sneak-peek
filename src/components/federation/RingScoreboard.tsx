@@ -445,6 +445,9 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
           <Button variant="ghost" size="sm" className="rounded-none h-7 w-7 p-0" onClick={handleResetRound}>
             <RotateCcw className="h-3 w-3" />
           </Button>
+          <Button variant="ghost" size="sm" className="rounded-none h-7 w-7 p-0 text-destructive" onClick={handleRefreshMatch} title="Refresh Match">
+            <RefreshCw className="h-3 w-3" />
+          </Button>
         </div>
       </div>
 
