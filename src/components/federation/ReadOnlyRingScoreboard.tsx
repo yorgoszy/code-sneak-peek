@@ -43,7 +43,7 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
   currentMatchId, competitionId, matchRangeStart, matchRangeEnd 
 }) => {
   const [match, setMatch] = useState<MatchData | null>(null);
-  const [judgeScores, setJudgeScores] = useState<JudgeScore[]>([]);
+  const judgeScores = useRealtimeJudgeScores(currentMatchId, { channelPrefix: 'coach-judge-scores' });
   const [upcomingMatches, setUpcomingMatches] = useState<UpcomingMatch[]>([]);
 
   // Load match
