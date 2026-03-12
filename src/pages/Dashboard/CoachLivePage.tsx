@@ -195,7 +195,7 @@ const CoachLivePage = () => {
                             className="w-full h-full"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen
-                            title={ring.ring_name || `Ring ${ring.ring_number}`}
+                            title={ring.ring_name || `Ring ${String.fromCharCode(64 + ring.ring_number)}`}
                           />
                         </AspectRatio>
                       ) : (
