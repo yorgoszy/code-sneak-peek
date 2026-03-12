@@ -32,6 +32,7 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
   const [liveSeconds, setLiveSeconds] = useState<number | null>(null);
   const [timerState, setTimerState] = useState<RingTimerState>(DEFAULT_TIMER_STATE);
   const lastTimerSignatureRef = useRef<string>('');
+  const safeRingId = ringId && ringId !== 'undefined' ? ringId : null;
 
   const applyTimerState = useCallback((next: Partial<RingTimerState> | null | undefined) => {
     if (!next) return;
@@ -56,27 +57,27 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
 
   // Initial fetch
   const loadTimerState = useCallback(async () => {
-    if (!ringId) return;
+    if (!safeRingId) return;
     const { data } = await supabase
       .from('competition_rings')
       .select('timer_current_round, timer_is_break, timer_remaining_seconds, timer_running_since')
-      .eq('id', ringId)
+      .eq('id', safeRingId)
       .maybeSingle();
 
     applyTimerState(data as RingTimerState | null);
-  }, [ringId, applyTimerState]);
+  }, [safeRingId, applyTimerState]);
 
   useEffect(() => { loadTimerState(); }, [loadTimerState]);
 
   // Primary: realtime timer sync
   useEffect(() => {
-    if (!ringId) return;
+    if (!safeRingId) return;
 
     const channel = supabase
-      .channel(`overlay-ring-timer-${ringId}`)
+      .channel(`overlay-ring-timer-${safeRingId}`)
       .on('postgres_changes', {
         event: '*', schema: 'public', table: 'competition_rings',
-        filter: `id=eq.${ringId}`
+        filter: `id=eq.${safeRingId}`
       }, (payload) => {
         if (payload.eventType === 'DELETE') return;
         applyTimerState(payload.new as RingTimerState);
@@ -84,11 +85,11 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [ringId, applyTimerState]);
+  }, [safeRingId, applyTimerState]);
 
   // Fallback: polling in case realtime event is missed
   useEffect(() => {
-    if (!ringId) return;
+    if (!safeRingId) return;
 
     let active = true;
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -97,7 +98,7 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
       const { data } = await supabase
         .from('competition_rings')
         .select('timer_current_round, timer_is_break, timer_remaining_seconds, timer_running_since')
-        .eq('id', ringId)
+        .eq('id', safeRingId)
         .maybeSingle();
 
       applyTimerState(data as RingTimerState | null);
@@ -113,7 +114,7 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
       active = false;
       clearTimeout(timeoutId);
     };
-  }, [ringId, applyTimerState]);
+  }, [safeRingId, applyTimerState]);
 
   const loadScores = useCallback(async () => {
     const { data } = await supabase
