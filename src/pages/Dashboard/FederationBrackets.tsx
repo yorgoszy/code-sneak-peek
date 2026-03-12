@@ -377,8 +377,8 @@ function getRoundName(roundNumber: number, t: any): string {
   if (roundNumber === 1) return t('federation.brackets.final');
   if (roundNumber === 2) return t('federation.brackets.semifinals');
   if (roundNumber === 4) return t('federation.brackets.quarterfinals');
-  if (roundNumber === 8) return 'Προκριματικοί 1/8';
-  if (roundNumber === 16) return 'Προκριματικοί 1/16';
+  if (roundNumber === 8) return t('federation.brackets.preliminaries18');
+  if (roundNumber === 16) return t('federation.brackets.preliminaries116');
   return `${t('federation.brackets.round')} ${roundNumber}`;
 }
 
