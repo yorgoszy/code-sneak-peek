@@ -85,7 +85,7 @@ function getYoutubeEmbedUrl(url: string): string | null {
   return url;
 }
 
-const JudgeLinkRow: React.FC<{ judgeNum: number; url: string }> = ({ judgeNum, url }) => {
+const JudgeLinkRow: React.FC<{ judgeNum: number; url: string; t: any }> = ({ judgeNum, url, t }) => {
   const [copied, setCopied] = React.useState(false);
   const [showQR, setShowQR] = React.useState(false);
 
@@ -98,7 +98,7 @@ const JudgeLinkRow: React.FC<{ judgeNum: number; url: string }> = ({ judgeNum, u
   return (
     <div className="border border-border p-2 space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium">Κριτής {judgeNum}</span>
+        <span className="text-xs font-medium">{t('federation.live.judge')} {judgeNum}</span>
         <div className="flex items-center gap-1">
           <Button variant="outline" size="sm" className="rounded-none h-7 text-xs" onClick={handleCopy}>
             {copied ? <Check className="h-3 w-3 mr-1 text-[#00ffba]" /> : <Copy className="h-3 w-3 mr-1" />}
@@ -266,9 +266,9 @@ const FederationLive = () => {
               ? feeder.athlete1?.name : feeder.athlete2?.name;
             if (winnerName) return winnerName;
           }
-          return `Νικητής αγ. ${feeder.match_order || feederMatchNum}`;
+          return `${t('federation.live.winnerFight')} ${feeder.match_order || feederMatchNum}`;
         }
-        return `Νικητής αγ. ?`;
+        return `${t('federation.live.winnerFight')} ?`;
       };
       
       return {
@@ -531,7 +531,7 @@ const FederationLive = () => {
               {rings.length > 0 && (
                 <Button variant="outline" onClick={handleRefreshAllRings} className="rounded-none">
                   <RefreshCw className="h-4 w-4 mr-2" />
-                  Refresh All Rings
+                  {t('federation.live.refreshAllRings')}
                 </Button>
               )}
 
@@ -645,7 +645,7 @@ const FederationLive = () => {
                       {/* Next 2 upcoming matches for this ring */}
                       {nextMatches.length > 0 && (
                         <div className="border-t border-border">
-                          <p className="text-[10px] font-semibold text-muted-foreground px-2 py-1 bg-muted/30">Επόμενοι αγώνες</p>
+                          <p className="text-[10px] font-semibold text-muted-foreground px-2 py-1 bg-muted/30">{t('federation.live.upcomingMatches')}</p>
                           {nextMatches.map((m: Match, idx: number) => (
                             <div key={m.id}>
                               {idx > 0 && <div className="h-px bg-white" />}
@@ -797,7 +797,7 @@ const FederationLive = () => {
                         }}
                       >
                         <SelectTrigger className="rounded-none h-7 text-xs flex-1">
-                          <SelectValue placeholder="Επιλέξτε κάμερα..." />
+                        <SelectValue placeholder={t('federation.live.selectCamera')} />
                         </SelectTrigger>
                         <SelectContent>
                           {availableCameras.map((cam, i) => (
@@ -806,7 +806,7 @@ const FederationLive = () => {
                             </SelectItem>
                           ))}
                           {availableCameras.length === 0 && (
-                            <div className="px-2 py-1 text-xs text-muted-foreground">Δεν βρέθηκαν κάμερες</div>
+                            <div className="px-2 py-1 text-xs text-muted-foreground">{t('federation.live.noCameras')}</div>
                           )}
                         </SelectContent>
                       </Select>
@@ -877,7 +877,7 @@ const FederationLive = () => {
               {/* Row 1: Ring Name + Source Type */}
               <div className="flex items-center gap-2">
                 <div className="flex-1">
-                  <Label className="text-xs">Όνομα</Label>
+                  <Label className="text-xs">{t('federation.live.ringName')}</Label>
                   <Input
                     value={editRingName}
                     onChange={(e) => setEditRingName(e.target.value)}
@@ -886,7 +886,7 @@ const FederationLive = () => {
                   />
                 </div>
                 <div className="shrink-0">
-                  <Label className="text-xs block mb-1">Πηγή</Label>
+                  <Label className="text-xs block mb-1">{t('federation.live.source')}</Label>
                   <div className="flex border border-border rounded-none overflow-hidden">
                     <button type="button" className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${editSourceType === 'youtube' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`} onClick={() => setEditSourceType('youtube')}>YouTube</button>
                     <button type="button" className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${editSourceType === 'camera' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`} onClick={() => setEditSourceType('camera')}>Camera</button>
@@ -897,23 +897,23 @@ const FederationLive = () => {
               {/* Row 2: YouTube URL / Camera + Match Range */}
               <div className="flex items-end gap-2">
                 <div className="flex-1">
-                  <Label className="text-xs">{editSourceType === 'youtube' ? 'YouTube URL' : 'Κάμερα'}</Label>
+                  <Label className="text-xs">{editSourceType === 'youtube' ? 'YouTube URL' : t('federation.live.camera')}</Label>
                   {editSourceType === 'youtube' ? (
                     <Input value={editYoutubeUrl} onChange={(e) => setEditYoutubeUrl(e.target.value)} placeholder="https://youtube.com/live/..." className="rounded-none h-7 text-xs" />
                   ) : (
                     <Select value={editCameraDeviceId} onValueChange={setEditCameraDeviceId}>
-                      <SelectTrigger className="rounded-none h-7 text-xs"><SelectValue placeholder="Επιλέξτε κάμερα..." /></SelectTrigger>
+                      <SelectTrigger className="rounded-none h-7 text-xs"><SelectValue placeholder={t('federation.live.selectCamera')} /></SelectTrigger>
                       <SelectContent>
                         {availableCameras.map((cam, i) => (
                           <SelectItem key={cam.deviceId} value={cam.deviceId}>{cam.label || `Camera ${i + 1}`}</SelectItem>
                         ))}
-                        {availableCameras.length === 0 && <div className="px-2 py-1 text-xs text-muted-foreground">Δεν βρέθηκαν κάμερες</div>}
+                        {availableCameras.length === 0 && <div className="px-2 py-1 text-xs text-muted-foreground">{t('federation.live.noCameras')}</div>}
                       </SelectContent>
                     </Select>
                   )}
                 </div>
                 <div className="shrink-0">
-                  <Label className="text-xs">Αγώνες</Label>
+                  <Label className="text-xs">{t('federation.live.matchesLabel')}</Label>
                   <div className="flex items-center gap-1">
                     <Input type="number" value={editMatchRangeStart} onChange={(e) => setEditMatchRangeStart(e.target.value)} placeholder="From" className="rounded-none h-7 text-xs w-16" />
                     <span className="text-xs text-muted-foreground">-</span>
@@ -930,7 +930,7 @@ const FederationLive = () => {
                   <SelectContent>
                     <SelectItem value="none">{t('federation.live.none')}</SelectItem>
                     {matches.filter(m => m.status !== 'completed').map(m => (
-                      <SelectItem key={m.id} value={m.id}>#{m.match_order ?? '-'} - {m.athlete1_display || m.athlete1?.name || 'Νικητής'} vs {m.athlete2_display || m.athlete2?.name || 'Νικητής'}</SelectItem>
+                      <SelectItem key={m.id} value={m.id}>#{m.match_order ?? '-'} - {m.athlete1_display || m.athlete1?.name || t('federation.live.winner')} vs {m.athlete2_display || m.athlete2?.name || t('federation.live.winner')}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -938,11 +938,11 @@ const FederationLive = () => {
 
               {/* Judge Links */}
               <div>
-                <Label className="text-xs mb-1 block">Links Κριτών</Label>
+                <Label className="text-xs mb-1 block">{t('federation.live.judgeLinks')}</Label>
                 <div className="space-y-2">
                   {[1, 2, 3].map((judgeNum) => {
                     const judgeUrl = `${window.location.origin}/judge?ring=${editRing.id}&judge=${judgeNum}&comp=${selectedCompId}`;
-                    return <JudgeLinkRow key={judgeNum} judgeNum={judgeNum} url={judgeUrl} />;
+                    return <JudgeLinkRow key={judgeNum} judgeNum={judgeNum} url={judgeUrl} t={t} />;
                   })}
                 </div>
               </div>

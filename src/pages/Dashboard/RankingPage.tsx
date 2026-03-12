@@ -25,7 +25,7 @@ interface RankingEntry {
   bronzes: number;
 }
 
-const AGE_ORDER = ['18-40', 'U23', '40+', '16-17', '14-15', '12-13', '10-11', '8-9', '5-7'];
+const AGE_ORDER = ['40+', '18-40', 'U23', '16-17', '14-15', '12-13', '10-11', '8-9', '5-7'];
 
 const getAgeLabel = (name: string): string => {
   if (/^Ενήλικοι/i.test(name)) return '18-40';

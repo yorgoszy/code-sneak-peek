@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -66,6 +67,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
   matches,
   onMatchChange,
 }) => {
+  const { t } = useTranslation();
   const [match, setMatch] = useState<MatchData | null>(null);
   const judgeScores = useRealtimeJudgeScores(currentMatchId, { channelPrefix: 'ring-judge-scores' });
   const [currentRound, setCurrentRound] = useState(1);
@@ -279,8 +281,8 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
         result_type: 'points',
       })
       .eq('id', match.id);
-    if (error) toast.error('Σφάλμα ορισμού νικητή');
-    else toast.success('Ο νικητής καταχωρήθηκε');
+    if (error) toast.error(t('federation.live.winnerError'));
+    else toast.success(t('federation.live.winnerSuccess'));
   };
 
   // Auto-declare winner based on majority vote when all rounds are done
@@ -291,7 +293,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
       return;
     }
     if (majorityA1 === 0 && majorityA2 === 0) {
-      toast.error('Δεν υπάρχουν βαθμολογίες κριτών');
+      toast.error(t('federation.live.noJudgeScores'));
       return;
     }
     if (majorityA1 === majorityA2) {
@@ -317,7 +319,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
     if (!judgeLinkDialog) return;
     await navigator.clipboard.writeText(judgeLinkDialog.url);
     setLinkCopied(true);
-    toast.success(`Link Κριτή ${judgeLinkDialog.judgeNum} αντιγράφηκε`);
+    toast.success(t('federation.live.judgeLinkCopied', { num: judgeLinkDialog.judgeNum }));
     setTimeout(() => setLinkCopied(false), 2000);
   };
 
@@ -413,12 +415,12 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
       <div className="px-2 py-2 border-t border-border">
         <Select value="" onValueChange={onMatchChange}>
           <SelectTrigger className="rounded-none h-7 text-xs">
-            <SelectValue placeholder="Επιλογή αγώνα..." />
+            <SelectValue placeholder={t('federation.live.selectMatchPlaceholder')} />
           </SelectTrigger>
           <SelectContent>
             {navigableMatches.map(m => (
               <SelectItem key={m.id} value={m.id}>
-                #{m.match_order} {m.athlete1_display || m.athlete1?.name || 'Νικητής'} vs {m.athlete2_display || m.athlete2?.name || 'Νικητής'}
+                #{m.match_order} {m.athlete1_display || m.athlete1?.name || t('federation.live.winner')} vs {m.athlete2_display || m.athlete2?.name || t('federation.live.winner')}
               </SelectItem>
             ))}
           </SelectContent>
@@ -428,7 +430,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
   }
 
   if (!match) {
-    return <div className="px-2 py-1 border-t border-border text-center text-[10px] text-muted-foreground">Φόρτωση...</div>;
+    return <div className="px-2 py-1 border-t border-border text-center text-[10px] text-muted-foreground">{t('federation.live.loading')}</div>;
   }
 
   return (
@@ -443,7 +445,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
           <SelectContent>
             {navigableMatches.map(m => (
               <SelectItem key={m.id} value={m.id}>
-                #{m.match_order} {m.athlete1_display || m.athlete1?.name || 'Νικητής'} vs {m.athlete2_display || m.athlete2?.name || 'Νικητής'}
+                #{m.match_order} {m.athlete1_display || m.athlete1?.name || t('federation.live.winner')} vs {m.athlete2_display || m.athlete2?.name || t('federation.live.winner')}
               </SelectItem>
             ))}
           </SelectContent>
@@ -461,7 +463,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
               variant="ghost"
               size="sm"
               className="rounded-none h-5 w-5 p-0 text-[8px]"
-              title={`Copy link Κριτή ${j}`}
+              title={`${t('federation.live.judge')} ${j}`}
               onClick={() => openJudgeLink(j)}
             >
               <Link2 className="h-2.5 w-2.5" />
@@ -477,21 +479,21 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
           variant="ghost"
           size="sm"
           className="rounded-none h-7 w-7 p-0 text-foreground"
-          title="Προηγούμενος αγώνας"
-          onClick={() => {
-            const prevMatch = getAdjacentMatch('prev');
-            if (prevMatch) {
-              onMatchChange(prevMatch.id);
-            } else {
-              toast.info('Δεν υπάρχει προηγούμενος αγώνας');
-            }
+            title={t('federation.live.prevMatch')}
+            onClick={() => {
+              const prevMatch = getAdjacentMatch('prev');
+              if (prevMatch) {
+                onMatchChange(prevMatch.id);
+              } else {
+                toast.info(t('federation.live.noPrevMatch'));
+              }
           }}
         >
           <SkipBack className="h-3 w-3" />
         </Button>
 
         <Badge variant={isBreak ? "secondary" : "outline"} className="rounded-none text-xs px-2">
-          {isBreak ? 'ΔΙΑΛ.' : `R${currentRound}`}
+          {isBreak ? t('federation.live.break') : `R${currentRound}`}
         </Badge>
         <div className="font-mono text-2xl font-bold tracking-wider text-foreground">
           {formatTimer(timeLeft)}
@@ -510,13 +512,13 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
             variant="ghost"
             size="sm"
             className="rounded-none h-7 w-7 p-0 text-foreground"
-            title="Επόμενος αγώνας"
+            title={t('federation.live.nextMatch')}
             onClick={() => {
               const nextMatch = getAdjacentMatch('next');
               if (nextMatch) {
                 onMatchChange(nextMatch.id);
               } else {
-                toast.info('Δεν υπάρχει επόμενος αγώνας');
+                toast.info(t('federation.live.noNextMatch'));
               }
             }}
           >
@@ -568,7 +570,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
             <tbody>
               {[1, 2, 3].map(j => (
                 <tr key={j} className="border-b border-border/50">
-                  <td className="px-1 py-0.5 font-medium text-muted-foreground">Κρ.{j}</td>
+                   <td className="px-1 py-0.5 font-medium text-muted-foreground">{t('federation.live.judgeShort')}.{j}</td>
                   {Array.from({ length: roundConfig.rounds }, (_, i) => {
                     const s = getJudgeScoreForRound(j, i + 1);
                     const val = s?.athlete1_score || 0;
@@ -581,7 +583,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
                 </tr>
               ))}
               <tr className="bg-muted/30 font-bold">
-                <td className="px-1 py-0.5">Σύν.</td>
+                 <td className="px-1 py-0.5">{t('federation.live.total')}</td>
                 {Array.from({ length: roundConfig.rounds }, (_, i) => {
                   const roundScored = getRoundTotals(i + 1).count === 3;
                   const ma = roundScored ? getMajorityScore(i + 1, 'a1') : null;
@@ -607,7 +609,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
             <tbody>
               {[1, 2, 3].map(j => (
                 <tr key={j} className="border-b border-border/50">
-                  <td className="px-1 py-0.5 font-medium text-muted-foreground">Κρ.{j}</td>
+                  <td className="px-1 py-0.5 font-medium text-muted-foreground">{t('federation.live.judgeShort')}.{j}</td>
                   {Array.from({ length: roundConfig.rounds }, (_, i) => {
                     const s = getJudgeScoreForRound(j, i + 1);
                     const val = s?.athlete2_score || 0;
@@ -620,7 +622,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
                 </tr>
               ))}
               <tr className="bg-muted/30 font-bold">
-                <td className="px-1 py-0.5">Σύν.</td>
+                <td className="px-1 py-0.5">{t('federation.live.total')}</td>
                 {Array.from({ length: roundConfig.rounds }, (_, i) => {
                   const roundScored = getRoundTotals(i + 1).count === 3;
                   const ma = roundScored ? getMajorityScore(i + 1, 'a2') : null;
@@ -649,8 +651,8 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
                     className={`rounded-none h-7 text-[10px] px-3 ${isRedWinner ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
                     onClick={handleAutoDeclareWinner}
                   >
-                    <Trophy className="h-3 w-3 mr-1" />
-                    Νικητής: {winnerName} ({majorityA1}-{majorityA2})
+                     <Trophy className="h-3 w-3 mr-1" />
+                    {t('federation.live.winnerLabel')}: {winnerName} ({majorityA1}-{majorityA2})
                   </Button>
                 );
               })()}
@@ -658,14 +660,14 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
           )}
           {/* Manual override for ties or special cases */}
           <div className="flex items-center justify-center gap-1">
-            <span className="text-[8px] text-muted-foreground">Χειροκίνητα:</span>
+            <span className="text-[8px] text-muted-foreground">{t('federation.live.manual')}</span>
             <Button
               size="sm"
               variant="outline"
               className="rounded-none h-5 text-[8px] px-1.5 border-red-500 text-red-600"
               onClick={() => match.athlete1_id && handleDeclareWinner(match.athlete1_id)}
             >
-              {match.athlete1?.name || 'Κόκκινη'}
+              {match.athlete1?.name || t('federation.live.red')}
             </Button>
             <Button
               size="sm"
@@ -673,7 +675,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
               className="rounded-none h-5 text-[8px] px-1.5 border-blue-500 text-blue-600"
               onClick={() => match.athlete2_id && handleDeclareWinner(match.athlete2_id)}
             >
-              {match.athlete2?.name || 'Μπλε'}
+              {match.athlete2?.name || t('federation.live.blue')}
             </Button>
           </div>
         </div>
@@ -692,7 +694,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
       <Dialog open={!!judgeLinkDialog} onOpenChange={() => setJudgeLinkDialog(null)}>
         <DialogContent className="rounded-none max-w-xs">
           <DialogHeader>
-            <DialogTitle className="text-center">Κριτής {judgeLinkDialog?.judgeNum}</DialogTitle>
+            <DialogTitle className="text-center    ">{t('federation.live.judge')} {judgeLinkDialog?.judgeNum}</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col items-center gap-4 py-4">
             <div className="bg-white p-4">
@@ -707,7 +709,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
               onClick={handleCopyLink}
             >
               {linkCopied ? <Check className="h-4 w-4 mr-2 text-[#00ffba]" /> : <Copy className="h-4 w-4 mr-2" />}
-              {linkCopied ? 'Αντιγράφηκε!' : 'Αντιγραφή Link'}
+              {linkCopied ? t('federation.live.copied') : t('federation.live.copyLink')}
             </Button>
           </div>
         </DialogContent>
