@@ -682,18 +682,23 @@ serve(async (req) => {
         
         // 🥊 BRACKETS & LIVE DATA (competition_matches + competition_rings)
         for (const comp of compsData) {
+          let allMatchesForComp: any[] = [];
           try {
             const matchesRes = await fetch(
-              `${SUPABASE_URL}/rest/v1/competition_matches?competition_id=eq.${comp.id}&select=*,athlete1:app_users!competition_matches_athlete1_id_fkey(name),athlete2:app_users!competition_matches_athlete2_id_fkey(name),category:federation_competition_categories!competition_matches_category_id_fkey(name)&order=round_number.desc,match_number.asc`,
+              `${SUPABASE_URL}/rest/v1/competition_matches?competition_id=eq.${comp.id}&select=*,athlete1:app_users!competition_matches_athlete1_id_fkey(name),athlete2:app_users!competition_matches_athlete2_id_fkey(name),category:federation_competition_categories!competition_matches_category_id_fkey(name),athlete1_club:app_users!competition_matches_athlete1_club_id_fkey(name),athlete2_club:app_users!competition_matches_athlete2_club_id_fkey(name)&order=match_order.asc.nullslast,round_number.desc,match_number.asc`,
               { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
             );
             const matchesData = await matchesRes.json();
             if (Array.isArray(matchesData) && matchesData.length > 0) {
+              allMatchesForComp = matchesData;
               federationCompetitionsContext += `\n  🥊 ΖΕΥΓΑΡΩΜΑΤΑ/BRACKETS (${matchesData.length} αγώνες):\n`;
               matchesData.forEach((m: any) => {
                 const winner = m.winner_id ? (m.winner_id === m.athlete1_id ? m.athlete1?.name : m.athlete2?.name) : null;
                 const status = m.status === 'completed' ? '✅' : m.is_bye ? '⏭️ BYE' : '⏳';
-                federationCompetitionsContext += `    ${status} R${m.round_number} #${m.match_number}: ${m.athlete1?.name || 'TBD'} vs ${m.athlete2?.name || 'TBD'}${winner ? ` → Νικητής: ${winner}` : ''} ${m.result_type ? `(${m.result_type})` : ''} [${m.category?.name || ''}]\n`;
+                const club1 = m.athlete1_club?.name ? ` [${m.athlete1_club.name}]` : '';
+                const club2 = m.athlete2_club?.name ? ` [${m.athlete2_club.name}]` : '';
+                const orderStr = m.match_order ? ` (Σειρά αγώνα: #${m.match_order})` : '';
+                federationCompetitionsContext += `    ${status} R${m.round_number} #${m.match_number}${orderStr}: ${m.athlete1?.name || 'TBD'}${club1} vs ${m.athlete2?.name || 'TBD'}${club2}${winner ? ` → Νικητής: ${winner}` : ''} ${m.result_type ? `(${m.result_type})` : ''} [${m.category?.name || ''}]\n`;
               });
             }
           } catch(e) {}
@@ -707,7 +712,28 @@ serve(async (req) => {
             if (Array.isArray(ringsData) && ringsData.length > 0) {
               federationCompetitionsContext += `\n  📺 LIVE RINGS (${ringsData.length}):\n`;
               ringsData.forEach((r: any) => {
-                federationCompetitionsContext += `    Ring ${r.ring_number} (${r.ring_name || '-'}): ${r.is_active ? '🔴 LIVE' : '⚪ OFF'} | YouTube: ${r.youtube_live_url || '-'} | Αγώνες: ${r.match_range_start || '?'}-${r.match_range_end || '?'}\n`;
+                // Find the current match for this ring
+                const currentMatch = r.current_match_id ? allMatchesForComp.find((m: any) => m.id === r.current_match_id) : null;
+                const currentMatchInfo = currentMatch 
+                  ? `🔴 ΤΡΕΧΩΝ ΑΓΩΝΑΣ: #${currentMatch.match_order || currentMatch.match_number} - ${currentMatch.athlete1?.name || 'TBD'} vs ${currentMatch.athlete2?.name || 'TBD'} [${currentMatch.category?.name || ''}] (R${r.timer_current_round || 1}, ${r.timer_is_break ? 'BREAK' : 'ΑΓΩΝΑΣ'}, ${r.timer_remaining_seconds != null ? r.timer_remaining_seconds + 'sec left' : '-'})` 
+                  : 'Κανένας τρέχων αγώνας';
+                
+                // Find remaining matches for this ring
+                const ringMatches = allMatchesForComp.filter((m: any) => 
+                  m.match_order && m.match_order >= (r.match_range_start || 0) && m.match_order <= (r.match_range_end || 999) && !m.is_bye
+                );
+                const pendingMatches = ringMatches.filter((m: any) => m.status !== 'completed');
+                const currentOrder = currentMatch?.match_order || 0;
+                const upcomingMatches = pendingMatches.filter((m: any) => m.match_order > currentOrder).sort((a: any, b: any) => a.match_order - b.match_order);
+                
+                federationCompetitionsContext += `    Ring ${r.ring_number} (${r.ring_name || '-'}): ${r.is_active ? '🔴 LIVE' : '⚪ OFF'} | Αγώνες: ${r.match_range_start || '?'}-${r.match_range_end || '?'}\n`;
+                federationCompetitionsContext += `      ${currentMatchInfo}\n`;
+                if (upcomingMatches.length > 0) {
+                  federationCompetitionsContext += `      📋 Επόμενοι αγώνες στο ring (${upcomingMatches.length}):\n`;
+                  upcomingMatches.forEach((m: any) => {
+                    federationCompetitionsContext += `        #${m.match_order}: ${m.athlete1?.name || 'TBD'} vs ${m.athlete2?.name || 'TBD'} [${m.category?.name || ''}]\n`;
+                  });
+                }
               });
             }
           } catch(e) {}
