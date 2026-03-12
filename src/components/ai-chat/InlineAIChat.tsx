@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -233,7 +234,10 @@ export const InlineAIChat: React.FC<InlineAIChatProps> = ({
               >
                 <div 
                   dangerouslySetInnerHTML={{ 
-                    __html: formatMessage(message.content) 
+                    __html: DOMPurify.sanitize(formatMessage(message.content), {
+                      ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br', 'ul', 'ol', 'li', 'span'],
+                      ALLOWED_ATTR: []
+                    })
                   }}
                   className="text-sm leading-relaxed"
                 />

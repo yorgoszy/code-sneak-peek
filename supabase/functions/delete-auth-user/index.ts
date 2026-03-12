@@ -26,7 +26,14 @@ serve(async (req) => {
       );
     }
 
-    console.log(`🗑️ Deleting auth user: ${authUserId}`);
+    // Verify caller authentication
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Create Supabase admin client
     const supabaseAdmin = createClient(
@@ -40,13 +47,40 @@ serve(async (req) => {
       }
     );
 
+    // Verify caller's JWT and check admin role
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Invalid authentication" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Check if caller is admin
+    const { data: callerProfile } = await supabaseAdmin
+      .from('app_users')
+      .select('role')
+      .eq('auth_user_id', user.id)
+      .single();
+
+    if (callerProfile?.role !== 'admin') {
+      return new Response(
+        JSON.stringify({ error: "Forbidden - Admin access required" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`🗑️ Admin ${user.id} deleting auth user: ${authUserId}`);
+
     // Delete the auth user
     const { error } = await supabaseAdmin.auth.admin.deleteUser(authUserId);
 
     if (error) {
       console.error("❌ Error deleting auth user:", error);
       return new Response(
-        JSON.stringify({ error: error.message }),
+        JSON.stringify({ error: "Failed to delete user" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -60,7 +94,7 @@ serve(async (req) => {
   } catch (error) {
     console.error("❌ Unexpected error:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "An unexpected error occurred" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
