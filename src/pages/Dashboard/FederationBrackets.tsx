@@ -1025,7 +1025,7 @@ const FederationBrackets = () => {
               const CARD_GAP = 40;
               const COL_W = 300;
               const CONNECTOR_W = 60;
-              const HEADER_H = 50;
+              const HEADER_H = 41;
 
               // Non-bye matches per round, sorted by match_order (global sequence) for top-to-bottom display
               const roundMatchArrays = sortedRoundNumbers.map(rn =>
@@ -1129,7 +1129,7 @@ const FederationBrackets = () => {
                         <React.Fragment key={roundNum}>
                           {/* Round header */}
                           <div
-                            className="absolute bg-foreground text-background px-3 py-2 border border-border"
+                            className="absolute bg-foreground text-background px-3 py-1.5 border border-border"
                             style={{ left: xOffset, top: 0, width: COL_W }}
                           >
                             <h3 className="font-bold text-xs">
