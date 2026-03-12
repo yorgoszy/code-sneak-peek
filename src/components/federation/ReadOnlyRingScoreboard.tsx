@@ -363,10 +363,16 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
       {/* Winner */}
       {match.winner_id && (
         <div className="px-3 py-1.5 border-t border-border flex justify-center">
-          <Badge className="rounded-none text-[10px] px-2 py-0.5 bg-[#00ffba] text-black">
-            <Trophy className="h-2.5 w-2.5 mr-1" />
-            Νικητής: {match.winner_id === match.athlete1_id ? match.athlete1?.name : match.athlete2?.name}
-          </Badge>
+          {(() => {
+            const isBlueWinner = match.winner_id === match.athlete1_id;
+            const winnerName = isBlueWinner ? match.athlete1?.name : match.athlete2?.name;
+            return (
+              <Badge className={`rounded-none text-[10px] px-2 py-0.5 ${isBlueWinner ? 'bg-blue-500 text-white' : 'bg-red-500 text-white'}`}>
+                <Trophy className="h-2.5 w-2.5 mr-1" />
+                Νικητής: {winnerName} ({majorityA1}-{majorityA2})
+              </Badge>
+            );
+          })()}
         </div>
       )}
 
