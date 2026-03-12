@@ -158,7 +158,15 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
 
   // Load match data
   useEffect(() => {
-    if (!currentMatchId) { setMatch(null); setJudgeScores([]); return; }
+    if (!currentMatchId) { 
+      setMatch(null); 
+      setJudgeScores([]); 
+      setIsRunning(false);
+      setCurrentRound(1);
+      setIsBreak(false);
+      setTimeLeft(roundConfig.roundDurationSec);
+      return; 
+    }
     const matchChanged = prevMatchIdRef.current !== null && prevMatchIdRef.current !== currentMatchId;
     prevMatchIdRef.current = currentMatchId;
 

@@ -755,6 +755,32 @@ const FederationBrackets = () => {
   };
 
   const handleResetAllBrackets = async () => {
+    // First, reset all rings for this competition (clear match, timer, round, scores)
+    await supabase
+      .from('competition_rings')
+      .update({
+        current_match_id: null,
+        timer_running_since: null,
+        timer_remaining_seconds: null,
+        timer_current_round: 1,
+        timer_is_break: false,
+      })
+      .eq('competition_id', selectedCompId);
+
+    // Delete all judge scores for matches in this competition
+    const { data: matchIds } = await supabase
+      .from('competition_matches')
+      .select('id')
+      .eq('competition_id', selectedCompId);
+    
+    if (matchIds && matchIds.length > 0) {
+      await supabase
+        .from('competition_match_judge_scores')
+        .delete()
+        .in('match_id', matchIds.map(m => m.id));
+    }
+
+    // Then delete all matches
     const { error } = await supabase
       .from('competition_matches')
       .delete()
