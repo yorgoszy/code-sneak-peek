@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Play, Pause, RotateCcw, Trophy, Clock, Link2, Copy, Check, RefreshCw, SkipForward } from "lucide-react";
+import { Play, Pause, RotateCcw, Trophy, Clock, Link2, Copy, Check, RefreshCw, SkipForward, SkipBack } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeJudgeScores } from "@/hooks/useRealtimeJudgeScores";
@@ -446,6 +446,27 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
 
       {/* Timer & Round */}
       <div className="flex items-center justify-center gap-3 px-2 py-1.5 bg-background">
+        {/* Previous match button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="rounded-none h-7 w-7 p-0 text-foreground"
+          title="Προηγούμενος αγώνας"
+          onClick={() => {
+            const currentOrder = match?.match_order || 0;
+            const prevMatch = matches
+              .filter(m => (m.match_order || 0) < currentOrder && (m.athlete1 || m.athlete2))
+              .sort((a, b) => (b.match_order || 0) - (a.match_order || 0))[0];
+            if (prevMatch) {
+              onMatchChange(prevMatch.id);
+            } else {
+              toast.info('Δεν υπάρχει προηγούμενος αγώνας');
+            }
+          }}
+        >
+          <SkipBack className="h-3 w-3" />
+        </Button>
+
         <Badge variant={isBreak ? "secondary" : "outline"} className="rounded-none text-xs px-2">
           {isBreak ? 'ΔΙΑΛ.' : `R${currentRound}`}
         </Badge>
@@ -465,11 +486,12 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            className="rounded-none h-7 w-7 p-0 text-black dark:text-white"
+            className="rounded-none h-7 w-7 p-0 text-foreground"
             title="Επόμενος αγώνας"
             onClick={() => {
+              const currentOrder = match?.match_order || 0;
               const nextMatch = matches
-                .filter(m => m.status === 'pending' && m.id !== currentMatchId && (m.athlete1 || m.athlete2))
+                .filter(m => (m.match_order || 0) > currentOrder && (m.athlete1 || m.athlete2))
                 .sort((a, b) => (a.match_order || 0) - (b.match_order || 0))[0];
               if (nextMatch) {
                 onMatchChange(nextMatch.id);
