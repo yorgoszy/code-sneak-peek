@@ -33,7 +33,7 @@ const CoachLivePage = () => {
   const { userProfile } = useRoleCheck();
 
   const [competitions, setCompetitions] = useState<any[]>([]);
-  const [selectedCompId, setSelectedCompId] = useState('');
+  const [selectedCompId, setSelectedCompId] = useState(() => localStorage.getItem('coach-live-comp') || '');
   const [rings, setRings] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
