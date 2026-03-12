@@ -672,7 +672,7 @@ const FederationLive = () => {
                     setRingCount(n);
                     setRingConfigs(prev => [...prev, {
                       ring_number: n,
-                      ring_name: `Ring ${n}`,
+                      ring_name: `Ring ${getRingLetter(n)}`,
                       youtube_live_url: '',
                       match_range_start: '',
                       match_range_end: '',
