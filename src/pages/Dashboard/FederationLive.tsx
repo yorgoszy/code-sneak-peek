@@ -470,6 +470,13 @@ const FederationLive = () => {
               )}
 
               {rings.length > 0 && (
+                <Button variant="outline" onClick={handleRefreshAllRings} className="rounded-none">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh All Rings
+                </Button>
+              )}
+
+              {rings.length > 0 && (
                 <Button variant="outline" onClick={() => setDeleteDialogOpen(true)} className="rounded-none text-destructive border-destructive">
                   <Trash2 className="h-4 w-4 mr-2" />
                   {t('federation.live.deleteRings')}
