@@ -366,6 +366,11 @@ html, body {
   object-fit: contain;
 }
 
+/* Normal overlay timer width to match score rounds */
+.overlay-scores .overlay-timer {
+  width: calc(3 * (1.25rem + 2px) - 2px);
+}
+
 [id^="ring-video-"]:fullscreen .overlay-exit-fs {
   display: block;
   z-index: 10;
