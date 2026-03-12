@@ -806,7 +806,7 @@ const FederationLive = () => {
                             </SelectItem>
                           ))}
                           {availableCameras.length === 0 && (
-                            <div className="px-2 py-1 text-xs text-muted-foreground">Δεν βρέθηκαν κάμερες</div>
+                            <div className="px-2 py-1 text-xs text-muted-foreground">{t('federation.live.noCameras')}</div>
                           )}
                         </SelectContent>
                       </Select>
