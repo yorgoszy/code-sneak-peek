@@ -2216,6 +2216,7 @@ export type Database = {
       }
       competition_rings: {
         Row: {
+          camera_device_id: string | null
           competition_id: string
           created_at: string
           current_match_id: string | null
@@ -2225,6 +2226,7 @@ export type Database = {
           match_range_start: number | null
           ring_name: string | null
           ring_number: number
+          source_type: string
           timer_current_round: number | null
           timer_is_break: boolean | null
           timer_remaining_seconds: number | null
@@ -2233,6 +2235,7 @@ export type Database = {
           youtube_live_url: string | null
         }
         Insert: {
+          camera_device_id?: string | null
           competition_id: string
           created_at?: string
           current_match_id?: string | null
@@ -2242,6 +2245,7 @@ export type Database = {
           match_range_start?: number | null
           ring_name?: string | null
           ring_number: number
+          source_type?: string
           timer_current_round?: number | null
           timer_is_break?: boolean | null
           timer_remaining_seconds?: number | null
@@ -2250,6 +2254,7 @@ export type Database = {
           youtube_live_url?: string | null
         }
         Update: {
+          camera_device_id?: string | null
           competition_id?: string
           created_at?: string
           current_match_id?: string | null
@@ -2259,6 +2264,7 @@ export type Database = {
           match_range_start?: number | null
           ring_name?: string | null
           ring_number?: number
+          source_type?: string
           timer_current_round?: number | null
           timer_is_break?: boolean | null
           timer_remaining_seconds?: number | null
