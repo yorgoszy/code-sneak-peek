@@ -37,6 +37,8 @@ interface Ring {
   ring_number: number;
   ring_name: string | null;
   youtube_live_url: string | null;
+  source_type: string;
+  camera_device_id: string | null;
   match_range_start: number | null;
   match_range_end: number | null;
   current_match_id: string | null;
