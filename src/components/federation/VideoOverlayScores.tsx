@@ -42,9 +42,8 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
     return scores[Math.floor(scores.length / 2)];
   };
 
-  // Find max round that has scores
-  const maxRound = judgeScores.length > 0 ? Math.max(...judgeScores.map(s => s.round)) : 0;
-  const rounds = Array.from({ length: Math.max(maxRound, 1) }, (_, i) => i + 1);
+  // Always show 3 rounds
+  const totalRounds = 3;
 
   const formatName = (fullName?: string) => {
     if (!fullName) return '—';
