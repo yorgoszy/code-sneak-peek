@@ -248,7 +248,7 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
           {/* Top row: Match number (over name) + Timer (over scores) */}
           <div className="flex items-stretch" style={{ gap: '2px' }}>
             {matchLabel ? (
-              <div className="overlay-match-number bg-white text-black text-[9px] font-bold px-1.5 py-0.5 w-[120px] text-right leading-none flex items-center justify-end truncate">
+              <div className="overlay-match-number bg-white text-black text-[9px] font-bold px-1.5 py-0.5 w-[120px] text-left leading-none flex items-center justify-start truncate">
                 {matchLabel}
               </div>
             ) : (
