@@ -574,8 +574,9 @@ const FederationBrackets = () => {
 
   // Derive available filter options from categories
   const genderOptions = React.useMemo(() => {
-    const genders = new Set(categories.map(c => c.gender));
-    return [...genders].sort();
+    const genders = new Set(categories.map(c => c.gender).filter(g => g === 'male' || g === 'female'));
+    // Show female first, then male (to match "Women, Men" order)
+    return ['female', 'male'].filter(g => genders.has(g));
   }, [categories]);
 
   const ageOptions = React.useMemo(() => {
