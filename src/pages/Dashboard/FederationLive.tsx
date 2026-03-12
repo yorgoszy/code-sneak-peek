@@ -593,7 +593,7 @@ const FederationLive = () => {
                       <RingScoreboard
                         ringId={ring.id}
                         currentMatchId={ring.current_match_id}
-                        matches={ringScopedMatches as any[]}
+                        matches={ringScopedMatches}
                         onMatchChange={(matchId) => handleMatchChangeForRing(ring.id, matchId)}
                       />
 
