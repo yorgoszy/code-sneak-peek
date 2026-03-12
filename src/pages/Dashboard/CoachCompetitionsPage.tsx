@@ -94,6 +94,7 @@ const getWeightLabel = (name: string): string => {
 const getAgeLabel = (name: string): string => {
   if (/^Ενήλικοι/i.test(name)) return '18-40';
   if (/^U23/i.test(name)) return 'U23';
+  if (/^Βετεράνοι|^40\+/i.test(name)) return '40+';
   const match = name.match(/^Νέ(?:οι|ες)\s*(\d+-\d+)/);
   if (match) return match[1];
   return name.replace(/([-+±]\s*\d+[\d.,]*\s*kg)/i, '').trim();

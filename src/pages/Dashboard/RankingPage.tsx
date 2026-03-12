@@ -25,11 +25,12 @@ interface RankingEntry {
   bronzes: number;
 }
 
-const AGE_ORDER = ['18-40', 'U23', '16-17', '14-15', '12-13', '10-11', '8-9', '5-7'];
+const AGE_ORDER = ['18-40', 'U23', '40+', '16-17', '14-15', '12-13', '10-11', '8-9', '5-7'];
 
 const getAgeLabel = (name: string): string => {
   if (/^Ενήλικοι/i.test(name)) return '18-40';
   if (/^U23/i.test(name)) return 'U23';
+  if (/^Βετεράνοι|^40\+/i.test(name)) return '40+';
   const match = name.match(/^Νέ(?:οι|ες)\s*(\d+-\d+)/);
   if (match) return match[1];
   return name.replace(/([-+±]\s*\d+[\d.,]*\s*kg)/i, '').trim();
