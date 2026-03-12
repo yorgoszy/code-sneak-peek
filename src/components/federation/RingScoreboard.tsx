@@ -694,7 +694,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
       <Dialog open={!!judgeLinkDialog} onOpenChange={() => setJudgeLinkDialog(null)}>
         <DialogContent className="rounded-none max-w-xs">
           <DialogHeader>
-            <DialogTitle className="text-center">Κριτής {judgeLinkDialog?.judgeNum}</DialogTitle>
+            <DialogTitle className="text-center    ">{t('federation.live.judge')} {judgeLinkDialog?.judgeNum}</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col items-center gap-4 py-4">
             <div className="bg-white p-4">
