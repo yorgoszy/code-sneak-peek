@@ -660,7 +660,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
           )}
           {/* Manual override for ties or special cases */}
           <div className="flex items-center justify-center gap-1">
-            <span className="text-[8px] text-muted-foreground">Χειροκίνητα:</span>
+            <span className="text-[8px] text-muted-foreground">{t('federation.live.manual')}</span>
             <Button
               size="sm"
               variant="outline"
