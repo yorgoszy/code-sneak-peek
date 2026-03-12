@@ -335,6 +335,37 @@ const FederationLive = () => {
     }
   };
 
+  const handleRefreshAllRings = async () => {
+    await supabase
+      .from('competition_rings')
+      .update({
+        current_match_id: null,
+        timer_running_since: null,
+        timer_remaining_seconds: null,
+        timer_current_round: 1,
+        timer_is_break: false,
+      })
+      .eq('competition_id', selectedCompId);
+    toast.success('Όλα τα rings ανανεώθηκαν');
+    loadRings();
+    loadMatches();
+  };
+
+  const handleRefreshSingleRing = async (ringId: string) => {
+    await supabase
+      .from('competition_rings')
+      .update({
+        current_match_id: null,
+        timer_running_since: null,
+        timer_remaining_seconds: null,
+        timer_current_round: 1,
+        timer_is_break: false,
+      })
+      .eq('id', ringId);
+    toast.success('Το ring ανανεώθηκε');
+    loadRings();
+  };
+
   const getAthleteAvatar = (athlete: { name: string; photo_url: string | null; avatar_url: string | null } | null | undefined) => {
     return athlete?.photo_url || athlete?.avatar_url || undefined;
   };
