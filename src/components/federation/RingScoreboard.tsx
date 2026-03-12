@@ -67,7 +67,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
   onMatchChange,
 }) => {
   const [match, setMatch] = useState<MatchData | null>(null);
-  const [judgeScores, setJudgeScores] = useState<JudgeScore[]>([]);
+  const judgeScores = useRealtimeJudgeScores(currentMatchId, { channelPrefix: 'ring-judge-scores' });
   const [currentRound, setCurrentRound] = useState(1);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
