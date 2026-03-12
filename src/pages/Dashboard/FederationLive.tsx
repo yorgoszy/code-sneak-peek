@@ -575,7 +575,7 @@ const FederationLive = () => {
                           return m.match_order >= ring.match_range_start && m.match_order <= ring.match_range_end;
                         });
                         const nextMatches = ringMatches
-                          .filter((m: any) => m.status === 'pending' && m.id !== ring.current_match_id && (m.athlete1_id || m.athlete2_id))
+                          .filter((m: any) => m.status === 'pending' && m.id !== ring.current_match_id && m.athlete1_id && m.athlete2_id)
                           .sort((a: any, b: any) => (a.match_order || 0) - (b.match_order || 0))
                           .slice(0, 2);
                         
