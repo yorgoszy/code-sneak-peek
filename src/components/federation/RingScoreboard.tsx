@@ -622,7 +622,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
                 </tr>
               ))}
               <tr className="bg-muted/30 font-bold">
-                <td className="px-1 py-0.5">Σύν.</td>
+                <td className="px-1 py-0.5">{t('federation.live.total')}</td>
                 {Array.from({ length: roundConfig.rounds }, (_, i) => {
                   const roundScored = getRoundTotals(i + 1).count === 3;
                   const ma = roundScored ? getMajorityScore(i + 1, 'a2') : null;
