@@ -372,7 +372,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
   const majorityA2 = getMajorityOfArray(roundMajoritiesA2);
   
   // Check if all rounds have scores from at least 1 judge
-  const allRoundsScored = Array.from({ length: roundConfig.rounds }, (_, i) => getRoundTotals(i + 1).count > 0).every(Boolean);
+  const allRoundsScored = Array.from({ length: roundConfig.rounds }, (_, i) => getRoundTotals(i + 1).count === 3).every(Boolean);
 
   const avatar = (a: any) => a?.photo_url || a?.avatar_url || undefined;
   const matchFinished = match?.status === 'completed' || (currentRound >= roundConfig.rounds && timeLeft === 0 && !isBreak && !isRunning);
