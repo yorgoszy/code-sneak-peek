@@ -588,8 +588,11 @@ const FederationLive = () => {
                           if (!ring.match_range_start || !ring.match_range_end) return true;
                           return m.match_order >= ring.match_range_start && m.match_order <= ring.match_range_end;
                         });
+                        // Find the current match's order to show only matches AFTER it
+                        const currentMatch = ringMatches.find((m: any) => m.id === ring.current_match_id);
+                        const currentOrder = currentMatch?.match_order || 0;
                         const nextMatches = ringMatches
-                          .filter((m: any) => m.status === 'pending' && m.id !== ring.current_match_id && m.athlete1_id && m.athlete2_id)
+                          .filter((m: any) => (m.match_order || 0) > currentOrder && m.athlete1_id && m.athlete2_id)
                           .sort((a: any, b: any) => (a.match_order || 0) - (b.match_order || 0))
                           .slice(0, 2);
                         
