@@ -862,16 +862,93 @@ const FederationLive = () => {
             </DialogHeader>
 
             <div className="space-y-4">
+              {/* Ring Name */}
               <div>
-                <Label className="text-sm">{t('federation.live.youtubeUrl')}</Label>
+                <Label className="text-sm">Όνομα Ring</Label>
                 <Input
-                  value={editYoutubeUrl}
-                  onChange={(e) => setEditYoutubeUrl(e.target.value)}
-                  placeholder="https://youtube.com/live/..."
+                  value={editRingName}
+                  onChange={(e) => setEditRingName(e.target.value)}
+                  placeholder={`Ring ${editRing.ring_number}`}
                   className="rounded-none"
                 />
               </div>
 
+              {/* Source Type Toggle */}
+              <div>
+                <Label className="text-sm mb-1 block">Πηγή Video</Label>
+                <div className="flex border border-border rounded-none overflow-hidden w-fit">
+                  <button
+                    type="button"
+                    className={`px-3 py-1.5 text-xs font-medium transition-colors ${editSourceType === 'youtube' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
+                    onClick={() => setEditSourceType('youtube')}
+                  >
+                    YouTube
+                  </button>
+                  <button
+                    type="button"
+                    className={`px-3 py-1.5 text-xs font-medium transition-colors ${editSourceType === 'camera' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
+                    onClick={() => setEditSourceType('camera')}
+                  >
+                    Camera
+                  </button>
+                </div>
+              </div>
+
+              {/* YouTube URL or Camera Selector */}
+              {editSourceType === 'youtube' ? (
+                <div>
+                  <Label className="text-sm">{t('federation.live.youtubeUrl')}</Label>
+                  <Input
+                    value={editYoutubeUrl}
+                    onChange={(e) => setEditYoutubeUrl(e.target.value)}
+                    placeholder="https://youtube.com/live/..."
+                    className="rounded-none"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <Label className="text-sm">Κάμερα</Label>
+                  <Select value={editCameraDeviceId} onValueChange={setEditCameraDeviceId}>
+                    <SelectTrigger className="rounded-none">
+                      <SelectValue placeholder="Επιλέξτε κάμερα..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableCameras.map((cam, i) => (
+                        <SelectItem key={cam.deviceId} value={cam.deviceId}>
+                          {cam.label || `Camera ${i + 1}`}
+                        </SelectItem>
+                      ))}
+                      {availableCameras.length === 0 && (
+                        <div className="px-2 py-1 text-xs text-muted-foreground">Δεν βρέθηκαν κάμερες</div>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Match Range */}
+              <div>
+                <Label className="text-sm mb-1 block">Εύρος Αγώνων</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    value={editMatchRangeStart}
+                    onChange={(e) => setEditMatchRangeStart(e.target.value)}
+                    placeholder="From"
+                    className="rounded-none w-24"
+                  />
+                  <span className="text-sm text-muted-foreground">-</span>
+                  <Input
+                    type="number"
+                    value={editMatchRangeEnd}
+                    onChange={(e) => setEditMatchRangeEnd(e.target.value)}
+                    placeholder="To"
+                    className="rounded-none w-24"
+                  />
+                </div>
+              </div>
+
+              {/* Current Match */}
               <div>
                 <Label className="text-sm">{t('federation.live.currentMatch')}</Label>
                 <Select value={editCurrentMatchId || "none"} onValueChange={(val) => setEditCurrentMatchId(val === "none" ? "" : val)}>
