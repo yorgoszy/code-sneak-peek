@@ -446,7 +446,7 @@ const CoachBracketsPage = () => {
                             style={{ left: xOffset, top: 0, width: COL_W }}
                           >
                             <h3 className="font-bold text-xs">{getRoundName(roundNum, t)}</h3>
-                            <span className="text-[10px] opacity-70">{rMatches.length} αγώνες</span>
+                            <span className="text-[10px] opacity-70">{rMatches.length} {t('federation.brackets.matchesCount')}</span>
                           </div>
 
                           {/* Match cards */}
