@@ -509,6 +509,12 @@ const FederationLive = () => {
                         )}
                       </div>
                       <div className="flex items-center gap-0.5">
+                        <Button variant="ghost" size="sm" onClick={() => {
+                          const el = document.getElementById(`ring-card-${ring.id}`);
+                          if (el) { if (document.fullscreenElement) document.exitFullscreen(); else el.requestFullscreen(); }
+                        }} className="rounded-none h-5 w-5 p-0" title="Fullscreen">
+                          <Maximize className="h-3 w-3" />
+                        </Button>
                         <Button variant="ghost" size="sm" onClick={() => handleRefreshSingleRing(ring.id)} className="rounded-none h-5 w-5 p-0" title="Refresh Ring">
                           <RefreshCw className="h-3 w-3" />
                         </Button>
@@ -520,15 +526,26 @@ const FederationLive = () => {
 
                     <CardContent className="p-0">
                       {ring.youtube_live_url ? (
-                        <AspectRatio ratio={16 / 9}>
-                          <iframe
-                            src={getYoutubeEmbedUrl(ring.youtube_live_url) || ''}
-                            className="w-full h-full"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                            title={`Ring ${ring.ring_number}`}
-                          />
-                        </AspectRatio>
+                        <div className="relative">
+                          <AspectRatio ratio={16 / 9}>
+                            <iframe
+                              src={getYoutubeEmbedUrl(ring.youtube_live_url) || ''}
+                              className="w-full h-full"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              title={`Ring ${ring.ring_number}`}
+                            />
+                          </AspectRatio>
+                          {ring.current_match_id && (() => {
+                            const currentMatch = (matches as any[]).find((m: any) => m.id === ring.current_match_id);
+                            if (!currentMatch?.match_order) return null;
+                            return (
+                              <div className="absolute top-1 left-1 bg-black/70 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-none pointer-events-none">
+                                #{currentMatch.match_order}
+                              </div>
+                            );
+                          })()}
+                        </div>
                       ) : (
                         <div className="bg-muted/50 flex items-center justify-center h-24">
                           <p className="text-[10px] text-muted-foreground">{t('federation.live.noYoutubeUrl')}</p>
