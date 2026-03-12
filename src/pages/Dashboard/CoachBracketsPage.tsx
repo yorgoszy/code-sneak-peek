@@ -47,7 +47,7 @@ function getRoundName(roundNumber: number, t: any): string {
   return `${t('federation.brackets.round')} ${roundNumber}`;
 }
 
-const AGE_ORDER = ['18-40', 'U23', '40+', '16-17', '14-15', '12-13', '10-11', '8-9', '5-7'];
+const AGE_ORDER = ['40+', '18-40', 'U23', '16-17', '14-15', '12-13', '10-11', '8-9', '5-7'];
 
 const getWeightLabel = (name: string): string => {
   const m = name.match(/([-+±]\s*\d+[\d.,]*\s*kg)/i);
