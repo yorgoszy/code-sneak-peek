@@ -7,6 +7,7 @@ interface VideoOverlayScoresProps {
   match: {
     athlete1?: { name: string } | null;
     athlete2?: { name: string } | null;
+    match_order?: number;
   };
   ringTimer?: {
     timer_current_round: number | null;
@@ -14,9 +15,10 @@ interface VideoOverlayScoresProps {
     timer_remaining_seconds: number | null;
     timer_running_since: string | null;
   };
+  ringLabel?: string;
 }
 
-export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId, match, ringTimer }) => {
+export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId, match, ringTimer, ringLabel }) => {
   const [judgeScores, setJudgeScores] = useState<any[]>([]);
   const [liveSeconds, setLiveSeconds] = useState<number | null>(null);
 
@@ -41,7 +43,7 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
     return () => { supabase.removeChannel(channel); };
   }, [matchId, loadScores]);
 
-  // Live countdown timer
+  // Live countdown timer - synced with ring timer
   useEffect(() => {
     if (!ringTimer?.timer_running_since || ringTimer.timer_remaining_seconds == null) {
       setLiveSeconds(ringTimer?.timer_remaining_seconds ?? null);
@@ -92,19 +94,51 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
       {/* Exit fullscreen button - only visible in fullscreen */}
       <button
         onClick={() => { if (document.fullscreenElement) document.exitFullscreen(); }}
-        className="overlay-exit-fs absolute top-2 right-2 bg-black/60 text-white p-2 rounded-none cursor-pointer hover:bg-black/80 hidden pointer-events-auto"
+        className="overlay-exit-fs absolute top-2 right-2 bg-black/60 text-white p-2 rounded-none cursor-pointer hover:bg-black/80 hidden pointer-events-auto z-10"
       >
         <Minimize className="h-4 w-4" />
       </button>
 
-      <div className="overlay-scores absolute bottom-1 right-1 pointer-events-none flex items-end gap-1">
-        {/* Names + scores */}
-        <div className="flex flex-col gap-0.5">
-          {/* Red (athlete2) on top */}
+      {/* Ring label - top left */}
+      {ringLabel && (
+        <div className="overlay-ring-label absolute top-1 left-1 bg-white/90 text-black text-[9px] font-bold px-1.5 py-0.5 rounded-none pointer-events-none">
+          {ringLabel}
+        </div>
+      )}
+
+      {/* Bottom-right overlay: scores stacked vertically */}
+      <div className="overlay-scores absolute bottom-1 right-1 pointer-events-none">
+        <div className="flex flex-col gap-0">
+          {/* Match number - above red name, same width as red name box */}
+          {match.match_order && (
+            <div className="overlay-match-number bg-white text-black text-[9px] font-bold px-1.5 py-0.5 w-[120px] text-center">
+              #{match.match_order}
+            </div>
+          )}
+
+          {/* Red (athlete2) name */}
           <div className="flex items-center gap-0.5">
             <div className="score-name bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 w-[120px] truncate">
               {athlete2Name}
             </div>
+            {/* Timer - above red scores, spanning R1-R3 width */}
+            <div className="overlay-timer-row flex items-center">
+              {/* Timer spans the width of the 3 round boxes */}
+              <div className="overlay-timer bg-white/90 text-black text-[9px] font-bold text-center py-0.5 flex items-center justify-center gap-1"
+                style={{ width: `calc(${totalRounds} * (1.25rem + 0.125rem) - 0.125rem)` }}>
+                <span className="text-[7px] font-medium uppercase">
+                  {isBreak ? 'ΔΙΑΛ.' : `R${currentRound}`}
+                </span>
+                <span className="text-[9px] font-bold">
+                  {formatTime(liveSeconds)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Red scores row */}
+          <div className="flex items-center gap-0.5">
+            <div className="w-[120px]"></div>
             {Array.from({ length: totalRounds }, (_, i) => i + 1).map(r => {
               const score = getMajorityScore(r, 'a2');
               return (
@@ -114,7 +148,8 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
               );
             })}
           </div>
-          {/* Blue (athlete1) on bottom */}
+
+          {/* Blue (athlete1) name + scores */}
           <div className="flex items-center gap-0.5">
             <div className="score-name bg-blue-600 text-white text-[9px] font-bold px-1.5 py-0.5 w-[120px] truncate">
               {athlete1Name}
@@ -128,16 +163,6 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
               );
             })}
           </div>
-        </div>
-
-        {/* Round & Timer */}
-        <div className="overlay-timer flex flex-col items-center bg-black/70 text-white px-1.5 py-0.5">
-          <span className="text-[7px] font-medium uppercase leading-tight">
-            {isBreak ? 'ΔΙΑΛ.' : `R${currentRound}`}
-          </span>
-          <span className="text-[10px] font-bold leading-tight">
-            {formatTime(liveSeconds)}
-          </span>
         </div>
       </div>
     </>

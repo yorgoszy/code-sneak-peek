@@ -252,10 +252,12 @@ const FederationLive = () => {
     setMatches(enriched);
   }, [selectedCompId]);
 
+  const getRingLetter = (num: number) => String.fromCharCode(64 + num); // 1->A, 2->B, etc.
+
   const handleSetupRings = () => {
     const configs = Array.from({ length: ringCount }, (_, i) => ({
       ring_number: i + 1,
-      ring_name: `Ring ${i + 1}`,
+      ring_name: `Ring ${getRingLetter(i + 1)}`,
       youtube_live_url: '',
       match_range_start: '',
       match_range_end: '',
@@ -268,7 +270,7 @@ const FederationLive = () => {
     const toInsert = ringConfigs.map(rc => ({
       competition_id: selectedCompId,
       ring_number: rc.ring_number,
-      ring_name: rc.ring_name || `Ring ${rc.ring_number}`,
+      ring_name: rc.ring_name || `Ring ${getRingLetter(rc.ring_number)}`,
       youtube_live_url: rc.youtube_live_url || null,
       match_range_start: rc.match_range_start ? parseInt(rc.match_range_start) : null,
       match_range_end: rc.match_range_end ? parseInt(rc.match_range_end) : null,
@@ -498,7 +500,7 @@ const FederationLive = () => {
                     <div className="flex items-center justify-between px-2 py-1 bg-muted border-b border-border">
                       <div className="flex items-center gap-1.5">
                         <Monitor className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-xs font-semibold">Ring {ring.ring_number}</span>
+                        <span className="text-xs font-semibold">{ring.ring_name || `Ring ${getRingLetter(ring.ring_number)}`}</span>
                         {ring.is_active && (
                           <Badge variant="outline" className="rounded-none text-[10px] px-1 py-0 bg-destructive/10 text-destructive border-destructive/30 leading-none">
                             <Radio className="h-2 w-2 mr-0.5 animate-pulse" />
@@ -534,24 +536,24 @@ const FederationLive = () => {
                               className="w-full h-full"
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                               allowFullScreen
-                              title={`Ring ${ring.ring_number}`}
+                              title={ring.ring_name || `Ring ${getRingLetter(ring.ring_number)}`}
                             />
                           </AspectRatio>
                           {ring.current_match_id && (() => {
                             const currentMatch = (matches as any[]).find((m: any) => m.id === ring.current_match_id);
-                            if (!currentMatch?.match_order) return null;
+                            if (!currentMatch) return null;
                             return (
-                              <>
-                                <div className="overlay-match-number absolute top-1 left-1 bg-white text-black text-sm font-bold px-2 py-0.5 rounded-none pointer-events-none">
-                                  #{currentMatch.match_order}
-                                </div>
-                                <VideoOverlayScores matchId={ring.current_match_id} match={currentMatch} ringTimer={{
+                              <VideoOverlayScores 
+                                matchId={ring.current_match_id} 
+                                match={currentMatch} 
+                                ringTimer={{
                                   timer_current_round: (ring as any).timer_current_round,
                                   timer_is_break: (ring as any).timer_is_break,
                                   timer_remaining_seconds: (ring as any).timer_remaining_seconds,
                                   timer_running_since: (ring as any).timer_running_since,
-                                }} />
-                              </>
+                                }}
+                                ringLabel={ring.ring_name || `Ring ${getRingLetter(ring.ring_number)}`}
+                              />
                             );
                           })()}
                         </div>
@@ -670,7 +672,7 @@ const FederationLive = () => {
                     setRingCount(n);
                     setRingConfigs(prev => [...prev, {
                       ring_number: n,
-                      ring_name: `Ring ${n}`,
+                      ring_name: `Ring ${getRingLetter(n)}`,
                       youtube_live_url: '',
                       match_range_start: '',
                       match_range_end: '',
@@ -686,7 +688,7 @@ const FederationLive = () => {
               <Card key={idx} className="rounded-none">
                 <CardContent className="p-2 space-y-1.5">
                   <div className="flex items-center gap-2">
-                    <h4 className="font-medium text-xs whitespace-nowrap">Ring {rc.ring_number}</h4>
+                    <h4 className="font-medium text-xs whitespace-nowrap">Ring {getRingLetter(rc.ring_number)}</h4>
                     <Input
                       value={rc.youtube_live_url}
                       onChange={(e) => {
