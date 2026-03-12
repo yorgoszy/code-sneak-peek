@@ -420,7 +420,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
           <SelectContent>
             {navigableMatches.map(m => (
               <SelectItem key={m.id} value={m.id}>
-                #{m.match_order} {m.athlete1_display || m.athlete1?.name || 'Νικητής'} vs {m.athlete2_display || m.athlete2?.name || 'Νικητής'}
+                #{m.match_order} {m.athlete1_display || m.athlete1?.name || t('federation.live.winner')} vs {m.athlete2_display || m.athlete2?.name || t('federation.live.winner')}
               </SelectItem>
             ))}
           </SelectContent>
