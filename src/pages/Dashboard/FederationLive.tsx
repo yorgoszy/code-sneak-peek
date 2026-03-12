@@ -340,7 +340,12 @@ const FederationLive = () => {
     const { error } = await supabase
       .from('competition_rings')
       .update({
-        youtube_live_url: editYoutubeUrl || null,
+        ring_name: editRingName || null,
+        source_type: editSourceType,
+        youtube_live_url: editSourceType === 'youtube' ? (editYoutubeUrl || null) : null,
+        camera_device_id: editSourceType === 'camera' ? (editCameraDeviceId || null) : null,
+        match_range_start: editMatchRangeStart ? parseInt(editMatchRangeStart) : null,
+        match_range_end: editMatchRangeEnd ? parseInt(editMatchRangeEnd) : null,
         current_match_id: editCurrentMatchId || null,
       })
       .eq('id', editRing.id);
@@ -358,6 +363,11 @@ const FederationLive = () => {
     setEditRing(ring);
     setEditYoutubeUrl(ring.youtube_live_url || '');
     setEditCurrentMatchId(ring.current_match_id || '');
+    setEditSourceType((ring.source_type as 'youtube' | 'camera') || 'youtube');
+    setEditCameraDeviceId(ring.camera_device_id || '');
+    setEditRingName(ring.ring_name || '');
+    setEditMatchRangeStart(ring.match_range_start?.toString() || '');
+    setEditMatchRangeEnd(ring.match_range_end?.toString() || '');
   };
 
   const handleMatchChangeForRing = async (ringId: string, matchId: string) => {
