@@ -98,7 +98,7 @@ const JudgeLinkRow: React.FC<{ judgeNum: number; url: string; t: any }> = ({ jud
   return (
     <div className="border border-border p-2 space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium">Κριτής {judgeNum}</span>
+        <span className="text-xs font-medium">{t('federation.live.judge')} {judgeNum}</span>
         <div className="flex items-center gap-1">
           <Button variant="outline" size="sm" className="rounded-none h-7 text-xs" onClick={handleCopy}>
             {copied ? <Check className="h-3 w-3 mr-1 text-[#00ffba]" /> : <Copy className="h-3 w-3 mr-1" />}
