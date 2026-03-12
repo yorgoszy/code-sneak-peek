@@ -156,12 +156,11 @@ const FederationLive = () => {
 
   const federationId = userProfile?.id;
 
-  // Enumerate cameras when setup dialog opens
+  // Enumerate cameras when setup or edit dialog opens
   useEffect(() => {
-    if (!setupDialogOpen) return;
+    if (!setupDialogOpen && !editRing) return;
     const loadCameras = async () => {
       try {
-        // Request permission first to get labels
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         stream.getTracks().forEach(t => t.stop());
         const devices = await navigator.mediaDevices.enumerateDevices();
@@ -172,7 +171,7 @@ const FederationLive = () => {
       }
     };
     loadCameras();
-  }, [setupDialogOpen]);
+  }, [setupDialogOpen, editRing]);
 
   useEffect(() => {
     if (!federationId) return;
