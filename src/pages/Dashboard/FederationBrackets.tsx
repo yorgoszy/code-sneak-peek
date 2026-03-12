@@ -977,7 +977,7 @@ const FederationBrackets = () => {
 
                     <Select value={filterAge} onValueChange={handleAgeChange} disabled={!filterGender}>
                       <SelectTrigger className="rounded-none h-8 text-xs w-24">
-                        <SelectValue placeholder="Ηλικία" />
+                        <SelectValue placeholder={t('federation.brackets.ageFilter')} />
                       </SelectTrigger>
                       <SelectContent>
                         {ageOptions.map(a => (
