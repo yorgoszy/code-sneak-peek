@@ -46,14 +46,32 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
   const maxRound = judgeScores.length > 0 ? Math.max(...judgeScores.map(s => s.round)) : 0;
   const rounds = Array.from({ length: Math.max(maxRound, 1) }, (_, i) => i + 1);
 
-  const athlete1Name = match.athlete1?.name?.split(' ').pop() || '—';
-  const athlete2Name = match.athlete2?.name?.split(' ').pop() || '—';
+  const formatName = (fullName?: string) => {
+    if (!fullName) return '—';
+    const parts = fullName.trim().split(' ');
+    if (parts.length === 1) return parts[0];
+    const initial = parts[0].charAt(0) + '.';
+    const lastName = parts[parts.length - 1];
+    return `${initial} ${lastName}`;
+  };
+
+  const athlete1Name = formatName(match.athlete1?.name);
+  const athlete2Name = formatName(match.athlete2?.name);
+
+  // TODO: Club abbreviations will be implemented later
+  const athlete1Club = '';
+  const athlete2Club = '';
 
   return (
     <div className="absolute bottom-1 right-1 pointer-events-none flex flex-col gap-0.5">
       {/* Red (athlete2) on top */}
       <div className="flex items-center gap-0.5">
-        <div className="bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 truncate max-w-[100px]">
+        {athlete2Club && (
+          <div className="bg-black/70 text-white text-[8px] font-bold px-1 py-0.5">
+            {athlete2Club}
+          </div>
+        )}
+        <div className="bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 w-[120px] truncate">
           {athlete2Name}
         </div>
         {rounds.map(r => {
@@ -67,7 +85,12 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
       </div>
       {/* Blue (athlete1) on bottom */}
       <div className="flex items-center gap-0.5">
-        <div className="bg-blue-600 text-white text-[9px] font-bold px-1.5 py-0.5 truncate max-w-[100px]">
+        {athlete1Club && (
+          <div className="bg-black/70 text-white text-[8px] font-bold px-1 py-0.5">
+            {athlete1Club}
+          </div>
+        )}
+        <div className="bg-blue-600 text-white text-[9px] font-bold px-1.5 py-0.5 w-[120px] truncate">
           {athlete1Name}
         </div>
         {rounds.map(r => {
