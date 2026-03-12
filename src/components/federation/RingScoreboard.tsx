@@ -463,7 +463,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
               variant="ghost"
               size="sm"
               className="rounded-none h-5 w-5 p-0 text-[8px]"
-              title={`Copy link Κριτή ${j}`}
+              title={`${t('federation.live.judge')} ${j}`}
               onClick={() => openJudgeLink(j)}
             >
               <Link2 className="h-2.5 w-2.5" />
