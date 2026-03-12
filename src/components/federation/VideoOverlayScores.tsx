@@ -261,7 +261,7 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
             ) : (
               <div className="overlay-timer bg-white/90 text-black text-[9px] font-bold py-0.5 flex items-center justify-center gap-1 leading-none">
                 <span className="text-[7px] font-medium uppercase">
-                  {isBreak ? 'ΔΙΑΛ.' : `R${currentRound}`}
+                  {isBreak ? 'BRK' : `R${currentRound}`}
                 </span>
                 <span className="text-[9px] font-bold">
                   {formatTime(liveSeconds)}
