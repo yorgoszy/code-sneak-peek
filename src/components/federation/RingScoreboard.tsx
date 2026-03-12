@@ -551,24 +551,24 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
               </tr>
             </thead>
             <tbody>
-              <tr className="bg-muted/30 font-bold border-b border-border">
-                <td className="px-1 py-0.5">{t('federation.live.total')}</td>
+              <tr className="bg-muted/30 font-bold border-b border-border text-[11px]">
+                <td className="px-1 py-1">{t('federation.live.total')}</td>
                 {Array.from({ length: roundConfig.rounds }, (_, i) => {
                   const roundScored = getRoundTotals(i + 1).count === 3;
                   const ma = roundScored ? getMajorityScore(i + 1, 'a1') : null;
                   return (
-                    <td key={i + 1} className={`text-center px-0.5 py-0.5 text-red-600 border-l border-border ${i === 1 ? 'bg-muted/50' : ''}`}>{ma !== null ? ma : '-'}</td>
+                    <td key={i + 1} className={`text-center px-0.5 py-1 text-red-600 border-l border-border ${i === 1 ? 'bg-muted/50' : ''}`}>{ma !== null ? ma : '-'}</td>
                   );
                 })}
               </tr>
               {[1, 2, 3].map(j => (
-                <tr key={j} className="border-b border-border/50">
-                  <td className="px-1 py-0.5 font-medium text-muted-foreground">{t('federation.live.judgeShort')}.{j}</td>
+                <tr key={j} className="border-b border-border/50 text-[8px]">
+                  <td className="px-1 py-0 font-medium text-muted-foreground">{t('federation.live.judgeShort')}.{j}</td>
                   {Array.from({ length: roundConfig.rounds }, (_, i) => {
                     const s = getJudgeScoreForRound(j, i + 1);
                     const val = s?.athlete1_score || 0;
                     return (
-                      <td key={i + 1} className={`text-center px-0.5 py-0.5 border-l border-border ${i === 1 ? 'bg-muted/40' : ''} ${s ? 'font-semibold' : 'text-muted-foreground'}`}>
+                      <td key={i + 1} className={`text-center px-0.5 py-0 border-l border-border ${i === 1 ? 'bg-muted/40' : ''} ${s ? 'font-semibold' : 'text-muted-foreground'}`}>
                         {s ? val : '-'}
                       </td>
                     );
