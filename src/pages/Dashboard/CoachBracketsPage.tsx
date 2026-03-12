@@ -238,10 +238,10 @@ const CoachBracketsPage = () => {
       return { name: `${t('federation.brackets.winnerFight')} ${winnerMatchNumber}`, isConfirmed: false };
     }
 
-    if (feederMatch.match_order) return { name: `Νικητής αγ. ${feederMatch.match_order}`, isConfirmed: false };
+    if (feederMatch.match_order) return { name: `${t('federation.brackets.winnerFight')} ${feederMatch.match_order}`, isConfirmed: false };
     const globalNum = globalMatchNumbers?.get(feederMatch.id);
-    if (globalNum) return { name: `Νικητής αγ. ${globalNum}`, isConfirmed: false };
-    return { name: `Νικητής αγ. ${feederMatchNumber}`, isConfirmed: false };
+    if (globalNum) return { name: `${t('federation.brackets.winnerFight')} ${globalNum}`, isConfirmed: false };
+    return { name: `${t('federation.brackets.winnerFight')} ${feederMatchNumber}`, isConfirmed: false };
   };
 
   const role = userProfile?.role;
