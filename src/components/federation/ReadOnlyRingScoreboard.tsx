@@ -48,7 +48,7 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
 
   // Load match
   const loadMatch = useCallback(async () => {
-    if (!currentMatchId) { setMatch(null); setJudgeScores([]); return; }
+    if (!currentMatchId) { setMatch(null); return; }
     const { data } = await supabase
       .from('competition_matches')
       .select(`
