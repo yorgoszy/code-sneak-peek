@@ -542,7 +542,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
         </div>
         <div className="bg-blue-500/20 flex items-center gap-1.5 px-2 py-1 justify-end">
           <div className="min-w-0 text-right">
-            <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete2?.name || 'Νικητής προηγούμενου αγώνα'}</p>
+            <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete2?.name || athlete2Fallback}</p>
             {match.athlete2_club && <p className="text-[8px] text-muted-foreground truncate">{match.athlete2_club.name}</p>}
           </div>
           <Avatar className="h-5 w-5">
