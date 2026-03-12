@@ -298,7 +298,7 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
             <AvatarImage src={avatar(match.athlete2)} />
             <AvatarFallback className="text-[8px]">{match.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
           </Avatar>
-          <div className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
+          
         </div>
       </div>
 
