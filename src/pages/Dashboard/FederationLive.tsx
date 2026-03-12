@@ -688,7 +688,7 @@ const FederationLive = () => {
               <Card key={idx} className="rounded-none">
                 <CardContent className="p-2 space-y-1.5">
                   <div className="flex items-center gap-2">
-                    <h4 className="font-medium text-xs whitespace-nowrap">Ring {rc.ring_number}</h4>
+                    <h4 className="font-medium text-xs whitespace-nowrap">Ring {getRingLetter(rc.ring_number)}</h4>
                     <Input
                       value={rc.youtube_live_url}
                       onChange={(e) => {
