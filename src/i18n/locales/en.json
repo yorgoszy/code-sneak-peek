@@ -701,7 +701,16 @@
       "quarterfinals": "Quarterfinals",
       "round": "Round",
       "men": "Men",
-      "women": "Women"
+      "women": "Women",
+      "preliminaries18": "Preliminaries 1/8",
+      "preliminaries116": "Preliminaries 1/16",
+      "fight": "Fight",
+      "winnerFight": "Winner fight",
+      "winnerPreviousFight": "Winner of previous fight",
+      "matchesCount": "matches",
+      "genderFilter": "Gender",
+      "ageFilter": "Age",
+      "weightFilter": "Weight"
     },
     "overview": {
       "title": "Federation Overview",
