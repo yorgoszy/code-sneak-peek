@@ -65,7 +65,6 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
       setMatch(data as any);
     } else {
       setMatch(null);
-      setJudgeScores([]);
       setUpcomingMatches([]);
     }
   }, [currentMatchId]);
