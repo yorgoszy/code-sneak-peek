@@ -109,7 +109,7 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
       }
     };
 
-    timeoutId = setTimeout(poll, 300);
+    timeoutId = setTimeout(poll, 150);
 
     return () => {
       active = false;
