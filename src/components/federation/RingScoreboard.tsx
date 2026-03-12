@@ -554,10 +554,10 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
         </div>
       </div>
 
-      {/* Judge scores - split layout: Red=athlete1 (left), Blue=athlete2 (right) */}
-      <div className="grid grid-cols-2 gap-0">
+      {/* Judge scores - split layout aligned with athlete header */}
+      <div className="grid grid-cols-[1fr_auto_1fr] gap-0">
         {/* Red athlete scores (athlete1) */}
-        <div className="border-r border-border">
+        <div>
           <table className="w-full text-[9px] border-collapse">
             <thead>
               <tr className="border-b border-border">
@@ -568,9 +568,19 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
               </tr>
             </thead>
             <tbody>
+              <tr className="bg-muted/30 font-bold border-b border-border">
+                <td className="px-1 py-0.5">{t('federation.live.total')}</td>
+                {Array.from({ length: roundConfig.rounds }, (_, i) => {
+                  const roundScored = getRoundTotals(i + 1).count === 3;
+                  const ma = roundScored ? getMajorityScore(i + 1, 'a1') : null;
+                  return (
+                    <td key={i + 1} className={`text-center px-0.5 py-0.5 text-red-600 border-l border-border ${i === 1 ? 'bg-muted/50' : ''}`}>{ma !== null ? ma : '-'}</td>
+                  );
+                })}
+              </tr>
               {[1, 2, 3].map(j => (
                 <tr key={j} className="border-b border-border/50">
-                   <td className="px-1 py-0.5 font-medium text-muted-foreground">{t('federation.live.judgeShort')}.{j}</td>
+                  <td className="px-1 py-0.5 font-medium text-muted-foreground">{t('federation.live.judgeShort')}.{j}</td>
                   {Array.from({ length: roundConfig.rounds }, (_, i) => {
                     const s = getJudgeScoreForRound(j, i + 1);
                     const val = s?.athlete1_score || 0;
@@ -582,19 +592,11 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
                   })}
                 </tr>
               ))}
-              <tr className="bg-muted/30 font-bold">
-                 <td className="px-1 py-0.5">{t('federation.live.total')}</td>
-                {Array.from({ length: roundConfig.rounds }, (_, i) => {
-                  const roundScored = getRoundTotals(i + 1).count === 3;
-                  const ma = roundScored ? getMajorityScore(i + 1, 'a1') : null;
-                  return (
-                    <td key={i + 1} className={`text-center px-0.5 py-0.5 text-red-600 border-l border-border ${i === 1 ? 'bg-muted/50' : ''}`}>{ma !== null ? ma : '-'}</td>
-                  );
-                })}
-              </tr>
             </tbody>
           </table>
         </div>
+        {/* Middle spacer to match VS column */}
+        <div className="bg-muted/20"></div>
         {/* Blue athlete scores (athlete2) */}
         <div>
           <table className="w-full text-[9px] border-collapse">
@@ -607,6 +609,16 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
               </tr>
             </thead>
             <tbody>
+              <tr className="bg-muted/30 font-bold border-b border-border">
+                <td className="px-1 py-0.5">{t('federation.live.total')}</td>
+                {Array.from({ length: roundConfig.rounds }, (_, i) => {
+                  const roundScored = getRoundTotals(i + 1).count === 3;
+                  const ma = roundScored ? getMajorityScore(i + 1, 'a2') : null;
+                  return (
+                    <td key={i + 1} className={`text-center px-0.5 py-0.5 text-blue-600 border-l border-border ${i === 1 ? 'bg-muted/50' : ''}`}>{ma !== null ? ma : '-'}</td>
+                  );
+                })}
+              </tr>
               {[1, 2, 3].map(j => (
                 <tr key={j} className="border-b border-border/50">
                   <td className="px-1 py-0.5 font-medium text-muted-foreground">{t('federation.live.judgeShort')}.{j}</td>
@@ -621,16 +633,6 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
                   })}
                 </tr>
               ))}
-              <tr className="bg-muted/30 font-bold">
-                <td className="px-1 py-0.5">{t('federation.live.total')}</td>
-                {Array.from({ length: roundConfig.rounds }, (_, i) => {
-                  const roundScored = getRoundTotals(i + 1).count === 3;
-                  const ma = roundScored ? getMajorityScore(i + 1, 'a2') : null;
-                  return (
-                    <td key={i + 1} className={`text-center px-0.5 py-0.5 text-blue-600 border-l border-border ${i === 1 ? 'bg-muted/50' : ''}`}>{ma !== null ? ma : '-'}</td>
-                  );
-                })}
-              </tr>
             </tbody>
           </table>
         </div>
