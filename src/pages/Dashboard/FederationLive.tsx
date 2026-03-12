@@ -913,7 +913,7 @@ const FederationLive = () => {
                   )}
                 </div>
                 <div className="shrink-0">
-                  <Label className="text-xs">Αγώνες</Label>
+                  <Label className="text-xs">{t('federation.live.matchesLabel')}</Label>
                   <div className="flex items-center gap-1">
                     <Input type="number" value={editMatchRangeStart} onChange={(e) => setEditMatchRangeStart(e.target.value)} placeholder="From" className="rounded-none h-7 text-xs w-16" />
                     <span className="text-xs text-muted-foreground">-</span>
