@@ -4,23 +4,58 @@ import { Minimize } from 'lucide-react';
 
 interface VideoOverlayScoresProps {
   matchId: string;
+  ringId: string;
   match: {
     athlete1?: { name: string } | null;
     athlete2?: { name: string } | null;
     match_order?: number;
   };
-  ringTimer?: {
+  ringLabel?: string;
+}
+
+export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId, ringId, match, ringLabel }) => {
+  const [judgeScores, setJudgeScores] = useState<any[]>([]);
+  const [liveSeconds, setLiveSeconds] = useState<number | null>(null);
+  const [timerState, setTimerState] = useState<{
     timer_current_round: number | null;
     timer_is_break: boolean | null;
     timer_remaining_seconds: number | null;
     timer_running_since: string | null;
-  };
-  ringLabel?: string;
-}
+  }>({ timer_current_round: 1, timer_is_break: false, timer_remaining_seconds: null, timer_running_since: null });
 
-export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId, match, ringTimer, ringLabel }) => {
-  const [judgeScores, setJudgeScores] = useState<any[]>([]);
-  const [liveSeconds, setLiveSeconds] = useState<number | null>(null);
+  // Fetch timer state directly from ring
+  const loadTimerState = useCallback(async () => {
+    const { data } = await supabase
+      .from('competition_rings')
+      .select('timer_current_round, timer_is_break, timer_remaining_seconds, timer_running_since')
+      .eq('id', ringId)
+      .single();
+    if (data) {
+      setTimerState(data as any);
+    }
+  }, [ringId]);
+
+  useEffect(() => { loadTimerState(); }, [loadTimerState]);
+
+  // Realtime subscription for ring timer changes
+  useEffect(() => {
+    const channel = supabase
+      .channel(`overlay-ring-timer-${ringId}`)
+      .on('postgres_changes', {
+        event: 'UPDATE', schema: 'public', table: 'competition_rings',
+        filter: `id=eq.${ringId}`
+      }, (payload) => {
+        const newData = payload.new as any;
+        setTimerState({
+          timer_current_round: newData.timer_current_round,
+          timer_is_break: newData.timer_is_break,
+          timer_remaining_seconds: newData.timer_remaining_seconds,
+          timer_running_since: newData.timer_running_since,
+        });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [ringId]);
 
   const loadScores = useCallback(async () => {
     const { data } = await supabase
@@ -43,25 +78,24 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
     return () => { supabase.removeChannel(channel); };
   }, [matchId, loadScores]);
 
-  // Live countdown timer - synced with ring timer
+  // Live countdown timer - synced with ring timer via direct subscription
   useEffect(() => {
-    // When timer is not running, show static remaining seconds
-    if (!ringTimer?.timer_running_since) {
-      setLiveSeconds(ringTimer?.timer_remaining_seconds ?? null);
+    if (!timerState.timer_running_since) {
+      setLiveSeconds(timerState.timer_remaining_seconds ?? null);
       return;
     }
-    if (ringTimer.timer_remaining_seconds == null) {
+    if (timerState.timer_remaining_seconds == null) {
       setLiveSeconds(null);
       return;
     }
     const calcRemaining = () => {
-      const elapsed = (Date.now() - new Date(ringTimer.timer_running_since!).getTime()) / 1000;
-      return Math.max(0, Math.round((ringTimer.timer_remaining_seconds ?? 0) - elapsed));
+      const elapsed = (Date.now() - new Date(timerState.timer_running_since!).getTime()) / 1000;
+      return Math.max(0, Math.round((timerState.timer_remaining_seconds ?? 0) - elapsed));
     };
     setLiveSeconds(calcRemaining());
     const interval = setInterval(() => setLiveSeconds(calcRemaining()), 200);
     return () => clearInterval(interval);
-  }, [ringTimer?.timer_running_since, ringTimer?.timer_remaining_seconds, ringTimer?.timer_current_round, ringTimer?.timer_is_break]);
+  }, [timerState.timer_running_since, timerState.timer_remaining_seconds, timerState.timer_current_round, timerState.timer_is_break]);
 
   const getMajorityScore = (round: number, athlete: 'a1' | 'a2'): number | null => {
     const roundScores = judgeScores.filter(s => s.round === round);
@@ -91,8 +125,8 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
 
   const athlete1Name = formatName(match.athlete1?.name);
   const athlete2Name = formatName(match.athlete2?.name);
-  const currentRound = ringTimer?.timer_current_round ?? 1;
-  const isBreak = ringTimer?.timer_is_break ?? false;
+  const currentRound = timerState.timer_current_round ?? 1;
+  const isBreak = timerState.timer_is_break ?? false;
 
   return (
     <>
