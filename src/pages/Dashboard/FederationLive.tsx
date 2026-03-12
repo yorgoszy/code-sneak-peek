@@ -797,7 +797,7 @@ const FederationLive = () => {
                         }}
                       >
                         <SelectTrigger className="rounded-none h-7 text-xs flex-1">
-                          <SelectValue placeholder="Επιλέξτε κάμερα..." />
+                        <SelectValue placeholder={t('federation.live.selectCamera')} />
                         </SelectTrigger>
                         <SelectContent>
                           {availableCameras.map((cam, i) => (
