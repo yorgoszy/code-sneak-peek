@@ -218,15 +218,6 @@ const JudgeScoring: React.FC = () => {
 
           {/* Athletes */}
           <div className="grid grid-cols-2 gap-3">
-            {/* Blue corner */}
-            <div className="bg-blue-500/10 border border-blue-500/30 p-3 text-center">
-              <div className="w-3 h-3 rounded-full bg-blue-500 mx-auto mb-2" />
-              <Avatar className="h-12 w-12 mx-auto mb-1">
-                <AvatarImage src={avatar(match.athlete1)} />
-                <AvatarFallback>{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
-              </Avatar>
-              <p className="text-sm font-semibold truncate">{match.athlete1?.name || 'Μπλε γωνία'}</p>
-            </div>
             {/* Red corner */}
             <div className="bg-red-500/10 border border-red-500/30 p-3 text-center">
               <div className="w-3 h-3 rounded-full bg-red-500 mx-auto mb-2" />
@@ -235,6 +226,15 @@ const JudgeScoring: React.FC = () => {
                 <AvatarFallback>{match.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
               </Avatar>
               <p className="text-sm font-semibold truncate">{match.athlete2?.name || 'Κόκκινη γωνία'}</p>
+            </div>
+            {/* Blue corner */}
+            <div className="bg-blue-500/10 border border-blue-500/30 p-3 text-center">
+              <div className="w-3 h-3 rounded-full bg-blue-500 mx-auto mb-2" />
+              <Avatar className="h-12 w-12 mx-auto mb-1">
+                <AvatarImage src={avatar(match.athlete1)} />
+                <AvatarFallback>{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
+              </Avatar>
+              <p className="text-sm font-semibold truncate">{match.athlete1?.name || 'Μπλε γωνία'}</p>
             </div>
           </div>
 
@@ -256,19 +256,6 @@ const JudgeScoring: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] text-blue-600 font-medium block mb-1">Μπλε γωνία</label>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={scores[round].a1 || ''}
-                    onChange={(e) => setScores(prev => ({
-                      ...prev,
-                      [round]: { ...prev[round], a1: parseInt(e.target.value) || 0 }
-                    }))}
-                    className="rounded-none h-12 text-xl text-center font-bold"
-                  />
-                </div>
-                <div>
                   <label className="text-[10px] text-red-600 font-medium block mb-1">Κόκκινη γωνία</label>
                   <Input
                     type="number"
@@ -277,6 +264,19 @@ const JudgeScoring: React.FC = () => {
                     onChange={(e) => setScores(prev => ({
                       ...prev,
                       [round]: { ...prev[round], a2: parseInt(e.target.value) || 0 }
+                    }))}
+                    className="rounded-none h-12 text-xl text-center font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-blue-600 font-medium block mb-1">Μπλε γωνία</label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={scores[round].a1 || ''}
+                    onChange={(e) => setScores(prev => ({
+                      ...prev,
+                      [round]: { ...prev[round], a1: parseInt(e.target.value) || 0 }
                     }))}
                     className="rounded-none h-12 text-xl text-center font-bold"
                   />
@@ -301,13 +301,13 @@ const JudgeScoring: React.FC = () => {
             </div>
             <div className="grid grid-cols-2 gap-3 text-center">
               <div>
-                <span className="text-2xl font-bold text-blue-600">
-                  {scores[1].a1 + scores[2].a1 + scores[3].a1}
+                <span className="text-2xl font-bold text-red-600">
+                  {scores[1].a2 + scores[2].a2 + scores[3].a2}
                 </span>
               </div>
               <div>
-                <span className="text-2xl font-bold text-red-600">
-                  {scores[1].a2 + scores[2].a2 + scores[3].a2}
+                <span className="text-2xl font-bold text-blue-600">
+                  {scores[1].a1 + scores[2].a1 + scores[3].a1}
                 </span>
               </div>
             </div>

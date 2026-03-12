@@ -245,77 +245,36 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
 
       {/* Athletes */}
       <div className="grid grid-cols-[1fr_auto_1fr] gap-0">
-        <div className="bg-blue-500/20 flex items-center gap-1.5 px-3 py-2">
+        <div className="bg-red-500/20 flex items-center gap-1.5 px-3 py-2">
           <Avatar className="h-6 w-6">
-            <AvatarImage src={avatar(match.athlete1)} />
-            <AvatarFallback className="text-[8px]">{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
+            <AvatarImage src={avatar(match.athlete2)} />
+            <AvatarFallback className="text-[8px]">{match.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <p className="text-xs font-semibold truncate">{match.athlete1?.name || 'Νικητής προηγούμενου αγώνα'}</p>
-            {match.athlete1_club && <p className="text-[9px] text-muted-foreground truncate">{match.athlete1_club.name}</p>}
+            <p className="text-xs font-semibold truncate">{match.athlete2?.name || 'Νικητής προηγούμενου αγώνα'}</p>
+            {match.athlete2_club && <p className="text-[9px] text-muted-foreground truncate">{match.athlete2_club.name}</p>}
           </div>
         </div>
         <div className="flex items-center justify-center px-2 bg-muted/20">
           <span className="text-xs font-bold text-muted-foreground">VS</span>
         </div>
-        <div className="bg-red-500/20 flex items-center gap-1.5 px-3 py-2 justify-end">
+        <div className="bg-blue-500/20 flex items-center gap-1.5 px-3 py-2 justify-end">
           <div className="min-w-0 text-right">
-            <p className="text-xs font-semibold truncate">{match.athlete2?.name || 'Νικητής προηγούμενου αγώνα'}</p>
-            {match.athlete2_club && <p className="text-[9px] text-muted-foreground truncate">{match.athlete2_club.name}</p>}
+            <p className="text-xs font-semibold truncate">{match.athlete1?.name || 'Νικητής προηγούμενου αγώνα'}</p>
+            {match.athlete1_club && <p className="text-[9px] text-muted-foreground truncate">{match.athlete1_club.name}</p>}
           </div>
           <Avatar className="h-6 w-6">
-            <AvatarImage src={avatar(match.athlete2)} />
-            <AvatarFallback className="text-[8px]">{match.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
+            <AvatarImage src={avatar(match.athlete1)} />
+            <AvatarFallback className="text-[8px]">{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
           </Avatar>
-          
         </div>
       </div>
 
       {/* Judge scores - split layout under each athlete */}
       {judgeScores.length > 0 && (
         <div className="grid grid-cols-2 gap-0">
-          {/* Blue athlete scores */}
+          {/* Red athlete scores (athlete2) */}
           <div className="border-r border-border">
-            <table className="w-full text-[9px] border-collapse">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left px-1 py-0.5 text-muted-foreground font-normal"></th>
-                  {[1, 2, 3].map(r => (
-                    <th key={r} className="text-center px-0.5 py-0.5 text-muted-foreground font-normal border-l border-border">R{r}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {[1, 2, 3].map(j => (
-                  <tr key={j} className="border-b border-border/50">
-                    <td className="px-1 py-0.5 font-medium text-muted-foreground">Κρ.{j}</td>
-                    {[1, 2, 3].map(r => {
-                      const s = getJudgeScoreForRound(j, r);
-                      const val = s?.athlete1_score || 0;
-                      return (
-                        <td key={r} className={`text-center px-0.5 py-0.5 border-l border-border ${s ? 'font-semibold' : 'text-muted-foreground'}`}>
-                          {s ? val : '-'}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-                {allRoundsScored && (
-                  <tr className="bg-muted/30 font-bold">
-                    <td className="px-1 py-0.5">Σύν.</td>
-                    {[1, 2, 3].map(r => {
-                      const ma = getMajorityScore(r, 'a1');
-                      return (
-                        <td key={r} className="text-center px-0.5 py-0.5 text-blue-600 border-l border-border">{ma !== null ? ma : '-'}</td>
-                      );
-                    })}
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          {/* Red athlete scores */}
-          <div>
             <table className="w-full text-[9px] border-collapse">
               <thead>
                 <tr className="border-b border-border">
@@ -354,6 +313,46 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
               </tbody>
             </table>
           </div>
+          {/* Blue athlete scores (athlete1) */}
+          <div>
+            <table className="w-full text-[9px] border-collapse">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left px-1 py-0.5 text-muted-foreground font-normal"></th>
+                  {[1, 2, 3].map(r => (
+                    <th key={r} className="text-center px-0.5 py-0.5 text-muted-foreground font-normal border-l border-border">R{r}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {[1, 2, 3].map(j => (
+                  <tr key={j} className="border-b border-border/50">
+                    <td className="px-1 py-0.5 font-medium text-muted-foreground">Κρ.{j}</td>
+                    {[1, 2, 3].map(r => {
+                      const s = getJudgeScoreForRound(j, r);
+                      const val = s?.athlete1_score || 0;
+                      return (
+                        <td key={r} className={`text-center px-0.5 py-0.5 border-l border-border ${s ? 'font-semibold' : 'text-muted-foreground'}`}>
+                          {s ? val : '-'}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+                {allRoundsScored && (
+                  <tr className="bg-muted/30 font-bold">
+                    <td className="px-1 py-0.5">Σύν.</td>
+                    {[1, 2, 3].map(r => {
+                      const ma = getMajorityScore(r, 'a1');
+                      return (
+                        <td key={r} className="text-center px-0.5 py-0.5 text-blue-600 border-l border-border">{ma !== null ? ma : '-'}</td>
+                      );
+                    })}
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -366,19 +365,6 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
             const roundScoresA2 = [1, 2, 3].map(r => getMajorityScore(r, 'a2'));
             return (
               <div className="flex items-center justify-center gap-0">
-                <div className={`flex-1 text-center py-1 ${isBlueWinner ? 'bg-blue-500 text-white' : 'bg-blue-500/10'}`}>
-                  <p className={`text-[10px] font-semibold truncate px-1 ${isBlueWinner ? 'text-white' : 'text-blue-600'}`}>
-                    {match.athlete1?.name || 'Μπλε'}
-                  </p>
-                  <div className="flex items-center justify-center gap-1 mt-1">
-                    {roundScoresA1.map((score, i) => (
-                      <span key={i} className={`inline-flex items-center justify-center w-7 h-7 text-sm font-bold border ${isBlueWinner ? 'border-white/40 text-white' : 'border-blue-300 text-blue-600'}`}>
-                        {score !== null ? score : '-'}
-                      </span>
-                    ))}
-                  </div>
-                  {isBlueWinner && <Trophy className="h-3 w-3 mx-auto text-white mt-1" />}
-                </div>
                 <div className={`flex-1 text-center py-1 ${!isBlueWinner ? 'bg-red-500 text-white' : 'bg-red-500/10'}`}>
                   <p className={`text-[10px] font-semibold truncate px-1 ${!isBlueWinner ? 'text-white' : 'text-red-600'}`}>
                     {match.athlete2?.name || 'Κόκκινη'}
@@ -391,6 +377,19 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
                     ))}
                   </div>
                   {!isBlueWinner && <Trophy className="h-3 w-3 mx-auto text-white mt-1" />}
+                </div>
+                <div className={`flex-1 text-center py-1 ${isBlueWinner ? 'bg-blue-500 text-white' : 'bg-blue-500/10'}`}>
+                  <p className={`text-[10px] font-semibold truncate px-1 ${isBlueWinner ? 'text-white' : 'text-blue-600'}`}>
+                    {match.athlete1?.name || 'Μπλε'}
+                  </p>
+                  <div className="flex items-center justify-center gap-1 mt-1">
+                    {roundScoresA1.map((score, i) => (
+                      <span key={i} className={`inline-flex items-center justify-center w-7 h-7 text-sm font-bold border ${isBlueWinner ? 'border-white/40 text-white' : 'border-blue-300 text-blue-600'}`}>
+                        {score !== null ? score : '-'}
+                      </span>
+                    ))}
+                  </div>
+                  {isBlueWinner && <Trophy className="h-3 w-3 mx-auto text-white mt-1" />}
                 </div>
               </div>
             );
