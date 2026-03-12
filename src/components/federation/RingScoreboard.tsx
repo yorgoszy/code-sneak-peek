@@ -293,7 +293,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
       return;
     }
     if (majorityA1 === 0 && majorityA2 === 0) {
-      toast.error('Δεν υπάρχουν βαθμολογίες κριτών');
+      toast.error(t('federation.live.noJudgeScores'));
       return;
     }
     if (majorityA1 === majorityA2) {
