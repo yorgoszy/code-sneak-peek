@@ -709,7 +709,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
               onClick={handleCopyLink}
             >
               {linkCopied ? <Check className="h-4 w-4 mr-2 text-[#00ffba]" /> : <Copy className="h-4 w-4 mr-2" />}
-              {linkCopied ? 'Αντιγράφηκε!' : 'Αντιγραφή Link'}
+              {linkCopied ? t('federation.live.copied') : t('federation.live.copyLink')}
             </Button>
           </div>
         </DialogContent>
