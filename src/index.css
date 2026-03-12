@@ -374,6 +374,13 @@ html, body {
 [id^="ring-video-"]:fullscreen .overlay-exit-fs {
   display: block;
   z-index: 10;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: auto;
+}
+
+[id^="ring-video-"]:fullscreen:hover .overlay-exit-fs {
+  opacity: 1;
 }
 
 [id^="ring-video-"]:fullscreen .overlay-ring-label {
