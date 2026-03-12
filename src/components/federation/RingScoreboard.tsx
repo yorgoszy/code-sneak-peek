@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Play, Pause, RotateCcw, Trophy, Clock, Link2, Copy, Check, RefreshCw } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
+import { useRealtimeJudgeScores } from "@/hooks/useRealtimeJudgeScores";
 import { toast } from "sonner";
 
 interface MatchData {
@@ -25,12 +26,6 @@ interface MatchData {
   category?: { name: string; min_age: number | null; max_age: number | null } | null;
 }
 
-interface JudgeScore {
-  judge_number: number;
-  round: number;
-  athlete1_score: number;
-  athlete2_score: number;
-}
 
 interface AvailableMatch {
   id: string;
@@ -72,7 +67,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
   onMatchChange,
 }) => {
   const [match, setMatch] = useState<MatchData | null>(null);
-  const [judgeScores, setJudgeScores] = useState<JudgeScore[]>([]);
+  const judgeScores = useRealtimeJudgeScores(currentMatchId, { channelPrefix: 'ring-judge-scores' });
   const [currentRound, setCurrentRound] = useState(1);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
@@ -160,7 +155,6 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
   useEffect(() => {
     if (!currentMatchId) { 
       setMatch(null); 
-      setJudgeScores([]); 
       setIsRunning(false);
       setCurrentRound(1);
       setIsBreak(false);
@@ -206,30 +200,6 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
     loadMatch();
   }, [currentMatchId, restoreTimerState, persistTimerState]);
 
-  // Load judge scores
-  const loadJudgeScores = useCallback(async () => {
-    if (!currentMatchId) return;
-    const { data } = await supabase
-      .from('competition_match_judge_scores')
-      .select('*')
-      .eq('match_id', currentMatchId);
-    setJudgeScores(data || []);
-  }, [currentMatchId]);
-
-  useEffect(() => { loadJudgeScores(); }, [loadJudgeScores]);
-
-  // Real-time judge scores
-  useEffect(() => {
-    if (!currentMatchId) return;
-    const channel = supabase
-      .channel(`judge-scores-${currentMatchId}`)
-      .on('postgres_changes', {
-        event: '*', schema: 'public', table: 'competition_match_judge_scores',
-        filter: `match_id=eq.${currentMatchId}`
-      }, () => loadJudgeScores())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [currentMatchId, loadJudgeScores]);
 
   // Timer logic
   useEffect(() => {
@@ -295,7 +265,6 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
       .from('competition_matches')
       .update({ status: 'pending', winner_id: null, completed_at: null, result_type: null, athlete1_score: null, athlete2_score: null })
       .eq('id', currentMatchId);
-    setJudgeScores([]);
     toast.success('Ο αγώνας ανανεώθηκε');
   };
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Minimize } from 'lucide-react';
+import { useRealtimeJudgeScores } from '@/hooks/useRealtimeJudgeScores';
 
 interface VideoOverlayScoresProps {
   matchId: string;
@@ -28,7 +29,7 @@ const DEFAULT_TIMER_STATE: RingTimerState = {
 };
 
 export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId, ringId, match, ringLabel }) => {
-  const [judgeScores, setJudgeScores] = useState<any[]>([]);
+  const judgeScores = useRealtimeJudgeScores(matchId, { channelPrefix: 'overlay-scores' });
   const [liveSeconds, setLiveSeconds] = useState<number | null>(null);
   const [timerState, setTimerState] = useState<RingTimerState>(DEFAULT_TIMER_STATE);
   const lastTimerSignatureRef = useRef<string>('');
@@ -116,26 +117,6 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
     };
   }, [safeRingId, applyTimerState]);
 
-  const loadScores = useCallback(async () => {
-    const { data } = await supabase
-      .from('competition_match_judge_scores')
-      .select('*')
-      .eq('match_id', matchId);
-    setJudgeScores(data || []);
-  }, [matchId]);
-
-  useEffect(() => { loadScores(); }, [loadScores]);
-
-  useEffect(() => {
-    const channel = supabase
-      .channel(`overlay-scores-${matchId}`)
-      .on('postgres_changes', {
-        event: '*', schema: 'public', table: 'competition_match_judge_scores',
-        filter: `match_id=eq.${matchId}`
-      }, () => loadScores())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [matchId, loadScores]);
 
   // Live countdown timer - synced with ring timer via direct subscription + polling fallback
   useEffect(() => {

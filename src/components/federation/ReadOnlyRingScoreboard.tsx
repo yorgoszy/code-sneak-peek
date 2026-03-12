@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useRealtimeJudgeScores } from "@/hooks/useRealtimeJudgeScores";
 
 interface MatchData {
   id: string;
@@ -18,12 +19,6 @@ interface MatchData {
   category?: { name: string; min_age: number | null; max_age: number | null } | null;
 }
 
-interface JudgeScore {
-  judge_number: number;
-  round: number;
-  athlete1_score: number;
-  athlete2_score: number;
-}
 
 interface UpcomingMatch {
   id: string;
@@ -48,12 +43,12 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
   currentMatchId, competitionId, matchRangeStart, matchRangeEnd 
 }) => {
   const [match, setMatch] = useState<MatchData | null>(null);
-  const [judgeScores, setJudgeScores] = useState<JudgeScore[]>([]);
+  const judgeScores = useRealtimeJudgeScores(currentMatchId, { channelPrefix: 'coach-judge-scores' });
   const [upcomingMatches, setUpcomingMatches] = useState<UpcomingMatch[]>([]);
 
   // Load match
   const loadMatch = useCallback(async () => {
-    if (!currentMatchId) { setMatch(null); setJudgeScores([]); return; }
+    if (!currentMatchId) { setMatch(null); return; }
     const { data } = await supabase
       .from('competition_matches')
       .select(`
@@ -70,37 +65,12 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
       setMatch(data as any);
     } else {
       setMatch(null);
-      setJudgeScores([]);
       setUpcomingMatches([]);
     }
   }, [currentMatchId]);
 
   useEffect(() => { loadMatch(); }, [loadMatch]);
 
-  // Load judge scores
-  const loadJudgeScores = useCallback(async () => {
-    if (!currentMatchId) return;
-    const { data } = await supabase
-      .from('competition_match_judge_scores')
-      .select('*')
-      .eq('match_id', currentMatchId);
-    setJudgeScores(data || []);
-  }, [currentMatchId]);
-
-  useEffect(() => { loadJudgeScores(); }, [loadJudgeScores]);
-
-  // Real-time judge scores
-  useEffect(() => {
-    if (!currentMatchId) return;
-    const channel = supabase
-      .channel(`coach-judge-scores-${currentMatchId}`)
-      .on('postgres_changes', {
-        event: '*', schema: 'public', table: 'competition_match_judge_scores',
-        filter: `match_id=eq.${currentMatchId}`
-      }, () => loadJudgeScores())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [currentMatchId, loadJudgeScores]);
 
   // Real-time match updates (including deletion from draw reset)
   useEffect(() => {
@@ -113,7 +83,6 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
       }, (payload) => {
         if (payload.eventType === 'DELETE') {
           setMatch(null);
-          setJudgeScores([]);
           setUpcomingMatches([]);
         } else {
           loadMatch();
