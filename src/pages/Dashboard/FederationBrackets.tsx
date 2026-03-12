@@ -1025,7 +1025,7 @@ const FederationBrackets = () => {
               const CARD_GAP = 40;
               const COL_W = 300;
               const CONNECTOR_W = 60;
-              const HEADER_H = 50;
+              const HEADER_H = 41;
 
               // Non-bye matches per round, sorted by match_order (global sequence) for top-to-bottom display
               const roundMatchArrays = sortedRoundNumbers.map(rn =>
