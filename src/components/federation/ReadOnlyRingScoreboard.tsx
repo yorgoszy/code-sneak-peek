@@ -277,7 +277,6 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
       {/* Athletes */}
       <div className="grid grid-cols-[1fr_auto_1fr] gap-0">
         <div className="bg-blue-500/20 flex items-center gap-1.5 px-3 py-2">
-          <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
           <Avatar className="h-6 w-6">
             <AvatarImage src={avatar(match.athlete1)} />
             <AvatarFallback className="text-[8px]">{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
@@ -299,7 +298,7 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
             <AvatarImage src={avatar(match.athlete2)} />
             <AvatarFallback className="text-[8px]">{match.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
           </Avatar>
-          <div className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
+          
         </div>
       </div>
 
