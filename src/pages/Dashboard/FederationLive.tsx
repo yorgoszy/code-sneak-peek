@@ -538,16 +538,20 @@ const FederationLive = () => {
                     </div>
 
                     <CardContent className="p-0">
-                      {ring.youtube_live_url ? (
+                      {(ring.youtube_live_url || (ring as any).source_type === 'camera') ? (
                         <div id={`ring-video-${ring.id}`} className="relative bg-black group">
                           <AspectRatio ratio={16 / 9}>
-                            <iframe
-                              src={getYoutubeEmbedUrl(ring.youtube_live_url) || ''}
-                              className="w-full h-full"
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                              allowFullScreen
-                              title={ring.ring_name || `Ring ${getRingLetter(ring.ring_number)}`}
-                            />
+                            {(ring as any).source_type === 'camera' ? (
+                              <CameraFeed deviceId={(ring as any).camera_device_id} className="w-full h-full" />
+                            ) : (
+                              <iframe
+                                src={getYoutubeEmbedUrl(ring.youtube_live_url!) || ''}
+                                className="w-full h-full"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                                title={ring.ring_name || `Ring ${getRingLetter(ring.ring_number)}`}
+                              />
+                            )}
                           </AspectRatio>
                           {ring.current_match_id && (() => {
                             const currentMatch = (matches as any[]).find((m: any) => m.id === ring.current_match_id);
