@@ -136,7 +136,7 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
     };
 
     setLiveSeconds(calcRemaining());
-    const interval = setInterval(() => setLiveSeconds(calcRemaining()), 200);
+    const interval = setInterval(() => setLiveSeconds(calcRemaining()), 50);
     return () => clearInterval(interval);
   }, [timerState.timer_running_since, timerState.timer_remaining_seconds, timerState.timer_current_round, timerState.timer_is_break]);
 
