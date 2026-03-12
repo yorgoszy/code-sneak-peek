@@ -366,25 +366,43 @@ html, body {
   object-fit: contain;
 }
 
+[id^="ring-video-"]:fullscreen .overlay-exit-fs {
+  display: block;
+  z-index: 10;
+}
+
 [id^="ring-video-"]:fullscreen .overlay-match-number {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   padding: 0.5rem 1rem;
 }
 
+[id^="ring-video-"]:fullscreen .overlay-scores {
+  bottom: 2rem;
+  right: 2rem;
+  gap: 6px;
+}
+
 [id^="ring-video-"]:fullscreen .overlay-scores .score-name {
-  font-size: 14px;
-  width: 200px;
-  padding: 4px 8px;
+  font-size: 18px;
+  width: 240px;
+  padding: 6px 12px;
 }
 
 [id^="ring-video-"]:fullscreen .overlay-scores .score-round {
-  font-size: 14px;
-  width: 28px;
-  padding: 4px 0;
+  font-size: 18px;
+  width: 36px;
+  padding: 6px 0;
 }
 
-[id^="ring-video-"]:fullscreen .overlay-scores {
-  bottom: 1rem;
-  right: 1rem;
-  gap: 4px;
+[id^="ring-video-"]:fullscreen .overlay-scores .overlay-timer {
+  font-size: 14px;
+  padding: 6px 12px;
+}
+
+[id^="ring-video-"]:fullscreen .overlay-scores .overlay-timer span:first-child {
+  font-size: 12px;
+}
+
+[id^="ring-video-"]:fullscreen .overlay-scores .overlay-timer span:last-child {
+  font-size: 20px;
 }

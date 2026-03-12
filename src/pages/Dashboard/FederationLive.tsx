@@ -545,7 +545,12 @@ const FederationLive = () => {
                                 <div className="overlay-match-number absolute top-1 left-1 bg-white text-black text-sm font-bold px-2 py-0.5 rounded-none pointer-events-none">
                                   #{currentMatch.match_order}
                                 </div>
-                                <VideoOverlayScores matchId={ring.current_match_id} match={currentMatch} />
+                                <VideoOverlayScores matchId={ring.current_match_id} match={currentMatch} ringTimer={{
+                                  timer_current_round: (ring as any).timer_current_round,
+                                  timer_is_break: (ring as any).timer_is_break,
+                                  timer_remaining_seconds: (ring as any).timer_remaining_seconds,
+                                  timer_running_since: (ring as any).timer_running_since,
+                                }} />
                               </>
                             );
                           })()}
