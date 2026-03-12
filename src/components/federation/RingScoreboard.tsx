@@ -626,15 +626,28 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
         </div>
       )}
       {match.winner_id && (
-        <div className="px-2 py-1 border-t border-border flex justify-center">
+        <div className="px-2 py-1.5 border-t border-border">
           {(() => {
             const isBlueWinner = match.winner_id === match.athlete1_id;
-            const winnerName = isBlueWinner ? match.athlete1?.name : match.athlete2?.name;
             return (
-              <Badge className={`rounded-none text-[10px] px-2 py-0.5 ${isBlueWinner ? 'bg-blue-500 text-white' : 'bg-red-500 text-white'}`}>
-                <Trophy className="h-2.5 w-2.5 mr-1" />
-                Νικητής: {winnerName} ({majorityA1}-{majorityA2})
-              </Badge>
+              <div className="flex items-center justify-center gap-0">
+                {/* Blue athlete score */}
+                <div className={`flex-1 text-center py-1 ${isBlueWinner ? 'bg-blue-500 text-white' : 'bg-blue-500/10'}`}>
+                  <p className={`text-[10px] font-semibold truncate px-1 ${isBlueWinner ? 'text-white' : 'text-blue-600'}`}>
+                    {match.athlete1?.name || 'Μπλε'}
+                  </p>
+                  <p className={`text-lg font-bold ${isBlueWinner ? 'text-white' : 'text-blue-600'}`}>{majorityA1}</p>
+                  {isBlueWinner && <Trophy className="h-3 w-3 mx-auto text-white" />}
+                </div>
+                {/* Red athlete score */}
+                <div className={`flex-1 text-center py-1 ${!isBlueWinner ? 'bg-red-500 text-white' : 'bg-red-500/10'}`}>
+                  <p className={`text-[10px] font-semibold truncate px-1 ${!isBlueWinner ? 'text-white' : 'text-red-600'}`}>
+                    {match.athlete2?.name || 'Κόκκινη'}
+                  </p>
+                  <p className={`text-lg font-bold ${!isBlueWinner ? 'text-white' : 'text-red-600'}`}>{majorityA2}</p>
+                  {!isBlueWinner && <Trophy className="h-3 w-3 mx-auto text-white" />}
+                </div>
+              </div>
             );
           })()}
         </div>
