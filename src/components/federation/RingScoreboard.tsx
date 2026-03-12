@@ -667,7 +667,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
               className="rounded-none h-5 text-[8px] px-1.5 border-red-500 text-red-600"
               onClick={() => match.athlete1_id && handleDeclareWinner(match.athlete1_id)}
             >
-              {match.athlete1?.name || 'Κόκκινη'}
+              {match.athlete1?.name || t('federation.live.red')}
             </Button>
             <Button
               size="sm"
