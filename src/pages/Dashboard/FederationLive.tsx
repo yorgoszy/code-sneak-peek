@@ -907,7 +907,7 @@ const FederationLive = () => {
                         {availableCameras.map((cam, i) => (
                           <SelectItem key={cam.deviceId} value={cam.deviceId}>{cam.label || `Camera ${i + 1}`}</SelectItem>
                         ))}
-                        {availableCameras.length === 0 && <div className="px-2 py-1 text-xs text-muted-foreground">Δεν βρέθηκαν κάμερες</div>}
+                        {availableCameras.length === 0 && <div className="px-2 py-1 text-xs text-muted-foreground">{t('federation.live.noCameras')}</div>}
                       </SelectContent>
                     </Select>
                   )}
