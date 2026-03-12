@@ -897,7 +897,7 @@ const FederationLive = () => {
               {/* Row 2: YouTube URL / Camera + Match Range */}
               <div className="flex items-end gap-2">
                 <div className="flex-1">
-                  <Label className="text-xs">{editSourceType === 'youtube' ? 'YouTube URL' : 'Κάμερα'}</Label>
+                  <Label className="text-xs">{editSourceType === 'youtube' ? 'YouTube URL' : t('federation.live.camera')}</Label>
                   {editSourceType === 'youtube' ? (
                     <Input value={editYoutubeUrl} onChange={(e) => setEditYoutubeUrl(e.target.value)} placeholder="https://youtube.com/live/..." className="rounded-none h-7 text-xs" />
                   ) : (
