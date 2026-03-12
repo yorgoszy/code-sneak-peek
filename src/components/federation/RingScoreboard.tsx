@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Play, Pause, RotateCcw, Trophy, Clock, Link2, Copy, Check, RefreshCw, SkipForward } from "lucide-react";
+import { Play, Pause, RotateCcw, Trophy, Clock, Link2, Copy, Check, RefreshCw, SkipForward, SkipBack } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeJudgeScores } from "@/hooks/useRealtimeJudgeScores";
