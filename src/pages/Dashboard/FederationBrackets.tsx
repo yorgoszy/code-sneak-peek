@@ -584,8 +584,10 @@ const FederationBrackets = () => {
   const ageOptions = React.useMemo(() => {
     if (!filterGender) return [];
     const filtered = categories.filter(c => c.gender === filterGender);
-    const ages = new Set(filtered.map(c => getAgeLabel(c.name)));
-    return AGE_ORDER.filter(a => ages.has(a)).concat([...ages].filter(a => !AGE_ORDER.includes(a)));
+    const ageLabels = filtered.map(c => getAgeLabel(c.name));
+    const ages = new Set(ageLabels);
+    const result = AGE_ORDER.filter(a => ages.has(a)).concat([...ages].filter(a => !AGE_ORDER.includes(a)));
+    return result;
   }, [categories, filterGender]);
 
   const weightOptions = React.useMemo(() => {
