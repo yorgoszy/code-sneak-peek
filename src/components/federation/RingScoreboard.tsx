@@ -651,8 +651,8 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
                     className={`rounded-none h-7 text-[10px] px-3 ${isRedWinner ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
                     onClick={handleAutoDeclareWinner}
                   >
-                    <Trophy className="h-3 w-3 mr-1" />
-                    Νικητής: {winnerName} ({majorityA1}-{majorityA2})
+                     <Trophy className="h-3 w-3 mr-1" />
+                    {t('federation.live.winnerLabel')}: {winnerName} ({majorityA1}-{majorityA2})
                   </Button>
                 );
               })()}
