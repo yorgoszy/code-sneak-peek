@@ -83,7 +83,6 @@ export const ReadOnlyRingScoreboard: React.FC<ReadOnlyRingScoreboardProps> = ({
       }, (payload) => {
         if (payload.eventType === 'DELETE') {
           setMatch(null);
-          setJudgeScores([]);
           setUpcomingMatches([]);
         } else {
           loadMatch();

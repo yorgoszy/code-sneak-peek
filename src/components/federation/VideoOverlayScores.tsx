@@ -117,26 +117,6 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
     };
   }, [safeRingId, applyTimerState]);
 
-  const loadScores = useCallback(async () => {
-    const { data } = await supabase
-      .from('competition_match_judge_scores')
-      .select('*')
-      .eq('match_id', matchId);
-    setJudgeScores(data || []);
-  }, [matchId]);
-
-  useEffect(() => { loadScores(); }, [loadScores]);
-
-  useEffect(() => {
-    const channel = supabase
-      .channel(`overlay-scores-${matchId}`)
-      .on('postgres_changes', {
-        event: '*', schema: 'public', table: 'competition_match_judge_scores',
-        filter: `match_id=eq.${matchId}`
-      }, () => loadScores())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [matchId, loadScores]);
 
   // Live countdown timer - synced with ring timer via direct subscription + polling fallback
   useEffect(() => {

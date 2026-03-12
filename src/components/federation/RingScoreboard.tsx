@@ -265,7 +265,6 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
       .from('competition_matches')
       .update({ status: 'pending', winner_id: null, completed_at: null, result_type: null, athlete1_score: null, athlete2_score: null })
       .eq('id', currentMatchId);
-    setJudgeScores([]);
     toast.success('Ο αγώνας ανανεώθηκε');
   };
 
