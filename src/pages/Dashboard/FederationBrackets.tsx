@@ -1054,7 +1054,7 @@ const FederationBrackets = () => {
                // First round: use guaranteed minimum spacing, start right below header
                const firstRoundSpacing = Math.max((totalH - HEADER_H) / firstRoundCount, minSpacing);
                roundMatchArrays[0]?.forEach((m, i) => {
-                 yPositions.set(m.id, HEADER_H + 10 + i * firstRoundSpacing + CARD_H / 2);
+                 yPositions.set(m.id, HEADER_H + 20 + i * firstRoundSpacing + CARD_H / 2);
                });
 
                // Subsequent rounds: position at midpoint of feeder matches
