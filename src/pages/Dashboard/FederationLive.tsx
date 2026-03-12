@@ -500,7 +500,7 @@ const FederationLive = () => {
                     <div className="flex items-center justify-between px-2 py-1 bg-muted border-b border-border">
                       <div className="flex items-center gap-1.5">
                         <Monitor className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-xs font-semibold">Ring {ring.ring_number}</span>
+                        <span className="text-xs font-semibold">{ring.ring_name || `Ring ${getRingLetter(ring.ring_number)}`}</span>
                         {ring.is_active && (
                           <Badge variant="outline" className="rounded-none text-[10px] px-1 py-0 bg-destructive/10 text-destructive border-destructive/30 leading-none">
                             <Radio className="h-2 w-2 mr-0.5 animate-pulse" />
