@@ -462,29 +462,28 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
 
       {/* Athletes header */}
       <div className="grid grid-cols-[1fr_auto_1fr] gap-0">
-        <div className="bg-blue-500/20 flex items-center gap-1.5 px-2 py-1">
+        <div className="bg-red-500/20 flex items-center gap-1.5 px-2 py-1">
           <Avatar className="h-5 w-5">
-            <AvatarImage src={avatar(match.athlete1)} />
-            <AvatarFallback className="text-[8px]">{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
+            <AvatarImage src={avatar(match.athlete2)} />
+            <AvatarFallback className="text-[8px]">{match.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete1?.name || 'Νικητής προηγούμενου αγώνα'}</p>
-            {match.athlete1_club && <p className="text-[8px] text-muted-foreground truncate">{match.athlete1_club.name}</p>}
+            <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete2?.name || 'Νικητής προηγούμενου αγώνα'}</p>
+            {match.athlete2_club && <p className="text-[8px] text-muted-foreground truncate">{match.athlete2_club.name}</p>}
           </div>
         </div>
         <div className="flex items-center justify-center px-1 bg-muted/20">
           <span className="text-[10px] font-bold text-muted-foreground">VS</span>
         </div>
-        <div className="bg-red-500/20 flex items-center gap-1.5 px-2 py-1 justify-end">
+        <div className="bg-blue-500/20 flex items-center gap-1.5 px-2 py-1 justify-end">
           <div className="min-w-0 text-right">
-            <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete2?.name || 'Νικητής προηγούμενου αγώνα'}</p>
-            {match.athlete2_club && <p className="text-[8px] text-muted-foreground truncate">{match.athlete2_club.name}</p>}
+            <p className="text-[10px] font-semibold truncate leading-tight">{match.athlete1?.name || 'Νικητής προηγούμενου αγώνα'}</p>
+            {match.athlete1_club && <p className="text-[8px] text-muted-foreground truncate">{match.athlete1_club.name}</p>}
           </div>
           <Avatar className="h-5 w-5">
-            <AvatarImage src={avatar(match.athlete2)} />
-            <AvatarFallback className="text-[8px]">{match.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
+            <AvatarImage src={avatar(match.athlete1)} />
+            <AvatarFallback className="text-[8px]">{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
           </Avatar>
-          
         </div>
       </div>
 
