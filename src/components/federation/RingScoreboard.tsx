@@ -319,7 +319,7 @@ export const RingScoreboard: React.FC<RingScoreboardProps> = ({
     if (!judgeLinkDialog) return;
     await navigator.clipboard.writeText(judgeLinkDialog.url);
     setLinkCopied(true);
-    toast.success(`Link Κριτή ${judgeLinkDialog.judgeNum} αντιγράφηκε`);
+    toast.success(t('federation.live.judgeLinkCopied', { num: judgeLinkDialog.judgeNum }));
     setTimeout(() => setLinkCopied(false), 2000);
   };
 
