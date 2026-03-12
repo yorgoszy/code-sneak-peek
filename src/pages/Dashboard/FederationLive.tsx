@@ -146,6 +146,11 @@ const FederationLive = () => {
   const [editRing, setEditRing] = useState<Ring | null>(null);
   const [editYoutubeUrl, setEditYoutubeUrl] = useState('');
   const [editCurrentMatchId, setEditCurrentMatchId] = useState('');
+  const [editSourceType, setEditSourceType] = useState<'youtube' | 'camera'>('youtube');
+  const [editCameraDeviceId, setEditCameraDeviceId] = useState('');
+  const [editRingName, setEditRingName] = useState('');
+  const [editMatchRangeStart, setEditMatchRangeStart] = useState('');
+  const [editMatchRangeEnd, setEditMatchRangeEnd] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [availableCameras, setAvailableCameras] = useState<MediaDeviceInfo[]>([]);
 
