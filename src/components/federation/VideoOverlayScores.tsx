@@ -105,7 +105,7 @@ export const VideoOverlayScores: React.FC<VideoOverlayScoresProps> = ({ matchId,
       applyTimerState(data as RingTimerState | null);
 
       if (active) {
-        timeoutId = setTimeout(poll, 1000);
+        timeoutId = setTimeout(poll, 300);
       }
     };
 
