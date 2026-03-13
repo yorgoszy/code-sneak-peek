@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Trophy, Send } from "lucide-react";
+import { Trophy, Send, Clock, Pause } from "lucide-react";
 
 interface MatchData {
   id: string;
@@ -35,6 +35,8 @@ const JudgeScoring: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const currentMatchIdRef = useRef<string | null>(null);
+  const [displayTime, setDisplayTime] = useState<number>(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Load match by ID
   const loadMatch = useCallback(async (matchId: string) => {
@@ -90,7 +92,7 @@ const JudgeScoring: React.FC = () => {
 
     const { data: ringData, error: ringError } = await supabase
       .from('competition_rings')
-      .select('id, ring_name, current_match_id')
+      .select('id, ring_name, current_match_id, timer_remaining_seconds, timer_running_since, timer_current_round, timer_is_break')
       .eq('id', ringId)
       .maybeSingle();
 
@@ -127,6 +129,30 @@ const JudgeScoring: React.FC = () => {
   useEffect(() => {
     loadRingAndMatch();
   }, [loadRingAndMatch]);
+
+  // Timer tick: compute remaining seconds from server-side timer_running_since
+  useEffect(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+
+    const tick = () => {
+      if (!ring) { setDisplayTime(0); return; }
+      const remaining = ring.timer_remaining_seconds || 0;
+      const runningSince = ring.timer_running_since;
+
+      if (!runningSince) {
+        // Timer paused — show stored remaining
+        setDisplayTime(Math.max(0, remaining));
+      } else {
+        // Timer running — compute elapsed since start
+        const elapsed = (Date.now() - new Date(runningSince).getTime()) / 1000;
+        setDisplayTime(Math.max(0, Math.ceil(remaining - elapsed)));
+      }
+    };
+
+    tick();
+    timerRef.current = setInterval(tick, 100);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [ring?.timer_remaining_seconds, ring?.timer_running_since]);
 
   // Real-time + polling: listen for ring changes (match switch & refresh)
   useEffect(() => {
@@ -171,7 +197,7 @@ const JudgeScoring: React.FC = () => {
       try {
         const query = supabase
           .from('competition_rings')
-          .select('id, ring_name, current_match_id, updated_at')
+          .select('id, ring_name, current_match_id, updated_at, timer_remaining_seconds, timer_running_since, timer_current_round, timer_is_break')
           .eq('id', ringId);
         
         if (lastRingUpdate) {
@@ -311,8 +337,12 @@ const JudgeScoring: React.FC = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-foreground text-background p-2 text-center">
-        <h1 className="text-base font-bold">Judge {judgeNumber}</h1>
-        <p className="text-[10px] opacity-70">{ring?.ring_name || `Ring`}</p>
+        <div className="flex items-center justify-center gap-3">
+          <div>
+            <h1 className="text-base font-bold">Judge {judgeNumber}</h1>
+            <p className="text-[10px] opacity-70">{ring?.ring_name || `Ring`}</p>
+          </div>
+        </div>
       </div>
 
       {loading ? (
@@ -329,11 +359,29 @@ const JudgeScoring: React.FC = () => {
         </div>
       ) : (
         <div className="max-w-md mx-auto">
-          {/* Match badge */}
-          <div className="text-center py-1.5">
+          {/* Timer + Round + Match info */}
+          <div className="flex items-center justify-center gap-2 py-1.5">
             <Badge variant="outline" className="rounded-none text-[10px]">
               Fight #{match.match_order}
             </Badge>
+            {ring?.timer_current_round && (
+              <Badge variant={ring.timer_is_break ? "secondary" : "default"} className="rounded-none text-[10px] gap-1">
+                {ring.timer_is_break ? (
+                  <><Pause className="h-2.5 w-2.5" /> Break</>
+                ) : (
+                  <>R{ring.timer_current_round}</>
+                )}
+              </Badge>
+            )}
+            {(ring?.timer_remaining_seconds > 0 || ring?.timer_running_since) && (
+              <Badge 
+                variant="outline" 
+                className={`rounded-none text-sm font-mono font-bold gap-1 ${ring?.timer_is_break ? 'border-yellow-500 text-yellow-600' : 'border-[#00ffba] text-[#00ffba]'}`}
+              >
+                <Clock className="h-3 w-3" />
+                {Math.floor(displayTime / 60)}:{(displayTime % 60).toString().padStart(2, '0')}
+              </Badge>
+            )}
           </div>
 
           {/* Athletes - ring style with grid */}
