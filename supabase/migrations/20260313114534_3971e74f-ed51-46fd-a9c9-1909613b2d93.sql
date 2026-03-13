@@ -1,0 +1,2 @@
+ALTER PUBLICATION supabase_realtime ADD TABLE competition_rings;
+ALTER PUBLICATION supabase_realtime ADD TABLE competition_matches;
