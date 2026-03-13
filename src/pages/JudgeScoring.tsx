@@ -90,7 +90,28 @@ const JudgeScoring: React.FC = () => {
     }
 
     if (matchData) {
-      setMatch(matchData as MatchData);
+      let enrichedMatch = matchData as MatchData;
+
+      // Fetch athlete names
+      const athleteIds = [matchData.athlete1_id, matchData.athlete2_id].filter(Boolean);
+      if (athleteIds.length > 0) {
+        const { data: athletes } = await supabase
+          .from('app_users')
+          .select('id, name, photo_url, avatar_url')
+          .in('id', athleteIds as string[]);
+
+        if (athletes) {
+          const a1 = athletes.find(a => a.id === matchData.athlete1_id);
+          const a2 = athletes.find(a => a.id === matchData.athlete2_id);
+          enrichedMatch = {
+            ...enrichedMatch,
+            athlete1: a1 ? { name: a1.name, photo_url: a1.photo_url, avatar_url: a1.avatar_url } : null,
+            athlete2: a2 ? { name: a2.name, photo_url: a2.photo_url, avatar_url: a2.avatar_url } : null,
+          };
+        }
+      }
+
+      setMatch(enrichedMatch);
       // Load existing scores for this judge
       const { data: existingScores } = await supabase
         .from('competition_match_judge_scores')
@@ -218,23 +239,23 @@ const JudgeScoring: React.FC = () => {
 
           {/* Athletes */}
           <div className="grid grid-cols-2 gap-3">
-            {/* Red corner */}
+            {/* Red corner = Athlete 1 */}
             <div className="bg-red-500/10 border border-red-500/30 p-3 text-center">
               <div className="w-3 h-3 rounded-full bg-red-500 mx-auto mb-2" />
-              <Avatar className="h-12 w-12 mx-auto mb-1">
-                <AvatarImage src={avatar(match.athlete2)} />
-                <AvatarFallback>{match.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
-              </Avatar>
-              <p className="text-sm font-semibold truncate">{match.athlete2?.name || 'Κόκκινη γωνία'}</p>
-            </div>
-            {/* Blue corner */}
-            <div className="bg-blue-500/10 border border-blue-500/30 p-3 text-center">
-              <div className="w-3 h-3 rounded-full bg-blue-500 mx-auto mb-2" />
               <Avatar className="h-12 w-12 mx-auto mb-1">
                 <AvatarImage src={avatar(match.athlete1)} />
                 <AvatarFallback>{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
               </Avatar>
-              <p className="text-sm font-semibold truncate">{match.athlete1?.name || 'Μπλε γωνία'}</p>
+              <p className="text-sm font-semibold truncate">{match.athlete1?.name || 'Κόκκινη γωνία'}</p>
+            </div>
+            {/* Blue corner = Athlete 2 */}
+            <div className="bg-blue-500/10 border border-blue-500/30 p-3 text-center">
+              <div className="w-3 h-3 rounded-full bg-blue-500 mx-auto mb-2" />
+              <Avatar className="h-12 w-12 mx-auto mb-1">
+                <AvatarImage src={avatar(match.athlete2)} />
+                <AvatarFallback>{match.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
+              </Avatar>
+              <p className="text-sm font-semibold truncate">{match.athlete2?.name || 'Μπλε γωνία'}</p>
             </div>
           </div>
 
@@ -256,20 +277,7 @@ const JudgeScoring: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] text-red-600 font-medium block mb-1">Κόκκινη γωνία</label>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={scores[round].a2 || ''}
-                    onChange={(e) => setScores(prev => ({
-                      ...prev,
-                      [round]: { ...prev[round], a2: parseInt(e.target.value) || 0 }
-                    }))}
-                    className="rounded-none h-12 text-xl text-center font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] text-blue-600 font-medium block mb-1">Μπλε γωνία</label>
+                  <label className="text-[10px] text-red-600 font-medium block mb-1">{match.athlete1?.name || 'Κόκκινη γωνία'}</label>
                   <Input
                     type="number"
                     min={0}
@@ -277,6 +285,19 @@ const JudgeScoring: React.FC = () => {
                     onChange={(e) => setScores(prev => ({
                       ...prev,
                       [round]: { ...prev[round], a1: parseInt(e.target.value) || 0 }
+                    }))}
+                    className="rounded-none h-12 text-xl text-center font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-blue-600 font-medium block mb-1">{match.athlete2?.name || 'Μπλε γωνία'}</label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={scores[round].a2 || ''}
+                    onChange={(e) => setScores(prev => ({
+                      ...prev,
+                      [round]: { ...prev[round], a2: parseInt(e.target.value) || 0 }
                     }))}
                     className="rounded-none h-12 text-xl text-center font-bold"
                   />
@@ -302,12 +323,12 @@ const JudgeScoring: React.FC = () => {
             <div className="grid grid-cols-2 gap-3 text-center">
               <div>
                 <span className="text-2xl font-bold text-red-600">
-                  {scores[1].a2 + scores[2].a2 + scores[3].a2}
+                  {scores[1].a1 + scores[2].a1 + scores[3].a1}
                 </span>
               </div>
               <div>
                 <span className="text-2xl font-bold text-blue-600">
-                  {scores[1].a1 + scores[2].a1 + scores[3].a1}
+                  {scores[1].a2 + scores[2].a2 + scores[3].a2}
                 </span>
               </div>
             </div>
