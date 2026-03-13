@@ -1005,17 +1005,26 @@ const FederationBrackets = () => {
               {/* Actions */}
               {selectedCompId && categories.length > 0 && (
                 <>
-                  {!hasAnyMatches && (
-                    <Button 
-                      onClick={handleGenerateAllBrackets} 
-                      disabled={generatingAll}
-                      size="sm"
-                      className="rounded-none bg-foreground text-background hover:bg-foreground/90 h-8 text-xs"
-                    >
-                      <Shuffle className="h-3 w-3 mr-1" />
-                      {generatingAll ? '...' : t('federation.brackets.generateDraw')}
-                    </Button>
-                  )}
+                  {(() => {
+                    const selectedComp = competitions.find(c => c.id === selectedCompId);
+                    const weighInEnded = selectedComp?.weigh_in_ended_at && !selectedComp?.weigh_in_active;
+                    return (
+                      <>
+                        {!hasAnyMatches && (
+                          <Button 
+                            onClick={handleGenerateAllBrackets} 
+                            disabled={generatingAll || !weighInEnded}
+                            size="sm"
+                            className="rounded-none bg-foreground text-background hover:bg-foreground/90 h-8 text-xs"
+                            title={!weighInEnded ? 'Η ζύγιση πρέπει να ολοκληρωθεί πρώτα' : ''}
+                          >
+                            <Shuffle className="h-3 w-3 mr-1" />
+                            {generatingAll ? '...' : !weighInEnded ? 'Αναμονή ζύγισης...' : t('federation.brackets.generateDraw')}
+                          </Button>
+                        )}
+                      </>
+                    );
+                  })()}
                   {hasAnyMatches && (
                     <Button variant="outline" size="sm" onClick={() => setResetDialogOpen(true)} className="rounded-none text-destructive border-destructive h-8 text-xs">
                       <RotateCcw className="h-3 w-3 mr-1" />
