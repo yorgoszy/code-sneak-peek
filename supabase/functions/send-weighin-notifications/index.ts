@@ -172,8 +172,9 @@ const handler = async (req: Request): Promise<Response> => {
       `;
 
       const emailPromises = Array.from(emailRecipients.values()).map(async (recipient) => {
-        try {
-          const res = await resend.emails.send({
+        return sendEmailWithResend(
+          resend,
+          {
             from: "HyperGym <noreply@hypergym.gr>",
             to: [recipient.email],
             subject: `⚖️ Λήξη Ζύγισης: ${competition_name}`,
@@ -197,13 +198,10 @@ const handler = async (req: Request): Promise<Response> => {
                 </div>
               </div>
             `,
-          });
-          console.log(`✅ End email sent to ${recipient.email}`);
-          return { success: true, email: recipient.email };
-        } catch (error) {
-          console.error(`❌ Failed to send to ${recipient.email}:`, error);
-          return { success: false, email: recipient.email, error: error.message };
-        }
+          },
+          recipient.email,
+          'End email'
+        );
       });
 
       const results = await Promise.all(emailPromises);
