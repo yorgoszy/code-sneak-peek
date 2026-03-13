@@ -209,16 +209,14 @@ const JudgeScoring: React.FC = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-foreground text-background p-3 text-center">
-        <h1 className="text-lg font-bold">Κριτής {judgeNumber}</h1>
-        <p className="text-xs opacity-70">{ring?.ring_name || `Ring`}</p>
+      <div className="bg-foreground text-background p-2 text-center">
+        <h1 className="text-base font-bold">Κριτής {judgeNumber}</h1>
+        <p className="text-[10px] opacity-70">{ring?.ring_name || `Ring`}</p>
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center h-[60vh]">
-          <div className="text-center text-muted-foreground">
-            <p className="text-sm">Φόρτωση...</p>
-          </div>
+          <p className="text-sm text-muted-foreground">Φόρτωση...</p>
         </div>
       ) : !match ? (
         <div className="flex items-center justify-center h-[60vh]">
@@ -229,55 +227,57 @@ const JudgeScoring: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="p-3 space-y-4 max-w-md mx-auto">
-          {/* Match info */}
-          <div className="text-center">
-            <Badge variant="outline" className="rounded-none text-xs mb-2">
+        <div className="max-w-md mx-auto">
+          {/* Match badge */}
+          <div className="text-center py-1.5">
+            <Badge variant="outline" className="rounded-none text-[10px]">
               Αγώνας #{match.match_order}
             </Badge>
           </div>
 
-          {/* Athletes */}
-          <div className="grid grid-cols-2 gap-3">
-            {/* Red corner = Athlete 1 */}
-            <div className="bg-red-500/10 border border-red-500/30 p-3 text-center">
-              <div className="w-3 h-3 rounded-full bg-red-500 mx-auto mb-2" />
-              <Avatar className="h-12 w-12 mx-auto mb-1">
+          {/* Athletes - ring style with grid */}
+          <div className="grid grid-cols-[1fr_auto_1fr] gap-0">
+            {/* RED = Athlete 1 */}
+            <div className="bg-red-500/20 flex items-center gap-1.5 px-2 py-1.5">
+              <Avatar className="h-6 w-6 shrink-0">
                 <AvatarImage src={avatar(match.athlete1)} />
-                <AvatarFallback>{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
+                <AvatarFallback className="text-[8px]">{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
               </Avatar>
-              <p className="text-sm font-semibold truncate">{match.athlete1?.name || 'Κόκκινη γωνία'}</p>
+              <p className="text-[11px] font-semibold truncate leading-tight">{match.athlete1?.name || 'Κόκκινη γωνία'}</p>
             </div>
-            {/* Blue corner = Athlete 2 */}
-            <div className="bg-blue-500/10 border border-blue-500/30 p-3 text-center">
-              <div className="w-3 h-3 rounded-full bg-blue-500 mx-auto mb-2" />
-              <Avatar className="h-12 w-12 mx-auto mb-1">
+            {/* VS */}
+            <div className="flex items-center justify-center px-2 bg-muted/20">
+              <span className="text-[10px] font-bold text-muted-foreground">VS</span>
+            </div>
+            {/* BLUE = Athlete 2 */}
+            <div className="bg-blue-500/20 flex items-center gap-1.5 px-2 py-1.5 justify-end">
+              <p className="text-[11px] font-semibold truncate leading-tight text-right">{match.athlete2?.name || 'Μπλε γωνία'}</p>
+              <Avatar className="h-6 w-6 shrink-0">
                 <AvatarImage src={avatar(match.athlete2)} />
-                <AvatarFallback>{match.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
+                <AvatarFallback className="text-[8px]">{match.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
               </Avatar>
-              <p className="text-sm font-semibold truncate">{match.athlete2?.name || 'Μπλε γωνία'}</p>
             </div>
           </div>
 
           {/* Scoring per round */}
           {[1, 2, 3].map((round) => (
-            <div key={round} className="border border-border p-3">
-              <div className="flex items-center justify-between mb-2">
-                <Badge variant="secondary" className="rounded-none text-xs">Round {round}</Badge>
+            <div key={round} className="border-b border-border px-2 py-2">
+              <div className="flex items-center justify-between mb-1.5">
+                <Badge variant="secondary" className="rounded-none text-[10px] px-1.5 py-0">R{round}</Badge>
                 <Button
                   size="sm"
                   variant="outline"
-                  className="rounded-none h-7 text-xs"
+                  className="rounded-none h-6 text-[10px] px-2"
                   onClick={() => handleSaveRound(round)}
                   disabled={saving}
                 >
-                  <Send className="h-3 w-3 mr-1" />
+                  <Send className="h-2.5 w-2.5 mr-1" />
                   Αποθήκευση
                 </Button>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-[1fr_auto_1fr] gap-0">
                 <div>
-                  <label className="text-[10px] text-red-600 font-medium block mb-1">{match.athlete1?.name || 'Κόκκινη γωνία'}</label>
+                  <label className="text-[9px] text-red-600 font-medium block mb-0.5 truncate">{match.athlete1?.name || 'Κόκκινη'}</label>
                   <Input
                     type="number"
                     min={0}
@@ -286,11 +286,12 @@ const JudgeScoring: React.FC = () => {
                       ...prev,
                       [round]: { ...prev[round], a1: parseInt(e.target.value) || 0 }
                     }))}
-                    className="rounded-none h-12 text-xl text-center font-bold"
+                    className="rounded-none h-10 text-lg text-center font-bold"
                   />
                 </div>
+                <div className="w-3" />
                 <div>
-                  <label className="text-[10px] text-blue-600 font-medium block mb-1">{match.athlete2?.name || 'Μπλε γωνία'}</label>
+                  <label className="text-[9px] text-blue-600 font-medium block mb-0.5 truncate text-right">{match.athlete2?.name || 'Μπλε'}</label>
                   <Input
                     type="number"
                     min={0}
@@ -299,7 +300,7 @@ const JudgeScoring: React.FC = () => {
                       ...prev,
                       [round]: { ...prev[round], a2: parseInt(e.target.value) || 0 }
                     }))}
-                    className="rounded-none h-12 text-xl text-center font-bold"
+                    className="rounded-none h-10 text-lg text-center font-bold"
                   />
                 </div>
               </div>
@@ -307,30 +308,27 @@ const JudgeScoring: React.FC = () => {
           ))}
 
           {/* Total */}
-          <div className="border border-border p-3 bg-muted/30">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold">Σύνολο</span>
+          <div className="px-2 py-2 bg-muted/30">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-semibold">Σύνολο</span>
               <Button
                 size="sm"
-                className="rounded-none h-8 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+                className="rounded-none h-7 text-[10px] bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
                 onClick={handleSaveAll}
                 disabled={saving}
               >
-                <Send className="h-3 w-3 mr-1" />
+                <Send className="h-2.5 w-2.5 mr-1" />
                 Αποθήκευση Όλων
               </Button>
             </div>
-            <div className="grid grid-cols-2 gap-3 text-center">
-              <div>
-                <span className="text-2xl font-bold text-red-600">
-                  {scores[1].a1 + scores[2].a1 + scores[3].a1}
-                </span>
-              </div>
-              <div>
-                <span className="text-2xl font-bold text-blue-600">
-                  {scores[1].a2 + scores[2].a2 + scores[3].a2}
-                </span>
-              </div>
+            <div className="grid grid-cols-[1fr_auto_1fr] gap-0 text-center">
+              <span className="text-xl font-bold text-red-600">
+                {scores[1].a1 + scores[2].a1 + scores[3].a1}
+              </span>
+              <div className="w-3" />
+              <span className="text-xl font-bold text-blue-600">
+                {scores[1].a2 + scores[2].a2 + scores[3].a2}
+              </span>
             </div>
           </div>
         </div>
