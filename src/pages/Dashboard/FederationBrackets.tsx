@@ -559,19 +559,25 @@ const FederationBrackets = () => {
   // Load categories, registration counts, and check for existing matches when competition changes
   useEffect(() => {
     if (!selectedCompId) { setCategories([]); setSelectedCategoryId(''); setRegistrationCounts(new Map()); setHasAnyMatches(false); return; }
+    const selectedComp = competitions.find(c => c.id === selectedCompId);
+    const isDrawFirst = selectedComp?.competition_flow === 'draw_first';
     const load = async () => {
+      let regQuery = supabase
+        .from('federation_competition_registrations')
+        .select('category_id')
+        .eq('competition_id', selectedCompId)
+        .eq('is_paid', true);
+      // In draw_first mode, use ALL paid registrations; in weigh_in_first, only passed
+      if (!isDrawFirst) {
+        regQuery = regQuery.eq('weigh_in_status', 'passed');
+      }
       const [catRes, regRes, matchCountRes] = await Promise.all([
         supabase
           .from('federation_competition_categories')
           .select('id, name, competition_id, gender')
           .eq('competition_id', selectedCompId)
           .order('name'),
-        supabase
-          .from('federation_competition_registrations')
-          .select('category_id')
-          .eq('competition_id', selectedCompId)
-          .eq('is_paid', true)
-          .eq('weigh_in_status', 'passed'),
+        regQuery,
         supabase
           .from('competition_matches')
           .select('id')
