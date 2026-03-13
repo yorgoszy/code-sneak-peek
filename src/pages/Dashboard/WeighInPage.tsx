@@ -14,7 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { normalizeGreekText } from '@/lib/utils';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
+  Dialog, DialogContent, DialogHeader, DialogTitle
 } from '@/components/ui/dialog';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
@@ -34,17 +34,6 @@ interface Registration {
   category: { name: string; min_weight: number | null; max_weight: number | null; gender: string | null } | null;
 }
 
-interface WeighInRecord {
-  id: string;
-  declared_weight: number | null;
-  actual_weight: number | null;
-  doctor_approved: boolean;
-  weigh_in_approved: boolean;
-  rejection_reason: string | null;
-  notes: string | null;
-  created_at: string;
-}
-
 interface Competition {
   id: string;
   name: string;
@@ -60,20 +49,17 @@ const WeighInPage: React.FC = () => {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [selectedCompId, setSelectedCompId] = useState('');
   const [registrations, setRegistrations] = useState<Registration[]>([]);
-  const [weighIns, setWeighIns] = useState<Record<string, WeighInRecord[]>>({});
+  const [weighIns, setWeighIns] = useState<Record<string, any[]>>({});
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Weigh-in dialog
-  const [weighInDialogOpen, setWeighInDialogOpen] = useState(false);
-  const [selectedReg, setSelectedReg] = useState<Registration | null>(null);
-  const [actualWeight, setActualWeight] = useState('');
-  const [doctorApproved, setDoctorApproved] = useState(false);
-  const [weighInNotes, setWeighInNotes] = useState('');
+  // Inline state per registration
+  const [doctorChecks, setDoctorChecks] = useState<Record<string, boolean>>({});
+  const [weights, setWeights] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState<Record<string, boolean>>({});
 
   // History dialog
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
-  const [historyAthleteId, setHistoryAthleteId] = useState('');
   const [historyAthleteName, setHistoryAthleteName] = useState('');
   const [allHistory, setAllHistory] = useState<any[]>([]);
 
@@ -87,19 +73,13 @@ const WeighInPage: React.FC = () => {
   }, [userProfile?.id]);
 
   useEffect(() => {
-    if (selectedCompId) {
-      fetchRegistrations();
-    }
+    if (selectedCompId) fetchRegistrations();
   }, [selectedCompId]);
 
   const fetchCompetitions = async () => {
     if (!userProfile?.id) return;
     let query = supabase.from('federation_competitions').select('id, name, competition_date').order('competition_date', { ascending: false });
-
-    if (isFederationUser) {
-      query = query.eq('federation_id', userProfile.id);
-    }
-
+    if (isFederationUser) query = query.eq('federation_id', userProfile.id);
     const { data } = await query;
     setCompetitions(data || []);
     if (data && data.length > 0) setSelectedCompId(data[0].id);
@@ -119,13 +99,12 @@ const WeighInPage: React.FC = () => {
 
     if (!error && data) {
       setRegistrations(data as unknown as Registration[]);
-      // Fetch weigh-in records
       const { data: wiData } = await (supabase
         .from('competition_weigh_ins' as any)
         .select('*')
         .eq('competition_id', selectedCompId)) as any;
 
-      const grouped: Record<string, WeighInRecord[]> = {};
+      const grouped: Record<string, any[]> = {};
       (wiData || []).forEach((wi: any) => {
         if (!grouped[wi.registration_id]) grouped[wi.registration_id] = [];
         grouped[wi.registration_id].push(wi);
@@ -135,26 +114,59 @@ const WeighInPage: React.FC = () => {
     setLoading(false);
   };
 
-  const handleWeighIn = async () => {
-    if (!selectedReg || !actualWeight) return;
+  const toggleDoctor = (regId: string) => {
+    setDoctorChecks(prev => ({ ...prev, [regId]: !prev[regId] }));
+  };
 
-    const weight = parseFloat(actualWeight);
-    const cat = selectedReg.category;
-    const withinLimits = cat?.max_weight ? weight <= cat.max_weight : true;
-    const approved = doctorApproved && withinLimits;
+  const handleWeighIn = async (reg: Registration) => {
+    const weight = parseFloat(weights[reg.id] || '');
+    const doctorOk = doctorChecks[reg.id] || false;
 
-    // Insert weigh-in record
+    // If doctor not approved → rejected
+    if (!doctorOk) {
+      setSubmitting(prev => ({ ...prev, [reg.id]: true }));
+      await submitWeighIn(reg, 0, false, t('weighIn.doctorNotApproved'));
+      setSubmitting(prev => ({ ...prev, [reg.id]: false }));
+      return;
+    }
+
+    if (!weight || isNaN(weight)) {
+      toast.error(t('weighIn.enterWeight'));
+      return;
+    }
+
+    setSubmitting(prev => ({ ...prev, [reg.id]: true }));
+
+    // Weight tolerance: max_weight + 0.1 is allowed, max_weight + 0.11 is not
+    const maxWeight = reg.category?.max_weight;
+    let approved = true;
+    let reason: string | null = null;
+
+    if (maxWeight) {
+      // Round to 2 decimals to avoid floating point issues
+      const tolerance = Math.round((maxWeight + 0.1) * 100) / 100;
+      if (weight > tolerance) {
+        approved = false;
+        reason = t('weighIn.overweight');
+      }
+    }
+
+    await submitWeighIn(reg, weight, approved, reason);
+    setSubmitting(prev => ({ ...prev, [reg.id]: false }));
+  };
+
+  const submitWeighIn = async (reg: Registration, weight: number, approved: boolean, reason: string | null) => {
     const { error: wiError } = await (supabase as any).from('competition_weigh_ins').insert({
-      registration_id: selectedReg.id,
-      competition_id: selectedReg.competition_id,
-      athlete_id: selectedReg.athlete_id,
-      category_id: selectedReg.category_id,
-      declared_weight: cat?.max_weight || null,
-      actual_weight: weight,
-      doctor_approved: doctorApproved,
+      registration_id: reg.id,
+      competition_id: reg.competition_id,
+      athlete_id: reg.athlete_id,
+      category_id: reg.category_id,
+      declared_weight: reg.category?.max_weight || null,
+      actual_weight: weight || null,
+      doctor_approved: doctorChecks[reg.id] || false,
       weigh_in_approved: approved,
-      rejection_reason: !approved ? (!doctorApproved ? t('weighIn.doctorNotApproved') : t('weighIn.overweight')) : null,
-      notes: weighInNotes || null,
+      rejection_reason: reason,
+      notes: null,
       approved_by: userProfile?.id,
     });
 
@@ -163,31 +175,20 @@ const WeighInPage: React.FC = () => {
       return;
     }
 
-    // Update registration status
     await supabase.from('federation_competition_registrations').update({
       weigh_in_status: approved ? 'approved' : 'rejected',
-      weigh_in_weight: weight,
+      weigh_in_weight: weight || null,
       weigh_in_date: new Date().toISOString(),
-    }).eq('id', selectedReg.id);
+    }).eq('id', reg.id);
 
     toast.success(approved ? t('weighIn.approved') : t('weighIn.rejected'));
-    setWeighInDialogOpen(false);
-    setActualWeight('');
-    setDoctorApproved(false);
-    setWeighInNotes('');
+    // Clear inline state
+    setWeights(prev => ({ ...prev, [reg.id]: '' }));
+    setDoctorChecks(prev => ({ ...prev, [reg.id]: false }));
     fetchRegistrations();
   };
 
-  const openWeighInDialog = (reg: Registration) => {
-    setSelectedReg(reg);
-    setActualWeight('');
-    setDoctorApproved(false);
-    setWeighInNotes('');
-    setWeighInDialogOpen(true);
-  };
-
   const openHistory = async (athleteId: string, athleteName: string) => {
-    setHistoryAthleteId(athleteId);
     setHistoryAthleteName(athleteName);
     const { data } = await (supabase
       .from('competition_weigh_ins' as any)
@@ -210,17 +211,6 @@ const WeighInPage: React.FC = () => {
     const email = normalizeGreekText(reg.athlete?.email || '');
     return name.includes(normalized) || club.includes(normalized) || email.includes(normalized);
   });
-
-  const rejectionCount = (athleteId: string) => {
-    let count = 0;
-    Object.values(weighIns).forEach(records => {
-      records.forEach(r => {
-        if (r.declared_weight !== null && !r.weigh_in_approved && (r as any).athlete_id === athleteId) count++;
-      });
-    });
-    // Also check from allHistory but simpler: count from all weigh-ins in current comp
-    return Object.values(weighIns).flat().filter(w => !w.weigh_in_approved && (w as any).athlete_id === athleteId).length;
-  };
 
   const getStatusBadge = (status: string | null) => {
     switch (status) {
@@ -269,7 +259,6 @@ const WeighInPage: React.FC = () => {
           </div>
 
           <main className="flex-1 p-4 lg:p-6 overflow-auto">
-            {/* Desktop header */}
             <div className="hidden lg:flex items-center justify-between mb-6">
               <div>
                 <h1 className="text-2xl font-bold">{t('weighIn.title')}</h1>
@@ -313,8 +302,8 @@ const WeighInPage: React.FC = () => {
                       <TableHead>{t('weighIn.club')}</TableHead>
                       <TableHead>{t('weighIn.category')}</TableHead>
                       <TableHead>{t('weighIn.declaredWeight')}</TableHead>
-                      <TableHead>{t('weighIn.actualWeight')}</TableHead>
                       <TableHead><Stethoscope className="w-4 h-4" /></TableHead>
+                      <TableHead>{t('weighIn.actualWeight')}</TableHead>
                       <TableHead>{t('weighIn.status')}</TableHead>
                       <TableHead>{t('weighIn.rejections')}</TableHead>
                       {canManageWeighIn && <TableHead>{t('weighIn.actions')}</TableHead>}
@@ -330,7 +319,17 @@ const WeighInPage: React.FC = () => {
                     ) : (
                       filteredRegistrations.map(reg => {
                         const latestWeighIn = weighIns[reg.id]?.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
-                        const rejCount = Object.values(weighIns).flat().filter(w => !w.weigh_in_approved && (w as any).athlete_id === reg.athlete_id).length;
+                        const rejCount = Object.values(weighIns).flat().filter(w => !w.weigh_in_approved && w.athlete_id === reg.athlete_id).length;
+                        const isAlreadyProcessed = reg.weigh_in_status === 'approved' || reg.weigh_in_status === 'rejected';
+                        const doctorOk = doctorChecks[reg.id] || false;
+                        const currentWeight = weights[reg.id] || '';
+                        const isSubmitting = submitting[reg.id] || false;
+
+                        // Weight warning
+                        const maxW = reg.category?.max_weight;
+                        const parsedWeight = parseFloat(currentWeight);
+                        const tolerance = maxW ? Math.round((maxW + 0.1) * 100) / 100 : null;
+                        const isOverweight = tolerance && !isNaN(parsedWeight) && parsedWeight > tolerance;
 
                         return (
                           <TableRow key={reg.id}>
@@ -352,24 +351,58 @@ const WeighInPage: React.FC = () => {
                               </div>
                             </TableCell>
                             <TableCell className="text-sm">{reg.club?.name}</TableCell>
-                            <TableCell>
-                              <span className="text-sm">{reg.category?.name}</span>
-                            </TableCell>
+                            <TableCell className="text-sm">{reg.category?.name}</TableCell>
                             <TableCell className="text-sm">
-                              {reg.category?.max_weight ? `${reg.category.min_weight || 0}-${reg.category.max_weight} kg` : '-'}
+                              {maxW ? `${reg.category?.min_weight || 0}-${maxW} kg` : '-'}
                             </TableCell>
-                            <TableCell className="text-sm font-medium">
-                              {latestWeighIn?.actual_weight ? `${latestWeighIn.actual_weight} kg` : '-'}
-                            </TableCell>
+
+                            {/* Doctor check - inline toggle */}
                             <TableCell>
-                              {latestWeighIn?.doctor_approved ? (
-                                <Check className="w-4 h-4 text-[#00ffba]" />
-                              ) : latestWeighIn ? (
-                                <X className="w-4 h-4 text-destructive" />
+                              {isAlreadyProcessed ? (
+                                latestWeighIn?.doctor_approved
+                                  ? <Check className="w-5 h-5 text-[#00ffba]" />
+                                  : <X className="w-5 h-5 text-destructive" />
+                              ) : canManageWeighIn ? (
+                                <button
+                                  onClick={() => toggleDoctor(reg.id)}
+                                  className={`w-8 h-8 flex items-center justify-center border transition-colors ${
+                                    doctorOk
+                                      ? 'border-[#00ffba] bg-[#00ffba]/10'
+                                      : 'border-destructive bg-destructive/10'
+                                  }`}
+                                >
+                                  {doctorOk
+                                    ? <Check className="w-4 h-4 text-[#00ffba]" />
+                                    : <X className="w-4 h-4 text-destructive" />
+                                  }
+                                </button>
                               ) : (
                                 <span className="text-muted-foreground">-</span>
                               )}
                             </TableCell>
+
+                            {/* Weight input - inline */}
+                            <TableCell>
+                              {isAlreadyProcessed ? (
+                                <span className="text-sm font-medium">
+                                  {latestWeighIn?.actual_weight ? `${latestWeighIn.actual_weight} kg` : '-'}
+                                </span>
+                              ) : canManageWeighIn ? (
+                                <div className="w-24">
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    value={currentWeight}
+                                    onChange={e => setWeights(prev => ({ ...prev, [reg.id]: e.target.value }))}
+                                    className={`rounded-none h-8 text-sm ${isOverweight ? 'border-destructive' : ''}`}
+                                    placeholder="kg"
+                                  />
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </TableCell>
+
                             <TableCell>{getStatusBadge(reg.weigh_in_status)}</TableCell>
                             <TableCell>
                               {rejCount > 0 ? (
@@ -382,15 +415,20 @@ const WeighInPage: React.FC = () => {
                             </TableCell>
                             {canManageWeighIn && (
                               <TableCell>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="rounded-none"
-                                  onClick={() => openWeighInDialog(reg)}
-                                >
-                                  <Scale className="w-4 h-4 mr-1" />
-                                  {t('weighIn.weighIn')}
-                                </Button>
+                                {!isAlreadyProcessed ? (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="rounded-none h-8"
+                                    onClick={() => handleWeighIn(reg)}
+                                    disabled={isSubmitting}
+                                  >
+                                    <Scale className="w-4 h-4 mr-1" />
+                                    Weigh-in
+                                  </Button>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground">—</span>
+                                )}
                               </TableCell>
                             )}
                           </TableRow>
@@ -404,94 +442,6 @@ const WeighInPage: React.FC = () => {
           </main>
         </div>
       </div>
-
-      {/* Weigh-in Dialog */}
-      <Dialog open={weighInDialogOpen} onOpenChange={setWeighInDialogOpen}>
-        <DialogContent className="rounded-none max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Scale className="w-5 h-5" />
-              {t('weighIn.weighInAthlete')}
-            </DialogTitle>
-          </DialogHeader>
-
-          {selectedReg && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 p-3 border border-border">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={selectedReg.athlete?.photo_url || selectedReg.athlete?.avatar_url || ''} />
-                  <AvatarFallback>{selectedReg.athlete?.name?.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium">{selectedReg.athlete?.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {selectedReg.category?.name} • {selectedReg.category?.max_weight ? `${selectedReg.category.min_weight || 0}-${selectedReg.category.max_weight} kg` : ''}
-                  </p>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium">{t('weighIn.actualWeight')} (kg)</label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  value={actualWeight}
-                  onChange={e => setActualWeight(e.target.value)}
-                  className="rounded-none mt-1"
-                  placeholder="0.0"
-                />
-                {actualWeight && selectedReg.category?.max_weight && parseFloat(actualWeight) > selectedReg.category.max_weight && (
-                  <p className="text-xs text-destructive mt-1 flex items-center gap-1">
-                    <AlertTriangle className="w-3 h-3" />
-                    {t('weighIn.overweightWarning', { max: selectedReg.category.max_weight })}
-                  </p>
-                )}
-              </div>
-
-              <div
-                onClick={() => setDoctorApproved(!doctorApproved)}
-                className={`flex items-center gap-3 p-3 border cursor-pointer transition-colors ${
-                  doctorApproved ? 'border-[#00ffba] bg-[#00ffba]/10' : 'border-border'
-                }`}
-              >
-                <Stethoscope className="w-5 h-5" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{t('weighIn.doctorCheck')}</p>
-                  <p className="text-xs text-muted-foreground">{t('weighIn.doctorCheckDesc')}</p>
-                </div>
-                {doctorApproved ? (
-                  <Check className="w-5 h-5 text-[#00ffba]" />
-                ) : (
-                  <X className="w-5 h-5 text-muted-foreground" />
-                )}
-              </div>
-
-              <div>
-                <label className="text-sm font-medium">{t('weighIn.notes')}</label>
-                <Input
-                  value={weighInNotes}
-                  onChange={e => setWeighInNotes(e.target.value)}
-                  className="rounded-none mt-1"
-                  placeholder={t('weighIn.notesPlaceholder')}
-                />
-              </div>
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setWeighInDialogOpen(false)} className="rounded-none">
-              {t('common.cancel')}
-            </Button>
-            <Button
-              onClick={handleWeighIn}
-              disabled={!actualWeight}
-              className="rounded-none bg-foreground text-background hover:bg-foreground/90"
-            >
-              {t('weighIn.confirm')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* History Dialog */}
       <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
