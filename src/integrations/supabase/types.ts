@@ -8586,6 +8586,7 @@ export type Database = {
         Args: { athlete_id: string }
         Returns: undefined
       }
+      auto_update_competition_status: { Args: never; Returns: undefined }
       can_cancel_booking: { Args: { booking_id: string }; Returns: boolean }
       check_and_update_expired_subscriptions: {
         Args: never

@@ -216,7 +216,7 @@ const FederationCompetitions = () => {
     }
     setSaving(true);
     try {
-      const { error } = await supabase.from('federation_competitions').insert({
+      const { data: newComp, error } = await supabase.from('federation_competitions').insert({
         federation_id: userProfile.id,
         name: formName,
         description: formDescription || null,
@@ -230,8 +230,21 @@ const FederationCompetitions = () => {
         regulations_pdf_url: formPdfUrl || null,
         status: formStatus,
         counts_for_ranking: formCountsForRanking,
-      });
+      }).select('id').single();
       if (error) throw error;
+
+      // If created as active, send email notification to coaches
+      if (formStatus === 'active' && newComp) {
+        supabase.functions.invoke('send-competition-status-email', {
+          body: {
+            type: 'competition_activated',
+            competitionId: newComp.id,
+            competitionName: formName,
+            federationId: userProfile.id,
+          },
+        }).catch((err) => console.error('Email notification error:', err));
+      }
+
       toast.success(t('federation.competitions.created'));
       setCreateDialogOpen(false);
       resetForm();
@@ -248,6 +261,7 @@ const FederationCompetitions = () => {
     if (!selectedCompetition || !formName || !formDate) return;
     setSaving(true);
     try {
+      const previousStatus = selectedCompetition.status;
       const { error } = await supabase.from('federation_competitions')
         .update({
           name: formName,
@@ -265,6 +279,23 @@ const FederationCompetitions = () => {
         })
         .eq('id', selectedCompetition.id);
       if (error) throw error;
+
+      // If status changed to active, send email notification to coaches
+      if (previousStatus !== 'active' && formStatus === 'active' && userProfile?.id) {
+        supabase.functions.invoke('send-competition-status-email', {
+          body: {
+            type: 'competition_activated',
+            competitionId: selectedCompetition.id,
+            competitionName: formName,
+            federationId: userProfile.id,
+          },
+        }).then(() => {
+          toast.success('Ειδοποίηση στάλθηκε στα σωματεία');
+        }).catch((err) => {
+          console.error('Email notification error:', err);
+        });
+      }
+
       toast.success(t('federation.competitions.updated'));
       setEditDialogOpen(false);
       resetForm();

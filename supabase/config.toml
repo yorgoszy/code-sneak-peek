@@ -50,3 +50,6 @@ verify_jwt = false
 
 [functions.google-calendar-sync]
 verify_jwt = false
+
+[functions.send-competition-status-email]
+verify_jwt = false
