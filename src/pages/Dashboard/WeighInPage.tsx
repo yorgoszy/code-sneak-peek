@@ -108,7 +108,7 @@ const WeighInPage: React.FC = () => {
   const fetchCompetitions = async () => {
     if (!userProfile?.id) return;
     let query = supabase.from('federation_competitions')
-      .select('id, name, competition_date, weigh_in_active, weigh_in_date, weigh_in_start_time, weigh_in_end_time, weigh_in_started_at, weigh_in_ended_at')
+      .select('id, name, competition_date, end_date, competition_flow, weigh_in_active, weigh_in_date, weigh_in_start_time, weigh_in_end_time, weigh_in_started_at, weigh_in_ended_at')
       .order('competition_date', { ascending: false });
     if (isFederationUser) query = query.eq('federation_id', userProfile.id);
     const { data } = await query as any;
