@@ -216,7 +216,7 @@ const FederationCompetitions = () => {
     }
     setSaving(true);
     try {
-      const { error } = await supabase.from('federation_competitions').insert({
+      const { data: newComp, error } = await supabase.from('federation_competitions').insert({
         federation_id: userProfile.id,
         name: formName,
         description: formDescription || null,
@@ -230,8 +230,21 @@ const FederationCompetitions = () => {
         regulations_pdf_url: formPdfUrl || null,
         status: formStatus,
         counts_for_ranking: formCountsForRanking,
-      });
+      }).select('id').single();
       if (error) throw error;
+
+      // If created as active, send email notification to coaches
+      if (formStatus === 'active' && newComp) {
+        supabase.functions.invoke('send-competition-status-email', {
+          body: {
+            type: 'competition_activated',
+            competitionId: newComp.id,
+            competitionName: formName,
+            federationId: userProfile.id,
+          },
+        }).catch((err) => console.error('Email notification error:', err));
+      }
+
       toast.success(t('federation.competitions.created'));
       setCreateDialogOpen(false);
       resetForm();
