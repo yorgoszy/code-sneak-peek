@@ -104,7 +104,7 @@ const FederationFightCard: React.FC = () => {
         .order('match_order', { ascending: true }),
       supabase
         .from('competition_rings')
-        .select('id, ring_number, ring_name, current_match_id')
+        .select('id, ring_number, ring_name, current_match_id, match_range_start, match_range_end')
         .eq('competition_id', selectedCompId)
         .order('ring_number')
     ]);
