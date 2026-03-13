@@ -473,6 +473,72 @@ const WeighInPage: React.FC = () => {
               </div>
             )}
 
+            {/* Schedule Section */}
+            {canManageWeighIn && selectedCompId && (
+              <div className="border border-border p-4 mb-6">
+                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Πρόγραμμα Ζύγισης
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Ημερομηνία</Label>
+                    <Input
+                      type="date"
+                      value={scheduleDate}
+                      onChange={e => setScheduleDate(e.target.value)}
+                      className="rounded-none"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Ώρα Έναρξης</Label>
+                    <Input
+                      type="time"
+                      value={scheduleStartTime}
+                      onChange={e => setScheduleStartTime(e.target.value)}
+                      className="rounded-none"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Ώρα Λήξης</Label>
+                    <Input
+                      type="time"
+                      value={scheduleEndTime}
+                      onChange={e => setScheduleEndTime(e.target.value)}
+                      className="rounded-none"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between mt-3">
+                  <div className="text-xs text-muted-foreground">
+                    {scheduleDate && scheduleStartTime && scheduleEndTime && (
+                      <span>
+                        {new Date(scheduleDate + 'T00:00:00').toLocaleDateString('el-GR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                        {' • '}{scheduleStartTime} - {scheduleEndTime}
+                      </span>
+                    )}
+                  </div>
+                  <Button size="sm" onClick={saveSchedule} disabled={savingSchedule} className="rounded-none bg-black hover:bg-black/90 text-white">
+                    <Save className="w-4 h-4 mr-1" />
+                    {savingSchedule ? '...' : 'Αποθήκευση'}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Schedule display for non-managers */}
+            {!canManageWeighIn && selectedCompId && (scheduleDate || scheduleStartTime) && (
+              <div className="border border-border p-3 mb-6 flex items-center gap-3 text-sm">
+                <Calendar className="w-4 h-4 text-muted-foreground" />
+                {scheduleDate && (
+                  <span>{new Date(scheduleDate + 'T00:00:00').toLocaleDateString('el-GR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+                )}
+                {scheduleStartTime && scheduleEndTime && (
+                  <span className="text-muted-foreground">{scheduleStartTime} - {scheduleEndTime}</span>
+                )}
+              </div>
+            )}
+
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-3 mb-6">
               <Select value={selectedCompId} onValueChange={setSelectedCompId}>
