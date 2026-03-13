@@ -587,19 +587,19 @@ const FederationLive = () => {
                       </div>
                     </div>
 
-                    <CardContent className="p-0">
+                      <CardContent className="p-0">
                       {(ring.youtube_live_url || (ring as any).source_type === 'camera') ? (
                         <div id={`ring-video-${ring.id}`} className="relative bg-black group">
                           <AspectRatio ratio={16 / 9}>
                             {(ring as any).source_type === 'camera' ? (
-                              <CameraFeed deviceId={(ring as any).camera_device_id} className="w-full h-full" />
+                              <RingCameraBroadcaster ringId={ring.id} deviceId={(ring as any).camera_device_id} className="w-full h-full object-cover" />
                             ) : (
-                              <iframe
-                                src={getYoutubeEmbedUrl(ring.youtube_live_url!) || ''}
+                              <SyncedYouTubePlayer
+                                ringId={ring.id}
+                                videoUrl={ring.youtube_live_url!}
+                                mode="broadcaster"
+                                controls={1}
                                 className="w-full h-full"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                                title={ring.ring_name || `Ring ${getRingLetter(ring.ring_number)}`}
                               />
                             )}
                           </AspectRatio>

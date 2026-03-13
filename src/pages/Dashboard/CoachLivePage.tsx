@@ -277,18 +277,26 @@ const CoachLivePage = () => {
                       </div>
 
                       <CardContent className="p-0">
-                        {ring.youtube_live_url ? (
+                        {(ring.youtube_live_url || ring.source_type === 'camera') ? (
                           <div id={`ring-video-${ring.id}`} className="relative bg-black group">
                             <AspectRatio ratio={16 / 9}>
-                              <iframe
-                                src={getYoutubeEmbedUrl(ring.youtube_live_url) || ''}
-                                className="w-full h-full"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                                title={ring.ring_name || `Ring ${getRingLetter(ring.ring_number)}`}
-                              />
-                              {/* Transparent overlay to block all video interaction (no seeking/controls) */}
-                              <div className="absolute inset-0 z-10" style={{ pointerEvents: 'auto' }} />
+                              {ring.source_type === 'camera' ? (
+                                <div className="relative w-full h-full">
+                                  <RingCameraViewer ringId={ring.id} className="absolute inset-0" />
+                                </div>
+                              ) : (
+                                <div className="relative w-full h-full">
+                                  <SyncedYouTubePlayer
+                                    ringId={ring.id}
+                                    videoUrl={ring.youtube_live_url}
+                                    mode="viewer"
+                                    controls={0}
+                                    className="absolute inset-0"
+                                  />
+                                  {/* Transparent overlay to block all video interaction (no seeking/controls) */}
+                                  <div className="absolute inset-0 z-10" style={{ pointerEvents: 'auto' }} />
+                                </div>
+                              )}
                             </AspectRatio>
                             {ring.current_match_id && (() => {
                               const currentMatch = (matches as any[]).find((m: any) => m.id === ring.current_match_id);
