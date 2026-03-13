@@ -45,6 +45,8 @@ interface RingInfo {
   ring_number: number;
   ring_name: string | null;
   current_match_id: string | null;
+  match_range_start: number | null;
+  match_range_end: number | null;
 }
 
 const FederationFightCard: React.FC = () => {
@@ -102,7 +104,7 @@ const FederationFightCard: React.FC = () => {
         .order('match_order', { ascending: true }),
       supabase
         .from('competition_rings')
-        .select('id, ring_number, ring_name, current_match_id')
+        .select('id, ring_number, ring_name, current_match_id, match_range_start, match_range_end')
         .eq('competition_id', selectedCompId)
         .order('ring_number')
     ]);
@@ -128,9 +130,20 @@ const FederationFightCard: React.FC = () => {
   // Current match IDs (active on rings)
   const currentMatchIds = useMemo(() => new Set(rings.map(r => r.current_match_id).filter(Boolean)), [rings]);
 
-  // Get ring info for a match
+  // Get ring info for a match (by current_match_id for live, or by match_range for assigned)
   const getRingForMatch = useCallback((matchId: string) => {
     return rings.find(r => r.current_match_id === matchId);
+  }, [rings]);
+
+  // Get assigned ring based on match_order falling within ring's match_range
+  const getAssignedRing = useCallback((matchOrder: number | null) => {
+    if (matchOrder == null) return null;
+    return rings.find(r => 
+      r.match_range_start != null && 
+      r.match_range_end != null && 
+      matchOrder >= r.match_range_start && 
+      matchOrder <= r.match_range_end
+    ) || null;
   }, [rings]);
 
   // Extract unique filter options
@@ -336,6 +349,7 @@ const FederationFightCard: React.FC = () => {
                               const isCompleted = m.status === 'completed';
                               const isCurrent = currentMatchIds.has(m.id);
                               const currentRing = isCurrent ? getRingForMatch(m.id) : null;
+                              const assignedRing = getAssignedRing(m.match_order);
 
                               return (
                                 <div
@@ -435,21 +449,19 @@ const FederationFightCard: React.FC = () => {
                                       <Badge variant="secondary" className="rounded-none text-[10px]">
                                         {m.category?.name || '—'}
                                       </Badge>
-                                      {m.ring_number != null && !isCurrent && (
-                                        <Badge variant="outline" className="rounded-none text-[10px]">
-                                          Ring {m.ring_number}
-                                        </Badge>
-                                      )}
-                                      {isCurrent && currentRing && (
+                                      {isCurrent && currentRing ? (
                                         <Badge className="rounded-none text-[10px] bg-foreground text-background animate-pulse">
-                                          LIVE · Ring {currentRing.ring_number}
+                                          LIVE · {currentRing.ring_name || `Ring ${currentRing.ring_number}`}
                                         </Badge>
-                                      )}
-                                      {isCurrent && !currentRing && (
+                                      ) : isCurrent ? (
                                         <Badge className="rounded-none text-[10px] bg-foreground text-background animate-pulse">
                                           LIVE
                                         </Badge>
-                                      )}
+                                      ) : assignedRing ? (
+                                        <Badge variant="outline" className="rounded-none text-[10px]">
+                                          {assignedRing.ring_name || `Ring ${assignedRing.ring_number}`}
+                                        </Badge>
+                                      ) : null}
                                     </div>
                                   </div>
 
