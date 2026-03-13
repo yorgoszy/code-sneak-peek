@@ -449,21 +449,19 @@ const FederationFightCard: React.FC = () => {
                                       <Badge variant="secondary" className="rounded-none text-[10px]">
                                         {m.category?.name || '—'}
                                       </Badge>
-                                      {m.ring_number != null && !isCurrent && (
-                                        <Badge variant="outline" className="rounded-none text-[10px]">
-                                          Ring {m.ring_number}
-                                        </Badge>
-                                      )}
-                                      {isCurrent && currentRing && (
+                                      {isCurrent && currentRing ? (
                                         <Badge className="rounded-none text-[10px] bg-foreground text-background animate-pulse">
-                                          LIVE · Ring {currentRing.ring_number}
+                                          LIVE · {currentRing.ring_name || `Ring ${currentRing.ring_number}`}
                                         </Badge>
-                                      )}
-                                      {isCurrent && !currentRing && (
+                                      ) : isCurrent ? (
                                         <Badge className="rounded-none text-[10px] bg-foreground text-background animate-pulse">
                                           LIVE
                                         </Badge>
-                                      )}
+                                      ) : assignedRing ? (
+                                        <Badge variant="outline" className="rounded-none text-[10px]">
+                                          {assignedRing.ring_name || `Ring ${assignedRing.ring_number}`}
+                                        </Badge>
+                                      ) : null}
                                     </div>
                                   </div>
 
