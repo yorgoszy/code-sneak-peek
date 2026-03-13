@@ -4,7 +4,7 @@ import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 interface WeighInNotificationRequest {
@@ -15,6 +15,33 @@ interface WeighInNotificationRequest {
   schedule_start_time?: string;
   schedule_end_time?: string;
 }
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const sendEmailWithResend = async (
+  resend: Resend,
+  payload: { from: string; to: string[]; subject: string; html: string },
+  recipientEmail: string,
+  notificationLabel: string,
+) => {
+  try {
+    const res: any = await resend.emails.send(payload);
+
+    if (res?.error) {
+      const errorMessage = res.error?.message || JSON.stringify(res.error);
+      console.error(`❌ ${notificationLabel} failed for ${recipientEmail}: ${errorMessage}`);
+      return { success: false, email: recipientEmail, error: errorMessage };
+    }
+
+    const messageId = res?.data?.id || null;
+    console.log(`✅ ${notificationLabel} sent to ${recipientEmail}${messageId ? ` (id: ${messageId})` : ''}`);
+    return { success: true, email: recipientEmail, messageId };
+  } catch (error: any) {
+    const errorMessage = error?.message || 'Unknown send error';
+    console.error(`❌ ${notificationLabel} exception for ${recipientEmail}: ${errorMessage}`);
+    return { success: false, email: recipientEmail, error: errorMessage };
+  }
+};
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -89,9 +116,13 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (type === 'weigh_in_started') {
       // Send "weigh-in started" email
-      const emailPromises = Array.from(emailRecipients.values()).map(async (recipient) => {
-        try {
-          const res = await resend.emails.send({
+      const recipients = Array.from(emailRecipients.values());
+      const results = [] as any[];
+
+      for (const recipient of recipients) {
+        const sendResult = await sendEmailWithResend(
+          resend,
+          {
             from: "HyperGym <noreply@hypergym.gr>",
             to: [recipient.email],
             subject: `⚖️ Έναρξη Ζύγισης: ${competition_name}`,
@@ -117,16 +148,14 @@ const handler = async (req: Request): Promise<Response> => {
                 </div>
               </div>
             `,
-          });
-          console.log(`✅ Start email sent to ${recipient.email}`);
-          return { success: true, email: recipient.email };
-        } catch (error) {
-          console.error(`❌ Failed to send to ${recipient.email}:`, error);
-          return { success: false, email: recipient.email, error: error.message };
-        }
-      });
+          },
+          recipient.email,
+          'Start email'
+        );
+        results.push(sendResult);
+        await sleep(550);
+      }
 
-      const results = await Promise.all(emailPromises);
       return new Response(JSON.stringify({ message: "Weigh-in start notifications sent", results }), {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -148,9 +177,13 @@ const handler = async (req: Request): Promise<Response> => {
         </div>
       `;
 
-      const emailPromises = Array.from(emailRecipients.values()).map(async (recipient) => {
-        try {
-          const res = await resend.emails.send({
+      const recipients = Array.from(emailRecipients.values());
+      const results = [] as any[];
+
+      for (const recipient of recipients) {
+        const sendResult = await sendEmailWithResend(
+          resend,
+          {
             from: "HyperGym <noreply@hypergym.gr>",
             to: [recipient.email],
             subject: `⚖️ Λήξη Ζύγισης: ${competition_name}`,
@@ -174,16 +207,14 @@ const handler = async (req: Request): Promise<Response> => {
                 </div>
               </div>
             `,
-          });
-          console.log(`✅ End email sent to ${recipient.email}`);
-          return { success: true, email: recipient.email };
-        } catch (error) {
-          console.error(`❌ Failed to send to ${recipient.email}:`, error);
-          return { success: false, email: recipient.email, error: error.message };
-        }
-      });
+          },
+          recipient.email,
+          'End email'
+        );
+        results.push(sendResult);
+        await sleep(550);
+      }
 
-      const results = await Promise.all(emailPromises);
       return new Response(JSON.stringify({ message: "Weigh-in end notifications sent", results }), {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -197,9 +228,13 @@ const handler = async (req: Request): Promise<Response> => {
         ? `${schedule_start_time} - ${schedule_end_time}` 
         : 'Δεν έχει οριστεί';
 
-      const emailPromises = Array.from(emailRecipients.values()).map(async (recipient) => {
-        try {
-          const res = await resend.emails.send({
+      const recipients = Array.from(emailRecipients.values());
+      const results = [] as any[];
+
+      for (const recipient of recipients) {
+        const sendResult = await sendEmailWithResend(
+          resend,
+          {
             from: "HyperGym <noreply@hypergym.gr>",
             to: [recipient.email],
             subject: `📅 Πρόγραμμα Ζύγισης: ${competition_name}`,
@@ -229,16 +264,14 @@ const handler = async (req: Request): Promise<Response> => {
                 </div>
               </div>
             `,
-          });
-          console.log(`✅ Schedule email sent to ${recipient.email}`);
-          return { success: true, email: recipient.email };
-        } catch (error) {
-          console.error(`❌ Failed to send to ${recipient.email}:`, error);
-          return { success: false, email: recipient.email, error: error.message };
-        }
-      });
+          },
+          recipient.email,
+          'Schedule email'
+        );
+        results.push(sendResult);
+        await sleep(550);
+      }
 
-      const results = await Promise.all(emailPromises);
       return new Response(JSON.stringify({ message: "Weigh-in schedule notifications sent", results }), {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
