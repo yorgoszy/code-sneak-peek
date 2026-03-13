@@ -194,22 +194,28 @@ const handler = async (req: Request): Promise<Response> => {
             to: [recipient.email],
             subject: `⚖️ Λήξη Ζύγισης: ${competition_name}`,
             html: `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <div style="background: #000; padding: 30px; text-align: center;">
-                  <h1 style="color: #00ffba; margin: 0; font-size: 28px;">⚖️ Λήξη Ζύγισης</h1>
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
+                <div style="background: #000; padding: 20px 30px;">
+                  <img src="${siteUrl}/images/email-icon.png" alt="HYPERKIDS" style="height: 32px; width: auto;" />
                 </div>
-                <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0;">
-                  <h2 style="color: #333;">Γεια σας ${recipient.name}!</h2>
-                  <p style="color: #666; font-size: 16px; line-height: 1.6;">
+                <div style="padding: 30px; border: 1px solid #e0e0e0; border-top: none;">
+                  <h2 style="color: #000; margin: 0 0 5px 0; font-size: 22px;">⚖️ Λήξη Ζύγισης</h2>
+                  <p style="color: #000; font-size: 15px; line-height: 1.6; margin-top: 20px;">
+                    Γεια σας <strong>${recipient.name}</strong>!
+                  </p>
+                  <p style="color: #333; font-size: 15px; line-height: 1.6;">
                     Η ζύγιση για τον αγώνα <strong>"${competition_name}"</strong> ολοκληρώθηκε!
                   </p>
                   ${resultsHtml}
                   <div style="text-align: center; margin: 30px 0;">
                     <a href="${siteUrl}/dashboard/weigh-in" 
-                       style="display: inline-block; background: #00ffba; color: #000; padding: 15px 30px; text-decoration: none; font-weight: bold; font-size: 16px;">
+                       style="display: inline-block; background: #000; color: #fff; padding: 14px 28px; text-decoration: none; font-weight: bold; font-size: 15px;">
                       Δείτε τα Αποτελέσματα
                     </a>
                   </div>
+                </div>
+                <div style="padding: 15px 30px; border-top: 1px solid #e0e0e0;">
+                  <img src="${siteUrl}/images/email-logo.png" alt="HYPERKIDS" style="height: 14px; width: auto; opacity: 0.5;" />
                 </div>
               </div>
             `,
