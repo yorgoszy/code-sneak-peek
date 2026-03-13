@@ -650,7 +650,7 @@ const WeighInPage: React.FC = () => {
                             </TableCell>
                             {canManageWeighIn && (
                               <TableCell>
-                                {!isAlreadyProcessed ? (
+                                {!isAlreadyProcessed && weighInActive ? (
                                   <Button size="sm" variant="outline" className="rounded-none h-8" onClick={() => handleWeighIn(reg)} disabled={isSubmitting}>
                                     <Scale className="w-4 h-4 mr-1" />Weigh-in
                                   </Button>
