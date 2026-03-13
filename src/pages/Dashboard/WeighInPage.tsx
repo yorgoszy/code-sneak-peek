@@ -95,6 +95,7 @@ const WeighInPage: React.FC = () => {
       const comp = competitions.find(c => c.id === selectedCompId);
       if (comp) {
         setWeighInActive(comp.weigh_in_active || false);
+        setWeighInEnded(!!(comp.weigh_in_ended_at && !comp.weigh_in_active));
         setScheduleDate(comp.weigh_in_date || comp.competition_date || '');
         setScheduleStartTime(comp.weigh_in_start_time || '');
         setScheduleEndTime(comp.weigh_in_end_time || '');
