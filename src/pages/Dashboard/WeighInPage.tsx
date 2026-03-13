@@ -495,6 +495,12 @@ const WeighInPage: React.FC = () => {
                 <span className="text-sm font-medium text-[#00ffba]">Ζύγιση σε εξέλιξη</span>
               </div>
             )}
+            {weighInEnded && !weighInActive && (
+              <div className="flex items-center gap-2 mb-4">
+                <CheckCircle className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-muted-foreground">Ζύγιση ολοκληρωμένη</span>
+              </div>
+            )}
 
             {/* Schedule Section - Compact */}
             {canManageWeighIn && selectedCompId && (
