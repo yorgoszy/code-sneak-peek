@@ -16,6 +16,31 @@ interface WeighInNotificationRequest {
   schedule_end_time?: string;
 }
 
+const sendEmailWithResend = async (
+  resend: Resend,
+  payload: { from: string; to: string[]; subject: string; html: string },
+  recipientEmail: string,
+  notificationLabel: string,
+) => {
+  try {
+    const res: any = await resend.emails.send(payload);
+
+    if (res?.error) {
+      const errorMessage = res.error?.message || JSON.stringify(res.error);
+      console.error(`❌ ${notificationLabel} failed for ${recipientEmail}: ${errorMessage}`);
+      return { success: false, email: recipientEmail, error: errorMessage };
+    }
+
+    const messageId = res?.data?.id || null;
+    console.log(`✅ ${notificationLabel} sent to ${recipientEmail}${messageId ? ` (id: ${messageId})` : ''}`);
+    return { success: true, email: recipientEmail, messageId };
+  } catch (error: any) {
+    const errorMessage = error?.message || 'Unknown send error';
+    console.error(`❌ ${notificationLabel} exception for ${recipientEmail}: ${errorMessage}`);
+    return { success: false, email: recipientEmail, error: errorMessage };
+  }
+};
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
