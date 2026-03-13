@@ -1051,19 +1051,22 @@ const FederationBrackets = () => {
                 <>
                   {(() => {
                     const selectedComp = competitions.find(c => c.id === selectedCompId);
+                    const isDrawFirst = selectedComp?.competition_flow === 'draw_first';
                     const weighInEnded = selectedComp?.weigh_in_ended_at && !selectedComp?.weigh_in_active;
+                    // In draw_first mode, bracket can be generated without weigh-in
+                    const canGenerate = isDrawFirst || weighInEnded;
                     return (
                       <>
                         {!hasAnyMatches && (
                           <Button 
                             onClick={handleGenerateAllBrackets} 
-                            disabled={generatingAll || !weighInEnded}
+                            disabled={generatingAll || !canGenerate}
                             size="sm"
                             className="rounded-none bg-foreground text-background hover:bg-foreground/90 h-8 text-xs"
-                            title={!weighInEnded ? 'Η ζύγιση πρέπει να ολοκληρωθεί πρώτα' : ''}
+                            title={!canGenerate ? 'Η ζύγιση πρέπει να ολοκληρωθεί πρώτα' : ''}
                           >
                             <Shuffle className="h-3 w-3 mr-1" />
-                            {generatingAll ? '...' : !weighInEnded ? 'Αναμονή ζύγισης...' : t('federation.brackets.generateDraw')}
+                            {generatingAll ? '...' : !canGenerate ? 'Αναμονή ζύγισης...' : t('federation.brackets.generateDraw')}
                           </Button>
                         )}
                       </>
