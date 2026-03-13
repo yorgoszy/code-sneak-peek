@@ -228,8 +228,11 @@ const handler = async (req: Request): Promise<Response> => {
         ? `${schedule_start_time} - ${schedule_end_time}` 
         : 'Δεν έχει οριστεί';
 
-      const emailPromises = Array.from(emailRecipients.values()).map(async (recipient) => {
-        return sendEmailWithResend(
+      const recipients = Array.from(emailRecipients.values());
+      const results = [] as any[];
+
+      for (const recipient of recipients) {
+        const sendResult = await sendEmailWithResend(
           resend,
           {
             from: "HyperGym <noreply@hypergym.gr>",
@@ -265,9 +268,10 @@ const handler = async (req: Request): Promise<Response> => {
           recipient.email,
           'Schedule email'
         );
-      });
+        results.push(sendResult);
+        await sleep(550);
+      }
 
-      const results = await Promise.all(emailPromises);
       return new Response(JSON.stringify({ message: "Weigh-in schedule notifications sent", results }), {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
