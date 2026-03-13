@@ -443,6 +443,7 @@ const FederationFightCard: React.FC = () => {
                                         </Badge>
                                       )}
                                     </div>
+                                  </div>
 
                                   {/* Result row for completed */}
                                   {isCompleted && (
