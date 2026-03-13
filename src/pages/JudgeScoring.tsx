@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,45 +34,10 @@ const JudgeScoring: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const currentMatchIdRef = useRef<string | null>(null);
 
-  // Load ring & current match
-  const loadRingAndMatch = useCallback(async () => {
-    if (!ringId) return;
-
-    setLoading(true);
-    setLoadError(null);
-
-    const { data: ringData, error: ringError } = await supabase
-      .from('competition_rings')
-      .select('id, ring_name, current_match_id')
-      .eq('id', ringId)
-      .maybeSingle();
-
-    if (ringError) {
-      console.error('❌ Judge ring load error:', ringError);
-      setRing(null);
-      setMatch(null);
-      setLoadError('Σφάλμα φόρτωσης ring');
-      setLoading(false);
-      return;
-    }
-
-    if (!ringData) {
-      setRing(null);
-      setMatch(null);
-      setLoadError('Το ring δεν βρέθηκε');
-      setLoading(false);
-      return;
-    }
-
-    setRing(ringData);
-
-    if (!ringData.current_match_id) {
-      setMatch(null);
-      setLoading(false);
-      return;
-    }
-
+  // Load match by ID
+  const loadMatch = useCallback(async (matchId: string) => {
     const { data: matchData, error: matchError } = await supabase
       .from('competition_matches')
       .select(`
@@ -80,21 +45,20 @@ const JudgeScoring: React.FC = () => {
         athlete1:app_users!competition_matches_athlete1_id_fkey(name, photo_url, avatar_url),
         athlete2:app_users!competition_matches_athlete2_id_fkey(name, photo_url, avatar_url)
       `)
-      .eq('id', ringData.current_match_id)
+      .eq('id', matchId)
       .maybeSingle();
-
-    console.log('🥊 Judge match load:', { matchData, matchError });
 
     if (matchError) {
       console.error('❌ Judge match load error:', matchError);
       setMatch(null);
-      setLoadError('Δεν επιτρέπεται πρόσβαση στον αγώνα');
-      setLoading(false);
+      setLoadError('Access denied');
       return;
     }
 
     if (matchData) {
       setMatch(matchData as MatchData);
+      currentMatchIdRef.current = matchData.id;
+
       // Load existing scores for this judge
       const { data: existingScores } = await supabase
         .from('competition_match_judge_scores')
@@ -113,27 +77,100 @@ const JudgeScoring: React.FC = () => {
       }
     } else {
       setMatch(null);
+      currentMatchIdRef.current = null;
+    }
+  }, [judgeNumber]);
+
+  // Load ring & current match
+  const loadRingAndMatch = useCallback(async () => {
+    if (!ringId) return;
+
+    setLoading(true);
+    setLoadError(null);
+
+    const { data: ringData, error: ringError } = await supabase
+      .from('competition_rings')
+      .select('id, ring_name, current_match_id')
+      .eq('id', ringId)
+      .maybeSingle();
+
+    if (ringError) {
+      console.error('❌ Judge ring load error:', ringError);
+      setRing(null);
+      setMatch(null);
+      setLoadError('Ring load error');
+      setLoading(false);
+      return;
     }
 
+    if (!ringData) {
+      setRing(null);
+      setMatch(null);
+      setLoadError('Ring not found');
+      setLoading(false);
+      return;
+    }
+
+    setRing(ringData);
+
+    if (!ringData.current_match_id) {
+      setMatch(null);
+      currentMatchIdRef.current = null;
+      setLoading(false);
+      return;
+    }
+
+    await loadMatch(ringData.current_match_id);
     setLoading(false);
-  }, [ringId, judgeNumber]);
+  }, [ringId, loadMatch]);
 
   useEffect(() => {
     loadRingAndMatch();
   }, [loadRingAndMatch]);
 
-  // Real-time: listen for ring changes (match selection)
+  // Real-time: listen for ring changes (current_match_id change = match switch)
   useEffect(() => {
     if (!ringId) return;
     const channel = supabase
       .channel(`judge-ring-${ringId}`)
       .on('postgres_changes', {
-        event: '*', schema: 'public', table: 'competition_rings',
+        event: 'UPDATE', schema: 'public', table: 'competition_rings',
         filter: `id=eq.${ringId}`
-      }, () => loadRingAndMatch())
+      }, (payload) => {
+        const newData = payload.new as any;
+        setRing(newData);
+        const newMatchId = newData?.current_match_id;
+        
+        if (newMatchId && newMatchId !== currentMatchIdRef.current) {
+          // Match changed — reload immediately
+          currentMatchIdRef.current = newMatchId;
+          setScores({ 1: { a1: 0, a2: 0 }, 2: { a1: 0, a2: 0 }, 3: { a1: 0, a2: 0 } });
+          loadMatch(newMatchId);
+        } else if (!newMatchId) {
+          setMatch(null);
+          currentMatchIdRef.current = null;
+          setScores({ 1: { a1: 0, a2: 0 }, 2: { a1: 0, a2: 0 }, 3: { a1: 0, a2: 0 } });
+        }
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [ringId, loadRingAndMatch]);
+  }, [ringId, loadMatch]);
+
+  // Real-time: listen for match updates (refresh match from ring card)
+  useEffect(() => {
+    if (!match?.id) return;
+    const channel = supabase
+      .channel(`judge-match-${match.id}`)
+      .on('postgres_changes', {
+        event: 'UPDATE', schema: 'public', table: 'competition_matches',
+        filter: `id=eq.${match.id}`
+      }, () => {
+        // Match data updated (e.g. refresh match) — reload
+        loadMatch(match.id);
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [match?.id, loadMatch]);
 
   const handleSaveRound = async (round: number) => {
     if (!match) return;
@@ -151,9 +188,9 @@ const JudgeScoring: React.FC = () => {
 
     setSaving(false);
     if (error) {
-      toast.error('Σφάλμα αποθήκευσης');
+      toast.error('Save error');
     } else {
-      toast.success(`R${round} αποθηκεύτηκε`);
+      toast.success(`R${round} saved`);
     }
   };
 
@@ -173,7 +210,7 @@ const JudgeScoring: React.FC = () => {
         }, { onConflict: 'match_id,judge_number,round' });
     }
     setSaving(false);
-    toast.success('Όλοι οι γύροι αποθηκεύτηκαν');
+    toast.success('All rounds saved');
   };
 
   const avatar = (a: any) => a?.photo_url || a?.avatar_url || undefined;
@@ -182,8 +219,8 @@ const JudgeScoring: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="text-center text-muted-foreground">
-          <p className="text-lg font-semibold">Μη έγκυρο link κριτή</p>
-          <p className="text-sm mt-2">Χρησιμοποιήστε το link που σας δόθηκε από τη διοργάνωση</p>
+          <p className="text-lg font-semibold">Invalid judge link</p>
+          <p className="text-sm mt-2">Please use the link provided by the organization</p>
         </div>
       </div>
     );
@@ -193,20 +230,20 @@ const JudgeScoring: React.FC = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-foreground text-background p-2 text-center">
-        <h1 className="text-base font-bold">Κριτής {judgeNumber}</h1>
+        <h1 className="text-base font-bold">Judge {judgeNumber}</h1>
         <p className="text-[10px] opacity-70">{ring?.ring_name || `Ring`}</p>
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center h-[60vh]">
-          <p className="text-sm text-muted-foreground">Φόρτωση...</p>
+          <p className="text-sm text-muted-foreground">Loading...</p>
         </div>
       ) : !match ? (
         <div className="flex items-center justify-center h-[60vh]">
           <div className="text-center text-muted-foreground">
             <Trophy className="h-12 w-12 mx-auto mb-4 opacity-30" />
-            <p className="text-sm">{loadError || 'Αναμονή για αγώνα...'}</p>
-            <p className="text-xs mt-1">Ο αγώνας θα εμφανιστεί αυτόματα</p>
+            <p className="text-sm">{loadError || 'Waiting for match...'}</p>
+            <p className="text-xs mt-1">The match will appear automatically</p>
           </div>
         </div>
       ) : (
@@ -214,7 +251,7 @@ const JudgeScoring: React.FC = () => {
           {/* Match badge */}
           <div className="text-center py-1.5">
             <Badge variant="outline" className="rounded-none text-[10px]">
-              Αγώνας #{match.match_order}
+              Fight #{match.match_order}
             </Badge>
           </div>
 
@@ -226,7 +263,7 @@ const JudgeScoring: React.FC = () => {
                 <AvatarImage src={avatar(match.athlete1)} />
                 <AvatarFallback className="text-[8px]">{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
               </Avatar>
-              <p className="text-[11px] font-semibold truncate leading-tight">{match.athlete1?.name || 'Κόκκινη γωνία'}</p>
+              <p className="text-[11px] font-semibold truncate leading-tight">{match.athlete1?.name || 'Red corner'}</p>
             </div>
             {/* VS */}
             <div className="flex items-center justify-center px-2 bg-muted/20">
@@ -234,7 +271,7 @@ const JudgeScoring: React.FC = () => {
             </div>
             {/* BLUE = Athlete 2 */}
             <div className="bg-blue-500/20 flex items-center gap-1.5 px-2 py-1.5 justify-end">
-              <p className="text-[11px] font-semibold truncate leading-tight text-right">{match.athlete2?.name || 'Μπλε γωνία'}</p>
+              <p className="text-[11px] font-semibold truncate leading-tight text-right">{match.athlete2?.name || 'Blue corner'}</p>
               <Avatar className="h-6 w-6 shrink-0">
                 <AvatarImage src={avatar(match.athlete2)} />
                 <AvatarFallback className="text-[8px]">{match.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
@@ -255,12 +292,12 @@ const JudgeScoring: React.FC = () => {
                   disabled={saving}
                 >
                   <Send className="h-2.5 w-2.5 mr-1" />
-                  Αποθήκευση
+                  Save
                 </Button>
               </div>
               <div className="grid grid-cols-[1fr_auto_1fr] gap-0">
                 <div>
-                  <label className="text-[9px] text-red-600 font-medium block mb-0.5 truncate">{match.athlete1?.name || 'Κόκκινη'}</label>
+                  <label className="text-[9px] text-red-600 font-medium block mb-0.5 truncate">{match.athlete1?.name || 'Red'}</label>
                   <Input
                     type="number"
                     min={0}
@@ -274,7 +311,7 @@ const JudgeScoring: React.FC = () => {
                 </div>
                 <div className="w-3" />
                 <div>
-                  <label className="text-[9px] text-blue-600 font-medium block mb-0.5 truncate text-right">{match.athlete2?.name || 'Μπλε'}</label>
+                  <label className="text-[9px] text-blue-600 font-medium block mb-0.5 truncate text-right">{match.athlete2?.name || 'Blue'}</label>
                   <Input
                     type="number"
                     min={0}
@@ -293,7 +330,7 @@ const JudgeScoring: React.FC = () => {
           {/* Total */}
           <div className="px-2 py-2 bg-muted/30">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-semibold">Σύνολο</span>
+              <span className="text-xs font-semibold">Total</span>
               <Button
                 size="sm"
                 className="rounded-none h-7 text-[10px] bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
@@ -301,7 +338,7 @@ const JudgeScoring: React.FC = () => {
                 disabled={saving}
               >
                 <Send className="h-2.5 w-2.5 mr-1" />
-                Αποθήκευση Όλων
+                Save All
               </Button>
             </div>
             <div className="grid grid-cols-[1fr_auto_1fr] gap-0 text-center">
