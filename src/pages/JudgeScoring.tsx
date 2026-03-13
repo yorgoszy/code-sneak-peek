@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Trophy, Send } from "lucide-react";
+import { Trophy, Send, Clock, Pause } from "lucide-react";
 
 interface MatchData {
   id: string;
