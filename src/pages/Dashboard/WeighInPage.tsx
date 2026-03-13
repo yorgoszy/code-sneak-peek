@@ -144,6 +144,29 @@ const WeighInPage: React.FC = () => {
     setLoading(false);
   };
 
+  const saveSchedule = async () => {
+    if (!selectedCompId) return;
+    setSavingSchedule(true);
+    const { error } = await supabase.from('federation_competitions').update({
+      weigh_in_date: scheduleDate || null,
+      weigh_in_start_time: scheduleStartTime || null,
+      weigh_in_end_time: scheduleEndTime || null,
+    }).eq('id', selectedCompId);
+
+    if (error) {
+      toast.error('Σφάλμα αποθήκευσης');
+    } else {
+      toast.success('Το πρόγραμμα ζύγισης αποθηκεύτηκε!');
+      // Update local competitions state
+      setCompetitions(prev => prev.map(c => 
+        c.id === selectedCompId 
+          ? { ...c, weigh_in_date: scheduleDate || null, weigh_in_start_time: scheduleStartTime || null, weigh_in_end_time: scheduleEndTime || null }
+          : c
+      ));
+    }
+    setSavingSchedule(false);
+  };
+
   const toggleWeighInSession = async () => {
     if (!selectedCompId) return;
     setTogglingWeighIn(true);
