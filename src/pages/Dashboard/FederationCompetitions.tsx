@@ -165,6 +165,8 @@ const FederationCompetitions = () => {
     setFormLocationUrl('');
     setMapCoords(null);
     setFormDate('');
+    setFormEndDate('');
+    setFormFlow('weigh_in_first');
     setFormDeadline('');
     setFormLateDeadline('');
     setFormStatus('upcoming');
