@@ -114,6 +114,7 @@ const WeighInPage: React.FC = () => {
     if (data && data.length > 0) {
       setSelectedCompId(data[0].id);
       setWeighInActive(data[0].weigh_in_active || false);
+      setWeighInEnded(!!(data[0].weigh_in_ended_at && !data[0].weigh_in_active));
     }
   };
 
