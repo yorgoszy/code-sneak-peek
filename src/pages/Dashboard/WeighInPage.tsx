@@ -76,7 +76,12 @@ const WeighInPage: React.FC = () => {
   }, [userProfile?.id]);
 
   useEffect(() => {
-    if (selectedCompId) fetchRegistrations();
+    if (selectedCompId) {
+      fetchRegistrations();
+      // Update weigh-in active status for selected competition
+      const comp = competitions.find(c => c.id === selectedCompId) as any;
+      if (comp) setWeighInActive(comp.weigh_in_active || false);
+    }
   }, [selectedCompId]);
 
   const fetchCompetitions = async () => {
