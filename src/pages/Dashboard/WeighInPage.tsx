@@ -52,6 +52,9 @@ const WeighInPage: React.FC = () => {
   const [weighIns, setWeighIns] = useState<Record<string, any[]>>({});
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [weighInActive, setWeighInActive] = useState(false);
+  const [togglingWeighIn, setTogglingWeighIn] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Inline state per registration
   const [doctorChecks, setDoctorChecks] = useState<Record<string, boolean>>({});
