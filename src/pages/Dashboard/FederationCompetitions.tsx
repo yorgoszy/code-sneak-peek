@@ -248,6 +248,7 @@ const FederationCompetitions = () => {
     if (!selectedCompetition || !formName || !formDate) return;
     setSaving(true);
     try {
+      const previousStatus = selectedCompetition.status;
       const { error } = await supabase.from('federation_competitions')
         .update({
           name: formName,
@@ -265,6 +266,23 @@ const FederationCompetitions = () => {
         })
         .eq('id', selectedCompetition.id);
       if (error) throw error;
+
+      // If status changed to active, send email notification to coaches
+      if (previousStatus !== 'active' && formStatus === 'active' && userProfile?.id) {
+        supabase.functions.invoke('send-competition-status-email', {
+          body: {
+            type: 'competition_activated',
+            competitionId: selectedCompetition.id,
+            competitionName: formName,
+            federationId: userProfile.id,
+          },
+        }).then(() => {
+          toast.success('Ειδοποίηση στάλθηκε στα σωματεία');
+        }).catch((err) => {
+          console.error('Email notification error:', err);
+        });
+      }
+
       toast.success(t('federation.competitions.updated'));
       setEditDialogOpen(false);
       resetForm();
