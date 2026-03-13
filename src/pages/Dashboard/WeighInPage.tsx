@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Menu, Search, Scale, Stethoscope, Check, X, AlertTriangle, RefreshCw, Play, Square, Clock, Calendar, Save } from 'lucide-react';
+import { Menu, Search, Scale, Stethoscope, Check, X, AlertTriangle, RefreshCw, Play, Square, Clock, Calendar, Save, CheckCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { normalizeGreekText } from '@/lib/utils';
@@ -60,6 +60,7 @@ const WeighInPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [weighInActive, setWeighInActive] = useState(false);
+  const [weighInEnded, setWeighInEnded] = useState(false);
   const [togglingWeighIn, setTogglingWeighIn] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -94,6 +95,7 @@ const WeighInPage: React.FC = () => {
       const comp = competitions.find(c => c.id === selectedCompId);
       if (comp) {
         setWeighInActive(comp.weigh_in_active || false);
+        setWeighInEnded(!!(comp.weigh_in_ended_at && !comp.weigh_in_active));
         setScheduleDate(comp.weigh_in_date || comp.competition_date || '');
         setScheduleStartTime(comp.weigh_in_start_time || '');
         setScheduleEndTime(comp.weigh_in_end_time || '');
@@ -112,6 +114,7 @@ const WeighInPage: React.FC = () => {
     if (data && data.length > 0) {
       setSelectedCompId(data[0].id);
       setWeighInActive(data[0].weigh_in_active || false);
+      setWeighInEnded(!!(data[0].weigh_in_ended_at && !data[0].weigh_in_active));
     }
   };
 
@@ -207,6 +210,7 @@ const WeighInPage: React.FC = () => {
       if (error) throw error;
 
       setWeighInActive(newStatus);
+      if (!newStatus) setWeighInEnded(true);
 
       // Send notification emails
       try {
@@ -430,7 +434,7 @@ const WeighInPage: React.FC = () => {
                 <h1 className="text-lg font-semibold">{t('weighIn.title')}</h1>
               </div>
               <div className="flex items-center gap-2">
-                {canManageWeighIn && selectedCompId && (
+                {canManageWeighIn && selectedCompId && !weighInEnded && (
                   <Button
                     size="sm"
                     onClick={toggleWeighInSession}
@@ -458,7 +462,7 @@ const WeighInPage: React.FC = () => {
                 <p className="text-sm text-muted-foreground">{t('weighIn.subtitle')}</p>
               </div>
               <div className="flex items-center gap-2">
-                {canManageWeighIn && selectedCompId && (
+                {canManageWeighIn && selectedCompId && !weighInEnded && (
                   <Button
                     onClick={toggleWeighInSession}
                     disabled={togglingWeighIn}
@@ -489,6 +493,12 @@ const WeighInPage: React.FC = () => {
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-3 h-3 bg-[#00ffba] rounded-full animate-pulse" />
                 <span className="text-sm font-medium text-[#00ffba]">Ζύγιση σε εξέλιξη</span>
+              </div>
+            )}
+            {weighInEnded && !weighInActive && (
+              <div className="flex items-center gap-2 mb-4">
+                <CheckCircle className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-muted-foreground">Ζύγιση ολοκληρωμένη</span>
               </div>
             )}
 
