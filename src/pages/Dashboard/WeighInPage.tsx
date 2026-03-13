@@ -144,7 +144,7 @@ const WeighInPage: React.FC = () => {
     const approved = doctorApproved && withinLimits;
 
     // Insert weigh-in record
-    const { error: wiError } = await supabase.from('competition_weigh_ins').insert({
+    const { error: wiError } = await (supabase as any).from('competition_weigh_ins').insert({
       registration_id: selectedReg.id,
       competition_id: selectedReg.competition_id,
       athlete_id: selectedReg.athlete_id,
