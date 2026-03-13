@@ -1,0 +1,1 @@
+ALTER TABLE public.federation_competitions ADD COLUMN IF NOT EXISTS weigh_in_date date;
