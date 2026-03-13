@@ -679,8 +679,11 @@ const FederationBrackets = () => {
   const handleGenerateAllBrackets = async () => {
     setGeneratingAll(true);
     try {
+      const selectedComp = competitions.find(c => c.id === selectedCompId);
+      const isDrawFirst = selectedComp?.competition_flow === 'draw_first';
+      
       // Load all registrations for all categories
-      const { data: allRegs } = await supabase
+      let regQuery = supabase
         .from('federation_competition_registrations')
         .select(`
           id, athlete_id, club_id, category_id,
@@ -688,8 +691,14 @@ const FederationBrackets = () => {
           club:app_users!federation_competition_registrations_club_id_fkey(name)
         `)
         .eq('competition_id', selectedCompId)
-        .eq('is_paid', true)
-        .eq('weigh_in_status', 'passed');
+        .eq('is_paid', true);
+      
+      // In draw_first mode, use ALL paid registrations; in weigh_in_first, only passed
+      if (!isDrawFirst) {
+        regQuery = regQuery.eq('weigh_in_status', 'passed');
+      }
+      
+      const { data: allRegs } = await regQuery;
 
       if (!allRegs?.length) {
         toast.error('Δεν υπάρχουν δηλώσεις');
