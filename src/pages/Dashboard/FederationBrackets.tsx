@@ -547,7 +547,8 @@ const FederationBrackets = () => {
           .from('federation_competition_registrations')
           .select('category_id')
           .eq('competition_id', selectedCompId)
-          .eq('is_paid', true),
+          .eq('is_paid', true)
+          .eq('weigh_in_status', 'passed'),
         supabase
           .from('competition_matches')
           .select('id')
