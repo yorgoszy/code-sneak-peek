@@ -398,7 +398,7 @@ const WeighInPage: React.FC = () => {
                                     step="0.01"
                                     value={currentWeight}
                                     onChange={e => setWeights(prev => ({ ...prev, [reg.id]: e.target.value }))}
-                                    className={`rounded-none h-8 text-sm ${isOverweight ? 'border-destructive' : ''}`}
+                                    className={`no-spinners rounded-none h-8 text-sm ${isOverweight ? 'border-destructive' : ''}`}
                                     placeholder="kg"
                                   />
                                 </div>
