@@ -7,9 +7,10 @@ import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Menu, Search, Scale, Stethoscope, Check, X, AlertTriangle, RefreshCw, Play, Square } from 'lucide-react';
+import { Menu, Search, Scale, Stethoscope, Check, X, AlertTriangle, RefreshCw, Play, Square, Clock, Calendar, Save } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { normalizeGreekText } from '@/lib/utils';
@@ -38,6 +39,12 @@ interface Competition {
   id: string;
   name: string;
   competition_date: string;
+  weigh_in_active?: boolean;
+  weigh_in_date?: string | null;
+  weigh_in_start_time?: string | null;
+  weigh_in_end_time?: string | null;
+  weigh_in_started_at?: string | null;
+  weigh_in_ended_at?: string | null;
 }
 
 const WeighInPage: React.FC = () => {
@@ -61,6 +68,12 @@ const WeighInPage: React.FC = () => {
   const [weights, setWeights] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState<Record<string, boolean>>({});
 
+  // Schedule state
+  const [scheduleDate, setScheduleDate] = useState('');
+  const [scheduleStartTime, setScheduleStartTime] = useState('');
+  const [scheduleEndTime, setScheduleEndTime] = useState('');
+  const [savingSchedule, setSavingSchedule] = useState(false);
+
   // History dialog
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
   const [historyAthleteName, setHistoryAthleteName] = useState('');
@@ -78,15 +91,21 @@ const WeighInPage: React.FC = () => {
   useEffect(() => {
     if (selectedCompId) {
       fetchRegistrations();
-      // Update weigh-in active status for selected competition
-      const comp = competitions.find(c => c.id === selectedCompId) as any;
-      if (comp) setWeighInActive(comp.weigh_in_active || false);
+      const comp = competitions.find(c => c.id === selectedCompId);
+      if (comp) {
+        setWeighInActive(comp.weigh_in_active || false);
+        setScheduleDate(comp.weigh_in_date || comp.competition_date || '');
+        setScheduleStartTime(comp.weigh_in_start_time || '');
+        setScheduleEndTime(comp.weigh_in_end_time || '');
+      }
     }
-  }, [selectedCompId]);
+  }, [selectedCompId, competitions]);
 
   const fetchCompetitions = async () => {
     if (!userProfile?.id) return;
-    let query = supabase.from('federation_competitions').select('id, name, competition_date, weigh_in_active').order('competition_date', { ascending: false });
+    let query = supabase.from('federation_competitions')
+      .select('id, name, competition_date, weigh_in_active, weigh_in_date, weigh_in_start_time, weigh_in_end_time, weigh_in_started_at, weigh_in_ended_at')
+      .order('competition_date', { ascending: false });
     if (isFederationUser) query = query.eq('federation_id', userProfile.id);
     const { data } = await query as any;
     setCompetitions(data || []);
@@ -123,6 +142,29 @@ const WeighInPage: React.FC = () => {
       setWeighIns(grouped);
     }
     setLoading(false);
+  };
+
+  const saveSchedule = async () => {
+    if (!selectedCompId) return;
+    setSavingSchedule(true);
+    const { error } = await supabase.from('federation_competitions').update({
+      weigh_in_date: scheduleDate || null,
+      weigh_in_start_time: scheduleStartTime || null,
+      weigh_in_end_time: scheduleEndTime || null,
+    }).eq('id', selectedCompId);
+
+    if (error) {
+      toast.error('Σφάλμα αποθήκευσης');
+    } else {
+      toast.success('Το πρόγραμμα ζύγισης αποθηκεύτηκε!');
+      // Update local competitions state
+      setCompetitions(prev => prev.map(c => 
+        c.id === selectedCompId 
+          ? { ...c, weigh_in_date: scheduleDate || null, weigh_in_start_time: scheduleStartTime || null, weigh_in_end_time: scheduleEndTime || null }
+          : c
+      ));
+    }
+    setSavingSchedule(false);
   };
 
   const toggleWeighInSession = async () => {
@@ -428,6 +470,72 @@ const WeighInPage: React.FC = () => {
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-3 h-3 bg-[#00ffba] rounded-full animate-pulse" />
                 <span className="text-sm font-medium text-[#00ffba]">Ζύγιση σε εξέλιξη</span>
+              </div>
+            )}
+
+            {/* Schedule Section */}
+            {canManageWeighIn && selectedCompId && (
+              <div className="border border-border p-4 mb-6">
+                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Πρόγραμμα Ζύγισης
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Ημερομηνία</Label>
+                    <Input
+                      type="date"
+                      value={scheduleDate}
+                      onChange={e => setScheduleDate(e.target.value)}
+                      className="rounded-none"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Ώρα Έναρξης</Label>
+                    <Input
+                      type="time"
+                      value={scheduleStartTime}
+                      onChange={e => setScheduleStartTime(e.target.value)}
+                      className="rounded-none"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Ώρα Λήξης</Label>
+                    <Input
+                      type="time"
+                      value={scheduleEndTime}
+                      onChange={e => setScheduleEndTime(e.target.value)}
+                      className="rounded-none"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between mt-3">
+                  <div className="text-xs text-muted-foreground">
+                    {scheduleDate && scheduleStartTime && scheduleEndTime && (
+                      <span>
+                        {new Date(scheduleDate + 'T00:00:00').toLocaleDateString('el-GR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                        {' • '}{scheduleStartTime} - {scheduleEndTime}
+                      </span>
+                    )}
+                  </div>
+                  <Button size="sm" onClick={saveSchedule} disabled={savingSchedule} className="rounded-none bg-black hover:bg-black/90 text-white">
+                    <Save className="w-4 h-4 mr-1" />
+                    {savingSchedule ? '...' : 'Αποθήκευση'}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Schedule display for non-managers */}
+            {!canManageWeighIn && selectedCompId && (scheduleDate || scheduleStartTime) && (
+              <div className="border border-border p-3 mb-6 flex items-center gap-3 text-sm">
+                <Calendar className="w-4 h-4 text-muted-foreground" />
+                {scheduleDate && (
+                  <span>{new Date(scheduleDate + 'T00:00:00').toLocaleDateString('el-GR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+                )}
+                {scheduleStartTime && scheduleEndTime && (
+                  <span className="text-muted-foreground">{scheduleStartTime} - {scheduleEndTime}</span>
+                )}
               </div>
             )}
 
