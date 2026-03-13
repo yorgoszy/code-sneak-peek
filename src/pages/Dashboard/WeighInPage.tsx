@@ -171,14 +171,31 @@ const WeighInPage: React.FC = () => {
   };
 
   const handleRefresh = async () => {
+    if (!selectedCompId) return;
     setRefreshing(true);
+
+    // Reset all weigh-in data in the database for this competition
+    const { error } = await supabase
+      .from('federation_competition_registrations')
+      .update({
+        weigh_in_status: null,
+        weigh_in_weight: null,
+        weigh_in_date: null,
+      })
+      .eq('competition_id', selectedCompId);
+
+    if (error) {
+      console.error('Reset error:', error);
+      toast.error('Σφάλμα κατά την επαναφορά');
+    }
+
     // Clear all local input state
     setDoctorChecks({});
     setWeights({});
     setSubmitting({});
     await fetchRegistrations();
     setRefreshing(false);
-    toast.success('Ανανεώθηκε!');
+    toast.success('Η ζύγιση επαναφέρθηκε!');
   };
 
   const toggleDoctor = (regId: string) => {
