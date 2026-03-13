@@ -359,11 +359,29 @@ const JudgeScoring: React.FC = () => {
         </div>
       ) : (
         <div className="max-w-md mx-auto">
-          {/* Match badge */}
-          <div className="text-center py-1.5">
+          {/* Timer + Round + Match info */}
+          <div className="flex items-center justify-center gap-2 py-1.5">
             <Badge variant="outline" className="rounded-none text-[10px]">
               Fight #{match.match_order}
             </Badge>
+            {ring?.timer_current_round && (
+              <Badge variant={ring.timer_is_break ? "secondary" : "default"} className="rounded-none text-[10px] gap-1">
+                {ring.timer_is_break ? (
+                  <><Pause className="h-2.5 w-2.5" /> Break</>
+                ) : (
+                  <>R{ring.timer_current_round}</>
+                )}
+              </Badge>
+            )}
+            {(ring?.timer_remaining_seconds > 0 || ring?.timer_running_since) && (
+              <Badge 
+                variant="outline" 
+                className={`rounded-none text-sm font-mono font-bold gap-1 ${ring?.timer_is_break ? 'border-yellow-500 text-yellow-600' : 'border-[#00ffba] text-[#00ffba]'}`}
+              >
+                <Clock className="h-3 w-3" />
+                {Math.floor(displayTime / 60)}:{(displayTime % 60).toString().padStart(2, '0')}
+              </Badge>
+            )}
           </div>
 
           {/* Athletes - ring style with grid */}
