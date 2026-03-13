@@ -349,7 +349,7 @@ const WeighInPage: React.FC = () => {
                       filteredRegistrations.map(reg => {
                         const latestWeighIn = weighIns[reg.id]?.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
                         const rejCount = Object.values(weighIns).flat().filter(w => !w.weigh_in_approved && w.athlete_id === reg.athlete_id).length;
-                        const isAlreadyProcessed = reg.weigh_in_status === 'approved' || reg.weigh_in_status === 'rejected';
+                        const isAlreadyProcessed = ['approved', 'rejected', 'passed', 'failed'].includes(reg.weigh_in_status || '');
                         const doctorOk = doctorChecks[reg.id] || false;
                         const currentWeight = weights[reg.id] || '';
                         const isSubmitting = submitting[reg.id] || false;
