@@ -195,7 +195,7 @@ const WeighInPage: React.FC = () => {
     // Update local state immediately so UI reflects changes
     setRegistrations(prev => prev.map(r => 
       r.id === reg.id 
-        ? { ...r, weigh_in_status: approved ? 'approved' : 'rejected', weigh_in_weight: weight || null } 
+        ? { ...r, weigh_in_status: approved ? 'passed' : 'failed', weigh_in_weight: weight || null } 
         : r
     ));
 
