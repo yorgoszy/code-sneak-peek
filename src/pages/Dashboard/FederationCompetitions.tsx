@@ -591,11 +591,13 @@ const FederationCompetitions = () => {
                               <Trophy className="h-3 w-3" /> Ranking
                             </Badge>
                           )}
-                          {comp.competition_flow === 'draw_first' && (
-                            <Badge className="rounded-none bg-blue-100 text-blue-800 text-[9px] px-1.5 h-5">
-                              Β: Κλήρωση→Ζύγιση
-                            </Badge>
-                          )}
+                          <Badge className={`rounded-none text-[9px] px-1.5 h-5 ${
+                            comp.competition_flow === 'draw_first' 
+                              ? 'bg-blue-100 text-blue-800' 
+                              : 'bg-purple-100 text-purple-800'
+                          }`}>
+                            {comp.competition_flow === 'draw_first' ? 'Β: Κλήρωση→Ζύγιση' : 'Α: Ζύγιση→Κλήρωση'}
+                          </Badge>
                         </div>
                         {getStatusBadge(comp.status)}
                       </div>
