@@ -79,7 +79,29 @@ function generateBracket(registrations: Registration[]): Omit<Match, 'id' | 'ath
   }));
 
   const n = athletes.length;
-  if (n < 2) return [];
+  if (n === 0) return [];
+
+  // Single athlete - create a final match with athlete in red corner, blue corner empty
+  if (n === 1) {
+    return [{
+      competition_id: '',
+      category_id: '',
+      round_number: 1,
+      match_number: 1,
+      match_order: 1,
+      athlete1_id: athletes[0].athleteId,
+      athlete2_id: null,
+      athlete1_club_id: athletes[0].clubId,
+      athlete2_club_id: null,
+      winner_id: athletes[0].athleteId,
+      athlete1_score: null,
+      athlete2_score: null,
+      result_type: 'walkover',
+      is_bye: false,
+      ring_number: null,
+      status: 'completed',
+    }];
+  }
 
   // Calculate bracket size (next power of 2)
   const bracketSize = Math.pow(2, Math.ceil(Math.log2(n)));
@@ -677,7 +699,7 @@ const FederationBrackets = () => {
       // Generate brackets for each category
       const orderedCategories = categories.filter(c => {
         const regs = regsByCategory.get(c.id);
-        return regs && regs.length >= 2;
+        return regs && regs.length >= 1;
       });
 
       // Step 1: Generate all brackets per category (without match_order yet)
