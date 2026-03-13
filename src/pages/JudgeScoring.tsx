@@ -218,23 +218,23 @@ const JudgeScoring: React.FC = () => {
 
           {/* Athletes */}
           <div className="grid grid-cols-2 gap-3">
-            {/* Red corner */}
+            {/* Red corner = Athlete 1 */}
             <div className="bg-red-500/10 border border-red-500/30 p-3 text-center">
               <div className="w-3 h-3 rounded-full bg-red-500 mx-auto mb-2" />
-              <Avatar className="h-12 w-12 mx-auto mb-1">
-                <AvatarImage src={avatar(match.athlete2)} />
-                <AvatarFallback>{match.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
-              </Avatar>
-              <p className="text-sm font-semibold truncate">{match.athlete2?.name || 'Κόκκινη γωνία'}</p>
-            </div>
-            {/* Blue corner */}
-            <div className="bg-blue-500/10 border border-blue-500/30 p-3 text-center">
-              <div className="w-3 h-3 rounded-full bg-blue-500 mx-auto mb-2" />
               <Avatar className="h-12 w-12 mx-auto mb-1">
                 <AvatarImage src={avatar(match.athlete1)} />
                 <AvatarFallback>{match.athlete1?.name?.charAt(0) || '?'}</AvatarFallback>
               </Avatar>
-              <p className="text-sm font-semibold truncate">{match.athlete1?.name || 'Μπλε γωνία'}</p>
+              <p className="text-sm font-semibold truncate">{match.athlete1?.name || 'Κόκκινη γωνία'}</p>
+            </div>
+            {/* Blue corner = Athlete 2 */}
+            <div className="bg-blue-500/10 border border-blue-500/30 p-3 text-center">
+              <div className="w-3 h-3 rounded-full bg-blue-500 mx-auto mb-2" />
+              <Avatar className="h-12 w-12 mx-auto mb-1">
+                <AvatarImage src={avatar(match.athlete2)} />
+                <AvatarFallback>{match.athlete2?.name?.charAt(0) || '?'}</AvatarFallback>
+              </Avatar>
+              <p className="text-sm font-semibold truncate">{match.athlete2?.name || 'Μπλε γωνία'}</p>
             </div>
           </div>
 
