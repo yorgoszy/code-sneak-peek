@@ -125,6 +125,58 @@ const WeighInPage: React.FC = () => {
     setLoading(false);
   };
 
+  const toggleWeighInSession = async () => {
+    if (!selectedCompId) return;
+    setTogglingWeighIn(true);
+    const newStatus = !weighInActive;
+    const selectedComp = competitions.find(c => c.id === selectedCompId);
+
+    try {
+      // Update competition weigh_in_active status
+      const updateData: any = {
+        weigh_in_active: newStatus,
+        ...(newStatus ? { weigh_in_started_at: new Date().toISOString() } : { weigh_in_ended_at: new Date().toISOString() }),
+      };
+
+      const { error } = await supabase
+        .from('federation_competitions')
+        .update(updateData)
+        .eq('id', selectedCompId);
+
+      if (error) throw error;
+
+      setWeighInActive(newStatus);
+
+      // Send notification emails
+      try {
+        await supabase.functions.invoke('send-weighin-notifications', {
+          body: {
+            type: newStatus ? 'weigh_in_started' : 'weigh_in_ended',
+            competition_id: selectedCompId,
+            competition_name: selectedComp?.name || '',
+          },
+        });
+        toast.success(newStatus ? 'Η ζύγιση ξεκίνησε! Στάλθηκαν ειδοποιήσεις.' : 'Η ζύγιση τελείωσε! Στάλθηκαν τα αποτελέσματα.');
+      } catch (emailErr) {
+        console.error('Email notification error:', emailErr);
+        toast.success(newStatus ? 'Η ζύγιση ξεκίνησε!' : 'Η ζύγιση τελείωσε!');
+        toast.warning('Δεν ήταν δυνατή η αποστολή ειδοποιήσεων email.');
+      }
+    } catch (err) {
+      console.error('Toggle weigh-in error:', err);
+      toast.error('Σφάλμα κατά την ενημέρωση');
+    } finally {
+      setTogglingWeighIn(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchRegistrations();
+    setRefreshing(false);
+    toast.success('Ανανεώθηκε!');
+  };
+
   const toggleDoctor = (regId: string) => {
     setDoctorChecks(prev => ({ ...prev, [regId]: !prev[regId] }));
   };
