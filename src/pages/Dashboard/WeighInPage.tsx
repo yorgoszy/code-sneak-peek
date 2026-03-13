@@ -197,7 +197,7 @@ const WeighInPage: React.FC = () => {
         competition:federation_competitions(name)
       `)
       .eq('athlete_id', athleteId)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })) as any;
     setAllHistory(data || []);
     setHistoryDialogOpen(true);
   };
