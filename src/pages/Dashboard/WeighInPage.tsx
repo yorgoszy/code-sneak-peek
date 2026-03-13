@@ -120,10 +120,10 @@ const WeighInPage: React.FC = () => {
     if (!error && data) {
       setRegistrations(data as unknown as Registration[]);
       // Fetch weigh-in records
-      const { data: wiData } = await supabase
-        .from('competition_weigh_ins')
+      const { data: wiData } = await (supabase
+        .from('competition_weigh_ins' as any)
         .select('*')
-        .eq('competition_id', selectedCompId);
+        .eq('competition_id', selectedCompId)) as any;
 
       const grouped: Record<string, WeighInRecord[]> = {};
       (wiData || []).forEach((wi: any) => {
@@ -144,7 +144,7 @@ const WeighInPage: React.FC = () => {
     const approved = doctorApproved && withinLimits;
 
     // Insert weigh-in record
-    const { error: wiError } = await supabase.from('competition_weigh_ins').insert({
+    const { error: wiError } = await (supabase as any).from('competition_weigh_ins').insert({
       registration_id: selectedReg.id,
       competition_id: selectedReg.competition_id,
       athlete_id: selectedReg.athlete_id,
@@ -189,15 +189,15 @@ const WeighInPage: React.FC = () => {
   const openHistory = async (athleteId: string, athleteName: string) => {
     setHistoryAthleteId(athleteId);
     setHistoryAthleteName(athleteName);
-    const { data } = await supabase
-      .from('competition_weigh_ins')
+    const { data } = await (supabase
+      .from('competition_weigh_ins' as any)
       .select(`
         *,
         category:federation_competition_categories(name),
         competition:federation_competitions(name)
       `)
       .eq('athlete_id', athleteId)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })) as any;
     setAllHistory(data || []);
     setHistoryDialogOpen(true);
   };
