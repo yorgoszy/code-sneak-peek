@@ -128,48 +128,129 @@ const JudgeScoring: React.FC = () => {
     loadRingAndMatch();
   }, [loadRingAndMatch]);
 
-  // Real-time: listen for ring changes (current_match_id change = match switch)
+  // Real-time + polling: listen for ring changes (match switch & refresh)
   useEffect(() => {
     if (!ringId) return;
+    let isActive = true;
+    let pollTimeout: ReturnType<typeof setTimeout>;
+    let lastRingUpdate: string | null = null;
+
+    const handleRingChange = (newData: any) => {
+      setRing(newData);
+      lastRingUpdate = newData?.updated_at || null;
+      const newMatchId = newData?.current_match_id;
+      
+      if (newMatchId && newMatchId !== currentMatchIdRef.current) {
+        currentMatchIdRef.current = newMatchId;
+        setScores({ 1: { a1: 0, a2: 0 }, 2: { a1: 0, a2: 0 }, 3: { a1: 0, a2: 0 } });
+        loadMatch(newMatchId);
+      } else if (!newMatchId) {
+        setMatch(null);
+        currentMatchIdRef.current = null;
+        setScores({ 1: { a1: 0, a2: 0 }, 2: { a1: 0, a2: 0 }, 3: { a1: 0, a2: 0 } });
+      }
+    };
+
+    // Realtime subscription
     const channel = supabase
-      .channel(`judge-ring-${ringId}`)
+      .channel(`judge-ring-${ringId}-${Date.now()}`)
       .on('postgres_changes', {
         event: 'UPDATE', schema: 'public', table: 'competition_rings',
         filter: `id=eq.${ringId}`
       }, (payload) => {
-        const newData = payload.new as any;
-        setRing(newData);
-        const newMatchId = newData?.current_match_id;
-        
-        if (newMatchId && newMatchId !== currentMatchIdRef.current) {
-          // Match changed — reload immediately
-          currentMatchIdRef.current = newMatchId;
-          setScores({ 1: { a1: 0, a2: 0 }, 2: { a1: 0, a2: 0 }, 3: { a1: 0, a2: 0 } });
-          loadMatch(newMatchId);
-        } else if (!newMatchId) {
-          setMatch(null);
-          currentMatchIdRef.current = null;
-          setScores({ 1: { a1: 0, a2: 0 }, 2: { a1: 0, a2: 0 }, 3: { a1: 0, a2: 0 } });
-        }
+        console.log('🔄 Judge realtime ring update received');
+        handleRingChange(payload.new);
       })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+      .subscribe((status) => {
+        console.log('📡 Judge ring channel status:', status);
+      });
+
+    // Polling fallback every 2s
+    const poll = async () => {
+      if (!isActive) return;
+      try {
+        const query = supabase
+          .from('competition_rings')
+          .select('id, ring_name, current_match_id, updated_at')
+          .eq('id', ringId);
+        
+        if (lastRingUpdate) {
+          query.gt('updated_at', lastRingUpdate);
+        }
+        
+        const { data } = await query.maybeSingle();
+        if (data) {
+          console.log('🔄 Judge poll: ring updated');
+          handleRingChange(data);
+        }
+      } catch (e) {
+        console.error('Poll error:', e);
+      }
+      if (isActive) {
+        pollTimeout = setTimeout(poll, 2000);
+      }
+    };
+    pollTimeout = setTimeout(poll, 2000);
+
+    return () => {
+      isActive = false;
+      clearTimeout(pollTimeout);
+      supabase.removeChannel(channel);
+    };
   }, [ringId, loadMatch]);
 
-  // Real-time: listen for match updates (refresh match from ring card)
+  // Real-time + polling: listen for match updates (refresh match)
   useEffect(() => {
     if (!match?.id) return;
+    let isActive = true;
+    let pollTimeout: ReturnType<typeof setTimeout>;
+    let lastMatchUpdate: string | null = null;
+
     const channel = supabase
-      .channel(`judge-match-${match.id}`)
+      .channel(`judge-match-${match.id}-${Date.now()}`)
       .on('postgres_changes', {
         event: 'UPDATE', schema: 'public', table: 'competition_matches',
         filter: `id=eq.${match.id}`
-      }, () => {
-        // Match data updated (e.g. refresh match) — reload
+      }, (payload) => {
+        console.log('🔄 Judge realtime match update received');
+        lastMatchUpdate = (payload.new as any)?.updated_at || null;
         loadMatch(match.id);
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+
+    // Polling fallback every 2s
+    const poll = async () => {
+      if (!isActive) return;
+      try {
+        const query = supabase
+          .from('competition_matches')
+          .select('id, updated_at')
+          .eq('id', match.id);
+        
+        if (lastMatchUpdate) {
+          query.gt('updated_at', lastMatchUpdate);
+        }
+
+        const { data } = await query.maybeSingle();
+        if (data) {
+          console.log('🔄 Judge poll: match updated');
+          lastMatchUpdate = data.updated_at;
+          loadMatch(match.id);
+        }
+      } catch (e) {
+        console.error('Poll error:', e);
+      }
+      if (isActive) {
+        pollTimeout = setTimeout(poll, 2000);
+      }
+    };
+    pollTimeout = setTimeout(poll, 2000);
+
+    return () => {
+      isActive = false;
+      clearTimeout(pollTimeout);
+      supabase.removeChannel(channel);
+    };
   }, [match?.id, loadMatch]);
 
   const handleSaveRound = async (round: number) => {
