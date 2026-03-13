@@ -666,8 +666,24 @@
       "competitions": "Competitions",
       "brackets": "Draw",
       "live": "Live",
+      "fightCard": "Fight Card",
       "editProfile": "Edit Profile",
       "signOut": "Sign Out"
+    },
+    "fightCard": {
+      "title": "Fight Card",
+      "subtitle": "Match schedule per ring",
+      "selectCompetition": "Select competition",
+      "searchPlaceholder": "Search athlete, club...",
+      "gender": "Gender",
+      "age": "Age",
+      "weight": "Weight",
+      "allGenders": "All genders",
+      "allAges": "All ages",
+      "allWeights": "All weights",
+      "fights": "fights",
+      "loading": "Loading matches...",
+      "noMatches": "No matches found"
     },
     "brackets": {
       "title": "Match Draw",

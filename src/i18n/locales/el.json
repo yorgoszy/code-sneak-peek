@@ -666,8 +666,24 @@
       "competitions": "Αγώνες",
       "brackets": "Κλήρωση",
       "live": "Live",
+      "fightCard": "Πρόγραμμα Αγώνα",
       "editProfile": "Επεξεργασία Προφίλ",
       "signOut": "Αποσύνδεση"
+    },
+    "fightCard": {
+      "title": "Πρόγραμμα Αγώνα",
+      "subtitle": "Πρόγραμμα αγώνων ανά ρινγκ",
+      "selectCompetition": "Επιλέξτε διοργάνωση",
+      "searchPlaceholder": "Αναζήτηση αθλητή, σωματείου...",
+      "gender": "Φύλο",
+      "age": "Ηλικία",
+      "weight": "Βάρος",
+      "allGenders": "Όλα τα φύλα",
+      "allAges": "Όλες οι ηλικίες",
+      "allWeights": "Όλα τα βάρη",
+      "fights": "αγώνες",
+      "loading": "Φόρτωση αγώνων...",
+      "noMatches": "Δεν βρέθηκαν αγώνες"
     },
     "brackets": {
       "title": "Κλήρωση Αγώνων",
