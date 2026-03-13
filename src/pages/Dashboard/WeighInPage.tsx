@@ -172,6 +172,10 @@ const WeighInPage: React.FC = () => {
 
   const handleRefresh = async () => {
     setRefreshing(true);
+    // Clear all local input state
+    setDoctorChecks({});
+    setWeights({});
+    setSubmitting({});
     await fetchRegistrations();
     setRefreshing(false);
     toast.success('Ανανεώθηκε!');
@@ -356,7 +360,7 @@ const WeighInPage: React.FC = () => {
                     className={`rounded-none ${
                       weighInActive 
                         ? 'bg-destructive hover:bg-destructive/90 text-white' 
-                        : 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black'
+                        : 'bg-black hover:bg-black/90 text-white'
                     }`}
                   >
                     {weighInActive ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
@@ -383,7 +387,7 @@ const WeighInPage: React.FC = () => {
                     className={`rounded-none ${
                       weighInActive 
                         ? 'bg-destructive hover:bg-destructive/90 text-white' 
-                        : 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black'
+                        : 'bg-black hover:bg-black/90 text-white'
                     }`}
                   >
                     {weighInActive ? <Square className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}
@@ -438,7 +442,9 @@ const WeighInPage: React.FC = () => {
             {loading ? (
               <p className="text-muted-foreground">{t('common.loading')}</p>
             ) : (
-              <div className="border border-border">
+              <>
+              {/* Desktop Table */}
+              <div className="border border-border hidden md:block">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -468,8 +474,6 @@ const WeighInPage: React.FC = () => {
                         const doctorOk = doctorChecks[reg.id] || false;
                         const currentWeight = weights[reg.id] || '';
                         const isSubmitting = submitting[reg.id] || false;
-
-                        // Weight warning
                         const maxW = reg.category?.max_weight;
                         const parsedWeight = parseFloat(currentWeight);
                         const tolerance = maxW ? Math.round((maxW + 0.1) * 100) / 100 : null;
@@ -484,10 +488,7 @@ const WeighInPage: React.FC = () => {
                                   <AvatarFallback className="text-xs">{reg.athlete?.name?.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                  <button
-                                    onClick={() => openHistory(reg.athlete_id, reg.athlete?.name || '')}
-                                    className="text-sm font-medium hover:underline text-left"
-                                  >
+                                  <button onClick={() => openHistory(reg.athlete_id, reg.athlete?.name || '')} className="text-sm font-medium hover:underline text-left">
                                     {reg.athlete?.name}
                                   </button>
                                   <p className="text-xs text-muted-foreground">{reg.athlete?.email}</p>
@@ -496,83 +497,36 @@ const WeighInPage: React.FC = () => {
                             </TableCell>
                             <TableCell className="text-sm">{reg.club?.name}</TableCell>
                             <TableCell className="text-sm">{reg.category?.name}</TableCell>
-                            <TableCell className="text-sm">
-                              {maxW ? `${reg.category?.min_weight || 0}-${maxW} kg` : '-'}
-                            </TableCell>
-
-                            {/* Doctor check - inline toggle */}
+                            <TableCell className="text-sm">{maxW ? `${reg.category?.min_weight || 0}-${maxW} kg` : '-'}</TableCell>
                             <TableCell>
                               {isAlreadyProcessed ? (
-                                latestWeighIn?.doctor_approved
-                                  ? <Check className="w-5 h-5 text-[#00ffba]" />
-                                  : <X className="w-5 h-5 text-destructive" />
+                                latestWeighIn?.doctor_approved ? <Check className="w-5 h-5 text-[#00ffba]" /> : <X className="w-5 h-5 text-destructive" />
                               ) : canManageWeighIn ? (
-                                <button
-                                  onClick={() => toggleDoctor(reg.id)}
-                                  className={`w-8 h-8 flex items-center justify-center border transition-colors ${
-                                    doctorOk
-                                      ? 'border-[#00ffba] bg-[#00ffba]/10'
-                                      : 'border-destructive bg-destructive/10'
-                                  }`}
-                                >
-                                  {doctorOk
-                                    ? <Check className="w-4 h-4 text-[#00ffba]" />
-                                    : <X className="w-4 h-4 text-destructive" />
-                                  }
+                                <button onClick={() => toggleDoctor(reg.id)} className={`w-8 h-8 flex items-center justify-center border transition-colors ${doctorOk ? 'border-[#00ffba] bg-[#00ffba]/10' : 'border-destructive bg-destructive/10'}`}>
+                                  {doctorOk ? <Check className="w-4 h-4 text-[#00ffba]" /> : <X className="w-4 h-4 text-destructive" />}
                                 </button>
-                              ) : (
-                                <span className="text-muted-foreground">-</span>
-                              )}
+                              ) : <span className="text-muted-foreground">-</span>}
                             </TableCell>
-
-                            {/* Weight input - inline */}
                             <TableCell>
                               {isAlreadyProcessed ? (
-                                <span className="text-sm font-medium">
-                                  {reg.weigh_in_weight ? `${reg.weigh_in_weight} kg` : (latestWeighIn?.actual_weight ? `${latestWeighIn.actual_weight} kg` : '-')}
-                                </span>
+                                <span className="text-sm font-medium">{reg.weigh_in_weight ? `${reg.weigh_in_weight} kg` : (latestWeighIn?.actual_weight ? `${latestWeighIn.actual_weight} kg` : '-')}</span>
                               ) : canManageWeighIn ? (
                                 <div className="w-24">
-                                  <Input
-                                    type="number"
-                                    step="0.01"
-                                    value={currentWeight}
-                                    onChange={e => setWeights(prev => ({ ...prev, [reg.id]: e.target.value }))}
-                                    className={`no-spinners rounded-none h-8 text-sm ${isOverweight ? 'border-destructive' : ''}`}
-                                    placeholder="kg"
-                                  />
+                                  <Input type="number" step="0.01" value={currentWeight} onChange={e => setWeights(prev => ({ ...prev, [reg.id]: e.target.value }))} className={`no-spinners rounded-none h-8 text-sm ${isOverweight ? 'border-destructive' : ''}`} placeholder="kg" />
                                 </div>
-                              ) : (
-                                <span className="text-muted-foreground">-</span>
-                              )}
+                              ) : <span className="text-muted-foreground">-</span>}
                             </TableCell>
-
                             <TableCell>{getStatusBadge(reg.weigh_in_status)}</TableCell>
                             <TableCell>
-                              {rejCount > 0 ? (
-                                <Badge variant="destructive" className="rounded-none">
-                                  <AlertTriangle className="w-3 h-3 mr-1" />{rejCount}
-                                </Badge>
-                              ) : (
-                                <span className="text-muted-foreground">0</span>
-                              )}
+                              {rejCount > 0 ? <Badge variant="destructive" className="rounded-none"><AlertTriangle className="w-3 h-3 mr-1" />{rejCount}</Badge> : <span className="text-muted-foreground">0</span>}
                             </TableCell>
                             {canManageWeighIn && (
                               <TableCell>
                                 {!isAlreadyProcessed ? (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="rounded-none h-8"
-                                    onClick={() => handleWeighIn(reg)}
-                                    disabled={isSubmitting}
-                                  >
-                                    <Scale className="w-4 h-4 mr-1" />
-                                    Weigh-in
+                                  <Button size="sm" variant="outline" className="rounded-none h-8" onClick={() => handleWeighIn(reg)} disabled={isSubmitting}>
+                                    <Scale className="w-4 h-4 mr-1" />Weigh-in
                                   </Button>
-                                ) : (
-                                  <span className="text-xs text-muted-foreground">—</span>
-                                )}
+                                ) : <span className="text-xs text-muted-foreground">—</span>}
                               </TableCell>
                             )}
                           </TableRow>
@@ -582,6 +536,76 @@ const WeighInPage: React.FC = () => {
                   </TableBody>
                 </Table>
               </div>
+
+              {/* Mobile Cards */}
+              <div className="md:hidden space-y-3">
+                {filteredRegistrations.length === 0 ? (
+                  <p className="text-center text-muted-foreground py-8">{t('weighIn.noRegistrations')}</p>
+                ) : (
+                  filteredRegistrations.map(reg => {
+                    const latestWeighIn = weighIns[reg.id]?.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+                    const rejCount = Object.values(weighIns).flat().filter(w => !w.weigh_in_approved && w.athlete_id === reg.athlete_id).length;
+                    const isAlreadyProcessed = ['approved', 'rejected', 'passed', 'failed'].includes(reg.weigh_in_status || '');
+                    const doctorOk = doctorChecks[reg.id] || false;
+                    const currentWeight = weights[reg.id] || '';
+                    const isSubmitting = submitting[reg.id] || false;
+                    const maxW = reg.category?.max_weight;
+                    const parsedWeight = parseFloat(currentWeight);
+                    const tolerance = maxW ? Math.round((maxW + 0.1) * 100) / 100 : null;
+                    const isOverweight = tolerance && !isNaN(parsedWeight) && parsedWeight > tolerance;
+
+                    return (
+                      <div key={reg.id} className="border border-border p-3 space-y-3">
+                        {/* Header: Avatar + Name + Status */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Avatar className="h-8 w-8 flex-shrink-0">
+                              <AvatarImage src={reg.athlete?.photo_url || reg.athlete?.avatar_url || ''} />
+                              <AvatarFallback className="text-xs">{reg.athlete?.name?.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0">
+                              <button onClick={() => openHistory(reg.athlete_id, reg.athlete?.name || '')} className="text-sm font-medium hover:underline text-left truncate block">
+                                {reg.athlete?.name}
+                              </button>
+                              <p className="text-xs text-muted-foreground truncate">{reg.club?.name}</p>
+                            </div>
+                          </div>
+                          {getStatusBadge(reg.weigh_in_status)}
+                        </div>
+
+                        {/* Info row */}
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <span>{reg.category?.name}</span>
+                          <span>{maxW ? `${reg.category?.min_weight || 0}-${maxW} kg` : '-'}</span>
+                          {rejCount > 0 && <Badge variant="destructive" className="rounded-none text-[10px] px-1 py-0"><AlertTriangle className="w-3 h-3 mr-1" />{rejCount}</Badge>}
+                        </div>
+
+                        {/* Actions row */}
+                        {!isAlreadyProcessed && canManageWeighIn ? (
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => toggleDoctor(reg.id)} className={`w-9 h-9 flex items-center justify-center border transition-colors flex-shrink-0 ${doctorOk ? 'border-[#00ffba] bg-[#00ffba]/10' : 'border-destructive bg-destructive/10'}`}>
+                              {doctorOk ? <Check className="w-4 h-4 text-[#00ffba]" /> : <X className="w-4 h-4 text-destructive" />}
+                            </button>
+                            <Input type="number" step="0.01" value={currentWeight} onChange={e => setWeights(prev => ({ ...prev, [reg.id]: e.target.value }))} className={`no-spinners rounded-none h-9 text-sm flex-1 ${isOverweight ? 'border-destructive' : ''}`} placeholder="kg" />
+                            <Button size="sm" variant="outline" className="rounded-none h-9 flex-shrink-0" onClick={() => handleWeighIn(reg)} disabled={isSubmitting}>
+                              <Scale className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ) : isAlreadyProcessed ? (
+                          <div className="flex items-center gap-3 text-sm">
+                            <div className="flex items-center gap-1">
+                              <Stethoscope className="w-3 h-3" />
+                              {latestWeighIn?.doctor_approved ? <Check className="w-4 h-4 text-[#00ffba]" /> : <X className="w-4 h-4 text-destructive" />}
+                            </div>
+                            <span className="font-medium">{reg.weigh_in_weight ? `${reg.weigh_in_weight} kg` : '-'}</span>
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+              </>
             )}
           </main>
         </div>

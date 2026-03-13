@@ -589,7 +589,21 @@ serve(async (req) => {
           
           for (const comp of compsData) {
             const isRanking = comp.counts_for_ranking ? ' [RANKING]' : '';
-            federationCompetitionsContext += `\n🥊 ${comp.name}${isRanking}\n  📅 Ημ/νία: ${comp.competition_date}\n  📍 Τοποθεσία: ${comp.location || '-'}\n  📋 Προθεσμία δηλώσεων: ${comp.registration_deadline || '-'}\n  Status: ${comp.status}\n`;
+            const weighInStatus = comp.weigh_in_active ? '⚖️ ΖΥΓΙΣΗ ΣΕ ΕΞΕΛΙΞΗ' : '';
+            const weighInSchedule = (comp.weigh_in_start_time || comp.weigh_in_end_time) 
+              ? `⏰ Ώρες ζύγισης: ${comp.weigh_in_start_time || '?'} - ${comp.weigh_in_end_time || '?'}` 
+              : '';
+            const weighInTimes = comp.weigh_in_started_at 
+              ? `  ⚖️ Ζύγιση ξεκίνησε: ${new Date(comp.weigh_in_started_at).toLocaleString('el-GR')}` 
+              : '';
+            const weighInEnded = comp.weigh_in_ended_at 
+              ? `  ⚖️ Ζύγιση τελείωσε: ${new Date(comp.weigh_in_ended_at).toLocaleString('el-GR')}` 
+              : '';
+            
+            federationCompetitionsContext += `\n🥊 ${comp.name}${isRanking} ${weighInStatus}\n  📅 Ημ/νία: ${comp.competition_date}\n  📍 Τοποθεσία: ${comp.location || '-'}\n  📋 Προθεσμία δηλώσεων: ${comp.registration_deadline || '-'}\n  Status: ${comp.status}\n`;
+            if (weighInSchedule) federationCompetitionsContext += `  ${weighInSchedule}\n`;
+            if (weighInTimes) federationCompetitionsContext += `${weighInTimes}\n`;
+            if (weighInEnded) federationCompetitionsContext += `${weighInEnded}\n`;
             
             // Φόρτωση κατηγοριών αγώνα
             try {
@@ -603,15 +617,36 @@ serve(async (req) => {
               }
             } catch(e) {}
             
-            // Φόρτωση δηλώσεων
+            // Φόρτωση δηλώσεων με weigh-in data
             try {
               const regsRes = await fetch(
-                `${SUPABASE_URL}/rest/v1/federation_competition_registrations?competition_id=eq.${comp.id}&select=*,app_users!federation_competition_registrations_athlete_id_fkey(name,email,coach_id)&order=created_at.desc`,
+                `${SUPABASE_URL}/rest/v1/federation_competition_registrations?competition_id=eq.${comp.id}&select=*,app_users!federation_competition_registrations_athlete_id_fkey(name,email,coach_id),federation_competition_categories(name,min_weight,max_weight)&order=created_at.desc`,
                 { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
               );
               const regsData = await regsRes.json();
               if (Array.isArray(regsData) && regsData.length > 0) {
-                federationCompetitionsContext += `  👥 Δηλώσεις (${regsData.length}): ${regsData.map((r: any) => r.app_users?.name || '?').join(', ')}\n`;
+                const passed = regsData.filter((r: any) => r.weigh_in_status === 'passed');
+                const failed = regsData.filter((r: any) => r.weigh_in_status === 'failed');
+                const pending = regsData.filter((r: any) => !r.weigh_in_status || r.weigh_in_status === 'pending');
+                
+                federationCompetitionsContext += `  👥 Δηλώσεις (${regsData.length}): ✅ Ζυγίστηκαν-Accept: ${passed.length}, ❌ Not-Accept: ${failed.length}, ⏳ Εκκρεμούν: ${pending.length}\n`;
+                
+                // Λεπτομέρειες ζύγισης
+                if (passed.length > 0 || failed.length > 0) {
+                  federationCompetitionsContext += `  ⚖️ ΑΠΟΤΕΛΕΣΜΑΤΑ ΖΥΓΙΣΗΣ:\n`;
+                  for (const reg of regsData) {
+                    if (reg.weigh_in_status === 'passed' || reg.weigh_in_status === 'failed') {
+                      const status = reg.weigh_in_status === 'passed' ? '✅' : '❌';
+                      const catName = reg.federation_competition_categories?.name || '';
+                      federationCompetitionsContext += `    ${status} ${reg.app_users?.name || '?'} - ${catName} - ${reg.weigh_in_weight || '?'}kg (${reg.weigh_in_status})\n`;
+                    }
+                  }
+                }
+                
+                // Pending athletes
+                if (pending.length > 0) {
+                  federationCompetitionsContext += `  ⏳ ΔΕΝ ΕΧΟΥΝ ΖΥΓΙΣΤΕΙ: ${pending.map((r: any) => r.app_users?.name || '?').join(', ')}\n`;
+                }
               }
             } catch(e) {}
             
