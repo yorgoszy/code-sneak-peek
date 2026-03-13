@@ -360,8 +360,7 @@ const FederationFightCard: React.FC = () => {
                                     <div className="flex-1 min-w-0">
                                       {/* Desktop layout */}
                                       <div className="hidden sm:flex items-center gap-2">
-                                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                                          <div className="w-1 h-7 bg-red-500 flex-shrink-0" />
+                                        <div className="flex items-center gap-2 flex-1 min-w-0 bg-red-500/10 px-2 py-1 border-l-2 border-red-500">
                                           <Avatar className="h-7 w-7 flex-shrink-0">
                                             <AvatarImage src={m.athlete1?.photo_url || m.athlete1?.avatar_url || undefined} />
                                             <AvatarFallback className="text-[10px]">{(m.athlete1?.name || '?').charAt(0)}</AvatarFallback>
@@ -376,8 +375,7 @@ const FederationFightCard: React.FC = () => {
                                           </div>
                                         </div>
                                         <span className="text-xs font-bold text-muted-foreground px-2">VS</span>
-                                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                                          <div className="w-1 h-7 bg-blue-500 flex-shrink-0" />
+                                        <div className="flex items-center gap-2 flex-1 min-w-0 bg-blue-500/10 px-2 py-1 border-l-2 border-blue-500">
                                           <Avatar className="h-7 w-7 flex-shrink-0">
                                             <AvatarImage src={m.athlete2?.photo_url || m.athlete2?.avatar_url || undefined} />
                                             <AvatarFallback className="text-[10px]">{(m.athlete2?.name || '?').charAt(0)}</AvatarFallback>
@@ -434,6 +432,11 @@ const FederationFightCard: React.FC = () => {
 
                                     {/* Category + LIVE badge */}
                                     <div className="flex-shrink-0 text-right flex flex-col items-end gap-1">
+                                      {m.ring_number != null && (
+                                        <Badge variant="outline" className="rounded-none text-[10px]">
+                                          Ring {m.ring_number}
+                                        </Badge>
+                                      )}
                                       <Badge variant="secondary" className="rounded-none text-[10px]">
                                         {m.category?.name || '—'}
                                       </Badge>
