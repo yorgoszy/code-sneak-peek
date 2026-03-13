@@ -179,7 +179,7 @@ const WeighInPage: React.FC = () => {
 
     // Update registration with weigh-in result
     const { error: updateError } = await supabase.from('federation_competition_registrations').update({
-      weigh_in_status: approved ? 'approved' : 'rejected',
+      weigh_in_status: approved ? 'passed' : 'failed',
       weigh_in_weight: weight || null,
       weigh_in_date: new Date().toISOString(),
     }).eq('id', reg.id);
@@ -195,7 +195,7 @@ const WeighInPage: React.FC = () => {
     // Update local state immediately so UI reflects changes
     setRegistrations(prev => prev.map(r => 
       r.id === reg.id 
-        ? { ...r, weigh_in_status: approved ? 'approved' : 'rejected', weigh_in_weight: weight || null } 
+        ? { ...r, weigh_in_status: approved ? 'passed' : 'failed', weigh_in_weight: weight || null } 
         : r
     ));
 
@@ -242,9 +242,11 @@ const WeighInPage: React.FC = () => {
   const getStatusBadge = (status: string | null) => {
     switch (status) {
       case 'approved':
-        return <Badge className="bg-[#00ffba] text-black rounded-none"><Check className="w-3 h-3 mr-1" />{t('weighIn.approved')}</Badge>;
+      case 'passed':
+        return <Badge className="bg-[#00ffba] text-black rounded-none"><Check className="w-3 h-3 mr-1" />Accept</Badge>;
       case 'rejected':
-        return <Badge variant="destructive" className="rounded-none"><X className="w-3 h-3 mr-1" />{t('weighIn.rejected')}</Badge>;
+      case 'failed':
+        return <Badge variant="destructive" className="rounded-none"><X className="w-3 h-3 mr-1" />Not accept</Badge>;
       default:
         return <Badge variant="outline" className="rounded-none">{t('weighIn.pending')}</Badge>;
     }
@@ -347,7 +349,7 @@ const WeighInPage: React.FC = () => {
                       filteredRegistrations.map(reg => {
                         const latestWeighIn = weighIns[reg.id]?.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
                         const rejCount = Object.values(weighIns).flat().filter(w => !w.weigh_in_approved && w.athlete_id === reg.athlete_id).length;
-                        const isAlreadyProcessed = reg.weigh_in_status === 'approved' || reg.weigh_in_status === 'rejected';
+                        const isAlreadyProcessed = ['approved', 'rejected', 'passed', 'failed'].includes(reg.weigh_in_status || '');
                         const doctorOk = doctorChecks[reg.id] || false;
                         const currentWeight = weights[reg.id] || '';
                         const isSubmitting = submitting[reg.id] || false;
