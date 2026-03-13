@@ -215,7 +215,7 @@ const handler = async (req: Request): Promise<Response> => {
                   </div>
                 </div>
                 <div style="padding: 15px 30px; border-top: 1px solid #e0e0e0;">
-                  <img src="${siteUrl}/images/email-logo.png" alt="HYPERKIDS" style="height: 14px; width: auto; opacity: 0.5;" />
+                  <span style="color: #999; font-size: 10px; font-weight: 900; letter-spacing: 2px; font-family: Arial, sans-serif;">HYPERKIDS</span>
                 </div>
               </div>
             `,
