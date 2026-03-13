@@ -17,38 +17,44 @@ serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const formData = await req.formData();
-    const file = formData.get("file") as File;
-    const fileName = formData.get("fileName") as string;
+    // Download images from lovable app and upload to storage
+    const assets = [
+      { url: "https://hyperkids.lovable.app/images/email-icon-white.png", name: "icon-white.png" },
+      { url: "https://hyperkids.lovable.app/images/email-logo.png", name: "logo-black.png" },
+    ];
 
-    if (!file || !fileName) {
-      return new Response(JSON.stringify({ error: "Missing file or fileName" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const results = [];
+
+    for (const asset of assets) {
+      const response = await fetch(asset.url);
+      if (!response.ok) {
+        results.push({ name: asset.name, error: `Failed to fetch: ${response.status}` });
+        continue;
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+
+      const { data, error } = await supabase.storage
+        .from("email-assets")
+        .upload(asset.name, uint8Array, {
+          contentType: "image/png",
+          upsert: true,
+        });
+
+      if (error) {
+        results.push({ name: asset.name, error: error.message });
+        continue;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from("email-assets")
+        .getPublicUrl(asset.name);
+
+      results.push({ name: asset.name, publicUrl: urlData.publicUrl });
     }
 
-    const arrayBuffer = await file.arrayBuffer();
-    const uint8Array = new Uint8Array(arrayBuffer);
-
-    const { data, error } = await supabase.storage
-      .from("email-assets")
-      .upload(fileName, uint8Array, {
-        contentType: file.type,
-        upsert: true,
-      });
-
-    if (error) throw error;
-
-    const { data: urlData } = supabase.storage
-      .from("email-assets")
-      .getPublicUrl(fileName);
-
-    return new Response(JSON.stringify({ 
-      success: true, 
-      path: data.path,
-      publicUrl: urlData.publicUrl 
-    }), {
+    return new Response(JSON.stringify({ results }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
