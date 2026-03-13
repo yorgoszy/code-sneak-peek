@@ -343,6 +343,27 @@ const FederationCompetitions = () => {
           <Input type="date" value={formDate} onChange={e => setFormDate(e.target.value)} className="rounded-none" />
         </div>
         <div>
+          <Label>Ημ. Λήξης (πολυήμερη)</Label>
+          <Input type="date" value={formEndDate} onChange={e => setFormEndDate(e.target.value)} className="rounded-none" placeholder="Προαιρετικό" />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <Label>Σειρά Διαδικασίας *</Label>
+          <Select value={formFlow} onValueChange={setFormFlow}>
+            <SelectTrigger className="rounded-none"><SelectValue /></SelectTrigger>
+            <SelectContent className="rounded-none">
+              <SelectItem value="weigh_in_first">Α: Ζύγιση → Κλήρωση</SelectItem>
+              <SelectItem value="draw_first">Β: Κλήρωση → Ζύγιση</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground mt-1">
+            {formFlow === 'weigh_in_first' 
+              ? 'Πρώτα ολοκληρώνεται η ζύγιση, μετά γίνεται η κλήρωση' 
+              : 'Πρώτα γίνεται η κλήρωση (όλοι οι δηλωμένοι), μετά ζύγιση ανά ημέρα αγώνων'}
+          </p>
+        </div>
+        <div>
           <Label>{t('federation.competitions.status')}</Label>
           <Select value={formStatus} onValueChange={setFormStatus}>
             <SelectTrigger className="rounded-none"><SelectValue /></SelectTrigger>
@@ -353,6 +374,8 @@ const FederationCompetitions = () => {
               <SelectItem value="cancelled">{t('federation.competitions.statusCancelled')}</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+      </div>
         </div>
       </div>
       
