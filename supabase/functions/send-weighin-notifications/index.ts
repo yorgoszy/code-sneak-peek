@@ -197,7 +197,7 @@ const handler = async (req: Request): Promise<Response> => {
             html: `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
                 <div style="background: #000; padding: 20px 30px;">
-                  <img src="${assetsUrl}/images/email-icon.png" alt="HYPERKIDS" style="height: 32px; width: auto; filter: invert(1);" />
+                  <img src="${assetsUrl}/images/email-icon-white.png" alt="HYPERKIDS" style="height: 32px; width: auto;" />
                 </div>
                 <div style="padding: 30px; border: 1px solid #e0e0e0; border-top: none;">
                   <h2 style="color: #000; margin: 0 0 5px 0; font-size: 22px;">⚖️ Λήξη Ζύγισης</h2>
