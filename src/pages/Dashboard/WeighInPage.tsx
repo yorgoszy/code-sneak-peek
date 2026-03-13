@@ -68,6 +68,12 @@ const WeighInPage: React.FC = () => {
   const [weights, setWeights] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState<Record<string, boolean>>({});
 
+  // Schedule state
+  const [scheduleDate, setScheduleDate] = useState('');
+  const [scheduleStartTime, setScheduleStartTime] = useState('');
+  const [scheduleEndTime, setScheduleEndTime] = useState('');
+  const [savingSchedule, setSavingSchedule] = useState(false);
+
   // History dialog
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
   const [historyAthleteName, setHistoryAthleteName] = useState('');
