@@ -16,6 +16,8 @@ interface WeighInNotificationRequest {
   schedule_end_time?: string;
 }
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const sendEmailWithResend = async (
   resend: Resend,
   payload: { from: string; to: string[]; subject: string; html: string },
