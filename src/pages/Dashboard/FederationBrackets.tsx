@@ -659,7 +659,8 @@ const FederationBrackets = () => {
           club:app_users!federation_competition_registrations_club_id_fkey(name)
         `)
         .eq('competition_id', selectedCompId)
-        .eq('is_paid', true);
+        .eq('is_paid', true)
+        .eq('weigh_in_status', 'passed');
 
       if (!allRegs?.length) {
         toast.error('Δεν υπάρχουν δηλώσεις');
