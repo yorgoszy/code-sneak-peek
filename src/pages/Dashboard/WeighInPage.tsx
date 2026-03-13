@@ -189,8 +189,8 @@ const WeighInPage: React.FC = () => {
   const openHistory = async (athleteId: string, athleteName: string) => {
     setHistoryAthleteId(athleteId);
     setHistoryAthleteName(athleteName);
-    const { data } = await supabase
-      .from('competition_weigh_ins')
+    const { data } = await (supabase
+      .from('competition_weigh_ins' as any)
       .select(`
         *,
         category:federation_competition_categories(name),
