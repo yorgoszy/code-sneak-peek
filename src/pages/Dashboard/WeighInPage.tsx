@@ -638,7 +638,7 @@ const WeighInPage: React.FC = () => {
                             <TableCell>
                               {isAlreadyProcessed ? (
                                 <span className="text-sm font-medium">{reg.weigh_in_weight ? `${reg.weigh_in_weight} kg` : (latestWeighIn?.actual_weight ? `${latestWeighIn.actual_weight} kg` : '-')}</span>
-                              ) : canManageWeighIn ? (
+                              ) : canManageWeighIn && weighInActive ? (
                                 <div className="w-24">
                                   <Input type="number" step="0.01" value={currentWeight} onChange={e => setWeights(prev => ({ ...prev, [reg.id]: e.target.value }))} className={`no-spinners rounded-none h-8 text-sm ${isOverweight ? 'border-destructive' : ''}`} placeholder="kg" />
                                 </div>
