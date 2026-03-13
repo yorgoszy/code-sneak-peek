@@ -71,6 +71,20 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
+    // Also include federation organizer email
+    const { data: competition } = await supabaseClient
+      .from('federation_competitions')
+      .select('federation_id, federation:app_users!federation_competitions_federation_id_fkey(name, email)')
+      .eq('id', competition_id)
+      .single();
+    
+    if (competition) {
+      const fed = competition.federation as any;
+      if (fed?.email) {
+        emailRecipients.set(fed.email, { name: fed.name, email: fed.email });
+      }
+    }
+
     const siteUrl = Deno.env.get("SITE_URL") || "https://hyperkids.gr";
 
     if (type === 'weigh_in_started') {
