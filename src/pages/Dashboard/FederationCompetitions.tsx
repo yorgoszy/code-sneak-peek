@@ -376,8 +376,6 @@ const FederationCompetitions = () => {
           </Select>
         </div>
       </div>
-        </div>
-      </div>
       
       {/* Location */}
       <div className="space-y-3">
