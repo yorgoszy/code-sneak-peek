@@ -188,6 +188,61 @@ const handler = async (req: Request): Promise<Response> => {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
+    } else if (type === 'weigh_in_schedule_announced') {
+      // Format date and time for display
+      const formattedDate = schedule_date 
+        ? new Date(schedule_date + 'T00:00:00').toLocaleDateString('el-GR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+        : 'Δεν έχει οριστεί';
+      const timeRange = (schedule_start_time && schedule_end_time) 
+        ? `${schedule_start_time} - ${schedule_end_time}` 
+        : 'Δεν έχει οριστεί';
+
+      const emailPromises = Array.from(emailRecipients.values()).map(async (recipient) => {
+        try {
+          const res = await resend.emails.send({
+            from: "HyperGym <noreply@hypergym.gr>",
+            to: [recipient.email],
+            subject: `📅 Πρόγραμμα Ζύγισης: ${competition_name}`,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="background: #000; padding: 30px; text-align: center;">
+                  <h1 style="color: #00ffba; margin: 0; font-size: 28px;">📅 Πρόγραμμα Ζύγισης</h1>
+                </div>
+                <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0;">
+                  <h2 style="color: #333;">Γεια σας ${recipient.name}!</h2>
+                  <p style="color: #666; font-size: 16px; line-height: 1.6;">
+                    Ανακοινώθηκε το πρόγραμμα ζύγισης για τον αγώνα <strong>"${competition_name}"</strong>.
+                  </p>
+                  <div style="margin: 20px 0; padding: 20px; background: #f8f9fa; border-left: 4px solid #00ffba;">
+                    <p style="margin: 5px 0; color: #333; font-size: 16px;">📅 <strong>Ημερομηνία:</strong> ${formattedDate}</p>
+                    <p style="margin: 5px 0; color: #333; font-size: 16px;">🕐 <strong>Ώρες:</strong> ${timeRange}</p>
+                  </div>
+                  <p style="color: #666; font-size: 14px;">
+                    Παρακαλούμε προσέλθετε στο χώρο ζύγισης εντός του προγράμματος με τα απαραίτητα δικαιολογητικά.
+                  </p>
+                  <div style="text-align: center; margin: 30px 0;">
+                    <a href="${siteUrl}/dashboard/weigh-in" 
+                       style="display: inline-block; background: #00ffba; color: #000; padding: 15px 30px; text-decoration: none; font-weight: bold; font-size: 16px;">
+                      Δείτε τη Ζύγιση
+                    </a>
+                  </div>
+                </div>
+              </div>
+            `,
+          });
+          console.log(`✅ Schedule email sent to ${recipient.email}`);
+          return { success: true, email: recipient.email };
+        } catch (error) {
+          console.error(`❌ Failed to send to ${recipient.email}:`, error);
+          return { success: false, email: recipient.email, error: error.message };
+        }
+      });
+
+      const results = await Promise.all(emailPromises);
+      return new Response(JSON.stringify({ message: "Weigh-in schedule notifications sent", results }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
     }
 
     return new Response(JSON.stringify({ error: "Invalid type" }), {
