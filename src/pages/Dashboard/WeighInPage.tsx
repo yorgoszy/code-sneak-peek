@@ -14,9 +14,6 @@ import { Menu, Search, Scale, Stethoscope, Check, X, AlertTriangle, RefreshCw, P
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { normalizeGreekText } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { normalizeGreekText } from '@/lib/utils';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle
 } from '@/components/ui/dialog';
