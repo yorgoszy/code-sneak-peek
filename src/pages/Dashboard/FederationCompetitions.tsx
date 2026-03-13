@@ -300,6 +300,8 @@ const FederationCompetitions = () => {
     setFormLocation(comp.location || '');
     setFormLocationUrl(comp.location_url || '');
     setFormDate(comp.competition_date);
+    setFormEndDate(comp.end_date || '');
+    setFormFlow(comp.competition_flow || 'weigh_in_first');
     setFormDeadline(comp.registration_deadline || '');
     setFormLateDeadline(comp.late_registration_deadline || '');
     setFormStatus(comp.status);
