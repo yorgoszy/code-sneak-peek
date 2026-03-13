@@ -442,6 +442,7 @@ const WeighInPage: React.FC = () => {
             {loading ? (
               <p className="text-muted-foreground">{t('common.loading')}</p>
             ) : (
+              <>
               {/* Desktop Table */}
               <div className="border border-border hidden md:block">
                 <Table>
