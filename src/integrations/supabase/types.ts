@@ -3455,7 +3455,9 @@ export type Database = {
           status: string
           updated_at: string
           weigh_in_active: boolean
+          weigh_in_end_time: string | null
           weigh_in_ended_at: string | null
+          weigh_in_start_time: string | null
           weigh_in_started_at: string | null
         }
         Insert: {
@@ -3474,7 +3476,9 @@ export type Database = {
           status?: string
           updated_at?: string
           weigh_in_active?: boolean
+          weigh_in_end_time?: string | null
           weigh_in_ended_at?: string | null
+          weigh_in_start_time?: string | null
           weigh_in_started_at?: string | null
         }
         Update: {
@@ -3493,7 +3497,9 @@ export type Database = {
           status?: string
           updated_at?: string
           weigh_in_active?: boolean
+          weigh_in_end_time?: string | null
           weigh_in_ended_at?: string | null
+          weigh_in_start_time?: string | null
           weigh_in_started_at?: string | null
         }
         Relationships: [
