@@ -75,7 +75,11 @@ const JudgeScoring: React.FC = () => {
 
     const { data: matchData, error: matchError } = await supabase
       .from('competition_matches')
-      .select('id, match_order, status, athlete1_id, athlete2_id')
+      .select(`
+        id, match_order, status, athlete1_id, athlete2_id,
+        athlete1:app_users!competition_matches_athlete1_id_fkey(name, photo_url, avatar_url),
+        athlete2:app_users!competition_matches_athlete2_id_fkey(name, photo_url, avatar_url)
+      `)
       .eq('id', ringData.current_match_id)
       .maybeSingle();
 
@@ -90,28 +94,7 @@ const JudgeScoring: React.FC = () => {
     }
 
     if (matchData) {
-      let enrichedMatch = matchData as MatchData;
-
-      // Fetch athlete names
-      const athleteIds = [matchData.athlete1_id, matchData.athlete2_id].filter(Boolean);
-      if (athleteIds.length > 0) {
-        const { data: athletes } = await supabase
-          .from('app_users')
-          .select('id, name, photo_url, avatar_url')
-          .in('id', athleteIds as string[]);
-
-        if (athletes) {
-          const a1 = athletes.find(a => a.id === matchData.athlete1_id);
-          const a2 = athletes.find(a => a.id === matchData.athlete2_id);
-          enrichedMatch = {
-            ...enrichedMatch,
-            athlete1: a1 ? { name: a1.name, photo_url: a1.photo_url, avatar_url: a1.avatar_url } : null,
-            athlete2: a2 ? { name: a2.name, photo_url: a2.photo_url, avatar_url: a2.avatar_url } : null,
-          };
-        }
-      }
-
-      setMatch(enrichedMatch);
+      setMatch(matchData as MatchData);
       // Load existing scores for this judge
       const { data: existingScores } = await supabase
         .from('competition_match_judge_scores')
