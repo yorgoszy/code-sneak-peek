@@ -389,10 +389,6 @@ const WeighInPage: React.FC = () => {
                                 latestWeighIn?.doctor_approved
                                   ? <Check className="w-5 h-5 text-[#00ffba]" />
                                   : <X className="w-5 h-5 text-destructive" />
-                              ) : reg.weigh_in_status === 'approved' || reg.weigh_in_status === 'rejected' ? (
-                                doctorChecks[reg.id]
-                                  ? <Check className="w-5 h-5 text-[#00ffba]" />
-                                  : <X className="w-5 h-5 text-destructive" />
                               ) : canManageWeighIn ? (
                                 <button
                                   onClick={() => toggleDoctor(reg.id)}
@@ -416,7 +412,7 @@ const WeighInPage: React.FC = () => {
                             <TableCell>
                               {isAlreadyProcessed ? (
                                 <span className="text-sm font-medium">
-                                  {latestWeighIn?.actual_weight ? `${latestWeighIn.actual_weight} kg` : '-'}
+                                  {reg.weigh_in_weight ? `${reg.weigh_in_weight} kg` : (latestWeighIn?.actual_weight ? `${latestWeighIn.actual_weight} kg` : '-')}
                                 </span>
                               ) : canManageWeighIn ? (
                                 <div className="w-24">
