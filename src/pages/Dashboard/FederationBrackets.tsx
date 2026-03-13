@@ -939,13 +939,19 @@ const FederationBrackets = () => {
     const athlete = slot === 'athlete1' ? match.athlete1 : match.athlete2;
     if (athleteId && athlete?.name) return { name: athlete.name, isConfirmed: true };
 
-    // Otherwise, find feeder match(es) from previous round
+    // If no athlete and no feeder round exists (e.g., single-athlete category), show empty slot
     const feederRound = match.round_number * 2;
     const feederMatchNumber = slot === 'athlete1'
       ? (match.match_number * 2) - 1
       : match.match_number * 2;
 
     const feederRoundMatches = (rounds[feederRound] || []).slice().sort((a, b) => a.match_number - b.match_number);
+    
+    // No feeder round and no athlete - this is an empty slot (e.g., walkover/single athlete)
+    if (feederRoundMatches.length === 0 && !athleteId) {
+      return { name: 'No Athlete', isConfirmed: false };
+    }
+    
     const feederMatch = feederRoundMatches.find((m) => m.match_number === feederMatchNumber)
       || (feederRoundMatches.length === 1 ? feederRoundMatches[0] : undefined);
 
