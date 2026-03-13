@@ -709,7 +709,7 @@ const WeighInPage: React.FC = () => {
                         </div>
 
                         {/* Actions row */}
-                        {!isAlreadyProcessed && canManageWeighIn ? (
+                        {!isAlreadyProcessed && canManageWeighIn && weighInActive ? (
                           <div className="flex items-center gap-2">
                             <button onClick={() => toggleDoctor(reg.id)} className={`w-9 h-9 flex items-center justify-center border transition-colors flex-shrink-0 ${doctorOk ? 'border-[#00ffba] bg-[#00ffba]/10' : 'border-destructive bg-destructive/10'}`}>
                               {doctorOk ? <Check className="w-4 h-4 text-[#00ffba]" /> : <X className="w-4 h-4 text-destructive" />}
