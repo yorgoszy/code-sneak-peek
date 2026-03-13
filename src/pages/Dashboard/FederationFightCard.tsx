@@ -349,6 +349,7 @@ const FederationFightCard: React.FC = () => {
                               const isCompleted = m.status === 'completed';
                               const isCurrent = currentMatchIds.has(m.id);
                               const currentRing = isCurrent ? getRingForMatch(m.id) : null;
+                              const assignedRing = getAssignedRing(m.match_order);
 
                               return (
                                 <div
