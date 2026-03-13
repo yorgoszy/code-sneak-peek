@@ -179,7 +179,7 @@ const WeighInPage: React.FC = () => {
 
     // Update registration with weigh-in result
     const { error: updateError } = await supabase.from('federation_competition_registrations').update({
-      weigh_in_status: approved ? 'approved' : 'rejected',
+      weigh_in_status: approved ? 'passed' : 'failed',
       weigh_in_weight: weight || null,
       weigh_in_date: new Date().toISOString(),
     }).eq('id', reg.id);
