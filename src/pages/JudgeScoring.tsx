@@ -130,6 +130,30 @@ const JudgeScoring: React.FC = () => {
     loadRingAndMatch();
   }, [loadRingAndMatch]);
 
+  // Timer tick: compute remaining seconds from server-side timer_running_since
+  useEffect(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+
+    const tick = () => {
+      if (!ring) { setDisplayTime(0); return; }
+      const remaining = ring.timer_remaining_seconds || 0;
+      const runningSince = ring.timer_running_since;
+
+      if (!runningSince) {
+        // Timer paused — show stored remaining
+        setDisplayTime(Math.max(0, remaining));
+      } else {
+        // Timer running — compute elapsed since start
+        const elapsed = (Date.now() - new Date(runningSince).getTime()) / 1000;
+        setDisplayTime(Math.max(0, Math.ceil(remaining - elapsed)));
+      }
+    };
+
+    tick();
+    timerRef.current = setInterval(tick, 100);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [ring?.timer_remaining_seconds, ring?.timer_running_since]);
+
   // Real-time + polling: listen for ring changes (match switch & refresh)
   useEffect(() => {
     if (!ringId) return;
