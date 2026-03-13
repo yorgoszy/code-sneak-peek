@@ -116,8 +116,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (type === 'weigh_in_started') {
       // Send "weigh-in started" email
-      const emailPromises = Array.from(emailRecipients.values()).map(async (recipient) => {
-        return sendEmailWithResend(
+      const recipients = Array.from(emailRecipients.values());
+      const results = [] as any[];
+
+      for (const recipient of recipients) {
+        const sendResult = await sendEmailWithResend(
           resend,
           {
             from: "HyperGym <noreply@hypergym.gr>",
@@ -149,9 +152,10 @@ const handler = async (req: Request): Promise<Response> => {
           recipient.email,
           'Start email'
         );
-      });
+        results.push(sendResult);
+        await sleep(550);
+      }
 
-      const results = await Promise.all(emailPromises);
       return new Response(JSON.stringify({ message: "Weigh-in start notifications sent", results }), {
         status: 200,
         headers: { "Content-Type": "application/json", ...corsHeaders },
