@@ -299,6 +299,8 @@ const CoachLivePage = () => {
                                 allowFullScreen
                                 title={ring.ring_name || `Ring ${getRingLetter(ring.ring_number)}`}
                               />
+                              {/* Transparent overlay to block all video interaction (no seeking/controls) */}
+                              <div className="absolute inset-0 z-10" style={{ pointerEvents: 'auto' }} />
                             </AspectRatio>
                             {ring.current_match_id && (() => {
                               const currentMatch = (matches as any[]).find((m: any) => m.id === ring.current_match_id);
