@@ -1,0 +1,190 @@
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { Resend } from "npm:resend@2.0.0";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+interface WeighInNotificationRequest {
+  type: 'weigh_in_started' | 'weigh_in_ended';
+  competition_id: string;
+  competition_name: string;
+}
+
+const handler = async (req: Request): Promise<Response> => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    if (!resendApiKey) throw new Error("RESEND_API_KEY is not configured");
+    const resend = new Resend(resendApiKey);
+
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    const { type, competition_id, competition_name }: WeighInNotificationRequest = await req.json();
+    console.log("🔔 Weigh-in notification:", { type, competition_id, competition_name });
+
+    // Get all registered athletes and their clubs for this competition
+    const { data: registrations, error: regError } = await supabaseClient
+      .from('federation_competition_registrations')
+      .select(`
+        athlete_id,
+        club_id,
+        weigh_in_status,
+        weigh_in_weight,
+        athlete:app_users!federation_competition_registrations_athlete_id_fkey(name, email),
+        club:app_users!federation_competition_registrations_club_id_fkey(name, email),
+        category:federation_competition_categories(name)
+      `)
+      .eq('competition_id', competition_id);
+
+    if (regError) throw regError;
+    if (!registrations || registrations.length === 0) {
+      return new Response(JSON.stringify({ message: "No registrations found" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // Collect unique emails (athletes + clubs)
+    const emailRecipients = new Map<string, { name: string; email: string }>();
+    
+    for (const reg of registrations) {
+      const athlete = reg.athlete as any;
+      const club = reg.club as any;
+      
+      if (athlete?.email) {
+        emailRecipients.set(athlete.email, { name: athlete.name, email: athlete.email });
+      }
+      if (club?.email) {
+        emailRecipients.set(club.email, { name: club.name, email: club.email });
+      }
+    }
+
+    const siteUrl = Deno.env.get("SITE_URL") || "https://hyperkids.gr";
+
+    if (type === 'weigh_in_started') {
+      // Send "weigh-in started" email
+      const emailPromises = Array.from(emailRecipients.values()).map(async (recipient) => {
+        try {
+          const res = await resend.emails.send({
+            from: "HyperGym <noreply@hypergym.gr>",
+            to: [recipient.email],
+            subject: `⚖️ Έναρξη Ζύγισης: ${competition_name}`,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="background: #000; padding: 30px; text-align: center;">
+                  <h1 style="color: #00ffba; margin: 0; font-size: 28px;">⚖️ Έναρξη Ζύγισης</h1>
+                </div>
+                <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0;">
+                  <h2 style="color: #333;">Γεια σας ${recipient.name}!</h2>
+                  <p style="color: #666; font-size: 16px; line-height: 1.6;">
+                    Η ζύγιση για τον αγώνα <strong>"${competition_name}"</strong> ξεκίνησε!
+                  </p>
+                  <p style="color: #666; font-size: 16px;">
+                    Παρακαλούμε προσέλθετε στο χώρο ζύγισης με τα απαραίτητα δικαιολογητικά.
+                  </p>
+                  <div style="text-align: center; margin: 30px 0;">
+                    <a href="${siteUrl}/dashboard/weigh-in" 
+                       style="display: inline-block; background: #00ffba; color: #000; padding: 15px 30px; text-decoration: none; font-weight: bold; font-size: 16px;">
+                      Δείτε τη Ζύγιση
+                    </a>
+                  </div>
+                </div>
+              </div>
+            `,
+          });
+          console.log(`✅ Start email sent to ${recipient.email}`);
+          return { success: true, email: recipient.email };
+        } catch (error) {
+          console.error(`❌ Failed to send to ${recipient.email}:`, error);
+          return { success: false, email: recipient.email, error: error.message };
+        }
+      });
+
+      const results = await Promise.all(emailPromises);
+      return new Response(JSON.stringify({ message: "Weigh-in start notifications sent", results }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+
+    } else if (type === 'weigh_in_ended') {
+      // Build results summary
+      const passed = registrations.filter(r => r.weigh_in_status === 'passed');
+      const failed = registrations.filter(r => r.weigh_in_status === 'failed');
+      const pending = registrations.filter(r => !r.weigh_in_status || r.weigh_in_status === 'pending');
+
+      const resultsHtml = `
+        <div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-left: 4px solid #00ffba;">
+          <h3 style="margin: 0 0 10px 0; color: #333;">📊 Αποτελέσματα Ζύγισης</h3>
+          <p style="margin: 5px 0; color: #666;">✅ Επιτυχημένες: <strong>${passed.length}</strong></p>
+          <p style="margin: 5px 0; color: #666;">❌ Αποτυχημένες: <strong>${failed.length}</strong></p>
+          <p style="margin: 5px 0; color: #666;">⏳ Εκκρεμούν: <strong>${pending.length}</strong></p>
+          <p style="margin: 5px 0; color: #666;">📋 Σύνολο: <strong>${registrations.length}</strong></p>
+        </div>
+      `;
+
+      const emailPromises = Array.from(emailRecipients.values()).map(async (recipient) => {
+        try {
+          const res = await resend.emails.send({
+            from: "HyperGym <noreply@hypergym.gr>",
+            to: [recipient.email],
+            subject: `⚖️ Λήξη Ζύγισης: ${competition_name}`,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="background: #000; padding: 30px; text-align: center;">
+                  <h1 style="color: #00ffba; margin: 0; font-size: 28px;">⚖️ Λήξη Ζύγισης</h1>
+                </div>
+                <div style="background: #fff; padding: 30px; border: 1px solid #e0e0e0;">
+                  <h2 style="color: #333;">Γεια σας ${recipient.name}!</h2>
+                  <p style="color: #666; font-size: 16px; line-height: 1.6;">
+                    Η ζύγιση για τον αγώνα <strong>"${competition_name}"</strong> ολοκληρώθηκε!
+                  </p>
+                  ${resultsHtml}
+                  <div style="text-align: center; margin: 30px 0;">
+                    <a href="${siteUrl}/dashboard/weigh-in" 
+                       style="display: inline-block; background: #00ffba; color: #000; padding: 15px 30px; text-decoration: none; font-weight: bold; font-size: 16px;">
+                      Δείτε τα Αποτελέσματα
+                    </a>
+                  </div>
+                </div>
+              </div>
+            `,
+          });
+          console.log(`✅ End email sent to ${recipient.email}`);
+          return { success: true, email: recipient.email };
+        } catch (error) {
+          console.error(`❌ Failed to send to ${recipient.email}:`, error);
+          return { success: false, email: recipient.email, error: error.message };
+        }
+      });
+
+      const results = await Promise.all(emailPromises);
+      return new Response(JSON.stringify({ message: "Weigh-in end notifications sent", results }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    return new Response(JSON.stringify({ error: "Invalid type" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+
+  } catch (error) {
+    console.error("💥 Error:", error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  }
+};
+
+serve(handler);
