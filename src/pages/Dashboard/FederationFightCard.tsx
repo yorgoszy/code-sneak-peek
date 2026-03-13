@@ -130,9 +130,20 @@ const FederationFightCard: React.FC = () => {
   // Current match IDs (active on rings)
   const currentMatchIds = useMemo(() => new Set(rings.map(r => r.current_match_id).filter(Boolean)), [rings]);
 
-  // Get ring info for a match
+  // Get ring info for a match (by current_match_id for live, or by match_range for assigned)
   const getRingForMatch = useCallback((matchId: string) => {
     return rings.find(r => r.current_match_id === matchId);
+  }, [rings]);
+
+  // Get assigned ring based on match_order falling within ring's match_range
+  const getAssignedRing = useCallback((matchOrder: number | null) => {
+    if (matchOrder == null) return null;
+    return rings.find(r => 
+      r.match_range_start != null && 
+      r.match_range_end != null && 
+      matchOrder >= r.match_range_start && 
+      matchOrder <= r.match_range_end
+    ) || null;
   }, [rings]);
 
   // Extract unique filter options
