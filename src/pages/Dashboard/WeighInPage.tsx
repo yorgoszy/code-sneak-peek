@@ -434,7 +434,7 @@ const WeighInPage: React.FC = () => {
                 <h1 className="text-lg font-semibold">{t('weighIn.title')}</h1>
               </div>
               <div className="flex items-center gap-2">
-                {canManageWeighIn && selectedCompId && (
+                {canManageWeighIn && selectedCompId && !weighInEnded && (
                   <Button
                     size="sm"
                     onClick={toggleWeighInSession}
