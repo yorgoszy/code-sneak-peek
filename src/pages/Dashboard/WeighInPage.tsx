@@ -39,6 +39,8 @@ interface Competition {
   id: string;
   name: string;
   competition_date: string;
+  end_date?: string | null;
+  competition_flow?: string;
   weigh_in_active?: boolean;
   weigh_in_date?: string | null;
   weigh_in_start_time?: string | null;

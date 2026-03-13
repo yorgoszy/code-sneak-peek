@@ -560,6 +560,11 @@ const FederationCompetitions = () => {
                               <Trophy className="h-3 w-3" /> Ranking
                             </Badge>
                           )}
+                          {comp.competition_flow === 'draw_first' && (
+                            <Badge className="rounded-none bg-blue-100 text-blue-800 text-[9px] px-1.5 h-5">
+                              Β: Κλήρωση→Ζύγιση
+                            </Badge>
+                          )}
                         </div>
                         {getStatusBadge(comp.status)}
                       </div>
@@ -567,7 +572,10 @@ const FederationCompetitions = () => {
                     <CardContent className="space-y-3">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Calendar className="h-4 w-4" />
-                        <span>{format(new Date(comp.competition_date), 'd MMMM yyyy', { locale: dateLocale })}</span>
+                        <span>
+                          {format(new Date(comp.competition_date), 'd MMMM yyyy', { locale: dateLocale })}
+                          {comp.end_date && ` - ${format(new Date(comp.end_date), 'd MMMM yyyy', { locale: dateLocale })}`}
+                        </span>
                       </div>
                       {comp.location && (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
