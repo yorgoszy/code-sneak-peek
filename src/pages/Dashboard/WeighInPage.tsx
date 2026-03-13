@@ -356,6 +356,31 @@ const WeighInPage: React.FC = () => {
                 <h1 className="text-2xl font-bold">{t('weighIn.title')}</h1>
                 <p className="text-sm text-muted-foreground">{t('weighIn.subtitle')}</p>
               </div>
+              <div className="flex items-center gap-2">
+                {canManageWeighIn && selectedCompId && (
+                  <Button
+                    onClick={toggleWeighInSession}
+                    disabled={togglingWeighIn}
+                    className={`rounded-none ${
+                      weighInActive 
+                        ? 'bg-destructive hover:bg-destructive/90 text-white' 
+                        : 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black'
+                    }`}
+                  >
+                    {weighInActive ? <Square className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}
+                    {togglingWeighIn ? '...' : weighInActive ? 'Λήξη Ζύγισης' : 'Έναρξη Ζύγισης'}
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRefresh}
+                  disabled={refreshing || !selectedCompId}
+                  className="rounded-none"
+                >
+                  <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
             </div>
 
             {/* Filters */}
