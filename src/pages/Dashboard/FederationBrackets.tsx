@@ -27,6 +27,8 @@ interface Competition {
   name: string;
   competition_date: string;
   status: string;
+  weigh_in_active?: boolean;
+  weigh_in_ended_at?: string | null;
 }
 
 interface Category {
