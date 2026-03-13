@@ -29,6 +29,7 @@ interface Competition {
   status: string;
   weigh_in_active?: boolean;
   weigh_in_ended_at?: string | null;
+  competition_flow?: string;
 }
 
 interface Category {
@@ -547,7 +548,7 @@ const FederationBrackets = () => {
     const load = async () => {
       const { data } = await supabase
         .from('federation_competitions')
-        .select('id, name, competition_date, status, weigh_in_active, weigh_in_ended_at')
+        .select('id, name, competition_date, status, weigh_in_active, weigh_in_ended_at, competition_flow')
         .eq('federation_id', federationId)
         .order('competition_date', { ascending: false });
       setCompetitions(data || []);
@@ -558,19 +559,25 @@ const FederationBrackets = () => {
   // Load categories, registration counts, and check for existing matches when competition changes
   useEffect(() => {
     if (!selectedCompId) { setCategories([]); setSelectedCategoryId(''); setRegistrationCounts(new Map()); setHasAnyMatches(false); return; }
+    const selectedComp = competitions.find(c => c.id === selectedCompId);
+    const isDrawFirst = selectedComp?.competition_flow === 'draw_first';
     const load = async () => {
+      let regQuery = supabase
+        .from('federation_competition_registrations')
+        .select('category_id')
+        .eq('competition_id', selectedCompId)
+        .eq('is_paid', true);
+      // In draw_first mode, use ALL paid registrations; in weigh_in_first, only passed
+      if (!isDrawFirst) {
+        regQuery = regQuery.eq('weigh_in_status', 'passed');
+      }
       const [catRes, regRes, matchCountRes] = await Promise.all([
         supabase
           .from('federation_competition_categories')
           .select('id, name, competition_id, gender')
           .eq('competition_id', selectedCompId)
           .order('name'),
-        supabase
-          .from('federation_competition_registrations')
-          .select('category_id')
-          .eq('competition_id', selectedCompId)
-          .eq('is_paid', true)
-          .eq('weigh_in_status', 'passed'),
+        regQuery,
         supabase
           .from('competition_matches')
           .select('id')
@@ -672,8 +679,11 @@ const FederationBrackets = () => {
   const handleGenerateAllBrackets = async () => {
     setGeneratingAll(true);
     try {
+      const selectedComp = competitions.find(c => c.id === selectedCompId);
+      const isDrawFirst = selectedComp?.competition_flow === 'draw_first';
+      
       // Load all registrations for all categories
-      const { data: allRegs } = await supabase
+      let regQuery = supabase
         .from('federation_competition_registrations')
         .select(`
           id, athlete_id, club_id, category_id,
@@ -681,8 +691,14 @@ const FederationBrackets = () => {
           club:app_users!federation_competition_registrations_club_id_fkey(name)
         `)
         .eq('competition_id', selectedCompId)
-        .eq('is_paid', true)
-        .eq('weigh_in_status', 'passed');
+        .eq('is_paid', true);
+      
+      // In draw_first mode, use ALL paid registrations; in weigh_in_first, only passed
+      if (!isDrawFirst) {
+        regQuery = regQuery.eq('weigh_in_status', 'passed');
+      }
+      
+      const { data: allRegs } = await regQuery;
 
       if (!allRegs?.length) {
         toast.error('Δεν υπάρχουν δηλώσεις');
@@ -1035,19 +1051,22 @@ const FederationBrackets = () => {
                 <>
                   {(() => {
                     const selectedComp = competitions.find(c => c.id === selectedCompId);
+                    const isDrawFirst = selectedComp?.competition_flow === 'draw_first';
                     const weighInEnded = selectedComp?.weigh_in_ended_at && !selectedComp?.weigh_in_active;
+                    // In draw_first mode, bracket can be generated without weigh-in
+                    const canGenerate = isDrawFirst || weighInEnded;
                     return (
                       <>
                         {!hasAnyMatches && (
                           <Button 
                             onClick={handleGenerateAllBrackets} 
-                            disabled={generatingAll || !weighInEnded}
+                            disabled={generatingAll || !canGenerate}
                             size="sm"
                             className="rounded-none bg-foreground text-background hover:bg-foreground/90 h-8 text-xs"
-                            title={!weighInEnded ? 'Η ζύγιση πρέπει να ολοκληρωθεί πρώτα' : ''}
+                            title={!canGenerate ? 'Η ζύγιση πρέπει να ολοκληρωθεί πρώτα' : ''}
                           >
                             <Shuffle className="h-3 w-3 mr-1" />
-                            {generatingAll ? '...' : !weighInEnded ? 'Αναμονή ζύγισης...' : t('federation.brackets.generateDraw')}
+                            {generatingAll ? '...' : !canGenerate ? 'Αναμονή ζύγισης...' : t('federation.brackets.generateDraw')}
                           </Button>
                         )}
                       </>

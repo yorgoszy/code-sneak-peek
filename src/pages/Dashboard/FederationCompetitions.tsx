@@ -33,6 +33,8 @@ interface Competition {
   location: string | null;
   location_url: string | null;
   competition_date: string;
+  end_date: string | null;
+  competition_flow: string;
   registration_deadline: string | null;
   late_registration_deadline: string | null;
   regulations_pdf_url: string | null;
@@ -66,6 +68,8 @@ const FederationCompetitions = () => {
   const [formLocation, setFormLocation] = useState('');
   const [formLocationUrl, setFormLocationUrl] = useState('');
   const [formDate, setFormDate] = useState('');
+  const [formEndDate, setFormEndDate] = useState('');
+  const [formFlow, setFormFlow] = useState('weigh_in_first');
   const [formDeadline, setFormDeadline] = useState('');
   const [formLateDeadline, setFormLateDeadline] = useState('');
   const [formStatus, setFormStatus] = useState('upcoming');
@@ -161,6 +165,8 @@ const FederationCompetitions = () => {
     setFormLocationUrl('');
     setMapCoords(null);
     setFormDate('');
+    setFormEndDate('');
+    setFormFlow('weigh_in_first');
     setFormDeadline('');
     setFormLateDeadline('');
     setFormStatus('upcoming');
@@ -217,6 +223,8 @@ const FederationCompetitions = () => {
         location: formLocation || null,
         location_url: formLocationUrl || null,
         competition_date: formDate,
+        end_date: formEndDate || null,
+        competition_flow: formFlow,
         registration_deadline: formDeadline || null,
         late_registration_deadline: formLateDeadline || null,
         regulations_pdf_url: formPdfUrl || null,
@@ -247,6 +255,8 @@ const FederationCompetitions = () => {
           location: formLocation || null,
           location_url: formLocationUrl || null,
           competition_date: formDate,
+          end_date: formEndDate || null,
+          competition_flow: formFlow,
           registration_deadline: formDeadline || null,
           late_registration_deadline: formLateDeadline || null,
           regulations_pdf_url: formPdfUrl || null,
@@ -290,6 +300,8 @@ const FederationCompetitions = () => {
     setFormLocation(comp.location || '');
     setFormLocationUrl(comp.location_url || '');
     setFormDate(comp.competition_date);
+    setFormEndDate(comp.end_date || '');
+    setFormFlow(comp.competition_flow || 'weigh_in_first');
     setFormDeadline(comp.registration_deadline || '');
     setFormLateDeadline(comp.late_registration_deadline || '');
     setFormStatus(comp.status);
@@ -329,6 +341,27 @@ const FederationCompetitions = () => {
         <div>
           <Label>{t('federation.competitions.competitionDate')} *</Label>
           <Input type="date" value={formDate} onChange={e => setFormDate(e.target.value)} className="rounded-none" />
+        </div>
+        <div>
+          <Label>Ημ. Λήξης (πολυήμερη)</Label>
+          <Input type="date" value={formEndDate} onChange={e => setFormEndDate(e.target.value)} className="rounded-none" placeholder="Προαιρετικό" />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <Label>Σειρά Διαδικασίας *</Label>
+          <Select value={formFlow} onValueChange={setFormFlow}>
+            <SelectTrigger className="rounded-none"><SelectValue /></SelectTrigger>
+            <SelectContent className="rounded-none">
+              <SelectItem value="weigh_in_first">Α: Ζύγιση → Κλήρωση</SelectItem>
+              <SelectItem value="draw_first">Β: Κλήρωση → Ζύγιση</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground mt-1">
+            {formFlow === 'weigh_in_first' 
+              ? 'Πρώτα ολοκληρώνεται η ζύγιση, μετά γίνεται η κλήρωση' 
+              : 'Πρώτα γίνεται η κλήρωση (όλοι οι δηλωμένοι), μετά ζύγιση ανά ημέρα αγώνων'}
+          </p>
         </div>
         <div>
           <Label>{t('federation.competitions.status')}</Label>
@@ -527,6 +560,11 @@ const FederationCompetitions = () => {
                               <Trophy className="h-3 w-3" /> Ranking
                             </Badge>
                           )}
+                          {comp.competition_flow === 'draw_first' && (
+                            <Badge className="rounded-none bg-blue-100 text-blue-800 text-[9px] px-1.5 h-5">
+                              Β: Κλήρωση→Ζύγιση
+                            </Badge>
+                          )}
                         </div>
                         {getStatusBadge(comp.status)}
                       </div>
@@ -534,7 +572,10 @@ const FederationCompetitions = () => {
                     <CardContent className="space-y-3">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Calendar className="h-4 w-4" />
-                        <span>{format(new Date(comp.competition_date), 'd MMMM yyyy', { locale: dateLocale })}</span>
+                        <span>
+                          {format(new Date(comp.competition_date), 'd MMMM yyyy', { locale: dateLocale })}
+                          {comp.end_date && ` - ${format(new Date(comp.end_date), 'd MMMM yyyy', { locale: dateLocale })}`}
+                        </span>
                       </div>
                       {comp.location && (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">

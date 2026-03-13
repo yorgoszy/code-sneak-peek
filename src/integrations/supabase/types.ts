@@ -2101,6 +2101,7 @@ export type Database = {
           athlete2_id: string | null
           athlete2_score: string | null
           category_id: string
+          competition_day: string | null
           competition_id: string
           completed_at: string | null
           created_at: string
@@ -2124,6 +2125,7 @@ export type Database = {
           athlete2_id?: string | null
           athlete2_score?: string | null
           category_id: string
+          competition_day?: string | null
           competition_id: string
           completed_at?: string | null
           created_at?: string
@@ -2147,6 +2149,7 @@ export type Database = {
           athlete2_id?: string | null
           athlete2_score?: string | null
           category_id?: string
+          competition_day?: string | null
           competition_id?: string
           completed_at?: string | null
           created_at?: string
@@ -3441,9 +3444,11 @@ export type Database = {
       federation_competitions: {
         Row: {
           competition_date: string
+          competition_flow: string
           counts_for_ranking: boolean
           created_at: string
           description: string | null
+          end_date: string | null
           federation_id: string
           id: string
           late_registration_deadline: string | null
@@ -3463,9 +3468,11 @@ export type Database = {
         }
         Insert: {
           competition_date: string
+          competition_flow?: string
           counts_for_ranking?: boolean
           created_at?: string
           description?: string | null
+          end_date?: string | null
           federation_id: string
           id?: string
           late_registration_deadline?: string | null
@@ -3485,9 +3492,11 @@ export type Database = {
         }
         Update: {
           competition_date?: string
+          competition_flow?: string
           counts_for_ranking?: boolean
           created_at?: string
           description?: string | null
+          end_date?: string | null
           federation_id?: string
           id?: string
           late_registration_deadline?: string | null
