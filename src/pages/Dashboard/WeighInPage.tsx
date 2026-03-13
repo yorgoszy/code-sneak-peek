@@ -360,7 +360,7 @@ const WeighInPage: React.FC = () => {
                     className={`rounded-none ${
                       weighInActive 
                         ? 'bg-destructive hover:bg-destructive/90 text-white' 
-                        : 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black'
+                        : 'bg-black hover:bg-black/90 text-white'
                     }`}
                   >
                     {weighInActive ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
