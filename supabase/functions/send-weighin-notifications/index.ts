@@ -235,7 +235,7 @@ const handler = async (req: Request): Promise<Response> => {
         const sendResult = await sendEmailWithResend(
           resend,
           {
-            from: "HyperGym <noreply@hypergym.gr>",
+            from: "HYPERKIDS <noreply@hyperkids.gr>",
             to: [recipient.email],
             subject: `📅 Πρόγραμμα Ζύγισης: ${competition_name}`,
             html: `
