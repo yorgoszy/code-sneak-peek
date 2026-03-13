@@ -22,7 +22,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { RingScoreboard } from "@/components/federation/RingScoreboard";
 import { VideoOverlayScores } from "@/components/federation/VideoOverlayScores";
-import { CameraFeed } from "@/components/federation/CameraFeed";
+import { SyncedYouTubePlayer } from "@/components/federation/SyncedYouTubePlayer";
+import { RingCameraBroadcaster } from "@/components/federation/webrtc/RingCameraBroadcaster";
 
 interface Competition {
   id: string;
@@ -69,20 +70,6 @@ interface Match {
   athlete1_display?: string;
   athlete2_display?: string;
   category_id: string;
-}
-
-function getYoutubeEmbedUrl(url: string): string | null {
-  if (!url) return null;
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/live\/)([a-zA-Z0-9_-]+)/,
-    /youtube\.com\/embed\/([a-zA-Z0-9_-]+)/,
-  ];
-  for (const pattern of patterns) {
-    const match = url.match(pattern);
-    if (match) return `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1`;
-  }
-  if (url.includes('youtube.com/embed')) return url;
-  return url;
 }
 
 const JudgeLinkRow: React.FC<{ judgeNum: number; url: string; t: any }> = ({ judgeNum, url, t }) => {
@@ -600,19 +587,19 @@ const FederationLive = () => {
                       </div>
                     </div>
 
-                    <CardContent className="p-0">
+                      <CardContent className="p-0">
                       {(ring.youtube_live_url || (ring as any).source_type === 'camera') ? (
                         <div id={`ring-video-${ring.id}`} className="relative bg-black group">
                           <AspectRatio ratio={16 / 9}>
                             {(ring as any).source_type === 'camera' ? (
-                              <CameraFeed deviceId={(ring as any).camera_device_id} className="w-full h-full" />
+                              <RingCameraBroadcaster ringId={ring.id} deviceId={(ring as any).camera_device_id} className="w-full h-full object-cover" />
                             ) : (
-                              <iframe
-                                src={getYoutubeEmbedUrl(ring.youtube_live_url!) || ''}
+                              <SyncedYouTubePlayer
+                                ringId={ring.id}
+                                videoUrl={ring.youtube_live_url!}
+                                mode="broadcaster"
+                                controls={1}
                                 className="w-full h-full"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                                title={ring.ring_name || `Ring ${getRingLetter(ring.ring_number)}`}
                               />
                             )}
                           </AspectRatio>
