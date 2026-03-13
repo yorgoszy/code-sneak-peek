@@ -442,7 +442,7 @@ const FederationFightCard: React.FC = () => {
                                           LIVE
                                         </Badge>
                                       )}
-                                  </div>
+                                    </div>
 
                                   {/* Result row for completed */}
                                   {isCompleted && (
