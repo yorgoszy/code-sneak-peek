@@ -68,6 +68,8 @@ const FederationCompetitions = () => {
   const [formLocation, setFormLocation] = useState('');
   const [formLocationUrl, setFormLocationUrl] = useState('');
   const [formDate, setFormDate] = useState('');
+  const [formEndDate, setFormEndDate] = useState('');
+  const [formFlow, setFormFlow] = useState('weigh_in_first');
   const [formDeadline, setFormDeadline] = useState('');
   const [formLateDeadline, setFormLateDeadline] = useState('');
   const [formStatus, setFormStatus] = useState('upcoming');
