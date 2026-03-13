@@ -173,7 +173,7 @@ const JudgeScoring: React.FC = () => {
       try {
         const query = supabase
           .from('competition_rings')
-          .select('id, ring_name, current_match_id, updated_at')
+          .select('id, ring_name, current_match_id, updated_at, timer_remaining_seconds, timer_running_since, timer_current_round, timer_is_break')
           .eq('id', ringId);
         
         if (lastRingUpdate) {
