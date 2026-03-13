@@ -34,6 +34,7 @@ import {
   GraduationCap,
   Shuffle,
   Radio,
+  Scale,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
