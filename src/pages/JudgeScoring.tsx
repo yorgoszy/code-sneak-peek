@@ -302,12 +302,12 @@ const JudgeScoring: React.FC = () => {
             <div className="grid grid-cols-2 gap-3 text-center">
               <div>
                 <span className="text-2xl font-bold text-red-600">
-                  {scores[1].a2 + scores[2].a2 + scores[3].a2}
+                  {scores[1].a1 + scores[2].a1 + scores[3].a1}
                 </span>
               </div>
               <div>
                 <span className="text-2xl font-bold text-blue-600">
-                  {scores[1].a1 + scores[2].a1 + scores[3].a1}
+                  {scores[1].a2 + scores[2].a2 + scores[3].a2}
                 </span>
               </div>
             </div>
