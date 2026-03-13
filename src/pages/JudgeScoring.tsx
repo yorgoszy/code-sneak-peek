@@ -94,6 +94,7 @@ const JudgeScoring: React.FC = () => {
     }
 
     if (matchData) {
+      setMatch(matchData as MatchData);
       // Load existing scores for this judge
       const { data: existingScores } = await supabase
         .from('competition_match_judge_scores')
