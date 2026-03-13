@@ -210,5 +210,9 @@ export const SyncedYouTubePlayer: React.FC<SyncedYouTubePlayerProps> = ({
     return <div className={className} />;
   }
 
-  return <div id={containerId} className={className} />;
+  return (
+    <div className={`relative ${className || ''}`}>
+      <div id={containerId} className="absolute inset-0 w-full h-full [&>iframe]:!w-full [&>iframe]:!h-full [&>iframe]:!absolute [&>iframe]:!inset-0" />
+    </div>
+  );
 };
