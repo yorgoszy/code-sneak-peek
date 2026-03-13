@@ -3454,6 +3454,9 @@ export type Database = {
           regulations_pdf_url: string | null
           status: string
           updated_at: string
+          weigh_in_active: boolean
+          weigh_in_ended_at: string | null
+          weigh_in_started_at: string | null
         }
         Insert: {
           competition_date: string
@@ -3470,6 +3473,9 @@ export type Database = {
           regulations_pdf_url?: string | null
           status?: string
           updated_at?: string
+          weigh_in_active?: boolean
+          weigh_in_ended_at?: string | null
+          weigh_in_started_at?: string | null
         }
         Update: {
           competition_date?: string
@@ -3486,6 +3492,9 @@ export type Database = {
           regulations_pdf_url?: string | null
           status?: string
           updated_at?: string
+          weigh_in_active?: boolean
+          weigh_in_ended_at?: string | null
+          weigh_in_started_at?: string | null
         }
         Relationships: [
           {

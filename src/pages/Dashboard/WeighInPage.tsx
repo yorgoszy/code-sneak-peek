@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Menu, Search, Scale, Stethoscope, Check, X, AlertTriangle } from 'lucide-react';
+import { Menu, Search, Scale, Stethoscope, Check, X, AlertTriangle, RefreshCw, Play, Square } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { normalizeGreekText } from '@/lib/utils';
@@ -52,6 +52,9 @@ const WeighInPage: React.FC = () => {
   const [weighIns, setWeighIns] = useState<Record<string, any[]>>({});
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [weighInActive, setWeighInActive] = useState(false);
+  const [togglingWeighIn, setTogglingWeighIn] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Inline state per registration
   const [doctorChecks, setDoctorChecks] = useState<Record<string, boolean>>({});
@@ -73,16 +76,24 @@ const WeighInPage: React.FC = () => {
   }, [userProfile?.id]);
 
   useEffect(() => {
-    if (selectedCompId) fetchRegistrations();
+    if (selectedCompId) {
+      fetchRegistrations();
+      // Update weigh-in active status for selected competition
+      const comp = competitions.find(c => c.id === selectedCompId) as any;
+      if (comp) setWeighInActive(comp.weigh_in_active || false);
+    }
   }, [selectedCompId]);
 
   const fetchCompetitions = async () => {
     if (!userProfile?.id) return;
-    let query = supabase.from('federation_competitions').select('id, name, competition_date').order('competition_date', { ascending: false });
+    let query = supabase.from('federation_competitions').select('id, name, competition_date, weigh_in_active').order('competition_date', { ascending: false });
     if (isFederationUser) query = query.eq('federation_id', userProfile.id);
-    const { data } = await query;
+    const { data } = await query as any;
     setCompetitions(data || []);
-    if (data && data.length > 0) setSelectedCompId(data[0].id);
+    if (data && data.length > 0) {
+      setSelectedCompId(data[0].id);
+      setWeighInActive(data[0].weigh_in_active || false);
+    }
   };
 
   const fetchRegistrations = async () => {
@@ -112,6 +123,58 @@ const WeighInPage: React.FC = () => {
       setWeighIns(grouped);
     }
     setLoading(false);
+  };
+
+  const toggleWeighInSession = async () => {
+    if (!selectedCompId) return;
+    setTogglingWeighIn(true);
+    const newStatus = !weighInActive;
+    const selectedComp = competitions.find(c => c.id === selectedCompId);
+
+    try {
+      // Update competition weigh_in_active status
+      const updateData: any = {
+        weigh_in_active: newStatus,
+        ...(newStatus ? { weigh_in_started_at: new Date().toISOString() } : { weigh_in_ended_at: new Date().toISOString() }),
+      };
+
+      const { error } = await supabase
+        .from('federation_competitions')
+        .update(updateData)
+        .eq('id', selectedCompId);
+
+      if (error) throw error;
+
+      setWeighInActive(newStatus);
+
+      // Send notification emails
+      try {
+        await supabase.functions.invoke('send-weighin-notifications', {
+          body: {
+            type: newStatus ? 'weigh_in_started' : 'weigh_in_ended',
+            competition_id: selectedCompId,
+            competition_name: selectedComp?.name || '',
+          },
+        });
+        toast.success(newStatus ? 'Η ζύγιση ξεκίνησε! Στάλθηκαν ειδοποιήσεις.' : 'Η ζύγιση τελείωσε! Στάλθηκαν τα αποτελέσματα.');
+      } catch (emailErr) {
+        console.error('Email notification error:', emailErr);
+        toast.success(newStatus ? 'Η ζύγιση ξεκίνησε!' : 'Η ζύγιση τελείωσε!');
+        toast.warning('Δεν ήταν δυνατή η αποστολή ειδοποιήσεων email.');
+      }
+    } catch (err) {
+      console.error('Toggle weigh-in error:', err);
+      toast.error('Σφάλμα κατά την ενημέρωση');
+    } finally {
+      setTogglingWeighIn(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchRegistrations();
+    setRefreshing(false);
+    toast.success('Ανανεώθηκε!');
   };
 
   const toggleDoctor = (regId: string) => {
@@ -284,6 +347,25 @@ const WeighInPage: React.FC = () => {
                 </Button>
                 <h1 className="text-lg font-semibold">{t('weighIn.title')}</h1>
               </div>
+              <div className="flex items-center gap-2">
+                {canManageWeighIn && selectedCompId && (
+                  <Button
+                    size="sm"
+                    onClick={toggleWeighInSession}
+                    disabled={togglingWeighIn}
+                    className={`rounded-none ${
+                      weighInActive 
+                        ? 'bg-destructive hover:bg-destructive/90 text-white' 
+                        : 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black'
+                    }`}
+                  >
+                    {weighInActive ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                  </Button>
+                )}
+                <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing || !selectedCompId} className="rounded-none">
+                  <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -293,7 +375,40 @@ const WeighInPage: React.FC = () => {
                 <h1 className="text-2xl font-bold">{t('weighIn.title')}</h1>
                 <p className="text-sm text-muted-foreground">{t('weighIn.subtitle')}</p>
               </div>
+              <div className="flex items-center gap-2">
+                {canManageWeighIn && selectedCompId && (
+                  <Button
+                    onClick={toggleWeighInSession}
+                    disabled={togglingWeighIn}
+                    className={`rounded-none ${
+                      weighInActive 
+                        ? 'bg-destructive hover:bg-destructive/90 text-white' 
+                        : 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black'
+                    }`}
+                  >
+                    {weighInActive ? <Square className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}
+                    {togglingWeighIn ? '...' : weighInActive ? 'Λήξη Ζύγισης' : 'Έναρξη Ζύγισης'}
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRefresh}
+                  disabled={refreshing || !selectedCompId}
+                  className="rounded-none"
+                >
+                  <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
             </div>
+
+            {/* Weigh-in status indicator */}
+            {weighInActive && (
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-3 h-3 bg-[#00ffba] rounded-full animate-pulse" />
+                <span className="text-sm font-medium text-[#00ffba]">Ζύγιση σε εξέλιξη</span>
+              </div>
+            )}
 
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-3 mb-6">
