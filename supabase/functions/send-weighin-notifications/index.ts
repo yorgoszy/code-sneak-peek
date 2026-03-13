@@ -196,8 +196,8 @@ const handler = async (req: Request): Promise<Response> => {
             subject: `⚖️ Λήξη Ζύγισης: ${competition_name}`,
             html: `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
-                <div style="background: #000; padding: 16px 30px;">
-                  <span style="color: #fff; font-size: 18px; font-weight: 900; letter-spacing: 3px; font-family: Arial, sans-serif;">HYPER<span style="font-style: italic;">K</span>IDS</span>
+                <div style="background: #000; padding: 20px 30px;">
+                  <img src="${assetsUrl}/images/email-icon.png" alt="HYPERKIDS" style="height: 32px; width: auto; filter: invert(1);" />
                 </div>
                 <div style="padding: 30px; border: 1px solid #e0e0e0; border-top: none;">
                   <h2 style="color: #000; margin: 0 0 5px 0; font-size: 22px;">⚖️ Λήξη Ζύγισης</h2>
