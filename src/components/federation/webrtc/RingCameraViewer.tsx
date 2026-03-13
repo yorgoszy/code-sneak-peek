@@ -80,10 +80,11 @@ export const RingCameraViewer: React.FC<RingCameraViewerProps> = ({ ringId, clas
           // ignore
         }
       })
-      .subscribe();
-
-    // join
-    channel.send({ type: "broadcast", event: "viewer-join", payload: { viewerId } as JoinPayload });
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          channel.send({ type: "broadcast", event: "viewer-join", payload: { viewerId } as JoinPayload });
+        }
+      });
 
     return () => {
       try {
