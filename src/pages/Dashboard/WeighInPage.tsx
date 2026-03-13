@@ -242,9 +242,11 @@ const WeighInPage: React.FC = () => {
   const getStatusBadge = (status: string | null) => {
     switch (status) {
       case 'approved':
-        return <Badge className="bg-[#00ffba] text-black rounded-none"><Check className="w-3 h-3 mr-1" />{t('weighIn.approved')}</Badge>;
+      case 'passed':
+        return <Badge className="bg-[#00ffba] text-black rounded-none"><Check className="w-3 h-3 mr-1" />Accept</Badge>;
       case 'rejected':
-        return <Badge variant="destructive" className="rounded-none"><X className="w-3 h-3 mr-1" />{t('weighIn.rejected')}</Badge>;
+      case 'failed':
+        return <Badge variant="destructive" className="rounded-none"><X className="w-3 h-3 mr-1" />Not accept</Badge>;
       default:
         return <Badge variant="outline" className="rounded-none">{t('weighIn.pending')}</Badge>;
     }
