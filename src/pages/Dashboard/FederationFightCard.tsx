@@ -356,11 +356,12 @@ const FederationFightCard: React.FC = () => {
                                       {m.match_order || m.match_number}
                                     </div>
 
-                                    {/* Athletes */}
+                                    {/* Athletes - horizontal on desktop, stacked on mobile */}
                                     <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-2">
-                                        {/* Athlete 1 */}
+                                      {/* Desktop layout */}
+                                      <div className="hidden sm:flex items-center gap-2">
                                         <div className="flex items-center gap-2 flex-1 min-w-0">
+                                          <div className="w-1 h-7 bg-red-500 flex-shrink-0" />
                                           <Avatar className="h-7 w-7 flex-shrink-0">
                                             <AvatarImage src={m.athlete1?.photo_url || m.athlete1?.avatar_url || undefined} />
                                             <AvatarFallback className="text-[10px]">{(m.athlete1?.name || '?').charAt(0)}</AvatarFallback>
@@ -374,11 +375,9 @@ const FederationFightCard: React.FC = () => {
                                             )}
                                           </div>
                                         </div>
-
                                         <span className="text-xs font-bold text-muted-foreground px-2">VS</span>
-
-                                        {/* Athlete 2 */}
                                         <div className="flex items-center gap-2 flex-1 min-w-0">
+                                          <div className="w-1 h-7 bg-blue-500 flex-shrink-0" />
                                           <Avatar className="h-7 w-7 flex-shrink-0">
                                             <AvatarImage src={m.athlete2?.photo_url || m.athlete2?.avatar_url || undefined} />
                                             <AvatarFallback className="text-[10px]">{(m.athlete2?.name || '?').charAt(0)}</AvatarFallback>
@@ -393,15 +392,53 @@ const FederationFightCard: React.FC = () => {
                                           </div>
                                         </div>
                                       </div>
+
+                                      {/* Mobile layout - stacked: red on top, blue below */}
+                                      <div className="flex sm:hidden flex-col gap-1">
+                                        <div className="flex items-center gap-2 bg-red-500/10 px-2 py-1 border-l-2 border-red-500">
+                                          <Avatar className="h-6 w-6 flex-shrink-0">
+                                            <AvatarImage src={m.athlete1?.photo_url || m.athlete1?.avatar_url || undefined} />
+                                            <AvatarFallback className="text-[9px]">{(m.athlete1?.name || '?').charAt(0)}</AvatarFallback>
+                                          </Avatar>
+                                          <div className="min-w-0 flex-1">
+                                            <p className={`text-xs font-medium ${m.winner_id === m.athlete1_id && isCompleted ? 'font-bold' : ''}`}>
+                                              {m.athlete1?.name || '—'}
+                                            </p>
+                                            {m.athlete1_club?.name && (
+                                              <p className="text-[9px] text-muted-foreground">{m.athlete1_club.name}</p>
+                                            )}
+                                          </div>
+                                          {m.winner_id === m.athlete1_id && isCompleted && (
+                                            <Trophy className="h-3 w-3 text-red-500 flex-shrink-0" />
+                                          )}
+                                        </div>
+                                        <div className="flex items-center gap-2 bg-blue-500/10 px-2 py-1 border-l-2 border-blue-500">
+                                          <Avatar className="h-6 w-6 flex-shrink-0">
+                                            <AvatarImage src={m.athlete2?.photo_url || m.athlete2?.avatar_url || undefined} />
+                                            <AvatarFallback className="text-[9px]">{(m.athlete2?.name || '?').charAt(0)}</AvatarFallback>
+                                          </Avatar>
+                                          <div className="min-w-0 flex-1">
+                                            <p className={`text-xs font-medium ${m.winner_id === m.athlete2_id && isCompleted ? 'font-bold' : ''}`}>
+                                              {m.athlete2?.name || '—'}
+                                            </p>
+                                            {m.athlete2_club?.name && (
+                                              <p className="text-[9px] text-muted-foreground">{m.athlete2_club.name}</p>
+                                            )}
+                                          </div>
+                                          {m.winner_id === m.athlete2_id && isCompleted && (
+                                            <Trophy className="h-3 w-3 text-blue-500 flex-shrink-0" />
+                                          )}
+                                        </div>
+                                      </div>
                                     </div>
 
-                                    {/* Category */}
-                                    <div className="flex-shrink-0 text-right">
+                                    {/* Category + LIVE badge */}
+                                    <div className="flex-shrink-0 text-right flex flex-col items-end gap-1">
                                       <Badge variant="secondary" className="rounded-none text-[10px]">
                                         {m.category?.name || '—'}
                                       </Badge>
                                       {isCurrent && (
-                                        <Badge className="rounded-none text-[10px] ml-1 bg-foreground text-background">
+                                        <Badge className="rounded-none text-[10px] bg-foreground text-background">
                                           LIVE
                                         </Badge>
                                       )}
