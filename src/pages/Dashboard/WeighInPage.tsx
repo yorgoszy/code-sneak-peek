@@ -629,7 +629,7 @@ const WeighInPage: React.FC = () => {
                             <TableCell>
                               {isAlreadyProcessed ? (
                                 latestWeighIn?.doctor_approved ? <Check className="w-5 h-5 text-[#00ffba]" /> : <X className="w-5 h-5 text-destructive" />
-                              ) : canManageWeighIn ? (
+                              ) : canManageWeighIn && weighInActive ? (
                                 <button onClick={() => toggleDoctor(reg.id)} className={`w-8 h-8 flex items-center justify-center border transition-colors ${doctorOk ? 'border-[#00ffba] bg-[#00ffba]/10' : 'border-destructive bg-destructive/10'}`}>
                                   {doctorOk ? <Check className="w-4 h-4 text-[#00ffba]" /> : <X className="w-4 h-4 text-destructive" />}
                                 </button>
@@ -638,7 +638,7 @@ const WeighInPage: React.FC = () => {
                             <TableCell>
                               {isAlreadyProcessed ? (
                                 <span className="text-sm font-medium">{reg.weigh_in_weight ? `${reg.weigh_in_weight} kg` : (latestWeighIn?.actual_weight ? `${latestWeighIn.actual_weight} kg` : '-')}</span>
-                              ) : canManageWeighIn ? (
+                              ) : canManageWeighIn && weighInActive ? (
                                 <div className="w-24">
                                   <Input type="number" step="0.01" value={currentWeight} onChange={e => setWeights(prev => ({ ...prev, [reg.id]: e.target.value }))} className={`no-spinners rounded-none h-8 text-sm ${isOverweight ? 'border-destructive' : ''}`} placeholder="kg" />
                                 </div>
@@ -650,7 +650,7 @@ const WeighInPage: React.FC = () => {
                             </TableCell>
                             {canManageWeighIn && (
                               <TableCell>
-                                {!isAlreadyProcessed ? (
+                                {!isAlreadyProcessed && weighInActive ? (
                                   <Button size="sm" variant="outline" className="rounded-none h-8" onClick={() => handleWeighIn(reg)} disabled={isSubmitting}>
                                     <Scale className="w-4 h-4 mr-1" />Weigh-in
                                   </Button>
@@ -709,7 +709,7 @@ const WeighInPage: React.FC = () => {
                         </div>
 
                         {/* Actions row */}
-                        {!isAlreadyProcessed && canManageWeighIn ? (
+                        {!isAlreadyProcessed && canManageWeighIn && weighInActive ? (
                           <div className="flex items-center gap-2">
                             <button onClick={() => toggleDoctor(reg.id)} className={`w-9 h-9 flex items-center justify-center border transition-colors flex-shrink-0 ${doctorOk ? 'border-[#00ffba] bg-[#00ffba]/10' : 'border-destructive bg-destructive/10'}`}>
                               {doctorOk ? <Check className="w-4 h-4 text-[#00ffba]" /> : <X className="w-4 h-4 text-destructive" />}

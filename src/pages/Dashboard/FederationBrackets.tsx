@@ -27,6 +27,8 @@ interface Competition {
   name: string;
   competition_date: string;
   status: string;
+  weigh_in_active?: boolean;
+  weigh_in_ended_at?: string | null;
 }
 
 interface Category {
@@ -523,7 +525,7 @@ const FederationBrackets = () => {
     const load = async () => {
       const { data } = await supabase
         .from('federation_competitions')
-        .select('id, name, competition_date, status')
+        .select('id, name, competition_date, status, weigh_in_active, weigh_in_ended_at')
         .eq('federation_id', federationId)
         .order('competition_date', { ascending: false });
       setCompetitions(data || []);
@@ -545,7 +547,8 @@ const FederationBrackets = () => {
           .from('federation_competition_registrations')
           .select('category_id')
           .eq('competition_id', selectedCompId)
-          .eq('is_paid', true),
+          .eq('is_paid', true)
+          .eq('weigh_in_status', 'passed'),
         supabase
           .from('competition_matches')
           .select('id')
@@ -656,7 +659,8 @@ const FederationBrackets = () => {
           club:app_users!federation_competition_registrations_club_id_fkey(name)
         `)
         .eq('competition_id', selectedCompId)
-        .eq('is_paid', true);
+        .eq('is_paid', true)
+        .eq('weigh_in_status', 'passed');
 
       if (!allRegs?.length) {
         toast.error('Δεν υπάρχουν δηλώσεις');
@@ -1001,17 +1005,26 @@ const FederationBrackets = () => {
               {/* Actions */}
               {selectedCompId && categories.length > 0 && (
                 <>
-                  {!hasAnyMatches && (
-                    <Button 
-                      onClick={handleGenerateAllBrackets} 
-                      disabled={generatingAll}
-                      size="sm"
-                      className="rounded-none bg-foreground text-background hover:bg-foreground/90 h-8 text-xs"
-                    >
-                      <Shuffle className="h-3 w-3 mr-1" />
-                      {generatingAll ? '...' : t('federation.brackets.generateDraw')}
-                    </Button>
-                  )}
+                  {(() => {
+                    const selectedComp = competitions.find(c => c.id === selectedCompId);
+                    const weighInEnded = selectedComp?.weigh_in_ended_at && !selectedComp?.weigh_in_active;
+                    return (
+                      <>
+                        {!hasAnyMatches && (
+                          <Button 
+                            onClick={handleGenerateAllBrackets} 
+                            disabled={generatingAll || !weighInEnded}
+                            size="sm"
+                            className="rounded-none bg-foreground text-background hover:bg-foreground/90 h-8 text-xs"
+                            title={!weighInEnded ? 'Η ζύγιση πρέπει να ολοκληρωθεί πρώτα' : ''}
+                          >
+                            <Shuffle className="h-3 w-3 mr-1" />
+                            {generatingAll ? '...' : !weighInEnded ? 'Αναμονή ζύγισης...' : t('federation.brackets.generateDraw')}
+                          </Button>
+                        )}
+                      </>
+                    );
+                  })()}
                   {hasAnyMatches && (
                     <Button variant="outline" size="sm" onClick={() => setResetDialogOpen(true)} className="rounded-none text-destructive border-destructive h-8 text-xs">
                       <RotateCcw className="h-3 w-3 mr-1" />
