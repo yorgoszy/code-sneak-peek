@@ -33,6 +33,8 @@ interface Competition {
   location: string | null;
   location_url: string | null;
   competition_date: string;
+  end_date: string | null;
+  competition_flow: string;
   registration_deadline: string | null;
   late_registration_deadline: string | null;
   regulations_pdf_url: string | null;
