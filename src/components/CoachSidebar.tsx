@@ -242,6 +242,13 @@ export const CoachSidebar = ({
       requiresSubscription: true,
     },
     {
+      icon: Scale,
+      label: "Ζύγιση",
+      path: effectiveCoachId ? `/dashboard/weigh-in?coachId=${effectiveCoachId}` : "/dashboard/weigh-in",
+      badge: null,
+      requiresSubscription: false,
+    },
+    {
       icon: Trophy,
       label: "Ranking",
       path: "/dashboard/ranking",

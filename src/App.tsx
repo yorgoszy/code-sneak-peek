@@ -200,6 +200,7 @@ function App() {
                       <Route path="/dashboard/coach-competitions" element={<ProtectedRoute><CoachCompetitionsPage /></ProtectedRoute>} />
                       <Route path="/dashboard/coach-brackets" element={<ProtectedRoute><CoachBracketsPage /></ProtectedRoute>} />
                       <Route path="/dashboard/coach-live" element={<ProtectedRoute><CoachLivePage /></ProtectedRoute>} />
+                      <Route path="/dashboard/weigh-in" element={<ProtectedRoute><WeighInPage /></ProtectedRoute>} />
                       {/* Admin-only routes */}
                       <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />
                       <Route path="/dashboard/users" element={<ProtectedRoute requireAdmin><Users /></ProtectedRoute>} />
