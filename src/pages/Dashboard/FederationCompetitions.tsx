@@ -223,6 +223,8 @@ const FederationCompetitions = () => {
         location: formLocation || null,
         location_url: formLocationUrl || null,
         competition_date: formDate,
+        end_date: formEndDate || null,
+        competition_flow: formFlow,
         registration_deadline: formDeadline || null,
         late_registration_deadline: formLateDeadline || null,
         regulations_pdf_url: formPdfUrl || null,
