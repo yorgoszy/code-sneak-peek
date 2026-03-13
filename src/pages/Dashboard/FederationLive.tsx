@@ -72,20 +72,6 @@ interface Match {
   category_id: string;
 }
 
-function getYoutubeEmbedUrl(url: string): string | null {
-  if (!url) return null;
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/live\/)([a-zA-Z0-9_-]+)/,
-    /youtube\.com\/embed\/([a-zA-Z0-9_-]+)/,
-  ];
-  for (const pattern of patterns) {
-    const match = url.match(pattern);
-    if (match) return `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1`;
-  }
-  if (url.includes('youtube.com/embed')) return url;
-  return url;
-}
-
 const JudgeLinkRow: React.FC<{ judgeNum: number; url: string; t: any }> = ({ judgeNum, url, t }) => {
   const [copied, setCopied] = React.useState(false);
   const [showQR, setShowQR] = React.useState(false);
