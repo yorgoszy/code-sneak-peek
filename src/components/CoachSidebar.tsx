@@ -34,6 +34,7 @@ import {
   GraduationCap,
   Shuffle,
   Radio,
+  Scale,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -239,6 +240,13 @@ export const CoachSidebar = ({
       path: effectiveCoachId ? `/dashboard/coach-competitions?coachId=${effectiveCoachId}` : "/dashboard/coach-competitions",
       badge: null,
       requiresSubscription: true,
+    },
+    {
+      icon: Scale,
+      label: "Ζύγιση",
+      path: effectiveCoachId ? `/dashboard/weigh-in?coachId=${effectiveCoachId}` : "/dashboard/weigh-in",
+      badge: null,
+      requiresSubscription: false,
     },
     {
       icon: Trophy,

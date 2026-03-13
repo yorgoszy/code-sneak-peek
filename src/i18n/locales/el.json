@@ -667,6 +667,7 @@
       "brackets": "Κλήρωση",
       "live": "Live",
       "fightCard": "Πρόγραμμα Αγώνα",
+      "weighIn": "Ζύγιση",
       "editProfile": "Επεξεργασία Προφίλ",
       "signOut": "Αποσύνδεση"
     },
@@ -951,5 +952,37 @@
       "points": "Πόντοι",
       "athletes": "αθλητές"
     }
+  },
+  "weighIn": {
+    "title": "Ζύγιση",
+    "subtitle": "Έλεγχος και έγκριση αθλητών πριν την κλήρωση",
+    "selectCompetition": "Επιλέξτε διοργάνωση",
+    "searchPlaceholder": "Αναζήτηση αθλητή, σωματείου, email...",
+    "athlete": "Αθλητής",
+    "club": "Σωματείο",
+    "category": "Κατηγορία",
+    "declaredWeight": "Όρια Κατηγ.",
+    "actualWeight": "Πραγματικό Βάρος",
+    "status": "Κατάσταση",
+    "rejections": "Απορρίψεις",
+    "actions": "Ενέργειες",
+    "weighIn": "Ζύγιση",
+    "weighInAthlete": "Ζύγιση Αθλητή",
+    "approved": "Εγκρίθηκε",
+    "rejected": "Απορρίφθηκε",
+    "pending": "Εκκρεμεί",
+    "doctorCheck": "Ιατρικός Έλεγχος",
+    "doctorCheckDesc": "Ο αθλητής πέρασε ιατρικό έλεγχο",
+    "doctorNotApproved": "Δεν πέρασε ιατρικό έλεγχο",
+    "overweight": "Υπέρβαση βάρους κατηγορίας",
+    "overweightWarning": "Υπέρβαση ορίου κατηγορίας (max: {{max}} kg)",
+    "notes": "Σημειώσεις",
+    "notesPlaceholder": "Προαιρετικές σημειώσεις...",
+    "confirm": "Επιβεβαίωση Ζύγισης",
+    "history": "Ιστορικό Ζυγίσεων",
+    "competition": "Διοργάνωση",
+    "reason": "Αιτία",
+    "noHistory": "Δεν υπάρχει ιστορικό ζυγίσεων",
+    "noRegistrations": "Δεν βρέθηκαν εγγεγραμμένοι αθλητές"
   }
 }

@@ -667,6 +667,7 @@
       "brackets": "Draw",
       "live": "Live",
       "fightCard": "Fight Card",
+      "weighIn": "Weigh-in",
       "editProfile": "Edit Profile",
       "signOut": "Sign Out"
     },
@@ -951,5 +952,37 @@
       "points": "Points",
       "athletes": "athletes"
     }
+  },
+  "weighIn": {
+    "title": "Weigh-in",
+    "subtitle": "Athlete verification and approval before draw",
+    "selectCompetition": "Select competition",
+    "searchPlaceholder": "Search athlete, club, email...",
+    "athlete": "Athlete",
+    "club": "Club",
+    "category": "Category",
+    "declaredWeight": "Category Limits",
+    "actualWeight": "Actual Weight",
+    "status": "Status",
+    "rejections": "Rejections",
+    "actions": "Actions",
+    "weighIn": "Weigh-in",
+    "weighInAthlete": "Weigh-in Athlete",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "pending": "Pending",
+    "doctorCheck": "Medical Check",
+    "doctorCheckDesc": "Athlete passed medical examination",
+    "doctorNotApproved": "Did not pass medical check",
+    "overweight": "Over category weight limit",
+    "overweightWarning": "Over category limit (max: {{max}} kg)",
+    "notes": "Notes",
+    "notesPlaceholder": "Optional notes...",
+    "confirm": "Confirm Weigh-in",
+    "history": "Weigh-in History",
+    "competition": "Competition",
+    "reason": "Reason",
+    "noHistory": "No weigh-in history",
+    "noRegistrations": "No registered athletes found"
   }
 }
