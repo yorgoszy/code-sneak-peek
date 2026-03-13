@@ -13,6 +13,7 @@ import {
   Shuffle,
   Radio,
   ClipboardList,
+  Scale,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
