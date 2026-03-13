@@ -174,12 +174,12 @@ const handler = async (req: Request): Promise<Response> => {
       const pending = registrations.filter(r => !r.weigh_in_status || r.weigh_in_status === 'pending');
 
       const resultsHtml = `
-        <div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-left: 4px solid #00ffba;">
-          <h3 style="margin: 0 0 10px 0; color: #333;">📊 Αποτελέσματα Ζύγισης</h3>
-          <p style="margin: 5px 0; color: #666;">✅ Επιτυχημένες: <strong>${passed.length}</strong></p>
-          <p style="margin: 5px 0; color: #666;">❌ Αποτυχημένες: <strong>${failed.length}</strong></p>
-          <p style="margin: 5px 0; color: #666;">⏳ Εκκρεμούν: <strong>${pending.length}</strong></p>
-          <p style="margin: 5px 0; color: #666;">📋 Σύνολο: <strong>${registrations.length}</strong></p>
+        <div style="margin: 20px 0; padding: 15px; background: #f5f5f5; border-left: 4px solid #000;">
+          <h3 style="margin: 0 0 10px 0; color: #000;">📊 Αποτελέσματα Ζύγισης</h3>
+          <p style="margin: 5px 0; color: #333;">✅ Επιτυχημένες: <strong>${passed.length}</strong></p>
+          <p style="margin: 5px 0; color: #333;">❌ Αποτυχημένες: <strong>${failed.length}</strong></p>
+          <p style="margin: 5px 0; color: #333;">⏳ Εκκρεμούν: <strong>${pending.length}</strong></p>
+          <p style="margin: 5px 0; color: #333;">📋 Σύνολο: <strong>${registrations.length}</strong></p>
         </div>
       `;
 
