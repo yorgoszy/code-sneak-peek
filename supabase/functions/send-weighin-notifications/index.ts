@@ -31,7 +31,7 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const { type, competition_id, competition_name }: WeighInNotificationRequest = await req.json();
+    const { type, competition_id, competition_name, schedule_date, schedule_start_time, schedule_end_time }: WeighInNotificationRequest = await req.json();
     console.log("🔔 Weigh-in notification:", { type, competition_id, competition_name });
 
     // Get all registered athletes and their clubs for this competition
