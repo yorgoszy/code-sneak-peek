@@ -120,10 +120,10 @@ const WeighInPage: React.FC = () => {
     if (!error && data) {
       setRegistrations(data as unknown as Registration[]);
       // Fetch weigh-in records
-      const { data: wiData } = await supabase
-        .from('competition_weigh_ins')
+      const { data: wiData } = await (supabase
+        .from('competition_weigh_ins' as any)
         .select('*')
-        .eq('competition_id', selectedCompId);
+        .eq('competition_id', selectedCompId)) as any;
 
       const grouped: Record<string, WeighInRecord[]> = {};
       (wiData || []).forEach((wi: any) => {
