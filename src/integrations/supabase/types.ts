@@ -2289,6 +2289,93 @@ export type Database = {
           },
         ]
       }
+      competition_weigh_ins: {
+        Row: {
+          actual_weight: number | null
+          approved_by: string | null
+          athlete_id: string
+          category_id: string
+          competition_id: string
+          created_at: string
+          declared_weight: number | null
+          doctor_approved: boolean | null
+          id: string
+          notes: string | null
+          registration_id: string
+          rejection_reason: string | null
+          updated_at: string
+          weigh_in_approved: boolean | null
+        }
+        Insert: {
+          actual_weight?: number | null
+          approved_by?: string | null
+          athlete_id: string
+          category_id: string
+          competition_id: string
+          created_at?: string
+          declared_weight?: number | null
+          doctor_approved?: boolean | null
+          id?: string
+          notes?: string | null
+          registration_id: string
+          rejection_reason?: string | null
+          updated_at?: string
+          weigh_in_approved?: boolean | null
+        }
+        Update: {
+          actual_weight?: number | null
+          approved_by?: string | null
+          athlete_id?: string
+          category_id?: string
+          competition_id?: string
+          created_at?: string
+          declared_weight?: number | null
+          doctor_approved?: boolean | null
+          id?: string
+          notes?: string | null
+          registration_id?: string
+          rejection_reason?: string | null
+          updated_at?: string
+          weigh_in_approved?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competition_weigh_ins_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_weigh_ins_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_weigh_ins_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "federation_competition_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_weigh_ins_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "federation_competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_weigh_ins_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "federation_competition_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       competitions: {
         Row: {
           competition_date: string
