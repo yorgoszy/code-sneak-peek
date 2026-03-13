@@ -35,6 +35,8 @@ const JudgeScoring: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const currentMatchIdRef = useRef<string | null>(null);
+  const [displayTime, setDisplayTime] = useState<number>(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Load match by ID
   const loadMatch = useCallback(async (matchId: string) => {
