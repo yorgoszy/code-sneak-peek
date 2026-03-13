@@ -90,7 +90,28 @@ const JudgeScoring: React.FC = () => {
     }
 
     if (matchData) {
-      setMatch(matchData as MatchData);
+      let enrichedMatch = matchData as MatchData;
+
+      // Fetch athlete names
+      const athleteIds = [matchData.athlete1_id, matchData.athlete2_id].filter(Boolean);
+      if (athleteIds.length > 0) {
+        const { data: athletes } = await supabase
+          .from('app_users')
+          .select('id, name, photo_url, avatar_url')
+          .in('id', athleteIds as string[]);
+
+        if (athletes) {
+          const a1 = athletes.find(a => a.id === matchData.athlete1_id);
+          const a2 = athletes.find(a => a.id === matchData.athlete2_id);
+          enrichedMatch = {
+            ...enrichedMatch,
+            athlete1: a1 ? { name: a1.name, photo_url: a1.photo_url, avatar_url: a1.avatar_url } : null,
+            athlete2: a2 ? { name: a2.name, photo_url: a2.photo_url, avatar_url: a2.avatar_url } : null,
+          };
+        }
+      }
+
+      setMatch(enrichedMatch);
       // Load existing scores for this judge
       const { data: existingScores } = await supabase
         .from('competition_match_judge_scores')
