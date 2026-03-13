@@ -362,6 +362,10 @@ const WeighInPage: React.FC = () => {
                                 latestWeighIn?.doctor_approved
                                   ? <Check className="w-5 h-5 text-[#00ffba]" />
                                   : <X className="w-5 h-5 text-destructive" />
+                              ) : reg.weigh_in_status === 'approved' || reg.weigh_in_status === 'rejected' ? (
+                                doctorChecks[reg.id]
+                                  ? <Check className="w-5 h-5 text-[#00ffba]" />
+                                  : <X className="w-5 h-5 text-destructive" />
                               ) : canManageWeighIn ? (
                                 <button
                                   onClick={() => toggleDoctor(reg.id)}
@@ -394,7 +398,7 @@ const WeighInPage: React.FC = () => {
                                     step="0.01"
                                     value={currentWeight}
                                     onChange={e => setWeights(prev => ({ ...prev, [reg.id]: e.target.value }))}
-                                    className={`rounded-none h-8 text-sm ${isOverweight ? 'border-destructive' : ''}`}
+                                    className={`no-spinners rounded-none h-8 text-sm ${isOverweight ? 'border-destructive' : ''}`}
                                     placeholder="kg"
                                   />
                                 </div>
