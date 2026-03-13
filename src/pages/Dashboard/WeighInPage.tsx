@@ -473,53 +473,37 @@ const WeighInPage: React.FC = () => {
               </div>
             )}
 
-            {/* Schedule Section */}
+            {/* Schedule Section - Compact */}
             {canManageWeighIn && selectedCompId && (
-              <div className="border border-border p-4 mb-6">
-                <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  Πρόγραμμα Ζύγισης
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Ημερομηνία</Label>
+              <div className="border border-border px-3 py-2 mb-4">
+                <div className="flex items-center flex-wrap gap-3">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                    <Clock className="w-3.5 h-3.5" />
+                    Πρόγραμμα:
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Input
                       type="date"
                       value={scheduleDate}
                       onChange={e => setScheduleDate(e.target.value)}
-                      className="rounded-none"
+                      className="rounded-none h-7 text-xs w-[130px]"
                     />
-                  </div>
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Ώρα Έναρξης</Label>
                     <Input
                       type="time"
                       value={scheduleStartTime}
                       onChange={e => setScheduleStartTime(e.target.value)}
-                      className="rounded-none"
+                      className="rounded-none h-7 text-xs w-[100px]"
                     />
-                  </div>
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Ώρα Λήξης</Label>
+                    <span className="text-xs text-muted-foreground">—</span>
                     <Input
                       type="time"
                       value={scheduleEndTime}
                       onChange={e => setScheduleEndTime(e.target.value)}
-                      className="rounded-none"
+                      className="rounded-none h-7 text-xs w-[100px]"
                     />
                   </div>
-                </div>
-                <div className="flex items-center justify-between mt-3">
-                  <div className="text-xs text-muted-foreground">
-                    {scheduleDate && scheduleStartTime && scheduleEndTime && (
-                      <span>
-                        {new Date(scheduleDate + 'T00:00:00').toLocaleDateString('el-GR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                        {' • '}{scheduleStartTime} - {scheduleEndTime}
-                      </span>
-                    )}
-                  </div>
-                  <Button size="sm" onClick={saveSchedule} disabled={savingSchedule} className="rounded-none bg-black hover:bg-black/90 text-white">
-                    <Save className="w-4 h-4 mr-1" />
+                  <Button size="sm" onClick={saveSchedule} disabled={savingSchedule} className="rounded-none h-7 text-xs bg-black hover:bg-black/90 text-white px-3">
+                    <Save className="w-3 h-3 mr-1" />
                     {savingSchedule ? '...' : 'Αποθήκευση'}
                   </Button>
                 </div>
