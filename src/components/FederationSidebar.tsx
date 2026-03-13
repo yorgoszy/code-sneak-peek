@@ -12,6 +12,7 @@ import {
   Trophy,
   Shuffle,
   Radio,
+  ClipboardList,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -45,6 +46,7 @@ export const FederationSidebar = ({
     { icon: Swords, label: t("federation.sidebar.competitions"), path: "/dashboard/federation-competitions" },
     { icon: Shuffle, label: t("federation.sidebar.brackets"), path: "/dashboard/federation-brackets" },
     { icon: Radio, label: t("federation.sidebar.live"), path: "/dashboard/federation-live" },
+    { icon: ClipboardList, label: t("federation.sidebar.fightCard"), path: "/dashboard/federation-fight-card" },
     { icon: Trophy, label: "Ranking", path: "/dashboard/ranking" },
     { icon: TrendingUp, label: t("federation.sidebar.progress"), path: "/dashboard/federation-progress" },
     { icon: MonitorPlay, label: t("federation.sidebar.videoAnalysis"), path: "/dashboard/federation-video-analysis" },
