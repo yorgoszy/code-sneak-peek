@@ -128,8 +128,8 @@ const handler = async (req: Request): Promise<Response> => {
             subject: `⚖️ Έναρξη Ζύγισης: ${competition_name}`,
             html: `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
-                <div style="background: #000; padding: 20px 30px;">
-                  <img src="${siteUrl}/images/email-icon.png" alt="HYPERKIDS" style="height: 32px; width: auto;" />
+                <div style="background: #000; padding: 16px 30px;">
+                  <span style="color: #fff; font-size: 18px; font-weight: 900; letter-spacing: 3px; font-family: Arial, sans-serif;">HYPER<span style="font-style: italic;">K</span>IDS</span>
                 </div>
                 <div style="padding: 30px; border: 1px solid #e0e0e0; border-top: none;">
                   <h2 style="color: #000; margin: 0 0 5px 0; font-size: 22px;">⚖️ Έναρξη Ζύγισης</h2>
@@ -150,7 +150,7 @@ const handler = async (req: Request): Promise<Response> => {
                   </div>
                 </div>
                 <div style="padding: 15px 30px; border-top: 1px solid #e0e0e0;">
-                  <img src="${siteUrl}/images/email-logo.png" alt="HYPERKIDS" style="height: 14px; width: auto; opacity: 0.5;" />
+                  <span style="color: #999; font-size: 10px; font-weight: 900; letter-spacing: 2px; font-family: Arial, sans-serif;">HYPERKIDS</span>
                 </div>
               </div>
             `,
@@ -195,8 +195,8 @@ const handler = async (req: Request): Promise<Response> => {
             subject: `⚖️ Λήξη Ζύγισης: ${competition_name}`,
             html: `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
-                <div style="background: #000; padding: 20px 30px;">
-                  <img src="${siteUrl}/images/email-icon.png" alt="HYPERKIDS" style="height: 32px; width: auto;" />
+                <div style="background: #000; padding: 16px 30px;">
+                  <span style="color: #fff; font-size: 18px; font-weight: 900; letter-spacing: 3px; font-family: Arial, sans-serif;">HYPER<span style="font-style: italic;">K</span>IDS</span>
                 </div>
                 <div style="padding: 30px; border: 1px solid #e0e0e0; border-top: none;">
                   <h2 style="color: #000; margin: 0 0 5px 0; font-size: 22px;">⚖️ Λήξη Ζύγισης</h2>
@@ -215,7 +215,7 @@ const handler = async (req: Request): Promise<Response> => {
                   </div>
                 </div>
                 <div style="padding: 15px 30px; border-top: 1px solid #e0e0e0;">
-                  <img src="${siteUrl}/images/email-logo.png" alt="HYPERKIDS" style="height: 14px; width: auto; opacity: 0.5;" />
+                  <span style="color: #999; font-size: 10px; font-weight: 900; letter-spacing: 2px; font-family: Arial, sans-serif;">HYPERKIDS</span>
                 </div>
               </div>
             `,
@@ -252,8 +252,8 @@ const handler = async (req: Request): Promise<Response> => {
             subject: `📅 Πρόγραμμα Ζύγισης: ${competition_name}`,
             html: `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
-                <div style="background: #000; padding: 20px 30px;">
-                  <img src="${siteUrl}/images/email-icon.png" alt="HYPERKIDS" style="height: 32px; width: auto;" />
+                <div style="background: #000; padding: 16px 30px;">
+                  <span style="color: #fff; font-size: 18px; font-weight: 900; letter-spacing: 3px; font-family: Arial, sans-serif;">HYPER<span style="font-style: italic;">K</span>IDS</span>
                 </div>
                 <div style="padding: 30px; border: 1px solid #e0e0e0; border-top: none;">
                   <h2 style="color: #000; margin: 0 0 5px 0; font-size: 22px;">📅 Πρόγραμμα Ζύγισης</h2>
@@ -278,7 +278,7 @@ const handler = async (req: Request): Promise<Response> => {
                   </div>
                 </div>
                 <div style="padding: 15px 30px; border-top: 1px solid #e0e0e0;">
-                  <img src="${siteUrl}/images/email-logo.png" alt="HYPERKIDS" style="height: 14px; width: auto; opacity: 0.5;" />
+                  <span style="color: #999; font-size: 10px; font-weight: 900; letter-spacing: 2px; font-family: Arial, sans-serif;">HYPERKIDS</span>
                 </div>
               </div>
             `,
