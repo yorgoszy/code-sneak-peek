@@ -110,6 +110,7 @@ import FederationSubscriptions from "@/pages/Dashboard/FederationSubscriptions";
 import FederationCompetitions from "@/pages/Dashboard/FederationCompetitions";
 import RankingPage from "@/pages/Dashboard/RankingPage";
 import FederationBrackets from "@/pages/Dashboard/FederationBrackets";
+const FederationFightCard = React.lazy(() => import("@/pages/Dashboard/FederationFightCard"));
 import { FederationPersistentLayout } from "@/components/federation/FederationPersistentLayout";
 const queryClient = new QueryClient({
   defaultOptions: {
