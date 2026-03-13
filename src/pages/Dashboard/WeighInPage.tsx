@@ -60,6 +60,7 @@ const WeighInPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [weighInActive, setWeighInActive] = useState(false);
+  const [weighInEnded, setWeighInEnded] = useState(false);
   const [togglingWeighIn, setTogglingWeighIn] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
