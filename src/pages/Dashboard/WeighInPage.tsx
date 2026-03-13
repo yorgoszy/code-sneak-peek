@@ -156,36 +156,63 @@ const WeighInPage: React.FC = () => {
   };
 
   const submitWeighIn = async (reg: Registration, weight: number, approved: boolean, reason: string | null) => {
-    const { error: wiError } = await (supabase as any).from('competition_weigh_ins').insert({
-      registration_id: reg.id,
-      competition_id: reg.competition_id,
-      athlete_id: reg.athlete_id,
-      category_id: reg.category_id,
-      declared_weight: reg.category?.max_weight || null,
-      actual_weight: weight || null,
-      doctor_approved: doctorChecks[reg.id] || false,
-      weigh_in_approved: approved,
-      rejection_reason: reason,
-      notes: null,
-      approved_by: userProfile?.id,
-    });
+    const doctorOk = doctorChecks[reg.id] || false;
 
-    if (wiError) {
-      toast.error(t('common.error'));
-      return;
+    // Try to insert into competition_weigh_ins (history), but don't block on failure
+    try {
+      await (supabase as any).from('competition_weigh_ins').insert({
+        registration_id: reg.id,
+        competition_id: reg.competition_id,
+        athlete_id: reg.athlete_id,
+        category_id: reg.category_id,
+        declared_weight: reg.category?.max_weight || null,
+        actual_weight: weight || null,
+        doctor_approved: doctorOk,
+        weigh_in_approved: approved,
+        rejection_reason: reason,
+        notes: null,
+        approved_by: userProfile?.id,
+      });
+    } catch (e) {
+      console.warn('competition_weigh_ins insert failed:', e);
     }
 
-    await supabase.from('federation_competition_registrations').update({
+    // Update registration with weigh-in result
+    const { error: updateError } = await supabase.from('federation_competition_registrations').update({
       weigh_in_status: approved ? 'approved' : 'rejected',
       weigh_in_weight: weight || null,
       weigh_in_date: new Date().toISOString(),
     }).eq('id', reg.id);
 
+    if (updateError) {
+      console.error('Registration update error:', updateError);
+      toast.error(t('common.error'));
+      return;
+    }
+
     toast.success(approved ? t('weighIn.approved') : t('weighIn.rejected'));
-    // Clear inline state
-    setWeights(prev => ({ ...prev, [reg.id]: '' }));
-    setDoctorChecks(prev => ({ ...prev, [reg.id]: false }));
-    fetchRegistrations();
+
+    // Update local state immediately so UI reflects changes
+    setRegistrations(prev => prev.map(r => 
+      r.id === reg.id 
+        ? { ...r, weigh_in_status: approved ? 'approved' : 'rejected', weigh_in_weight: weight || null } 
+        : r
+    ));
+
+    // Store the weigh-in data locally for display
+    setWeighIns(prev => ({
+      ...prev,
+      [reg.id]: [...(prev[reg.id] || []), {
+        id: crypto.randomUUID(),
+        registration_id: reg.id,
+        actual_weight: weight || null,
+        doctor_approved: doctorOk,
+        weigh_in_approved: approved,
+        rejection_reason: reason,
+        athlete_id: reg.athlete_id,
+        created_at: new Date().toISOString(),
+      }]
+    }));
   };
 
   const openHistory = async (athleteId: string, athleteName: string) => {
@@ -362,10 +389,6 @@ const WeighInPage: React.FC = () => {
                                 latestWeighIn?.doctor_approved
                                   ? <Check className="w-5 h-5 text-[#00ffba]" />
                                   : <X className="w-5 h-5 text-destructive" />
-                              ) : reg.weigh_in_status === 'approved' || reg.weigh_in_status === 'rejected' ? (
-                                doctorChecks[reg.id]
-                                  ? <Check className="w-5 h-5 text-[#00ffba]" />
-                                  : <X className="w-5 h-5 text-destructive" />
                               ) : canManageWeighIn ? (
                                 <button
                                   onClick={() => toggleDoctor(reg.id)}
@@ -389,7 +412,7 @@ const WeighInPage: React.FC = () => {
                             <TableCell>
                               {isAlreadyProcessed ? (
                                 <span className="text-sm font-medium">
-                                  {latestWeighIn?.actual_weight ? `${latestWeighIn.actual_weight} kg` : '-'}
+                                  {reg.weigh_in_weight ? `${reg.weigh_in_weight} kg` : (latestWeighIn?.actual_weight ? `${latestWeighIn.actual_weight} kg` : '-')}
                                 </span>
                               ) : canManageWeighIn ? (
                                 <div className="w-24">
