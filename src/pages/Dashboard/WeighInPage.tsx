@@ -157,12 +157,31 @@ const WeighInPage: React.FC = () => {
       toast.error('Σφάλμα αποθήκευσης');
     } else {
       toast.success('Το πρόγραμμα ζύγισης αποθηκεύτηκε!');
-      // Update local competitions state
       setCompetitions(prev => prev.map(c => 
         c.id === selectedCompId 
           ? { ...c, weigh_in_date: scheduleDate || null, weigh_in_start_time: scheduleStartTime || null, weigh_in_end_time: scheduleEndTime || null }
           : c
       ));
+
+      // Send notification to all stakeholders (athletes, clubs, federation)
+      const selectedComp = competitions.find(c => c.id === selectedCompId);
+      if (selectedComp && scheduleDate) {
+        try {
+          await supabase.functions.invoke('send-weighin-notifications', {
+            body: {
+              type: 'weigh_in_schedule_announced',
+              competition_id: selectedCompId,
+              competition_name: selectedComp.name,
+              schedule_date: scheduleDate,
+              schedule_start_time: scheduleStartTime,
+              schedule_end_time: scheduleEndTime,
+            }
+          });
+          toast.success('Ειδοποιήσεις στάλθηκαν σε όλους!');
+        } catch (e) {
+          console.error('Failed to send schedule notifications:', e);
+        }
+      }
     }
     setSavingSchedule(false);
   };

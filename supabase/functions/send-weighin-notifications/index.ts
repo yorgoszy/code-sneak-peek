@@ -8,9 +8,12 @@ const corsHeaders = {
 };
 
 interface WeighInNotificationRequest {
-  type: 'weigh_in_started' | 'weigh_in_ended';
+  type: 'weigh_in_started' | 'weigh_in_ended' | 'weigh_in_schedule_announced';
   competition_id: string;
   competition_name: string;
+  schedule_date?: string;
+  schedule_start_time?: string;
+  schedule_end_time?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
