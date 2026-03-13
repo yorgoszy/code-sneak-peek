@@ -376,7 +376,7 @@ const JudgeScoring: React.FC = () => {
             {(ring?.timer_remaining_seconds > 0 || ring?.timer_running_since) && (
               <Badge 
                 variant="outline" 
-                className={`rounded-none text-sm font-mono font-bold gap-1 ${ring?.timer_is_break ? 'border-yellow-500 text-yellow-600' : 'border-[#00ffba] text-[#00ffba]'}`}
+                className={`rounded-none text-sm font-mono font-bold gap-1 ${ring?.timer_is_break ? 'border-yellow-500 text-yellow-600' : 'border-foreground text-foreground'}`}
               >
                 <Clock className="h-3 w-3" />
                 {Math.floor(displayTime / 60)}:{(displayTime % 60).toString().padStart(2, '0')}
