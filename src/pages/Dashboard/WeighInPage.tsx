@@ -172,6 +172,10 @@ const WeighInPage: React.FC = () => {
 
   const handleRefresh = async () => {
     setRefreshing(true);
+    // Clear all local input state
+    setDoctorChecks({});
+    setWeights({});
+    setSubmitting({});
     await fetchRegistrations();
     setRefreshing(false);
     toast.success('Ανανεώθηκε!');
