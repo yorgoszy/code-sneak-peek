@@ -210,6 +210,7 @@ const WeighInPage: React.FC = () => {
       if (error) throw error;
 
       setWeighInActive(newStatus);
+      if (!newStatus) setWeighInEnded(true);
 
       // Send notification emails
       try {
