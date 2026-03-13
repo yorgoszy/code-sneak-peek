@@ -289,96 +289,86 @@ const generateGeneralReceiptHTML = (data: any) => {
 };
 
 const generateReceiptHTML = (data: ReceiptData) => {
+  const assetsUrl = "https://hyperkids.lovable.app";
   return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <title>Απόδειξη Συνδρομής - HYPERKIDS</title>
-        <style>
-            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
-            .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-            .header { text-align: left; border-bottom: 2px solid #000000; padding-bottom: 20px; margin-bottom: 30px; }
-            .receipt-title { font-size: 24px; color: #000000; margin: 20px 0; }
-            .info-section { margin: 20px 0; }
-            .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
-            .label { font-weight: bold; color: #333; }
-            .value { color: #666; }
-            .total-section { background: #f8f9fa; padding: 15px; margin: 20px 0; border-left: 4px solid #000000; }
-            .total-amount { font-size: 24px; font-weight: bold; color: #000000; text-align: right; }
-            .footer { text-align: right; margin-top: 30px; color: #666; font-size: 12px; border-top: 1px solid #eee; padding-top: 20px; }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <img src="https://www.hyperkids.gr/images/hyperkids-logo-email.png" alt="HYPERKIDS" style="height: 45px; width: auto; margin-bottom: 10px; display: block;" />
-                <p>ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ</p>
-                <p>Διεύθυνση: ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46, ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
-                <p>Email: info@hyperkids.gr | Web: www.hyperkids.gr</p>
-                <p>Τηλ: 2310 529104</p>
-            </div>
-            
-            <h2 class="receipt-title">ΑΠΟΔΕΙΞΗ ΣΥΝΔΡΟΜΗΣ</h2>
-            
-            <div class="info-section">
-                <div class="info-row">
-                    <span class="label">Αριθμός Απόδειξης:</span>
-                    <span class="value">${data.invoiceNumber}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Ημερομηνία Έκδοσης:</span>
-                    <span class="value">${new Date().toLocaleDateString('el-GR')}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Πελάτης:</span>
-                    <span class="value">${data.userName}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Email:</span>
-                    <span class="value">${data.userEmail}</span>
-                </div>
-            </div>
-            
-            <div class="info-section">
-                <h3>Στοιχεία Συνδρομής</h3>
-                <div class="info-row">
-                    <span class="label">Τύπος Συνδρομής:</span>
-                    <span class="value">${data.subscriptionType}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Ημερομηνία Έναρξης:</span>
-                    <span class="value">${new Date(data.startDate).toLocaleDateString('el-GR')}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Ημερομηνία Λήξης:</span>
-                    <span class="value">${new Date(data.endDate).toLocaleDateString('el-GR')}</span>
-                </div>
-            </div>
-            
-            <div class="total-section">
-                <div class="info-row">
-                    <span class="label">Καθαρή Αξία:</span>
-                    <span class="value">€${(data.price / 1.13).toFixed(2)}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">ΦΠΑ (13%):</span>
-                    <span class="value">€${(data.price - data.price / 1.13).toFixed(2)}</span>
-                </div>
-                <div style="margin-top: 10px; border-top: 2px solid #000000; padding-top: 10px;">
-                    <div class="total-amount">
-                        Σύνολο: €${data.price.toFixed(2)}
-                    </div>
-                </div>
-            </div>
-            
-            <div class="footer">
-                <img src="https://www.hyperkids.gr/images/hyperkids-logo-email.png" alt="HYPERKIDS Logo" style="height: 30px; width: auto; display: block; margin-left: auto; margin-bottom: 10px;" />
-                <p><em>Αυτή η απόδειξη εκδόθηκε ηλεκτρονικά και θα αποσταλεί στο MyData της AADE</em></p>
-            </div>
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 0; background: #ffffff;">
+      <div style="background: #000; padding: 20px 30px;">
+        <img src="${assetsUrl}/images/email-icon-white.png" alt="HYPERKIDS" style="height: 32px; width: auto;" />
+      </div>
+      <div style="padding: 30px; border: 1px solid #e0e0e0; border-top: none;">
+        <h2 style="color: #000; margin: 0 0 5px 0; font-size: 22px;">🧾 Απόδειξη Συνδρομής</h2>
+        
+        <div style="margin: 20px 0; padding: 20px; background: #f5f5f5; border-left: 4px solid #000;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 4px 0; color: #000; font-size: 14px; font-weight: 600;">Αρ. Απόδειξης:</td>
+              <td style="padding: 4px 0; color: #333; font-size: 14px; text-align: right;">${data.invoiceNumber}</td>
+            </tr>
+            <tr>
+              <td style="padding: 4px 0; color: #000; font-size: 14px; font-weight: 600;">Ημ. Έκδοσης:</td>
+              <td style="padding: 4px 0; color: #333; font-size: 14px; text-align: right;">${new Date().toLocaleDateString('el-GR')}</td>
+            </tr>
+            <tr>
+              <td style="padding: 4px 0; color: #000; font-size: 14px; font-weight: 600;">Πελάτης:</td>
+              <td style="padding: 4px 0; color: #333; font-size: 14px; text-align: right;">${data.userName}</td>
+            </tr>
+            <tr>
+              <td style="padding: 4px 0; color: #000; font-size: 14px; font-weight: 600;">Email:</td>
+              <td style="padding: 4px 0; color: #333; font-size: 14px; text-align: right;">${data.userEmail}</td>
+            </tr>
+          </table>
         </div>
-    </body>
-    </html>
+
+        <p style="color: #000; font-size: 14px; font-weight: 600; margin: 20px 0 10px 0;">Στοιχεία Συνδρομής</p>
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr>
+              <th style="padding: 8px 0; border-bottom: 2px solid #000; color: #000; font-size: 13px; text-align: left;">Τύπος</th>
+              <th style="padding: 8px 0; border-bottom: 2px solid #000; color: #000; font-size: 13px; text-align: center;">Έναρξη</th>
+              <th style="padding: 8px 0; border-bottom: 2px solid #000; color: #000; font-size: 13px; text-align: right;">Λήξη</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 10px 0; border-bottom: 1px solid #e0e0e0; color: #333; font-size: 14px;">${data.subscriptionType}</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid #e0e0e0; color: #333; font-size: 14px; text-align: center;">${new Date(data.startDate).toLocaleDateString('el-GR')}</td>
+              <td style="padding: 10px 0; border-bottom: 1px solid #e0e0e0; color: #333; font-size: 14px; text-align: right;">${new Date(data.endDate).toLocaleDateString('el-GR')}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top: 20px; padding: 15px; background: #f5f5f5; border-left: 4px solid #000;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 4px 0; color: #333; font-size: 14px;">Καθαρή Αξία:</td>
+              <td style="padding: 4px 0; color: #333; font-size: 14px; text-align: right;">€${(data.price / 1.13).toFixed(2)}</td>
+            </tr>
+            <tr>
+              <td style="padding: 4px 0; color: #333; font-size: 14px;">ΦΠΑ (13%):</td>
+              <td style="padding: 4px 0; color: #333; font-size: 14px; text-align: right;">€${(data.price - data.price / 1.13).toFixed(2)}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0 0 0; border-top: 2px solid #000; color: #000; font-size: 20px; font-weight: bold;">Σύνολο:</td>
+              <td style="padding: 8px 0 0 0; border-top: 2px solid #000; color: #000; font-size: 20px; font-weight: bold; text-align: right;">€${data.price.toFixed(2)}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+          <p style="color: #999; font-size: 11px; line-height: 1.5; margin: 0;">
+            <strong>HYPERKIDS</strong> - ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ<br/>
+            ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46, ΘΕΣΣΑΛΟΝΙΚΗ 54627<br/>
+            Τηλ: 2310 529104 | Email: info@hyperkids.gr | Web: www.hyperkids.gr
+          </p>
+          <p style="color: #aaa; font-size: 10px; margin-top: 8px; font-style: italic;">
+            Αυτή η απόδειξη εκδόθηκε ηλεκτρονικά και θα αποσταλεί στο MyData της AADE
+          </p>
+        </div>
+      </div>
+      <div style="padding: 15px 30px; border-top: 1px solid #e0e0e0;">
+        <img src="${assetsUrl}/images/email-logo.png" alt="HYPERKIDS" style="height: 12px; width: auto; opacity: 0.4;" />
+      </div>
+    </div>
   `;
 };
 
