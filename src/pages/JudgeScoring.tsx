@@ -92,7 +92,7 @@ const JudgeScoring: React.FC = () => {
 
     const { data: ringData, error: ringError } = await supabase
       .from('competition_rings')
-      .select('id, ring_name, current_match_id')
+      .select('id, ring_name, current_match_id, timer_remaining_seconds, timer_running_since, timer_current_round, timer_is_break')
       .eq('id', ringId)
       .maybeSingle();
 
