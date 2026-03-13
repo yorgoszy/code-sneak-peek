@@ -402,6 +402,14 @@ const WeighInPage: React.FC = () => {
               </div>
             </div>
 
+            {/* Weigh-in status indicator */}
+            {weighInActive && (
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-3 h-3 bg-[#00ffba] rounded-full animate-pulse" />
+                <span className="text-sm font-medium text-[#00ffba]">Ζύγιση σε εξέλιξη</span>
+              </div>
+            )}
+
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-3 mb-6">
               <Select value={selectedCompId} onValueChange={setSelectedCompId}>
