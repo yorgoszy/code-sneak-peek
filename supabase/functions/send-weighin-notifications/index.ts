@@ -115,8 +115,9 @@ const handler = async (req: Request): Promise<Response> => {
     if (type === 'weigh_in_started') {
       // Send "weigh-in started" email
       const emailPromises = Array.from(emailRecipients.values()).map(async (recipient) => {
-        try {
-          const res = await resend.emails.send({
+        return sendEmailWithResend(
+          resend,
+          {
             from: "HyperGym <noreply@hypergym.gr>",
             to: [recipient.email],
             subject: `⚖️ Έναρξη Ζύγισης: ${competition_name}`,
@@ -142,13 +143,10 @@ const handler = async (req: Request): Promise<Response> => {
                 </div>
               </div>
             `,
-          });
-          console.log(`✅ Start email sent to ${recipient.email}`);
-          return { success: true, email: recipient.email };
-        } catch (error) {
-          console.error(`❌ Failed to send to ${recipient.email}:`, error);
-          return { success: false, email: recipient.email, error: error.message };
-        }
+          },
+          recipient.email,
+          'Start email'
+        );
       });
 
       const results = await Promise.all(emailPromises);
