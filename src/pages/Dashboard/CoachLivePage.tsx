@@ -16,20 +16,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { ReadOnlyRingScoreboard } from "@/components/federation/ReadOnlyRingScoreboard";
 import { VideoOverlayScores } from "@/components/federation/VideoOverlayScores";
-
-function getYoutubeEmbedUrl(url: string): string | null {
-  if (!url) return null;
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/live\/)([a-zA-Z0-9_-]+)/,
-    /youtube\.com\/embed\/([a-zA-Z0-9_-]+)/,
-  ];
-  for (const pattern of patterns) {
-    const match = url.match(pattern);
-    if (match) return `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&controls=0&disablekb=1&modestbranding=1&rel=0&live=1`;
-  }
-  if (url.includes('youtube.com/embed')) return url;
-  return url;
-}
+import { SyncedYouTubePlayer } from "@/components/federation/SyncedYouTubePlayer";
+import { RingCameraViewer } from "@/components/federation/webrtc/RingCameraViewer";
 
 const getRingLetter = (num: number) => String.fromCharCode(64 + num);
 

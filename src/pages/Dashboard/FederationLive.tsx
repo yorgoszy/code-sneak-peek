@@ -22,7 +22,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { RingScoreboard } from "@/components/federation/RingScoreboard";
 import { VideoOverlayScores } from "@/components/federation/VideoOverlayScores";
-import { CameraFeed } from "@/components/federation/CameraFeed";
+import { SyncedYouTubePlayer } from "@/components/federation/SyncedYouTubePlayer";
+import { RingCameraBroadcaster } from "@/components/federation/webrtc/RingCameraBroadcaster";
 
 interface Competition {
   id: string;
