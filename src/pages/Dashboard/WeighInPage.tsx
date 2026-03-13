@@ -81,11 +81,14 @@ const WeighInPage: React.FC = () => {
 
   const fetchCompetitions = async () => {
     if (!userProfile?.id) return;
-    let query = supabase.from('federation_competitions').select('id, name, competition_date').order('competition_date', { ascending: false });
+    let query = supabase.from('federation_competitions').select('id, name, competition_date, weigh_in_active').order('competition_date', { ascending: false });
     if (isFederationUser) query = query.eq('federation_id', userProfile.id);
-    const { data } = await query;
+    const { data } = await query as any;
     setCompetitions(data || []);
-    if (data && data.length > 0) setSelectedCompId(data[0].id);
+    if (data && data.length > 0) {
+      setSelectedCompId(data[0].id);
+      setWeighInActive(data[0].weigh_in_active || false);
+    }
   };
 
   const fetchRegistrations = async () => {
