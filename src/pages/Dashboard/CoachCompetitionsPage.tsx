@@ -696,7 +696,7 @@ const CoachCompetitionsContent: React.FC = () => {
 
                 {/* Actions */}
                 <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t mt-auto">
-                  {!isAllDeadlinesPassed(comp) && (
+                  {comp.status === 'active' && !isAllDeadlinesPassed(comp) && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -707,6 +707,9 @@ const CoachCompetitionsContent: React.FC = () => {
                       <span className="hidden sm:inline">Δήλωση</span>
                       <span className="sm:hidden">+</span>
                     </Button>
+                  )}
+                  {comp.status === 'upcoming' && (
+                    <span className="text-xs text-muted-foreground italic">Οι δηλώσεις δεν έχουν ανοίξει ακόμα</span>
                   )}
                   {comp.regulations_pdf_url && (
                     <a href={comp.regulations_pdf_url} target="_blank" rel="noopener noreferrer">
