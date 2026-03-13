@@ -45,6 +45,8 @@ interface RingInfo {
   ring_number: number;
   ring_name: string | null;
   current_match_id: string | null;
+  match_range_start: number | null;
+  match_range_end: number | null;
 }
 
 const FederationFightCard: React.FC = () => {
