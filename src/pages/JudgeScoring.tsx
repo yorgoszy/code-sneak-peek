@@ -337,8 +337,12 @@ const JudgeScoring: React.FC = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-foreground text-background p-2 text-center">
-        <h1 className="text-base font-bold">Judge {judgeNumber}</h1>
-        <p className="text-[10px] opacity-70">{ring?.ring_name || `Ring`}</p>
+        <div className="flex items-center justify-center gap-3">
+          <div>
+            <h1 className="text-base font-bold">Judge {judgeNumber}</h1>
+            <p className="text-[10px] opacity-70">{ring?.ring_name || `Ring`}</p>
+          </div>
+        </div>
       </div>
 
       {loading ? (
