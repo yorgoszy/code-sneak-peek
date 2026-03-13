@@ -39,6 +39,12 @@ interface Competition {
   id: string;
   name: string;
   competition_date: string;
+  weigh_in_active?: boolean;
+  weigh_in_date?: string | null;
+  weigh_in_start_time?: string | null;
+  weigh_in_end_time?: string | null;
+  weigh_in_started_at?: string | null;
+  weigh_in_ended_at?: string | null;
 }
 
 const WeighInPage: React.FC = () => {
