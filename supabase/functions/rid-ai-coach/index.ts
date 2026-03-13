@@ -589,21 +589,32 @@ serve(async (req) => {
           
           for (const comp of compsData) {
             const isRanking = comp.counts_for_ranking ? ' [RANKING]' : '';
-            const weighInStatus = comp.weigh_in_active ? '⚖️ ΖΥΓΙΣΗ ΣΕ ΕΞΕΛΙΞΗ' : '';
+            
+            // Clear weigh-in status determination
+            let weighInStatusLine = '';
+            if (comp.weigh_in_active === true) {
+              weighInStatusLine = '  🟢 ΚΑΤΑΣΤΑΣΗ ΖΥΓΙΣΗΣ: ΣΕ ΕΞΕΛΙΞΗ (LIVE) - Η ζύγιση είναι ΤΩΡΑ ενεργή!';
+              if (comp.weigh_in_started_at) {
+                weighInStatusLine += ` (ξεκίνησε: ${new Date(comp.weigh_in_started_at).toLocaleString('el-GR')})`;
+              }
+            } else if (comp.weigh_in_ended_at) {
+              weighInStatusLine = `  ⚖️ ΚΑΤΑΣΤΑΣΗ ΖΥΓΙΣΗΣ: ΟΛΟΚΛΗΡΩΘΗΚΕ (τελείωσε: ${new Date(comp.weigh_in_ended_at).toLocaleString('el-GR')})`;
+              if (comp.weigh_in_started_at) {
+                weighInStatusLine += ` (είχε ξεκινήσει: ${new Date(comp.weigh_in_started_at).toLocaleString('el-GR')})`;
+              }
+            } else if (comp.weigh_in_started_at) {
+              weighInStatusLine = `  ⚖️ ΚΑΤΑΣΤΑΣΗ ΖΥΓΙΣΗΣ: Είχε ξεκινήσει στις ${new Date(comp.weigh_in_started_at).toLocaleString('el-GR')} αλλά δεν είναι ενεργή τώρα`;
+            } else {
+              weighInStatusLine = '  ⚖️ ΚΑΤΑΣΤΑΣΗ ΖΥΓΙΣΗΣ: ΔΕΝ ΕΧΕΙ ΞΕΚΙΝΗΣΕΙ ΑΚΟΜΑ';
+            }
+            
             const weighInSchedule = (comp.weigh_in_start_time || comp.weigh_in_end_time) 
               ? `⏰ Ώρες ζύγισης: ${comp.weigh_in_start_time || '?'} - ${comp.weigh_in_end_time || '?'}` 
               : '';
-            const weighInTimes = comp.weigh_in_started_at 
-              ? `  ⚖️ Ζύγιση ξεκίνησε: ${new Date(comp.weigh_in_started_at).toLocaleString('el-GR')}` 
-              : '';
-            const weighInEnded = comp.weigh_in_ended_at 
-              ? `  ⚖️ Ζύγιση τελείωσε: ${new Date(comp.weigh_in_ended_at).toLocaleString('el-GR')}` 
-              : '';
             
-            federationCompetitionsContext += `\n🥊 ${comp.name}${isRanking} ${weighInStatus}\n  📅 Ημ/νία: ${comp.competition_date}\n  📍 Τοποθεσία: ${comp.location || '-'}\n  📋 Προθεσμία δηλώσεων: ${comp.registration_deadline || '-'}\n  Status: ${comp.status}\n`;
+            federationCompetitionsContext += `\n🥊 ${comp.name}${isRanking}\n  📅 Ημ/νία: ${comp.competition_date}\n  📍 Τοποθεσία: ${comp.location || '-'}\n  📋 Προθεσμία δηλώσεων: ${comp.registration_deadline || '-'}\n  Status: ${comp.status}\n`;
+            federationCompetitionsContext += `${weighInStatusLine}\n`;
             if (weighInSchedule) federationCompetitionsContext += `  ${weighInSchedule}\n`;
-            if (weighInTimes) federationCompetitionsContext += `${weighInTimes}\n`;
-            if (weighInEnded) federationCompetitionsContext += `${weighInEnded}\n`;
             
             // Φόρτωση κατηγοριών αγώνα
             try {
