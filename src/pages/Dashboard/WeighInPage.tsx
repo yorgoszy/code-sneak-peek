@@ -605,6 +605,7 @@ const WeighInPage: React.FC = () => {
                   })
                 )}
               </div>
+              </>
             )}
           </main>
         </div>
