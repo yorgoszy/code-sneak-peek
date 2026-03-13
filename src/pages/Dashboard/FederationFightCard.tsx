@@ -432,16 +432,16 @@ const FederationFightCard: React.FC = () => {
 
                                     {/* Category + LIVE badge */}
                                     <div className="flex-shrink-0 text-right flex flex-col items-end gap-1">
-                                      {m.ring_number != null && (
-                                        <Badge variant="outline" className="rounded-none text-[10px]">
-                                          Ring {m.ring_number}
-                                        </Badge>
-                                      )}
                                       <Badge variant="secondary" className="rounded-none text-[10px]">
                                         {m.category?.name || '—'}
                                       </Badge>
-                                      {isCurrent && (
-                                        <Badge className="rounded-none text-[10px] bg-foreground text-background">
+                                      {isCurrent && currentRing && (
+                                        <Badge className="rounded-none text-[10px] bg-foreground text-background animate-pulse">
+                                          LIVE · Ring {currentRing.ring_number}
+                                        </Badge>
+                                      )}
+                                      {isCurrent && !currentRing && (
+                                        <Badge className="rounded-none text-[10px] bg-foreground text-background animate-pulse">
                                           LIVE
                                         </Badge>
                                       )}

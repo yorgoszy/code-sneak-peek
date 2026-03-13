@@ -112,7 +112,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    const siteUrl = Deno.env.get("SITE_URL") || "https://www.hyperkids.gr";
+    const siteUrl = Deno.env.get("SITE_URL") || "https://hyperkids.lovable.app";
     const assetsUrl = "https://hyperkids.lovable.app";
 
     if (type === 'weigh_in_started') {
