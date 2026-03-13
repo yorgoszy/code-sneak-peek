@@ -69,6 +69,8 @@ export const SyncedYouTubePlayer: React.FC<SyncedYouTubePlayerProps> = ({
     }
 
     const player = new w.YT.Player(containerId, {
+      width: "100%",
+      height: "100%",
       videoId: youtubeId,
       playerVars: {
         autoplay: 1,
@@ -85,6 +87,16 @@ export const SyncedYouTubePlayer: React.FC<SyncedYouTubePlayerProps> = ({
       events: {
         onReady: () => {
           setIsPlayerReady(true);
+          // Force iframe to fill container
+          try {
+            const iframe = document.querySelector(`#${containerId} iframe, #${containerId}`) as HTMLElement;
+            if (iframe?.tagName === 'IFRAME') {
+              iframe.style.width = '100%';
+              iframe.style.height = '100%';
+              iframe.style.position = 'absolute';
+              iframe.style.inset = '0';
+            }
+          } catch {}
           try {
             player.mute();
             player.playVideo();
@@ -198,5 +210,9 @@ export const SyncedYouTubePlayer: React.FC<SyncedYouTubePlayerProps> = ({
     return <div className={className} />;
   }
 
-  return <div id={containerId} className={className} />;
+  return (
+    <div className={`relative ${className || ''}`}>
+      <div id={containerId} className="absolute inset-0 w-full h-full [&>iframe]:!w-full [&>iframe]:!h-full [&>iframe]:!absolute [&>iframe]:!inset-0" />
+    </div>
+  );
 };
