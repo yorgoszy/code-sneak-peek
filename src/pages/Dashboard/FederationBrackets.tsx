@@ -699,7 +699,7 @@ const FederationBrackets = () => {
       // Generate brackets for each category
       const orderedCategories = categories.filter(c => {
         const regs = regsByCategory.get(c.id);
-        return regs && regs.length >= 2;
+        return regs && regs.length >= 1;
       });
 
       // Step 1: Generate all brackets per category (without match_order yet)
