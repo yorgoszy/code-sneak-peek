@@ -91,15 +91,21 @@ const WeighInPage: React.FC = () => {
   useEffect(() => {
     if (selectedCompId) {
       fetchRegistrations();
-      // Update weigh-in active status for selected competition
-      const comp = competitions.find(c => c.id === selectedCompId) as any;
-      if (comp) setWeighInActive(comp.weigh_in_active || false);
+      const comp = competitions.find(c => c.id === selectedCompId);
+      if (comp) {
+        setWeighInActive(comp.weigh_in_active || false);
+        setScheduleDate(comp.weigh_in_date || comp.competition_date || '');
+        setScheduleStartTime(comp.weigh_in_start_time || '');
+        setScheduleEndTime(comp.weigh_in_end_time || '');
+      }
     }
-  }, [selectedCompId]);
+  }, [selectedCompId, competitions]);
 
   const fetchCompetitions = async () => {
     if (!userProfile?.id) return;
-    let query = supabase.from('federation_competitions').select('id, name, competition_date, weigh_in_active').order('competition_date', { ascending: false });
+    let query = supabase.from('federation_competitions')
+      .select('id, name, competition_date, weigh_in_active, weigh_in_date, weigh_in_start_time, weigh_in_end_time, weigh_in_started_at, weigh_in_ended_at')
+      .order('competition_date', { ascending: false });
     if (isFederationUser) query = query.eq('federation_id', userProfile.id);
     const { data } = await query as any;
     setCompetitions(data || []);
