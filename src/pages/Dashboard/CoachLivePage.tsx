@@ -25,7 +25,7 @@ function getYoutubeEmbedUrl(url: string): string | null {
   ];
   for (const pattern of patterns) {
     const match = url.match(pattern);
-    if (match) return `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1`;
+    if (match) return `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&controls=0&disablekb=1&modestbranding=1&rel=0`;
   }
   if (url.includes('youtube.com/embed')) return url;
   return url;
@@ -299,6 +299,8 @@ const CoachLivePage = () => {
                                 allowFullScreen
                                 title={ring.ring_name || `Ring ${getRingLetter(ring.ring_number)}`}
                               />
+                              {/* Transparent overlay to block all video interaction (no seeking/controls) */}
+                              <div className="absolute inset-0 z-10" style={{ pointerEvents: 'auto' }} />
                             </AspectRatio>
                             {ring.current_match_id && (() => {
                               const currentMatch = (matches as any[]).find((m: any) => m.id === ring.current_match_id);
