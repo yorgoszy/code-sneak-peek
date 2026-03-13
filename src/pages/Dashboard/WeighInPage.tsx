@@ -629,7 +629,7 @@ const WeighInPage: React.FC = () => {
                             <TableCell>
                               {isAlreadyProcessed ? (
                                 latestWeighIn?.doctor_approved ? <Check className="w-5 h-5 text-[#00ffba]" /> : <X className="w-5 h-5 text-destructive" />
-                              ) : canManageWeighIn ? (
+                              ) : canManageWeighIn && weighInActive ? (
                                 <button onClick={() => toggleDoctor(reg.id)} className={`w-8 h-8 flex items-center justify-center border transition-colors ${doctorOk ? 'border-[#00ffba] bg-[#00ffba]/10' : 'border-destructive bg-destructive/10'}`}>
                                   {doctorOk ? <Check className="w-4 h-4 text-[#00ffba]" /> : <X className="w-4 h-4 text-destructive" />}
                                 </button>
