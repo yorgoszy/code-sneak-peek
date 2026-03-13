@@ -25,7 +25,7 @@ function getYoutubeEmbedUrl(url: string): string | null {
   ];
   for (const pattern of patterns) {
     const match = url.match(pattern);
-    if (match) return `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&controls=0&disablekb=1&modestbranding=1&rel=0`;
+    if (match) return `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&controls=0&disablekb=1&modestbranding=1&rel=0&live=1`;
   }
   if (url.includes('youtube.com/embed')) return url;
   return url;
