@@ -2051,6 +2051,111 @@ export type Database = {
           },
         ]
       }
+      competition_match_analysis: {
+        Row: {
+          athlete_id: string
+          competition_id: string
+          confidence: number | null
+          corner: string
+          created_at: string
+          created_by: string | null
+          detection_method: string
+          event_type: string
+          id: string
+          is_blocked: boolean | null
+          is_successful: boolean | null
+          match_id: string
+          notes: string | null
+          ring_id: string
+          round_number: number
+          strike_category: string | null
+          strike_side: string | null
+          strike_type: string | null
+          timestamp_seconds: number
+          updated_at: string
+        }
+        Insert: {
+          athlete_id: string
+          competition_id: string
+          confidence?: number | null
+          corner: string
+          created_at?: string
+          created_by?: string | null
+          detection_method?: string
+          event_type: string
+          id?: string
+          is_blocked?: boolean | null
+          is_successful?: boolean | null
+          match_id: string
+          notes?: string | null
+          ring_id: string
+          round_number?: number
+          strike_category?: string | null
+          strike_side?: string | null
+          strike_type?: string | null
+          timestamp_seconds?: number
+          updated_at?: string
+        }
+        Update: {
+          athlete_id?: string
+          competition_id?: string
+          confidence?: number | null
+          corner?: string
+          created_at?: string
+          created_by?: string | null
+          detection_method?: string
+          event_type?: string
+          id?: string
+          is_blocked?: boolean | null
+          is_successful?: boolean | null
+          match_id?: string
+          notes?: string | null
+          ring_id?: string
+          round_number?: number
+          strike_category?: string | null
+          strike_side?: string | null
+          strike_type?: string | null
+          timestamp_seconds?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competition_match_analysis_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_match_analysis_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "federation_competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_match_analysis_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_match_analysis_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "competition_matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_match_analysis_ring_id_fkey"
+            columns: ["ring_id"]
+            isOneToOne: false
+            referencedRelation: "competition_rings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       competition_match_judge_scores: {
         Row: {
           athlete1_score: number
@@ -2085,6 +2190,88 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "competition_match_judge_scores_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "competition_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      competition_match_stats: {
+        Row: {
+          athlete_id: string
+          blocked_strikes: number | null
+          competition_id: string
+          corner: string
+          created_at: string
+          id: string
+          match_id: string
+          strike_accuracy: number | null
+          successful_strikes: number | null
+          total_attacks: number | null
+          total_defenses: number | null
+          total_elbows: number | null
+          total_kicks: number | null
+          total_knees: number | null
+          total_punches: number | null
+          total_strikes: number | null
+          updated_at: string
+        }
+        Insert: {
+          athlete_id: string
+          blocked_strikes?: number | null
+          competition_id: string
+          corner: string
+          created_at?: string
+          id?: string
+          match_id: string
+          strike_accuracy?: number | null
+          successful_strikes?: number | null
+          total_attacks?: number | null
+          total_defenses?: number | null
+          total_elbows?: number | null
+          total_kicks?: number | null
+          total_knees?: number | null
+          total_punches?: number | null
+          total_strikes?: number | null
+          updated_at?: string
+        }
+        Update: {
+          athlete_id?: string
+          blocked_strikes?: number | null
+          competition_id?: string
+          corner?: string
+          created_at?: string
+          id?: string
+          match_id?: string
+          strike_accuracy?: number | null
+          successful_strikes?: number | null
+          total_attacks?: number | null
+          total_defenses?: number | null
+          total_elbows?: number | null
+          total_kicks?: number | null
+          total_knees?: number | null
+          total_punches?: number | null
+          total_strikes?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competition_match_stats_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_match_stats_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "federation_competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_match_stats_match_id_fkey"
             columns: ["match_id"]
             isOneToOne: false
             referencedRelation: "competition_matches"
