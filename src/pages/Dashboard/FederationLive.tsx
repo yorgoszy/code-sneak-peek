@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Menu, Plus, Settings, Radio, Play, Pause, Trash2, Save, Monitor, Copy, Check, RefreshCw, Maximize, Video } from "lucide-react";
+import { Menu, Plus, Settings, Radio, Play, Pause, Trash2, Save, Monitor, Copy, Check, RefreshCw, Maximize, Video, Activity } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -111,6 +112,7 @@ const FederationLive = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { userProfile } = useRoleCheck();
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [selectedCompId, setSelectedCompId] = useState<string>(() => localStorage.getItem('federation-live-comp') || '');
@@ -667,6 +669,30 @@ const FederationLive = () => {
                         matches={ringScopedMatches}
                         onMatchChange={(matchId) => handleMatchChangeForRing(ring.id, matchId)}
                       />
+
+                      {/* Video Analysis Links */}
+                      {ring.current_match_id && (
+                        <div className="border-t border-border px-2 py-1.5 flex items-center gap-1.5">
+                          <Activity className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-[10px] font-semibold text-muted-foreground mr-auto">Video Analysis</span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-none h-6 text-[10px] px-2 border-red-500/50 text-red-600 hover:bg-red-500/10"
+                            onClick={() => navigate(`/dashboard/federation-live/ring/${ring.id}/analysis/red`)}
+                          >
+                            🔴 Red
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-none h-6 text-[10px] px-2 border-blue-500/50 text-blue-600 hover:bg-blue-500/10"
+                            onClick={() => navigate(`/dashboard/federation-live/ring/${ring.id}/analysis/blue`)}
+                          >
+                            🔵 Blue
+                          </Button>
+                        </div>
+                      )}
 
                       {/* Next 2 upcoming matches for this ring */}
                       {nextMatches.length > 0 && (
