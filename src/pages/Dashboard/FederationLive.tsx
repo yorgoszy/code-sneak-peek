@@ -351,6 +351,10 @@ const FederationLive = () => {
 
   const handleUpdateRing = async () => {
     if (!editRing) return;
+    const newRangeStart = editMatchRangeStart ? parseInt(editMatchRangeStart) : null;
+    const newRangeEnd = editMatchRangeEnd ? parseInt(editMatchRangeEnd) : null;
+    const rangeChanged = newRangeStart !== editRing.match_range_start || newRangeEnd !== editRing.match_range_end;
+
     const { error } = await supabase
       .from('competition_rings')
       .update({
@@ -358,8 +362,8 @@ const FederationLive = () => {
         source_type: editSourceType,
         youtube_live_url: editSourceType === 'youtube' ? (editYoutubeUrl || null) : null,
         camera_device_id: editSourceType === 'camera' ? (editCameraDeviceId || null) : null,
-        match_range_start: editMatchRangeStart ? parseInt(editMatchRangeStart) : null,
-        match_range_end: editMatchRangeEnd ? parseInt(editMatchRangeEnd) : null,
+        match_range_start: newRangeStart,
+        match_range_end: newRangeEnd,
         current_match_id: editCurrentMatchId || null,
       })
       .eq('id', editRing.id);
@@ -370,6 +374,14 @@ const FederationLive = () => {
       toast.success(t('federation.live.ringUpdated'));
       setEditRing(null);
       loadRings();
+      // Send notification if match range changed
+      if (rangeChanged && newRangeStart && newRangeEnd) {
+        sendRingAssignmentNotification([{
+          ring_name: editRingName || `Ring ${editRing.ring_number}`,
+          match_range_start: newRangeStart,
+          match_range_end: newRangeEnd,
+        }]);
+      }
     }
   };
 
