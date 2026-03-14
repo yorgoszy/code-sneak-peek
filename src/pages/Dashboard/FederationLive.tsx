@@ -284,6 +284,27 @@ const FederationLive = () => {
     setSetupDialogOpen(true);
   };
 
+  // Send ring assignment notification email
+  const sendRingAssignmentNotification = async (ringsData: { ring_name: string; match_range_start: number; match_range_end: number }[]) => {
+    const comp = competitions.find(c => c.id === selectedCompId);
+    if (!comp) return;
+    const validRings = ringsData.filter(r => r.match_range_start && r.match_range_end);
+    if (validRings.length === 0) return;
+    
+    try {
+      await supabase.functions.invoke('send-ring-assignment-notifications', {
+        body: {
+          competition_id: selectedCompId,
+          competition_name: comp.name,
+          rings: validRings,
+        },
+      });
+      console.log('✅ Ring assignment notification sent');
+    } catch (err) {
+      console.error('❌ Ring assignment notification error:', err);
+    }
+  };
+
   const handleSaveRings = async () => {
     const toInsert = ringConfigs.map(rc => ({
       competition_id: selectedCompId,
@@ -305,6 +326,12 @@ const FederationLive = () => {
       toast.success(t('federation.live.ringsCreated'));
       setSetupDialogOpen(false);
       loadRings();
+      // Send email notification
+      sendRingAssignmentNotification(toInsert.map(r => ({
+        ring_name: r.ring_name,
+        match_range_start: r.match_range_start || 0,
+        match_range_end: r.match_range_end || 0,
+      })));
     }
   };
 
