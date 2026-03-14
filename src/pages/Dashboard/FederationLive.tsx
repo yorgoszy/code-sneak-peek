@@ -112,6 +112,7 @@ const FederationLive = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { userProfile } = useRoleCheck();
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [selectedCompId, setSelectedCompId] = useState<string>(() => localStorage.getItem('federation-live-comp') || '');
