@@ -112,6 +112,7 @@ import RankingPage from "@/pages/Dashboard/RankingPage";
 import FederationBrackets from "@/pages/Dashboard/FederationBrackets";
 const FederationFightCard = React.lazy(() => import("@/pages/Dashboard/FederationFightCard"));
 const WeighInPage = React.lazy(() => import("@/pages/Dashboard/WeighInPage"));
+const LiveRingAnalysis = React.lazy(() => import("@/pages/Dashboard/LiveRingAnalysis"));
 import { FederationPersistentLayout } from "@/components/federation/FederationPersistentLayout";
 const queryClient = new QueryClient({
   defaultOptions: {

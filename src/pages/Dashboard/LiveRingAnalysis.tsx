@@ -281,10 +281,9 @@ const LiveRingAnalysis: React.FC = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const renderSidebar = () => {
-    if (isFederation()) return <FederationSidebar />;
-    return <FederationSidebar />;
-  };
+  const renderSidebar = () => (
+    <FederationSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+  );
 
   const ringLabel = ring?.ring_name || (ring ? `Ring ${String.fromCharCode(64 + ring.ring_number)}` : 'Ring');
 
