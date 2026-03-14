@@ -66,6 +66,7 @@ const LiveRingAnalysis: React.FC = () => {
   const navigate = useNavigate();
   const { isAdmin, isFederation, userProfile } = useRoleCheck();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Ring & match data
   const [ring, setRing] = useState<any>(null);
