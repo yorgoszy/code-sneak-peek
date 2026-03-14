@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Menu, Plus, Settings, Radio, Play, Pause, Trash2, Save, Monitor, Copy, Check, RefreshCw, Maximize, Video } from "lucide-react";
+import { Menu, Plus, Settings, Radio, Play, Pause, Trash2, Save, Monitor, Copy, Check, RefreshCw, Maximize, Video, Activity } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
