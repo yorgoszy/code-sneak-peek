@@ -670,6 +670,30 @@ const FederationLive = () => {
                         onMatchChange={(matchId) => handleMatchChangeForRing(ring.id, matchId)}
                       />
 
+                      {/* Video Analysis Links */}
+                      {ring.current_match_id && (
+                        <div className="border-t border-border px-2 py-1.5 flex items-center gap-1.5">
+                          <Activity className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-[10px] font-semibold text-muted-foreground mr-auto">Video Analysis</span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-none h-6 text-[10px] px-2 border-red-500/50 text-red-600 hover:bg-red-500/10"
+                            onClick={() => navigate(`/dashboard/federation-live/ring/${ring.id}/analysis/red`)}
+                          >
+                            🔴 Red
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-none h-6 text-[10px] px-2 border-blue-500/50 text-blue-600 hover:bg-blue-500/10"
+                            onClick={() => navigate(`/dashboard/federation-live/ring/${ring.id}/analysis/blue`)}
+                          >
+                            🔵 Blue
+                          </Button>
+                        </div>
+                      )}
+
                       {/* Next 2 upcoming matches for this ring */}
                       {nextMatches.length > 0 && (
                         <div className="border-t border-border">
