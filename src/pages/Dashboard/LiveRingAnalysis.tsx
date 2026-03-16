@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
@@ -19,6 +19,8 @@ import { toast } from "sonner";
 import { SyncedYouTubePlayer } from "@/components/federation/SyncedYouTubePlayer";
 import { RingCameraBroadcaster } from "@/components/federation/webrtc/RingCameraBroadcaster";
 import { VideoOverlayScores } from "@/components/federation/VideoOverlayScores";
+import { FightTimelineChart } from "@/components/video-analysis/FightTimelineChart";
+import { RoundTimelineData } from '@/hooks/useFightStats';
 
 type StrikeCategory = 'punch' | 'kick' | 'knee' | 'elbow';
 type EventType = 'attack' | 'defense' | 'strike' | 'clinch';
