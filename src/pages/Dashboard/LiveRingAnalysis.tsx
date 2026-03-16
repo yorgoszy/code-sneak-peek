@@ -485,6 +485,12 @@ const LiveRingAnalysis: React.FC = () => {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Timeline Chart */}
+                <FightTimelineChart 
+                  roundsData={roundsTimelineData}
+                  loading={false}
+                />
               </div>
 
               {/* RIGHT: Strike Buttons + Live Stats */}
