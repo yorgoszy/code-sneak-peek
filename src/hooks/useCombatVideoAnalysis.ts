@@ -22,21 +22,23 @@ export interface CornerStrikeData {
   accuracy_percentage: number;
 }
 
+export interface CornerRoundStats {
+  total_strikes: number;
+  significant_strikes: number;
+  strikes_landed: number;
+  accuracy_percentage: number;
+  offensive_time_seconds: number;
+  defensive_actions: number;
+  ring_control_percentage: number;
+  aggression_score: number;
+  clinch_time_seconds: number;
+}
+
 export interface RoundStats {
   round_number: number;
   duration_seconds: number;
-  red_corner: {
-    total_strikes: number;
-    significant_strikes: number;
-    strikes_landed: number;
-    accuracy_percentage: number;
-    offensive_time_seconds: number;
-    defensive_actions: number;
-    ring_control_percentage: number;
-    aggression_score: number;
-    clinch_time_seconds: number;
-  };
-  blue_corner: typeof RoundStats.prototype.red_corner;
+  red_corner: CornerRoundStats;
+  blue_corner: CornerRoundStats;
   round_winner_suggestion: 'red' | 'blue' | 'even';
   round_notes: string;
 }
