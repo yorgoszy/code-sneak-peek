@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
@@ -19,6 +19,8 @@ import { toast } from "sonner";
 import { SyncedYouTubePlayer } from "@/components/federation/SyncedYouTubePlayer";
 import { RingCameraBroadcaster } from "@/components/federation/webrtc/RingCameraBroadcaster";
 import { VideoOverlayScores } from "@/components/federation/VideoOverlayScores";
+import { FightTimelineChart } from "@/components/video-analysis/FightTimelineChart";
+import { RoundTimelineData } from '@/hooks/useFightStats';
 
 type StrikeCategory = 'punch' | 'kick' | 'knee' | 'elbow';
 type EventType = 'attack' | 'defense' | 'strike' | 'clinch';
@@ -275,6 +277,46 @@ const LiveRingAnalysis: React.FC = () => {
       .eq('event_type', last.event_type);
   }, [events, currentMatch, athlete]);
 
+  // Compute timeline data from live events
+  const roundsTimelineData: RoundTimelineData[] = useMemo(() => {
+    if (events.length === 0) return [];
+    
+    const roundNumbers = [...new Set(events.map(e => e.round_number))].sort((a, b) => a - b);
+    
+    return roundNumbers.map(roundNum => {
+      const roundEvents = events.filter(e => e.round_number === roundNum);
+      const maxTime = Math.max(...roundEvents.map(e => e.timestamp_seconds), 0);
+      const intervalSeconds = 30;
+      const intervals = Math.max(Math.ceil(maxTime / intervalSeconds), 1);
+      
+      const data = [];
+      for (let i = 0; i < intervals; i++) {
+        const startSec = i * intervalSeconds;
+        const endSec = (i + 1) * intervalSeconds;
+        const intervalEvents = roundEvents.filter(
+          e => e.timestamp_seconds >= startSec && e.timestamp_seconds < endSec
+        );
+        
+        const mins = Math.floor(startSec / 60);
+        const secs = startSec % 60;
+        
+        data.push({
+          time: `${mins}:${secs.toString().padStart(2, '0')}`,
+          timeSeconds: startSec,
+          strikes: intervalEvents.filter(e => e.event_type === 'strike' || e.strike_category).length,
+          defenses: intervalEvents.filter(e => e.event_type === 'defense').length,
+          attacks: intervalEvents.filter(e => e.event_type === 'attack').length,
+        });
+      }
+      
+      return {
+        roundNumber: roundNum,
+        duration: maxTime,
+        data,
+      };
+    });
+  }, [events]);
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
@@ -443,6 +485,12 @@ const LiveRingAnalysis: React.FC = () => {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Timeline Chart */}
+                <FightTimelineChart 
+                  roundsData={roundsTimelineData}
+                  loading={false}
+                />
               </div>
 
               {/* RIGHT: Strike Buttons + Live Stats */}
