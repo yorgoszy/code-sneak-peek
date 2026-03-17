@@ -9,9 +9,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Separator } from "@/components/ui/separator";
 import { 
-  Menu, ArrowLeft, Swords, Shield, Target, Hand, 
-  CircleDot, Zap, RotateCcw, Save, Radio, Timer, 
-  TrendingUp, Activity
+  Menu, ArrowLeft, Swords, Shield, Target, 
+  RotateCcw, Save, Radio, Timer, 
+  TrendingUp, Activity, Play, Square
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
@@ -19,49 +19,11 @@ import { toast } from "sonner";
 import { SyncedYouTubePlayer } from "@/components/federation/SyncedYouTubePlayer";
 import { RingCameraBroadcaster } from "@/components/federation/webrtc/RingCameraBroadcaster";
 import { VideoOverlayScores } from "@/components/federation/VideoOverlayScores";
+import { ActivityBalanceBar } from "@/components/federation/live-analysis/ActivityBalanceBar";
 import { FightTimelineChart } from "@/components/video-analysis/FightTimelineChart";
 import { RoundTimelineData } from '@/hooks/useFightStats';
-
-type StrikeCategory = 'punch' | 'kick' | 'knee' | 'elbow';
-type EventType = 'attack' | 'defense' | 'strike' | 'clinch';
-
-interface AnalysisEvent {
-  id: string;
-  event_type: EventType;
-  strike_type: string | null;
-  strike_category: StrikeCategory | null;
-  strike_side: string | null;
-  is_successful: boolean;
-  is_blocked: boolean;
-  round_number: number;
-  timestamp_seconds: number;
-  detection_method: 'manual' | 'ai' | 'hybrid';
-}
-
-interface LiveStats {
-  totalStrikes: number;
-  punches: number;
-  kicks: number;
-  knees: number;
-  elbows: number;
-  attacks: number;
-  defenses: number;
-  successfulStrikes: number;
-  blockedStrikes: number;
-}
-
-const STRIKE_BUTTONS = [
-  { type: 'jab', category: 'punch' as StrikeCategory, label: 'Jab', side: 'left', icon: '👊' },
-  { type: 'cross', category: 'punch' as StrikeCategory, label: 'Cross', side: 'right', icon: '🥊' },
-  { type: 'hook', category: 'punch' as StrikeCategory, label: 'Hook', side: null, icon: '🪝' },
-  { type: 'uppercut', category: 'punch' as StrikeCategory, label: 'Uppercut', side: null, icon: '⬆️' },
-  { type: 'roundhouse_kick', category: 'kick' as StrikeCategory, label: 'Roundhouse', side: null, icon: '🦵' },
-  { type: 'front_kick', category: 'kick' as StrikeCategory, label: 'Teep', side: null, icon: '🦶' },
-  { type: 'low_kick', category: 'kick' as StrikeCategory, label: 'Low Kick', side: null, icon: '⬇️' },
-  { type: 'knee', category: 'knee' as StrikeCategory, label: 'Knee', side: null, icon: '🦿' },
-  { type: 'elbow', category: 'elbow' as StrikeCategory, label: 'Elbow', side: null, icon: '💪' },
-  { type: 'clinch', category: null, label: 'Clinch', side: null, icon: '🤼' },
-];
+import type { ActionPhase, PhaseType, StrikeCategory, StrikeEvent, RoundData } from '@/components/federation/live-analysis/types';
+import { STRIKE_BUTTONS } from '@/components/federation/live-analysis/types';
 
 const LiveRingAnalysis: React.FC = () => {
   const { ringId, corner } = useParams<{ ringId: string; corner: string }>();
@@ -76,35 +38,30 @@ const LiveRingAnalysis: React.FC = () => {
   const [athlete, setAthlete] = useState<any>(null);
   const [competitionId, setCompetitionId] = useState<string | null>(null);
 
-  // Analysis state
-  const [events, setEvents] = useState<AnalysisEvent[]>([]);
+  // Round & timer
   const [currentRound, setCurrentRound] = useState(1);
   const [isRecording, setIsRecording] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   const timerRef = useRef<number | null>(null);
   const startTimeRef = useRef<number>(0);
 
-  // Live stats
-  const [stats, setStats] = useState<LiveStats>({
-    totalStrikes: 0, punches: 0, kicks: 0, knees: 0, elbows: 0,
-    attacks: 0, defenses: 0, successfulStrikes: 0, blockedStrikes: 0,
-  });
+  // Phase-based analysis: periods of attack/defense with strikes inside
+  const [phases, setPhases] = useState<ActionPhase[]>([]);
+  const [activePhase, setActivePhase] = useState<ActionPhase | null>(null);
 
   const isCornerRed = corner === 'red';
   const cornerColor = isCornerRed ? 'text-red-500' : 'text-blue-500';
   const cornerBg = isCornerRed ? 'bg-red-500/10 border-red-500/30' : 'bg-blue-500/10 border-blue-500/30';
   const cornerBgSolid = isCornerRed ? 'bg-red-500' : 'bg-blue-500';
 
-  // Load ring data
+  // ─── Load ring data ───
   const loadRingData = useCallback(async () => {
     if (!ringId) return;
-    
     const { data: ringData } = await supabase
       .from('competition_rings')
       .select('*, competition_id')
       .eq('id', ringId)
       .single();
-
     if (!ringData) return;
     setRing(ringData);
     setCompetitionId(ringData.competition_id);
@@ -121,18 +78,16 @@ const LiveRingAnalysis: React.FC = () => {
         `)
         .eq('id', ringData.current_match_id)
         .single();
-
       if (matchData) {
         setCurrentMatch(matchData);
-        const athleteData = isCornerRed ? matchData.athlete1 : matchData.athlete2;
-        setAthlete(athleteData);
+        setAthlete(isCornerRed ? matchData.athlete1 : matchData.athlete2);
       }
     }
   }, [ringId, isCornerRed]);
 
   useEffect(() => { loadRingData(); }, [loadRingData]);
 
-  // Real-time subscription for ring changes
+  // Real-time ring subscription
   useEffect(() => {
     if (!ringId) return;
     const channel = supabase
@@ -145,7 +100,7 @@ const LiveRingAnalysis: React.FC = () => {
     return () => { supabase.removeChannel(channel); };
   }, [ringId, loadRingData]);
 
-  // Timer
+  // ─── Timer ───
   useEffect(() => {
     if (isRecording) {
       startTimeRef.current = Date.now() - (elapsedTime * 1000);
@@ -158,164 +113,233 @@ const LiveRingAnalysis: React.FC = () => {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [isRecording]);
 
-  // Recalculate stats when events change
-  useEffect(() => {
-    const newStats: LiveStats = {
-      totalStrikes: 0, punches: 0, kicks: 0, knees: 0, elbows: 0,
-      attacks: 0, defenses: 0, successfulStrikes: 0, blockedStrikes: 0,
-    };
-    events.forEach(e => {
-      if (e.event_type === 'attack') newStats.attacks++;
-      if (e.event_type === 'defense') newStats.defenses++;
-      if (e.event_type === 'strike' || e.strike_category) {
-        newStats.totalStrikes++;
-        if (e.strike_category === 'punch') newStats.punches++;
-        if (e.strike_category === 'kick') newStats.kicks++;
-        if (e.strike_category === 'knee') newStats.knees++;
-        if (e.strike_category === 'elbow') newStats.elbows++;
-        if (e.is_successful) newStats.successfulStrikes++;
-        if (e.is_blocked) newStats.blockedStrikes++;
-      }
-    });
-    setStats(newStats);
-  }, [events]);
+  // ─── Start a phase (attack or defense) ───
+  const startPhase = useCallback((type: PhaseType) => {
+    if (!isRecording) return;
 
-  // Record event
-  const recordEvent = useCallback(async (
-    eventType: EventType,
-    strikeType: string | null = null,
-    strikeCategory: StrikeCategory | null = null,
-    strikeSide: string | null = null,
-    isBlocked = false,
+    // Close any active phase first
+    if (activePhase) {
+      const closedPhase = { ...activePhase, endTime: elapsedTime };
+      setPhases(prev => prev.map(p => p.id === closedPhase.id ? closedPhase : p));
+      setActivePhase(null);
+    }
+
+    const newPhase: ActionPhase = {
+      id: crypto.randomUUID(),
+      type,
+      roundNumber: currentRound,
+      startTime: elapsedTime,
+      endTime: null,
+      strikes: [],
+    };
+    setPhases(prev => [...prev, newPhase]);
+    setActivePhase(newPhase);
+  }, [isRecording, activePhase, elapsedTime, currentRound]);
+
+  // ─── End current phase ───
+  const endPhase = useCallback(() => {
+    if (!activePhase) return;
+    const closed = { ...activePhase, endTime: elapsedTime };
+    setPhases(prev => prev.map(p => p.id === closed.id ? closed : p));
+    setActivePhase(null);
+  }, [activePhase, elapsedTime]);
+
+  // ─── Record a strike (only within an active phase) ───
+  const recordStrike = useCallback((
+    strikeType: string,
+    category: StrikeCategory | null,
+    side: string | null,
   ) => {
-    if (!currentMatch || !athlete || !competitionId || !ringId) {
-      toast.error('Δεν υπάρχει ενεργός αγώνας');
+    if (!activePhase || !isRecording) {
+      toast.error('Ξεκίνα πρώτα Επίθεση ή Άμυνα');
       return;
     }
 
-    const newEvent: AnalysisEvent = {
+    const strike: StrikeEvent = {
       id: crypto.randomUUID(),
-      event_type: eventType,
-      strike_type: strikeType,
-      strike_category: strikeCategory,
-      strike_side: strikeSide,
-      is_successful: !isBlocked,
-      is_blocked: isBlocked,
-      round_number: currentRound,
-      timestamp_seconds: elapsedTime,
-      detection_method: 'manual',
+      strikeType,
+      category,
+      side,
+      timestamp: elapsedTime,
     };
 
-    setEvents(prev => [...prev, newEvent]);
+    const updated = { ...activePhase, strikes: [...activePhase.strikes, strike] };
+    setActivePhase(updated);
+    setPhases(prev => prev.map(p => p.id === updated.id ? updated : p));
+  }, [activePhase, isRecording, elapsedTime]);
 
-    // Save to DB
-    const { error } = await supabase.from('competition_match_analysis').insert({
-      competition_id: competitionId,
-      match_id: currentMatch.id,
-      ring_id: ringId,
-      athlete_id: athlete.id,
-      corner: corner || 'red',
-      round_number: currentRound,
-      timestamp_seconds: elapsedTime,
-      event_type: eventType,
-      strike_type: strikeType,
-      strike_category: strikeCategory,
-      strike_side: strikeSide,
-      is_successful: !isBlocked,
-      is_blocked: isBlocked,
-      confidence: 1.0,
-      detection_method: 'manual',
-      created_by: userProfile?.id,
-    });
-
-    if (error) {
-      console.error('Error saving event:', error);
+  // ─── Undo last action ───
+  const undoLast = useCallback(() => {
+    if (activePhase && activePhase.strikes.length > 0) {
+      // Remove last strike from active phase
+      const updated = { ...activePhase, strikes: activePhase.strikes.slice(0, -1) };
+      setActivePhase(updated);
+      setPhases(prev => prev.map(p => p.id === updated.id ? updated : p));
+    } else if (activePhase) {
+      // Cancel active phase
+      setPhases(prev => prev.filter(p => p.id !== activePhase.id));
+      setActivePhase(null);
+    } else if (phases.length > 0) {
+      // Remove last completed phase
+      setPhases(prev => prev.slice(0, -1));
     }
-  }, [currentMatch, athlete, competitionId, ringId, corner, currentRound, elapsedTime, userProfile]);
+  }, [activePhase, phases]);
 
-  // Save summary stats
-  const saveStats = useCallback(async () => {
-    if (!currentMatch || !athlete || !competitionId) return;
+  // ─── Compute round stats ───
+  const roundStats: RoundData[] = useMemo(() => {
+    const roundNumbers = [...new Set(phases.map(p => p.roundNumber))].sort((a, b) => a - b);
+    return roundNumbers.map(rn => {
+      const roundPhases = phases.filter(p => p.roundNumber === rn);
+      let attackSec = 0, defenseSec = 0;
+      let attackStrikes = 0, defenseStrikes = 0;
+      let punches = 0, kicks = 0, knees = 0, elbows = 0;
 
-    const { error } = await supabase.from('competition_match_stats').upsert({
-      competition_id: competitionId,
-      match_id: currentMatch.id,
-      athlete_id: athlete.id,
-      corner: corner || 'red',
-      total_strikes: stats.totalStrikes,
-      total_punches: stats.punches,
-      total_kicks: stats.kicks,
-      total_knees: stats.knees,
-      total_elbows: stats.elbows,
-      total_attacks: stats.attacks,
-      total_defenses: stats.defenses,
-      successful_strikes: stats.successfulStrikes,
-      blocked_strikes: stats.blockedStrikes,
-      strike_accuracy: stats.totalStrikes > 0 ? (stats.successfulStrikes / stats.totalStrikes) : 0,
-    }, { onConflict: 'match_id,athlete_id' });
-
-    if (error) {
-      toast.error('Σφάλμα αποθήκευσης στατιστικών');
-      console.error(error);
-    } else {
-      toast.success('Στατιστικά αποθηκεύτηκαν');
-    }
-  }, [currentMatch, athlete, competitionId, corner, stats]);
-
-  // Undo last event
-  const undoLastEvent = useCallback(async () => {
-    if (events.length === 0) return;
-    const last = events[events.length - 1];
-    setEvents(prev => prev.slice(0, -1));
-    
-    // Delete from DB (best effort)
-    await supabase.from('competition_match_analysis')
-      .delete()
-      .eq('match_id', currentMatch?.id)
-      .eq('athlete_id', athlete?.id)
-      .eq('timestamp_seconds', last.timestamp_seconds)
-      .eq('event_type', last.event_type);
-  }, [events, currentMatch, athlete]);
-
-  // Compute timeline data from live events
-  const roundsTimelineData: RoundTimelineData[] = useMemo(() => {
-    if (events.length === 0) return [];
-    
-    const roundNumbers = [...new Set(events.map(e => e.round_number))].sort((a, b) => a - b);
-    
-    return roundNumbers.map(roundNum => {
-      const roundEvents = events.filter(e => e.round_number === roundNum);
-      const maxTime = Math.max(...roundEvents.map(e => e.timestamp_seconds), 0);
-      const intervalSeconds = 30;
-      const intervals = Math.max(Math.ceil(maxTime / intervalSeconds), 1);
-      
-      const data = [];
-      for (let i = 0; i < intervals; i++) {
-        const startSec = i * intervalSeconds;
-        const endSec = (i + 1) * intervalSeconds;
-        const intervalEvents = roundEvents.filter(
-          e => e.timestamp_seconds >= startSec && e.timestamp_seconds < endSec
-        );
-        
-        const mins = Math.floor(startSec / 60);
-        const secs = startSec % 60;
-        
-        data.push({
-          time: `${mins}:${secs.toString().padStart(2, '0')}`,
-          timeSeconds: startSec,
-          strikes: intervalEvents.filter(e => e.event_type === 'strike' || e.strike_category).length,
-          defenses: intervalEvents.filter(e => e.event_type === 'defense').length,
-          attacks: intervalEvents.filter(e => e.event_type === 'attack').length,
+      roundPhases.forEach(p => {
+        const dur = (p.endTime ?? elapsedTime) - p.startTime;
+        if (p.type === 'attack') {
+          attackSec += dur;
+          attackStrikes += p.strikes.length;
+        } else {
+          defenseSec += dur;
+          defenseStrikes += p.strikes.length;
+        }
+        p.strikes.forEach(s => {
+          if (s.category === 'punch') punches++;
+          if (s.category === 'kick') kicks++;
+          if (s.category === 'knee') knees++;
+          if (s.category === 'elbow') elbows++;
         });
-      }
-      
+      });
+
       return {
-        roundNumber: roundNum,
-        duration: maxTime,
-        data,
+        roundNumber: rn,
+        attackSeconds: attackSec,
+        defenseSeconds: defenseSec,
+        totalStrikes: attackStrikes + defenseStrikes,
+        attackStrikes,
+        defenseStrikes,
+        punches, kicks, knees, elbows,
       };
     });
-  }, [events]);
+  }, [phases, elapsedTime]);
+
+  // ─── Total stats ───
+  const totalStats = useMemo(() => {
+    return roundStats.reduce((acc, r) => ({
+      attackSeconds: acc.attackSeconds + r.attackSeconds,
+      defenseSeconds: acc.defenseSeconds + r.defenseSeconds,
+      totalStrikes: acc.totalStrikes + r.totalStrikes,
+      attackStrikes: acc.attackStrikes + r.attackStrikes,
+      defenseStrikes: acc.defenseStrikes + r.defenseStrikes,
+      punches: acc.punches + r.punches,
+      kicks: acc.kicks + r.kicks,
+      knees: acc.knees + r.knees,
+      elbows: acc.elbows + r.elbows,
+    }), {
+      attackSeconds: 0, defenseSeconds: 0,
+      totalStrikes: 0, attackStrikes: 0, defenseStrikes: 0,
+      punches: 0, kicks: 0, knees: 0, elbows: 0,
+    });
+  }, [roundStats]);
+
+  // ─── Timeline data for FightTimelineChart ───
+  const roundsTimelineData: RoundTimelineData[] = useMemo(() => {
+    if (phases.length === 0) return [];
+    const roundNumbers = [...new Set(phases.map(p => p.roundNumber))].sort((a, b) => a - b);
+    return roundNumbers.map(rn => {
+      const roundPhases = phases.filter(p => p.roundNumber === rn);
+      const allStrikes = roundPhases.flatMap(p => p.strikes.map(s => ({ ...s, phaseType: p.type })));
+      const maxTime = Math.max(...roundPhases.map(p => p.endTime ?? elapsedTime), 0);
+      const intervalSec = 30;
+      const intervals = Math.max(Math.ceil(maxTime / intervalSec), 1);
+      const data = [];
+      for (let i = 0; i < intervals; i++) {
+        const start = i * intervalSec;
+        const end = (i + 1) * intervalSec;
+        const mins = Math.floor(start / 60);
+        const secs = start % 60;
+        const intervalStrikes = allStrikes.filter(s => s.timestamp >= start && s.timestamp < end);
+        data.push({
+          time: `${mins}:${secs.toString().padStart(2, '0')}`,
+          timeSeconds: start,
+          strikes: intervalStrikes.filter(s => s.phaseType === 'attack').length,
+          defenses: intervalStrikes.filter(s => s.phaseType === 'defense').length,
+          attacks: intervalStrikes.filter(s => s.phaseType === 'attack').length,
+        });
+      }
+      return { roundNumber: rn, duration: maxTime, data };
+    });
+  }, [phases, elapsedTime]);
+
+  // ─── Save to DB ───
+  const saveAnalysis = useCallback(async () => {
+    if (!currentMatch || !athlete || !competitionId || !ringId) return;
+
+    // Save each phase as events
+    for (const phase of phases) {
+      const dur = (phase.endTime ?? elapsedTime) - phase.startTime;
+      // Save phase event
+      await supabase.from('competition_match_analysis').insert({
+        competition_id: competitionId,
+        match_id: currentMatch.id,
+        ring_id: ringId,
+        athlete_id: athlete.id,
+        corner: corner || 'red',
+        round_number: phase.roundNumber,
+        timestamp_seconds: phase.startTime,
+        event_type: phase.type,
+        strike_type: null,
+        strike_category: null,
+        is_successful: true,
+        is_blocked: false,
+        confidence: 1.0,
+        detection_method: 'manual',
+        created_by: userProfile?.id,
+      });
+
+      // Save each strike
+      for (const s of phase.strikes) {
+        await supabase.from('competition_match_analysis').insert({
+          competition_id: competitionId,
+          match_id: currentMatch.id,
+          ring_id: ringId,
+          athlete_id: athlete.id,
+          corner: corner || 'red',
+          round_number: phase.roundNumber,
+          timestamp_seconds: s.timestamp,
+          event_type: 'strike',
+          strike_type: s.strikeType,
+          strike_category: s.category,
+          strike_side: s.side,
+          is_successful: phase.type === 'attack',
+          is_blocked: phase.type === 'defense',
+          confidence: 1.0,
+          detection_method: 'manual',
+          created_by: userProfile?.id,
+        });
+      }
+    }
+
+    // Save summary stats
+    await supabase.from('competition_match_stats').upsert({
+      competition_id: competitionId,
+      match_id: currentMatch.id,
+      athlete_id: athlete.id,
+      corner: corner || 'red',
+      total_strikes: totalStats.totalStrikes,
+      total_punches: totalStats.punches,
+      total_kicks: totalStats.kicks,
+      total_knees: totalStats.knees,
+      total_elbows: totalStats.elbows,
+      total_attacks: totalStats.attackStrikes,
+      total_defenses: totalStats.defenseStrikes,
+      successful_strikes: totalStats.attackStrikes,
+      blocked_strikes: totalStats.defenseStrikes,
+      strike_accuracy: totalStats.totalStrikes > 0 ? (totalStats.attackStrikes / totalStats.totalStrikes) : 0,
+    }, { onConflict: 'match_id,athlete_id' });
+
+    toast.success('Ανάλυση αποθηκεύτηκε');
+  }, [phases, currentMatch, athlete, competitionId, ringId, corner, userProfile, elapsedTime, totalStats]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -333,7 +357,6 @@ const LiveRingAnalysis: React.FC = () => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         <div className="hidden lg:block">{renderSidebar()}</div>
-
         {isMobileOpen && (
           <div className="fixed inset-0 z-50 lg:hidden">
             <div className="absolute inset-0 bg-black/50" onClick={() => setIsMobileOpen(false)} />
@@ -349,7 +372,7 @@ const LiveRingAnalysis: React.FC = () => {
                 <Button variant="outline" size="sm" onClick={() => setIsMobileOpen(true)} className="rounded-none">
                   <Menu className="h-5 w-5" />
                 </Button>
-                <h1 className="text-lg font-semibold">Video Analysis</h1>
+                <h1 className="text-lg font-semibold">Live Analysis</h1>
               </div>
               <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-none">
                 <ArrowLeft className="h-4 w-4" />
@@ -362,8 +385,7 @@ const LiveRingAnalysis: React.FC = () => {
             <div className="hidden lg:flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-none">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Πίσω
+                  <ArrowLeft className="h-4 w-4 mr-2" />Πίσω
                 </Button>
                 <div>
                   <h1 className="text-xl font-bold flex items-center gap-2">
@@ -377,14 +399,13 @@ const LiveRingAnalysis: React.FC = () => {
               </div>
               {isRecording && (
                 <Badge className="rounded-none bg-destructive text-destructive-foreground animate-pulse">
-                  <Radio className="h-3 w-3 mr-1" />
-                  REC · {formatTime(elapsedTime)}
+                  <Radio className="h-3 w-3 mr-1" />REC · {formatTime(elapsedTime)}
                 </Badge>
               )}
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
-              {/* LEFT: Video + Athlete Info */}
+              {/* LEFT: Video + Controls + Timeline */}
               <div className="xl:col-span-2 space-y-3">
                 {/* Athlete Card */}
                 {athlete && (
@@ -452,11 +473,7 @@ const LiveRingAnalysis: React.FC = () => {
                         onClick={() => setIsRecording(!isRecording)}
                         className={`rounded-none ${isRecording ? 'bg-destructive hover:bg-destructive/90' : 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black'}`}
                       >
-                        {isRecording ? (
-                          <><Radio className="h-4 w-4 mr-2 animate-pulse" />Παύση</>
-                        ) : (
-                          <><Radio className="h-4 w-4 mr-2" />Εκκίνηση</>
-                        )}
+                        {isRecording ? <><Square className="h-4 w-4 mr-2" />Παύση</> : <><Play className="h-4 w-4 mr-2" />Εκκίνηση</>}
                       </Button>
 
                       <div className="flex items-center gap-1 border border-border px-2 py-1">
@@ -466,73 +483,161 @@ const LiveRingAnalysis: React.FC = () => {
 
                       <div className="flex items-center gap-1">
                         <span className="text-xs text-muted-foreground">Γύρος:</span>
-                        <Button variant="outline" size="sm" className="rounded-none h-7 w-7 p-0" 
-                          disabled={currentRound <= 1} onClick={() => setCurrentRound(r => r - 1)}>−</Button>
+                        <Button variant="outline" size="sm" className="rounded-none h-7 w-7 p-0"
+                          disabled={currentRound <= 1} onClick={() => { endPhase(); setCurrentRound(r => r - 1); }}>−</Button>
                         <span className="text-sm font-bold px-1">{currentRound}</span>
-                        <Button variant="outline" size="sm" className="rounded-none h-7 w-7 p-0" 
-                          onClick={() => setCurrentRound(r => r + 1)}>+</Button>
+                        <Button variant="outline" size="sm" className="rounded-none h-7 w-7 p-0"
+                          onClick={() => { endPhase(); setCurrentRound(r => r + 1); }}>+</Button>
                       </div>
 
-                      <Button variant="outline" size="sm" className="rounded-none" onClick={undoLastEvent} disabled={events.length === 0}>
-                        <RotateCcw className="h-3 w-3 mr-1" />
-                        Undo
+                      <Button variant="outline" size="sm" className="rounded-none" onClick={undoLast}
+                        disabled={phases.length === 0 && !activePhase}>
+                        <RotateCcw className="h-3 w-3 mr-1" />Undo
                       </Button>
 
-                      <Button variant="outline" size="sm" className="rounded-none" onClick={saveStats}>
-                        <Save className="h-3 w-3 mr-1" />
-                        Αποθήκευση
+                      <Button variant="outline" size="sm" className="rounded-none" onClick={saveAnalysis}>
+                        <Save className="h-3 w-3 mr-1" />Αποθήκευση
                       </Button>
                     </div>
+                  </CardContent>
+                </Card>
+
+                {/* Activity Balance Bars */}
+                <Card className="rounded-none">
+                  <CardHeader className="p-3 pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4" />
+                      Ισορροπία Επίθεσης / Άμυνας
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-0 space-y-3">
+                    {/* Per-round bars */}
+                    {roundStats.map(r => (
+                      <ActivityBalanceBar
+                        key={r.roundNumber}
+                        attackSeconds={r.attackSeconds}
+                        defenseSeconds={r.defenseSeconds}
+                        label={`Γύρος ${r.roundNumber} — ${r.totalStrikes} χτυπ.`}
+                      />
+                    ))}
+                    {/* Total bar */}
+                    {roundStats.length > 0 && (
+                      <>
+                        <Separator />
+                        <ActivityBalanceBar
+                          attackSeconds={totalStats.attackSeconds}
+                          defenseSeconds={totalStats.defenseSeconds}
+                          label={`Σύνολο Αγώνα — ${totalStats.totalStrikes} χτυπ.`}
+                          className="font-semibold"
+                        />
+                      </>
+                    )}
+                    {roundStats.length === 0 && (
+                      <p className="text-xs text-muted-foreground text-center py-2">
+                        Δεν υπάρχουν δεδομένα ακόμα
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
 
                 {/* Timeline Chart */}
-                <FightTimelineChart 
-                  roundsData={roundsTimelineData}
-                  loading={false}
-                />
+                <FightTimelineChart roundsData={roundsTimelineData} loading={false} />
               </div>
 
-              {/* RIGHT: Strike Buttons + Live Stats */}
+              {/* RIGHT: Phase controls + Strikes + Stats */}
               <div className="space-y-3">
-                {/* Quick Action Buttons */}
+                {/* Phase Controls (Attack / Defense toggle) */}
                 <Card className="rounded-none">
                   <CardHeader className="p-3 pb-2">
                     <CardTitle className="text-sm flex items-center gap-2">
                       <Swords className="h-4 w-4" />
-                      Επίθεση / Άμυνα
+                      Φάση Δράσης
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-3 pt-0 space-y-2">
+                    {/* Current phase indicator */}
+                    {activePhase && (
+                      <div className={`flex items-center justify-between p-2 border ${activePhase.type === 'attack' ? 'border-red-500/50 bg-red-500/10' : 'border-blue-500/50 bg-blue-500/10'}`}>
+                        <div className="flex items-center gap-2">
+                          {activePhase.type === 'attack' ? (
+                            <Swords className="h-4 w-4 text-red-500 animate-pulse" />
+                          ) : (
+                            <Shield className="h-4 w-4 text-blue-500 animate-pulse" />
+                          )}
+                          <span className="text-xs font-bold">
+                            {activePhase.type === 'attack' ? 'ΕΠΙΘΕΣΗ' : 'ΑΜΥΝΑ'} σε εξέλιξη
+                          </span>
+                          <span className="text-[10px] text-muted-foreground font-mono">
+                            {formatTime(elapsedTime - activePhase.startTime)}
+                          </span>
+                        </div>
+                        <Button
+                          variant="outline" size="sm" className="rounded-none h-7 text-xs"
+                          onClick={endPhase}
+                        >
+                          <Square className="h-3 w-3 mr-1" />Τέλος
+                        </Button>
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-2 gap-2">
                       <Button
-                        variant="outline"
-                        className="rounded-none border-red-500/50 text-red-600 hover:bg-red-500/10 h-12"
-                        onClick={() => recordEvent('attack')}
+                        variant={activePhase?.type === 'attack' ? 'default' : 'outline'}
+                        className={`rounded-none h-14 ${
+                          activePhase?.type === 'attack'
+                            ? 'bg-red-500 hover:bg-red-600 text-white'
+                            : 'border-red-500/50 text-red-600 hover:bg-red-500/10'
+                        }`}
+                        onClick={() => activePhase?.type === 'attack' ? endPhase() : startPhase('attack')}
                         disabled={!isRecording}
                       >
-                        <Swords className="h-4 w-4 mr-2" />
-                        Επίθεση
+                        <div className="flex flex-col items-center gap-1">
+                          <Swords className="h-5 w-5" />
+                          <span className="text-xs font-bold">
+                            {activePhase?.type === 'attack' ? 'ΤΕΛΟΣ ⚔' : 'Επίθεση'}
+                          </span>
+                        </div>
                       </Button>
                       <Button
-                        variant="outline"
-                        className="rounded-none border-blue-500/50 text-blue-600 hover:bg-blue-500/10 h-12"
-                        onClick={() => recordEvent('defense')}
+                        variant={activePhase?.type === 'defense' ? 'default' : 'outline'}
+                        className={`rounded-none h-14 ${
+                          activePhase?.type === 'defense'
+                            ? 'bg-blue-500 hover:bg-blue-600 text-white'
+                            : 'border-blue-500/50 text-blue-600 hover:bg-blue-500/10'
+                        }`}
+                        onClick={() => activePhase?.type === 'defense' ? endPhase() : startPhase('defense')}
                         disabled={!isRecording}
                       >
-                        <Shield className="h-4 w-4 mr-2" />
-                        Άμυνα
+                        <div className="flex flex-col items-center gap-1">
+                          <Shield className="h-5 w-5" />
+                          <span className="text-xs font-bold">
+                            {activePhase?.type === 'defense' ? 'ΤΕΛΟΣ 🛡' : 'Άμυνα'}
+                          </span>
+                        </div>
                       </Button>
                     </div>
+
+                    {!activePhase && isRecording && (
+                      <p className="text-[10px] text-muted-foreground text-center">
+                        Πάτα Επίθεση ή Άμυνα για να ξεκινήσεις φάση
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
 
-                {/* Strike Buttons */}
-                <Card className="rounded-none">
+                {/* Strike Buttons (only active during a phase) */}
+                <Card className={`rounded-none transition-opacity ${activePhase ? 'opacity-100' : 'opacity-40'}`}>
                   <CardHeader className="p-3 pb-2">
                     <CardTitle className="text-sm flex items-center gap-2">
                       <Target className="h-4 w-4" />
                       Χτυπήματα
+                      {activePhase && (
+                        <Badge variant="outline" className={`rounded-none text-[9px] ml-auto ${
+                          activePhase.type === 'attack' ? 'border-red-500/50 text-red-500' : 'border-blue-500/50 text-blue-500'
+                        }`}>
+                          μέσα σε {activePhase.type === 'attack' ? 'Επίθεση' : 'Άμυνα'}
+                        </Badge>
+                      )}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-3 pt-0">
@@ -543,32 +648,23 @@ const LiveRingAnalysis: React.FC = () => {
                           variant="outline"
                           size="sm"
                           className="rounded-none h-10 text-xs justify-start"
-                          onClick={() => recordEvent(
-                            btn.category ? 'strike' : 'clinch',
-                            btn.type,
-                            btn.category,
-                            btn.side,
-                          )}
-                          disabled={!isRecording}
+                          onClick={() => recordStrike(btn.type, btn.category, btn.side)}
+                          disabled={!activePhase}
                         >
                           <span className="mr-1.5">{btn.icon}</span>
                           {btn.label}
+                          {/* Show count in active phase */}
+                          {activePhase && (() => {
+                            const count = activePhase.strikes.filter(s => s.strikeType === btn.type).length;
+                            return count > 0 ? (
+                              <Badge variant="secondary" className="rounded-none ml-auto text-[9px] h-4 px-1">
+                                {count}
+                              </Badge>
+                            ) : null;
+                          })()}
                         </Button>
                       ))}
                     </div>
-
-                    {/* Blocked strike */}
-                    <Separator className="my-2" />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="rounded-none w-full h-9 text-xs border-amber-500/50 text-amber-600 hover:bg-amber-500/10"
-                      onClick={() => recordEvent('defense', 'block', null, null, true)}
-                      disabled={!isRecording}
-                    >
-                      <Shield className="h-3 w-3 mr-1.5" />
-                      Μπλοκαρισμένο χτύπημα
-                    </Button>
                   </CardContent>
                 </Card>
 
@@ -583,22 +679,20 @@ const LiveRingAnalysis: React.FC = () => {
                   <CardContent className="p-3 pt-0">
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <div className="border border-border p-2 text-center">
-                        <p className="text-lg font-bold text-foreground">{stats.totalStrikes}</p>
-                        <p className="text-muted-foreground">Σύνολο</p>
+                        <p className="text-lg font-bold text-foreground">{totalStats.totalStrikes}</p>
+                        <p className="text-muted-foreground">Σύνολο Χτυπ.</p>
                       </div>
                       <div className="border border-border p-2 text-center">
-                        <p className="text-lg font-bold text-[#00ffba]">
-                          {stats.totalStrikes > 0 ? Math.round((stats.successfulStrikes / stats.totalStrikes) * 100) : 0}%
-                        </p>
-                        <p className="text-muted-foreground">Ακρίβεια</p>
+                        <p className="text-lg font-bold text-foreground">{formatTime(totalStats.attackSeconds + totalStats.defenseSeconds)}</p>
+                        <p className="text-muted-foreground">Ενεργός Χρόνος</p>
                       </div>
                       <div className="border border-border p-2 text-center">
-                        <p className="text-lg font-bold text-red-500">{stats.attacks}</p>
-                        <p className="text-muted-foreground">Επιθέσεις</p>
+                        <p className="text-lg font-bold text-red-500">{totalStats.attackStrikes}</p>
+                        <p className="text-muted-foreground">Επιθ. Χτυπ.</p>
                       </div>
                       <div className="border border-border p-2 text-center">
-                        <p className="text-lg font-bold text-blue-500">{stats.defenses}</p>
-                        <p className="text-muted-foreground">Άμυνες</p>
+                        <p className="text-lg font-bold text-blue-500">{totalStats.defenseStrikes}</p>
+                        <p className="text-muted-foreground">Αμυντ. Χτυπ.</p>
                       </div>
                     </div>
 
@@ -606,51 +700,59 @@ const LiveRingAnalysis: React.FC = () => {
 
                     <div className="grid grid-cols-4 gap-1 text-xs text-center">
                       <div className="p-1.5 border border-border">
-                        <p className="font-bold">{stats.punches}</p>
+                        <p className="font-bold">{totalStats.punches}</p>
                         <p className="text-[10px] text-muted-foreground">Μπουνιές</p>
                       </div>
                       <div className="p-1.5 border border-border">
-                        <p className="font-bold">{stats.kicks}</p>
+                        <p className="font-bold">{totalStats.kicks}</p>
                         <p className="text-[10px] text-muted-foreground">Κλωτσιές</p>
                       </div>
                       <div className="p-1.5 border border-border">
-                        <p className="font-bold">{stats.knees}</p>
+                        <p className="font-bold">{totalStats.knees}</p>
                         <p className="text-[10px] text-muted-foreground">Γόνατα</p>
                       </div>
                       <div className="p-1.5 border border-border">
-                        <p className="font-bold">{stats.elbows}</p>
+                        <p className="font-bold">{totalStats.elbows}</p>
                         <p className="text-[10px] text-muted-foreground">Αγκώνες</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Recent Events Log */}
+                {/* Phase Log */}
                 <Card className="rounded-none">
                   <CardHeader className="p-3 pb-2">
-                    <CardTitle className="text-sm">Πρόσφατα Events ({events.length})</CardTitle>
+                    <CardTitle className="text-sm">Φάσεις ({phases.length})</CardTitle>
                   </CardHeader>
                   <CardContent className="p-3 pt-0 max-h-48 overflow-y-auto">
-                    {events.length === 0 ? (
+                    {phases.length === 0 ? (
                       <p className="text-xs text-muted-foreground text-center py-4">
-                        Πατήστε Εκκίνηση και καταγράψτε events
+                        Ξεκίνα καταγραφή φάσεων
                       </p>
                     ) : (
                       <div className="space-y-1">
-                        {[...events].reverse().slice(0, 20).map((e) => (
-                          <div key={e.id} className="flex items-center justify-between text-xs border-b border-border py-1">
+                        {[...phases].reverse().slice(0, 20).map((p) => (
+                          <div key={p.id} className="flex items-center justify-between text-xs border-b border-border py-1">
                             <div className="flex items-center gap-1.5">
-                              {e.event_type === 'attack' && <Swords className="h-3 w-3 text-red-500" />}
-                              {e.event_type === 'defense' && <Shield className="h-3 w-3 text-blue-500" />}
-                              {e.event_type === 'strike' && <Target className="h-3 w-3 text-[#00ffba]" />}
-                              {e.event_type === 'clinch' && <Hand className="h-3 w-3 text-amber-500" />}
+                              {p.type === 'attack' ? (
+                                <Swords className="h-3 w-3 text-red-500" />
+                              ) : (
+                                <Shield className="h-3 w-3 text-blue-500" />
+                              )}
                               <span className="font-medium">
-                                {e.strike_type || e.event_type}
+                                {p.type === 'attack' ? 'Επίθεση' : 'Άμυνα'}
                               </span>
-                              {e.is_blocked && <Badge variant="outline" className="rounded-none text-[8px] px-1 py-0">BLK</Badge>}
+                              <Badge variant="outline" className="rounded-none text-[8px] px-1 py-0">
+                                {p.strikes.length} χτυπ.
+                              </Badge>
+                              {!p.endTime && (
+                                <Badge className="rounded-none text-[8px] px-1 py-0 bg-destructive text-destructive-foreground animate-pulse">
+                                  LIVE
+                                </Badge>
+                              )}
                             </div>
-                            <span className="text-muted-foreground font-mono">
-                              R{e.round_number} · {formatTime(e.timestamp_seconds)}
+                            <span className="text-muted-foreground font-mono text-[10px]">
+                              R{p.roundNumber} · {formatTime(p.startTime)}–{p.endTime ? formatTime(p.endTime) : '...'}
                             </span>
                           </div>
                         ))}
