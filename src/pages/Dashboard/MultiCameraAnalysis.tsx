@@ -691,7 +691,7 @@ const MultiCameraAnalysis: React.FC = () => {
                       <Button
                         onClick={isAnalyzing ? stopAnalysis : startAnalysis}
                         disabled={activeCameras.length === 0 && !isAnalyzing}
-                        className={`w-full rounded-none ${isAnalyzing ? 'bg-red-500 hover:bg-red-600' : 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black'}`}
+                        className={`w-full rounded-none ${isAnalyzing ? 'bg-destructive hover:bg-destructive/90' : ''}`}
                       >
                         {isAnalyzing ? (
                           <><Square className="h-4 w-4 mr-1" /> Διακοπή</>
