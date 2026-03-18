@@ -513,6 +513,9 @@ const LiveRingAnalysis: React.FC = () => {
                     Γωνία: <span className={`font-semibold ${cornerColor}`}>{isCornerRed ? 'Κόκκινη (Red)' : 'Μπλε (Blue)'}</span>
                   </p>
                 </div>
+                <Button variant="outline" size="sm" className="rounded-none ml-2" onClick={() => navigate(`/dashboard/federation-live/ring/${ringId}/ai-lab`)}>
+                  🧠 AI Lab
+                </Button>
               </div>
               {(isRecording || isBreak) && (
                 <Badge className={`rounded-none ${isBreak ? 'bg-amber-500 text-black' : 'bg-destructive text-destructive-foreground'} animate-pulse`}>
