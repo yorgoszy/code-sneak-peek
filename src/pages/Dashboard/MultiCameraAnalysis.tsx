@@ -673,7 +673,7 @@ const MultiCameraAnalysis: React.FC = () => {
                   <Card className="rounded-none lg:col-span-1">
                     <CardHeader className="p-3 pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
-                        <Settings className="h-4 w-4" /> Ρυθμίσεις Ανάλυσης
+                        <Settings className="h-4 w-4" /> {t('aiLab.analysis.settingsTitle')}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-3 pt-0 space-y-3">
