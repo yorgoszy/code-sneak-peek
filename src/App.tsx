@@ -249,6 +249,7 @@ function App() {
                         <Route path="/dashboard/federation-live" element={<ProtectedRoute><></></ProtectedRoute>} />
                         <Route path="/dashboard/federation-fight-card" element={<ProtectedRoute><FederationFightCard /></ProtectedRoute>} />
                         <Route path="/dashboard/federation-live/ring/:ringId/analysis/:corner" element={<ProtectedRoute><LiveRingAnalysis /></ProtectedRoute>} />
+                        <Route path="/dashboard/federation-live/ring/:ringId/ai-lab" element={<ProtectedRoute><MultiCameraAnalysis /></ProtectedRoute>} />
                         <Route path="/dashboard/federation-profile" element={<ProtectedRoute><FederationEditProfile /></ProtectedRoute>} />
                         <Route path="/dashboard/ranking" element={<ProtectedRoute><RankingPage /></ProtectedRoute>} />
                       </Route>
