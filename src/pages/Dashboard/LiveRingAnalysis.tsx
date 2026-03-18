@@ -102,17 +102,81 @@ const LiveRingAnalysis: React.FC = () => {
     return () => { supabase.removeChannel(channel); };
   }, [ringId, loadRingData]);
 
-  // ─── Timer ───
-  useEffect(() => {
-    if (isRecording) {
-      startTimeRef.current = Date.now() - (elapsedTime * 1000);
-      timerRef.current = window.setInterval(() => {
-        setElapsedTime((Date.now() - startTimeRef.current) / 1000);
-      }, 100);
-    } else if (timerRef.current) {
-      clearInterval(timerRef.current);
+  // ─── Sync with ring timer ───
+  const applyRingTimer = useCallback((data: any) => {
+    if (!data) return;
+    const round = data.timer_current_round ?? 1;
+    const isBrk = data.timer_is_break ?? false;
+    const runningSince = data.timer_running_since ?? null;
+    const remaining = data.timer_remaining_seconds ?? null;
+
+    setCurrentRound(round);
+    setIsBreak(isBrk);
+
+    const timerIsRunning = !!runningSince && !isBrk;
+    
+    // Track when timer starts/stops to accumulate elapsed
+    if (timerIsRunning && !isRecording) {
+      // Timer just started - save current elapsed as base
+      elapsedBaseRef.current = elapsedTime;
+      lastRunSinceRef.current = runningSince;
+      lastRemainingRef.current = remaining;
     }
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+    
+    if (!timerIsRunning && isRecording && activePhase) {
+      // Timer stopped - close any active phase
+      const closed = { ...activePhase, endTime: elapsedTime };
+      setPhases(prev => prev.map(p => p.id === closed.id ? closed : p));
+      setActivePhase(null);
+    }
+
+    setIsRecording(timerIsRunning);
+  }, [isRecording, elapsedTime, activePhase]);
+
+  // Poll ring timer (like VideoOverlayScores)
+  useEffect(() => {
+    if (!ringId) return;
+    let active = true;
+    
+    const poll = async () => {
+      const { data } = await supabase
+        .from('competition_rings')
+        .select('timer_current_round, timer_is_break, timer_remaining_seconds, timer_running_since')
+        .eq('id', ringId)
+        .maybeSingle();
+      if (active && data) applyRingTimer(data);
+      if (active) setTimeout(poll, 500);
+    };
+    poll();
+    
+    return () => { active = false; };
+  }, [ringId, applyRingTimer]);
+
+  // Realtime ring timer subscription
+  useEffect(() => {
+    if (!ringId) return;
+    const channel = supabase
+      .channel(`analysis-timer-${ringId}`)
+      .on('postgres_changes', {
+        event: 'UPDATE', schema: 'public', table: 'competition_rings',
+        filter: `id=eq.${ringId}`
+      }, (payload) => applyRingTimer(payload.new))
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [ringId, applyRingTimer]);
+
+  // Local elapsed time counter - runs when isRecording
+  useEffect(() => {
+    if (!isRecording || !lastRunSinceRef.current) return;
+    const base = elapsedBaseRef.current;
+    const runStart = new Date(lastRunSinceRef.current).getTime();
+    
+    const interval = setInterval(() => {
+      const sinceStart = (Date.now() - runStart) / 1000;
+      setElapsedTime(base + sinceStart);
+    }, 100);
+    
+    return () => clearInterval(interval);
   }, [isRecording]);
 
   // ─── Start a phase (attack or defense) ───
