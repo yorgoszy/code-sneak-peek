@@ -953,7 +953,7 @@ const MultiCameraAnalysis: React.FC = () => {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-sm">
                 <Camera className="h-4 w-4" />
-                {cameras[selectedCameraIndex]?.camera_label} — Ρυθμίσεις
+                {cameras[selectedCameraIndex]?.camera_label} — {t('aiLab.cameras.cameraSettings')}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-3">
