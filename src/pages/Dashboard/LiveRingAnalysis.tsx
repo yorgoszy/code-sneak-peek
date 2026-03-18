@@ -596,13 +596,15 @@ const LiveRingAnalysis: React.FC = () => {
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-1 border border-border px-2 py-1">
-                        <Timer className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-sm font-mono">{formatTime(elapsedTime)}</span>
+                      <div className={`flex items-center gap-1 border px-2 py-1 ${isBreak ? 'border-amber-500 bg-amber-500/10' : 'border-border'}`}>
+                        <Timer className={`h-3 w-3 ${isBreak ? 'text-amber-500' : 'text-muted-foreground'}`} />
+                        <span className={`text-sm font-mono font-bold ${isBreak ? 'text-amber-500' : ''}`}>
+                          {formatCountdown(countdownTime)}
+                        </span>
                       </div>
 
                       <div className="flex items-center gap-1 border border-border px-2 py-1">
-                        <span className="text-xs text-muted-foreground">Γύρος:</span>
+                        <span className="text-xs text-muted-foreground">{isBreak ? 'Διάλειμμα' : 'Γύρος'}:</span>
                         <span className="text-sm font-bold">{currentRound}</span>
                       </div>
 
