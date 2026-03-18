@@ -280,8 +280,20 @@ serve(async (req) => {
       });
     }
 
+    // Add additional camera angles
+    if (additionalVideoUrls && additionalVideoUrls.length > 0) {
+      for (const extraUrl of additionalVideoUrls) {
+        parts.push({
+          file_data: {
+            mime_type: "video/mp4",
+            file_uri: extraUrl,
+          },
+        });
+      }
+    }
+
     console.log(
-      `Analyzing ${sport} video, mode: ${mode}, round: ${roundNumber || "N/A"}`
+      `Analyzing ${sport} video, mode: ${mode}, round: ${roundNumber || "N/A"}, cameras: ${camerasUsed}`
     );
 
     const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
