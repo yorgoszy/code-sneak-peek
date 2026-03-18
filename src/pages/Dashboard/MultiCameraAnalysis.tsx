@@ -394,73 +394,56 @@ const MultiCameraAnalysis: React.FC = () => {
   );
 
   const renderCameraCard = (cam: AnalysisCamera, index: number) => (
-    <Card key={index} className={`rounded-none border ${cam.is_active ? 'border-[#00ffba]/50' : 'border-border'}`}>
-      <CardHeader className="p-3 pb-2">
+    <Card key={index} className={`rounded-none border ${cam.is_active ? 'border-foreground/30' : 'border-border'}`}>
+      <CardContent className="p-2.5 space-y-1.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Camera className={`h-4 w-4 ${cam.is_active ? 'text-[#00ffba]' : 'text-muted-foreground'}`} />
-            <span className="text-sm font-medium">{cam.camera_label}</span>
-            <Badge variant="outline" className="rounded-none text-xs">
+            <Camera className={`h-3.5 w-3.5 ${cam.is_active ? 'text-foreground' : 'text-muted-foreground'}`} />
+            <span className="text-xs font-medium">{cam.camera_label}</span>
+            <Badge variant="outline" className="rounded-none text-[10px] px-1.5 py-0">
               {positionLabels[cam.position] || cam.position}
             </Badge>
           </div>
           <Switch
             checked={cam.is_active}
             onCheckedChange={v => updateCamera(index, 'is_active', v)}
+            className="scale-90"
           />
         </div>
-      </CardHeader>
-      <CardContent className="p-3 pt-0 space-y-2">
-        <div>
-          <Label className="text-xs text-muted-foreground">Stream URL (RTSP/HLS)</Label>
-          <Input
-            value={cam.stream_url || ''}
-            onChange={e => updateCamera(index, 'stream_url', e.target.value)}
-            placeholder="rtsp://mac-mini.local:8554/cam1"
-            className="rounded-none text-xs h-8"
-          />
-        </div>
+        <Input
+          value={cam.stream_url || ''}
+          onChange={e => updateCamera(index, 'stream_url', e.target.value)}
+          placeholder="rtsp://mac-mini.local:8554/cam1"
+          className="rounded-none text-xs h-7"
+        />
         <div className="flex gap-2">
-          <div className="flex-1">
-            <Label className="text-xs text-muted-foreground">Θέση</Label>
-            <Select
-              value={cam.position}
-              onValueChange={v => updateCamera(index, 'position', v)}
-            >
-              <SelectTrigger className="rounded-none h-8 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {cameraPositions.map(p => (
-                  <SelectItem key={p} value={p}>{positionLabels[p]}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex-1">
-            <Label className="text-xs text-muted-foreground">FPS</Label>
-            <Select
-              value={String(cam.fps)}
-              onValueChange={v => updateCamera(index, 'fps', Number(v))}
-            >
-              <SelectTrigger className="rounded-none h-8 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="30">30 fps</SelectItem>
-                <SelectItem value="60">60 fps</SelectItem>
-                <SelectItem value="120">120 fps</SelectItem>
-                <SelectItem value="160">160 fps</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Select value={cam.position} onValueChange={v => updateCamera(index, 'position', v)}>
+            <SelectTrigger className="rounded-none h-7 text-xs flex-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {cameraPositions.map(p => (
+                <SelectItem key={p} value={p}>{positionLabels[p]}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={String(cam.fps)} onValueChange={v => updateCamera(index, 'fps', Number(v))}>
+            <SelectTrigger className="rounded-none h-7 text-xs w-24">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="30">30 fps</SelectItem>
+              <SelectItem value="60">60 fps</SelectItem>
+              <SelectItem value="120">120 fps</SelectItem>
+              <SelectItem value="160">160 fps</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        {/* Status indicator */}
-        <div className="flex items-center gap-1.5 text-xs">
+        <div className="flex items-center gap-1 text-[10px]">
           {cam.is_active && cam.stream_url ? (
-            <><Wifi className="h-3 w-3 text-[#00ffba]" /><span className="text-[#00ffba]">Ενεργή</span></>
+            <><Wifi className="h-3 w-3 text-foreground" /><span>Ενεργή</span></>
           ) : cam.is_active ? (
-            <><AlertCircle className="h-3 w-3 text-amber-500" /><span className="text-amber-500">Χωρίς URL</span></>
+            <><AlertCircle className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">Χωρίς URL</span></>
           ) : (
             <><WifiOff className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">Απενεργοποιημένη</span></>
           )}
@@ -495,7 +478,7 @@ const MultiCameraAnalysis: React.FC = () => {
         {data.accuracy_percentage !== undefined && (
           <div className="flex justify-between text-xs">
             <span>Ακρίβεια</span>
-            <span className="text-[#00ffba]">{data.accuracy_percentage}%</span>
+            <span className="font-medium">{data.accuracy_percentage}%</span>
           </div>
         )}
       </div>
@@ -536,13 +519,13 @@ const MultiCameraAnalysis: React.FC = () => {
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div>
-                  <h1 className="text-2xl font-bold flex items-center gap-2">
-                    <Brain className="h-6 w-6 text-[#00ffba]" />
+                  <h1 className="text-xl font-bold flex items-center gap-2">
+                    <Brain className="h-5 w-5" />
                     AI Analysis Lab
-                    {ring && <Badge variant="outline" className="rounded-none ml-2">{ring.ring_name || `Ring ${ring.ring_number}`}</Badge>}
+                    {ring && <Badge variant="outline" className="rounded-none ml-2 text-xs">{ring.ring_name || `Ring ${ring.ring_number}`}</Badge>}
                   </h1>
-                  <p className="text-sm text-muted-foreground">
-                    {ringId ? `Multi-Camera AI Analysis • ${activeCameras.length}/4 κάμερες ενεργές` : 'Επιλέξτε ρινγκ για να ρυθμίσετε κάμερες και ανάλυση'}
+                  <p className="text-xs text-muted-foreground">
+                    {ringId ? `${activeCameras.length}/4 κάμερες ενεργές` : 'Επιλέξτε ρινγκ'}
                   </p>
                 </div>
               </div>
@@ -550,9 +533,9 @@ const MultiCameraAnalysis: React.FC = () => {
               {currentMatch && (
                 <div className="flex items-center gap-3">
                   <div className="text-right text-sm">
-                    <span className="text-red-500 font-medium">{(currentMatch as any).athlete1?.name}</span>
+                    <span className="font-medium">{(currentMatch as any).athlete1?.name}</span>
                     <span className="text-muted-foreground mx-2">vs</span>
-                    <span className="text-blue-500 font-medium">{(currentMatch as any).athlete2?.name}</span>
+                    <span className="font-medium">{(currentMatch as any).athlete2?.name}</span>
                   </div>
                 </div>
               )}
@@ -560,33 +543,22 @@ const MultiCameraAnalysis: React.FC = () => {
 
             {/* Ring Selector - shown when no ringId in URL */}
             {!ringIdParam && (
-              <div className="mb-6">
-                <Label className="text-sm font-medium mb-2 block">Επιλέξτε Ρινγκ</Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="mb-4">
+                <Label className="text-xs font-medium mb-1.5 block">Επιλέξτε Ρινγκ</Label>
+                <div className="flex flex-wrap gap-2">
                   {availableRings.map((r: any) => (
-                    <Card
+                    <Button
                       key={r.id}
-                      className={`rounded-none cursor-pointer transition-colors ${ringId === r.id ? 'border-[#00ffba] bg-[#00ffba]/5' : 'hover:border-muted-foreground/50'}`}
+                      variant={ringId === r.id ? 'default' : 'outline'}
+                      size="sm"
+                      className="rounded-none text-xs"
                       onClick={() => setSelectedRingId(r.id)}
                     >
-                      <CardContent className="p-3 flex items-center gap-3">
-                        <div className={`w-10 h-10 flex items-center justify-center rounded-none ${ringId === r.id ? 'bg-[#00ffba]/20 text-[#00ffba]' : 'bg-muted text-muted-foreground'}`}>
-                          <MonitorPlay className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium">{r.ring_name || `Ring ${r.ring_number}`}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {(r as any).federation_competitions?.name || 'Χωρίς αγώνα'}
-                          </p>
-                        </div>
-                        {ringId === r.id && <CheckCircle className="h-4 w-4 text-[#00ffba] ml-auto" />}
-                      </CardContent>
-                    </Card>
+                      {r.ring_name || `Ring ${r.ring_number}`}
+                    </Button>
                   ))}
                   {availableRings.length === 0 && (
-                    <p className="text-sm text-muted-foreground col-span-full py-4 text-center">
-                      Δεν βρέθηκαν ρινγκ. Δημιουργήστε πρώτα ένα αγώνα με ρινγκ.
-                    </p>
+                    <p className="text-xs text-muted-foreground">Δεν βρέθηκαν ρινγκ.</p>
                   )}
                 </div>
               </div>
@@ -618,7 +590,7 @@ const MultiCameraAnalysis: React.FC = () => {
                   <div>
                     <h2 className="text-lg font-semibold">Ρύθμιση Καμερών Ανάλυσης</h2>
                   </div>
-                  <Button onClick={saveCameras} disabled={savingCameras} className="rounded-none bg-[#00ffba] text-black hover:bg-[#00ffba]/90">
+                  <Button onClick={saveCameras} disabled={savingCameras} className="rounded-none" size="sm">
                     {savingCameras ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
                     Αποθήκευση
                   </Button>
@@ -646,7 +618,7 @@ const MultiCameraAnalysis: React.FC = () => {
                         };
                         return (
                           <div key={i} className={`absolute ${positions[cam.position] || positions.front}`}>
-                            <div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-none ${cam.is_active ? 'bg-[#00ffba]/20 text-[#00ffba] border border-[#00ffba]/50' : 'bg-muted text-muted-foreground border border-border'}`}>
+                            <div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-none ${cam.is_active ? 'bg-foreground/10 text-foreground border border-foreground/30' : 'bg-muted text-muted-foreground border border-border'}`}>
                               <Camera className="h-3 w-3" />
                               <span>{i + 1}</span>
                             </div>
@@ -719,7 +691,7 @@ const MultiCameraAnalysis: React.FC = () => {
                       <Button
                         onClick={isAnalyzing ? stopAnalysis : startAnalysis}
                         disabled={activeCameras.length === 0 && !isAnalyzing}
-                        className={`w-full rounded-none ${isAnalyzing ? 'bg-red-500 hover:bg-red-600' : 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black'}`}
+                        className={`w-full rounded-none ${isAnalyzing ? 'bg-destructive hover:bg-destructive/90' : ''}`}
                       >
                         {isAnalyzing ? (
                           <><Square className="h-4 w-4 mr-1" /> Διακοπή</>
@@ -750,11 +722,11 @@ const MultiCameraAnalysis: React.FC = () => {
                     <CardContent className="p-3 pt-0">
                       <div className="grid grid-cols-2 gap-2">
                         {cameras.map((cam, i) => (
-                          <div key={i} className={`aspect-video border rounded-none flex items-center justify-center ${cam.is_active ? 'border-[#00ffba]/30 bg-black' : 'border-border bg-muted/50'}`}>
+                          <div key={i} className={`aspect-video border rounded-none flex items-center justify-center ${cam.is_active ? 'border-foreground/20 bg-black' : 'border-border bg-muted/50'}`}>
                             {cam.is_active && cam.stream_url ? (
                               <div className="text-center">
-                                <Video className="h-8 w-8 text-[#00ffba] mx-auto mb-1" />
-                                <p className="text-xs text-[#00ffba]">{cam.camera_label}</p>
+                                <Video className="h-8 w-8 text-foreground mx-auto mb-1" />
+                                <p className="text-xs text-foreground">{cam.camera_label}</p>
                                 <p className="text-[10px] text-muted-foreground">{cam.fps}fps • {positionLabels[cam.position]}</p>
                               </div>
                             ) : (
@@ -767,7 +739,7 @@ const MultiCameraAnalysis: React.FC = () => {
                             )}
                             {/* Camera label overlay */}
                             <div className="absolute top-1 left-1">
-                              <Badge className={`rounded-none text-[10px] ${cam.is_active ? 'bg-[#00ffba]/20 text-[#00ffba]' : 'bg-muted'}`}>
+                              <Badge className={`rounded-none text-[10px] ${cam.is_active ? 'bg-foreground/10 text-foreground' : 'bg-muted'}`}>
                                 CAM {cam.camera_index} • {positionLabels[cam.position]}
                               </Badge>
                             </div>
@@ -805,11 +777,11 @@ const MultiCameraAnalysis: React.FC = () => {
                       <CardContent className="p-3 pt-0">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <h4 className="text-xs font-medium text-red-500 mb-2">🔴 Red Corner</h4>
+                            <h4 className="text-xs font-medium mb-2">🔴 Red Corner</h4>
                             {renderStrikeTable(round.red_corner_data, 'red')}
                           </div>
                           <div>
-                            <h4 className="text-xs font-medium text-blue-500 mb-2">🔵 Blue Corner</h4>
+                            <h4 className="text-xs font-medium mb-2">🔵 Blue Corner</h4>
                             {renderStrikeTable(round.blue_corner_data, 'blue')}
                           </div>
                         </div>
@@ -836,18 +808,18 @@ const MultiCameraAnalysis: React.FC = () => {
                   </Card>
                 ) : (
                   sessions.map(session => (
-                    <Card key={session.id} className="rounded-none hover:border-[#00ffba]/30 cursor-pointer transition-colors"
+                    <Card key={session.id} className="rounded-none hover:border-foreground/20 cursor-pointer transition-colors"
                       onClick={() => loadSessionResults(session.id)}>
                       <CardContent className="p-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className={`p-1.5 rounded-none ${session.status === 'completed' ? 'bg-[#00ffba]/10' : session.status === 'analyzing' ? 'bg-amber-500/10' : 'bg-red-500/10'}`}>
+                            <div className={`p-1.5 rounded-none ${session.status === 'completed' ? 'bg-foreground/10' : session.status === 'analyzing' ? 'bg-amber-500/10' : 'bg-destructive/10'}`}>
                               {session.status === 'completed' ? (
-                                <CheckCircle className="h-4 w-4 text-[#00ffba]" />
+                                <CheckCircle className="h-4 w-4 text-foreground" />
                               ) : session.status === 'analyzing' ? (
-                                <Loader2 className="h-4 w-4 text-amber-500 animate-spin" />
+                                <Loader2 className="h-4 w-4 text-muted-foreground animate-spin" />
                               ) : (
-                                <AlertCircle className="h-4 w-4 text-red-500" />
+                                <AlertCircle className="h-4 w-4 text-destructive" />
                               )}
                             </div>
                             <div>
@@ -880,7 +852,7 @@ const MultiCameraAnalysis: React.FC = () => {
                         <Tag className="h-4 w-4" /> Training Data Collection
                         <Badge variant="outline" className="rounded-none">Phase 3</Badge>
                       </CardTitle>
-                      <Badge className="rounded-none bg-[#cb8954] text-black">
+                      <Badge className="rounded-none" variant="outline">
                         {trainingLabelsCount} labels
                       </Badge>
                     </div>
@@ -894,21 +866,21 @@ const MultiCameraAnalysis: React.FC = () => {
 
                     <div className="grid grid-cols-3 gap-3">
                       <Card className="rounded-none p-3 text-center">
-                        <Zap className="h-6 w-6 mx-auto mb-1 text-[#00ffba]" />
+                        <Zap className="h-6 w-6 mx-auto mb-1 text-foreground" />
                         <p className="text-xs font-medium">Auto-Label</p>
                         <p className="text-[10px] text-muted-foreground">
                           AI labels → Human review
                         </p>
                       </Card>
                       <Card className="rounded-none p-3 text-center">
-                        <Eye className="h-6 w-6 mx-auto mb-1 text-[#cb8954]" />
+                        <Eye className="h-6 w-6 mx-auto mb-1 text-muted-foreground" />
                         <p className="text-xs font-medium">Manual Label</p>
                         <p className="text-[10px] text-muted-foreground">
                           Frame-by-frame annotation
                         </p>
                       </Card>
                       <Card className="rounded-none p-3 text-center">
-                        <Download className="h-6 w-6 mx-auto mb-1 text-blue-500" />
+                        <Download className="h-6 w-6 mx-auto mb-1 text-muted-foreground" />
                         <p className="text-xs font-medium">Export</p>
                         <p className="text-[10px] text-muted-foreground">
                           JSONL for Gemini tuning
