@@ -83,11 +83,16 @@ interface RoundResult {
 }
 
 const MultiCameraAnalysis: React.FC = () => {
-  const { ringId } = useParams<{ ringId: string }>();
+  const { ringId: ringIdParam } = useParams<{ ringId: string }>();
   const navigate = useNavigate();
   const { isAdmin, isFederation } = useRoleCheck();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('cameras');
+
+  // Ring selector (when no ringId in URL)
+  const [availableRings, setAvailableRings] = useState<any[]>([]);
+  const [selectedRingId, setSelectedRingId] = useState<string | null>(ringIdParam || null);
+  const ringId = ringIdParam || selectedRingId;
 
   // Ring data
   const [ring, setRing] = useState<any>(null);
@@ -112,6 +117,13 @@ const MultiCameraAnalysis: React.FC = () => {
   const [labelingMode, setLabelingMode] = useState(false);
   const [trainingLabelsCount, setTrainingLabelsCount] = useState(0);
 
+  // Load available rings when no ringId in params
+  useEffect(() => {
+    if (!ringIdParam) {
+      loadAvailableRings();
+    }
+  }, [ringIdParam]);
+
   // Load ring and cameras
   useEffect(() => {
     if (!ringId) return;
@@ -119,6 +131,14 @@ const MultiCameraAnalysis: React.FC = () => {
     loadCameras();
     loadSessions();
   }, [ringId]);
+
+  const loadAvailableRings = async () => {
+    const { data } = await supabase
+      .from('competition_rings')
+      .select('id, ring_name, ring_number, competition_id, federation_competitions(name)')
+      .order('ring_number');
+    if (data) setAvailableRings(data);
+  };
 
   const loadRingData = async () => {
     if (!ringId) return;
