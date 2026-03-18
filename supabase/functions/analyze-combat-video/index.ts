@@ -31,6 +31,10 @@ interface AnalysisRequest {
   roundNumber?: number;
   fighterNames?: { red: string; blue: string };
   durationSeconds?: number;
+  // Multi-camera support
+  camerasUsed?: number;
+  cameraPositions?: string[]; // ['front', 'back', 'left', 'right']
+  additionalVideoUrls?: string[]; // Extra camera angle URLs
 }
 
 const GEMINI_API_URL =
