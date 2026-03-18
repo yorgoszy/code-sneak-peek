@@ -524,8 +524,9 @@ const MultiCameraAnalysis: React.FC = () => {
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div>
-                  <h1 className="text-xl font-bold flex items-center gap-2">
-                    <Brain className="h-5 w-5" />
+                    <h1 className="text-xl font-bold flex items-center gap-2">
+                      <Brain className="h-5 w-5" />
+                      {t('aiLab.title')}
                     AI Analysis Lab
                     {ring && <Badge variant="outline" className="rounded-none ml-2 text-xs">{ring.ring_name || `Ring ${ring.ring_number}`}</Badge>}
                   </h1>
