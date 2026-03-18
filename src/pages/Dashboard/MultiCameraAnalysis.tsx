@@ -958,7 +958,7 @@ const MultiCameraAnalysis: React.FC = () => {
             </DialogHeader>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-xs">Ενεργοποίηση</Label>
+                <Label className="text-xs">{t('aiLab.cameras.enable')}</Label>
                 <Switch
                   checked={cameras[selectedCameraIndex]?.is_active}
                   onCheckedChange={v => updateCamera(selectedCameraIndex, 'is_active', v)}
