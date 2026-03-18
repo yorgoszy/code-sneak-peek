@@ -813,9 +813,9 @@ const MultiCameraAnalysis: React.FC = () => {
                       <CardContent className="p-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className={`p-1.5 rounded-none ${session.status === 'completed' ? 'bg-[#00ffba]/10' : session.status === 'analyzing' ? 'bg-amber-500/10' : 'bg-red-500/10'}`}>
+                            <div className={`p-1.5 rounded-none ${session.status === 'completed' ? 'bg-foreground/10' : session.status === 'analyzing' ? 'bg-amber-500/10' : 'bg-destructive/10'}`}>
                               {session.status === 'completed' ? (
-                                <CheckCircle className="h-4 w-4 text-[#00ffba]" />
+                                <CheckCircle className="h-4 w-4 text-foreground" />
                               ) : session.status === 'analyzing' ? (
                                 <Loader2 className="h-4 w-4 text-amber-500 animate-spin" />
                               ) : (
