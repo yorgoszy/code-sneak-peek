@@ -975,7 +975,7 @@ const MultiCameraAnalysis: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <Label className="text-xs">Θέση</Label>
+                  <Label className="text-xs">{t('aiLab.cameras.position')}</Label>
                   <Select value={cameras[selectedCameraIndex]?.position} onValueChange={v => updateCamera(selectedCameraIndex, 'position', v)}>
                     <SelectTrigger className="rounded-none h-8 text-xs mt-1">
                       <SelectValue />
