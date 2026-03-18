@@ -45,12 +45,12 @@ export const FederationSidebar = ({
     { icon: Users, label: t("federation.sidebar.users"), path: "/dashboard/federation-users" },
     { icon: CreditCard, label: t("federation.sidebar.subscriptions"), path: "/dashboard/federation-subscriptions" },
     { icon: TrendingUp, label: "Athletes Progress", path: "/dashboard/federation-progress" },
+    { icon: Trophy, label: "Ranking", path: "/dashboard/ranking" },
     { icon: Swords, label: t("federation.sidebar.competitions"), path: "/dashboard/federation-competitions" },
     { icon: Scale, label: t("federation.sidebar.weighIn"), path: "/dashboard/weigh-in" },
     { icon: Shuffle, label: t("federation.sidebar.brackets"), path: "/dashboard/federation-brackets" },
     { icon: Radio, label: t("federation.sidebar.live"), path: "/dashboard/federation-live" },
     { icon: ClipboardList, label: t("federation.sidebar.fightCard"), path: "/dashboard/federation-fight-card" },
-    { icon: Trophy, label: "Ranking", path: "/dashboard/ranking" },
     { icon: Brain, label: "AI Lab", path: "/dashboard/ai-lab" },
     { icon: Settings, label: t("federation.sidebar.editProfile"), path: "/dashboard/federation-profile" },
   ];
