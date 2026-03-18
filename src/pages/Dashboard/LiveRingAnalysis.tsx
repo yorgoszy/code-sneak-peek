@@ -59,6 +59,9 @@ const LiveRingAnalysis: React.FC = () => {
   const cornerBg = isCornerRed ? 'bg-red-500/10 border-red-500/30' : 'bg-blue-500/10 border-blue-500/30';
   const cornerBgSolid = isCornerRed ? 'bg-red-500' : 'bg-blue-500';
 
+  // Auto-save ref (will be set after saveAnalysis is defined)
+  const saveCurrentAnalysisRef = useRef<(() => Promise<void>) | null>(null);
+
   // Track previous match ID to detect match changes and auto-save/reset
   const prevMatchIdRef = useRef<string | null>(null);
 
