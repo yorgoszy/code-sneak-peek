@@ -984,5 +984,98 @@
     "reason": "Αιτία",
     "noHistory": "Δεν υπάρχει ιστορικό ζυγίσεων",
     "noRegistrations": "Δεν βρέθηκαν εγγεγραμμένοι αθλητές"
+  },
+  "aiLab": {
+    "title": "AI Analysis Lab",
+    "activeCameras": "κάμερες ενεργές",
+    "selectRing": "Επιλέξτε Ρινγκ",
+    "noRingsFound": "Δεν βρέθηκαν ρινγκ.",
+    "tabs": {
+      "cameras": "Κάμερες",
+      "analysis": "Ανάλυση",
+      "results": "Αποτελέσματα",
+      "history": "Ιστορικό",
+      "trainingData": "Training Data"
+    },
+    "cameras": {
+      "title": "Τοποθέτηση Καμερών",
+      "subtitle": "Κάντε κλικ σε κάμερα για ρύθμιση",
+      "save": "Αποθήκευση",
+      "cameraSettings": "Ρυθμίσεις",
+      "enable": "Ενεργοποίηση",
+      "streamUrl": "Stream URL",
+      "position": "Θέση",
+      "front": "Μπροστά",
+      "back": "Πίσω",
+      "left": "Αριστερά",
+      "right": "Δεξιά",
+      "active": "Ενεργή",
+      "noUrl": "Χωρίς URL",
+      "disabled": "Απενεργοποιημένη",
+      "noStream": "Χωρίς stream",
+      "off": "Off",
+      "saved": "Οι κάμερες αποθηκεύτηκαν",
+      "saveError": "Σφάλμα αποθήκευσης"
+    },
+    "analysis": {
+      "settingsTitle": "Ρυθμίσεις Ανάλυσης",
+      "sport": "Άθλημα",
+      "mode": "Mode Ανάλυσης",
+      "modeFull": "Πλήρης Ανάλυση",
+      "modeStrike": "Μέτρηση Χτυπημάτων",
+      "modeRound": "Στατιστικά Γύρου",
+      "modeTechnique": "Αξιολόγηση Τεχνικής",
+      "modeComparison": "Σύγκριση Αθλητών",
+      "activeCameras": "Ενεργές κάμερες",
+      "estimatedCost": "Εκτ. κόστος/γύρο",
+      "aiModel": "AI Model",
+      "startAnalysis": "Έναρξη Ανάλυσης",
+      "stopAnalysis": "Διακοπή",
+      "progress": "Πρόοδος",
+      "cameraFeeds": "Camera Feeds",
+      "setupCamera": "Ρυθμίστε τουλάχιστον μία κάμερα",
+      "analysisComplete": "Ανάλυση ολοκληρώθηκε"
+    },
+    "results": {
+      "noResults": "Δεν υπάρχουν αποτελέσματα ακόμα.",
+      "noResultsDesc": "Ξεκινήστε μια ανάλυση ή επιλέξτε από το ιστορικό.",
+      "round": "Γύρος",
+      "redCorner": "Red Corner",
+      "blueCorner": "Blue Corner",
+      "strike": "Χτύπημα",
+      "thrownLanded": "Thrown / Landed",
+      "total": "Σύνολο",
+      "accuracy": "Ακρίβεια",
+      "noData": "Δεν υπάρχουν δεδομένα",
+      "aiNotes": "Σημειώσεις AI"
+    },
+    "history": {
+      "noHistory": "Δεν υπάρχει ιστορικό αναλύσεων.",
+      "cameras": "κάμερες",
+      "rounds": "γύροι"
+    },
+    "training": {
+      "title": "Training Data Collection",
+      "description": "Συλλέξτε labeled data από αγώνες για fine-tuning του AI μοντέλου. Κάθε label αντιστοιχεί σε ένα frame με τον τύπο χτυπήματος, τη γωνία κάμερας, και τη γωνία του αθλητή.",
+      "autoLabel": "Auto-Label",
+      "autoLabelDesc": "AI labels → Human review",
+      "manualLabel": "Manual Label",
+      "manualLabelDesc": "Frame-by-frame annotation",
+      "export": "Export",
+      "exportDesc": "JSONL for Gemini tuning",
+      "trainingProgress": "Πρόοδος Εκπαίδευσης",
+      "minFineTuning": "Minimum για fine-tuning",
+      "recommended": "Συνιστώμενο",
+      "startLabeling": "Έναρξη Labeling (Coming Soon)"
+    },
+    "sports": {
+      "muay_thai": "Muay Thai",
+      "boxing": "Πυγμαχία",
+      "kickboxing": "Kickboxing",
+      "mma": "MMA",
+      "karate": "Καράτε",
+      "taekwondo": "Taekwondo",
+      "judo": "Τζούντο"
+    }
   }
 }

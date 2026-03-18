@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
@@ -37,23 +38,9 @@ import { toast } from "sonner";
 type CombatSport = 'muay_thai' | 'boxing' | 'kickboxing' | 'mma' | 'karate' | 'taekwondo' | 'judo';
 type AnalysisMode = 'strike_counting' | 'round_stats' | 'technique_evaluation' | 'fighter_comparison' | 'full';
 
-const sportLabels: Record<CombatSport, string> = {
-  muay_thai: 'Muay Thai',
-  boxing: 'Πυγμαχία',
-  kickboxing: 'Kickboxing',
-  mma: 'MMA',
-  karate: 'Καράτε',
-  taekwondo: 'Taekwondo',
-  judo: 'Τζούντο',
-};
+const sportKeys: CombatSport[] = ['muay_thai', 'boxing', 'kickboxing', 'mma', 'karate', 'taekwondo', 'judo'];
 
 const cameraPositions = ['front', 'back', 'left', 'right'] as const;
-const positionLabels: Record<string, string> = {
-  front: 'Μπροστά',
-  back: 'Πίσω',
-  left: 'Αριστερά',
-  right: 'Δεξιά',
-};
 
 interface AnalysisCamera {
   id: string;
@@ -92,7 +79,15 @@ const MultiCameraAnalysis: React.FC = () => {
   const { ringId: ringIdParam } = useParams<{ ringId: string }>();
   const navigate = useNavigate();
   const { isAdmin, isFederation } = useRoleCheck();
+  const { t } = useTranslation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  const positionLabels: Record<string, string> = useMemo(() => ({
+    front: t('aiLab.cameras.front'),
+    back: t('aiLab.cameras.back'),
+    left: t('aiLab.cameras.left'),
+    right: t('aiLab.cameras.right'),
+  }), [t]);
   const [activeTab, setActiveTab] = useState('cameras');
 
   // Ring selector (when no ringId in URL)
@@ -248,9 +243,9 @@ const MultiCameraAnalysis: React.FC = () => {
           }
         }
       }
-      toast.success('Οι κάμερες αποθηκεύτηκαν');
+      toast.success(t('aiLab.cameras.saved'));
     } catch (err) {
-      toast.error('Σφάλμα αποθήκευσης');
+      toast.error(t('aiLab.cameras.saveError'));
     } finally {
       setSavingCameras(false);
     }
@@ -267,7 +262,7 @@ const MultiCameraAnalysis: React.FC = () => {
   // Start AI Analysis
   const startAnalysis = async () => {
     if (!ringId || activeCameras.length === 0) {
-      toast.error('Ρυθμίστε τουλάχιστον μία κάμερα');
+      toast.error(t('aiLab.analysis.setupCamera'));
       return;
     }
 
@@ -367,12 +362,12 @@ const MultiCameraAnalysis: React.FC = () => {
 
       setRoundResults(roundResultsArr);
       setAnalysisProgress(100);
-      toast.success(`Ανάλυση ολοκληρώθηκε - ${roundResultsArr.length} γύροι`);
+      toast.success(`${t('aiLab.analysis.analysisComplete')} - ${roundResultsArr.length} ${t('aiLab.history.rounds')}`);
       loadSessions();
 
     } catch (err) {
       console.error('Analysis error:', err);
-      toast.error('Σφάλμα ανάλυσης');
+      toast.error(t('aiLab.cameras.saveError'));
     } finally {
       setIsAnalyzing(false);
     }
@@ -451,11 +446,11 @@ const MultiCameraAnalysis: React.FC = () => {
         </div>
         <div className="flex items-center gap-1 text-[10px]">
           {cam.is_active && cam.stream_url ? (
-            <><Wifi className="h-3 w-3 text-foreground" /><span>Ενεργή</span></>
+            <><Wifi className="h-3 w-3 text-foreground" /><span>{t('aiLab.cameras.active')}</span></>
           ) : cam.is_active ? (
-            <><AlertCircle className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">Χωρίς URL</span></>
+            <><AlertCircle className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">{t('aiLab.cameras.noUrl')}</span></>
           ) : (
-            <><WifiOff className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">Απενεργοποιημένη</span></>
+            <><WifiOff className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">{t('aiLab.cameras.disabled')}</span></>
           )}
         </div>
       </CardContent>
@@ -464,15 +459,15 @@ const MultiCameraAnalysis: React.FC = () => {
 
   const renderStrikeTable = (data: any, corner: string) => {
     if (!data?.strikes && !data?.total_strikes_thrown) return (
-      <p className="text-xs text-muted-foreground">Δεν υπάρχουν δεδομένα</p>
+      <p className="text-xs text-muted-foreground">{t('aiLab.results.noData')}</p>
     );
 
     const strikes = data.strikes || {};
     return (
       <div className="space-y-1">
         <div className="flex justify-between text-xs font-medium border-b border-border pb-1">
-          <span>Χτύπημα</span>
-          <span>Thrown / Landed</span>
+          <span>{t('aiLab.results.strike')}</span>
+          <span>{t('aiLab.results.thrownLanded')}</span>
         </div>
         {Object.entries(strikes).map(([type, vals]: [string, any]) => (
           <div key={type} className="flex justify-between text-xs">
@@ -482,12 +477,12 @@ const MultiCameraAnalysis: React.FC = () => {
         ))}
         <Separator />
         <div className="flex justify-between text-xs font-bold">
-          <span>Σύνολο</span>
+          <span>{t('aiLab.results.total')}</span>
           <span>{data.total_strikes_thrown || 0} / {data.total_strikes_landed || 0}</span>
         </div>
         {data.accuracy_percentage !== undefined && (
           <div className="flex justify-between text-xs">
-            <span>Ακρίβεια</span>
+            <span>{t('aiLab.results.accuracy')}</span>
             <span className="font-medium">{data.accuracy_percentage}%</span>
           </div>
         )}
@@ -516,7 +511,7 @@ const MultiCameraAnalysis: React.FC = () => {
                 <Button variant="outline" size="sm" onClick={() => setIsMobileOpen(true)} className="rounded-none">
                   <Menu className="h-5 w-5" />
                 </Button>
-                <h1 className="text-lg font-semibold">AI Analysis Lab</h1>
+                <h1 className="text-lg font-semibold">{t('aiLab.title')}</h1>
               </div>
             </div>
           </div>
@@ -529,13 +524,14 @@ const MultiCameraAnalysis: React.FC = () => {
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div>
-                  <h1 className="text-xl font-bold flex items-center gap-2">
-                    <Brain className="h-5 w-5" />
+                    <h1 className="text-xl font-bold flex items-center gap-2">
+                      <Brain className="h-5 w-5" />
+                      {t('aiLab.title')}
                     AI Analysis Lab
                     {ring && <Badge variant="outline" className="rounded-none ml-2 text-xs">{ring.ring_name || `Ring ${ring.ring_number}`}</Badge>}
                   </h1>
                   <p className="text-xs text-muted-foreground">
-                    {ringId ? `${activeCameras.length}/4 κάμερες ενεργές` : 'Επιλέξτε ρινγκ'}
+                    {ringId ? `${activeCameras.length}/4 ${t('aiLab.activeCameras')}` : t('aiLab.selectRing')}
                   </p>
                 </div>
               </div>
@@ -554,7 +550,7 @@ const MultiCameraAnalysis: React.FC = () => {
             {/* Ring Selector - shown when no ringId in URL */}
             {!ringIdParam && (
               <div className="mb-4">
-                <Label className="text-xs font-medium mb-1.5 block">Επιλέξτε Ρινγκ</Label>
+                <Label className="text-xs font-medium mb-1.5 block">{t('aiLab.selectRing')}</Label>
                 <div className="flex flex-wrap gap-2">
                   {availableRings.map((r: any) => (
                     <Button
@@ -568,7 +564,7 @@ const MultiCameraAnalysis: React.FC = () => {
                     </Button>
                   ))}
                   {availableRings.length === 0 && (
-                    <p className="text-xs text-muted-foreground">Δεν βρέθηκαν ρινγκ.</p>
+                    <p className="text-xs text-muted-foreground">{t('aiLab.noRingsFound')}</p>
                   )}
                 </div>
               </div>
@@ -578,19 +574,19 @@ const MultiCameraAnalysis: React.FC = () => {
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="rounded-none mb-4">
                 <TabsTrigger value="cameras" className="rounded-none gap-1">
-                  <Camera className="h-4 w-4" /> Κάμερες
+                  <Camera className="h-4 w-4" /> {t('aiLab.tabs.cameras')}
                 </TabsTrigger>
                 <TabsTrigger value="analysis" className="rounded-none gap-1">
-                  <Brain className="h-4 w-4" /> Ανάλυση
+                  <Brain className="h-4 w-4" /> {t('aiLab.tabs.analysis')}
                 </TabsTrigger>
                 <TabsTrigger value="results" className="rounded-none gap-1">
-                  <Target className="h-4 w-4" /> Αποτελέσματα
+                  <Target className="h-4 w-4" /> {t('aiLab.tabs.results')}
                 </TabsTrigger>
                 <TabsTrigger value="history" className="rounded-none gap-1">
-                  <Activity className="h-4 w-4" /> Ιστορικό
+                  <Activity className="h-4 w-4" /> {t('aiLab.tabs.history')}
                 </TabsTrigger>
                 <TabsTrigger value="training" className="rounded-none gap-1">
-                  <Tag className="h-4 w-4" /> Training Data
+                  <Tag className="h-4 w-4" /> {t('aiLab.tabs.trainingData')}
                 </TabsTrigger>
               </TabsList>
 
@@ -598,12 +594,12 @@ const MultiCameraAnalysis: React.FC = () => {
               <TabsContent value="cameras" className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-lg font-semibold">Τοποθέτηση Καμερών</h2>
-                    <p className="text-xs text-muted-foreground">Κάντε κλικ σε κάμερα για ρύθμιση</p>
+                    <h2 className="text-lg font-semibold">{t('aiLab.cameras.title')}</h2>
+                    <p className="text-xs text-muted-foreground">{t('aiLab.cameras.subtitle')}</p>
                   </div>
                   <Button onClick={saveCameras} disabled={savingCameras} className="rounded-none" size="sm">
                     {savingCameras ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
-                    Αποθήκευση
+                    {t('aiLab.cameras.save')}
                   </Button>
                 </div>
 
@@ -658,11 +654,11 @@ const MultiCameraAnalysis: React.FC = () => {
                       <p className="text-[10px] text-muted-foreground">{positionLabels[cam.position]}</p>
                       <div className="mt-1">
                         {cam.is_active && cam.stream_url ? (
-                          <Badge variant="outline" className="rounded-none text-[9px] px-1 py-0">Ενεργή</Badge>
+                          <Badge variant="outline" className="rounded-none text-[9px] px-1 py-0">{t('aiLab.cameras.active')}</Badge>
                         ) : cam.is_active ? (
-                          <Badge variant="outline" className="rounded-none text-[9px] px-1 py-0 text-muted-foreground">Χωρίς URL</Badge>
+                          <Badge variant="outline" className="rounded-none text-[9px] px-1 py-0 text-muted-foreground">{t('aiLab.cameras.noUrl')}</Badge>
                         ) : (
-                          <Badge variant="outline" className="rounded-none text-[9px] px-1 py-0 text-muted-foreground">Off</Badge>
+                          <Badge variant="outline" className="rounded-none text-[9px] px-1 py-0 text-muted-foreground">{t('aiLab.cameras.off')}</Badge>
                         )}
                       </div>
                     </div>
@@ -677,36 +673,36 @@ const MultiCameraAnalysis: React.FC = () => {
                   <Card className="rounded-none lg:col-span-1">
                     <CardHeader className="p-3 pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
-                        <Settings className="h-4 w-4" /> Ρυθμίσεις Ανάλυσης
+                        <Settings className="h-4 w-4" /> {t('aiLab.analysis.settingsTitle')}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-3 pt-0 space-y-3">
                       <div>
-                        <Label className="text-xs">Άθλημα</Label>
+                        <Label className="text-xs">{t('aiLab.analysis.sport')}</Label>
                         <Select value={selectedSport} onValueChange={v => setSelectedSport(v as CombatSport)}>
                           <SelectTrigger className="rounded-none h-8 text-xs">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {Object.entries(sportLabels).map(([k, v]) => (
-                              <SelectItem key={k} value={k}>{v}</SelectItem>
+                            {sportKeys.map(k => (
+                              <SelectItem key={k} value={k}>{t(`aiLab.sports.${k}`)}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       </div>
 
                       <div>
-                        <Label className="text-xs">Mode Ανάλυσης</Label>
+                        <Label className="text-xs">{t('aiLab.analysis.mode')}</Label>
                         <Select value={analysisMode} onValueChange={v => setAnalysisMode(v as AnalysisMode)}>
                           <SelectTrigger className="rounded-none h-8 text-xs">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="full">Πλήρης Ανάλυση</SelectItem>
-                            <SelectItem value="strike_counting">Μέτρηση Χτυπημάτων</SelectItem>
-                            <SelectItem value="round_stats">Στατιστικά Γύρου</SelectItem>
-                            <SelectItem value="technique_evaluation">Αξιολόγηση Τεχνικής</SelectItem>
-                            <SelectItem value="fighter_comparison">Σύγκριση Αθλητών</SelectItem>
+                            <SelectItem value="full">{t('aiLab.analysis.modeFull')}</SelectItem>
+                            <SelectItem value="strike_counting">{t('aiLab.analysis.modeStrike')}</SelectItem>
+                            <SelectItem value="round_stats">{t('aiLab.analysis.modeRound')}</SelectItem>
+                            <SelectItem value="technique_evaluation">{t('aiLab.analysis.modeTechnique')}</SelectItem>
+                            <SelectItem value="fighter_comparison">{t('aiLab.analysis.modeComparison')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -715,15 +711,15 @@ const MultiCameraAnalysis: React.FC = () => {
 
                       <div className="space-y-1 text-xs text-muted-foreground">
                         <div className="flex justify-between">
-                          <span>Ενεργές κάμερες:</span>
+                          <span>{t('aiLab.analysis.activeCameras')}:</span>
                           <span className="text-foreground">{activeCameras.length}/4</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Εκτ. κόστος/γύρο:</span>
+                          <span>{t('aiLab.analysis.estimatedCost')}:</span>
                           <span className="text-foreground">~$0.07</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>AI Model:</span>
+                          <span>{t('aiLab.analysis.aiModel')}:</span>
                           <span className="text-foreground">Gemini 2.0 Flash</span>
                         </div>
                       </div>
@@ -734,16 +730,16 @@ const MultiCameraAnalysis: React.FC = () => {
                         className={`w-full rounded-none ${isAnalyzing ? 'bg-destructive hover:bg-destructive/90' : ''}`}
                       >
                         {isAnalyzing ? (
-                          <><Square className="h-4 w-4 mr-1" /> Διακοπή</>
+                          <><Square className="h-4 w-4 mr-1" /> {t('aiLab.analysis.stopAnalysis')}</>
                         ) : (
-                          <><Play className="h-4 w-4 mr-1" /> Έναρξη Ανάλυσης</>
+                          <><Play className="h-4 w-4 mr-1" /> {t('aiLab.analysis.startAnalysis')}</>
                         )}
                       </Button>
 
                       {isAnalyzing && (
                         <div className="space-y-1">
                           <div className="flex justify-between text-xs">
-                            <span>Πρόοδος</span>
+                            <span>{t('aiLab.analysis.progress')}</span>
                             <span>{analysisProgress}%</span>
                           </div>
                           <Progress value={analysisProgress} className="h-2 rounded-none" />
@@ -756,7 +752,7 @@ const MultiCameraAnalysis: React.FC = () => {
                   <Card className="rounded-none lg:col-span-2">
                     <CardHeader className="p-3 pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
-                        <MonitorPlay className="h-4 w-4" /> Camera Feeds
+                        <MonitorPlay className="h-4 w-4" /> {t('aiLab.analysis.cameraFeeds')}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-3 pt-0">
@@ -773,7 +769,7 @@ const MultiCameraAnalysis: React.FC = () => {
                               <div className="text-center">
                                 <Camera className="h-6 w-6 text-muted-foreground mx-auto mb-1" />
                                 <p className="text-xs text-muted-foreground">
-                                  {cam.is_active ? 'Χωρίς stream' : 'Απενεργοποιημένη'}
+                                  {cam.is_active ? t('aiLab.cameras.noStream') : t('aiLab.cameras.disabled')}
                                 </p>
                               </div>
                             )}
@@ -797,8 +793,8 @@ const MultiCameraAnalysis: React.FC = () => {
                   <Card className="rounded-none">
                     <CardContent className="p-8 text-center text-muted-foreground">
                       <Brain className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                      <p>Δεν υπάρχουν αποτελέσματα ακόμα.</p>
-                      <p className="text-xs mt-1">Ξεκινήστε μια ανάλυση ή επιλέξτε από το ιστορικό.</p>
+                      <p>{t('aiLab.results.noResults')}</p>
+                      <p className="text-xs mt-1">{t('aiLab.results.noResultsDesc')}</p>
                     </CardContent>
                   </Card>
                 ) : (
@@ -806,7 +802,7 @@ const MultiCameraAnalysis: React.FC = () => {
                     <Card key={round.id} className="rounded-none">
                       <CardHeader className="p-3 pb-2">
                         <div className="flex items-center justify-between">
-                          <CardTitle className="text-sm">Γύρος {round.round_number}</CardTitle>
+                          <CardTitle className="text-sm">{t('aiLab.results.round')} {round.round_number}</CardTitle>
                           {round.processing_time_ms && (
                             <Badge variant="outline" className="rounded-none text-xs">
                               {(round.processing_time_ms / 1000).toFixed(1)}s
@@ -817,17 +813,17 @@ const MultiCameraAnalysis: React.FC = () => {
                       <CardContent className="p-3 pt-0">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <h4 className="text-xs font-medium mb-2">🔴 Red Corner</h4>
+                            <h4 className="text-xs font-medium mb-2">🔴 {t('aiLab.results.redCorner')}</h4>
                             {renderStrikeTable(round.red_corner_data, 'red')}
                           </div>
                           <div>
-                            <h4 className="text-xs font-medium mb-2">🔵 Blue Corner</h4>
+                            <h4 className="text-xs font-medium mb-2">🔵 {t('aiLab.results.blueCorner')}</h4>
                             {renderStrikeTable(round.blue_corner_data, 'blue')}
                           </div>
                         </div>
                         {round.round_summary && (
                           <div className="mt-3 p-2 bg-muted/50 text-xs">
-                            <p className="font-medium mb-1">Σημειώσεις AI:</p>
+                            <p className="font-medium mb-1">{t('aiLab.results.aiNotes')}:</p>
                             <p>{round.round_summary}</p>
                           </div>
                         )}
@@ -843,7 +839,7 @@ const MultiCameraAnalysis: React.FC = () => {
                   <Card className="rounded-none">
                     <CardContent className="p-8 text-center text-muted-foreground">
                       <Activity className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                      <p>Δεν υπάρχει ιστορικό αναλύσεων.</p>
+                      <p>{t('aiLab.history.noHistory')}</p>
                     </CardContent>
                   </Card>
                 ) : (
@@ -864,14 +860,14 @@ const MultiCameraAnalysis: React.FC = () => {
                             </div>
                             <div>
                               <p className="text-sm font-medium">
-                                {sportLabels[session.sport as CombatSport] || session.sport}
+                                {t(`aiLab.sports.${session.sport}`, { defaultValue: session.sport })}
                                 {' • '}
                                 {session.analysis_type === 'live' ? 'Live' : 'Post-Match'}
                               </p>
                               <p className="text-xs text-muted-foreground">
                                 {new Date(session.created_at).toLocaleString('el-GR')}
                                 {' • '}
-                                {session.cameras_used} κάμερες • {session.total_rounds} γύροι
+                                {session.cameras_used} {t('aiLab.history.cameras')} • {session.total_rounds} {t('aiLab.history.rounds')}
                               </p>
                             </div>
                           </div>
@@ -889,7 +885,7 @@ const MultiCameraAnalysis: React.FC = () => {
                   <CardHeader className="p-3 pb-2">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-sm flex items-center gap-2">
-                        <Tag className="h-4 w-4" /> Training Data Collection
+                        <Tag className="h-4 w-4" /> {t('aiLab.training.title')}
                         <Badge variant="outline" className="rounded-none">Phase 3</Badge>
                       </CardTitle>
                       <Badge className="rounded-none" variant="outline">
@@ -899,55 +895,47 @@ const MultiCameraAnalysis: React.FC = () => {
                   </CardHeader>
                   <CardContent className="p-3 pt-0 space-y-3">
                     <p className="text-xs text-muted-foreground">
-                      Συλλέξτε labeled data από αγώνες για fine-tuning του AI μοντέλου.
-                      Κάθε label αντιστοιχεί σε ένα frame με τον τύπο χτυπήματος, τη γωνία κάμερας,
-                      και τη γωνία του αθλητή.
+                      {t('aiLab.training.description')}
                     </p>
 
                     <div className="grid grid-cols-3 gap-3">
                       <Card className="rounded-none p-3 text-center">
                         <Zap className="h-6 w-6 mx-auto mb-1 text-foreground" />
-                        <p className="text-xs font-medium">Auto-Label</p>
-                        <p className="text-[10px] text-muted-foreground">
-                          AI labels → Human review
-                        </p>
+                        <p className="text-xs font-medium">{t('aiLab.training.autoLabel')}</p>
+                        <p className="text-[10px] text-muted-foreground">{t('aiLab.training.autoLabelDesc')}</p>
                       </Card>
                       <Card className="rounded-none p-3 text-center">
                         <Eye className="h-6 w-6 mx-auto mb-1 text-muted-foreground" />
-                        <p className="text-xs font-medium">Manual Label</p>
-                        <p className="text-[10px] text-muted-foreground">
-                          Frame-by-frame annotation
-                        </p>
+                        <p className="text-xs font-medium">{t('aiLab.training.manualLabel')}</p>
+                        <p className="text-[10px] text-muted-foreground">{t('aiLab.training.manualLabelDesc')}</p>
                       </Card>
                       <Card className="rounded-none p-3 text-center">
                         <Download className="h-6 w-6 mx-auto mb-1 text-muted-foreground" />
-                        <p className="text-xs font-medium">Export</p>
-                        <p className="text-[10px] text-muted-foreground">
-                          JSONL for Gemini tuning
-                        </p>
+                        <p className="text-xs font-medium">{t('aiLab.training.export')}</p>
+                        <p className="text-[10px] text-muted-foreground">{t('aiLab.training.exportDesc')}</p>
                       </Card>
                     </div>
 
                     <Separator />
 
                     <div className="space-y-2">
-                      <h4 className="text-xs font-medium">Πρόοδος Εκπαίδευσης</h4>
+                      <h4 className="text-xs font-medium">{t('aiLab.training.trainingProgress')}</h4>
                       <div className="space-y-1">
                         <div className="flex justify-between text-xs">
-                          <span>Minimum για fine-tuning:</span>
+                          <span>{t('aiLab.training.minFineTuning')}:</span>
                           <span>{trainingLabelsCount} / 1,000</span>
                         </div>
                         <Progress value={Math.min((trainingLabelsCount / 1000) * 100, 100)} className="h-2 rounded-none" />
                       </div>
                       <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>Συνιστώμενο:</span>
+                        <span>{t('aiLab.training.recommended')}:</span>
                         <span>5,000+ labels</span>
                       </div>
                     </div>
 
                     <Button disabled className="w-full rounded-none" variant="outline">
                       <Tag className="h-4 w-4 mr-1" />
-                      Έναρξη Labeling (Coming Soon)
+                      {t('aiLab.training.startLabeling')}
                     </Button>
                   </CardContent>
                 </Card>
@@ -965,19 +953,19 @@ const MultiCameraAnalysis: React.FC = () => {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-sm">
                 <Camera className="h-4 w-4" />
-                {cameras[selectedCameraIndex]?.camera_label} — Ρυθμίσεις
+                {cameras[selectedCameraIndex]?.camera_label} — {t('aiLab.cameras.cameraSettings')}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-xs">Ενεργοποίηση</Label>
+                <Label className="text-xs">{t('aiLab.cameras.enable')}</Label>
                 <Switch
                   checked={cameras[selectedCameraIndex]?.is_active}
                   onCheckedChange={v => updateCamera(selectedCameraIndex, 'is_active', v)}
                 />
               </div>
               <div>
-                <Label className="text-xs">Stream URL</Label>
+                <Label className="text-xs">{t('aiLab.cameras.streamUrl')}</Label>
                 <Input
                   value={cameras[selectedCameraIndex]?.stream_url || ''}
                   onChange={e => updateCamera(selectedCameraIndex, 'stream_url', e.target.value)}
@@ -987,7 +975,7 @@ const MultiCameraAnalysis: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <Label className="text-xs">Θέση</Label>
+                  <Label className="text-xs">{t('aiLab.cameras.position')}</Label>
                   <Select value={cameras[selectedCameraIndex]?.position} onValueChange={v => updateCamera(selectedCameraIndex, 'position', v)}>
                     <SelectTrigger className="rounded-none h-8 text-xs mt-1">
                       <SelectValue />
@@ -1016,11 +1004,11 @@ const MultiCameraAnalysis: React.FC = () => {
               </div>
               <div className="flex items-center gap-1 text-xs pt-1">
                 {cameras[selectedCameraIndex]?.is_active && cameras[selectedCameraIndex]?.stream_url ? (
-                  <><Wifi className="h-3 w-3 text-foreground" /><span>Ενεργή</span></>
+                  <><Wifi className="h-3 w-3 text-foreground" /><span>{t('aiLab.cameras.active')}</span></>
                 ) : cameras[selectedCameraIndex]?.is_active ? (
-                  <><AlertCircle className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">Χωρίς URL</span></>
+                  <><AlertCircle className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">{t('aiLab.cameras.noUrl')}</span></>
                 ) : (
-                  <><WifiOff className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">Απενεργοποιημένη</span></>
+                  <><WifiOff className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">{t('aiLab.cameras.disabled')}</span></>
                 )}
               </div>
               <Button
@@ -1033,7 +1021,7 @@ const MultiCameraAnalysis: React.FC = () => {
                 size="sm"
               >
                 {savingCameras ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
-                Αποθήκευση
+                {t('aiLab.cameras.save')}
               </Button>
             </div>
           </DialogContent>

@@ -984,5 +984,98 @@
     "reason": "Reason",
     "noHistory": "No weigh-in history",
     "noRegistrations": "No registered athletes found"
+  },
+  "aiLab": {
+    "title": "AI Analysis Lab",
+    "activeCameras": "active cameras",
+    "selectRing": "Select Ring",
+    "noRingsFound": "No rings found.",
+    "tabs": {
+      "cameras": "Cameras",
+      "analysis": "Analysis",
+      "results": "Results",
+      "history": "History",
+      "trainingData": "Training Data"
+    },
+    "cameras": {
+      "title": "Camera Placement",
+      "subtitle": "Click on a camera to configure",
+      "save": "Save",
+      "cameraSettings": "Settings",
+      "enable": "Enable",
+      "streamUrl": "Stream URL",
+      "position": "Position",
+      "front": "Front",
+      "back": "Back",
+      "left": "Left",
+      "right": "Right",
+      "active": "Active",
+      "noUrl": "No URL",
+      "disabled": "Disabled",
+      "noStream": "No stream",
+      "off": "Off",
+      "saved": "Cameras saved",
+      "saveError": "Save error"
+    },
+    "analysis": {
+      "settingsTitle": "Analysis Settings",
+      "sport": "Sport",
+      "mode": "Analysis Mode",
+      "modeFull": "Full Analysis",
+      "modeStrike": "Strike Counting",
+      "modeRound": "Round Stats",
+      "modeTechnique": "Technique Evaluation",
+      "modeComparison": "Fighter Comparison",
+      "activeCameras": "Active cameras",
+      "estimatedCost": "Est. cost/round",
+      "aiModel": "AI Model",
+      "startAnalysis": "Start Analysis",
+      "stopAnalysis": "Stop",
+      "progress": "Progress",
+      "cameraFeeds": "Camera Feeds",
+      "setupCamera": "Set up at least one camera",
+      "analysisComplete": "Analysis completed"
+    },
+    "results": {
+      "noResults": "No results yet.",
+      "noResultsDesc": "Start an analysis or select from history.",
+      "round": "Round",
+      "redCorner": "Red Corner",
+      "blueCorner": "Blue Corner",
+      "strike": "Strike",
+      "thrownLanded": "Thrown / Landed",
+      "total": "Total",
+      "accuracy": "Accuracy",
+      "noData": "No data available",
+      "aiNotes": "AI Notes"
+    },
+    "history": {
+      "noHistory": "No analysis history.",
+      "cameras": "cameras",
+      "rounds": "rounds"
+    },
+    "training": {
+      "title": "Training Data Collection",
+      "description": "Collect labeled data from matches for fine-tuning the AI model. Each label corresponds to a frame with strike type, camera angle, and fighter angle.",
+      "autoLabel": "Auto-Label",
+      "autoLabelDesc": "AI labels → Human review",
+      "manualLabel": "Manual Label",
+      "manualLabelDesc": "Frame-by-frame annotation",
+      "export": "Export",
+      "exportDesc": "JSONL for Gemini tuning",
+      "trainingProgress": "Training Progress",
+      "minFineTuning": "Minimum for fine-tuning",
+      "recommended": "Recommended",
+      "startLabeling": "Start Labeling (Coming Soon)"
+    },
+    "sports": {
+      "muay_thai": "Muay Thai",
+      "boxing": "Boxing",
+      "kickboxing": "Kickboxing",
+      "mma": "MMA",
+      "karate": "Karate",
+      "taekwondo": "Taekwondo",
+      "judo": "Judo"
+    }
   }
 }
