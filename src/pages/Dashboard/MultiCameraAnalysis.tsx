@@ -781,7 +781,7 @@ const MultiCameraAnalysis: React.FC = () => {
                             {renderStrikeTable(round.red_corner_data, 'red')}
                           </div>
                           <div>
-                            <h4 className="text-xs font-medium text-blue-500 mb-2">🔵 Blue Corner</h4>
+                            <h4 className="text-xs font-medium mb-2">🔵 Blue Corner</h4>
                             {renderStrikeTable(round.blue_corner_data, 'blue')}
                           </div>
                         </div>
