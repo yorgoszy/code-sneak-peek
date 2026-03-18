@@ -580,7 +580,7 @@ const MultiCameraAnalysis: React.FC = () => {
                   <Brain className="h-4 w-4" /> {t('aiLab.tabs.analysis')}
                 </TabsTrigger>
                 <TabsTrigger value="results" className="rounded-none gap-1">
-                  <Target className="h-4 w-4" /> Αποτελέσματα
+                  <Target className="h-4 w-4" /> {t('aiLab.tabs.results')}
                 </TabsTrigger>
                 <TabsTrigger value="history" className="rounded-none gap-1">
                   <Activity className="h-4 w-4" /> Ιστορικό
