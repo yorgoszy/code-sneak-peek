@@ -531,29 +531,38 @@ const LiveRingAnalysis: React.FC = () => {
                   </CardContent>
                 </Card>
 
-                {/* Recording Controls */}
+                {/* Recording Controls - synced with ring timer */}
                 <Card className="rounded-none">
                   <CardContent className="p-3">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Button
-                        onClick={() => setIsRecording(!isRecording)}
-                        className={`rounded-none ${isRecording ? 'bg-destructive hover:bg-destructive/90' : 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black'}`}
-                      >
-                        {isRecording ? <><Square className="h-4 w-4 mr-2" />Παύση</> : <><Play className="h-4 w-4 mr-2" />Εκκίνηση</>}
-                      </Button>
+                      {/* Recording status indicator */}
+                      <div className={`flex items-center gap-1.5 border px-3 py-1.5 ${
+                        isRecording 
+                          ? 'border-destructive bg-destructive/10' 
+                          : isBreak 
+                            ? 'border-amber-500 bg-amber-500/10' 
+                            : 'border-border'
+                      }`}>
+                        {isRecording ? (
+                          <Radio className="h-3 w-3 text-destructive animate-pulse" />
+                        ) : isBreak ? (
+                          <Timer className="h-3 w-3 text-amber-500" />
+                        ) : (
+                          <Square className="h-3 w-3 text-muted-foreground" />
+                        )}
+                        <span className="text-xs font-medium">
+                          {isRecording ? 'REC' : isBreak ? 'BREAK' : 'Αναμονή'}
+                        </span>
+                      </div>
 
                       <div className="flex items-center gap-1 border border-border px-2 py-1">
                         <Timer className="h-3 w-3 text-muted-foreground" />
                         <span className="text-sm font-mono">{formatTime(elapsedTime)}</span>
                       </div>
 
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 border border-border px-2 py-1">
                         <span className="text-xs text-muted-foreground">Γύρος:</span>
-                        <Button variant="outline" size="sm" className="rounded-none h-7 w-7 p-0"
-                          disabled={currentRound <= 1} onClick={() => { endPhase(); setCurrentRound(r => r - 1); }}>−</Button>
-                        <span className="text-sm font-bold px-1">{currentRound}</span>
-                        <Button variant="outline" size="sm" className="rounded-none h-7 w-7 p-0"
-                          onClick={() => { endPhase(); setCurrentRound(r => r + 1); }}>+</Button>
+                        <span className="text-sm font-bold">{currentRound}</span>
                       </div>
 
                       <Button variant="outline" size="sm" className="rounded-none" onClick={undoLast}
