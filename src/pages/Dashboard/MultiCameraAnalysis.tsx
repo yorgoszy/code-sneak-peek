@@ -965,7 +965,7 @@ const MultiCameraAnalysis: React.FC = () => {
                 />
               </div>
               <div>
-                <Label className="text-xs">Stream URL</Label>
+                <Label className="text-xs">{t('aiLab.cameras.streamUrl')}</Label>
                 <Input
                   value={cameras[selectedCameraIndex]?.stream_url || ''}
                   onChange={e => updateCamera(selectedCameraIndex, 'stream_url', e.target.value)}
