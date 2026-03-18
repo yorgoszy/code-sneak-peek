@@ -802,7 +802,7 @@ const MultiCameraAnalysis: React.FC = () => {
                     <Card key={round.id} className="rounded-none">
                       <CardHeader className="p-3 pb-2">
                         <div className="flex items-center justify-between">
-                          <CardTitle className="text-sm">Γύρος {round.round_number}</CardTitle>
+                          <CardTitle className="text-sm">{t('aiLab.results.round')} {round.round_number}</CardTitle>
                           {round.processing_time_ms && (
                             <Badge variant="outline" className="rounded-none text-xs">
                               {(round.processing_time_ms / 1000).toFixed(1)}s
