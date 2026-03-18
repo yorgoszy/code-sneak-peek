@@ -477,7 +477,7 @@ const MultiCameraAnalysis: React.FC = () => {
         ))}
         <Separator />
         <div className="flex justify-between text-xs font-bold">
-          <span>Σύνολο</span>
+          <span>{t('aiLab.results.total')}</span>
           <span>{data.total_strikes_thrown || 0} / {data.total_strikes_landed || 0}</span>
         </div>
         {data.accuracy_percentage !== undefined && (
