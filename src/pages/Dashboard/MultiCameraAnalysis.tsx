@@ -739,7 +739,7 @@ const MultiCameraAnalysis: React.FC = () => {
                             )}
                             {/* Camera label overlay */}
                             <div className="absolute top-1 left-1">
-                              <Badge className={`rounded-none text-[10px] ${cam.is_active ? 'bg-[#00ffba]/20 text-[#00ffba]' : 'bg-muted'}`}>
+                              <Badge className={`rounded-none text-[10px] ${cam.is_active ? 'bg-foreground/10 text-foreground' : 'bg-muted'}`}>
                                 CAM {cam.camera_index} • {positionLabels[cam.position]}
                               </Badge>
                             </div>
