@@ -362,7 +362,7 @@ const MultiCameraAnalysis: React.FC = () => {
 
       setRoundResults(roundResultsArr);
       setAnalysisProgress(100);
-      toast.success(`Ανάλυση ολοκληρώθηκε - ${roundResultsArr.length} γύροι`);
+      toast.success(`${t('aiLab.analysis.analysisComplete')} - ${roundResultsArr.length} ${t('aiLab.history.rounds')}`);
       loadSessions();
 
     } catch (err) {
