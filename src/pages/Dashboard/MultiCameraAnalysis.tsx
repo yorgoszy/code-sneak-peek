@@ -564,7 +564,7 @@ const MultiCameraAnalysis: React.FC = () => {
                     </Button>
                   ))}
                   {availableRings.length === 0 && (
-                    <p className="text-xs text-muted-foreground">Δεν βρέθηκαν ρινγκ.</p>
+                    <p className="text-xs text-muted-foreground">{t('aiLab.noRingsFound')}</p>
                   )}
                 </div>
               </div>
