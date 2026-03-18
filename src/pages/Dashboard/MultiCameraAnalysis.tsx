@@ -38,23 +38,9 @@ import { toast } from "sonner";
 type CombatSport = 'muay_thai' | 'boxing' | 'kickboxing' | 'mma' | 'karate' | 'taekwondo' | 'judo';
 type AnalysisMode = 'strike_counting' | 'round_stats' | 'technique_evaluation' | 'fighter_comparison' | 'full';
 
-const sportLabels: Record<CombatSport, string> = {
-  muay_thai: 'Muay Thai',
-  boxing: 'Πυγμαχία',
-  kickboxing: 'Kickboxing',
-  mma: 'MMA',
-  karate: 'Καράτε',
-  taekwondo: 'Taekwondo',
-  judo: 'Τζούντο',
-};
+const sportKeys: CombatSport[] = ['muay_thai', 'boxing', 'kickboxing', 'mma', 'karate', 'taekwondo', 'judo'];
 
 const cameraPositions = ['front', 'back', 'left', 'right'] as const;
-const positionLabels: Record<string, string> = {
-  front: 'Μπροστά',
-  back: 'Πίσω',
-  left: 'Αριστερά',
-  right: 'Δεξιά',
-};
 
 interface AnalysisCamera {
   id: string;
