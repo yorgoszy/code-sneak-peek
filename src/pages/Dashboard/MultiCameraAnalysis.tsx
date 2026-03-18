@@ -328,10 +328,10 @@ const MultiCameraAnalysis: React.FC = () => {
           status: 'completed',
           completed_at: new Date().toISOString(),
           total_rounds: totalRounds,
-          results: {
+          results: JSON.parse(JSON.stringify({
             rounds: roundResultsArr,
             summary: roundResultsArr.length > 0 ? 'Analysis complete' : 'No rounds analyzed',
-          },
+          })),
         })
         .eq('id', session.id);
 
