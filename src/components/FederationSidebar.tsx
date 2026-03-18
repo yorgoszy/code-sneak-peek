@@ -5,7 +5,7 @@ import {
   Settings,
   LogOut,
   Building2,
-  MonitorPlay,
+  
   Brain,
   CreditCard,
   Swords,
