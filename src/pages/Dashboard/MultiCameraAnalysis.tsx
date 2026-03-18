@@ -466,8 +466,8 @@ const MultiCameraAnalysis: React.FC = () => {
     return (
       <div className="space-y-1">
         <div className="flex justify-between text-xs font-medium border-b border-border pb-1">
-          <span>Χτύπημα</span>
-          <span>Thrown / Landed</span>
+          <span>{t('aiLab.results.strike')}</span>
+          <span>{t('aiLab.results.thrownLanded')}</span>
         </div>
         {Object.entries(strikes).map(([type, vals]: [string, any]) => (
           <div key={type} className="flex justify-between text-xs">
