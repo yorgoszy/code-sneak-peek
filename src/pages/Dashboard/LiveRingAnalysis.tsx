@@ -43,9 +43,12 @@ const LiveRingAnalysis: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const elapsedBaseRef = useRef<number>(0); // accumulated elapsed when timer was last paused
+  const [countdownTime, setCountdownTime] = useState(0); // countdown display
+  const elapsedBaseRef = useRef<number>(0);
   const lastRunSinceRef = useRef<string | null>(null);
   const lastRemainingRef = useRef<number | null>(null);
+  const breakRemainingRef = useRef<number | null>(null);
+  const breakRunningSinceRef = useRef<string | null>(null);
 
   // Phase-based analysis: periods of attack/defense with strikes inside
   const [phases, setPhases] = useState<ActionPhase[]>([]);
