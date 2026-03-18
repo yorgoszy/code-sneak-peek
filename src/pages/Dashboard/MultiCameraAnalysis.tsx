@@ -683,8 +683,8 @@ const MultiCameraAnalysis: React.FC = () => {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {Object.entries(sportLabels).map(([k, v]) => (
-                              <SelectItem key={k} value={k}>{v}</SelectItem>
+                            {sportKeys.map(k => (
+                              <SelectItem key={k} value={k}>{t(`aiLab.sports.${k}`)}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
