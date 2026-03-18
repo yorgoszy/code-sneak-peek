@@ -678,7 +678,7 @@ const MultiCameraAnalysis: React.FC = () => {
                     </CardHeader>
                     <CardContent className="p-3 pt-0 space-y-3">
                       <div>
-                        <Label className="text-xs">Άθλημα</Label>
+                        <Label className="text-xs">{t('aiLab.analysis.sport')}</Label>
                         <Select value={selectedSport} onValueChange={v => setSelectedSport(v as CombatSport)}>
                           <SelectTrigger className="rounded-none h-8 text-xs">
                             <SelectValue />
