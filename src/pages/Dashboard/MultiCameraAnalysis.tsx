@@ -928,7 +928,7 @@ const MultiCameraAnalysis: React.FC = () => {
                         <Progress value={Math.min((trainingLabelsCount / 1000) * 100, 100)} className="h-2 rounded-none" />
                       </div>
                       <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>Συνιστώμενο:</span>
+                        <span>{t('aiLab.training.recommended')}:</span>
                         <span>5,000+ labels</span>
                       </div>
                     </div>
