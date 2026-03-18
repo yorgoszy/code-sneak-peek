@@ -692,17 +692,17 @@ const MultiCameraAnalysis: React.FC = () => {
                       </div>
 
                       <div>
-                        <Label className="text-xs">Mode Ανάλυσης</Label>
+                        <Label className="text-xs">{t('aiLab.analysis.mode')}</Label>
                         <Select value={analysisMode} onValueChange={v => setAnalysisMode(v as AnalysisMode)}>
                           <SelectTrigger className="rounded-none h-8 text-xs">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="full">Πλήρης Ανάλυση</SelectItem>
-                            <SelectItem value="strike_counting">Μέτρηση Χτυπημάτων</SelectItem>
-                            <SelectItem value="round_stats">Στατιστικά Γύρου</SelectItem>
-                            <SelectItem value="technique_evaluation">Αξιολόγηση Τεχνικής</SelectItem>
-                            <SelectItem value="fighter_comparison">Σύγκριση Αθλητών</SelectItem>
+                            <SelectItem value="full">{t('aiLab.analysis.modeFull')}</SelectItem>
+                            <SelectItem value="strike_counting">{t('aiLab.analysis.modeStrike')}</SelectItem>
+                            <SelectItem value="round_stats">{t('aiLab.analysis.modeRound')}</SelectItem>
+                            <SelectItem value="technique_evaluation">{t('aiLab.analysis.modeTechnique')}</SelectItem>
+                            <SelectItem value="fighter_comparison">{t('aiLab.analysis.modeComparison')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
