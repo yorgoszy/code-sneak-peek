@@ -654,11 +654,11 @@ const MultiCameraAnalysis: React.FC = () => {
                       <p className="text-[10px] text-muted-foreground">{positionLabels[cam.position]}</p>
                       <div className="mt-1">
                         {cam.is_active && cam.stream_url ? (
-                          <Badge variant="outline" className="rounded-none text-[9px] px-1 py-0">Ενεργή</Badge>
+                          <Badge variant="outline" className="rounded-none text-[9px] px-1 py-0">{t('aiLab.cameras.active')}</Badge>
                         ) : cam.is_active ? (
-                          <Badge variant="outline" className="rounded-none text-[9px] px-1 py-0 text-muted-foreground">Χωρίς URL</Badge>
+                          <Badge variant="outline" className="rounded-none text-[9px] px-1 py-0 text-muted-foreground">{t('aiLab.cameras.noUrl')}</Badge>
                         ) : (
-                          <Badge variant="outline" className="rounded-none text-[9px] px-1 py-0 text-muted-foreground">Off</Badge>
+                          <Badge variant="outline" className="rounded-none text-[9px] px-1 py-0 text-muted-foreground">{t('aiLab.cameras.off')}</Badge>
                         )}
                       </div>
                     </div>
