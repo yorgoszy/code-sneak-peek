@@ -590,7 +590,7 @@ const MultiCameraAnalysis: React.FC = () => {
                   <div>
                     <h2 className="text-lg font-semibold">Ρύθμιση Καμερών Ανάλυσης</h2>
                   </div>
-                  <Button onClick={saveCameras} disabled={savingCameras} className="rounded-none bg-[#00ffba] text-black hover:bg-[#00ffba]/90">
+                  <Button onClick={saveCameras} disabled={savingCameras} className="rounded-none" size="sm">
                     {savingCameras ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
                     Αποθήκευση
                   </Button>
