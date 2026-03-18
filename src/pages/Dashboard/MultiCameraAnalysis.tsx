@@ -730,9 +730,9 @@ const MultiCameraAnalysis: React.FC = () => {
                         className={`w-full rounded-none ${isAnalyzing ? 'bg-destructive hover:bg-destructive/90' : ''}`}
                       >
                         {isAnalyzing ? (
-                          <><Square className="h-4 w-4 mr-1" /> Διακοπή</>
+                          <><Square className="h-4 w-4 mr-1" /> {t('aiLab.analysis.stopAnalysis')}</>
                         ) : (
-                          <><Play className="h-4 w-4 mr-1" /> Έναρξη Ανάλυσης</>
+                          <><Play className="h-4 w-4 mr-1" /> {t('aiLab.analysis.startAnalysis')}</>
                         )}
                       </Button>
 
