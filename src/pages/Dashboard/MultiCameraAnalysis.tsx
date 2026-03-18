@@ -1021,7 +1021,7 @@ const MultiCameraAnalysis: React.FC = () => {
                 size="sm"
               >
                 {savingCameras ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
-                Αποθήκευση
+                {t('aiLab.cameras.save')}
               </Button>
             </div>
           </DialogContent>
