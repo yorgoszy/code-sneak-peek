@@ -367,7 +367,7 @@ const MultiCameraAnalysis: React.FC = () => {
 
     } catch (err) {
       console.error('Analysis error:', err);
-      toast.error('Σφάλμα ανάλυσης');
+      toast.error(t('aiLab.cameras.saveError'));
     } finally {
       setIsAnalyzing(false);
     }
