@@ -935,7 +935,7 @@ const MultiCameraAnalysis: React.FC = () => {
 
                     <Button disabled className="w-full rounded-none" variant="outline">
                       <Tag className="h-4 w-4 mr-1" />
-                      Έναρξη Labeling (Coming Soon)
+                      {t('aiLab.training.startLabeling')}
                     </Button>
                   </CardContent>
                 </Card>
