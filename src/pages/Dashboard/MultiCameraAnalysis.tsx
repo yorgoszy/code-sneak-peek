@@ -123,6 +123,10 @@ const MultiCameraAnalysis: React.FC = () => {
   const [labelingMode, setLabelingMode] = useState(false);
   const [trainingLabelsCount, setTrainingLabelsCount] = useState(0);
 
+  // Camera dialog
+  const [cameraDialogOpen, setCameraDialogOpen] = useState(false);
+  const [selectedCameraIndex, setSelectedCameraIndex] = useState<number | null>(null);
+
   // Load available rings when no ringId in params
   useEffect(() => {
     if (!ringIdParam) {
