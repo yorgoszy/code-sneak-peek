@@ -51,7 +51,7 @@ export const FederationSidebar = ({
     { icon: ClipboardList, label: t("federation.sidebar.fightCard"), path: "/dashboard/federation-fight-card" },
     { icon: Trophy, label: "Ranking", path: "/dashboard/ranking" },
     { icon: TrendingUp, label: "Athletes Progress", path: "/dashboard/federation-progress" },
-    { icon: MonitorPlay, label: t("federation.sidebar.videoAnalysis"), path: "/dashboard/federation-video-analysis" },
+    
     { icon: Brain, label: "AI Lab", path: "/dashboard/ai-lab" },
     { icon: Settings, label: t("federation.sidebar.editProfile"), path: "/dashboard/federation-profile" },
   ];
