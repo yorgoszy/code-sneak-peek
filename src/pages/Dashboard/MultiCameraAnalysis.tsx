@@ -852,7 +852,7 @@ const MultiCameraAnalysis: React.FC = () => {
                         <Tag className="h-4 w-4" /> Training Data Collection
                         <Badge variant="outline" className="rounded-none">Phase 3</Badge>
                       </CardTitle>
-                      <Badge className="rounded-none bg-[#cb8954] text-black">
+                      <Badge className="rounded-none" variant="outline">
                         {trainingLabelsCount} labels
                       </Badge>
                     </div>
