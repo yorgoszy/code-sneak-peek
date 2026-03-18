@@ -31,6 +31,10 @@ interface AnalysisRequest {
   roundNumber?: number;
   fighterNames?: { red: string; blue: string };
   durationSeconds?: number;
+  // Multi-camera support
+  camerasUsed?: number;
+  cameraPositions?: string[]; // ['front', 'back', 'left', 'right']
+  additionalVideoUrls?: string[]; // Extra camera angle URLs
 }
 
 const GEMINI_API_URL =
@@ -220,6 +224,9 @@ serve(async (req) => {
       roundNumber,
       fighterNames,
       durationSeconds,
+      camerasUsed = 1,
+      cameraPositions = [],
+      additionalVideoUrls = [],
     } = (await req.json()) as AnalysisRequest;
 
     if (!videoUrl && !videoBase64) {
@@ -240,6 +247,9 @@ serve(async (req) => {
     }
     if (durationSeconds) {
       userPrompt += ` Video duration: ${durationSeconds} seconds.`;
+    }
+    if (camerasUsed > 1 && cameraPositions.length > 0) {
+      userPrompt += `\n\nIMPORTANT: This analysis uses ${camerasUsed} synchronized cameras from positions: ${cameraPositions.join(', ')}. Cross-reference all angles for maximum accuracy. A strike visible from multiple angles has higher confidence.`;
     }
     userPrompt += `\n\nProvide your analysis as JSON only. No markdown formatting, no code blocks, just raw JSON.`;
 
@@ -270,8 +280,20 @@ serve(async (req) => {
       });
     }
 
+    // Add additional camera angles
+    if (additionalVideoUrls && additionalVideoUrls.length > 0) {
+      for (const extraUrl of additionalVideoUrls) {
+        parts.push({
+          file_data: {
+            mime_type: "video/mp4",
+            file_uri: extraUrl,
+          },
+        });
+      }
+    }
+
     console.log(
-      `Analyzing ${sport} video, mode: ${mode}, round: ${roundNumber || "N/A"}`
+      `Analyzing ${sport} video, mode: ${mode}, round: ${roundNumber || "N/A"}, cameras: ${camerasUsed}`
     );
 
     const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
