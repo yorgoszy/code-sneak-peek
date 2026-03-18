@@ -594,12 +594,12 @@ const MultiCameraAnalysis: React.FC = () => {
               <TabsContent value="cameras" className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-lg font-semibold">Τοποθέτηση Καμερών</h2>
-                    <p className="text-xs text-muted-foreground">Κάντε κλικ σε κάμερα για ρύθμιση</p>
+                    <h2 className="text-lg font-semibold">{t('aiLab.cameras.title')}</h2>
+                    <p className="text-xs text-muted-foreground">{t('aiLab.cameras.subtitle')}</p>
                   </div>
                   <Button onClick={saveCameras} disabled={savingCameras} className="rounded-none" size="sm">
                     {savingCameras ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
-                    Αποθήκευση
+                    {t('aiLab.cameras.save')}
                   </Button>
                 </div>
 
