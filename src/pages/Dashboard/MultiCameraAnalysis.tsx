@@ -769,7 +769,7 @@ const MultiCameraAnalysis: React.FC = () => {
                               <div className="text-center">
                                 <Camera className="h-6 w-6 text-muted-foreground mx-auto mb-1" />
                                 <p className="text-xs text-muted-foreground">
-                                  {cam.is_active ? 'Χωρίς stream' : 'Απενεργοποιημένη'}
+                                  {cam.is_active ? t('aiLab.cameras.noStream') : t('aiLab.cameras.disabled')}
                                 </p>
                               </div>
                             )}
