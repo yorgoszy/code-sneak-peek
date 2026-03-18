@@ -252,7 +252,7 @@ const LiveRingAnalysis: React.FC = () => {
     }, 50);
     
     return () => clearInterval(interval);
-  }, [isRecording, isBreak]);
+  }, [isRecording, isBreak, breakRunning, currentRound]);
 
   // ─── Start a phase (attack or defense) ───
   const startPhase = useCallback((type: PhaseType) => {
