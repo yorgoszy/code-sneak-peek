@@ -719,7 +719,7 @@ const MultiCameraAnalysis: React.FC = () => {
                           <span className="text-foreground">~$0.07</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>AI Model:</span>
+                          <span>{t('aiLab.analysis.aiModel')}:</span>
                           <span className="text-foreground">Gemini 2.0 Flash</span>
                         </div>
                       </div>
