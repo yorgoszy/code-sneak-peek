@@ -793,8 +793,8 @@ const MultiCameraAnalysis: React.FC = () => {
                   <Card className="rounded-none">
                     <CardContent className="p-8 text-center text-muted-foreground">
                       <Brain className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                      <p>Δεν υπάρχουν αποτελέσματα ακόμα.</p>
-                      <p className="text-xs mt-1">Ξεκινήστε μια ανάλυση ή επιλέξτε από το ιστορικό.</p>
+                      <p>{t('aiLab.results.noResults')}</p>
+                      <p className="text-xs mt-1">{t('aiLab.results.noResultsDesc')}</p>
                     </CardContent>
                   </Card>
                 ) : (
