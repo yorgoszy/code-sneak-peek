@@ -543,33 +543,22 @@ const MultiCameraAnalysis: React.FC = () => {
 
             {/* Ring Selector - shown when no ringId in URL */}
             {!ringIdParam && (
-              <div className="mb-6">
-                <Label className="text-sm font-medium mb-2 block">Επιλέξτε Ρινγκ</Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="mb-4">
+                <Label className="text-xs font-medium mb-1.5 block">Επιλέξτε Ρινγκ</Label>
+                <div className="flex flex-wrap gap-2">
                   {availableRings.map((r: any) => (
-                    <Card
+                    <Button
                       key={r.id}
-                      className={`rounded-none cursor-pointer transition-colors ${ringId === r.id ? 'border-[#00ffba] bg-[#00ffba]/5' : 'hover:border-muted-foreground/50'}`}
+                      variant={ringId === r.id ? 'default' : 'outline'}
+                      size="sm"
+                      className="rounded-none text-xs"
                       onClick={() => setSelectedRingId(r.id)}
                     >
-                      <CardContent className="p-3 flex items-center gap-3">
-                        <div className={`w-10 h-10 flex items-center justify-center rounded-none ${ringId === r.id ? 'bg-[#00ffba]/20 text-[#00ffba]' : 'bg-muted text-muted-foreground'}`}>
-                          <MonitorPlay className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium">{r.ring_name || `Ring ${r.ring_number}`}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {(r as any).federation_competitions?.name || 'Χωρίς αγώνα'}
-                          </p>
-                        </div>
-                        {ringId === r.id && <CheckCircle className="h-4 w-4 text-[#00ffba] ml-auto" />}
-                      </CardContent>
-                    </Card>
+                      {r.ring_name || `Ring ${r.ring_number}`}
+                    </Button>
                   ))}
                   {availableRings.length === 0 && (
-                    <p className="text-sm text-muted-foreground col-span-full py-4 text-center">
-                      Δεν βρέθηκαν ρινγκ. Δημιουργήστε πρώτα ένα αγώνα με ρινγκ.
-                    </p>
+                    <p className="text-xs text-muted-foreground">Δεν βρέθηκαν ρινγκ.</p>
                   )}
                 </div>
               </div>
