@@ -901,24 +901,18 @@ const MultiCameraAnalysis: React.FC = () => {
                     <div className="grid grid-cols-3 gap-3">
                       <Card className="rounded-none p-3 text-center">
                         <Zap className="h-6 w-6 mx-auto mb-1 text-foreground" />
-                        <p className="text-xs font-medium">Auto-Label</p>
-                        <p className="text-[10px] text-muted-foreground">
-                          AI labels → Human review
-                        </p>
+                        <p className="text-xs font-medium">{t('aiLab.training.autoLabel')}</p>
+                        <p className="text-[10px] text-muted-foreground">{t('aiLab.training.autoLabelDesc')}</p>
                       </Card>
                       <Card className="rounded-none p-3 text-center">
                         <Eye className="h-6 w-6 mx-auto mb-1 text-muted-foreground" />
-                        <p className="text-xs font-medium">Manual Label</p>
-                        <p className="text-[10px] text-muted-foreground">
-                          Frame-by-frame annotation
-                        </p>
+                        <p className="text-xs font-medium">{t('aiLab.training.manualLabel')}</p>
+                        <p className="text-[10px] text-muted-foreground">{t('aiLab.training.manualLabelDesc')}</p>
                       </Card>
                       <Card className="rounded-none p-3 text-center">
                         <Download className="h-6 w-6 mx-auto mb-1 text-muted-foreground" />
-                        <p className="text-xs font-medium">Export</p>
-                        <p className="text-[10px] text-muted-foreground">
-                          JSONL for Gemini tuning
-                        </p>
+                        <p className="text-xs font-medium">{t('aiLab.training.export')}</p>
+                        <p className="text-[10px] text-muted-foreground">{t('aiLab.training.exportDesc')}</p>
                       </Card>
                     </div>
 
