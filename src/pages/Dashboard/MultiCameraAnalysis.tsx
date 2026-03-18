@@ -895,9 +895,7 @@ const MultiCameraAnalysis: React.FC = () => {
                   </CardHeader>
                   <CardContent className="p-3 pt-0 space-y-3">
                     <p className="text-xs text-muted-foreground">
-                      Συλλέξτε labeled data από αγώνες για fine-tuning του AI μοντέλου.
-                      Κάθε label αντιστοιχεί σε ένα frame με τον τύπο χτυπήματος, τη γωνία κάμερας,
-                      και τη γωνία του αθλητή.
+                      {t('aiLab.training.description')}
                     </p>
 
                     <div className="grid grid-cols-3 gap-3">
