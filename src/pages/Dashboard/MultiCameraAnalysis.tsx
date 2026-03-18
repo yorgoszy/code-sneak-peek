@@ -739,7 +739,7 @@ const MultiCameraAnalysis: React.FC = () => {
                       {isAnalyzing && (
                         <div className="space-y-1">
                           <div className="flex justify-between text-xs">
-                            <span>Πρόοδος</span>
+                            <span>{t('aiLab.analysis.progress')}</span>
                             <span>{analysisProgress}%</span>
                           </div>
                           <Progress value={analysisProgress} className="h-2 rounded-none" />
