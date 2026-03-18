@@ -224,6 +224,9 @@ serve(async (req) => {
       roundNumber,
       fighterNames,
       durationSeconds,
+      camerasUsed = 1,
+      cameraPositions = [],
+      additionalVideoUrls = [],
     } = (await req.json()) as AnalysisRequest;
 
     if (!videoUrl && !videoBase64) {
