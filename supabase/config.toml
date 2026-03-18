@@ -48,6 +48,9 @@ verify_jwt = false
 [functions.verify-competition-payment]
 verify_jwt = false
 
+[functions.camera-bridge]
+verify_jwt = false
+
 [functions.check-unpaid-registrations]
 verify_jwt = false
 
