@@ -511,7 +511,7 @@ const MultiCameraAnalysis: React.FC = () => {
                 <Button variant="outline" size="sm" onClick={() => setIsMobileOpen(true)} className="rounded-none">
                   <Menu className="h-5 w-5" />
                 </Button>
-                <h1 className="text-lg font-semibold">AI Analysis Lab</h1>
+                <h1 className="text-lg font-semibold">{t('aiLab.title')}</h1>
               </div>
             </div>
           </div>
