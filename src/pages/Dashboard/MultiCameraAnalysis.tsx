@@ -859,7 +859,7 @@ const MultiCameraAnalysis: React.FC = () => {
                             </div>
                             <div>
                               <p className="text-sm font-medium">
-                                {sportLabels[session.sport as CombatSport] || session.sport}
+                                {t(`aiLab.sports.${session.sport}`, { defaultValue: session.sport })}
                                 {' • '}
                                 {session.analysis_type === 'live' ? 'Live' : 'Post-Match'}
                               </p>
