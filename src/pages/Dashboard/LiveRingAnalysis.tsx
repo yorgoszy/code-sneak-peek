@@ -189,6 +189,27 @@ const LiveRingAnalysis: React.FC = () => {
     return () => clearInterval(interval);
   }, [isRecording]);
 
+  // Countdown timer - shows remaining time (counts down), resets each round
+  useEffect(() => {
+    const runningSince = isBreak ? breakRunningSinceRef.current : lastRunSinceRef.current;
+    const remaining = isBreak ? breakRemainingRef.current : lastRemainingRef.current;
+    
+    if (!runningSince || remaining === null || remaining === undefined) {
+      if (!isRecording && !isBreak) setCountdownTime(remaining ?? 0);
+      return;
+    }
+
+    const runStart = new Date(runningSince).getTime();
+    
+    const interval = setInterval(() => {
+      const elapsed = (Date.now() - runStart) / 1000;
+      const timeLeft = Math.max(0, remaining - elapsed);
+      setCountdownTime(Math.ceil(timeLeft));
+    }, 50);
+    
+    return () => clearInterval(interval);
+  }, [isRecording, isBreak]);
+
   // ─── Start a phase (attack or defense) ───
   const startPhase = useCallback((type: PhaseType) => {
     if (!isRecording) return;
