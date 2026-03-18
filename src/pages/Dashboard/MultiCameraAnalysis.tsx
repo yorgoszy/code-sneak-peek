@@ -885,7 +885,7 @@ const MultiCameraAnalysis: React.FC = () => {
                   <CardHeader className="p-3 pb-2">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-sm flex items-center gap-2">
-                        <Tag className="h-4 w-4" /> Training Data Collection
+                        <Tag className="h-4 w-4" /> {t('aiLab.training.title')}
                         <Badge variant="outline" className="rounded-none">Phase 3</Badge>
                       </CardTitle>
                       <Badge className="rounded-none" variant="outline">
