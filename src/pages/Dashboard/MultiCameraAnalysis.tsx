@@ -819,7 +819,7 @@ const MultiCameraAnalysis: React.FC = () => {
                               ) : session.status === 'analyzing' ? (
                                 <Loader2 className="h-4 w-4 text-amber-500 animate-spin" />
                               ) : (
-                                <AlertCircle className="h-4 w-4 text-red-500" />
+                                <AlertCircle className="h-4 w-4 text-destructive" />
                               )}
                             </div>
                             <div>
