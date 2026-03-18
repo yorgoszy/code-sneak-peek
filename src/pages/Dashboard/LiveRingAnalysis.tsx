@@ -85,7 +85,7 @@ const LiveRingAnalysis: React.FC = () => {
           toast.info('Αγώνας άλλαξε — αυτόματη αποθήκευση...');
           // We'll call saveAnalysis after setting new match, handled below
           try {
-            await saveCurrentAnalysis();
+            await saveCurrentAnalysisRef.current?.();
           } catch (e) {
             console.error('Auto-save failed:', e);
           }
