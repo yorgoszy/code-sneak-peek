@@ -19,6 +19,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Menu, ArrowLeft, Camera, Settings, Play, Square, RotateCcw,
   Brain, Target, Activity, Save, Loader2, Video, MonitorPlay,
   Maximize2, Tag, Download, ChevronRight, Zap, Eye,
@@ -116,6 +122,10 @@ const MultiCameraAnalysis: React.FC = () => {
   // Training labels
   const [labelingMode, setLabelingMode] = useState(false);
   const [trainingLabelsCount, setTrainingLabelsCount] = useState(0);
+
+  // Camera dialog
+  const [cameraDialogOpen, setCameraDialogOpen] = useState(false);
+  const [selectedCameraIndex, setSelectedCameraIndex] = useState<number | null>(null);
 
   // Load available rings when no ringId in params
   useEffect(() => {
@@ -533,9 +543,9 @@ const MultiCameraAnalysis: React.FC = () => {
               {currentMatch && (
                 <div className="flex items-center gap-3">
                   <div className="text-right text-sm">
-                    <span className="font-medium">{(currentMatch as any).athlete1?.name}</span>
+                    <span className="font-medium text-red-600">{(currentMatch as any).athlete1?.name}</span>
                     <span className="text-muted-foreground mx-2">vs</span>
-                    <span className="font-medium">{(currentMatch as any).athlete2?.name}</span>
+                    <span className="font-medium text-blue-600">{(currentMatch as any).athlete2?.name}</span>
                   </div>
                 </div>
               )}
@@ -588,7 +598,8 @@ const MultiCameraAnalysis: React.FC = () => {
               <TabsContent value="cameras" className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-lg font-semibold">Ρύθμιση Καμερών Ανάλυσης</h2>
+                    <h2 className="text-lg font-semibold">Τοποθέτηση Καμερών</h2>
+                    <p className="text-xs text-muted-foreground">Κάντε κλικ σε κάμερα για ρύθμιση</p>
                   </div>
                   <Button onClick={saveCameras} disabled={savingCameras} className="rounded-none" size="sm">
                     {savingCameras ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
@@ -596,17 +607,9 @@ const MultiCameraAnalysis: React.FC = () => {
                   </Button>
                 </div>
 
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {cameras.map((cam, i) => renderCameraCard(cam, i))}
-                </div>
-
-                {/* Ring diagram */}
+                {/* Ring diagram - clickable cameras */}
                 <Card className="rounded-none">
-                  <CardHeader className="p-3 pb-2">
-                    <CardTitle className="text-sm">Τοποθέτηση Καμερών</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-3 pt-0">
+                  <CardContent className="p-4">
                     <div className="relative w-full max-w-md mx-auto aspect-square border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
                       <div className="text-center text-muted-foreground text-xs">RING</div>
                       {cameras.map((cam, i) => {
@@ -617,10 +620,20 @@ const MultiCameraAnalysis: React.FC = () => {
                           right: 'right-0 top-1/2 -translate-y-1/2 translate-x-1/2',
                         };
                         return (
-                          <div key={i} className={`absolute ${positions[cam.position] || positions.front}`}>
-                            <div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-none ${cam.is_active ? 'bg-foreground/10 text-foreground border border-foreground/30' : 'bg-muted text-muted-foreground border border-border'}`}>
+                          <div
+                            key={i}
+                            className={`absolute ${positions[cam.position] || positions.front} cursor-pointer`}
+                            onClick={() => {
+                              setSelectedCameraIndex(i);
+                              setCameraDialogOpen(true);
+                            }}
+                          >
+                            <div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-none transition-colors hover:bg-foreground/20 ${cam.is_active ? 'bg-foreground/10 text-foreground border border-foreground/30' : 'bg-muted text-muted-foreground border border-border'}`}>
                               <Camera className="h-3 w-3" />
                               <span>{i + 1}</span>
+                              {cam.is_active && cam.stream_url && (
+                                <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                              )}
                             </div>
                           </div>
                         );
@@ -628,6 +641,33 @@ const MultiCameraAnalysis: React.FC = () => {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Camera status summary */}
+                <div className="grid grid-cols-4 gap-2">
+                  {cameras.map((cam, i) => (
+                    <div
+                      key={i}
+                      className={`p-2 border rounded-none text-center cursor-pointer transition-colors hover:bg-muted/50 ${cam.is_active ? 'border-foreground/30' : 'border-border'}`}
+                      onClick={() => {
+                        setSelectedCameraIndex(i);
+                        setCameraDialogOpen(true);
+                      }}
+                    >
+                      <Camera className={`h-4 w-4 mx-auto mb-1 ${cam.is_active ? 'text-foreground' : 'text-muted-foreground'}`} />
+                      <p className="text-[10px] font-medium">{cam.camera_label}</p>
+                      <p className="text-[10px] text-muted-foreground">{positionLabels[cam.position]}</p>
+                      <div className="mt-1">
+                        {cam.is_active && cam.stream_url ? (
+                          <Badge variant="outline" className="rounded-none text-[9px] px-1 py-0">Ενεργή</Badge>
+                        ) : cam.is_active ? (
+                          <Badge variant="outline" className="rounded-none text-[9px] px-1 py-0 text-muted-foreground">Χωρίς URL</Badge>
+                        ) : (
+                          <Badge variant="outline" className="rounded-none text-[9px] px-1 py-0 text-muted-foreground">Off</Badge>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </TabsContent>
 
               {/* ─── ANALYSIS TAB ─── */}
@@ -917,6 +957,88 @@ const MultiCameraAnalysis: React.FC = () => {
           </main>
         </div>
       </div>
+
+      {/* Camera Settings Dialog */}
+      {selectedCameraIndex !== null && (
+        <Dialog open={cameraDialogOpen} onOpenChange={setCameraDialogOpen}>
+          <DialogContent className="max-w-md rounded-none">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-sm">
+                <Camera className="h-4 w-4" />
+                {cameras[selectedCameraIndex]?.camera_label} — Ρυθμίσεις
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs">Ενεργοποίηση</Label>
+                <Switch
+                  checked={cameras[selectedCameraIndex]?.is_active}
+                  onCheckedChange={v => updateCamera(selectedCameraIndex, 'is_active', v)}
+                />
+              </div>
+              <div>
+                <Label className="text-xs">Stream URL</Label>
+                <Input
+                  value={cameras[selectedCameraIndex]?.stream_url || ''}
+                  onChange={e => updateCamera(selectedCameraIndex, 'stream_url', e.target.value)}
+                  placeholder="rtsp://mac-mini.local:8554/cam1"
+                  className="rounded-none text-xs h-8 mt-1"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-xs">Θέση</Label>
+                  <Select value={cameras[selectedCameraIndex]?.position} onValueChange={v => updateCamera(selectedCameraIndex, 'position', v)}>
+                    <SelectTrigger className="rounded-none h-8 text-xs mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cameraPositions.map(p => (
+                        <SelectItem key={p} value={p}>{positionLabels[p]}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs">FPS</Label>
+                  <Select value={String(cameras[selectedCameraIndex]?.fps)} onValueChange={v => updateCamera(selectedCameraIndex, 'fps', Number(v))}>
+                    <SelectTrigger className="rounded-none h-8 text-xs mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="30">30 fps</SelectItem>
+                      <SelectItem value="60">60 fps</SelectItem>
+                      <SelectItem value="120">120 fps</SelectItem>
+                      <SelectItem value="160">160 fps</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 text-xs pt-1">
+                {cameras[selectedCameraIndex]?.is_active && cameras[selectedCameraIndex]?.stream_url ? (
+                  <><Wifi className="h-3 w-3 text-foreground" /><span>Ενεργή</span></>
+                ) : cameras[selectedCameraIndex]?.is_active ? (
+                  <><AlertCircle className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">Χωρίς URL</span></>
+                ) : (
+                  <><WifiOff className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">Απενεργοποιημένη</span></>
+                )}
+              </div>
+              <Button
+                onClick={() => {
+                  saveCameras();
+                  setCameraDialogOpen(false);
+                }}
+                disabled={savingCameras}
+                className="w-full rounded-none"
+                size="sm"
+              >
+                {savingCameras ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
+                Αποθήκευση
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </SidebarProvider>
   );
 };
