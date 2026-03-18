@@ -922,7 +922,7 @@ const MultiCameraAnalysis: React.FC = () => {
                       <h4 className="text-xs font-medium">{t('aiLab.training.trainingProgress')}</h4>
                       <div className="space-y-1">
                         <div className="flex justify-between text-xs">
-                          <span>Minimum για fine-tuning:</span>
+                          <span>{t('aiLab.training.minFineTuning')}:</span>
                           <span>{trainingLabelsCount} / 1,000</span>
                         </div>
                         <Progress value={Math.min((trainingLabelsCount / 1000) * 100, 100)} className="h-2 rounded-none" />
