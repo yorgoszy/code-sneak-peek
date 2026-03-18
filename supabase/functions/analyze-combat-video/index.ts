@@ -248,6 +248,9 @@ serve(async (req) => {
     if (durationSeconds) {
       userPrompt += ` Video duration: ${durationSeconds} seconds.`;
     }
+    if (camerasUsed > 1 && cameraPositions.length > 0) {
+      userPrompt += `\n\nIMPORTANT: This analysis uses ${camerasUsed} synchronized cameras from positions: ${cameraPositions.join(', ')}. Cross-reference all angles for maximum accuracy. A strike visible from multiple angles has higher confidence.`;
+    }
     userPrompt += `\n\nProvide your analysis as JSON only. No markdown formatting, no code blocks, just raw JSON.`;
 
     // Build the request parts
