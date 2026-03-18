@@ -618,7 +618,7 @@ const MultiCameraAnalysis: React.FC = () => {
                         };
                         return (
                           <div key={i} className={`absolute ${positions[cam.position] || positions.front}`}>
-                            <div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-none ${cam.is_active ? 'bg-[#00ffba]/20 text-[#00ffba] border border-[#00ffba]/50' : 'bg-muted text-muted-foreground border border-border'}`}>
+                            <div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-none ${cam.is_active ? 'bg-foreground/10 text-foreground border border-foreground/30' : 'bg-muted text-muted-foreground border border-border'}`}>
                               <Camera className="h-3 w-3" />
                               <span>{i + 1}</span>
                             </div>
