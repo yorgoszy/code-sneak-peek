@@ -79,7 +79,15 @@ const MultiCameraAnalysis: React.FC = () => {
   const { ringId: ringIdParam } = useParams<{ ringId: string }>();
   const navigate = useNavigate();
   const { isAdmin, isFederation } = useRoleCheck();
+  const { t } = useTranslation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  const positionLabels: Record<string, string> = useMemo(() => ({
+    front: t('aiLab.cameras.front'),
+    back: t('aiLab.cameras.back'),
+    left: t('aiLab.cameras.left'),
+    right: t('aiLab.cameras.right'),
+  }), [t]);
   const [activeTab, setActiveTab] = useState('cameras');
 
   // Ring selector (when no ringId in URL)
