@@ -482,7 +482,7 @@ const MultiCameraAnalysis: React.FC = () => {
         </div>
         {data.accuracy_percentage !== undefined && (
           <div className="flex justify-between text-xs">
-            <span>Ακρίβεια</span>
+            <span>{t('aiLab.results.accuracy')}</span>
             <span className="font-medium">{data.accuracy_percentage}%</span>
           </div>
         )}
