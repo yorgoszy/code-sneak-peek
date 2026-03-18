@@ -866,7 +866,7 @@ const MultiCameraAnalysis: React.FC = () => {
 
                     <div className="grid grid-cols-3 gap-3">
                       <Card className="rounded-none p-3 text-center">
-                        <Zap className="h-6 w-6 mx-auto mb-1 text-[#00ffba]" />
+                        <Zap className="h-6 w-6 mx-auto mb-1 text-foreground" />
                         <p className="text-xs font-medium">Auto-Label</p>
                         <p className="text-[10px] text-muted-foreground">
                           AI labels → Human review
