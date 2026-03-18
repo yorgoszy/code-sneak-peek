@@ -752,7 +752,7 @@ const MultiCameraAnalysis: React.FC = () => {
                   <Card className="rounded-none lg:col-span-2">
                     <CardHeader className="p-3 pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
-                        <MonitorPlay className="h-4 w-4" /> Camera Feeds
+                        <MonitorPlay className="h-4 w-4" /> {t('aiLab.analysis.cameraFeeds')}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-3 pt-0">
