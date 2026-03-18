@@ -459,7 +459,7 @@ const MultiCameraAnalysis: React.FC = () => {
 
   const renderStrikeTable = (data: any, corner: string) => {
     if (!data?.strikes && !data?.total_strikes_thrown) return (
-      <p className="text-xs text-muted-foreground">Δεν υπάρχουν δεδομένα</p>
+      <p className="text-xs text-muted-foreground">{t('aiLab.results.noData')}</p>
     );
 
     const strikes = data.strikes || {};
