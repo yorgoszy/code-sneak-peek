@@ -867,7 +867,7 @@ const MultiCameraAnalysis: React.FC = () => {
                               <p className="text-xs text-muted-foreground">
                                 {new Date(session.created_at).toLocaleString('el-GR')}
                                 {' • '}
-                                {session.cameras_used} κάμερες • {session.total_rounds} γύροι
+                                {session.cameras_used} {t('aiLab.history.cameras')} • {session.total_rounds} {t('aiLab.history.rounds')}
                               </p>
                             </div>
                           </div>
