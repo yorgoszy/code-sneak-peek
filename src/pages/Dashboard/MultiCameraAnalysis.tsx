@@ -531,7 +531,7 @@ const MultiCameraAnalysis: React.FC = () => {
                     {ring && <Badge variant="outline" className="rounded-none ml-2 text-xs">{ring.ring_name || `Ring ${ring.ring_number}`}</Badge>}
                   </h1>
                   <p className="text-xs text-muted-foreground">
-                    {ringId ? `${activeCameras.length}/4 κάμερες ενεργές` : 'Επιλέξτε ρινγκ'}
+                    {ringId ? `${activeCameras.length}/4 ${t('aiLab.activeCameras')}` : t('aiLab.selectRing')}
                   </p>
                 </div>
               </div>
