@@ -360,7 +360,7 @@ serve(async (req) => {
           mode,
           roundNumber: roundNumber || null,
           fighterNames: fighterNames || null,
-          model: "gemini-2.0-flash",
+          model: "gemini-3.1-pro",
           tokens: {
             input: usageMetadata.promptTokenCount || 0,
             output: usageMetadata.candidatesTokenCount || 0,

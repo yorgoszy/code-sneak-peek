@@ -720,7 +720,7 @@ const MultiCameraAnalysis: React.FC = () => {
                         </div>
                         <div className="flex justify-between">
                           <span>{t('aiLab.analysis.aiModel')}:</span>
-                          <span className="text-foreground">Gemini 2.0 Flash</span>
+                          <span className="text-foreground">Gemini 3.1 Pro</span>
                         </div>
                       </div>
 
