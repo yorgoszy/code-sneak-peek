@@ -500,9 +500,13 @@ const LiveRingAnalysis: React.FC = () => {
                   </p>
                 </div>
               </div>
-              {isRecording && (
-                <Badge className="rounded-none bg-destructive text-destructive-foreground animate-pulse">
-                  <Radio className="h-3 w-3 mr-1" />REC · {formatTime(elapsedTime)}
+              {(isRecording || isBreak) && (
+                <Badge className={`rounded-none ${isBreak ? 'bg-amber-500 text-black' : 'bg-destructive text-destructive-foreground'} animate-pulse`}>
+                  {isBreak ? (
+                    <><Timer className="h-3 w-3 mr-1" />BRK · {formatCountdown(countdownTime)}</>
+                  ) : (
+                    <><Radio className="h-3 w-3 mr-1" />R{currentRound} · {formatCountdown(countdownTime)}</>
+                  )}
                 </Badge>
               )}
             </div>
