@@ -446,11 +446,11 @@ const MultiCameraAnalysis: React.FC = () => {
         </div>
         <div className="flex items-center gap-1 text-[10px]">
           {cam.is_active && cam.stream_url ? (
-            <><Wifi className="h-3 w-3 text-foreground" /><span>Ενεργή</span></>
+            <><Wifi className="h-3 w-3 text-foreground" /><span>{t('aiLab.cameras.active')}</span></>
           ) : cam.is_active ? (
-            <><AlertCircle className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">Χωρίς URL</span></>
+            <><AlertCircle className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">{t('aiLab.cameras.noUrl')}</span></>
           ) : (
-            <><WifiOff className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">Απενεργοποιημένη</span></>
+            <><WifiOff className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">{t('aiLab.cameras.disabled')}</span></>
           )}
         </div>
       </CardContent>
