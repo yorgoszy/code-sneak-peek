@@ -711,11 +711,11 @@ const MultiCameraAnalysis: React.FC = () => {
 
                       <div className="space-y-1 text-xs text-muted-foreground">
                         <div className="flex justify-between">
-                          <span>Ενεργές κάμερες:</span>
+                          <span>{t('aiLab.analysis.activeCameras')}:</span>
                           <span className="text-foreground">{activeCameras.length}/4</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>Εκτ. κόστος/γύρο:</span>
+                          <span>{t('aiLab.analysis.estimatedCost')}:</span>
                           <span className="text-foreground">~$0.07</span>
                         </div>
                         <div className="flex justify-between">
