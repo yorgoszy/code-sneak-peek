@@ -880,7 +880,7 @@ const MultiCameraAnalysis: React.FC = () => {
                         </p>
                       </Card>
                       <Card className="rounded-none p-3 text-center">
-                        <Download className="h-6 w-6 mx-auto mb-1 text-blue-500" />
+                        <Download className="h-6 w-6 mx-auto mb-1 text-muted-foreground" />
                         <p className="text-xs font-medium">Export</p>
                         <p className="text-[10px] text-muted-foreground">
                           JSONL for Gemini tuning
