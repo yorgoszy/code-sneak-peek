@@ -44,6 +44,7 @@ const LiveRingAnalysis: React.FC = () => {
   const [isBreak, setIsBreak] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [countdownTime, setCountdownTime] = useState(0); // countdown display
+  const [breakRunning, setBreakRunning] = useState(false); // whether break timer is actively counting
   const elapsedBaseRef = useRef<number>(0);
   const lastRunSinceRef = useRef<string | null>(null);
   const lastRemainingRef = useRef<number | null>(null);
@@ -59,6 +60,12 @@ const LiveRingAnalysis: React.FC = () => {
   const cornerBg = isCornerRed ? 'bg-red-500/10 border-red-500/30' : 'bg-blue-500/10 border-blue-500/30';
   const cornerBgSolid = isCornerRed ? 'bg-red-500' : 'bg-blue-500';
 
+  // Auto-save ref (will be set after saveAnalysis is defined)
+  const saveCurrentAnalysisRef = useRef<(() => Promise<void>) | null>(null);
+
+  // Track previous match ID to detect match changes and auto-save/reset
+  const prevMatchIdRef = useRef<string | null>(null);
+
   // ─── Load ring data ───
   const loadRingData = useCallback(async () => {
     if (!ringId) return;
@@ -72,6 +79,26 @@ const LiveRingAnalysis: React.FC = () => {
     setCompetitionId(ringData.competition_id);
 
     if (ringData.current_match_id) {
+      // Detect match change → auto-save and reset analysis
+      if (prevMatchIdRef.current && prevMatchIdRef.current !== ringData.current_match_id) {
+        // Match changed! Auto-save previous analysis if there's data
+        if (phases.length > 0) {
+          toast.info('Αγώνας άλλαξε — αυτόματη αποθήκευση...');
+          // We'll call saveAnalysis after setting new match, handled below
+          try {
+            await saveCurrentAnalysisRef.current?.();
+          } catch (e) {
+            console.error('Auto-save failed:', e);
+          }
+        }
+        // Reset analysis state for new match
+        setPhases([]);
+        setActivePhase(null);
+        setElapsedTime(0);
+        elapsedBaseRef.current = 0;
+      }
+      prevMatchIdRef.current = ringData.current_match_id;
+
       const { data: matchData } = await supabase
         .from('competition_matches')
         .select(`
@@ -87,8 +114,10 @@ const LiveRingAnalysis: React.FC = () => {
         setCurrentMatch(matchData);
         setAthlete(isCornerRed ? matchData.athlete1 : matchData.athlete2);
       }
+    } else {
+      prevMatchIdRef.current = null;
     }
-  }, [ringId, isCornerRed]);
+  }, [ringId, isCornerRed, phases]);
 
   useEffect(() => { loadRingData(); }, [loadRingData]);
 
@@ -146,6 +175,7 @@ const LiveRingAnalysis: React.FC = () => {
       breakRunningSinceRef.current = runningSince;
     }
 
+    setBreakRunning(breakIsRunning);
     setIsRecording(roundIsRunning);
   }, [isRecording, elapsedTime, activePhase]);
 
@@ -222,7 +252,7 @@ const LiveRingAnalysis: React.FC = () => {
     }, 50);
     
     return () => clearInterval(interval);
-  }, [isRecording, isBreak]);
+  }, [isRecording, isBreak, breakRunning, currentRound]);
 
   // ─── Start a phase (attack or defense) ───
   const startPhase = useCallback((type: PhaseType) => {
@@ -451,6 +481,11 @@ const LiveRingAnalysis: React.FC = () => {
 
     toast.success('Ανάλυση αποθηκεύτηκε');
   }, [phases, currentMatch, athlete, competitionId, ringId, corner, userProfile, elapsedTime, totalStats]);
+
+  // Wire up ref so loadRingData can auto-save on match change
+  useEffect(() => {
+    saveCurrentAnalysisRef.current = saveAnalysis;
+  }, [saveAnalysis]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
