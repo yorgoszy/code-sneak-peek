@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { 
   Menu, ArrowLeft, Swords, Shield, Target, 
   RotateCcw, Save, Radio, Timer, 
-  TrendingUp, Activity, Play, Square
+  TrendingUp, Activity, Square, Radio
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
