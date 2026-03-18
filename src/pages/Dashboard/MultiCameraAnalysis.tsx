@@ -243,9 +243,9 @@ const MultiCameraAnalysis: React.FC = () => {
           }
         }
       }
-      toast.success('Οι κάμερες αποθηκεύτηκαν');
+      toast.success(t('aiLab.cameras.saved'));
     } catch (err) {
-      toast.error('Σφάλμα αποθήκευσης');
+      toast.error(t('aiLab.cameras.saveError'));
     } finally {
       setSavingCameras(false);
     }
