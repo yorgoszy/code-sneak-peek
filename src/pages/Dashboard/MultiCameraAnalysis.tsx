@@ -83,11 +83,16 @@ interface RoundResult {
 }
 
 const MultiCameraAnalysis: React.FC = () => {
-  const { ringId } = useParams<{ ringId: string }>();
+  const { ringId: ringIdParam } = useParams<{ ringId: string }>();
   const navigate = useNavigate();
   const { isAdmin, isFederation } = useRoleCheck();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('cameras');
+
+  // Ring selector (when no ringId in URL)
+  const [availableRings, setAvailableRings] = useState<any[]>([]);
+  const [selectedRingId, setSelectedRingId] = useState<string | null>(ringIdParam || null);
+  const ringId = ringIdParam || selectedRingId;
 
   // Ring data
   const [ring, setRing] = useState<any>(null);
@@ -112,6 +117,13 @@ const MultiCameraAnalysis: React.FC = () => {
   const [labelingMode, setLabelingMode] = useState(false);
   const [trainingLabelsCount, setTrainingLabelsCount] = useState(0);
 
+  // Load available rings when no ringId in params
+  useEffect(() => {
+    if (!ringIdParam) {
+      loadAvailableRings();
+    }
+  }, [ringIdParam]);
+
   // Load ring and cameras
   useEffect(() => {
     if (!ringId) return;
@@ -119,6 +131,14 @@ const MultiCameraAnalysis: React.FC = () => {
     loadCameras();
     loadSessions();
   }, [ringId]);
+
+  const loadAvailableRings = async () => {
+    const { data } = await supabase
+      .from('competition_rings')
+      .select('id, ring_name, ring_number, competition_id, federation_competitions(name)')
+      .order('ring_number');
+    if (data) setAvailableRings(data);
+  };
 
   const loadRingData = async () => {
     if (!ringId) return;
@@ -522,7 +542,7 @@ const MultiCameraAnalysis: React.FC = () => {
                     {ring && <Badge variant="outline" className="rounded-none ml-2">{ring.ring_name || `Ring ${ring.ring_number}`}</Badge>}
                   </h1>
                   <p className="text-sm text-muted-foreground">
-                    Multi-Camera AI Analysis • {activeCameras.length}/4 κάμερες ενεργές
+                    {ringId ? `Multi-Camera AI Analysis • ${activeCameras.length}/4 κάμερες ενεργές` : 'Επιλέξτε ρινγκ για να ρυθμίσετε κάμερες και ανάλυση'}
                   </p>
                 </div>
               </div>
@@ -538,6 +558,41 @@ const MultiCameraAnalysis: React.FC = () => {
               )}
             </div>
 
+            {/* Ring Selector - shown when no ringId in URL */}
+            {!ringIdParam && (
+              <div className="mb-6">
+                <Label className="text-sm font-medium mb-2 block">Επιλέξτε Ρινγκ</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {availableRings.map((r: any) => (
+                    <Card
+                      key={r.id}
+                      className={`rounded-none cursor-pointer transition-colors ${ringId === r.id ? 'border-[#00ffba] bg-[#00ffba]/5' : 'hover:border-muted-foreground/50'}`}
+                      onClick={() => setSelectedRingId(r.id)}
+                    >
+                      <CardContent className="p-3 flex items-center gap-3">
+                        <div className={`w-10 h-10 flex items-center justify-center rounded-none ${ringId === r.id ? 'bg-[#00ffba]/20 text-[#00ffba]' : 'bg-muted text-muted-foreground'}`}>
+                          <MonitorPlay className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">{r.ring_name || `Ring ${r.ring_number}`}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {(r as any).federation_competitions?.name || 'Χωρίς αγώνα'}
+                          </p>
+                        </div>
+                        {ringId === r.id && <CheckCircle className="h-4 w-4 text-[#00ffba] ml-auto" />}
+                      </CardContent>
+                    </Card>
+                  ))}
+                  {availableRings.length === 0 && (
+                    <p className="text-sm text-muted-foreground col-span-full py-4 text-center">
+                      Δεν βρέθηκαν ρινγκ. Δημιουργήστε πρώτα ένα αγώνα με ρινγκ.
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {ringId ? (
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="rounded-none mb-4">
                 <TabsTrigger value="cameras" className="rounded-none gap-1">
@@ -903,6 +958,7 @@ const MultiCameraAnalysis: React.FC = () => {
                 </Card>
               </TabsContent>
             </Tabs>
+            ) : !ringIdParam && availableRings.length > 0 ? null : null}
           </main>
         </div>
       </div>
