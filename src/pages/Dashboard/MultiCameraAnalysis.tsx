@@ -519,13 +519,13 @@ const MultiCameraAnalysis: React.FC = () => {
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div>
-                  <h1 className="text-2xl font-bold flex items-center gap-2">
-                    <Brain className="h-6 w-6 text-[#00ffba]" />
+                  <h1 className="text-xl font-bold flex items-center gap-2">
+                    <Brain className="h-5 w-5" />
                     AI Analysis Lab
-                    {ring && <Badge variant="outline" className="rounded-none ml-2">{ring.ring_name || `Ring ${ring.ring_number}`}</Badge>}
+                    {ring && <Badge variant="outline" className="rounded-none ml-2 text-xs">{ring.ring_name || `Ring ${ring.ring_number}`}</Badge>}
                   </h1>
-                  <p className="text-sm text-muted-foreground">
-                    {ringId ? `Multi-Camera AI Analysis • ${activeCameras.length}/4 κάμερες ενεργές` : 'Επιλέξτε ρινγκ για να ρυθμίσετε κάμερες και ανάλυση'}
+                  <p className="text-xs text-muted-foreground">
+                    {ringId ? `${activeCameras.length}/4 κάμερες ενεργές` : 'Επιλέξτε ρινγκ'}
                   </p>
                 </div>
               </div>
