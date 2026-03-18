@@ -533,9 +533,9 @@ const MultiCameraAnalysis: React.FC = () => {
               {currentMatch && (
                 <div className="flex items-center gap-3">
                   <div className="text-right text-sm">
-                    <span className="text-red-500 font-medium">{(currentMatch as any).athlete1?.name}</span>
+                    <span className="font-medium">{(currentMatch as any).athlete1?.name}</span>
                     <span className="text-muted-foreground mx-2">vs</span>
-                    <span className="text-blue-500 font-medium">{(currentMatch as any).athlete2?.name}</span>
+                    <span className="font-medium">{(currentMatch as any).athlete2?.name}</span>
                   </div>
                 </div>
               )}
