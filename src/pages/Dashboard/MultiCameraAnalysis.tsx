@@ -19,6 +19,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Menu, ArrowLeft, Camera, Settings, Play, Square, RotateCcw,
   Brain, Target, Activity, Save, Loader2, Video, MonitorPlay,
   Maximize2, Tag, Download, ChevronRight, Zap, Eye,
