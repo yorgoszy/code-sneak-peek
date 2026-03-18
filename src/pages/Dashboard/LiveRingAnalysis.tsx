@@ -127,20 +127,26 @@ const LiveRingAnalysis: React.FC = () => {
       breakRunningSinceRef.current = null;
     }
 
-    const timerIsRunning = !!runningSince && !isBrk;
+    const roundIsRunning = !!runningSince && !isBrk;
+    const breakIsRunning = isBrk && !!runningSince;
     
-    if (timerIsRunning && !isRecording) {
+    if (roundIsRunning && !isRecording) {
       elapsedBaseRef.current = elapsedTime;
       lastRunSinceRef.current = runningSince;
     }
     
-    if (!timerIsRunning && isRecording && activePhase) {
+    if (!roundIsRunning && isRecording && activePhase) {
       const closed = { ...activePhase, endTime: elapsedTime };
       setPhases(prev => prev.map(p => p.id === closed.id ? closed : p));
       setActivePhase(null);
     }
 
-    setIsRecording(timerIsRunning);
+    // During break, store break timing for countdown
+    if (breakIsRunning) {
+      breakRunningSinceRef.current = runningSince;
+    }
+
+    setIsRecording(roundIsRunning);
   }, [isRecording, elapsedTime, activePhase]);
 
   // Poll ring timer (like VideoOverlayScores)
