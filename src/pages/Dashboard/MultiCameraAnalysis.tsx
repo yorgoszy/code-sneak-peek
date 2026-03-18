@@ -808,7 +808,7 @@ const MultiCameraAnalysis: React.FC = () => {
                   </Card>
                 ) : (
                   sessions.map(session => (
-                    <Card key={session.id} className="rounded-none hover:border-[#00ffba]/30 cursor-pointer transition-colors"
+                    <Card key={session.id} className="rounded-none hover:border-foreground/20 cursor-pointer transition-colors"
                       onClick={() => loadSessionResults(session.id)}>
                       <CardContent className="p-3">
                         <div className="flex items-center justify-between">
