@@ -725,8 +725,8 @@ const MultiCameraAnalysis: React.FC = () => {
                           <div key={i} className={`aspect-video border rounded-none flex items-center justify-center ${cam.is_active ? 'border-foreground/20 bg-black' : 'border-border bg-muted/50'}`}>
                             {cam.is_active && cam.stream_url ? (
                               <div className="text-center">
-                                <Video className="h-8 w-8 text-[#00ffba] mx-auto mb-1" />
-                                <p className="text-xs text-[#00ffba]">{cam.camera_label}</p>
+                                <Video className="h-8 w-8 text-foreground mx-auto mb-1" />
+                                <p className="text-xs text-foreground">{cam.camera_label}</p>
                                 <p className="text-[10px] text-muted-foreground">{cam.fps}fps • {positionLabels[cam.position]}</p>
                               </div>
                             ) : (
