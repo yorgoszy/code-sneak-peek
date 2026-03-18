@@ -919,7 +919,7 @@ const MultiCameraAnalysis: React.FC = () => {
                     <Separator />
 
                     <div className="space-y-2">
-                      <h4 className="text-xs font-medium">Πρόοδος Εκπαίδευσης</h4>
+                      <h4 className="text-xs font-medium">{t('aiLab.training.trainingProgress')}</h4>
                       <div className="space-y-1">
                         <div className="flex justify-between text-xs">
                           <span>Minimum για fine-tuning:</span>
