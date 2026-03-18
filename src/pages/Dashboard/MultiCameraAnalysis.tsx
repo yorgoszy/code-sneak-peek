@@ -722,7 +722,7 @@ const MultiCameraAnalysis: React.FC = () => {
                     <CardContent className="p-3 pt-0">
                       <div className="grid grid-cols-2 gap-2">
                         {cameras.map((cam, i) => (
-                          <div key={i} className={`aspect-video border rounded-none flex items-center justify-center ${cam.is_active ? 'border-[#00ffba]/30 bg-black' : 'border-border bg-muted/50'}`}>
+                          <div key={i} className={`aspect-video border rounded-none flex items-center justify-center ${cam.is_active ? 'border-foreground/20 bg-black' : 'border-border bg-muted/50'}`}>
                             {cam.is_active && cam.stream_url ? (
                               <div className="text-center">
                                 <Video className="h-8 w-8 text-[#00ffba] mx-auto mb-1" />
