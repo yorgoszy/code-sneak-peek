@@ -957,6 +957,88 @@ const MultiCameraAnalysis: React.FC = () => {
           </main>
         </div>
       </div>
+
+      {/* Camera Settings Dialog */}
+      {selectedCameraIndex !== null && (
+        <Dialog open={cameraDialogOpen} onOpenChange={setCameraDialogOpen}>
+          <DialogContent className="max-w-md rounded-none">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-sm">
+                <Camera className="h-4 w-4" />
+                {cameras[selectedCameraIndex]?.camera_label} — Ρυθμίσεις
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs">Ενεργοποίηση</Label>
+                <Switch
+                  checked={cameras[selectedCameraIndex]?.is_active}
+                  onCheckedChange={v => updateCamera(selectedCameraIndex, 'is_active', v)}
+                />
+              </div>
+              <div>
+                <Label className="text-xs">Stream URL</Label>
+                <Input
+                  value={cameras[selectedCameraIndex]?.stream_url || ''}
+                  onChange={e => updateCamera(selectedCameraIndex, 'stream_url', e.target.value)}
+                  placeholder="rtsp://mac-mini.local:8554/cam1"
+                  className="rounded-none text-xs h-8 mt-1"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-xs">Θέση</Label>
+                  <Select value={cameras[selectedCameraIndex]?.position} onValueChange={v => updateCamera(selectedCameraIndex, 'position', v)}>
+                    <SelectTrigger className="rounded-none h-8 text-xs mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cameraPositions.map(p => (
+                        <SelectItem key={p} value={p}>{positionLabels[p]}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs">FPS</Label>
+                  <Select value={String(cameras[selectedCameraIndex]?.fps)} onValueChange={v => updateCamera(selectedCameraIndex, 'fps', Number(v))}>
+                    <SelectTrigger className="rounded-none h-8 text-xs mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="30">30 fps</SelectItem>
+                      <SelectItem value="60">60 fps</SelectItem>
+                      <SelectItem value="120">120 fps</SelectItem>
+                      <SelectItem value="160">160 fps</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 text-xs pt-1">
+                {cameras[selectedCameraIndex]?.is_active && cameras[selectedCameraIndex]?.stream_url ? (
+                  <><Wifi className="h-3 w-3 text-foreground" /><span>Ενεργή</span></>
+                ) : cameras[selectedCameraIndex]?.is_active ? (
+                  <><AlertCircle className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">Χωρίς URL</span></>
+                ) : (
+                  <><WifiOff className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">Απενεργοποιημένη</span></>
+                )}
+              </div>
+              <Button
+                onClick={() => {
+                  saveCameras();
+                  setCameraDialogOpen(false);
+                }}
+                disabled={savingCameras}
+                className="w-full rounded-none"
+                size="sm"
+              >
+                {savingCameras ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
+                Αποθήκευση
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </SidebarProvider>
   );
 };
