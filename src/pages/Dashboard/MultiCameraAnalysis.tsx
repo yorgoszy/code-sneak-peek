@@ -777,7 +777,7 @@ const MultiCameraAnalysis: React.FC = () => {
                       <CardContent className="p-3 pt-0">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <h4 className="text-xs font-medium text-red-500 mb-2">🔴 Red Corner</h4>
+                            <h4 className="text-xs font-medium mb-2">🔴 Red Corner</h4>
                             {renderStrikeTable(round.red_corner_data, 'red')}
                           </div>
                           <div>
