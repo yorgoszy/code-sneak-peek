@@ -478,7 +478,7 @@ const MultiCameraAnalysis: React.FC = () => {
         {data.accuracy_percentage !== undefined && (
           <div className="flex justify-between text-xs">
             <span>Ακρίβεια</span>
-            <span className="text-[#00ffba]">{data.accuracy_percentage}%</span>
+            <span className="font-medium">{data.accuracy_percentage}%</span>
           </div>
         )}
       </div>
