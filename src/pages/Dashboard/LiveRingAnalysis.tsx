@@ -175,6 +175,7 @@ const LiveRingAnalysis: React.FC = () => {
       breakRunningSinceRef.current = runningSince;
     }
 
+    setBreakRunning(breakIsRunning);
     setIsRecording(roundIsRunning);
   }, [isRecording, elapsedTime, activePhase]);
 
