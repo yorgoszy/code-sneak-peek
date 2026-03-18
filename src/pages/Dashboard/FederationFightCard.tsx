@@ -338,13 +338,15 @@ const FederationFightCard: React.FC = () => {
 
                       return (
                         <div key={ringNum}>
-                          <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border">
-                            <ListOrdered className="h-5 w-5 text-foreground" />
-                            <h2 className="text-lg font-bold">{ringLabel}</h2>
-                            <Badge variant="outline" className="rounded-none ml-2">
-                              {ringMatches.length} {t('federation.fightCard.fights')}
-                            </Badge>
-                          </div>
+                          {ringNum !== 0 && (
+                            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border">
+                              <ListOrdered className="h-5 w-5 text-foreground" />
+                              <h2 className="text-lg font-bold">{ringLabel}</h2>
+                              <Badge variant="outline" className="rounded-none ml-2">
+                                {ringMatches.length} {t('federation.fightCard.fights')}
+                              </Badge>
+                            </div>
+                          )}
 
                           <div className="space-y-1">
                             {ringMatches.map(m => {
