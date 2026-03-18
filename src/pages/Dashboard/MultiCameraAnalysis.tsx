@@ -550,7 +550,7 @@ const MultiCameraAnalysis: React.FC = () => {
             {/* Ring Selector - shown when no ringId in URL */}
             {!ringIdParam && (
               <div className="mb-4">
-                <Label className="text-xs font-medium mb-1.5 block">Επιλέξτε Ρινγκ</Label>
+                <Label className="text-xs font-medium mb-1.5 block">{t('aiLab.selectRing')}</Label>
                 <div className="flex flex-wrap gap-2">
                   {availableRings.map((r: any) => (
                     <Button
