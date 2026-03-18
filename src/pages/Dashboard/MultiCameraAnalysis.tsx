@@ -873,7 +873,7 @@ const MultiCameraAnalysis: React.FC = () => {
                         </p>
                       </Card>
                       <Card className="rounded-none p-3 text-center">
-                        <Eye className="h-6 w-6 mx-auto mb-1 text-[#cb8954]" />
+                        <Eye className="h-6 w-6 mx-auto mb-1 text-muted-foreground" />
                         <p className="text-xs font-medium">Manual Label</p>
                         <p className="text-[10px] text-muted-foreground">
                           Frame-by-frame annotation
