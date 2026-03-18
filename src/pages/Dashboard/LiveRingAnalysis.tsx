@@ -44,6 +44,7 @@ const LiveRingAnalysis: React.FC = () => {
   const [isBreak, setIsBreak] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [countdownTime, setCountdownTime] = useState(0); // countdown display
+  const [breakRunning, setBreakRunning] = useState(false); // whether break timer is actively counting
   const elapsedBaseRef = useRef<number>(0);
   const lastRunSinceRef = useRef<string | null>(null);
   const lastRemainingRef = useRef<number | null>(null);
