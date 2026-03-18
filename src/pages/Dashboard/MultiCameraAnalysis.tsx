@@ -823,7 +823,7 @@ const MultiCameraAnalysis: React.FC = () => {
                         </div>
                         {round.round_summary && (
                           <div className="mt-3 p-2 bg-muted/50 text-xs">
-                            <p className="font-medium mb-1">Σημειώσεις AI:</p>
+                            <p className="font-medium mb-1">{t('aiLab.results.aiNotes')}:</p>
                             <p>{round.round_summary}</p>
                           </div>
                         )}
