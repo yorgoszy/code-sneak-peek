@@ -628,19 +628,6 @@ const MultiCameraAnalysis: React.FC = () => {
                   </Button>
                 </div>
 
-                {/* Architecture note */}
-                <Card className="rounded-none border-amber-500/30 bg-amber-500/5">
-                  <CardContent className="p-3">
-                    <div className="flex gap-2 text-xs text-amber-200">
-                      <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-medium mb-1">Αρχιτεκτονική Basler + Mac Mini</p>
-                        <p>4× Basler dart daA1920-160uc → 10G Switch → Mac Mini M2 Pro → H.265 encode → RTSP stream → Platform AI</p>
-                        <p className="mt-1">Κάθε κάμερα: €292 (σώμα €259 + φακός €33). Σύνολο ανά ρινγκ: ~€1.200</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {cameras.map((cam, i) => renderCameraCard(cam, i))}
