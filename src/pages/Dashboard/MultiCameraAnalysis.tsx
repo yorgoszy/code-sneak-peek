@@ -369,7 +369,7 @@ const MultiCameraAnalysis: React.FC = () => {
   const renderSidebar = () => (
     <FederationSidebar
       isCollapsed={false}
-      onToggleCollapse={() => {}}
+      setIsCollapsed={() => {}}
     />
   );
 
