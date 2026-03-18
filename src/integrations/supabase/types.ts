@@ -143,6 +143,136 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_analysis_rounds: {
+        Row: {
+          blue_corner_data: Json | null
+          created_at: string | null
+          id: string
+          processing_time_ms: number | null
+          raw_ai_response: Json | null
+          red_corner_data: Json | null
+          round_number: number
+          round_summary: string | null
+          session_id: string
+        }
+        Insert: {
+          blue_corner_data?: Json | null
+          created_at?: string | null
+          id?: string
+          processing_time_ms?: number | null
+          raw_ai_response?: Json | null
+          red_corner_data?: Json | null
+          round_number: number
+          round_summary?: string | null
+          session_id: string
+        }
+        Update: {
+          blue_corner_data?: Json | null
+          created_at?: string | null
+          id?: string
+          processing_time_ms?: number | null
+          raw_ai_response?: Json | null
+          red_corner_data?: Json | null
+          round_number?: number
+          round_summary?: string | null
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_analysis_rounds_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ai_analysis_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_analysis_sessions: {
+        Row: {
+          analysis_type: string
+          cameras_used: number | null
+          competition_id: string | null
+          completed_at: string | null
+          created_at: string | null
+          created_by: string | null
+          error_message: string | null
+          id: string
+          match_id: string | null
+          results: Json | null
+          ring_id: string
+          sport: string
+          started_at: string | null
+          status: string
+          total_rounds: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          analysis_type?: string
+          cameras_used?: number | null
+          competition_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          error_message?: string | null
+          id?: string
+          match_id?: string | null
+          results?: Json | null
+          ring_id: string
+          sport?: string
+          started_at?: string | null
+          status?: string
+          total_rounds?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          analysis_type?: string
+          cameras_used?: number | null
+          competition_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          error_message?: string | null
+          id?: string
+          match_id?: string | null
+          results?: Json | null
+          ring_id?: string
+          sport?: string
+          started_at?: string | null
+          status?: string
+          total_rounds?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_analysis_sessions_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "federation_competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_analysis_sessions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_analysis_sessions_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "competition_matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_analysis_sessions_ring_id_fkey"
+            columns: ["ring_id"]
+            isOneToOne: false
+            referencedRelation: "competition_rings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_chat_files: {
         Row: {
           created_at: string
@@ -293,6 +423,85 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      ai_training_labels: {
+        Row: {
+          camera_index: number | null
+          confidence: number | null
+          created_at: string | null
+          fighter_corner: string
+          frame_image_path: string | null
+          frame_timestamp: number
+          id: string
+          is_blocked: boolean | null
+          is_landed: boolean | null
+          labeled_by: string | null
+          match_id: string | null
+          notes: string | null
+          session_id: string | null
+          side: string | null
+          strike_category: string
+          strike_type: string
+        }
+        Insert: {
+          camera_index?: number | null
+          confidence?: number | null
+          created_at?: string | null
+          fighter_corner: string
+          frame_image_path?: string | null
+          frame_timestamp: number
+          id?: string
+          is_blocked?: boolean | null
+          is_landed?: boolean | null
+          labeled_by?: string | null
+          match_id?: string | null
+          notes?: string | null
+          session_id?: string | null
+          side?: string | null
+          strike_category: string
+          strike_type: string
+        }
+        Update: {
+          camera_index?: number | null
+          confidence?: number | null
+          created_at?: string | null
+          fighter_corner?: string
+          frame_image_path?: string | null
+          frame_timestamp?: number
+          id?: string
+          is_blocked?: boolean | null
+          is_landed?: boolean | null
+          labeled_by?: string | null
+          match_id?: string | null
+          notes?: string | null
+          session_id?: string | null
+          side?: string | null
+          strike_category?: string
+          strike_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_training_labels_labeled_by_fkey"
+            columns: ["labeled_by"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_training_labels_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "competition_matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_training_labels_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "ai_analysis_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ai_user_profiles: {
         Row: {
@@ -6591,6 +6800,59 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      ring_analysis_cameras: {
+        Row: {
+          camera_index: number
+          camera_label: string
+          created_at: string | null
+          fps: number | null
+          id: string
+          is_active: boolean | null
+          position: string
+          resolution_height: number | null
+          resolution_width: number | null
+          ring_id: string
+          stream_url: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          camera_index: number
+          camera_label?: string
+          created_at?: string | null
+          fps?: number | null
+          id?: string
+          is_active?: boolean | null
+          position?: string
+          resolution_height?: number | null
+          resolution_width?: number | null
+          ring_id: string
+          stream_url?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          camera_index?: number
+          camera_label?: string
+          created_at?: string | null
+          fps?: number | null
+          id?: string
+          is_active?: boolean | null
+          position?: string
+          resolution_height?: number | null
+          resolution_width?: number | null
+          ring_id?: string
+          stream_url?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ring_analysis_cameras_ring_id_fkey"
+            columns: ["ring_id"]
+            isOneToOne: false
+            referencedRelation: "competition_rings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       saved_macrocycles: {
         Row: {
