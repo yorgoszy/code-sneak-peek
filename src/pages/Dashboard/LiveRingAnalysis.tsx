@@ -116,18 +116,25 @@ const LiveRingAnalysis: React.FC = () => {
     setCurrentRound(round);
     setIsBreak(isBrk);
 
+    // Store remaining/runningSince for countdown calc
+    lastRemainingRef.current = remaining;
+    
+    if (isBrk) {
+      breakRemainingRef.current = remaining;
+      breakRunningSinceRef.current = runningSince;
+    } else {
+      breakRemainingRef.current = null;
+      breakRunningSinceRef.current = null;
+    }
+
     const timerIsRunning = !!runningSince && !isBrk;
     
-    // Track when timer starts/stops to accumulate elapsed
     if (timerIsRunning && !isRecording) {
-      // Timer just started - save current elapsed as base
       elapsedBaseRef.current = elapsedTime;
       lastRunSinceRef.current = runningSince;
-      lastRemainingRef.current = remaining;
     }
     
     if (!timerIsRunning && isRecording && activePhase) {
-      // Timer stopped - close any active phase
       const closed = { ...activePhase, endTime: elapsedTime };
       setPhases(prev => prev.map(p => p.id === closed.id ? closed : p));
       setActivePhase(null);
