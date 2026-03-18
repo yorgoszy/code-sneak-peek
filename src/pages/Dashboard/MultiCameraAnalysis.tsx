@@ -262,7 +262,7 @@ const MultiCameraAnalysis: React.FC = () => {
   // Start AI Analysis
   const startAnalysis = async () => {
     if (!ringId || activeCameras.length === 0) {
-      toast.error('Ρυθμίστε τουλάχιστον μία κάμερα');
+      toast.error(t('aiLab.analysis.setupCamera'));
       return;
     }
 
