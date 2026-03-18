@@ -43,9 +43,12 @@ const LiveRingAnalysis: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const elapsedBaseRef = useRef<number>(0); // accumulated elapsed when timer was last paused
+  const [countdownTime, setCountdownTime] = useState(0); // countdown display
+  const elapsedBaseRef = useRef<number>(0);
   const lastRunSinceRef = useRef<string | null>(null);
   const lastRemainingRef = useRef<number | null>(null);
+  const breakRemainingRef = useRef<number | null>(null);
+  const breakRunningSinceRef = useRef<string | null>(null);
 
   // Phase-based analysis: periods of attack/defense with strikes inside
   const [phases, setPhases] = useState<ActionPhase[]>([]);
@@ -113,18 +116,25 @@ const LiveRingAnalysis: React.FC = () => {
     setCurrentRound(round);
     setIsBreak(isBrk);
 
+    // Store remaining/runningSince for countdown calc
+    lastRemainingRef.current = remaining;
+    
+    if (isBrk) {
+      breakRemainingRef.current = remaining;
+      breakRunningSinceRef.current = runningSince;
+    } else {
+      breakRemainingRef.current = null;
+      breakRunningSinceRef.current = null;
+    }
+
     const timerIsRunning = !!runningSince && !isBrk;
     
-    // Track when timer starts/stops to accumulate elapsed
     if (timerIsRunning && !isRecording) {
-      // Timer just started - save current elapsed as base
       elapsedBaseRef.current = elapsedTime;
       lastRunSinceRef.current = runningSince;
-      lastRemainingRef.current = remaining;
     }
     
     if (!timerIsRunning && isRecording && activePhase) {
-      // Timer stopped - close any active phase
       const closed = { ...activePhase, endTime: elapsedTime };
       setPhases(prev => prev.map(p => p.id === closed.id ? closed : p));
       setActivePhase(null);
@@ -178,6 +188,27 @@ const LiveRingAnalysis: React.FC = () => {
     
     return () => clearInterval(interval);
   }, [isRecording]);
+
+  // Countdown timer - shows remaining time (counts down), resets each round
+  useEffect(() => {
+    const runningSince = isBreak ? breakRunningSinceRef.current : lastRunSinceRef.current;
+    const remaining = isBreak ? breakRemainingRef.current : lastRemainingRef.current;
+    
+    if (!runningSince || remaining === null || remaining === undefined) {
+      if (!isRecording && !isBreak) setCountdownTime(remaining ?? 0);
+      return;
+    }
+
+    const runStart = new Date(runningSince).getTime();
+    
+    const interval = setInterval(() => {
+      const elapsed = (Date.now() - runStart) / 1000;
+      const timeLeft = Math.max(0, remaining - elapsed);
+      setCountdownTime(Math.ceil(timeLeft));
+    }, 50);
+    
+    return () => clearInterval(interval);
+  }, [isRecording, isBreak]);
 
   // ─── Start a phase (attack or defense) ───
   const startPhase = useCallback((type: PhaseType) => {
@@ -413,6 +444,12 @@ const LiveRingAnalysis: React.FC = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const formatCountdown = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const renderSidebar = () => (
     <FederationSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
   );
@@ -463,9 +500,13 @@ const LiveRingAnalysis: React.FC = () => {
                   </p>
                 </div>
               </div>
-              {isRecording && (
-                <Badge className="rounded-none bg-destructive text-destructive-foreground animate-pulse">
-                  <Radio className="h-3 w-3 mr-1" />REC · {formatTime(elapsedTime)}
+              {(isRecording || isBreak) && (
+                <Badge className={`rounded-none ${isBreak ? 'bg-amber-500 text-black' : 'bg-destructive text-destructive-foreground'} animate-pulse`}>
+                  {isBreak ? (
+                    <><Timer className="h-3 w-3 mr-1" />BRK · {formatCountdown(countdownTime)}</>
+                  ) : (
+                    <><Radio className="h-3 w-3 mr-1" />R{currentRound} · {formatCountdown(countdownTime)}</>
+                  )}
                 </Badge>
               )}
             </div>
@@ -555,13 +596,15 @@ const LiveRingAnalysis: React.FC = () => {
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-1 border border-border px-2 py-1">
-                        <Timer className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-sm font-mono">{formatTime(elapsedTime)}</span>
+                      <div className={`flex items-center gap-1 border px-2 py-1 ${isBreak ? 'border-amber-500 bg-amber-500/10' : 'border-border'}`}>
+                        <Timer className={`h-3 w-3 ${isBreak ? 'text-amber-500' : 'text-muted-foreground'}`} />
+                        <span className={`text-sm font-mono font-bold ${isBreak ? 'text-amber-500' : ''}`}>
+                          {formatCountdown(countdownTime)}
+                        </span>
                       </div>
 
                       <div className="flex items-center gap-1 border border-border px-2 py-1">
-                        <span className="text-xs text-muted-foreground">Γύρος:</span>
+                        <span className="text-xs text-muted-foreground">{isBreak ? 'Διάλειμμα' : 'Γύρος'}:</span>
                         <span className="text-sm font-bold">{currentRound}</span>
                       </div>
 
