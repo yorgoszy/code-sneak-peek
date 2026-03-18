@@ -38,12 +38,14 @@ const LiveRingAnalysis: React.FC = () => {
   const [athlete, setAthlete] = useState<any>(null);
   const [competitionId, setCompetitionId] = useState<string | null>(null);
 
-  // Round & timer
+  // Ring timer state (synced from ring)
   const [currentRound, setCurrentRound] = useState(1);
   const [isRecording, setIsRecording] = useState(false);
+  const [isBreak, setIsBreak] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const timerRef = useRef<number | null>(null);
-  const startTimeRef = useRef<number>(0);
+  const elapsedBaseRef = useRef<number>(0); // accumulated elapsed when timer was last paused
+  const lastRunSinceRef = useRef<string | null>(null);
+  const lastRemainingRef = useRef<number | null>(null);
 
   // Phase-based analysis: periods of attack/defense with strikes inside
   const [phases, setPhases] = useState<ActionPhase[]>([]);
