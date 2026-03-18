@@ -266,20 +266,28 @@ export function useVideoAnalyzer(options: Partial<UseVideoAnalyzerOptions> = {})
       if (config.enableAIVerification && allStrikesRef.current.length > 0) {
         setProgress(prev => ({ ...prev, phase: 'verifying' }));
 
-        // Create frame data for verification
-        const framesToVerify = allStrikesRef.current.map(strike => ({
-          imageData: '', // Would capture actual frame
-          timestamp: strike.timestamp,
-          detectedStrike: strike,
-        }));
+        try {
+          // Create frame data for verification
+          const framesToVerify = allStrikesRef.current.map(strike => ({
+            imageData: '', // Would capture actual frame
+            timestamp: strike.timestamp,
+            detectedStrike: strike,
+          }));
 
-        await analyzeVideoFrames(framesToVerify, config.sport);
+          await analyzeVideoFrames(framesToVerify, config.sport);
 
-        setProgress(prev => ({
-          ...prev,
-          strikesVerified: verificationResults.length,
-          progress: 100,
-        }));
+          setProgress(prev => ({
+            ...prev,
+            strikesVerified: verificationResults.length,
+            progress: 100,
+          }));
+        } catch (verifyErr) {
+          console.warn('AI verification failed, completing without verification:', verifyErr);
+          setProgress(prev => ({ ...prev, progress: 100 }));
+        }
+      } else if (config.enableAIVerification) {
+        // No strikes found but AI verification was enabled - still complete to 100%
+        setProgress(prev => ({ ...prev, progress: 100 }));
       }
 
       // Phase 4: Complete

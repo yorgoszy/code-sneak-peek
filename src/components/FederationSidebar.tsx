@@ -50,7 +50,7 @@ export const FederationSidebar = ({
     { icon: Radio, label: t("federation.sidebar.live"), path: "/dashboard/federation-live" },
     { icon: ClipboardList, label: t("federation.sidebar.fightCard"), path: "/dashboard/federation-fight-card" },
     { icon: Trophy, label: "Ranking", path: "/dashboard/ranking" },
-    { icon: TrendingUp, label: t("federation.sidebar.progress"), path: "/dashboard/federation-progress" },
+    { icon: TrendingUp, label: "Athletes Progress", path: "/dashboard/federation-progress" },
     { icon: MonitorPlay, label: t("federation.sidebar.videoAnalysis"), path: "/dashboard/federation-video-analysis" },
     { icon: Settings, label: t("federation.sidebar.editProfile"), path: "/dashboard/federation-profile" },
   ];
