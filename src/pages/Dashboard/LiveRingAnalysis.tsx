@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { 
   Menu, ArrowLeft, Swords, Shield, Target, 
   RotateCcw, Save, Radio, Timer, 
-  TrendingUp, Activity, Play, Square
+  TrendingUp, Activity, Square
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
@@ -38,12 +38,14 @@ const LiveRingAnalysis: React.FC = () => {
   const [athlete, setAthlete] = useState<any>(null);
   const [competitionId, setCompetitionId] = useState<string | null>(null);
 
-  // Round & timer
+  // Ring timer state (synced from ring)
   const [currentRound, setCurrentRound] = useState(1);
   const [isRecording, setIsRecording] = useState(false);
+  const [isBreak, setIsBreak] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const timerRef = useRef<number | null>(null);
-  const startTimeRef = useRef<number>(0);
+  const elapsedBaseRef = useRef<number>(0); // accumulated elapsed when timer was last paused
+  const lastRunSinceRef = useRef<string | null>(null);
+  const lastRemainingRef = useRef<number | null>(null);
 
   // Phase-based analysis: periods of attack/defense with strikes inside
   const [phases, setPhases] = useState<ActionPhase[]>([]);
@@ -100,17 +102,81 @@ const LiveRingAnalysis: React.FC = () => {
     return () => { supabase.removeChannel(channel); };
   }, [ringId, loadRingData]);
 
-  // ─── Timer ───
-  useEffect(() => {
-    if (isRecording) {
-      startTimeRef.current = Date.now() - (elapsedTime * 1000);
-      timerRef.current = window.setInterval(() => {
-        setElapsedTime((Date.now() - startTimeRef.current) / 1000);
-      }, 100);
-    } else if (timerRef.current) {
-      clearInterval(timerRef.current);
+  // ─── Sync with ring timer ───
+  const applyRingTimer = useCallback((data: any) => {
+    if (!data) return;
+    const round = data.timer_current_round ?? 1;
+    const isBrk = data.timer_is_break ?? false;
+    const runningSince = data.timer_running_since ?? null;
+    const remaining = data.timer_remaining_seconds ?? null;
+
+    setCurrentRound(round);
+    setIsBreak(isBrk);
+
+    const timerIsRunning = !!runningSince && !isBrk;
+    
+    // Track when timer starts/stops to accumulate elapsed
+    if (timerIsRunning && !isRecording) {
+      // Timer just started - save current elapsed as base
+      elapsedBaseRef.current = elapsedTime;
+      lastRunSinceRef.current = runningSince;
+      lastRemainingRef.current = remaining;
     }
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+    
+    if (!timerIsRunning && isRecording && activePhase) {
+      // Timer stopped - close any active phase
+      const closed = { ...activePhase, endTime: elapsedTime };
+      setPhases(prev => prev.map(p => p.id === closed.id ? closed : p));
+      setActivePhase(null);
+    }
+
+    setIsRecording(timerIsRunning);
+  }, [isRecording, elapsedTime, activePhase]);
+
+  // Poll ring timer (like VideoOverlayScores)
+  useEffect(() => {
+    if (!ringId) return;
+    let active = true;
+    
+    const poll = async () => {
+      const { data } = await supabase
+        .from('competition_rings')
+        .select('timer_current_round, timer_is_break, timer_remaining_seconds, timer_running_since')
+        .eq('id', ringId)
+        .maybeSingle();
+      if (active && data) applyRingTimer(data);
+      if (active) setTimeout(poll, 500);
+    };
+    poll();
+    
+    return () => { active = false; };
+  }, [ringId, applyRingTimer]);
+
+  // Realtime ring timer subscription
+  useEffect(() => {
+    if (!ringId) return;
+    const channel = supabase
+      .channel(`analysis-timer-${ringId}`)
+      .on('postgres_changes', {
+        event: 'UPDATE', schema: 'public', table: 'competition_rings',
+        filter: `id=eq.${ringId}`
+      }, (payload) => applyRingTimer(payload.new))
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [ringId, applyRingTimer]);
+
+  // Local elapsed time counter - runs when isRecording
+  useEffect(() => {
+    if (!isRecording || !lastRunSinceRef.current) return;
+    const base = elapsedBaseRef.current;
+    const runStart = new Date(lastRunSinceRef.current).getTime();
+    
+    const interval = setInterval(() => {
+      const sinceStart = (Date.now() - runStart) / 1000;
+      setElapsedTime(base + sinceStart);
+    }, 100);
+    
+    return () => clearInterval(interval);
   }, [isRecording]);
 
   // ─── Start a phase (attack or defense) ───
@@ -465,29 +531,38 @@ const LiveRingAnalysis: React.FC = () => {
                   </CardContent>
                 </Card>
 
-                {/* Recording Controls */}
+                {/* Recording Controls - synced with ring timer */}
                 <Card className="rounded-none">
                   <CardContent className="p-3">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Button
-                        onClick={() => setIsRecording(!isRecording)}
-                        className={`rounded-none ${isRecording ? 'bg-destructive hover:bg-destructive/90' : 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black'}`}
-                      >
-                        {isRecording ? <><Square className="h-4 w-4 mr-2" />Παύση</> : <><Play className="h-4 w-4 mr-2" />Εκκίνηση</>}
-                      </Button>
+                      {/* Recording status indicator */}
+                      <div className={`flex items-center gap-1.5 border px-3 py-1.5 ${
+                        isRecording 
+                          ? 'border-destructive bg-destructive/10' 
+                          : isBreak 
+                            ? 'border-amber-500 bg-amber-500/10' 
+                            : 'border-border'
+                      }`}>
+                        {isRecording ? (
+                          <Radio className="h-3 w-3 text-destructive animate-pulse" />
+                        ) : isBreak ? (
+                          <Timer className="h-3 w-3 text-amber-500" />
+                        ) : (
+                          <Square className="h-3 w-3 text-muted-foreground" />
+                        )}
+                        <span className="text-xs font-medium">
+                          {isRecording ? 'REC' : isBreak ? 'BREAK' : 'Αναμονή'}
+                        </span>
+                      </div>
 
                       <div className="flex items-center gap-1 border border-border px-2 py-1">
                         <Timer className="h-3 w-3 text-muted-foreground" />
                         <span className="text-sm font-mono">{formatTime(elapsedTime)}</span>
                       </div>
 
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 border border-border px-2 py-1">
                         <span className="text-xs text-muted-foreground">Γύρος:</span>
-                        <Button variant="outline" size="sm" className="rounded-none h-7 w-7 p-0"
-                          disabled={currentRound <= 1} onClick={() => { endPhase(); setCurrentRound(r => r - 1); }}>−</Button>
-                        <span className="text-sm font-bold px-1">{currentRound}</span>
-                        <Button variant="outline" size="sm" className="rounded-none h-7 w-7 p-0"
-                          onClick={() => { endPhase(); setCurrentRound(r => r + 1); }}>+</Button>
+                        <span className="text-sm font-bold">{currentRound}</span>
                       </div>
 
                       <Button variant="outline" size="sm" className="rounded-none" onClick={undoLast}
