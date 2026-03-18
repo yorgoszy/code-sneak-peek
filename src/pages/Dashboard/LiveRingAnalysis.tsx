@@ -480,6 +480,11 @@ const LiveRingAnalysis: React.FC = () => {
     toast.success('Ανάλυση αποθηκεύτηκε');
   }, [phases, currentMatch, athlete, competitionId, ringId, corner, userProfile, elapsedTime, totalStats]);
 
+  // Wire up ref so loadRingData can auto-save on match change
+  useEffect(() => {
+    saveCurrentAnalysisRef.current = saveAnalysis;
+  }, [saveAnalysis]);
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
