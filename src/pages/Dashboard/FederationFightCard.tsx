@@ -331,7 +331,9 @@ const FederationFightCard: React.FC = () => {
                   <div className="space-y-8">
                     {ringNumbers.map(ringNum => {
                       const ringInfo = rings.find(r => r.ring_number === ringNum);
-                      const ringLabel = ringInfo?.ring_name || `Ring ${ringNum}`;
+                      const ringLabel = ringNum === 0 
+                        ? t('federation.fightCard.unassigned', 'Unassigned') 
+                        : (ringInfo?.ring_name || `Ring ${ringNum}`);
                       const ringMatches = matchesByRing[ringNum];
 
                       return (
