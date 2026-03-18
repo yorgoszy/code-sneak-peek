@@ -958,6 +958,7 @@ const MultiCameraAnalysis: React.FC = () => {
                 </Card>
               </TabsContent>
             </Tabs>
+            ) : !ringIdParam && availableRings.length > 0 ? null : null}
           </main>
         </div>
       </div>
