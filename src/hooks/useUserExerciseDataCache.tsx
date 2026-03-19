@@ -11,6 +11,8 @@ interface ExerciseData1RM {
 interface UserExerciseDataCache {
   /** Get 1RM for an exercise (checks linked exercises too) */
   getOneRM: (exerciseId: string) => number | null;
+  /** Get the measured velocity at 1RM attempt */
+  getOneRMVelocity: (exerciseId: string) => number | null;
   /** Get velocity prediction for a percentage */
   getVelocityForPercentage: (exerciseId: string, percentage: number, oneRM: number) => number | null;
   /** Whether data is still loading */
