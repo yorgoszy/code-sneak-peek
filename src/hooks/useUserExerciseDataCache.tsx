@@ -262,7 +262,7 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
     // Direct match
     const profile = velocityProfiles.get(exerciseId);
     if (profile) {
-      console.log('[VelocityCache] Direct profile found for', exerciseId, 'test1RM:', profile.test1RM, 'points:', profile.percentagePoints.length);
+      console.log('[VelocityCache] Direct profile found for', exerciseId, 'test1RM:', profile.test1RM, 'points:', profile.percentagePoints.length, 'pctPoints:', JSON.stringify(profile.percentagePoints));
       return predictVelocityFromPercentage(profile, percentage, oneRM);
     }
 
