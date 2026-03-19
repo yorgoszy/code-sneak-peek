@@ -249,17 +249,24 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
   const getVelocityForPercentage = useCallback((exerciseId: string, percentage: number, oneRM: number): number | null => {
     // Direct match
     const profile = velocityProfiles.get(exerciseId);
-    if (profile) return predictVelocityFromPercentage(profile, percentage, oneRM);
+    if (profile) {
+      console.log('[VelocityCache] Direct profile found for', exerciseId, 'sortedPoints:', JSON.stringify(profile.sortedPoints), 'regression:', JSON.stringify(profile.regression));
+      return predictVelocityFromPercentage(profile, percentage, oneRM);
+    }
 
     // Check linked exercises
     const linked = linkMap.get(exerciseId);
     if (linked) {
       for (const linkedId of linked) {
         const linkedProfile = velocityProfiles.get(linkedId);
-        if (linkedProfile) return predictVelocityFromPercentage(linkedProfile, percentage, oneRM);
+        if (linkedProfile) {
+          console.log('[VelocityCache] Linked profile found via', linkedId, 'sortedPoints:', JSON.stringify(linkedProfile.sortedPoints), 'regression:', JSON.stringify(linkedProfile.regression));
+          return predictVelocityFromPercentage(linkedProfile, percentage, oneRM);
+        }
       }
     }
 
+    console.log('[VelocityCache] No profile found for', exerciseId, 'profiles keys:', Array.from(velocityProfiles.keys()));
     return null;
   }, [velocityProfiles, linkMap]);
 
