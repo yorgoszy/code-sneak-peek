@@ -72,19 +72,71 @@ serve(async (req) => {
   }
 
   try {
-    const body = await req.json();
-    const { action } = body;
-
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
 
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !SUPABASE_ANON_KEY) {
       throw new Error("Missing Supabase configuration");
     }
 
+    // --- Authentication: verify JWT ---
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false },
+    });
+
+    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) {
+      console.error("❌ Auth error:", claimsError);
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const authUserId = claimsData.claims.sub;
+
+    // --- Authorization: verify admin or coach role ---
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
       auth: { persistSession: false },
     });
+
+    const { data: callerProfile, error: profileError } = await supabase
+      .from("app_users")
+      .select("id, role")
+      .eq("auth_user_id", authUserId)
+      .maybeSingle();
+
+    if (profileError || !callerProfile) {
+      console.error("❌ Profile lookup error:", profileError);
+      return new Response(
+        JSON.stringify({ error: "User profile not found" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!["admin", "coach", "trainer"].includes(callerProfile.role)) {
+      console.error("❌ Unauthorized role:", callerProfile.role);
+      return new Response(
+        JSON.stringify({ error: "Forbidden: insufficient permissions" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`✅ Authenticated user: ${authUserId}, role: ${callerProfile.role}`);
+
+    const body = await req.json();
+    const { action } = body;
 
     console.log("🤖 AI Program Action:", action, body);
 
