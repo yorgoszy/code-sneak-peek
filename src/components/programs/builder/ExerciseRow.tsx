@@ -66,6 +66,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = React.memo(({
 
       // Calculate velocity
       const predictedVelocity = getVelocityForPercentage(exerciseId, pct, oneRM);
+      console.log('[VelocityDebug] exerciseId:', exerciseId, 'pct:', pct, '1RM:', oneRM, 'targetLoad:', (pct/100)*oneRM, 'predicted:', predictedVelocity);
       if (predictedVelocity !== null && predictedVelocity !== lastAutoVelocity.current) {
         lastAutoVelocity.current = predictedVelocity;
         onUpdate('velocity_ms', predictedVelocity);
