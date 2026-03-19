@@ -164,7 +164,19 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
 
             if (sortedSessions.length > 0) {
               exerciseIdsWithVelocity.add(exId);
-              latestSessionPoints.set(exId, sortedSessions[0][1].points);
+              
+              // Deduplicate: keep best (highest) velocity per weight_kg
+              const rawPoints = sortedSessions[0][1].points;
+              const bestByWeight = new Map<number, number>();
+              for (const p of rawPoints) {
+                const current = bestByWeight.get(p.weight_kg);
+                if (current === undefined || p.velocity_ms > current) {
+                  bestByWeight.set(p.weight_kg, p.velocity_ms);
+                }
+              }
+              const deduped: LoadVelocityPoint[] = Array.from(bestByWeight.entries())
+                .map(([weight_kg, velocity_ms]) => ({ weight_kg, velocity_ms }));
+              latestSessionPoints.set(exId, deduped);
 
               // If no is_1rm velocity, use the velocity at max weight
               if (!newRmVelocityMap.has(exId)) {
