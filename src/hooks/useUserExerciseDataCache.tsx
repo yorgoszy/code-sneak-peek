@@ -11,6 +11,8 @@ interface ExerciseData1RM {
 interface UserExerciseDataCache {
   /** Get 1RM for an exercise (checks linked exercises too) */
   getOneRM: (exerciseId: string) => number | null;
+  /** Get the measured velocity at 1RM attempt */
+  getOneRMVelocity: (exerciseId: string) => number | null;
   /** Get velocity prediction for a percentage */
   getVelocityForPercentage: (exerciseId: string, percentage: number, oneRM: number) => number | null;
   /** Whether data is still loading */
@@ -21,6 +23,7 @@ interface UserExerciseDataCache {
 
 const UserExerciseDataCacheContext = createContext<UserExerciseDataCache>({
   getOneRM: () => null,
+  getOneRMVelocity: () => null,
   getVelocityForPercentage: () => null,
   loading: false,
   userId: null,
@@ -36,6 +39,8 @@ interface Props {
 export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, children }) => {
   // Map: exerciseId -> 1RM weight
   const [rmMap, setRmMap] = useState<Map<string, number>>(new Map());
+  // Map: exerciseId -> measured velocity at 1RM
+  const [rmVelocityMap, setRmVelocityMap] = useState<Map<string, number>>(new Map());
   // Map: exerciseId -> Set of linked exercise IDs
   const [linkMap, setLinkMap] = useState<Map<string, string[]>>(new Map());
   // Map: exerciseId -> VelocityProfile
@@ -44,6 +49,7 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
 
   useEffect(() => {
     setRmMap(new Map());
+    setRmVelocityMap(new Map());
     setLinkMap(new Map());
     setVelocityProfiles(new Map());
 
@@ -108,13 +114,14 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
           }
         }
 
-        // 3. Fetch ALL velocity data for this user with session info
+        // 3. Fetch ALL velocity data for this user with session info (including is_1rm)
         const { data: velocityData } = await supabase
           .from('strength_test_attempts')
           .select(`
             exercise_id,
             weight_kg,
             velocity_ms,
+            is_1rm,
             test_session_id,
             strength_test_sessions!inner (user_id, test_date)
           `)
@@ -122,7 +129,8 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
           .not('velocity_ms', 'is', null)
           .gt('velocity_ms', 0);
 
-        // 4. Group by exercise and session, keep only the LATEST session per exercise
+        // 4. Build 1RM velocity map and group sessions for profiles
+        const newRmVelocityMap = new Map<string, number>();
         const exerciseIdsWithVelocity = new Set<string>();
         const latestSessionPoints = new Map<string, LoadVelocityPoint[]>();
 
@@ -140,9 +148,15 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
             const sessions = byExerciseSession.get(exId)!;
             if (!sessions.has(sessionId)) sessions.set(sessionId, { date: testDate, points: [] });
             sessions.get(sessionId)!.points.push({ weight_kg: v.weight_kg, velocity_ms: v.velocity_ms! });
+
+            // Track 1RM velocity: the velocity at the heaviest weight (1RM attempt)
+            // or the velocity of the attempt marked as is_1rm
+            if (v.is_1rm && v.velocity_ms) {
+              newRmVelocityMap.set(exId, v.velocity_ms);
+            }
           }
 
-          // For each exercise, find the latest session with >= 2 points
+          // For exercises without is_1rm marked, use the velocity at max weight from latest session
           for (const [exId, sessions] of byExerciseSession) {
             const sortedSessions = Array.from(sessions.entries())
               .filter(([_, s]) => s.points.length >= 2)
@@ -151,6 +165,13 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
             if (sortedSessions.length > 0) {
               exerciseIdsWithVelocity.add(exId);
               latestSessionPoints.set(exId, sortedSessions[0][1].points);
+
+              // If no is_1rm velocity, use the velocity at max weight
+              if (!newRmVelocityMap.has(exId)) {
+                const pts = sortedSessions[0][1].points;
+                const maxPt = pts.reduce((max, p) => p.weight_kg > max.weight_kg ? p : max, pts[0]);
+                newRmVelocityMap.set(exId, maxPt.velocity_ms);
+              }
             }
           }
         }
@@ -180,6 +201,7 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
         }
 
         setRmMap(newRmMap);
+        setRmVelocityMap(newRmVelocityMap);
         setLinkMap(newLinkMap);
         setVelocityProfiles(newVelocityProfiles);
       } catch (err) {
@@ -209,6 +231,21 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
     return null;
   }, [rmMap, linkMap]);
 
+  const getOneRMVelocity = useCallback((exerciseId: string): number | null => {
+    const direct = rmVelocityMap.get(exerciseId);
+    if (direct !== undefined) return direct;
+
+    const linked = linkMap.get(exerciseId);
+    if (linked) {
+      for (const linkedId of linked) {
+        const linkedV = rmVelocityMap.get(linkedId);
+        if (linkedV !== undefined) return linkedV;
+      }
+    }
+
+    return null;
+  }, [rmVelocityMap, linkMap]);
+
   const getVelocityForPercentage = useCallback((exerciseId: string, percentage: number, oneRM: number): number | null => {
     // Direct match
     const profile = velocityProfiles.get(exerciseId);
@@ -228,10 +265,11 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
 
   const value = useMemo(() => ({
     getOneRM,
+    getOneRMVelocity,
     getVelocityForPercentage,
     loading,
     userId,
-  }), [getOneRM, getVelocityForPercentage, loading, userId]);
+  }), [getOneRM, getOneRMVelocity, getVelocityForPercentage, loading, userId]);
 
   return (
     <UserExerciseDataCacheContext.Provider value={value}>
