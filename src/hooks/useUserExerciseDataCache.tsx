@@ -39,6 +39,8 @@ interface Props {
 export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, children }) => {
   // Map: exerciseId -> 1RM weight
   const [rmMap, setRmMap] = useState<Map<string, number>>(new Map());
+  // Map: exerciseId -> measured velocity at 1RM
+  const [rmVelocityMap, setRmVelocityMap] = useState<Map<string, number>>(new Map());
   // Map: exerciseId -> Set of linked exercise IDs
   const [linkMap, setLinkMap] = useState<Map<string, string[]>>(new Map());
   // Map: exerciseId -> VelocityProfile
@@ -47,6 +49,7 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
 
   useEffect(() => {
     setRmMap(new Map());
+    setRmVelocityMap(new Map());
     setLinkMap(new Map());
     setVelocityProfiles(new Map());
 
