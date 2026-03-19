@@ -97,28 +97,22 @@ export function buildVelocityProfile(
 /**
  * Predicts velocity for a given %1RM using pure interpolation from test data.
  * 
- * The percentage is relative to the PROGRAM's 1RM (from user_exercise_1rm),
- * but we convert it to the test's scale for interpolation.
+ * The percentage maps DIRECTLY to the test's percentage scale.
+ * When the coach writes "85%", we look up what velocity the athlete achieved
+ * at 85% of their test's max weight — regardless of what the user_exercise_1rm says.
  * 
- * Example: Program 1RM = 120kg, test 1RM = 88kg
- * User asks for 85% → target = 102kg → test percentage = 102/88 = 115.9%
- * This would be outside test range, so we extrapolate from last 2 points.
- * 
- * BUT if the program 1RM matches the test (or is close), it works perfectly:
- * Program 1RM = 88kg, 85% → 74.8kg → test percentage = 74.8/88 = 85% → interpolate!
+ * This is the most accurate approach because the load-velocity relationship
+ * is specific to each test session.
  */
 export function predictVelocityFromPercentage(
   profile: VelocityProfile,
   percentage1RM: number,
-  actual1RM: number
+  _actual1RM?: number // kept for API compat, not used
 ): number | null {
-  if (percentage1RM <= 0 || actual1RM <= 0) return null;
+  if (percentage1RM <= 0) return null;
 
-  // Convert the target load to a percentage of the TEST's 1RM
-  const targetLoad = (percentage1RM / 100) * actual1RM;
-  const testPercentage = (targetLoad / profile.test1RM) * 100;
-
-  return interpolateByPercentage(profile.percentagePoints, testPercentage);
+  // Use the percentage directly on the test's scale
+  return interpolateByPercentage(profile.percentagePoints, percentage1RM);
 }
 
 /**
