@@ -231,6 +231,21 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
     return null;
   }, [rmMap, linkMap]);
 
+  const getOneRMVelocity = useCallback((exerciseId: string): number | null => {
+    const direct = rmVelocityMap.get(exerciseId);
+    if (direct !== undefined) return direct;
+
+    const linked = linkMap.get(exerciseId);
+    if (linked) {
+      for (const linkedId of linked) {
+        const linkedV = rmVelocityMap.get(linkedId);
+        if (linkedV !== undefined) return linkedV;
+      }
+    }
+
+    return null;
+  }, [rmVelocityMap, linkMap]);
+
   const getVelocityForPercentage = useCallback((exerciseId: string, percentage: number, oneRM: number): number | null => {
     // Direct match
     const profile = velocityProfiles.get(exerciseId);
@@ -250,10 +265,11 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
 
   const value = useMemo(() => ({
     getOneRM,
+    getOneRMVelocity,
     getVelocityForPercentage,
     loading,
     userId,
-  }), [getOneRM, getVelocityForPercentage, loading, userId]);
+  }), [getOneRM, getOneRMVelocity, getVelocityForPercentage, loading, userId]);
 
   return (
     <UserExerciseDataCacheContext.Provider value={value}>
