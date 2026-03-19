@@ -9086,6 +9086,7 @@ export type Database = {
         Returns: boolean
       }
       is_coach_safe: { Args: { user_auth_id: string }; Returns: boolean }
+      is_coach_user: { Args: { _auth_uid: string }; Returns: boolean }
       is_federation_club_athlete: {
         Args: { _athlete_id: string; _user_auth_id: string }
         Returns: boolean
