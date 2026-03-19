@@ -71,12 +71,19 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = React.memo(({
         onUpdate('velocity_ms', predictedVelocity);
       }
     } else if (!currentKg && !lastAutoKg.current) {
-      // No percentage, no kg => fill with 1RM directly (only once)
+      // No percentage: fill with 1RM kg and measured velocity at 1RM
       const rmStr = oneRM.toString().replace('.', ',');
       lastAutoKg.current = rmStr;
       onUpdate('kg', rmStr);
+
+      // Also fill the measured 1RM velocity
+      const rmVelocity = getOneRMVelocity(exerciseId);
+      if (rmVelocity !== null && rmVelocity !== lastAutoVelocity.current) {
+        lastAutoVelocity.current = rmVelocity;
+        onUpdate('velocity_ms', rmVelocity);
+      }
     }
-  }, [exerciseId, percentage, userId, getOneRM, getVelocityForPercentage]); // include cache fns so new user data triggers recalc
+  }, [exerciseId, percentage, userId, getOneRM, getOneRMVelocity, getVelocityForPercentage]); // include cache fns so new user data triggers recalc
 
   const handleExerciseSelect = useCallback((exerciseId: string) => {
     // Reset auto-fill tracking for new exercise
