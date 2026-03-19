@@ -23,6 +23,7 @@ interface UserExerciseDataCache {
 
 const UserExerciseDataCacheContext = createContext<UserExerciseDataCache>({
   getOneRM: () => null,
+  getOneRMVelocity: () => null,
   getVelocityForPercentage: () => null,
   loading: false,
   userId: null,
