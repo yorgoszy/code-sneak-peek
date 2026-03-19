@@ -5,8 +5,44 @@
  * Each test point is converted to %1RM (relative to the test's own max weight),
  * then piecewise linear interpolation is used to predict velocity at any %1RM.
  * 
- * NO regression formulas — only real measured data.
+ * NO regression formulas for velocity prediction — only real measured data.
+ * linearRegression is exported only for the test recording UI (R², estimated 1RM display).
  */
+
+export interface LinearRegressionResult {
+  slope: number;
+  intercept: number;
+  r_squared: number;
+}
+
+/**
+ * Calculates linear regression: velocity = slope × weight + intercept
+ * Used only in the test recording UI for R² and estimated 1RM display.
+ */
+export function linearRegression(points: LoadVelocityPoint[]): LinearRegressionResult | null {
+  if (points.length < 2) return null;
+  const n = points.length;
+  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+  for (const p of points) {
+    sumX += p.weight_kg;
+    sumY += p.velocity_ms;
+    sumXY += p.weight_kg * p.velocity_ms;
+    sumX2 += p.weight_kg * p.weight_kg;
+  }
+  const denominator = n * sumX2 - sumX * sumX;
+  if (denominator === 0) return null;
+  const slope = (n * sumXY - sumX * sumY) / denominator;
+  const intercept = (sumY - slope * sumX) / n;
+  const meanY = sumY / n;
+  let ssRes = 0, ssTot = 0;
+  for (const p of points) {
+    const predicted = slope * p.weight_kg + intercept;
+    ssRes += (p.velocity_ms - predicted) ** 2;
+    ssTot += (p.velocity_ms - meanY) ** 2;
+  }
+  const r_squared = ssTot === 0 ? 0 : 1 - ssRes / ssTot;
+  return { slope, intercept, r_squared };
+}
 
 export interface LoadVelocityPoint {
   weight_kg: number;
