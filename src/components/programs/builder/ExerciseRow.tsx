@@ -29,7 +29,7 @@ export const ExerciseRow: React.FC<ExerciseRowProps> = React.memo(({
   onExercisesUpdate
 }) => {
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
-  const { getOneRM, getVelocityForPercentage, userId } = useUserExerciseDataCacheContext();
+  const { getOneRM, getOneRMVelocity, getVelocityForPercentage, userId } = useUserExerciseDataCacheContext();
 
   // Track last auto-filled values to avoid redundant updates
   const lastAutoKg = useRef<string>('');
