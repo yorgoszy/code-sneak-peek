@@ -51,12 +51,7 @@ serve(async (req) => {
 
     const { receipt, paymentMethod = 'cash' } = await req.json()
 
-    console.log('🚀 MyData Send Receipt called')
-
-    // Δημιουργία Supabase client για να διαβάσουμε τα credentials από τη βάση
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    console.log('🚀 MyData Send Receipt called by user:', user.id)
 
     // Λήψη credentials από τον πίνακα mydata_settings
     const { data: settings, error: settingsError } = await supabase
