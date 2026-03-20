@@ -44,11 +44,18 @@ export const ReceiptMyDataIntegration: React.FC<ReceiptMyDataIntegrationProps> =
   };
 
   const getMyDataSettings = () => {
+    // Clean up any legacy localStorage credentials (security fix)
+    localStorage.removeItem('mydata_aade_user_id');
+    localStorage.removeItem('mydata_subscription_key');
+    localStorage.removeItem('mydata_vat_number');
+
     return {
-      aadeUserId: localStorage.getItem('mydata_aade_user_id') || '',
-      subscriptionKey: localStorage.getItem('mydata_subscription_key') || '',
-      vatNumber: localStorage.getItem('mydata_vat_number') || '',
-      environment: (localStorage.getItem('mydata_environment') as 'development' | 'production') || 'development',
+      // Credentials are now always fetched server-side from mydata_settings table
+      // via the mydata-send-receipt edge function
+      aadeUserId: '',
+      subscriptionKey: '',
+      vatNumber: '',
+      environment: 'production' as const,
       enabled: localStorage.getItem('mydata_enabled') === 'true'
     };
   };
@@ -65,21 +72,9 @@ export const ReceiptMyDataIntegration: React.FC<ReceiptMyDataIntegrationProps> =
       return;
     }
 
-    // Ελέγχουμε αν υπάρχουν local settings ή θα χρησιμοποιήσουμε τα Supabase secrets
-    const useStoredCredentials = !settings.aadeUserId || !settings.subscriptionKey;
-
-    if (useStoredCredentials) {
-      console.log('🔑 Will use stored Supabase secrets for MyData credentials');
-    }
-
-    if (!useStoredCredentials && !settings.vatNumber) {
-      toast({
-        title: "Μη ολοκληρωμένες ρυθμίσεις",
-        description: "Παρακαλώ ολοκληρώστε τις ρυθμίσεις MyData πρώτα",
-        variant: "destructive"
-      });
-      return;
-    }
+    // Always use server-side credentials from mydata_settings table
+    const useStoredCredentials = true;
+    console.log('🔑 Using stored Supabase secrets for MyData credentials');
 
     setSending(true);
 

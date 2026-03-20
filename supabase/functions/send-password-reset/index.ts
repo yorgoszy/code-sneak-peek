@@ -12,7 +12,33 @@ interface PasswordResetRequest {
   redirectTo?: string;
 }
 
+// Simple in-memory rate limiting (resets on cold start, but sufficient for basic protection)
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_MAX = 3;
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+
+function isRateLimited(key: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(key);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+  entry.count++;
+  return entry.count > RATE_LIMIT_MAX;
+}
+
+// Constant-time delay to prevent timing-based enumeration
+async function constantTimeDelay(startTime: number, targetMs = 500) {
+  const elapsed = Date.now() - startTime;
+  const remaining = targetMs - elapsed;
+  if (remaining > 0) {
+    await new Promise(resolve => setTimeout(resolve, remaining));
+  }
+}
+
 serve(async (req) => {
+  const startTime = Date.now();
   console.log(`🔥 send-password-reset function started - Method: ${req.method}`);
   
   // Handle CORS preflight requests
@@ -31,7 +57,7 @@ serve(async (req) => {
 
   try {
     const requestBody = await req.json();
-    console.log("📨 Request body:", requestBody);
+    // Don't log request body - may contain PII
     
     const { email, redirectTo }: PasswordResetRequest = requestBody;
 
@@ -43,7 +69,29 @@ serve(async (req) => {
       });
     }
 
-    console.log("🔍 Processing password reset for email:", email);
+    // Rate limiting by email
+    const normalizedForRateLimit = email.trim().toLowerCase();
+    if (isRateLimited(normalizedForRateLimit)) {
+      console.log("⚠️ Rate limited:", normalizedForRateLimit);
+      await constantTimeDelay(startTime);
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Also rate limit by IP
+    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    if (isRateLimited(`ip:${clientIp}`)) {
+      console.log("⚠️ IP rate limited");
+      await constantTimeDelay(startTime);
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    console.log("🔍 Processing password reset");
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
@@ -72,15 +120,16 @@ serve(async (req) => {
     // Fallback removed for security - only exact match allowed
 
     if (!appUser) {
-      console.log("⚠️ User not found in app_users:", email);
+      console.log("⚠️ User not found in app_users");
       // Return success for security reasons even if user doesn't exist
+      await constantTimeDelay(startTime);
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    console.log("✅ User found in app_users:", appUser.email);
+    console.log("✅ User found in app_users");
 
     // Check if user has auth_user_id (already has auth account)
     let authUserId = appUser.auth_user_id;
@@ -126,8 +175,9 @@ serve(async (req) => {
         });
         
         if (createError) {
-          console.log("❌ Error creating auth user:", createError);
+          console.log("❌ Error creating auth user");
           // Return success for security reasons
+          await constantTimeDelay(startTime);
           return new Response(JSON.stringify({ success: true }), {
             status: 200,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -146,7 +196,7 @@ serve(async (req) => {
         }
       }
     } else {
-      console.log("✅ User already has auth account:", authUserId);
+      console.log("✅ User already has auth account");
       
       // Sync email in auth.users with app_users if they differ
       console.log("🔄 Syncing email in auth.users with app_users...");
@@ -236,7 +286,8 @@ serve(async (req) => {
     }
 
     if (genError) {
-      console.log("⚠️ Falling back to safe success without email. Reason:", genError);
+      console.log("⚠️ Falling back to safe success without email");
+      await constantTimeDelay(startTime);
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -245,6 +296,7 @@ serve(async (req) => {
 
     if (!linkData?.properties?.action_link) {
       console.log("⚠️ No action link generated (unexpected). Returning safe success.");
+      await constantTimeDelay(startTime);
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
