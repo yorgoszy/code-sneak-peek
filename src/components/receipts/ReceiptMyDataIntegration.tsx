@@ -72,21 +72,9 @@ export const ReceiptMyDataIntegration: React.FC<ReceiptMyDataIntegrationProps> =
       return;
     }
 
-    // Ελέγχουμε αν υπάρχουν local settings ή θα χρησιμοποιήσουμε τα Supabase secrets
-    const useStoredCredentials = !settings.aadeUserId || !settings.subscriptionKey;
-
-    if (useStoredCredentials) {
-      console.log('🔑 Will use stored Supabase secrets for MyData credentials');
-    }
-
-    if (!useStoredCredentials && !settings.vatNumber) {
-      toast({
-        title: "Μη ολοκληρωμένες ρυθμίσεις",
-        description: "Παρακαλώ ολοκληρώστε τις ρυθμίσεις MyData πρώτα",
-        variant: "destructive"
-      });
-      return;
-    }
+    // Always use server-side credentials from mydata_settings table
+    const useStoredCredentials = true;
+    console.log('🔑 Using stored Supabase secrets for MyData credentials');
 
     setSending(true);
 
