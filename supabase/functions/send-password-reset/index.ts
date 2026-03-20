@@ -286,7 +286,8 @@ serve(async (req) => {
     }
 
     if (genError) {
-      console.log("⚠️ Falling back to safe success without email. Reason:", genError);
+      console.log("⚠️ Falling back to safe success without email");
+      await constantTimeDelay(startTime);
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -295,6 +296,7 @@ serve(async (req) => {
 
     if (!linkData?.properties?.action_link) {
       console.log("⚠️ No action link generated (unexpected). Returning safe success.");
+      await constantTimeDelay(startTime);
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
