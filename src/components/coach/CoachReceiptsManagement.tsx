@@ -181,6 +181,10 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
   };
 
   const handlePrint = async (receipt: Receipt) => {
+    // HTML-escape helper to prevent stored XSS
+    const esc = (s?: string | null) =>
+      (s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
     // Create a temporary container for the receipt - A5 size (148mm x 210mm), compact
     const container = document.createElement('div');
     container.id = 'receipt-print-container';
@@ -188,17 +192,17 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
     
     container.innerHTML = `
       <div style="font-size: 14px; font-weight: bold; margin-bottom: 12px; text-align: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">
-        Απόδειξη ${receipt.receipt_number}
+        Απόδειξη ${esc(receipt.receipt_number)}
       </div>
       
       <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
         ${receipt.app_users?.avatar_url 
-          ? `<img src="${receipt.app_users.avatar_url}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" crossorigin="anonymous" />`
-          : `<div style="width: 32px; height: 32px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">${receipt.app_users?.name?.charAt(0) || 'Α'}</div>`
+          ? `<img src="${esc(receipt.app_users.avatar_url)}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" crossorigin="anonymous" />`
+          : `<div style="width: 32px; height: 32px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">${esc(receipt.app_users?.name?.charAt(0) || 'Α')}</div>`
         }
         <div>
-          <div style="font-weight: 600; font-size: 12px;">${receipt.app_users?.name || '-'}</div>
-          <div style="font-size: 10px; color: #6b7280;">${receipt.app_users?.email || ''}</div>
+          <div style="font-weight: 600; font-size: 12px;">${esc(receipt.app_users?.name) || '-'}</div>
+          <div style="font-size: 10px; color: #6b7280;">${esc(receipt.app_users?.email)}</div>
         </div>
       </div>
       
@@ -209,16 +213,16 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
         </div>
         <div>
           <div style="color: #6b7280;">Τύπος:</div>
-          <div style="font-weight: 500;">${receipt.subscription_types?.name || '-'}</div>
+          <div style="font-weight: 500;">${esc(receipt.subscription_types?.name) || '-'}</div>
         </div>
         <div>
           <div style="color: #6b7280;">Είδος:</div>
-          <div style="font-weight: 500;">${getReceiptTypeLabel(receipt.receipt_type)}</div>
+          <div style="font-weight: 500;">${esc(getReceiptTypeLabel(receipt.receipt_type))}</div>
         </div>
         ${receipt.mark ? `
         <div>
           <div style="color: #6b7280;">ΜΑΡΚ ΑΑΔΕ:</div>
-          <div style="font-weight: 500;">${receipt.mark}</div>
+          <div style="font-weight: 500;">${esc(receipt.mark)}</div>
         </div>
         ` : ''}
       </div>
@@ -231,14 +235,14 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
       ${coachProfile && (coachProfile.business_name || coachProfile.logo_url) ? `
       <div style="border-top: 1px solid #e5e7eb; padding-top: 10px;">
         <div style="display: flex; align-items: center; gap: 8px;">
-          ${coachProfile.logo_url ? `<img src="${coachProfile.logo_url}" style="max-width: 40px; max-height: 40px; object-fit: contain;" crossorigin="anonymous" />` : ''}
+          ${coachProfile.logo_url ? `<img src="${esc(coachProfile.logo_url)}" style="max-width: 40px; max-height: 40px; object-fit: contain;" crossorigin="anonymous" />` : ''}
           <div>
-            ${coachProfile.business_name ? `<div style="font-size: 11px; font-weight: 600;">${coachProfile.business_name}</div>` : ''}
+            ${coachProfile.business_name ? `<div style="font-size: 11px; font-weight: 600;">${esc(coachProfile.business_name)}</div>` : ''}
             <div style="font-size: 9px; color: #6b7280;">
-              ${coachProfile.address ? coachProfile.address : ''}${coachProfile.city ? `, ${coachProfile.city}` : ''}
+              ${esc(coachProfile.address)}${coachProfile.city ? `, ${esc(coachProfile.city)}` : ''}
             </div>
             <div style="font-size: 9px; color: #6b7280;">
-              ${coachProfile.vat_number ? `ΑΦΜ: ${coachProfile.vat_number}` : ''}${coachProfile.phone ? ` | Τηλ: ${coachProfile.phone}` : ''}
+              ${coachProfile.vat_number ? `ΑΦΜ: ${esc(coachProfile.vat_number)}` : ''}${coachProfile.phone ? ` | Τηλ: ${esc(coachProfile.phone)}` : ''}
             </div>
           </div>
         </div>
