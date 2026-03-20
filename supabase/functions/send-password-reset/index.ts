@@ -69,24 +69,7 @@ serve(async (req) => {
       .ilike('email', normalizedEmail)
       .maybeSingle();
 
-    // 2) Fallback: tolerate accidental spaces in DB (" user@email.com ")
-    // We search with a broad pattern and then pick the exact trimmed match in code.
-    if (!appUser) {
-      console.log("🔎 Fallback lookup (trim-tolerant) for:", normalizedEmail);
-      const { data: candidates, error: candidatesError } = await supabase
-        .from('app_users')
-        .select('id, email, auth_user_id')
-        .ilike('email', `%${normalizedEmail}%`)
-        .limit(10);
-
-      if (!candidatesError && candidates?.length) {
-        appUser = candidates.find(u => (u.email ?? '').trim().toLowerCase() === normalizedEmail) ?? null;
-      }
-
-      if (!appUser) {
-        appUserError = candidatesError ?? ({ message: 'User not found after fallback' } as any);
-      }
-    }
+    // Fallback removed for security - only exact match allowed
 
     if (!appUser) {
       console.log("⚠️ User not found in app_users:", email);
@@ -376,8 +359,7 @@ serve(async (req) => {
     console.error("💥 Error in send-password-reset function:", error);
     return new Response(
       JSON.stringify({ 
-        error: "Internal server error",
-        details: error.message 
+        error: "Internal server error"
       }),
       {
         status: 500,
