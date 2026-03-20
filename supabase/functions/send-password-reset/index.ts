@@ -196,7 +196,7 @@ serve(async (req) => {
         }
       }
     } else {
-      console.log("✅ User already has auth account:", authUserId);
+      console.log("✅ User already has auth account");
       
       // Sync email in auth.users with app_users if they differ
       console.log("🔄 Syncing email in auth.users with app_users...");
