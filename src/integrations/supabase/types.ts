@@ -10038,6 +10038,10 @@ export type Database = {
       exec_sql: { Args: { query: string }; Returns: Json }
       force_delete_athlete: { Args: { athlete_id: string }; Returns: undefined }
       generate_coupon_code: { Args: never; Returns: string }
+      get_app_user_id_for_programs: {
+        Args: { _auth_uid: string }
+        Returns: string
+      }
       get_app_user_id_safe: { Args: { user_auth_id: string }; Returns: string }
       get_current_user_role: { Args: never; Returns: string }
       get_latest_1rm: {
