@@ -175,8 +175,9 @@ serve(async (req) => {
         });
         
         if (createError) {
-          console.log("❌ Error creating auth user:", createError);
+          console.log("❌ Error creating auth user");
           // Return success for security reasons
+          await constantTimeDelay(startTime);
           return new Response(JSON.stringify({ success: true }), {
             status: 200,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
