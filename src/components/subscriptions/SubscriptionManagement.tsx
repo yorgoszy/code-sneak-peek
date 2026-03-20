@@ -387,13 +387,18 @@ export const SubscriptionManagement: React.FC = () => {
     const enabled = localStorage.getItem('mydata_enabled') === 'true';
     const autoSendRaw = localStorage.getItem('mydata_auto_send');
 
+    // Clean up any legacy localStorage credentials (security fix)
+    localStorage.removeItem('mydata_aade_user_id');
+    localStorage.removeItem('mydata_subscription_key');
+    localStorage.removeItem('mydata_vat_number');
+
     return {
-      aadeUserId: localStorage.getItem('mydata_aade_user_id') || '',
-      subscriptionKey: localStorage.getItem('mydata_subscription_key') || '',
-      vatNumber: localStorage.getItem('mydata_vat_number') || '',
+      // Credentials are now always fetched server-side from mydata_settings table
+      aadeUserId: '',
+      subscriptionKey: '',
+      vatNumber: '',
       environment: 'production' as const,
       enabled,
-      // Αν δεν έχει αποθηκευτεί ακόμα ρύθμιση auto-send, το θεωρούμε true όταν το MyData είναι ενεργό
       autoSend: autoSendRaw === null ? enabled : autoSendRaw === 'true'
     };
   };
