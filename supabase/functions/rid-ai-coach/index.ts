@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,11 +12,54 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, userId, targetUserId: rawTargetUserId, userContext } = await req.json();
-    
-    if (!userId) {
-      throw new Error("User ID is required");
+    // ─── JWT Authentication ───
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
+
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+    const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+
+    const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) {
+      return new Response(JSON.stringify({ error: "Invalid token" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const authUid = claimsData.claims.sub;
+
+    const { messages, targetUserId: rawTargetUserId, userContext } = await req.json();
+
+    // Resolve userId from the authenticated user's auth_user_id
+    const SUPABASE_SERVICE_ROLE_KEY_EARLY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const resolveResp = await fetch(
+      `${SUPABASE_URL}/rest/v1/app_users?auth_user_id=eq.${authUid}&select=id`,
+      {
+        headers: {
+          "apikey": SUPABASE_SERVICE_ROLE_KEY_EARLY,
+          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY_EARLY}`
+        }
+      }
+    );
+    const resolveData = await resolveResp.json();
+    if (!Array.isArray(resolveData) || resolveData.length === 0) {
+      return new Response(JSON.stringify({ error: "User not found" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const userId = resolveData[0].id;
 
     // Normalize targetUserId: empty string -> undefined
     const targetUserId = rawTargetUserId && rawTargetUserId.trim() !== '' ? rawTargetUserId : undefined;
