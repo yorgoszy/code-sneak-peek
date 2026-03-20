@@ -12,14 +12,46 @@ serve(async (req) => {
   }
 
   try {
-    const { receipt, paymentMethod = 'cash' } = await req.json()
+    // Authentication check
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
-    console.log('🚀 MyData Send Receipt called')
-
-    // Δημιουργία Supabase client για να διαβάσουμε τα credentials από τη βάση
+    // Δημιουργία Supabase client για auth verification
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid authentication' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Verify caller is admin or coach
+    const { data: callerProfile } = await supabase
+      .from('app_users')
+      .select('role')
+      .eq('auth_user_id', user.id)
+      .single()
+
+    if (!callerProfile || !['admin', 'coach'].includes(callerProfile.role)) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Forbidden - Admin or Coach access required' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const { receipt, paymentMethod = 'cash' } = await req.json()
+
+    console.log('🚀 MyData Send Receipt called by user:', user.id)
 
     // Λήψη credentials από τον πίνακα mydata_settings
     const { data: settings, error: settingsError } = await supabase
