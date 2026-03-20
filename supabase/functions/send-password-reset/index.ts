@@ -120,15 +120,16 @@ serve(async (req) => {
     // Fallback removed for security - only exact match allowed
 
     if (!appUser) {
-      console.log("⚠️ User not found in app_users:", email);
+      console.log("⚠️ User not found in app_users");
       // Return success for security reasons even if user doesn't exist
+      await constantTimeDelay(startTime);
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    console.log("✅ User found in app_users:", appUser.email);
+    console.log("✅ User found in app_users");
 
     // Check if user has auth_user_id (already has auth account)
     let authUserId = appUser.auth_user_id;
