@@ -359,8 +359,7 @@ serve(async (req) => {
     console.error("💥 Error in send-password-reset function:", error);
     return new Response(
       JSON.stringify({ 
-        error: "Internal server error",
-        details: error.message 
+        error: "Internal server error"
       }),
       {
         status: 500,
