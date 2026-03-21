@@ -1,34 +1,84 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.8';
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // --- Authentication ---
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: 'Invalid token' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const userId = claimsData.claims.sub;
+
     const { message, athleteId, athleteName } = await req.json();
 
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured');
     }
 
-    console.log('🚀 OpenAI GPT request for message:', message);
+    // Use service role client for data queries
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Φορτώνουμε όλη τη γνώση από τη βάση
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.49.8');
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Verify the caller has access to the athleteId (is the athlete or is a coach/admin)
+    if (athleteId) {
+      const { data: callerUser } = await supabase
+        .from('app_users')
+        .select('id, role')
+        .eq('auth_user_id', userId)
+        .single();
+
+      if (!callerUser) {
+        return new Response(JSON.stringify({ error: 'User not found' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Allow if caller IS the athlete, or is admin/coach/trainer
+      const isPrivileged = ['admin', 'coach', 'trainer'].includes(callerUser.role);
+      if (callerUser.id !== athleteId && !isPrivileged) {
+        return new Response(JSON.stringify({ error: 'Forbidden' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    console.log('🚀 OpenAI GPT request for authenticated user:', userId);
 
     const { data: knowledge, error: knowledgeError } = await supabase
       .from('ai_global_knowledge')
@@ -39,7 +89,6 @@ serve(async (req) => {
       console.error('Error loading knowledge:', knowledgeError);
     }
 
-    // Δημιουργούμε το knowledge context
     let knowledgeContext = '';
     if (knowledge && knowledge.length > 0) {
       const categoryLabels: Record<string, string> = {
@@ -65,7 +114,6 @@ serve(async (req) => {
       }
     }
 
-    // Δημιουργία system prompt για fitness και διατροφή
     const systemPrompt = `Είσαι ένας εξειδικευμένος AI βοηθός για fitness και διατροφή με το όνομα "RID AI Προπονητής". Βοηθάς προπονητές και αθλητές με:
 
 1. Διατροφικές συμβουλές και σχεδιασμό γευμάτων
@@ -90,8 +138,6 @@ ${athleteName ? `Αυτή τη στιγμή βοηθάς με ερωτήσεις
 
 ${knowledgeContext}`;
 
-
-    // Δημιουργία των μηνυμάτων για το OpenAI API
     const messages = [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: message }
@@ -127,7 +173,7 @@ ${knowledgeContext}`;
   } catch (error) {
     console.error('💥 OpenAI Chat Error:', error);
     return new Response(JSON.stringify({ 
-      error: error.message,
+      error: 'Internal server error',
       response: 'Λυπάμαι, αντιμετωπίζω τεχνικά προβλήματα. Παρακαλώ δοκιμάστε ξανά αργότερα.'
     }), {
       status: 500,
