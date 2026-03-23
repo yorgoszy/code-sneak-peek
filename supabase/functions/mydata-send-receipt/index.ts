@@ -170,33 +170,33 @@ serve(async (req) => {
              xmlns:icls="https://www.aade.gr/myDATA/incomeClassificaton/v1.0">
   <invoice>
     <issuer>
-      <vatNumber>${vatNumber}</vatNumber>
+      <vatNumber>${escapeXml(vatNumber)}</vatNumber>
       <country>GR</country>
       <branch>0</branch>
     </issuer>
     ${counterpartXml}
     <invoiceHeader>
-      <series>${series}</series>
-      <aa>${receipt.invoiceHeader.aa}</aa>
-      <issueDate>${receipt.invoiceHeader.issueDate}</issueDate>
-      <invoiceType>${invoiceType}</invoiceType>
-      <currency>${receipt.invoiceHeader.currency || 'EUR'}</currency>
+      <series>${escapeXml(series)}</series>
+      <aa>${escapeXml(receipt.invoiceHeader.aa)}</aa>
+      <issueDate>${escapeXml(receipt.invoiceHeader.issueDate)}</issueDate>
+      <invoiceType>${escapeXml(invoiceType)}</invoiceType>
+      <currency>${escapeXml(receipt.invoiceHeader.currency || 'EUR')}</currency>
     </invoiceHeader>
     <paymentMethods>
       <paymentMethodDetails>
-        <type>${getPaymentTypeCode(paymentMethod)}</type>
+        <type>${escapeXml(getPaymentTypeCode(paymentMethod))}</type>
         <amount>${roundToTwoDecimals(receipt.invoiceSummary.totalGrossValue)}</amount>
       </paymentMethodDetails>
     </paymentMethods>
     ${receipt.invoiceDetails.map((detail: any) => `
     <invoiceDetails>
-      <lineNumber>${detail.lineNumber}</lineNumber>
+      <lineNumber>${escapeXml(detail.lineNumber)}</lineNumber>
       <netValue>${roundToTwoDecimals(detail.netValue)}</netValue>
-      <vatCategory>${detail.vatCategory}</vatCategory>
+      <vatCategory>${escapeXml(detail.vatCategory)}</vatCategory>
       <vatAmount>${roundToTwoDecimals(detail.vatAmount)}</vatAmount>
       <incomeClassification>
-        <icls:classificationType>${classificationType}</icls:classificationType>
-        <icls:classificationCategory>${classificationCategory}</icls:classificationCategory>
+        <icls:classificationType>${escapeXml(classificationType)}</icls:classificationType>
+        <icls:classificationCategory>${escapeXml(classificationCategory)}</icls:classificationCategory>
         <icls:amount>${roundToTwoDecimals(detail.netValue)}</icls:amount>
       </incomeClassification>
     </invoiceDetails>`).join('')}
