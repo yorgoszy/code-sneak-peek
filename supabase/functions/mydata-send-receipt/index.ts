@@ -123,6 +123,14 @@ serve(async (req) => {
       : 'https://mydatapi.aade.gr/myDATA/SendInvoices'
     
     // Helper functions
+    const escapeXml = (val: unknown): string =>
+      String(val ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;')
+
     const roundToTwoDecimals = (value: number): number => Math.round(value * 100) / 100
 
     const getPaymentTypeCode = (method: string): string => {
