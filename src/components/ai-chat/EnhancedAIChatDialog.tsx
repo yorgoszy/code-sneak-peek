@@ -1000,13 +1000,17 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
 
     try {
       // Κλήση rid-ai-coach με streaming
+      const { data: { session: ridSession } } = await supabase.auth.getSession();
+      if (!ridSession?.access_token) {
+        throw new Error('Πρέπει να είστε συνδεδεμένοι');
+      }
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/rid-ai-coach`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer ${ridSession.access_token}`,
           },
           body: JSON.stringify({
             messages: [{ role: 'user', content: currentInput }],
