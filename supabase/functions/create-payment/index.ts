@@ -105,12 +105,7 @@ serve(async (req) => {
       }
     });
 
-    // Create payment and receipt records using service role key
-    const supabaseService = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      { auth: { persistSession: false } }
-    );
+    // Reuse service role client for payment and receipt records
 
     // Get app_users id
     const { data: appUser } = await supabaseService
