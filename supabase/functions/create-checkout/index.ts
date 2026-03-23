@@ -43,8 +43,9 @@ serve(async (req) => {
 
     // Παρσάρισμα του request body
     const body = await req.json();
-    const { subscription_type_id, discounted_price, offer_id } = body;
-    logStep("Request body parsed", { subscription_type_id, discounted_price, offer_id });
+    const { subscription_type_id, offer_id } = body;
+    logStep("Request body parsed", { subscription_type_id, offer_id });
+    // Note: discounted_price from client is intentionally ignored for security
 
     if (!subscription_type_id) {
       throw new Error("subscription_type_id is required");
@@ -75,8 +76,34 @@ serve(async (req) => {
     }
     logStep("Subscription type found", subscriptionType);
 
-    // Χρήση της τιμής προσφοράς αν υπάρχει, αλλιώς της κανονικής τιμής
-    const finalPrice = discounted_price || subscriptionType.price;
+    // Server-side price determination: always use DB prices, never trust client
+    let finalPrice = subscriptionType.price;
+
+    if (offer_id) {
+      // Validate offer exists and get its server-side discounted price
+      const supabaseService = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+        { auth: { persistSession: false } }
+      );
+      const { data: offer, error: offerError } = await supabaseService
+        .from('offers')
+        .select('discounted_price, subscription_type_id, is_active, end_date')
+        .eq('id', offer_id)
+        .single();
+
+      if (offerError || !offer) {
+        logStep("Offer not found, using regular price", { offer_id });
+      } else if (!offer.is_active || (offer.end_date && new Date(offer.end_date) < new Date())) {
+        logStep("Offer expired or inactive, using regular price", { offer_id });
+      } else if (offer.subscription_type_id !== subscription_type_id) {
+        logStep("Offer subscription type mismatch, using regular price", { offer_id });
+      } else {
+        finalPrice = offer.discounted_price;
+        logStep("Using offer discounted price from DB", { offerPrice: finalPrice });
+      }
+    }
+
     const priceInCents = Math.round(finalPrice * 100);
     logStep("Price calculated", { finalPrice, priceInCents });
 
