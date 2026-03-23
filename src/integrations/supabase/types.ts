@@ -10027,6 +10027,10 @@ export type Database = {
       }
       auto_update_competition_status: { Args: never; Returns: undefined }
       can_cancel_booking: { Args: { booking_id: string }; Returns: boolean }
+      can_read_program: {
+        Args: { _auth_uid: string; _program_id: string }
+        Returns: boolean
+      }
       check_and_update_expired_subscriptions: {
         Args: never
         Returns: undefined
