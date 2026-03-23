@@ -149,9 +149,9 @@ serve(async (req) => {
     // Counterpart XML (για τιμολόγια)
     const counterpartXml = receipt.counterpart?.vatNumber && receipt.counterpart.vatNumber !== "000000000"
       ? `<counterpart>
-           <vatNumber>${receipt.counterpart.vatNumber}</vatNumber>
-           <country>${receipt.counterpart.country || 'GR'}</country>
-           <branch>${receipt.counterpart.branch || 0}</branch>
+           <vatNumber>${escapeXml(receipt.counterpart.vatNumber)}</vatNumber>
+           <country>${escapeXml(receipt.counterpart.country || 'GR')}</country>
+           <branch>${escapeXml(receipt.counterpart.branch || 0)}</branch>
          </counterpart>`
       : ''
 
