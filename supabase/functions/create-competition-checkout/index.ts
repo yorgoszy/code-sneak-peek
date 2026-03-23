@@ -30,12 +30,48 @@ serve(async (req) => {
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated");
 
-    const { competition_id, club_id, registration_ids, total_amount, currency = "eur", competition_name } = await req.json();
-    console.log("Competition checkout:", { competition_id, club_id, registration_ids, total_amount, currency });
+    const { competition_id, club_id, registration_ids, currency = "eur", competition_name } = await req.json();
+    // Note: client-supplied 'total_amount' is intentionally ignored for security
 
-    if (!competition_id || !club_id || !registration_ids?.length || !total_amount) {
+    if (!competition_id || !club_id || !registration_ids?.length) {
       throw new Error("Missing required fields");
     }
+
+    // Server-side price calculation from registration categories
+    const supabaseService = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+
+    // Get registrations with their category fees
+    const { data: registrations, error: regError } = await supabaseService
+      .from('federation_competition_registrations')
+      .select('id, category_id, federation_competition_categories!inner(registration_fee, late_registration_fee)')
+      .in('id', registration_ids)
+      .eq('competition_id', competition_id);
+
+    if (regError || !registrations?.length) {
+      throw new Error(`Could not fetch registrations: ${regError?.message || 'No registrations found'}`);
+    }
+
+    // Verify all requested registrations were found (prevent partial payment)
+    if (registrations.length !== registration_ids.length) {
+      throw new Error(`Registration count mismatch: expected ${registration_ids.length}, found ${registrations.length}`);
+    }
+
+    // Calculate total from DB fees
+    const total_amount = registrations.reduce((sum: number, reg: any) => {
+      const category = reg.federation_competition_categories;
+      const fee = category?.registration_fee || 0;
+      return sum + fee;
+    }, 0);
+
+    if (total_amount <= 0) {
+      throw new Error("Calculated total amount is invalid");
+    }
+
+    console.log("Competition checkout:", { competition_id, club_id, registration_ids, total_amount, currency });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 

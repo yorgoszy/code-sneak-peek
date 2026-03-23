@@ -14,13 +14,12 @@ serve(async (req) => {
   }
 
   try {
-    const { amount, currency = "eur", productName, subscriptionTypeId, isCoachShop } = await req.json();
+    const { currency = "eur", subscriptionTypeId, isCoachShop } = await req.json();
+    // Note: client-supplied 'amount' is intentionally ignored for security
 
-    if (!amount || amount <= 0) {
-      throw new Error("Valid amount is required");
+    if (!subscriptionTypeId) {
+      throw new Error("subscriptionTypeId is required");
     }
-
-    console.log("📦 Create payment request:", { amount, productName, subscriptionTypeId, isCoachShop });
 
     // Create Supabase client using the anon key for user authentication
     const supabaseClient = createClient(
@@ -37,6 +36,32 @@ serve(async (req) => {
     if (!user?.email) {
       throw new Error("User not authenticated");
     }
+
+    // Server-side price lookup from subscription_types
+    const supabaseService = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+
+    const { data: subscriptionType, error: subTypeError } = await supabaseService
+      .from('subscription_types')
+      .select('id, name, price, description')
+      .eq('id', subscriptionTypeId)
+      .single();
+
+    if (subTypeError || !subscriptionType) {
+      throw new Error(`Subscription type not found: ${subTypeError?.message}`);
+    }
+
+    const amount = subscriptionType.price;
+    const productName = subscriptionType.name;
+
+    if (!amount || amount <= 0) {
+      throw new Error("Invalid price for subscription type");
+    }
+
+    console.log("📦 Create payment request:", { amount, productName, subscriptionTypeId, isCoachShop });
 
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
@@ -63,7 +88,7 @@ serve(async (req) => {
           price_data: {
             currency: currency,
             product_data: { name: productName || "Αγορά από το Γυμναστήριο" },
-            unit_amount: Math.round(amount * 100), // Convert to cents
+            unit_amount: Math.round(amount * 100),
           },
           quantity: 1,
         },
@@ -75,7 +100,7 @@ serve(async (req) => {
         user_id: user.id,
         amount: amount.toString(),
         product_name: productName || "Αγορά Πακέτου",
-        subscription_type_id: subscriptionTypeId || "",
+        subscription_type_id: subscriptionTypeId,
         is_coach_shop: isCoachShop ? "true" : "false"
       }
     });
