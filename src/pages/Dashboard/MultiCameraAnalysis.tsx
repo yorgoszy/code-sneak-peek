@@ -472,64 +472,6 @@ const MultiCameraAnalysis: React.FC = () => {
     />
   );
 
-  const renderCameraCard = (cam: AnalysisCamera, index: number) => (
-    <Card key={index} className={`rounded-none border ${cam.is_active ? 'border-foreground/30' : 'border-border'}`}>
-      <CardContent className="p-2.5 space-y-1.5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Camera className={`h-3.5 w-3.5 ${cam.is_active ? 'text-foreground' : 'text-muted-foreground'}`} />
-            <span className="text-xs font-medium">{cam.camera_label}</span>
-            <Badge variant="outline" className="rounded-none text-[10px] px-1.5 py-0">
-              {positionLabels[cam.position] || cam.position}
-            </Badge>
-          </div>
-          <Switch
-            checked={cam.is_active}
-            onCheckedChange={v => updateCamera(index, 'is_active', v)}
-            className="scale-90"
-          />
-        </div>
-        <Input
-          value={cam.stream_url || ''}
-          onChange={e => updateCamera(index, 'stream_url', e.target.value)}
-          placeholder="rtsp://mac-mini.local:8554/cam1"
-          className="rounded-none text-xs h-7"
-        />
-        <div className="flex gap-2">
-          <Select value={cam.position} onValueChange={v => updateCamera(index, 'position', v)}>
-            <SelectTrigger className="rounded-none h-7 text-xs flex-1">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {cameraPositions.map(p => (
-                <SelectItem key={p} value={p}>{positionLabels[p]}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={String(cam.fps)} onValueChange={v => updateCamera(index, 'fps', Number(v))}>
-            <SelectTrigger className="rounded-none h-7 text-xs w-24">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="30">30 fps</SelectItem>
-              <SelectItem value="60">60 fps</SelectItem>
-              <SelectItem value="120">120 fps</SelectItem>
-              <SelectItem value="160">160 fps</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex items-center gap-1 text-[10px]">
-          {cam.is_active && cam.stream_url ? (
-            <><Wifi className="h-3 w-3 text-foreground" /><span>{t('aiLab.cameras.active')}</span></>
-          ) : cam.is_active ? (
-            <><AlertCircle className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">{t('aiLab.cameras.noUrl')}</span></>
-          ) : (
-            <><WifiOff className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">{t('aiLab.cameras.disabled')}</span></>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
 
   const renderStrikeTable = (data: any, corner: string) => {
     if (!data?.strikes && !data?.total_strikes_thrown) return (
