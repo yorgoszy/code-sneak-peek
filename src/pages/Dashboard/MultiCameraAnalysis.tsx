@@ -155,9 +155,9 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
   const rotatedHeightPercent = `${(frameData.height / frameData.width) * 100}%`;
 
   return (
-    <div className="w-full h-full flex items-center justify-center overflow-hidden bg-black">
+    <div className="w-full flex items-center justify-center overflow-hidden bg-black p-2">
       <div
-        className="relative h-full overflow-hidden"
+        className="relative w-full overflow-hidden"
         style={{
           aspectRatio: isSidePortrait ? '9 / 16' : `${frameData.width} / ${frameData.height}`,
           maxWidth: '100%',
@@ -761,7 +761,7 @@ const MultiCameraAnalysis: React.FC = () => {
                           const isMobile = cam.stream_url.startsWith('mobile:');
                           return (
                             <Card key={i} className="rounded-none overflow-hidden">
-                              <div className="relative aspect-video bg-black">
+                              <div className={isMobile ? 'relative bg-black' : 'relative aspect-video bg-black'}>
                                 {isWebcam ? (
                                   <CameraFeedInline deviceId={cam.stream_url.replace('webcam:', '')} />
                                 ) : isMobile ? (
