@@ -616,10 +616,7 @@ const MultiCameraAnalysis: React.FC = () => {
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="rounded-none mb-4">
                 <TabsTrigger value="cameras" className="rounded-none gap-1">
-                  <Camera className="h-4 w-4" /> {t('aiLab.tabs.cameras')}
-                </TabsTrigger>
-                <TabsTrigger value="analysis" className="rounded-none gap-1">
-                  <Brain className="h-4 w-4" /> {t('aiLab.tabs.analysis')}
+                  <Camera className="h-4 w-4" /> {t('aiLab.tabs.cameras')} & {t('aiLab.tabs.analysis')}
                 </TabsTrigger>
                 <TabsTrigger value="results" className="rounded-none gap-1">
                   <Target className="h-4 w-4" /> {t('aiLab.tabs.results')}
