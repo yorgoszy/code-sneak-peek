@@ -106,7 +106,7 @@ const FederationFightCard: React.FC = () => {
       // Load ALL matches (lightweight) for bracket lookup
       supabase
         .from('competition_matches')
-        .select('id, match_number, match_order, round_number, category_id, athlete1_id, athlete2_id')
+        .select('id, match_number, match_order, round_number, category_id, athlete1_id, athlete2_id, winner_id')
         .eq('competition_id', selectedCompId)
         .order('match_number', { ascending: true }),
       supabase
