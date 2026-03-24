@@ -701,11 +701,13 @@ const MultiCameraAnalysis: React.FC = () => {
                               <div className="relative aspect-video bg-black">
                                 {isWebcam ? (
                                   <CameraFeedInline deviceId={cam.stream_url.replace('webcam:', '')} />
+                                ) : isMobile ? (
+                                  <MobileFeedInline ringId={ringId} camIndex={cam.camera_index} />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center">
                                     <div className="text-center">
                                       <Video className="h-8 w-8 text-white/60 mx-auto mb-1" />
-                                      <p className="text-xs text-white/60">{isMobile ? '📱 Mobile Live' : 'IP Stream'}</p>
+                                      <p className="text-xs text-white/60">IP Stream</p>
                                     </div>
                                   </div>
                                 )}
