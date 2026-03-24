@@ -86,7 +86,7 @@ const FederationFightCard: React.FC = () => {
     if (!selectedCompId) { setMatches([]); setRings([]); return; }
     setLoading(true);
 
-    const [matchesRes, ringsRes] = await Promise.all([
+    const [matchesRes, allMatchesRes, ringsRes] = await Promise.all([
       supabase
         .from('competition_matches')
         .select(`
@@ -103,6 +103,12 @@ const FederationFightCard: React.FC = () => {
         .eq('is_bye', false)
         .not('match_order', 'is', null)
         .order('match_order', { ascending: true }),
+      // Load ALL matches (lightweight) for bracket lookup
+      supabase
+        .from('competition_matches')
+        .select('id, match_number, match_order, round_number, category_id, athlete1_id, athlete2_id')
+        .eq('competition_id', selectedCompId)
+        .order('match_number', { ascending: true }),
       supabase
         .from('competition_rings')
         .select('id, ring_number, ring_name, current_match_id, match_range_start, match_range_end')
@@ -111,6 +117,7 @@ const FederationFightCard: React.FC = () => {
     ]);
 
     setMatches((matchesRes.data as MatchRow[]) || []);
+    setAllCompMatches(allMatchesRes.data || []);
     setRings((ringsRes.data as RingInfo[]) || []);
     setLoading(false);
   }, [selectedCompId]);
