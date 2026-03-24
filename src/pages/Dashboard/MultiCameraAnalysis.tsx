@@ -364,11 +364,19 @@ const MultiCameraAnalysis: React.FC = () => {
     setSavingCameras(true);
     try {
       for (const cam of cameras) {
+        const streamUrlToPersist = cam.stream_url?.startsWith('mobile:')
+          ? cam.stream_url
+          : cameraSourceType === 'webcam'
+            ? cam.stream_url?.startsWith('webcam:')
+              ? cam.stream_url
+              : null
+            : cam.stream_url;
+
         if (cam.id) {
           await supabase.from('ring_analysis_cameras').update({
             camera_label: cam.camera_label,
             position: cam.position,
-            stream_url: cam.stream_url,
+            stream_url: streamUrlToPersist,
             is_active: cam.is_active,
             fps: cam.fps,
           }).eq('id', cam.id);
@@ -378,7 +386,7 @@ const MultiCameraAnalysis: React.FC = () => {
             camera_index: cam.camera_index,
             camera_label: cam.camera_label,
             position: cam.position,
-            stream_url: cam.stream_url,
+            stream_url: streamUrlToPersist,
             is_active: cam.is_active,
             fps: cam.fps,
           }).select().single();
