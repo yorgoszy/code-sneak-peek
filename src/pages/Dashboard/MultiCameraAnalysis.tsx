@@ -76,6 +76,38 @@ interface RoundResult {
   processing_time_ms: number;
 }
 
+/** Inline webcam feed component */
+const CameraFeedInline: React.FC<{ deviceId: string }> = ({ deviceId }) => {
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+  const streamRef = React.useRef<MediaStream | null>(null);
+
+  React.useEffect(() => {
+    let active = true;
+    const start = async () => {
+      try {
+        if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: deviceId ? { deviceId: { exact: deviceId } } : true,
+          audio: false,
+        });
+        if (!active) { stream.getTracks().forEach(t => t.stop()); return; }
+        streamRef.current = stream;
+        if (videoRef.current) videoRef.current.srcObject = stream;
+      } catch (err) {
+        console.error('Inline camera error:', err);
+      }
+    };
+    start();
+    return () => {
+      active = false;
+      streamRef.current?.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    };
+  }, [deviceId]);
+
+  return <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />;
+};
+
 const MultiCameraAnalysis: React.FC = () => {
   const { ringId: ringIdParam } = useParams<{ ringId: string }>();
   const navigate = useNavigate();
@@ -440,64 +472,6 @@ const MultiCameraAnalysis: React.FC = () => {
     />
   );
 
-  const renderCameraCard = (cam: AnalysisCamera, index: number) => (
-    <Card key={index} className={`rounded-none border ${cam.is_active ? 'border-foreground/30' : 'border-border'}`}>
-      <CardContent className="p-2.5 space-y-1.5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Camera className={`h-3.5 w-3.5 ${cam.is_active ? 'text-foreground' : 'text-muted-foreground'}`} />
-            <span className="text-xs font-medium">{cam.camera_label}</span>
-            <Badge variant="outline" className="rounded-none text-[10px] px-1.5 py-0">
-              {positionLabels[cam.position] || cam.position}
-            </Badge>
-          </div>
-          <Switch
-            checked={cam.is_active}
-            onCheckedChange={v => updateCamera(index, 'is_active', v)}
-            className="scale-90"
-          />
-        </div>
-        <Input
-          value={cam.stream_url || ''}
-          onChange={e => updateCamera(index, 'stream_url', e.target.value)}
-          placeholder="rtsp://mac-mini.local:8554/cam1"
-          className="rounded-none text-xs h-7"
-        />
-        <div className="flex gap-2">
-          <Select value={cam.position} onValueChange={v => updateCamera(index, 'position', v)}>
-            <SelectTrigger className="rounded-none h-7 text-xs flex-1">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {cameraPositions.map(p => (
-                <SelectItem key={p} value={p}>{positionLabels[p]}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={String(cam.fps)} onValueChange={v => updateCamera(index, 'fps', Number(v))}>
-            <SelectTrigger className="rounded-none h-7 text-xs w-24">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="30">30 fps</SelectItem>
-              <SelectItem value="60">60 fps</SelectItem>
-              <SelectItem value="120">120 fps</SelectItem>
-              <SelectItem value="160">160 fps</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex items-center gap-1 text-[10px]">
-          {cam.is_active && cam.stream_url ? (
-            <><Wifi className="h-3 w-3 text-foreground" /><span>{t('aiLab.cameras.active')}</span></>
-          ) : cam.is_active ? (
-            <><AlertCircle className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">{t('aiLab.cameras.noUrl')}</span></>
-          ) : (
-            <><WifiOff className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">{t('aiLab.cameras.disabled')}</span></>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
 
   const renderStrikeTable = (data: any, corner: string) => {
     if (!data?.strikes && !data?.total_strikes_thrown) return (
@@ -616,10 +590,7 @@ const MultiCameraAnalysis: React.FC = () => {
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="rounded-none mb-4">
                 <TabsTrigger value="cameras" className="rounded-none gap-1">
-                  <Camera className="h-4 w-4" /> {t('aiLab.tabs.cameras')}
-                </TabsTrigger>
-                <TabsTrigger value="analysis" className="rounded-none gap-1">
-                  <Brain className="h-4 w-4" /> {t('aiLab.tabs.analysis')}
+                  <Camera className="h-4 w-4" /> {t('aiLab.tabs.cameras')} & {t('aiLab.tabs.analysis')}
                 </TabsTrigger>
                 <TabsTrigger value="results" className="rounded-none gap-1">
                   <Target className="h-4 w-4" /> {t('aiLab.tabs.results')}
@@ -632,7 +603,7 @@ const MultiCameraAnalysis: React.FC = () => {
                 </TabsTrigger>
               </TabsList>
 
-              {/* ─── CAMERAS TAB ─── */}
+              {/* ─── CAMERAS & ANALYSIS TAB (merged) ─── */}
               <TabsContent value="cameras" className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -645,82 +616,87 @@ const MultiCameraAnalysis: React.FC = () => {
                   </Button>
                 </div>
 
-                {/* Ring diagram - clickable cameras */}
-                <Card className="rounded-none">
-                  <CardContent className="p-4">
-                    <div className="relative w-full max-w-md mx-auto aspect-square border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
-                      <div className="text-center text-muted-foreground text-xs">RING</div>
-                      {cameras.map((cam, i) => {
-                        const positions: Record<string, string> = {
-                          front: 'bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2',
-                          back: 'top-0 left-1/2 -translate-x-1/2 -translate-y-1/2',
-                          left: 'left-0 top-1/2 -translate-y-1/2 -translate-x-1/2',
-                          right: 'right-0 top-1/2 -translate-y-1/2 translate-x-1/2',
-                        };
-                        return (
-                          <div
-                            key={i}
-                            className={`absolute ${positions[cam.position] || positions.front} cursor-pointer`}
-                            onClick={() => {
-                              setSelectedCameraIndex(i);
-                              setCameraSourceType(cam.stream_url?.startsWith('webcam:') ? 'webcam' : cam.stream_url ? 'ip' : 'webcam');
-                              setSelectedDeviceId(cam.stream_url?.startsWith('webcam:') ? cam.stream_url.replace('webcam:', '') : '');
-                              loadWebcamDevices();
-                              setCameraDialogOpen(true);
-                            }}
-                          >
-                            <div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-none transition-colors hover:bg-foreground/20 ${cam.is_active ? 'bg-foreground/10 text-foreground border border-foreground/30' : 'bg-muted text-muted-foreground border border-border'}`}>
-                              <Camera className="h-3 w-3" />
-                              <span>{i + 1}</span>
-                              {cam.is_active && cam.stream_url && (
-                                <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Camera status summary */}
-                <div className="grid grid-cols-4 gap-2">
-                  {cameras.map((cam, i) => (
-                    <div
-                      key={i}
-                      className={`p-2 border rounded-none text-center cursor-pointer transition-colors hover:bg-muted/50 ${cam.is_active ? 'border-foreground/30' : 'border-border'}`}
-                      onClick={() => {
-                        setSelectedCameraIndex(i);
-                        setCameraSourceType(cam.stream_url?.startsWith('webcam:') ? 'webcam' : cam.stream_url ? 'ip' : 'webcam');
-                        setSelectedDeviceId(cam.stream_url?.startsWith('webcam:') ? cam.stream_url.replace('webcam:', '') : '');
-                        loadWebcamDevices();
-                        setCameraDialogOpen(true);
-                      }}
-                    >
-                      <Camera className={`h-4 w-4 mx-auto mb-1 ${cam.is_active ? 'text-foreground' : 'text-muted-foreground'}`} />
-                      <p className="text-[10px] font-medium">{cam.camera_label}</p>
-                      <p className="text-[10px] text-muted-foreground">{positionLabels[cam.position]}</p>
-                      <div className="mt-1">
-                        {cam.is_active && cam.stream_url?.startsWith('mobile:') ? (
-                          <Badge variant="outline" className="rounded-none text-[9px] px-1 py-0 border-[#00ffba] text-[#00ffba]">📱 Mobile</Badge>
-                        ) : cam.is_active && cam.stream_url ? (
-                          <Badge variant="outline" className="rounded-none text-[9px] px-1 py-0">{t('aiLab.cameras.active')}</Badge>
-                        ) : cam.is_active ? (
-                          <Badge variant="outline" className="rounded-none text-[9px] px-1 py-0 text-muted-foreground">{t('aiLab.cameras.noUrl')}</Badge>
-                        ) : (
-                          <Badge variant="outline" className="rounded-none text-[9px] px-1 py-0 text-muted-foreground">{t('aiLab.cameras.off')}</Badge>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </TabsContent>
-
-              {/* ─── ANALYSIS TAB ─── */}
-              <TabsContent value="analysis" className="space-y-4">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                  {/* Settings */}
-                  <Card className="rounded-none lg:col-span-1">
+                  {/* Ring diagram + Live feeds */}
+                  <div className="lg:col-span-2 space-y-3">
+                    <Card className="rounded-none">
+                      <CardContent className="p-4">
+                        <div className="relative w-full max-w-md mx-auto aspect-square border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
+                          <div className="text-center text-muted-foreground text-xs">RING</div>
+                          {cameras.map((cam, i) => {
+                            const positions: Record<string, string> = {
+                              front: 'bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2',
+                              back: 'top-0 left-1/2 -translate-x-1/2 -translate-y-1/2',
+                              left: 'left-0 top-1/2 -translate-y-1/2 -translate-x-1/2',
+                              right: 'right-0 top-1/2 -translate-y-1/2 translate-x-1/2',
+                            };
+                            return (
+                              <div
+                                key={i}
+                                className={`absolute ${positions[cam.position] || positions.front} cursor-pointer`}
+                                onClick={() => {
+                                  setSelectedCameraIndex(i);
+                                  setCameraSourceType(cam.stream_url?.startsWith('webcam:') ? 'webcam' : cam.stream_url ? 'ip' : 'webcam');
+                                  setSelectedDeviceId(cam.stream_url?.startsWith('webcam:') ? cam.stream_url.replace('webcam:', '') : '');
+                                  loadWebcamDevices();
+                                  setCameraDialogOpen(true);
+                                }}
+                              >
+                                <div className={`flex items-center gap-1 px-2 py-1 text-xs rounded-none transition-colors hover:bg-foreground/20 ${cam.is_active ? 'bg-foreground/10 text-foreground border border-foreground/30' : 'bg-muted text-muted-foreground border border-border'}`}>
+                                  <Camera className="h-3 w-3" />
+                                  <span>{i + 1}</span>
+                                  {cam.is_active && cam.stream_url && (
+                                    <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Live Camera Feeds */}
+                    {activeCameras.length > 0 && (
+                      <div className={`grid gap-2 ${activeCameras.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                        {cameras.map((cam, i) => {
+                          if (!cam.is_active || !cam.stream_url) return null;
+                          const isWebcam = cam.stream_url.startsWith('webcam:');
+                          const isMobile = cam.stream_url.startsWith('mobile:');
+                          return (
+                            <Card key={i} className="rounded-none overflow-hidden">
+                              <div className="relative aspect-video bg-black">
+                                {isWebcam ? (
+                                  <CameraFeedInline deviceId={cam.stream_url.replace('webcam:', '')} />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <div className="text-center">
+                                      <Video className="h-8 w-8 text-white/60 mx-auto mb-1" />
+                                      <p className="text-xs text-white/60">{isMobile ? '📱 Mobile Live' : 'IP Stream'}</p>
+                                    </div>
+                                  </div>
+                                )}
+                                <div className="absolute top-1 left-1">
+                                  <Badge className="rounded-none text-[10px] bg-black/60 text-white border-none">
+                                    CAM {cam.camera_index} • {positionLabels[cam.position]}
+                                  </Badge>
+                                </div>
+                                <div className="absolute top-1 right-1">
+                                  <div className="flex items-center gap-1 px-1.5 py-0.5 bg-black/60 text-[10px] text-green-400">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                                    LIVE
+                                  </div>
+                                </div>
+                              </div>
+                            </Card>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Analysis Settings sidebar */}
+                  <Card className="rounded-none lg:col-span-1 h-fit">
                     <CardHeader className="p-3 pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
                         <Settings className="h-4 w-4" /> {t('aiLab.analysis.settingsTitle')}
@@ -730,9 +706,7 @@ const MultiCameraAnalysis: React.FC = () => {
                       <div>
                         <Label className="text-xs">{t('aiLab.analysis.sport')}</Label>
                         <Select value={selectedSport} onValueChange={v => setSelectedSport(v as CombatSport)}>
-                          <SelectTrigger className="rounded-none h-8 text-xs">
-                            <SelectValue />
-                          </SelectTrigger>
+                          <SelectTrigger className="rounded-none h-8 text-xs"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             {sportKeys.map(k => (
                               <SelectItem key={k} value={k}>{t(`aiLab.sports.${k}`)}</SelectItem>
@@ -740,13 +714,10 @@ const MultiCameraAnalysis: React.FC = () => {
                           </SelectContent>
                         </Select>
                       </div>
-
                       <div>
                         <Label className="text-xs">{t('aiLab.analysis.mode')}</Label>
                         <Select value={analysisMode} onValueChange={v => setAnalysisMode(v as AnalysisMode)}>
-                          <SelectTrigger className="rounded-none h-8 text-xs">
-                            <SelectValue />
-                          </SelectTrigger>
+                          <SelectTrigger className="rounded-none h-8 text-xs"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="full">{t('aiLab.analysis.modeFull')}</SelectItem>
                             <SelectItem value="strike_counting">{t('aiLab.analysis.modeStrike')}</SelectItem>
@@ -756,78 +727,36 @@ const MultiCameraAnalysis: React.FC = () => {
                           </SelectContent>
                         </Select>
                       </div>
-
                       <Separator />
-
                       <div className="space-y-1 text-xs text-muted-foreground">
-                        <div className="flex justify-between">
-                          <span>{t('aiLab.analysis.activeCameras')}:</span>
-                          <span className="text-foreground">{activeCameras.length}/4</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>{t('aiLab.analysis.estimatedCost')}:</span>
-                          <span className="text-foreground">~$0.07</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>{t('aiLab.analysis.aiModel')}:</span>
-                          <span className="text-foreground">Gemini 3.1 Pro</span>
-                        </div>
+                        <div className="flex justify-between"><span>{t('aiLab.analysis.activeCameras')}:</span><span className="text-foreground">{activeCameras.length}/4</span></div>
+                        <div className="flex justify-between"><span>{t('aiLab.analysis.estimatedCost')}:</span><span className="text-foreground">~$0.07</span></div>
+                        <div className="flex justify-between"><span>{t('aiLab.analysis.aiModel')}:</span><span className="text-foreground">Gemini 3.1 Pro</span></div>
                       </div>
-
-                      <Button
-                        onClick={isAnalyzing ? stopAnalysis : startAnalysis}
-                        disabled={activeCameras.length === 0 && !isAnalyzing}
-                        className={`w-full rounded-none ${isAnalyzing ? 'bg-destructive hover:bg-destructive/90' : ''}`}
-                      >
-                        {isAnalyzing ? (
-                          <><Square className="h-4 w-4 mr-1" /> {t('aiLab.analysis.stopAnalysis')}</>
-                        ) : (
-                          <><Play className="h-4 w-4 mr-1" /> {t('aiLab.analysis.startAnalysis')}</>
-                        )}
+                      <Button onClick={isAnalyzing ? stopAnalysis : startAnalysis} disabled={activeCameras.length === 0 && !isAnalyzing} className={`w-full rounded-none ${isAnalyzing ? 'bg-destructive hover:bg-destructive/90' : ''}`}>
+                        {isAnalyzing ? (<><Square className="h-4 w-4 mr-1" /> {t('aiLab.analysis.stopAnalysis')}</>) : (<><Play className="h-4 w-4 mr-1" /> {t('aiLab.analysis.startAnalysis')}</>)}
                       </Button>
-
                       {isAnalyzing && (
                         <div className="space-y-1">
-                          <div className="flex justify-between text-xs">
-                            <span>{t('aiLab.analysis.progress')}</span>
-                            <span>{analysisProgress}%</span>
-                          </div>
+                          <div className="flex justify-between text-xs"><span>{t('aiLab.analysis.progress')}</span><span>{analysisProgress}%</span></div>
                           <Progress value={analysisProgress} className="h-2 rounded-none" />
                         </div>
                       )}
-                    </CardContent>
-                  </Card>
-
-                  {/* Camera feeds preview */}
-                  <Card className="rounded-none lg:col-span-2">
-                    <CardHeader className="p-3 pb-2">
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <MonitorPlay className="h-4 w-4" /> {t('aiLab.analysis.cameraFeeds')}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-3 pt-0">
-                      <div className="grid grid-cols-2 gap-2">
+                      <Separator />
+                      <div className="grid grid-cols-2 gap-1.5">
                         {cameras.map((cam, i) => (
-                          <div key={i} className={`aspect-video border rounded-none flex items-center justify-center ${cam.is_active ? 'border-foreground/20 bg-black' : 'border-border bg-muted/50'}`}>
-                            {cam.is_active && cam.stream_url ? (
-                              <div className="text-center">
-                                <Video className="h-8 w-8 text-foreground mx-auto mb-1" />
-                                <p className="text-xs text-foreground">{cam.camera_label}</p>
-                                <p className="text-[10px] text-muted-foreground">{cam.fps}fps • {positionLabels[cam.position]}</p>
-                              </div>
-                            ) : (
-                              <div className="text-center">
-                                <Camera className="h-6 w-6 text-muted-foreground mx-auto mb-1" />
-                                <p className="text-xs text-muted-foreground">
-                                  {cam.is_active ? t('aiLab.cameras.noStream') : t('aiLab.cameras.disabled')}
-                                </p>
-                              </div>
-                            )}
-                            {/* Camera label overlay */}
-                            <div className="absolute top-1 left-1">
-                              <Badge className={`rounded-none text-[10px] ${cam.is_active ? 'bg-foreground/10 text-foreground' : 'bg-muted'}`}>
-                                CAM {cam.camera_index} • {positionLabels[cam.position]}
-                              </Badge>
+                          <div key={i} className={`p-1.5 border rounded-none text-center cursor-pointer transition-colors hover:bg-muted/50 ${cam.is_active ? 'border-foreground/30' : 'border-border'}`}
+                            onClick={() => { setSelectedCameraIndex(i); setCameraSourceType(cam.stream_url?.startsWith('webcam:') ? 'webcam' : cam.stream_url ? 'ip' : 'webcam'); setSelectedDeviceId(cam.stream_url?.startsWith('webcam:') ? cam.stream_url.replace('webcam:', '') : ''); loadWebcamDevices(); setCameraDialogOpen(true); }}>
+                            <Camera className={`h-3 w-3 mx-auto mb-0.5 ${cam.is_active ? 'text-foreground' : 'text-muted-foreground'}`} />
+                            <p className="text-[9px] font-medium">{positionLabels[cam.position]}</p>
+                            <div className="mt-0.5">
+                              {cam.is_active && cam.stream_url?.startsWith('mobile:') ? (
+                                <Badge variant="outline" className="rounded-none text-[8px] px-1 py-0 border-[#00ffba] text-[#00ffba]">📱</Badge>
+                              ) : cam.is_active && cam.stream_url ? (
+                                <Badge variant="outline" className="rounded-none text-[8px] px-1 py-0">ON</Badge>
+                              ) : (
+                                <Badge variant="outline" className="rounded-none text-[8px] px-1 py-0 text-muted-foreground">OFF</Badge>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -836,6 +765,8 @@ const MultiCameraAnalysis: React.FC = () => {
                   </Card>
                 </div>
               </TabsContent>
+
+
 
               {/* ─── RESULTS TAB ─── */}
               <TabsContent value="results" className="space-y-4">
