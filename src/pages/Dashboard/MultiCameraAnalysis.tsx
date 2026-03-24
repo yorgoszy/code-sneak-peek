@@ -114,9 +114,6 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
     src: string;
     width: number;
     height: number;
-    rotationDegrees: number;
-    orientationAngle: number;
-    isFrontCamera: boolean;
   } | null>(null);
 
   React.useEffect(() => {
@@ -129,9 +126,6 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
           src: payload.frame,
           width: Number(payload.width) || 320,
           height: Number(payload.height) || 180,
-          rotationDegrees: Number(payload.rotationDegrees) || 0,
-          orientationAngle: Number(payload.orientationAngle) || 0,
-          isFrontCamera: Boolean(payload.isFrontCamera),
         });
       }
     }).subscribe();
@@ -152,42 +146,14 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
     );
   }
 
-  const isPortraitFrame = frameData.height > frameData.width;
-  const normalizedAngle = ((frameData.orientationAngle % 360) + 360) % 360;
-  
-  // When frame is portrait (phone not rotated enough or sensor delivers portrait),
-  // we need to rotate it to landscape on desktop.
-  // angle 90 = phone rotated LEFT (counterclockwise) → rotate image -90° on desktop
-  // angle 270 = phone rotated RIGHT (clockwise) → rotate image +90° on desktop
-  let desktopRotation = 0;
-  if (isPortraitFrame) {
-    if (normalizedAngle === 90) {
-      desktopRotation = -90;
-    } else if (normalizedAngle === 270) {
-      desktopRotation = 90;
-    } else {
-      // Default: assume right rotation
-      desktopRotation = 90;
-    }
-    // Front camera flips the rotation direction
-    if (frameData.isFrontCamera) {
-      desktopRotation = -desktopRotation;
-    }
-  }
-
   return (
     <div className="w-full h-full flex items-center justify-center overflow-hidden bg-black">
       <img
         src={frameData.src}
         alt="Mobile feed"
-        className="object-contain"
+        className="h-full w-full object-contain"
         style={{
-          width: isPortraitFrame ? 'auto' : '100%',
-          height: isPortraitFrame ? '100%' : '100%',
-          maxWidth: isPortraitFrame ? 'none' : '100%',
-          maxHeight: '100%',
-          transform: `rotate(${desktopRotation}deg)`,
-          transformOrigin: 'center center',
+          aspectRatio: `${frameData.width} / ${frameData.height}`,
         }}
       />
     </div>
