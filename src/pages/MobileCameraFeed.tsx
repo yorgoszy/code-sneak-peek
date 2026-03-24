@@ -225,22 +225,30 @@ const MobileCameraFeed: React.FC = () => {
     context.restore();
   }, [isFrontCamera, isLandscape, rotationDegrees]);
 
-  const drawBroadcastFrame = useCallback((context: CanvasRenderingContext2D) => {
-    const targetWidth = 320;
-    const targetHeight = 180;
+  const drawRawFrame = useCallback((context: CanvasRenderingContext2D) => {
+    const video = videoRef.current;
+    if (!video || video.readyState < 2) return null;
 
-    if (context.canvas.width !== targetWidth || context.canvas.height !== targetHeight) {
-      context.canvas.width = targetWidth;
-      context.canvas.height = targetHeight;
+    const sourceWidth = video.videoWidth || 640;
+    const sourceHeight = video.videoHeight || 480;
+    const maxDimension = 480;
+    const scale = Math.min(maxDimension / Math.max(sourceWidth, sourceHeight), 1);
+    const outputWidth = Math.max(1, Math.round(sourceWidth * scale));
+    const outputHeight = Math.max(1, Math.round(sourceHeight * scale));
+
+    if (context.canvas.width !== outputWidth || context.canvas.height !== outputHeight) {
+      context.canvas.width = outputWidth;
+      context.canvas.height = outputHeight;
     }
 
-    drawFrame(context, targetWidth, targetHeight, 'contain');
+    context.clearRect(0, 0, outputWidth, outputHeight);
+    context.drawImage(video, 0, 0, outputWidth, outputHeight);
 
     return {
-      width: targetWidth,
-      height: targetHeight,
+      width: outputWidth,
+      height: outputHeight,
     };
-  }, [drawFrame]);
+  }, []);
 
   useEffect(() => {
     if (!connected) return;
@@ -288,7 +296,7 @@ const MobileCameraFeed: React.FC = () => {
     const interval = setInterval(() => {
       if (!context) return;
 
-      const frameSize = drawBroadcastFrame(context);
+      const frameSize = drawRawFrame(context);
       if (!frameSize) return;
 
       const frame = canvas.toDataURL('image/jpeg', 0.62);
@@ -300,6 +308,9 @@ const MobileCameraFeed: React.FC = () => {
           width: frameSize.width,
           height: frameSize.height,
           facingMode,
+          rotationDegrees,
+          orientationAngle: normalizeAngle(viewport.angle),
+          isFrontCamera,
         },
       });
     }, 500);
@@ -308,7 +319,7 @@ const MobileCameraFeed: React.FC = () => {
       clearInterval(interval);
       supabase.removeChannel(channel);
     };
-  }, [camIndex, connected, drawBroadcastFrame, facingMode, ringId]);
+  }, [camIndex, connected, drawRawFrame, facingMode, isFrontCamera, ringId, rotationDegrees, viewport.angle]);
 
   const toggleCamera = () => {
     const nextFacingMode = facingMode === 'environment' ? 'user' : 'environment';
