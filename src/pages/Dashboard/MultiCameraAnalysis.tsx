@@ -145,11 +145,18 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
   const isPortrait = frameData.height > frameData.width;
 
   return (
-    <img
-      src={frameData.src}
-      alt="Mobile feed"
-      className={isPortrait ? 'w-full h-full object-contain bg-black' : 'w-full h-full object-cover'}
-    />
+    <div className="relative w-full h-full bg-black">
+      <img
+        src={frameData.src}
+        alt="Mobile feed"
+        className={isPortrait ? 'w-full h-full object-contain' : 'w-full h-full object-cover'}
+      />
+      {isPortrait && (
+        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-yellow-500/80 text-black px-2 py-0.5 text-[9px] font-semibold">
+          📱 Portrait mode
+        </div>
+      )}
+    </div>
   );
 };
 
