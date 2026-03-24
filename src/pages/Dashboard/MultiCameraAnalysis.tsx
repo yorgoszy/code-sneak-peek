@@ -125,8 +125,8 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
       if (payload?.frame) {
         setFrameData({
           src: payload.frame,
-          width: Number(payload.width) || 320,
-          height: Number(payload.height) || 180,
+          width: Number(payload.width) || 1280,
+          height: Number(payload.height) || 720,
           orientationAngle: Number(payload.orientationAngle) || 0,
         });
       }
