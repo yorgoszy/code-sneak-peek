@@ -149,16 +149,20 @@ const MobileCameraFeed: React.FC = () => {
       const video = videoRef.current;
       if (!video || !ctx || video.readyState < 2) return;
 
-      // Low-res for bandwidth (320x180)
-      canvas.width = 320;
-      canvas.height = 180;
-      ctx.drawImage(video, 0, 0, 320, 180);
-      const frame = canvas.toDataURL('image/jpeg', 0.5);
+      const sourceWidth = video.videoWidth || 720;
+      const sourceHeight = video.videoHeight || 1280;
+      const targetWidth = 320;
+      const targetHeight = Math.round((sourceHeight / sourceWidth) * targetWidth);
+
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      ctx.drawImage(video, 0, 0, targetWidth, targetHeight);
+      const frame = canvas.toDataURL('image/jpeg', 0.55);
 
       channel.send({
         type: 'broadcast',
         event: 'frame',
-        payload: { frame },
+        payload: { frame, width: targetWidth, height: targetHeight },
       });
     }, 500); // 2 FPS
 
