@@ -10,19 +10,11 @@ const positionLabels: Record<string, string> = {
   back: 'Πίσω / Back',
 };
 
-const getOrientationAngle = () => {
-  if (typeof window === 'undefined') return 0;
-
-  const screenAngle = window.screen.orientation?.angle;
-  if (typeof screenAngle === 'number') return screenAngle;
-
-  const legacyAngle = (window as Window & { orientation?: number }).orientation;
-  return typeof legacyAngle === 'number' ? legacyAngle : 0;
+const RTC_CONFIG: RTCConfiguration = {
+  iceServers: [
+    { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
+  ],
 };
-
-const normalizeAngle = (angle: number) => ((angle % 360) + 360) % 360;
-
-type RenderMode = 'contain' | 'cover';
 
 const MobileCameraFeed: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -31,50 +23,23 @@ const MobileCameraFeed: React.FC = () => {
   const position = searchParams.get('pos') || 'left';
 
   const videoRef = useRef<HTMLVideoElement>(null);
-  const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const previewAnimationRef = useRef<number | null>(null);
+  const pcsRef = useRef<Record<string, RTCPeerConnection>>({});
 
   const [error, setError] = useState<string | null>(null);
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
   const [connected, setConnected] = useState(false);
   const [dbRegistered, setDbRegistered] = useState(false);
-  const [viewport, setViewport] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
-    angle: getOrientationAngle(),
-  });
-  const [videoSize, setVideoSize] = useState({ width: 0, height: 0 });
+  const [viewerCount, setViewerCount] = useState(0);
 
-  const isLandscape = viewport.width > viewport.height;
-  const isFrontCamera = facingMode === 'user';
+  const channelName = useMemo(
+    () => `webrtc-mobile-cam-${ringId}-${camIndex}`,
+    [ringId, camIndex],
+  );
 
-  useEffect(() => {
-    const updateViewport = () => {
-      setViewport({
-        width: window.innerWidth,
-        height: window.innerHeight,
-        angle: getOrientationAngle(),
-      });
-    };
-
-    const handleOrientationChange = () => {
-      window.setTimeout(updateViewport, 150);
-    };
-
-    updateViewport();
-    window.addEventListener('resize', updateViewport);
-    window.addEventListener('orientationchange', handleOrientationChange);
-
-    return () => {
-      window.removeEventListener('resize', updateViewport);
-      window.removeEventListener('orientationchange', handleOrientationChange);
-    };
-  }, []);
-
+  // ── Register camera in DB ──
   const registerCamera = async () => {
     if (!ringId) return;
-
     try {
       const camNum = Number(camIndex);
       const mobileStreamUrl = `mobile:${camNum}:${Date.now()}`;
@@ -99,7 +64,6 @@ const MobileCameraFeed: React.FC = () => {
             updated_at: new Date().toISOString(),
           })
           .eq('id', existing.id);
-
         if (updateError) throw updateError;
       } else {
         const { error: insertError } = await supabase.from('ring_analysis_cameras').insert({
@@ -111,7 +75,6 @@ const MobileCameraFeed: React.FC = () => {
           is_active: true,
           fps: 30,
         });
-
         if (insertError) throw insertError;
       }
 
@@ -124,22 +87,18 @@ const MobileCameraFeed: React.FC = () => {
 
   const unregisterCamera = async () => {
     if (!ringId) return;
-
     const camNum = Number(camIndex);
     await supabase
       .from('ring_analysis_cameras')
-      .update({
-        is_active: false,
-        stream_url: null,
-        updated_at: new Date().toISOString(),
-      })
+      .update({ is_active: false, stream_url: null, updated_at: new Date().toISOString() })
       .eq('ring_id', ringId)
       .eq('camera_index', camNum);
   };
 
+  // ── Start camera ──
   const startCamera = async (facing: 'environment' | 'user') => {
     try {
-      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current?.getTracks().forEach((t) => t.stop());
       setError(null);
 
       const mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -159,6 +118,19 @@ const MobileCameraFeed: React.FC = () => {
         await videoRef.current.play().catch(() => undefined);
       }
 
+      // Add tracks to all existing peer connections
+      Object.values(pcsRef.current).forEach((pc) => {
+        const senders = pc.getSenders();
+        mediaStream.getTracks().forEach((track) => {
+          const existingSender = senders.find((s) => s.track?.kind === track.kind);
+          if (existingSender) {
+            existingSender.replaceTrack(track);
+          } else {
+            pc.addTrack(track, mediaStream);
+          }
+        });
+      });
+
       await registerCamera();
       setConnected(true);
     } catch (err: any) {
@@ -168,179 +140,123 @@ const MobileCameraFeed: React.FC = () => {
     }
   };
 
+  // ── Initial camera start ──
   useEffect(() => {
     startCamera(facingMode);
-
     return () => {
-      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current?.getTracks().forEach((t) => t.stop());
       unregisterCamera();
     };
   }, []);
 
+  // ── Heartbeat ──
   useEffect(() => {
     if (!dbRegistered || !connected || !ringId) return;
-
     const interval = setInterval(async () => {
       const camNum = Number(camIndex);
-        await supabase
+      await supabase
         .from('ring_analysis_cameras')
-          .update({
-            is_active: true,
-            updated_at: new Date().toISOString(),
-          })
+        .update({ is_active: true, updated_at: new Date().toISOString() })
         .eq('ring_id', ringId)
         .eq('camera_index', camNum);
     }, 10000);
-
     return () => clearInterval(interval);
   }, [dbRegistered, connected, ringId, camIndex]);
 
-  const rotationDegrees = useMemo(() => {
-    const normalizedAngle = normalizeAngle(viewport.angle);
-    const sourceIsPortrait = videoSize.height > videoSize.width;
-
-    if (!isLandscape || !sourceIsPortrait) {
-      return 0;
-    }
-
-    if (normalizedAngle === 270) return -90;
-    if (normalizedAngle === 90) return 90;
-    return 90;
-  }, [isLandscape, videoSize.height, videoSize.width, viewport.angle]);
-
-  const drawFrame = useCallback((
-    context: CanvasRenderingContext2D,
-    targetWidth: number,
-    targetHeight: number,
-    mode: RenderMode,
-  ) => {
-    const video = videoRef.current;
-    if (!video || video.readyState < 2) return;
-
-    const sourceWidth = video.videoWidth || 640;
-    const sourceHeight = video.videoHeight || 480;
-    const shouldRotate = isLandscape && sourceHeight > sourceWidth;
-    const appliedRotation = shouldRotate ? rotationDegrees : 0;
-    const effectiveWidth = shouldRotate ? sourceHeight : sourceWidth;
-    const effectiveHeight = shouldRotate ? sourceWidth : sourceHeight;
-    const scale = mode === 'cover'
-      ? Math.max(targetWidth / effectiveWidth, targetHeight / effectiveHeight)
-      : Math.min(targetWidth / effectiveWidth, targetHeight / effectiveHeight);
-    const drawWidth = sourceWidth * scale;
-    const drawHeight = sourceHeight * scale;
-
-    context.fillStyle = 'black';
-    context.fillRect(0, 0, targetWidth, targetHeight);
-    context.save();
-    context.translate(targetWidth / 2, targetHeight / 2);
-    context.rotate((appliedRotation * Math.PI) / 180);
-    context.scale(isFrontCamera ? -1 : 1, 1);
-    context.drawImage(video, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
-    context.restore();
-  }, [isFrontCamera, isLandscape, rotationDegrees]);
-
-  const drawBroadcastFrame = useCallback((context: CanvasRenderingContext2D) => {
-    const targetWidth = 320;
-    const targetHeight = 180;
-
-    if (context.canvas.width !== targetWidth || context.canvas.height !== targetHeight) {
-      context.canvas.width = targetWidth;
-      context.canvas.height = targetHeight;
-    }
-
-    drawFrame(context, targetWidth, targetHeight, 'contain');
-
-    return {
-      width: targetWidth,
-      height: targetHeight,
-    };
-  }, [drawFrame]);
-
+  // ── WebRTC signaling (broadcaster side) ──
   useEffect(() => {
-    if (!connected) return;
-
-    const renderPreview = () => {
-      const canvas = previewCanvasRef.current;
-      const context = canvas?.getContext('2d');
-      if (!canvas || !context) {
-        previewAnimationRef.current = window.requestAnimationFrame(renderPreview);
-        return;
-      }
-
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const targetWidth = Math.max(1, Math.floor(viewport.width * dpr));
-      const targetHeight = Math.max(1, Math.floor(viewport.height * dpr));
-
-      if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
-        canvas.width = targetWidth;
-        canvas.height = targetHeight;
-      }
-
-      drawFrame(context, targetWidth, targetHeight, 'contain');
-      previewAnimationRef.current = window.requestAnimationFrame(renderPreview);
-    };
-
-    previewAnimationRef.current = window.requestAnimationFrame(renderPreview);
-
-    return () => {
-      if (previewAnimationRef.current) {
-        window.cancelAnimationFrame(previewAnimationRef.current);
-      }
-    };
-  }, [connected, drawFrame, viewport.height, viewport.width]);
-
-  useEffect(() => {
-    if (!connected || !ringId) return;
-
-    const channelName = `mobile-cam-${ringId}-${camIndex}`;
     const channel = supabase.channel(channelName);
-    channel.subscribe();
 
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
+    const closePc = (viewerId: string) => {
+      const pc = pcsRef.current[viewerId];
+      if (pc) {
+        try { pc.close(); } catch {}
+        delete pcsRef.current[viewerId];
+        setViewerCount(Object.keys(pcsRef.current).length);
+      }
+    };
 
-    const interval = setInterval(() => {
-      if (!context) return;
+    const ensurePc = (viewerId: string) => {
+      if (pcsRef.current[viewerId]) return pcsRef.current[viewerId];
 
-      const frameSize = drawBroadcastFrame(context);
-      if (!frameSize) return;
+      const pc = new RTCPeerConnection(RTC_CONFIG);
+      pcsRef.current[viewerId] = pc;
 
-      const frame = canvas.toDataURL('image/jpeg', 0.62);
-      channel.send({
-        type: 'broadcast',
-        event: 'frame',
-        payload: {
-          frame,
-          width: frameSize.width,
-          height: frameSize.height,
-          orientationAngle: normalizeAngle(viewport.angle),
-          facingMode,
-        },
-      });
-    }, 500);
+      pc.onicecandidate = (ev) => {
+        if (!ev.candidate) return;
+        channel.send({
+          type: 'broadcast',
+          event: 'ice',
+          payload: { viewerId, candidate: ev.candidate.toJSON(), from: 'broadcaster' },
+        });
+      };
+
+      // Add current stream tracks
+      const stream = streamRef.current;
+      if (stream) {
+        stream.getTracks().forEach((track) => pc.addTrack(track, stream));
+      }
+
+      pc.onconnectionstatechange = () => {
+        if (['failed', 'closed', 'disconnected'].includes(pc.connectionState)) {
+          closePc(viewerId);
+        }
+      };
+
+      setViewerCount(Object.keys(pcsRef.current).length);
+      return pc;
+    };
+
+    channel
+      .on('broadcast', { event: 'viewer-join' }, async ({ payload }: any) => {
+        try {
+          if (!streamRef.current) return;
+          const pc = ensurePc(payload.viewerId);
+
+          const offer = await pc.createOffer({ offerToReceiveVideo: false });
+          await pc.setLocalDescription(offer);
+
+          await channel.send({
+            type: 'broadcast',
+            event: 'offer',
+            payload: { viewerId: payload.viewerId, sdp: pc.localDescription! },
+          });
+        } catch (e) {
+          console.error('[WebRTC] broadcaster offer error', e);
+        }
+      })
+      .on('broadcast', { event: 'answer' }, async ({ payload }: any) => {
+        try {
+          const pc = pcsRef.current[payload.viewerId];
+          if (!pc) return;
+          await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+        } catch (e) {
+          console.error('[WebRTC] broadcaster answer error', e);
+        }
+      })
+      .on('broadcast', { event: 'ice' }, async ({ payload }: any) => {
+        try {
+          if (payload.from !== 'viewer') return;
+          const pc = pcsRef.current[payload.viewerId];
+          if (!pc || !payload.candidate) return;
+          await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
+        } catch {}
+      })
+      .on('broadcast', { event: 'viewer-leave' }, ({ payload }: any) => {
+        closePc(payload.viewerId);
+      })
+      .subscribe();
 
     return () => {
-      clearInterval(interval);
-      supabase.removeChannel(channel);
+      try { supabase.removeChannel(channel); } catch {}
+      Object.keys(pcsRef.current).forEach(closePc);
     };
-  }, [camIndex, connected, drawBroadcastFrame, facingMode, ringId]);
+  }, [channelName]);
 
   const toggleCamera = () => {
     const nextFacingMode = facingMode === 'environment' ? 'user' : 'environment';
     setFacingMode(nextFacingMode);
     startCamera(nextFacingMode);
-  };
-
-  const handleVideoMetadata = () => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    setVideoSize({
-      width: video.videoWidth || 0,
-      height: video.videoHeight || 0,
-    });
-
-    video.play().catch(() => undefined);
   };
 
   return (
@@ -350,24 +266,8 @@ const MobileCameraFeed: React.FC = () => {
         autoPlay
         muted
         playsInline
-        onLoadedMetadata={handleVideoMetadata}
-        className="pointer-events-none absolute h-0 w-0 opacity-0"
+        className="absolute inset-0 h-full w-full object-cover"
       />
-
-      <canvas
-        ref={previewCanvasRef}
-        className="absolute inset-0 h-full w-full"
-      />
-
-      {!error && !isLandscape && (
-        <div className="absolute inset-0 flex items-center justify-center px-6 text-center text-white">
-          <div className="max-w-sm bg-black/60 px-5 py-4 backdrop-blur-sm">
-            <Smartphone className="mx-auto mb-3 h-10 w-10 rotate-90" />
-            <p className="text-base font-semibold">Γυρίστε το κινητό οριζόντια</p>
-            <p className="mt-1 text-sm text-white/70">Rotate to landscape for σωστό full-screen 16:9</p>
-          </div>
-        </div>
-      )}
 
       {error && (
         <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-white">
@@ -383,6 +283,7 @@ const MobileCameraFeed: React.FC = () => {
         </div>
       )}
 
+      {/* Top bar */}
       <div className="absolute inset-x-0 top-0 z-10 bg-black/80 px-4 py-3 text-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -411,12 +312,14 @@ const MobileCameraFeed: React.FC = () => {
         </div>
       </div>
 
+      {/* Bottom bar */}
       <div className="absolute inset-x-0 bottom-0 z-10 bg-black/80 px-4 py-2 text-white">
         <div className="flex items-center justify-center gap-2">
           <div className={`h-2 w-2 rounded-full ${connected ? 'bg-[#00ffba] animate-pulse' : 'bg-red-400'}`} />
           <span className="text-xs text-white/70">
-            Ring • {positionLabels[position] || position}
+            WebRTC HD • {positionLabels[position] || position}
             {dbRegistered && ' • Synced'}
+            {viewerCount > 0 && ` • ${viewerCount} viewer${viewerCount > 1 ? 's' : ''}`}
           </span>
         </div>
       </div>

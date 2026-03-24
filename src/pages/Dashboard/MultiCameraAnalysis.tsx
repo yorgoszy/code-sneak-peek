@@ -26,7 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Menu, ArrowLeft, Camera, Settings, Play, Square, RotateCcw, RotateCw,
+  Menu, ArrowLeft, Camera, Settings, Play, Square,
   Brain, Target, Activity, Save, Loader2, Video, MonitorPlay,
   Maximize2, Tag, Download, ChevronRight, Zap, Eye,
   AlertCircle, CheckCircle, Wifi, WifiOff, Smartphone, Monitor
@@ -108,85 +108,115 @@ const CameraFeedInline: React.FC<{ deviceId: string }> = ({ deviceId }) => {
   return <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />;
 };
 
-/** Inline mobile camera feed — receives frames via Supabase Realtime broadcast */
+/** Inline mobile camera feed — receives video via WebRTC peer-to-peer */
 const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ringId, camIndex }) => {
-  const [frameData, setFrameData] = React.useState<{
-    src: string;
-    width: number;
-    height: number;
-    orientationAngle: number;
-  } | null>(null);
-  const [manualRotation, setManualRotation] = React.useState(0);
+  const viewerId = React.useMemo(
+    () => (crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`),
+    [],
+  );
+  const channelName = React.useMemo(
+    () => `webrtc-mobile-cam-${ringId}-${camIndex}`,
+    [ringId, camIndex],
+  );
+  const pcRef = React.useRef<RTCPeerConnection | null>(null);
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+  const [hasStream, setHasStream] = React.useState(false);
+
+  const RTC_CONFIG: RTCConfiguration = {
+    iceServers: [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }],
+  };
 
   React.useEffect(() => {
-    const channelName = `mobile-cam-${ringId}-${camIndex}`;
     const channel = supabase.channel(channelName);
 
-    channel.on('broadcast', { event: 'frame' }, ({ payload }) => {
-      if (payload?.frame) {
-        setFrameData({
-          src: payload.frame,
-          width: Number(payload.width) || 320,
-          height: Number(payload.height) || 180,
-          orientationAngle: Number(payload.orientationAngle) || 0,
+    const ensurePc = () => {
+      if (pcRef.current) return pcRef.current;
+      const pc = new RTCPeerConnection(RTC_CONFIG);
+      pcRef.current = pc;
+
+      pc.ontrack = (event) => {
+        const [stream] = event.streams;
+        if (stream && videoRef.current) {
+          videoRef.current.srcObject = stream;
+          setHasStream(true);
+        }
+      };
+
+      pc.onicecandidate = (ev) => {
+        if (!ev.candidate) return;
+        channel.send({
+          type: 'broadcast',
+          event: 'ice',
+          payload: { viewerId, candidate: ev.candidate.toJSON(), from: 'viewer' },
         });
-      }
-    }).subscribe();
+      };
+
+      return pc;
+    };
+
+    channel
+      .on('broadcast', { event: 'offer' }, async ({ payload }: any) => {
+        try {
+          if (payload.viewerId !== viewerId) return;
+          const pc = ensurePc();
+          await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          await channel.send({
+            type: 'broadcast',
+            event: 'answer',
+            payload: { viewerId, sdp: pc.localDescription! },
+          });
+        } catch (e) {
+          console.error('[WebRTC] viewer offer/answer error', e);
+        }
+      })
+      .on('broadcast', { event: 'ice' }, async ({ payload }: any) => {
+        try {
+          if (payload.viewerId !== viewerId) return;
+          if (payload.from !== 'broadcaster') return;
+          const pc = ensurePc();
+          if (!payload.candidate) return;
+          await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
+        } catch {}
+      })
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          channel.send({
+            type: 'broadcast',
+            event: 'viewer-join',
+            payload: { viewerId },
+          });
+        }
+      });
 
     return () => {
-      supabase.removeChannel(channel);
+      try {
+        channel.send({ type: 'broadcast', event: 'viewer-leave', payload: { viewerId } });
+      } catch {}
+      try { supabase.removeChannel(channel); } catch {}
+      try { pcRef.current?.close(); } catch {}
+      pcRef.current = null;
     };
-  }, [ringId, camIndex]);
-
-  if (!frameData) {
-    return (
-      <div className="w-full h-full flex items-center justify-center">
-        <div className="text-center">
-          <Video className="h-8 w-8 text-white/60 mx-auto mb-1" />
-          <p className="text-xs text-white/60">📱 Waiting for mobile feed...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const normalizedAngle = ((frameData.orientationAngle % 360) + 360) % 360;
-  const autoRotation = normalizedAngle === 90 ? -90 : normalizedAngle === 270 ? 90 : 0;
-  const totalRotation = ((autoRotation + manualRotation) % 360 + 360) % 360;
-  const isSidePortrait = totalRotation === 90 || totalRotation === 270;
-  const coverScale = Math.max(frameData.width, frameData.height) / Math.max(1, Math.min(frameData.width, frameData.height));
+  }, [channelName, viewerId]);
 
   return (
     <div className="relative w-full h-full overflow-hidden bg-black">
-      <img
-        src={frameData.src}
-        alt="Mobile feed"
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted
         className="absolute inset-0 h-full w-full object-cover"
-        style={{
-          transform: isSidePortrait ? `rotate(${totalRotation}deg) scale(${coverScale})` : `rotate(${totalRotation}deg)`,
-          transformOrigin: 'center center',
-        }}
       />
-
-      <div className="absolute bottom-2 right-2 z-10 flex items-center gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className="h-8 w-8 rounded-none border-border bg-background/80 text-foreground hover:bg-background"
-          onClick={() => setManualRotation((prev) => prev - 90)}
-        >
-          <RotateCcw className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className="h-8 w-8 rounded-none border-border bg-background/80 text-foreground hover:bg-background"
-          onClick={() => setManualRotation((prev) => prev + 90)}
-        >
-          <RotateCw className="h-4 w-4" />
-        </Button>
-      </div>
+      {!hasStream && (
+        <div className="w-full h-full flex items-center justify-center">
+          <div className="text-center">
+            <Video className="h-8 w-8 text-white/60 mx-auto mb-1" />
+            <p className="text-xs text-white/60">📱 Connecting WebRTC...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
