@@ -283,6 +283,18 @@ const MultiCameraAnalysis: React.FC = () => {
     };
   }, [ringId]);
 
+  useEffect(() => {
+    if (!ringId) return;
+
+    const interval = window.setInterval(() => {
+      loadCameras();
+    }, 3000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [ringId]);
+
   const loadAvailableRings = async () => {
     const { data } = await supabase
       .from('competition_rings')
@@ -372,12 +384,16 @@ const MultiCameraAnalysis: React.FC = () => {
               : null
             : cam.stream_url;
 
+        const shouldStayActive = cam.stream_url?.startsWith('mobile:')
+          ? true
+          : cam.is_active;
+
         if (cam.id) {
           await supabase.from('ring_analysis_cameras').update({
             camera_label: cam.camera_label,
             position: cam.position,
             stream_url: streamUrlToPersist,
-            is_active: cam.is_active,
+            is_active: shouldStayActive,
             fps: cam.fps,
           }).eq('id', cam.id);
         } else {
@@ -387,7 +403,7 @@ const MultiCameraAnalysis: React.FC = () => {
             camera_label: cam.camera_label,
             position: cam.position,
             stream_url: streamUrlToPersist,
-            is_active: cam.is_active,
+            is_active: shouldStayActive,
             fps: cam.fps,
           }).select().single();
           if (data) {
