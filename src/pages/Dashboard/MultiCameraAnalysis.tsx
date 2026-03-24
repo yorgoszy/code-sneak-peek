@@ -110,7 +110,14 @@ const CameraFeedInline: React.FC<{ deviceId: string }> = ({ deviceId }) => {
 
 /** Inline mobile camera feed — receives frames via Supabase Realtime broadcast */
 const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ringId, camIndex }) => {
-  const [frameData, setFrameData] = React.useState<{ src: string; width: number; height: number } | null>(null);
+  const [frameData, setFrameData] = React.useState<{
+    src: string;
+    width: number;
+    height: number;
+    rotationDegrees: number;
+    orientationAngle: number;
+    isFrontCamera: boolean;
+  } | null>(null);
 
   React.useEffect(() => {
     const channelName = `mobile-cam-${ringId}-${camIndex}`;
@@ -122,6 +129,9 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
           src: payload.frame,
           width: Number(payload.width) || 320,
           height: Number(payload.height) || 180,
+          rotationDegrees: Number(payload.rotationDegrees) || 0,
+          orientationAngle: Number(payload.orientationAngle) || 0,
+          isFrontCamera: Boolean(payload.isFrontCamera),
         });
       }
     }).subscribe();
@@ -142,12 +152,33 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
     );
   }
 
+  const shouldRotate = frameData.height > frameData.width;
+  const normalizedAngle = ((frameData.orientationAngle % 360) + 360) % 360;
+  const desktopRotation = shouldRotate
+    ? normalizedAngle === 270
+      ? 90
+      : normalizedAngle === 90
+        ? -90
+        : frameData.rotationDegrees === 90 || frameData.rotationDegrees === -90
+          ? -frameData.rotationDegrees
+          : -90
+    : 0;
+  const desktopMirror = frameData.isFrontCamera && !shouldRotate;
+
   return (
-    <img
-      src={frameData.src}
-      alt="Mobile feed"
-      className="w-full h-full object-contain bg-black"
-    />
+    <div className="w-full h-full flex items-center justify-center overflow-hidden bg-black">
+      <img
+        src={frameData.src}
+        alt="Mobile feed"
+        className="max-w-full max-h-full object-contain"
+        style={{
+          width: shouldRotate ? 'auto' : '100%',
+          height: shouldRotate ? '100%' : 'auto',
+          transform: `rotate(${desktopRotation}deg) scaleX(${desktopMirror ? -1 : 1})`,
+          transformOrigin: 'center center',
+        }}
+      />
+    </div>
   );
 };
 
