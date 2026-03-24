@@ -1121,11 +1121,6 @@ const MultiCameraAnalysis: React.FC = () => {
           </DialogContent>
         </Dialog>
         );
-      })()}
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
     </SidebarProvider>
   );
 };
