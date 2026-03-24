@@ -701,7 +701,9 @@ const MultiCameraAnalysis: React.FC = () => {
                       <p className="text-[10px] font-medium">{cam.camera_label}</p>
                       <p className="text-[10px] text-muted-foreground">{positionLabels[cam.position]}</p>
                       <div className="mt-1">
-                        {cam.is_active && cam.stream_url ? (
+                        {cam.is_active && cam.stream_url?.startsWith('mobile:') ? (
+                          <Badge variant="outline" className="rounded-none text-[9px] px-1 py-0 border-[#00ffba] text-[#00ffba]">📱 Mobile</Badge>
+                        ) : cam.is_active && cam.stream_url ? (
                           <Badge variant="outline" className="rounded-none text-[9px] px-1 py-0">{t('aiLab.cameras.active')}</Badge>
                         ) : cam.is_active ? (
                           <Badge variant="outline" className="rounded-none text-[9px] px-1 py-0 text-muted-foreground">{t('aiLab.cameras.noUrl')}</Badge>
