@@ -972,7 +972,7 @@ const MultiCameraAnalysis: React.FC = () => {
       {/* Camera Settings Dialog */}
       {selectedCameraIndex !== null && (() => {
         const cam = cameras[selectedCameraIndex];
-        const qrUrl = `${window.location.origin}/dashboard/ai-lab?ring=${ringId}&cam=${cam?.camera_index}&pos=${cam?.position}`;
+        const qrUrl = `${window.location.origin}/mobile-camera?ring=${ringId}&cam=${cam?.camera_index}&pos=${cam?.position}`;
         return (
         <Dialog open={cameraDialogOpen} onOpenChange={setCameraDialogOpen}>
           <DialogContent className="max-w-md rounded-none">

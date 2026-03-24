@@ -20,6 +20,7 @@ import ResetPassword from "@/pages/ResetPassword";
 const PrivacyPolicy = React.lazy(() => import("@/pages/PrivacyPolicy"));
 const TermsOfService = React.lazy(() => import("@/pages/TermsOfService"));
 const JudgeScoring = React.lazy(() => import("@/pages/JudgeScoring"));
+const MobileCameraFeed = React.lazy(() => import("@/pages/MobileCameraFeed"));
 import Dashboard from "@/pages/Dashboard";
 import Users from "@/pages/Users";
 import Groups from "@/pages/Groups";
@@ -262,6 +263,9 @@ function App() {
                       <Route path="/dashboard/user-profile/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
                       <Route path="/dashboard/user-profile/:userId/edit" element={<ProtectedRoute><ProfileEdit /></ProtectedRoute>} />
                       <Route path="/dashboard/user-profile/:userId/shop" element={<ProtectedRoute><ShopWithSidebar /></ProtectedRoute>} />
+
+                      {/* Mobile camera feed - public, no auth needed */}
+                      <Route path="/mobile-camera" element={<MobileCameraFeed />} />
 
                       {/* 404 */}
                       <Route path="*" element={<NotFound />} />

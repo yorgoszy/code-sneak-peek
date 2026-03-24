@@ -1,0 +1,139 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Camera, Wifi, WifiOff, RotateCcw } from 'lucide-react';
+
+const positionLabels: Record<string, string> = {
+  left: 'Αριστερά / Left',
+  right: 'Δεξιά / Right',
+  front: 'Μπροστά / Front',
+  back: 'Πίσω / Back',
+};
+
+const MobileCameraFeed: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const ringId = searchParams.get('ring') || '';
+  const camIndex = searchParams.get('cam') || '0';
+  const position = searchParams.get('pos') || 'left';
+
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
+  const [connected, setConnected] = useState(false);
+
+  const startCamera = async (facing: 'environment' | 'user') => {
+    try {
+      // Stop existing stream
+      if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+      }
+      setError(null);
+
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: facing,
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+        },
+        audio: false,
+      });
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+      }
+      setStream(mediaStream);
+      setConnected(true);
+    } catch (err: any) {
+      console.error('Camera error:', err);
+      setError(err.message || 'Δεν ήταν δυνατή η πρόσβαση στην κάμερα');
+      setConnected(false);
+    }
+  };
+
+  useEffect(() => {
+    startCamera(facingMode);
+    return () => {
+      stream?.getTracks().forEach(t => t.stop());
+    };
+  }, []);
+
+  const toggleCamera = () => {
+    const newFacing = facingMode === 'environment' ? 'user' : 'environment';
+    setFacingMode(newFacing);
+    startCamera(newFacing);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black flex flex-col">
+      {/* Top bar */}
+      <div className="bg-black/80 text-white px-4 py-3 flex items-center justify-between z-10">
+        <div className="flex items-center gap-2">
+          <Camera className="h-5 w-5" />
+          <div>
+            <p className="text-sm font-semibold">
+              {positionLabels[position] || position}
+            </p>
+            <p className="text-[10px] text-white/60">
+              Camera {Number(camIndex) + 1}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={toggleCamera}
+            className="p-2 rounded-full bg-white/10 active:bg-white/20"
+          >
+            <RotateCcw className="h-5 w-5 text-white" />
+          </button>
+          <div className="flex items-center gap-1">
+            {connected ? (
+              <Wifi className="h-4 w-4 text-[#00ffba]" />
+            ) : (
+              <WifiOff className="h-4 w-4 text-red-400" />
+            )}
+            <span className="text-[10px]">
+              {connected ? 'LIVE' : 'OFF'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Camera feed */}
+      <div className="flex-1 relative">
+        {error ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-white px-6 text-center">
+            <Camera className="h-12 w-12 mb-4 text-white/40" />
+            <p className="text-sm mb-2">Σφάλμα κάμερας</p>
+            <p className="text-xs text-white/60 mb-4">{error}</p>
+            <button
+              onClick={() => startCamera(facingMode)}
+              className="px-4 py-2 bg-white/10 text-white text-sm active:bg-white/20"
+            >
+              Δοκιμή ξανά
+            </button>
+          </div>
+        ) : (
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        )}
+      </div>
+
+      {/* Bottom bar with position indicator */}
+      <div className="bg-black/80 text-white px-4 py-2 flex items-center justify-center z-10">
+        <div className="flex items-center gap-2">
+          <div className={`w-2 h-2 rounded-full ${connected ? 'bg-[#00ffba] animate-pulse' : 'bg-red-400'}`} />
+          <span className="text-xs text-white/70">
+            Ring • {positionLabels[position] || position}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MobileCameraFeed;
