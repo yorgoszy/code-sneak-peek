@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Camera, Wifi, WifiOff, RotateCcw } from 'lucide-react';
+import { Camera, Wifi, WifiOff, RotateCcw, Smartphone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 const positionLabels: Record<string, string> = {
