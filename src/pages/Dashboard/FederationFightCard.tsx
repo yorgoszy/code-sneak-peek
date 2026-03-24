@@ -58,6 +58,7 @@ const FederationFightCard: React.FC = () => {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [selectedCompId, setSelectedCompId] = useState('');
   const [matches, setMatches] = useState<MatchRow[]>([]);
+  const [allCompMatches, setAllCompMatches] = useState<{ id: string; match_number: number; match_order: number | null; round_number: number; category_id: string; athlete1_id: string | null; athlete2_id: string | null }[]>([]);
   const [rings, setRings] = useState<RingInfo[]>([]);
   const [loading, setLoading] = useState(false);
 
