@@ -26,7 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Menu, ArrowLeft, Camera, Settings, Play, Square, RotateCcw, RotateCw,
+  Menu, ArrowLeft, Camera, Settings, Play, Square,
   Brain, Target, Activity, Save, Loader2, Video, MonitorPlay,
   Maximize2, Tag, Download, ChevronRight, Zap, Eye,
   AlertCircle, CheckCircle, Wifi, WifiOff, Smartphone, Monitor
