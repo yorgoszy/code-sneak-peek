@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Camera, Wifi, WifiOff, RotateCcw } from 'lucide-react';
+import { Camera, Wifi, WifiOff, RotateCcw, Smartphone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 const positionLabels: Record<string, string> = {
@@ -22,6 +22,20 @@ const MobileCameraFeed: React.FC = () => {
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
   const [connected, setConnected] = useState(false);
   const [dbRegistered, setDbRegistered] = useState(false);
+  const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
+
+  // Detect orientation changes
+  useEffect(() => {
+    const handleResize = () => {
+      setIsPortrait(window.innerHeight > window.innerWidth);
+    };
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
 
   // Register this mobile camera in the database
   const registerCamera = async () => {
@@ -228,13 +242,22 @@ const MobileCameraFeed: React.FC = () => {
             </button>
           </div>
         ) : (
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="absolute inset-0 w-full h-full object-cover"
-          />
+          <>
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            {/* Portrait mode warning */}
+            {isPortrait && connected && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-yellow-500/90 text-black px-4 py-2 text-xs font-semibold animate-pulse">
+                <Smartphone className="h-4 w-4 rotate-90" />
+                Γυρίστε το κινητό οριζόντια για καλύτερη εικόνα
+              </div>
+            )}
+          </>
         )}
       </div>
 
