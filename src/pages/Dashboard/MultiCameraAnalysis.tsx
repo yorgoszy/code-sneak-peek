@@ -154,6 +154,31 @@ const MultiCameraAnalysis: React.FC = () => {
     loadSessions();
   }, [ringId]);
 
+  // Realtime subscription for camera updates (e.g. mobile phone connecting)
+  useEffect(() => {
+    if (!ringId) return;
+    const channel = supabase
+      .channel(`ring-cameras-${ringId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'ring_analysis_cameras',
+          filter: `ring_id=eq.${ringId}`,
+        },
+        () => {
+          // Reload cameras when any change happens
+          loadCameras();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [ringId]);
+
   const loadAvailableRings = async () => {
     const { data } = await supabase
       .from('competition_rings')
