@@ -29,8 +29,9 @@ import {
   Menu, ArrowLeft, Camera, Settings, Play, Square, RotateCcw,
   Brain, Target, Activity, Save, Loader2, Video, MonitorPlay,
   Maximize2, Tag, Download, ChevronRight, Zap, Eye,
-  AlertCircle, CheckCircle, Wifi, WifiOff
+  AlertCircle, CheckCircle, Wifi, WifiOff, Smartphone, Monitor
 } from "lucide-react";
+import { QRCodeSVG } from 'qrcode.react';
 import { supabase } from "@/integrations/supabase/client";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { toast } from "sonner";
@@ -121,6 +122,22 @@ const MultiCameraAnalysis: React.FC = () => {
   // Camera dialog
   const [cameraDialogOpen, setCameraDialogOpen] = useState(false);
   const [selectedCameraIndex, setSelectedCameraIndex] = useState<number | null>(null);
+  const [availableDevices, setAvailableDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
+  const [cameraSourceType, setCameraSourceType] = useState<'webcam' | 'ip'>('webcam');
+
+  // Enumerate webcam devices
+  const loadWebcamDevices = useCallback(async () => {
+    try {
+      // Request permission first
+      await navigator.mediaDevices.getUserMedia({ video: true }).then(s => s.getTracks().forEach(t => t.stop()));
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(d => d.kind === 'videoinput');
+      setAvailableDevices(videoDevices);
+    } catch (err) {
+      console.warn('Cannot enumerate devices:', err);
+    }
+  }, []);
 
   // Load available rings when no ringId in params
   useEffect(() => {
@@ -621,6 +638,9 @@ const MultiCameraAnalysis: React.FC = () => {
                             className={`absolute ${positions[cam.position] || positions.front} cursor-pointer`}
                             onClick={() => {
                               setSelectedCameraIndex(i);
+                              setCameraSourceType(cam.stream_url?.startsWith('webcam:') ? 'webcam' : cam.stream_url ? 'ip' : 'webcam');
+                              setSelectedDeviceId(cam.stream_url?.startsWith('webcam:') ? cam.stream_url.replace('webcam:', '') : '');
+                              loadWebcamDevices();
                               setCameraDialogOpen(true);
                             }}
                           >
@@ -646,6 +666,9 @@ const MultiCameraAnalysis: React.FC = () => {
                       className={`p-2 border rounded-none text-center cursor-pointer transition-colors hover:bg-muted/50 ${cam.is_active ? 'border-foreground/30' : 'border-border'}`}
                       onClick={() => {
                         setSelectedCameraIndex(i);
+                        setCameraSourceType(cam.stream_url?.startsWith('webcam:') ? 'webcam' : cam.stream_url ? 'ip' : 'webcam');
+                        setSelectedDeviceId(cam.stream_url?.startsWith('webcam:') ? cam.stream_url.replace('webcam:', '') : '');
+                        loadWebcamDevices();
                         setCameraDialogOpen(true);
                       }}
                     >
@@ -947,70 +970,141 @@ const MultiCameraAnalysis: React.FC = () => {
       </div>
 
       {/* Camera Settings Dialog */}
-      {selectedCameraIndex !== null && (
+      {selectedCameraIndex !== null && (() => {
+        const cam = cameras[selectedCameraIndex];
+        const qrUrl = `${window.location.origin}/dashboard/ai-lab?ring=${ringId}&cam=${cam?.camera_index}&pos=${cam?.position}`;
+        return (
         <Dialog open={cameraDialogOpen} onOpenChange={setCameraDialogOpen}>
           <DialogContent className="max-w-md rounded-none">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-sm">
                 <Camera className="h-4 w-4" />
-                {cameras[selectedCameraIndex]?.camera_label} — {t('aiLab.cameras.cameraSettings')}
+                {cam?.camera_label} — {t('aiLab.cameras.cameraSettings')}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-3">
+              {/* Enable toggle */}
               <div className="flex items-center justify-between">
                 <Label className="text-xs">{t('aiLab.cameras.enable')}</Label>
                 <Switch
-                  checked={cameras[selectedCameraIndex]?.is_active}
+                  checked={cam?.is_active}
                   onCheckedChange={v => updateCamera(selectedCameraIndex, 'is_active', v)}
                 />
               </div>
+
+              {/* Position - read only */}
               <div>
-                <Label className="text-xs">{t('aiLab.cameras.streamUrl')}</Label>
-                <Input
-                  value={cameras[selectedCameraIndex]?.stream_url || ''}
-                  onChange={e => updateCamera(selectedCameraIndex, 'stream_url', e.target.value)}
-                  placeholder="rtsp://mac-mini.local:8554/cam1"
-                  className="rounded-none text-xs h-8 mt-1"
-                />
+                <Label className="text-xs">{t('aiLab.cameras.position')}</Label>
+                <div className="mt-1 h-8 flex items-center px-3 border border-input bg-muted text-xs rounded-none">
+                  {positionLabels[cam?.position] || cam?.position}
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+
+              {/* Source type selector */}
+              <div>
+                <Label className="text-xs">Πηγή Κάμερας</Label>
+                <div className="flex gap-2 mt-1">
+                  <Button
+                    variant={cameraSourceType === 'webcam' ? 'default' : 'outline'}
+                    size="sm"
+                    className="rounded-none flex-1 text-xs h-8"
+                    onClick={() => setCameraSourceType('webcam')}
+                  >
+                    <Monitor className="h-3 w-3 mr-1" /> Webcam / USB
+                  </Button>
+                  <Button
+                    variant={cameraSourceType === 'ip' ? 'default' : 'outline'}
+                    size="sm"
+                    className="rounded-none flex-1 text-xs h-8"
+                    onClick={() => setCameraSourceType('ip')}
+                  >
+                    <Wifi className="h-3 w-3 mr-1" /> IP / RTSP
+                  </Button>
+                </div>
+              </div>
+
+              {/* Webcam device selector */}
+              {cameraSourceType === 'webcam' && (
                 <div>
-                  <Label className="text-xs">{t('aiLab.cameras.position')}</Label>
-                  <Select value={cameras[selectedCameraIndex]?.position} onValueChange={v => updateCamera(selectedCameraIndex, 'position', v)}>
+                  <Label className="text-xs">Επιλογή Κάμερας</Label>
+                  <Select
+                    value={selectedDeviceId}
+                    onValueChange={v => {
+                      setSelectedDeviceId(v);
+                      updateCamera(selectedCameraIndex, 'stream_url', `webcam:${v}`);
+                    }}
+                  >
                     <SelectTrigger className="rounded-none h-8 text-xs mt-1">
-                      <SelectValue />
+                      <SelectValue placeholder="Επιλέξτε κάμερα..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {cameraPositions.map(p => (
-                        <SelectItem key={p} value={p}>{positionLabels[p]}</SelectItem>
+                      {availableDevices.map((d, idx) => (
+                        <SelectItem key={d.deviceId} value={d.deviceId}>
+                          {d.label || `Camera ${idx + 1}`}
+                        </SelectItem>
                       ))}
+                      {availableDevices.length === 0 && (
+                        <SelectItem value="none" disabled>Δεν βρέθηκαν κάμερες</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
+              )}
+
+              {/* IP / RTSP URL */}
+              {cameraSourceType === 'ip' && (
                 <div>
-                  <Label className="text-xs">FPS</Label>
-                  <Select value={String(cameras[selectedCameraIndex]?.fps)} onValueChange={v => updateCamera(selectedCameraIndex, 'fps', Number(v))}>
-                    <SelectTrigger className="rounded-none h-8 text-xs mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="30">30 fps</SelectItem>
-                      <SelectItem value="60">60 fps</SelectItem>
-                      <SelectItem value="120">120 fps</SelectItem>
-                      <SelectItem value="160">160 fps</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label className="text-xs">IP / RTSP URL</Label>
+                  <Input
+                    value={cam?.stream_url?.startsWith('webcam:') ? '' : (cam?.stream_url || '')}
+                    onChange={e => updateCamera(selectedCameraIndex, 'stream_url', e.target.value)}
+                    placeholder="rtsp://192.168.1.100:8554/cam1"
+                    className="rounded-none text-xs h-8 mt-1"
+                  />
+                </div>
+              )}
+
+              {/* FPS */}
+              <div>
+                <Label className="text-xs">FPS</Label>
+                <Select value={String(cam?.fps)} onValueChange={v => updateCamera(selectedCameraIndex, 'fps', Number(v))}>
+                  <SelectTrigger className="rounded-none h-8 text-xs mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="30">30 fps</SelectItem>
+                    <SelectItem value="60">60 fps</SelectItem>
+                    <SelectItem value="120">120 fps</SelectItem>
+                    <SelectItem value="160">160 fps</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* QR Code for mobile */}
+              <div className="border border-border p-3 rounded-none">
+                <div className="flex items-center gap-2 mb-2">
+                  <Smartphone className="h-3.5 w-3.5 text-muted-foreground" />
+                  <Label className="text-xs">Σύνδεση Κινητού</Label>
+                </div>
+                <p className="text-[10px] text-muted-foreground mb-2">
+                  Σκάναρε το QR code για να χρησιμοποιήσεις κινητό ως κάμερα
+                </p>
+                <div className="flex justify-center bg-white p-3">
+                  <QRCodeSVG value={qrUrl} size={140} />
                 </div>
               </div>
+
+              {/* Status */}
               <div className="flex items-center gap-1 text-xs pt-1">
-                {cameras[selectedCameraIndex]?.is_active && cameras[selectedCameraIndex]?.stream_url ? (
+                {cam?.is_active && cam?.stream_url ? (
                   <><Wifi className="h-3 w-3 text-foreground" /><span>{t('aiLab.cameras.active')}</span></>
-                ) : cameras[selectedCameraIndex]?.is_active ? (
+                ) : cam?.is_active ? (
                   <><AlertCircle className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">{t('aiLab.cameras.noUrl')}</span></>
                 ) : (
                   <><WifiOff className="h-3 w-3 text-muted-foreground" /><span className="text-muted-foreground">{t('aiLab.cameras.disabled')}</span></>
                 )}
               </div>
+
               <Button
                 onClick={() => {
                   saveCameras();
@@ -1026,7 +1120,8 @@ const MultiCameraAnalysis: React.FC = () => {
             </div>
           </DialogContent>
         </Dialog>
-      )}
+        );
+      })()}
     </SidebarProvider>
   );
 };
