@@ -751,7 +751,7 @@ const MultiCameraAnalysis: React.FC = () => {
                           const isMobile = cam.stream_url.startsWith('mobile:');
                           return (
                             <Card key={i} className="rounded-none overflow-hidden">
-                              <div className={isMobile ? 'relative bg-black' : 'relative aspect-video bg-black'}>
+                              <div className="relative aspect-video bg-black">
                                 {isWebcam ? (
                                   <CameraFeedInline deviceId={cam.stream_url.replace('webcam:', '')} />
                                 ) : isMobile ? (
