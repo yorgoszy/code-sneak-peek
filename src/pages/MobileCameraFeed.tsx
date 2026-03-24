@@ -240,9 +240,8 @@ const MobileCameraFeed: React.FC = () => {
   }, [isFrontCamera, isLandscape, rotationDegrees]);
 
   const drawBroadcastFrame = useCallback((context: CanvasRenderingContext2D) => {
-    // Send portrait or landscape frame based on device orientation
-    const targetWidth = isLandscape ? 320 : 180;
-    const targetHeight = isLandscape ? 180 : 320;
+    const targetWidth = 320;
+    const targetHeight = 180;
 
     if (context.canvas.width !== targetWidth || context.canvas.height !== targetHeight) {
       context.canvas.width = targetWidth;
@@ -255,7 +254,7 @@ const MobileCameraFeed: React.FC = () => {
       width: targetWidth,
       height: targetHeight,
     };
-  }, [drawFrame, isLandscape]);
+  }, [drawFrame]);
 
   useEffect(() => {
     if (!connected) return;
@@ -315,7 +314,6 @@ const MobileCameraFeed: React.FC = () => {
           width: frameSize.width,
           height: frameSize.height,
           orientationAngle: normalizeAngle(viewport.angle),
-          rotationDegrees,
           facingMode,
         },
       });
@@ -325,7 +323,7 @@ const MobileCameraFeed: React.FC = () => {
       clearInterval(interval);
       supabase.removeChannel(channel);
     };
-  }, [camIndex, connected, drawBroadcastFrame, facingMode, ringId, rotationDegrees, viewport.angle]);
+  }, [camIndex, connected, drawBroadcastFrame, facingMode, ringId]);
 
   const toggleCamera = () => {
     const nextFacingMode = facingMode === 'environment' ? 'user' : 'environment';
