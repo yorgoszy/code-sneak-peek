@@ -159,14 +159,11 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
       <img
         src={frameData.src}
         alt="Mobile feed"
-        style={isSidePortrait ? {
-          height: '100%',
-          width: 'auto',
-          transform: `rotate(${rotation}deg) scale(${frameData.width / frameData.height})`,
-        } : {
-          width: '100%',
-          height: '100%',
-          objectFit: 'contain',
+        className="object-contain"
+        style={{
+          maxWidth: '100%',
+          maxHeight: '100%',
+          transform: isSidePortrait ? `rotate(${rotation}deg)` : undefined,
         }}
       />
     </div>
