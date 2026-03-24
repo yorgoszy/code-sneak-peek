@@ -199,15 +199,22 @@ const FederationFightCard: React.FC = () => {
 
   // Build source match lookup: for matches missing athletes, find which earlier match feeds into that slot
   const getPlaceholderText = useCallback((match: MatchRow, athleteSlot: 'athlete1' | 'athlete2') => {
-    // Find all matches in the same category with round_number - 1
     const sameCategoryMatches = matches.filter(m => m.category_id === match.category_id);
+    
+    // Get matches in the previous round, sorted by match_number
     const prevRoundMatches = sameCategoryMatches
       .filter(m => m.round_number === match.round_number - 1)
       .sort((a, b) => (a.match_number || 0) - (b.match_number || 0));
     
-    if (prevRoundMatches.length > 0) {
-      // For athlete1 -> first source match, for athlete2 -> second source match
-      const sourceIndex = athleteSlot === 'athlete1' ? 0 : 1;
+    // Get current match's position within its round (0-indexed)
+    const sameRoundMatches = sameCategoryMatches
+      .filter(m => m.round_number === match.round_number)
+      .sort((a, b) => (a.match_number || 0) - (b.match_number || 0));
+    const matchPositionInRound = sameRoundMatches.findIndex(m => m.id === match.id);
+    
+    if (prevRoundMatches.length > 0 && matchPositionInRound >= 0) {
+      // Match at position P gets winners from positions (2P) and (2P+1) in previous round
+      const sourceIndex = athleteSlot === 'athlete1' ? matchPositionInRound * 2 : matchPositionInRound * 2 + 1;
       const sourceMatch = prevRoundMatches[sourceIndex];
       if (sourceMatch) {
         return `Νικητής αγ. ${sourceMatch.match_order || sourceMatch.match_number}`;
