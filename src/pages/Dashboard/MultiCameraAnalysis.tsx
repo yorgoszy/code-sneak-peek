@@ -115,6 +115,7 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
     width: number;
     height: number;
     orientationAngle: number;
+    rotationDegrees: number;
   } | null>(null);
 
   React.useEffect(() => {
@@ -128,6 +129,7 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
           width: Number(payload.width) || 320,
           height: Number(payload.height) || 180,
           orientationAngle: Number(payload.orientationAngle) || 0,
+          rotationDegrees: Number(payload.rotationDegrees) || 0,
         });
       }
     }).subscribe();
@@ -148,9 +150,8 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
     );
   }
 
-  const normalizedAngle = ((frameData.orientationAngle % 360) + 360) % 360;
-  const isSidePortrait = normalizedAngle === 90 || normalizedAngle === 270;
-  const rotation = normalizedAngle === 90 ? -90 : normalizedAngle === 270 ? 90 : 0;
+  const rotation = frameData.rotationDegrees;
+  const isSidePortrait = Math.abs(rotation) === 90;
   const rotatedWidthPercent = `${(frameData.width / frameData.height) * 100}%`;
   const rotatedHeightPercent = `${(frameData.height / frameData.width) * 100}%`;
 
