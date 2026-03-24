@@ -240,8 +240,9 @@ const MobileCameraFeed: React.FC = () => {
   }, [isFrontCamera, isLandscape, rotationDegrees]);
 
   const drawBroadcastFrame = useCallback((context: CanvasRenderingContext2D) => {
-    const targetWidth = 320;
-    const targetHeight = 180;
+    // Send portrait or landscape frame based on device orientation
+    const targetWidth = isLandscape ? 320 : 180;
+    const targetHeight = isLandscape ? 180 : 320;
 
     if (context.canvas.width !== targetWidth || context.canvas.height !== targetHeight) {
       context.canvas.width = targetWidth;
@@ -254,7 +255,7 @@ const MobileCameraFeed: React.FC = () => {
       width: targetWidth,
       height: targetHeight,
     };
-  }, [drawFrame]);
+  }, [drawFrame, isLandscape]);
 
   useEffect(() => {
     if (!connected) return;
