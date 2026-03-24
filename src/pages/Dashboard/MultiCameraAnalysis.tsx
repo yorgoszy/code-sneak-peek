@@ -110,7 +110,7 @@ const CameraFeedInline: React.FC<{ deviceId: string }> = ({ deviceId }) => {
 
 /** Inline mobile camera feed — receives frames via Supabase Realtime broadcast */
 const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ringId, camIndex }) => {
-  const [frameSrc, setFrameSrc] = React.useState<string | null>(null);
+  const [frameData, setFrameData] = React.useState<{ src: string; width: number; height: number } | null>(null);
 
   React.useEffect(() => {
     const channelName = `mobile-cam-${ringId}-${camIndex}`;
@@ -118,7 +118,11 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
 
     channel.on('broadcast', { event: 'frame' }, ({ payload }) => {
       if (payload?.frame) {
-        setFrameSrc(payload.frame);
+        setFrameData({
+          src: payload.frame,
+          width: Number(payload.width) || 320,
+          height: Number(payload.height) || 180,
+        });
       }
     }).subscribe();
 
@@ -127,7 +131,7 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
     };
   }, [ringId, camIndex]);
 
-  if (!frameSrc) {
+  if (!frameData) {
     return (
       <div className="w-full h-full flex items-center justify-center">
         <div className="text-center">
@@ -138,7 +142,15 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
     );
   }
 
-  return <img src={frameSrc} alt="Mobile feed" className="w-full h-full object-cover" />;
+  const isPortrait = frameData.height > frameData.width;
+
+  return (
+    <img
+      src={frameData.src}
+      alt="Mobile feed"
+      className={isPortrait ? 'w-full h-full object-contain bg-black' : 'w-full h-full object-cover'}
+    />
+  );
 };
 
 const MultiCameraAnalysis: React.FC = () => {
