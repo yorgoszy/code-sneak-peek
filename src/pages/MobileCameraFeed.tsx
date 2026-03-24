@@ -134,6 +134,40 @@ const MobileCameraFeed: React.FC = () => {
     return () => clearInterval(interval);
   }, [dbRegistered, connected, ringId, camIndex]);
 
+  // Broadcast video frames via Supabase Realtime so the dashboard can display them
+  useEffect(() => {
+    if (!connected || !ringId || !videoRef.current) return;
+
+    const channelName = `mobile-cam-${ringId}-${camIndex}`;
+    const channel = supabase.channel(channelName);
+    channel.subscribe();
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const interval = setInterval(() => {
+      const video = videoRef.current;
+      if (!video || !ctx || video.readyState < 2) return;
+
+      // Low-res for bandwidth (320x180)
+      canvas.width = 320;
+      canvas.height = 180;
+      ctx.drawImage(video, 0, 0, 320, 180);
+      const frame = canvas.toDataURL('image/jpeg', 0.5);
+
+      channel.send({
+        type: 'broadcast',
+        event: 'frame',
+        payload: { frame },
+      });
+    }, 500); // 2 FPS
+
+    return () => {
+      clearInterval(interval);
+      supabase.removeChannel(channel);
+    };
+  }, [connected, ringId, camIndex]);
+
   const toggleCamera = () => {
     const newFacing = facingMode === 'environment' ? 'user' : 'environment';
     setFacingMode(newFacing);
