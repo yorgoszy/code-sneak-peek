@@ -151,19 +151,17 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
   const normalizedAngle = ((frameData.orientationAngle % 360) + 360) % 360;
   const isSidePortrait = normalizedAngle === 90 || normalizedAngle === 270;
   const rotation = normalizedAngle === 90 ? -90 : normalizedAngle === 270 ? 90 : 0;
-  const rotatedWidthPercent = `${(frameData.width / frameData.height) * 100}%`;
-  const rotatedHeightPercent = `${(frameData.height / frameData.width) * 100}%`;
+  const coverScale = Math.max(frameData.width, frameData.height) / Math.max(1, Math.min(frameData.width, frameData.height));
 
   return (
-    <div className="w-full h-full flex items-center justify-center overflow-hidden bg-black">
+    <div className="relative w-full h-full overflow-hidden bg-black">
       <img
         src={frameData.src}
         alt="Mobile feed"
-        className="object-contain"
+        className="absolute inset-0 h-full w-full object-cover"
         style={{
-          maxWidth: '100%',
-          maxHeight: '100%',
-          transform: isSidePortrait ? `rotate(${rotation}deg)` : undefined,
+          transform: isSidePortrait ? `rotate(${rotation}deg) scale(${coverScale})` : undefined,
+          transformOrigin: 'center center',
         }}
       />
     </div>
