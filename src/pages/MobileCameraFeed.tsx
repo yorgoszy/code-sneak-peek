@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Camera, Wifi, WifiOff, RotateCcw, Smartphone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,6 +10,18 @@ const positionLabels: Record<string, string> = {
   back: 'Πίσω / Back',
 };
 
+const getOrientationAngle = () => {
+  if (typeof window === 'undefined') return 0;
+
+  const screenAngle = window.screen.orientation?.angle;
+  if (typeof screenAngle === 'number') return screenAngle;
+
+  const legacyAngle = (window as Window & { orientation?: number }).orientation;
+  return typeof legacyAngle === 'number' ? legacyAngle : 0;
+};
+
+const normalizeAngle = (angle: number) => ((angle % 360) + 360) % 360;
+
 const MobileCameraFeed: React.FC = () => {
   const [searchParams] = useSearchParams();
   const ringId = searchParams.get('ring') || '';
@@ -17,31 +29,44 @@ const MobileCameraFeed: React.FC = () => {
   const position = searchParams.get('pos') || 'left';
 
   const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
   const [connected, setConnected] = useState(false);
   const [dbRegistered, setDbRegistered] = useState(false);
-  const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
+  const [viewport, setViewport] = useState({
+    isLandscape: window.innerWidth > window.innerHeight,
+    angle: getOrientationAngle(),
+  });
+  const [videoSize, setVideoSize] = useState({ width: 0, height: 0 });
 
-  // Detect orientation changes
   useEffect(() => {
-    const handleResize = () => {
-      setIsLandscape(window.innerWidth > window.innerHeight);
+    const updateViewport = () => {
+      setViewport({
+        isLandscape: window.innerWidth > window.innerHeight,
+        angle: getOrientationAngle(),
+      });
     };
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', () => {
-      // Delay to let browser finish rotation
-      setTimeout(handleResize, 200);
-    });
+
+    const handleOrientationChange = () => {
+      window.setTimeout(updateViewport, 150);
+    };
+
+    updateViewport();
+    window.addEventListener('resize', updateViewport);
+    window.addEventListener('orientationchange', handleOrientationChange);
+
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('resize', updateViewport);
+      window.removeEventListener('orientationchange', handleOrientationChange);
     };
   }, []);
 
-  // Register this mobile camera in the database
   const registerCamera = async () => {
     if (!ringId) return;
+
     try {
       const camNum = Number(camIndex);
       const { data: existing } = await supabase
@@ -65,12 +90,13 @@ const MobileCameraFeed: React.FC = () => {
           ring_id: ringId,
           camera_index: camNum,
           camera_label: `Camera ${camNum + 1}`,
-          position: position,
+          position,
           stream_url: `mobile:${Date.now()}`,
           is_active: true,
           fps: 30,
         });
       }
+
       setDbRegistered(true);
     } catch (err) {
       console.error('Failed to register camera:', err);
@@ -79,6 +105,7 @@ const MobileCameraFeed: React.FC = () => {
 
   const unregisterCamera = async () => {
     if (!ringId) return;
+
     const camNum = Number(camIndex);
     await supabase
       .from('ring_analysis_cameras')
@@ -93,26 +120,27 @@ const MobileCameraFeed: React.FC = () => {
 
   const startCamera = async (facing: 'environment' | 'user') => {
     try {
-      if (stream) {
-        stream.getTracks().forEach(t => t.stop());
-      }
+      streamRef.current?.getTracks().forEach((track) => track.stop());
       setError(null);
 
-      // Request high resolution - no aspect ratio constraint
-      // The camera will naturally give landscape when phone is rotated
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: facing,
           width: { ideal: 1920 },
           height: { ideal: 1080 },
+          aspectRatio: { ideal: 16 / 9 },
         },
         audio: false,
       });
 
+      streamRef.current = mediaStream;
+      setStream(mediaStream);
+
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
+        await videoRef.current.play().catch(() => undefined);
       }
-      setStream(mediaStream);
+
       setConnected(true);
       registerCamera();
     } catch (err: any) {
@@ -124,15 +152,16 @@ const MobileCameraFeed: React.FC = () => {
 
   useEffect(() => {
     startCamera(facingMode);
+
     return () => {
-      stream?.getTracks().forEach(t => t.stop());
+      streamRef.current?.getTracks().forEach((track) => track.stop());
       unregisterCamera();
     };
   }, []);
 
-  // Keep-alive heartbeat
   useEffect(() => {
     if (!dbRegistered || !connected || !ringId) return;
+
     const interval = setInterval(async () => {
       const camNum = Number(camIndex);
       await supabase
@@ -141,10 +170,21 @@ const MobileCameraFeed: React.FC = () => {
         .eq('ring_id', ringId)
         .eq('camera_index', camNum);
     }, 10000);
+
     return () => clearInterval(interval);
   }, [dbRegistered, connected, ringId, camIndex]);
 
-  // Broadcast video frames — send the FULL frame as-is, no cropping
+  const rotationDegrees = useMemo(() => {
+    const normalizedAngle = normalizeAngle(viewport.angle);
+
+    if (!viewport.isLandscape || videoSize.width >= videoSize.height) {
+      return 0;
+    }
+
+    if (normalizedAngle === 270) return -90;
+    return 90;
+  }, [viewport.angle, viewport.isLandscape, videoSize.height, videoSize.width]);
+
   useEffect(() => {
     if (!connected || !ringId || !videoRef.current) return;
 
@@ -159,114 +199,165 @@ const MobileCameraFeed: React.FC = () => {
       const video = videoRef.current;
       if (!video || !ctx || video.readyState < 2) return;
 
-      const vw = video.videoWidth || 640;
-      const vh = video.videoHeight || 480;
+      const rawWidth = video.videoWidth || 640;
+      const rawHeight = video.videoHeight || 480;
 
-      // Scale down proportionally for bandwidth, max 320px on longest side
-      const scale = Math.min(320 / Math.max(vw, vh), 1);
-      const outW = Math.round(vw * scale);
-      const outH = Math.round(vh * scale);
+      setVideoSize((prev) => (
+        prev.width === rawWidth && prev.height === rawHeight
+          ? prev
+          : { width: rawWidth, height: rawHeight }
+      ));
 
-      canvas.width = outW;
-      canvas.height = outH;
+      const targetWidth = 320;
+      const targetHeight = 180;
+      const shouldRotate = viewport.isLandscape && rawHeight > rawWidth;
+      const drawRotation = shouldRotate ? rotationDegrees : 0;
+      const effectiveWidth = shouldRotate ? rawHeight : rawWidth;
+      const effectiveHeight = shouldRotate ? rawWidth : rawHeight;
+      const scale = Math.min(targetWidth / effectiveWidth, targetHeight / effectiveHeight);
+      const drawWidth = rawWidth * scale;
+      const drawHeight = rawHeight * scale;
 
-      // Draw the full frame as-is — no rotation, no cropping
-      ctx.drawImage(video, 0, 0, outW, outH);
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
 
-      const frame = canvas.toDataURL('image/jpeg', 0.55);
+      ctx.fillStyle = 'black';
+      ctx.fillRect(0, 0, targetWidth, targetHeight);
+      ctx.save();
+      ctx.translate(targetWidth / 2, targetHeight / 2);
+      ctx.rotate((drawRotation * Math.PI) / 180);
+      ctx.drawImage(video, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+      ctx.restore();
+
+      const frame = canvas.toDataURL('image/jpeg', 0.6);
 
       channel.send({
         type: 'broadcast',
         event: 'frame',
-        payload: { frame, width: outW, height: outH },
+        payload: {
+          frame,
+          width: targetWidth,
+          height: targetHeight,
+        },
       });
-    }, 500); // 2 FPS
+    }, 500);
 
     return () => {
       clearInterval(interval);
       supabase.removeChannel(channel);
     };
-  }, [connected, ringId, camIndex]);
+  }, [camIndex, connected, ringId, rotationDegrees, viewport.isLandscape]);
 
   const toggleCamera = () => {
-    const newFacing = facingMode === 'environment' ? 'user' : 'environment';
-    setFacingMode(newFacing);
-    startCamera(newFacing);
+    const nextFacingMode = facingMode === 'environment' ? 'user' : 'environment';
+    setFacingMode(nextFacingMode);
+    startCamera(nextFacingMode);
   };
 
-  return (
-    <div className="fixed inset-0 bg-black flex flex-col">
-      {/* Top bar */}
-      <div className="bg-black/80 text-white px-4 py-3 flex items-center justify-between z-10">
-        <div className="flex items-center gap-2">
-          <Camera className="h-5 w-5" />
-          <div>
-            <p className="text-sm font-semibold">
-              {positionLabels[position] || position}
-            </p>
-            <p className="text-[10px] text-white/60">
-              Camera {Number(camIndex) + 1}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={toggleCamera}
-            className="p-2 rounded-full bg-white/10 active:bg-white/20"
-          >
-            <RotateCcw className="h-5 w-5 text-white" />
-          </button>
-          <div className="flex items-center gap-1">
-            {connected ? (
-              <Wifi className="h-4 w-4 text-[#00ffba]" />
-            ) : (
-              <WifiOff className="h-4 w-4 text-red-400" />
-            )}
-            <span className="text-[10px]">
-              {connected ? 'LIVE' : 'OFF'}
-            </span>
-          </div>
-        </div>
-      </div>
+  const handleVideoMetadata = () => {
+    const video = videoRef.current;
+    if (!video) return;
 
-      {/* Camera feed */}
-      <div className="flex-1 relative">
+    setVideoSize({
+      width: video.videoWidth || 0,
+      height: video.videoHeight || 0,
+    });
+
+    video.play().catch(() => undefined);
+  };
+
+  const landscapePreviewStyle: React.CSSProperties = rotationDegrees
+    ? {
+        width: '100vh',
+        height: '100vw',
+        objectFit: 'contain',
+        transform: `rotate(${rotationDegrees}deg)`,
+      }
+    : {
+        width: '100vw',
+        height: '100vh',
+        objectFit: 'contain',
+      };
+
+  return (
+    <div className="fixed inset-0 overflow-hidden bg-black">
+      <div className="absolute inset-0 bg-black">
         {error ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-white px-6 text-center">
-            <Camera className="h-12 w-12 mb-4 text-white/40" />
-            <p className="text-sm mb-2">Σφάλμα κάμερας</p>
-            <p className="text-xs text-white/60 mb-4">{error}</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-white">
+            <Camera className="mb-4 h-12 w-12 text-white/40" />
+            <p className="mb-2 text-sm">Σφάλμα κάμερας</p>
+            <p className="mb-4 text-xs text-white/60">{error}</p>
             <button
               onClick={() => startCamera(facingMode)}
-              className="px-4 py-2 bg-white/10 text-white text-sm active:bg-white/20"
+              className="bg-white/10 px-4 py-2 text-sm text-white active:bg-white/20"
             >
               Δοκιμή ξανά
             </button>
+          </div>
+        ) : viewport.isLandscape ? (
+          <div className="absolute inset-0 flex items-center justify-center overflow-hidden bg-black">
+            <video
+              ref={videoRef}
+              autoPlay
+              muted
+              playsInline
+              onLoadedMetadata={handleVideoMetadata}
+              className="max-w-none"
+              style={landscapePreviewStyle}
+            />
           </div>
         ) : (
           <>
             <video
               ref={videoRef}
               autoPlay
-              playsInline
               muted
-              className="absolute inset-0 w-full h-full object-cover"
+              playsInline
+              onLoadedMetadata={handleVideoMetadata}
+              className="absolute inset-0 h-full w-full object-cover opacity-50"
             />
-            {/* Show message when portrait — encourage landscape */}
-            {!isLandscape && connected && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-yellow-500/90 text-black px-4 py-2 text-xs font-semibold animate-pulse">
-                <Smartphone className="h-4 w-4 rotate-90" />
-                Γυρίστε το κινητό οριζόντια / Rotate to landscape
+            <div className="absolute inset-0 flex items-center justify-center px-6 text-center text-white">
+              <div className="max-w-sm bg-black/60 px-5 py-4 backdrop-blur-sm">
+                <Smartphone className="mx-auto mb-3 h-10 w-10 rotate-90" />
+                <p className="text-base font-semibold">Γυρίστε το κινητό οριζόντια</p>
+                <p className="mt-1 text-sm text-white/70">Rotate the phone to landscape for full 16:9 capture</p>
               </div>
-            )}
+            </div>
           </>
         )}
       </div>
 
-      {/* Bottom bar */}
-      <div className="bg-black/80 text-white px-4 py-2 flex items-center justify-center z-10">
-        <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${connected ? 'bg-[#00ffba] animate-pulse' : 'bg-red-400'}`} />
+      <div className="absolute inset-x-0 top-0 z-10 bg-black/80 px-4 py-3 text-white">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Camera className="h-5 w-5" />
+            <div>
+              <p className="text-sm font-semibold">{positionLabels[position] || position}</p>
+              <p className="text-[10px] text-white/60">Camera {Number(camIndex) + 1}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={toggleCamera}
+              className="rounded-full bg-white/10 p-2 active:bg-white/20"
+            >
+              <RotateCcw className="h-5 w-5 text-white" />
+            </button>
+            <div className="flex items-center gap-1">
+              {connected ? (
+                <Wifi className="h-4 w-4 text-[#00ffba]" />
+              ) : (
+                <WifiOff className="h-4 w-4 text-red-400" />
+              )}
+              <span className="text-[10px]">{connected ? 'LIVE' : 'OFF'}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="absolute inset-x-0 bottom-0 z-10 bg-black/80 px-4 py-2 text-white">
+        <div className="flex items-center justify-center gap-2">
+          <div className={`h-2 w-2 rounded-full ${connected ? 'bg-[#00ffba] animate-pulse' : 'bg-red-400'}`} />
           <span className="text-xs text-white/70">
             Ring • {positionLabels[position] || position}
             {dbRegistered && ' • Synced'}
