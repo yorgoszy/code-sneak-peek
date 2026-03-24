@@ -227,9 +227,9 @@ const FederationFightCard: React.FC = () => {
           ? (feeder as any).athlete1?.name : (feeder as any).athlete2?.name;
         if (winnerName) return winnerName;
       }
-      return `Νικητής αγ. ${feeder.match_order || feederMatchNum}`;
+      return `${t('federation.brackets.winnerFight')} ${feeder.match_order || feederMatchNum}`;
     }
-    return `Νικητής αγ. ?`;
+    return `${t('federation.brackets.winnerFight')} ?`;
   }, [allCompMatches]);
 
   // Group by ring
