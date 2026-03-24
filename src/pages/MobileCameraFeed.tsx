@@ -103,8 +103,9 @@ const MobileCameraFeed: React.FC = () => {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: facing,
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
+          width: { ideal: 1920, min: 1280 },
+          height: { ideal: 1080, min: 720 },
+          aspectRatio: { ideal: 16 / 9 },
         },
         audio: false,
       });
@@ -123,6 +124,33 @@ const MobileCameraFeed: React.FC = () => {
       setConnected(false);
     }
   };
+
+  // Lock screen orientation to portrait so the camera doesn't rotate
+  useEffect(() => {
+    const lockOrientation = async () => {
+      try {
+        // @ts-ignore - screen.orientation.lock is not in all TS typings
+        await screen.orientation?.lock?.('portrait');
+      } catch (e) {
+        // Fallback: not supported on all browsers, that's OK
+        console.log('Orientation lock not supported');
+      }
+    };
+    lockOrientation();
+
+    // Also add a CSS-based lock via viewport meta
+    const meta = document.querySelector('meta[name="viewport"]');
+    const originalContent = meta?.getAttribute('content') || '';
+
+    return () => {
+      try {
+        screen.orientation?.unlock?.();
+      } catch (e) {}
+      if (meta && originalContent) {
+        meta.setAttribute('content', originalContent);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     startCamera(facingMode);
