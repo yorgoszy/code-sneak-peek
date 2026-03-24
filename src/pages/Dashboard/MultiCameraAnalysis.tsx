@@ -108,6 +108,39 @@ const CameraFeedInline: React.FC<{ deviceId: string }> = ({ deviceId }) => {
   return <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />;
 };
 
+/** Inline mobile camera feed — receives frames via Supabase Realtime broadcast */
+const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ringId, camIndex }) => {
+  const [frameSrc, setFrameSrc] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const channelName = `mobile-cam-${ringId}-${camIndex}`;
+    const channel = supabase.channel(channelName);
+
+    channel.on('broadcast', { event: 'frame' }, ({ payload }) => {
+      if (payload?.frame) {
+        setFrameSrc(payload.frame);
+      }
+    }).subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [ringId, camIndex]);
+
+  if (!frameSrc) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="text-center">
+          <Video className="h-8 w-8 text-white/60 mx-auto mb-1" />
+          <p className="text-xs text-white/60">📱 Waiting for mobile feed...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return <img src={frameSrc} alt="Mobile feed" className="w-full h-full object-cover" />;
+};
+
 const MultiCameraAnalysis: React.FC = () => {
   const { ringId: ringIdParam } = useParams<{ ringId: string }>();
   const navigate = useNavigate();
