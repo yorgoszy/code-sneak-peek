@@ -22,18 +22,20 @@ const MobileCameraFeed: React.FC = () => {
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
   const [connected, setConnected] = useState(false);
   const [dbRegistered, setDbRegistered] = useState(false);
-  const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
+  const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
 
   // Detect orientation changes
   useEffect(() => {
     const handleResize = () => {
-      setIsPortrait(window.innerHeight > window.innerWidth);
+      setIsLandscape(window.innerWidth > window.innerHeight);
     };
     window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
+    window.addEventListener('orientationchange', () => {
+      // Delay to let browser finish rotation
+      setTimeout(handleResize, 200);
+    });
     return () => {
       window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
     };
   }, []);
 
@@ -42,7 +44,6 @@ const MobileCameraFeed: React.FC = () => {
     if (!ringId) return;
     try {
       const camNum = Number(camIndex);
-      // Check if camera row exists for this ring + camera_index
       const { data: existing } = await supabase
         .from('ring_analysis_cameras')
         .select('id')
@@ -51,7 +52,6 @@ const MobileCameraFeed: React.FC = () => {
         .maybeSingle();
 
       if (existing) {
-        // Update: mark as active with mobile source
         await supabase
           .from('ring_analysis_cameras')
           .update({
@@ -61,7 +61,6 @@ const MobileCameraFeed: React.FC = () => {
           })
           .eq('id', existing.id);
       } else {
-        // Insert new camera entry
         await supabase.from('ring_analysis_cameras').insert({
           ring_id: ringId,
           camera_index: camNum,
@@ -78,7 +77,6 @@ const MobileCameraFeed: React.FC = () => {
     }
   };
 
-  // Unregister on unmount
   const unregisterCamera = async () => {
     if (!ringId) return;
     const camNum = Number(camIndex);
@@ -100,12 +98,13 @@ const MobileCameraFeed: React.FC = () => {
       }
       setError(null);
 
+      // Request high resolution - no aspect ratio constraint
+      // The camera will naturally give landscape when phone is rotated
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: facing,
-          width: { ideal: 1920, min: 1280 },
-          height: { ideal: 1080, min: 720 },
-          aspectRatio: { ideal: 16 / 9 },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
         },
         audio: false,
       });
@@ -115,8 +114,6 @@ const MobileCameraFeed: React.FC = () => {
       }
       setStream(mediaStream);
       setConnected(true);
-
-      // Register in DB once camera is working
       registerCamera();
     } catch (err: any) {
       console.error('Camera error:', err);
@@ -125,44 +122,15 @@ const MobileCameraFeed: React.FC = () => {
     }
   };
 
-  // Lock screen orientation to portrait so the camera doesn't rotate
-  useEffect(() => {
-    const lockOrientation = async () => {
-      try {
-        // @ts-ignore - screen.orientation.lock is not in all TS typings
-        await screen.orientation?.lock?.('portrait');
-      } catch (e) {
-        // Fallback: not supported on all browsers, that's OK
-        console.log('Orientation lock not supported');
-      }
-    };
-    lockOrientation();
-
-    // Also add a CSS-based lock via viewport meta
-    const meta = document.querySelector('meta[name="viewport"]');
-    const originalContent = meta?.getAttribute('content') || '';
-
-    return () => {
-      try {
-        screen.orientation?.unlock?.();
-      } catch (e) {}
-      if (meta && originalContent) {
-        meta.setAttribute('content', originalContent);
-      }
-    };
-  }, []);
-
   useEffect(() => {
     startCamera(facingMode);
-
-    // Cleanup on unmount
     return () => {
       stream?.getTracks().forEach(t => t.stop());
       unregisterCamera();
     };
   }, []);
 
-  // Keep-alive: update timestamp every 10 seconds so AI Lab knows we're still connected
+  // Keep-alive heartbeat
   useEffect(() => {
     if (!dbRegistered || !connected || !ringId) return;
     const interval = setInterval(async () => {
@@ -176,7 +144,7 @@ const MobileCameraFeed: React.FC = () => {
     return () => clearInterval(interval);
   }, [dbRegistered, connected, ringId, camIndex]);
 
-  // Broadcast video frames via Supabase Realtime so the dashboard can display them
+  // Broadcast video frames — send the FULL frame as-is, no cropping
   useEffect(() => {
     if (!connected || !ringId || !videoRef.current) return;
 
@@ -191,34 +159,26 @@ const MobileCameraFeed: React.FC = () => {
       const video = videoRef.current;
       if (!video || !ctx || video.readyState < 2) return;
 
-      // Always output landscape 320x180 (16:9)
-      const targetWidth = 320;
-      const targetHeight = 180;
-      canvas.width = targetWidth;
-      canvas.height = targetHeight;
-
       const vw = video.videoWidth || 640;
       const vh = video.videoHeight || 480;
-      const isVideoPortrait = vh > vw;
 
-      if (isVideoPortrait) {
-        // Portrait source: crop center to fill landscape canvas
-        // We need to take a horizontal slice from the portrait video
-        const sourceAspect = targetWidth / targetHeight; // 16/9
-        const cropHeight = vw / sourceAspect; // height of crop area in source
-        const cropY = Math.max(0, (vh - cropHeight) / 2);
-        ctx.drawImage(video, 0, cropY, vw, cropHeight, 0, 0, targetWidth, targetHeight);
-      } else {
-        // Landscape source: draw normally
-        ctx.drawImage(video, 0, 0, targetWidth, targetHeight);
-      }
+      // Scale down proportionally for bandwidth, max 320px on longest side
+      const scale = Math.min(320 / Math.max(vw, vh), 1);
+      const outW = Math.round(vw * scale);
+      const outH = Math.round(vh * scale);
+
+      canvas.width = outW;
+      canvas.height = outH;
+
+      // Draw the full frame as-is — no rotation, no cropping
+      ctx.drawImage(video, 0, 0, outW, outH);
 
       const frame = canvas.toDataURL('image/jpeg', 0.55);
 
       channel.send({
         type: 'broadcast',
         event: 'frame',
-        payload: { frame, width: targetWidth, height: targetHeight },
+        payload: { frame, width: outW, height: outH },
       });
     }, 500); // 2 FPS
 
@@ -292,11 +252,11 @@ const MobileCameraFeed: React.FC = () => {
               muted
               className="absolute inset-0 w-full h-full object-cover"
             />
-            {/* Portrait mode warning */}
-            {isPortrait && connected && (
+            {/* Show message when portrait — encourage landscape */}
+            {!isLandscape && connected && (
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-yellow-500/90 text-black px-4 py-2 text-xs font-semibold animate-pulse">
                 <Smartphone className="h-4 w-4 rotate-90" />
-                Γυρίστε το κινητό οριζόντια για καλύτερη εικόνα
+                Γυρίστε το κινητό οριζόντια / Rotate to landscape
               </div>
             )}
           </>
