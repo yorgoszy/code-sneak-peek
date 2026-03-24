@@ -314,6 +314,7 @@ const MobileCameraFeed: React.FC = () => {
           width: frameSize.width,
           height: frameSize.height,
           orientationAngle: normalizeAngle(viewport.angle),
+          rotationDegrees,
           facingMode,
         },
       });
@@ -323,7 +324,7 @@ const MobileCameraFeed: React.FC = () => {
       clearInterval(interval);
       supabase.removeChannel(channel);
     };
-  }, [camIndex, connected, drawBroadcastFrame, facingMode, ringId]);
+  }, [camIndex, connected, drawBroadcastFrame, facingMode, ringId, rotationDegrees, viewport.angle]);
 
   const toggleCamera = () => {
     const nextFacingMode = facingMode === 'environment' ? 'user' : 'environment';
