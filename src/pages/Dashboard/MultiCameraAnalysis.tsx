@@ -26,7 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Menu, ArrowLeft, Camera, Settings, Play, Square, RotateCcw,
+  Menu, ArrowLeft, Camera, Settings, Play, Square, RotateCcw, RotateCw,
   Brain, Target, Activity, Save, Loader2, Video, MonitorPlay,
   Maximize2, Tag, Download, ChevronRight, Zap, Eye,
   AlertCircle, CheckCircle, Wifi, WifiOff, Smartphone, Monitor
@@ -116,6 +116,7 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
     height: number;
     orientationAngle: number;
   } | null>(null);
+  const [manualRotation, setManualRotation] = React.useState(0);
 
   React.useEffect(() => {
     const channelName = `mobile-cam-${ringId}-${camIndex}`;
@@ -149,8 +150,9 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
   }
 
   const normalizedAngle = ((frameData.orientationAngle % 360) + 360) % 360;
-  const isSidePortrait = normalizedAngle === 90 || normalizedAngle === 270;
-  const rotation = normalizedAngle === 90 ? -90 : normalizedAngle === 270 ? 90 : 0;
+  const autoRotation = normalizedAngle === 90 ? -90 : normalizedAngle === 270 ? 90 : 0;
+  const totalRotation = ((autoRotation + manualRotation) % 360 + 360) % 360;
+  const isSidePortrait = totalRotation === 90 || totalRotation === 270;
   const coverScale = Math.max(frameData.width, frameData.height) / Math.max(1, Math.min(frameData.width, frameData.height));
 
   return (
@@ -160,10 +162,31 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
         alt="Mobile feed"
         className="absolute inset-0 h-full w-full object-cover"
         style={{
-          transform: isSidePortrait ? `rotate(${rotation}deg) scale(${coverScale})` : undefined,
+          transform: isSidePortrait ? `rotate(${totalRotation}deg) scale(${coverScale})` : `rotate(${totalRotation}deg)`,
           transformOrigin: 'center center',
         }}
       />
+
+      <div className="absolute bottom-2 right-2 z-10 flex items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="h-8 w-8 rounded-none border-border bg-background/80 text-foreground hover:bg-background"
+          onClick={() => setManualRotation((prev) => prev - 90)}
+        >
+          <RotateCcw className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="h-8 w-8 rounded-none border-border bg-background/80 text-foreground hover:bg-background"
+          onClick={() => setManualRotation((prev) => prev + 90)}
+        >
+          <RotateCw className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 };
