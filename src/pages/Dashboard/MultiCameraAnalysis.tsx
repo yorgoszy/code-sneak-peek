@@ -146,7 +146,7 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
     <img
       src={frameData.src}
       alt="Mobile feed"
-      className="w-full h-full object-cover bg-black"
+      className="w-full h-full object-contain bg-black"
     />
   );
 };

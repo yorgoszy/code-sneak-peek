@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Camera, Wifi, WifiOff, RotateCcw, Smartphone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,6 +22,8 @@ const getOrientationAngle = () => {
 
 const normalizeAngle = (angle: number) => ((angle % 360) + 360) % 360;
 
+type RenderMode = 'contain' | 'cover';
+
 const MobileCameraFeed: React.FC = () => {
   const [searchParams] = useSearchParams();
   const ringId = searchParams.get('ring') || '';
@@ -29,23 +31,29 @@ const MobileCameraFeed: React.FC = () => {
   const position = searchParams.get('pos') || 'left';
 
   const videoRef = useRef<HTMLVideoElement>(null);
+  const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const previewAnimationRef = useRef<number | null>(null);
 
-  const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
   const [connected, setConnected] = useState(false);
   const [dbRegistered, setDbRegistered] = useState(false);
   const [viewport, setViewport] = useState({
-    isLandscape: window.innerWidth > window.innerHeight,
+    width: window.innerWidth,
+    height: window.innerHeight,
     angle: getOrientationAngle(),
   });
   const [videoSize, setVideoSize] = useState({ width: 0, height: 0 });
 
+  const isLandscape = viewport.width > viewport.height;
+  const isFrontCamera = facingMode === 'user';
+
   useEffect(() => {
     const updateViewport = () => {
       setViewport({
-        isLandscape: window.innerWidth > window.innerHeight,
+        width: window.innerWidth,
+        height: window.innerHeight,
         angle: getOrientationAngle(),
       });
     };
@@ -134,7 +142,6 @@ const MobileCameraFeed: React.FC = () => {
       });
 
       streamRef.current = mediaStream;
-      setStream(mediaStream);
 
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
@@ -176,61 +183,102 @@ const MobileCameraFeed: React.FC = () => {
 
   const rotationDegrees = useMemo(() => {
     const normalizedAngle = normalizeAngle(viewport.angle);
+    const sourceIsPortrait = videoSize.height > videoSize.width;
 
-    if (!viewport.isLandscape || videoSize.width >= videoSize.height) {
+    if (!isLandscape || !sourceIsPortrait) {
       return 0;
     }
 
     if (normalizedAngle === 270) return -90;
+    if (normalizedAngle === 90) return 90;
     return 90;
-  }, [viewport.angle, viewport.isLandscape, videoSize.height, videoSize.width]);
+  }, [isLandscape, videoSize.height, videoSize.width, viewport.angle]);
+
+  const drawFrame = useCallback((
+    context: CanvasRenderingContext2D,
+    targetWidth: number,
+    targetHeight: number,
+    mode: RenderMode,
+  ) => {
+    const video = videoRef.current;
+    if (!video || video.readyState < 2) return;
+
+    const sourceWidth = video.videoWidth || 640;
+    const sourceHeight = video.videoHeight || 480;
+    const shouldRotate = isLandscape && sourceHeight > sourceWidth;
+    const appliedRotation = shouldRotate ? rotationDegrees : 0;
+    const effectiveWidth = shouldRotate ? sourceHeight : sourceWidth;
+    const effectiveHeight = shouldRotate ? sourceWidth : sourceHeight;
+    const scale = mode === 'cover'
+      ? Math.max(targetWidth / effectiveWidth, targetHeight / effectiveHeight)
+      : Math.min(targetWidth / effectiveWidth, targetHeight / effectiveHeight);
+    const drawWidth = sourceWidth * scale;
+    const drawHeight = sourceHeight * scale;
+
+    context.fillStyle = 'black';
+    context.fillRect(0, 0, targetWidth, targetHeight);
+    context.save();
+    context.translate(targetWidth / 2, targetHeight / 2);
+    context.rotate((appliedRotation * Math.PI) / 180);
+    context.scale(isFrontCamera ? -1 : 1, 1);
+    context.drawImage(video, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+    context.restore();
+  }, [isFrontCamera, isLandscape, rotationDegrees]);
 
   useEffect(() => {
-    if (!connected || !ringId || !videoRef.current) return;
+    if (!connected) return;
+
+    const renderPreview = () => {
+      const canvas = previewCanvasRef.current;
+      const context = canvas?.getContext('2d');
+      if (!canvas || !context) {
+        previewAnimationRef.current = window.requestAnimationFrame(renderPreview);
+        return;
+      }
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const targetWidth = Math.max(1, Math.floor(viewport.width * dpr));
+      const targetHeight = Math.max(1, Math.floor(viewport.height * dpr));
+
+      if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+      }
+
+      drawFrame(context, targetWidth, targetHeight, 'contain');
+      previewAnimationRef.current = window.requestAnimationFrame(renderPreview);
+    };
+
+    previewAnimationRef.current = window.requestAnimationFrame(renderPreview);
+
+    return () => {
+      if (previewAnimationRef.current) {
+        window.cancelAnimationFrame(previewAnimationRef.current);
+      }
+    };
+  }, [connected, drawFrame, viewport.height, viewport.width]);
+
+  useEffect(() => {
+    if (!connected || !ringId) return;
 
     const channelName = `mobile-cam-${ringId}-${camIndex}`;
     const channel = supabase.channel(channelName);
     channel.subscribe();
 
     const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const context = canvas.getContext('2d');
 
     const interval = setInterval(() => {
-      const video = videoRef.current;
-      if (!video || !ctx || video.readyState < 2) return;
-
-      const rawWidth = video.videoWidth || 640;
-      const rawHeight = video.videoHeight || 480;
-
-      setVideoSize((prev) => (
-        prev.width === rawWidth && prev.height === rawHeight
-          ? prev
-          : { width: rawWidth, height: rawHeight }
-      ));
+      if (!context) return;
 
       const targetWidth = 320;
       const targetHeight = 180;
-      const shouldRotate = viewport.isLandscape && rawHeight > rawWidth;
-      const drawRotation = shouldRotate ? rotationDegrees : 0;
-      const effectiveWidth = shouldRotate ? rawHeight : rawWidth;
-      const effectiveHeight = shouldRotate ? rawWidth : rawHeight;
-      const scale = Math.min(targetWidth / effectiveWidth, targetHeight / effectiveHeight);
-      const drawWidth = rawWidth * scale;
-      const drawHeight = rawHeight * scale;
-
       canvas.width = targetWidth;
       canvas.height = targetHeight;
 
-      ctx.fillStyle = 'black';
-      ctx.fillRect(0, 0, targetWidth, targetHeight);
-      ctx.save();
-      ctx.translate(targetWidth / 2, targetHeight / 2);
-      ctx.rotate((drawRotation * Math.PI) / 180);
-      ctx.drawImage(video, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
-      ctx.restore();
+      drawFrame(context, targetWidth, targetHeight, 'contain');
 
-      const frame = canvas.toDataURL('image/jpeg', 0.6);
-
+      const frame = canvas.toDataURL('image/jpeg', 0.62);
       channel.send({
         type: 'broadcast',
         event: 'frame',
@@ -238,6 +286,7 @@ const MobileCameraFeed: React.FC = () => {
           frame,
           width: targetWidth,
           height: targetHeight,
+          facingMode,
         },
       });
     }, 500);
@@ -246,7 +295,7 @@ const MobileCameraFeed: React.FC = () => {
       clearInterval(interval);
       supabase.removeChannel(channel);
     };
-  }, [camIndex, connected, ringId, rotationDegrees, viewport.isLandscape]);
+  }, [camIndex, connected, drawFrame, facingMode, ringId]);
 
   const toggleCamera = () => {
     const nextFacingMode = facingMode === 'environment' ? 'user' : 'environment';
@@ -266,66 +315,45 @@ const MobileCameraFeed: React.FC = () => {
     video.play().catch(() => undefined);
   };
 
-  const landscapePreviewStyle: React.CSSProperties = rotationDegrees
-    ? {
-        width: '100vh',
-        height: '100vw',
-        objectFit: 'contain',
-        transform: `rotate(${rotationDegrees}deg)`,
-      }
-    : {
-        width: '100vw',
-        height: '100vh',
-        objectFit: 'contain',
-      };
-
   return (
     <div className="fixed inset-0 overflow-hidden bg-black">
-      <div className="absolute inset-0 bg-black">
-        {error ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-white">
-            <Camera className="mb-4 h-12 w-12 text-white/40" />
-            <p className="mb-2 text-sm">Σφάλμα κάμερας</p>
-            <p className="mb-4 text-xs text-white/60">{error}</p>
-            <button
-              onClick={() => startCamera(facingMode)}
-              className="bg-white/10 px-4 py-2 text-sm text-white active:bg-white/20"
-            >
-              Δοκιμή ξανά
-            </button>
+      <video
+        ref={videoRef}
+        autoPlay
+        muted
+        playsInline
+        onLoadedMetadata={handleVideoMetadata}
+        className="pointer-events-none absolute h-0 w-0 opacity-0"
+      />
+
+      <canvas
+        ref={previewCanvasRef}
+        className="absolute inset-0 h-full w-full"
+      />
+
+      {!error && !isLandscape && (
+        <div className="absolute inset-0 flex items-center justify-center px-6 text-center text-white">
+          <div className="max-w-sm bg-black/60 px-5 py-4 backdrop-blur-sm">
+            <Smartphone className="mx-auto mb-3 h-10 w-10 rotate-90" />
+            <p className="text-base font-semibold">Γυρίστε το κινητό οριζόντια</p>
+            <p className="mt-1 text-sm text-white/70">Rotate to landscape for σωστό full-screen 16:9</p>
           </div>
-        ) : viewport.isLandscape ? (
-          <div className="absolute inset-0 flex items-center justify-center overflow-hidden bg-black">
-            <video
-              ref={videoRef}
-              autoPlay
-              muted
-              playsInline
-              onLoadedMetadata={handleVideoMetadata}
-              className="max-w-none"
-              style={landscapePreviewStyle}
-            />
-          </div>
-        ) : (
-          <>
-            <video
-              ref={videoRef}
-              autoPlay
-              muted
-              playsInline
-              onLoadedMetadata={handleVideoMetadata}
-              className="absolute inset-0 h-full w-full object-cover opacity-50"
-            />
-            <div className="absolute inset-0 flex items-center justify-center px-6 text-center text-white">
-              <div className="max-w-sm bg-black/60 px-5 py-4 backdrop-blur-sm">
-                <Smartphone className="mx-auto mb-3 h-10 w-10 rotate-90" />
-                <p className="text-base font-semibold">Γυρίστε το κινητό οριζόντια</p>
-                <p className="mt-1 text-sm text-white/70">Rotate the phone to landscape for full 16:9 capture</p>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
+        </div>
+      )}
+
+      {error && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-white">
+          <Camera className="mb-4 h-12 w-12 text-white/40" />
+          <p className="mb-2 text-sm">Σφάλμα κάμερας</p>
+          <p className="mb-4 text-xs text-white/60">{error}</p>
+          <button
+            onClick={() => startCamera(facingMode)}
+            className="bg-white/10 px-4 py-2 text-sm text-white active:bg-white/20"
+          >
+            Δοκιμή ξανά
+          </button>
+        </div>
+      )}
 
       <div className="absolute inset-x-0 top-0 z-10 bg-black/80 px-4 py-3 text-white">
         <div className="flex items-center justify-between">
