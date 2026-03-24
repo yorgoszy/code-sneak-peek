@@ -58,6 +58,7 @@ const FederationFightCard: React.FC = () => {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [selectedCompId, setSelectedCompId] = useState('');
   const [matches, setMatches] = useState<MatchRow[]>([]);
+  const [allCompMatches, setAllCompMatches] = useState<{ id: string; match_number: number; match_order: number | null; round_number: number; category_id: string; athlete1_id: string | null; athlete2_id: string | null }[]>([]);
   const [rings, setRings] = useState<RingInfo[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -85,7 +86,7 @@ const FederationFightCard: React.FC = () => {
     if (!selectedCompId) { setMatches([]); setRings([]); return; }
     setLoading(true);
 
-    const [matchesRes, ringsRes] = await Promise.all([
+    const [matchesRes, allMatchesRes, ringsRes] = await Promise.all([
       supabase
         .from('competition_matches')
         .select(`
@@ -102,6 +103,12 @@ const FederationFightCard: React.FC = () => {
         .eq('is_bye', false)
         .not('match_order', 'is', null)
         .order('match_order', { ascending: true }),
+      // Load ALL matches (lightweight) for bracket lookup
+      supabase
+        .from('competition_matches')
+        .select('id, match_number, match_order, round_number, category_id, athlete1_id, athlete2_id')
+        .eq('competition_id', selectedCompId)
+        .order('match_number', { ascending: true }),
       supabase
         .from('competition_rings')
         .select('id, ring_number, ring_name, current_match_id, match_range_start, match_range_end')
@@ -110,6 +117,7 @@ const FederationFightCard: React.FC = () => {
     ]);
 
     setMatches((matchesRes.data as MatchRow[]) || []);
+    setAllCompMatches(allMatchesRes.data || []);
     setRings((ringsRes.data as RingInfo[]) || []);
     setLoading(false);
   }, [selectedCompId]);
@@ -197,23 +205,23 @@ const FederationFightCard: React.FC = () => {
     });
   }, [matches, searchTerm, genderFilter, ageFilter, weightFilter]);
 
-  // Build source match lookup: for matches missing athletes, find which earlier match feeds into that slot
+  // Build source match lookup using ALL matches (including byes)
   const getPlaceholderText = useCallback((match: MatchRow, athleteSlot: 'athlete1' | 'athlete2') => {
-    const sameCategoryMatches = matches.filter(m => m.category_id === match.category_id);
+    // Use allCompMatches which includes ALL matches (byes, unassigned, etc.)
+    const sameCategoryAll = allCompMatches.filter(m => m.category_id === match.category_id);
     
     // Get matches in the previous round, sorted by match_number
-    const prevRoundMatches = sameCategoryMatches
+    const prevRoundMatches = sameCategoryAll
       .filter(m => m.round_number === match.round_number - 1)
       .sort((a, b) => (a.match_number || 0) - (b.match_number || 0));
     
     // Get current match's position within its round (0-indexed)
-    const sameRoundMatches = sameCategoryMatches
+    const sameRoundMatches = sameCategoryAll
       .filter(m => m.round_number === match.round_number)
       .sort((a, b) => (a.match_number || 0) - (b.match_number || 0));
     const matchPositionInRound = sameRoundMatches.findIndex(m => m.id === match.id);
     
     if (prevRoundMatches.length > 0 && matchPositionInRound >= 0) {
-      // Match at position P gets winners from positions (2P) and (2P+1) in previous round
       const sourceIndex = athleteSlot === 'athlete1' ? matchPositionInRound * 2 : matchPositionInRound * 2 + 1;
       const sourceMatch = prevRoundMatches[sourceIndex];
       if (sourceMatch) {
@@ -221,7 +229,7 @@ const FederationFightCard: React.FC = () => {
       }
     }
     return `Νικητής αγ. ?`;
-  }, [matches]);
+  }, [allCompMatches]);
 
   // Group by ring
   const matchesByRing = useMemo(() => {
