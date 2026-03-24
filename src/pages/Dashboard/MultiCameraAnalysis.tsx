@@ -142,12 +142,11 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
     );
   }
 
-  // Always landscape now
   return (
     <img
       src={frameData.src}
       alt="Mobile feed"
-      className="w-full h-full object-cover"
+      className="w-full h-full object-contain bg-black"
     />
   );
 };
