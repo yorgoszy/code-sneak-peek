@@ -20,6 +20,7 @@ import ResetPassword from "@/pages/ResetPassword";
 const PrivacyPolicy = React.lazy(() => import("@/pages/PrivacyPolicy"));
 const TermsOfService = React.lazy(() => import("@/pages/TermsOfService"));
 const JudgeScoring = React.lazy(() => import("@/pages/JudgeScoring"));
+const MobileCameraFeed = React.lazy(() => import("@/pages/MobileCameraFeed"));
 import Dashboard from "@/pages/Dashboard";
 import Users from "@/pages/Users";
 import Groups from "@/pages/Groups";
