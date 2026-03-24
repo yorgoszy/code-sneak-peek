@@ -77,37 +77,48 @@ const MobileCameraFeed: React.FC = () => {
 
     try {
       const camNum = Number(camIndex);
-      const { data: existing } = await supabase
+      const mobileStreamUrl = `mobile:${camNum}:${Date.now()}`;
+
+      const { data: existing, error: existingError } = await supabase
         .from('ring_analysis_cameras')
         .select('id')
         .eq('ring_id', ringId)
         .eq('camera_index', camNum)
         .maybeSingle();
 
+      if (existingError) throw existingError;
+
       if (existing) {
-        await supabase
+        const { error: updateError } = await supabase
           .from('ring_analysis_cameras')
           .update({
+            camera_label: `Camera ${camNum}`,
+            position,
             is_active: true,
-            stream_url: `mobile:${Date.now()}`,
+            stream_url: mobileStreamUrl,
             updated_at: new Date().toISOString(),
           })
           .eq('id', existing.id);
+
+        if (updateError) throw updateError;
       } else {
-        await supabase.from('ring_analysis_cameras').insert({
+        const { error: insertError } = await supabase.from('ring_analysis_cameras').insert({
           ring_id: ringId,
           camera_index: camNum,
-          camera_label: `Camera ${camNum + 1}`,
+          camera_label: `Camera ${camNum}`,
           position,
-          stream_url: `mobile:${Date.now()}`,
+          stream_url: mobileStreamUrl,
           is_active: true,
           fps: 30,
         });
+
+        if (insertError) throw insertError;
       }
 
       setDbRegistered(true);
     } catch (err) {
       console.error('Failed to register camera:', err);
+      setDbRegistered(false);
     }
   };
 
@@ -148,8 +159,8 @@ const MobileCameraFeed: React.FC = () => {
         await videoRef.current.play().catch(() => undefined);
       }
 
+      await registerCamera();
       setConnected(true);
-      registerCamera();
     } catch (err: any) {
       console.error('Camera error:', err);
       setError(err.message || 'Δεν ήταν δυνατή η πρόσβαση στην κάμερα');
@@ -171,9 +182,12 @@ const MobileCameraFeed: React.FC = () => {
 
     const interval = setInterval(async () => {
       const camNum = Number(camIndex);
-      await supabase
+        await supabase
         .from('ring_analysis_cameras')
-        .update({ updated_at: new Date().toISOString() })
+          .update({
+            is_active: true,
+            updated_at: new Date().toISOString(),
+          })
         .eq('ring_id', ringId)
         .eq('camera_index', camNum);
     }, 10000);
