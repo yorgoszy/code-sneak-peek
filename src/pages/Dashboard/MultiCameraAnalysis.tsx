@@ -76,6 +76,38 @@ interface RoundResult {
   processing_time_ms: number;
 }
 
+/** Inline webcam feed component */
+const CameraFeedInline: React.FC<{ deviceId: string }> = ({ deviceId }) => {
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+  const streamRef = React.useRef<MediaStream | null>(null);
+
+  React.useEffect(() => {
+    let active = true;
+    const start = async () => {
+      try {
+        if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: deviceId ? { deviceId: { exact: deviceId } } : true,
+          audio: false,
+        });
+        if (!active) { stream.getTracks().forEach(t => t.stop()); return; }
+        streamRef.current = stream;
+        if (videoRef.current) videoRef.current.srcObject = stream;
+      } catch (err) {
+        console.error('Inline camera error:', err);
+      }
+    };
+    start();
+    return () => {
+      active = false;
+      streamRef.current?.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    };
+  }, [deviceId]);
+
+  return <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />;
+};
+
 const MultiCameraAnalysis: React.FC = () => {
   const { ringId: ringIdParam } = useParams<{ ringId: string }>();
   const navigate = useNavigate();
