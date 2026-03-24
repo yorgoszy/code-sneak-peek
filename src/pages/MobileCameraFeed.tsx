@@ -299,6 +299,7 @@ const MobileCameraFeed: React.FC = () => {
           frame,
           width: frameSize.width,
           height: frameSize.height,
+          orientationAngle: normalizeAngle(viewport.angle),
           facingMode,
         },
       });

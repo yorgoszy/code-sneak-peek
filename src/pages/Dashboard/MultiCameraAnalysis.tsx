@@ -114,6 +114,7 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
     src: string;
     width: number;
     height: number;
+    orientationAngle: number;
   } | null>(null);
 
   React.useEffect(() => {
@@ -126,6 +127,7 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
           src: payload.frame,
           width: Number(payload.width) || 320,
           height: Number(payload.height) || 180,
+          orientationAngle: Number(payload.orientationAngle) || 0,
         });
       }
     }).subscribe();
@@ -146,16 +148,34 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
     );
   }
 
+  const normalizedAngle = ((frameData.orientationAngle % 360) + 360) % 360;
+  const isSidePortrait = normalizedAngle === 90 || normalizedAngle === 270;
+  const rotation = normalizedAngle === 90 ? -90 : normalizedAngle === 270 ? 90 : 0;
+  const rotatedWidthPercent = `${(frameData.width / frameData.height) * 100}%`;
+  const rotatedHeightPercent = `${(frameData.height / frameData.width) * 100}%`;
+
   return (
     <div className="w-full h-full flex items-center justify-center overflow-hidden bg-black">
-      <img
-        src={frameData.src}
-        alt="Mobile feed"
-        className="h-full w-full object-contain"
+      <div
+        className="relative h-full overflow-hidden"
         style={{
-          aspectRatio: `${frameData.width} / ${frameData.height}`,
+          aspectRatio: isSidePortrait ? '9 / 16' : `${frameData.width} / ${frameData.height}`,
+          maxWidth: '100%',
         }}
-      />
+      >
+        <img
+          src={frameData.src}
+          alt="Mobile feed"
+          className="absolute left-1/2 top-1/2 object-cover"
+          style={{
+            width: isSidePortrait ? rotatedWidthPercent : '100%',
+            height: isSidePortrait ? rotatedHeightPercent : '100%',
+            maxWidth: 'none',
+            transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
+            transformOrigin: 'center center',
+          }}
+        />
+      </div>
     </div>
   );
 };
