@@ -317,7 +317,7 @@ const MobileCameraFeed: React.FC = () => {
           facingMode,
         },
       });
-    }, 500);
+    }, 33);
 
     return () => {
       clearInterval(interval);
