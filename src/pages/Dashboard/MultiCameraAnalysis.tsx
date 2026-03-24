@@ -152,29 +152,41 @@ const MobileFeedInline: React.FC<{ ringId: string; camIndex: number }> = ({ ring
     );
   }
 
-  const shouldRotate = frameData.height > frameData.width;
+  const isPortraitFrame = frameData.height > frameData.width;
   const normalizedAngle = ((frameData.orientationAngle % 360) + 360) % 360;
-  const desktopRotation = shouldRotate
-    ? normalizedAngle === 270
-      ? 90
-      : normalizedAngle === 90
-        ? -90
-        : frameData.rotationDegrees === 90 || frameData.rotationDegrees === -90
-          ? -frameData.rotationDegrees
-          : -90
-    : 0;
-  const desktopMirror = frameData.isFrontCamera && !shouldRotate;
+  
+  // When frame is portrait (phone not rotated enough or sensor delivers portrait),
+  // we need to rotate it to landscape on desktop.
+  // angle 90 = phone rotated LEFT (counterclockwise) → rotate image -90° on desktop
+  // angle 270 = phone rotated RIGHT (clockwise) → rotate image +90° on desktop
+  let desktopRotation = 0;
+  if (isPortraitFrame) {
+    if (normalizedAngle === 90) {
+      desktopRotation = -90;
+    } else if (normalizedAngle === 270) {
+      desktopRotation = 90;
+    } else {
+      // Default: assume right rotation
+      desktopRotation = 90;
+    }
+    // Front camera flips the rotation direction
+    if (frameData.isFrontCamera) {
+      desktopRotation = -desktopRotation;
+    }
+  }
 
   return (
     <div className="w-full h-full flex items-center justify-center overflow-hidden bg-black">
       <img
         src={frameData.src}
         alt="Mobile feed"
-        className="max-w-full max-h-full object-contain"
+        className="object-contain"
         style={{
-          width: shouldRotate ? 'auto' : '100%',
-          height: shouldRotate ? '100%' : 'auto',
-          transform: `rotate(${desktopRotation}deg) scaleX(${desktopMirror ? -1 : 1})`,
+          width: isPortraitFrame ? 'auto' : '100%',
+          height: isPortraitFrame ? '100%' : '100%',
+          maxWidth: isPortraitFrame ? 'none' : '100%',
+          maxHeight: '100%',
+          transform: `rotate(${desktopRotation}deg)`,
           transformOrigin: 'center center',
         }}
       />
