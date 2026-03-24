@@ -205,23 +205,23 @@ const FederationFightCard: React.FC = () => {
     });
   }, [matches, searchTerm, genderFilter, ageFilter, weightFilter]);
 
-  // Build source match lookup: for matches missing athletes, find which earlier match feeds into that slot
+  // Build source match lookup using ALL matches (including byes)
   const getPlaceholderText = useCallback((match: MatchRow, athleteSlot: 'athlete1' | 'athlete2') => {
-    const sameCategoryMatches = matches.filter(m => m.category_id === match.category_id);
+    // Use allCompMatches which includes ALL matches (byes, unassigned, etc.)
+    const sameCategoryAll = allCompMatches.filter(m => m.category_id === match.category_id);
     
     // Get matches in the previous round, sorted by match_number
-    const prevRoundMatches = sameCategoryMatches
+    const prevRoundMatches = sameCategoryAll
       .filter(m => m.round_number === match.round_number - 1)
       .sort((a, b) => (a.match_number || 0) - (b.match_number || 0));
     
     // Get current match's position within its round (0-indexed)
-    const sameRoundMatches = sameCategoryMatches
+    const sameRoundMatches = sameCategoryAll
       .filter(m => m.round_number === match.round_number)
       .sort((a, b) => (a.match_number || 0) - (b.match_number || 0));
     const matchPositionInRound = sameRoundMatches.findIndex(m => m.id === match.id);
     
     if (prevRoundMatches.length > 0 && matchPositionInRound >= 0) {
-      // Match at position P gets winners from positions (2P) and (2P+1) in previous round
       const sourceIndex = athleteSlot === 'athlete1' ? matchPositionInRound * 2 : matchPositionInRound * 2 + 1;
       const sourceMatch = prevRoundMatches[sourceIndex];
       if (sourceMatch) {
@@ -229,7 +229,7 @@ const FederationFightCard: React.FC = () => {
       }
     }
     return `Νικητής αγ. ?`;
-  }, [matches]);
+  }, [allCompMatches]);
 
   // Group by ring
   const matchesByRing = useMemo(() => {
