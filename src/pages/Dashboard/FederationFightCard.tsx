@@ -454,7 +454,7 @@ const FederationFightCard: React.FC = () => {
                                           </Avatar>
                                           <div className="min-w-0 flex-1">
                                             <p className={`text-xs font-medium ${m.winner_id === m.athlete2_id && isCompleted ? 'font-bold' : ''}`}>
-                                              {m.athlete2?.name || '—'}
+                                              {m.athlete2?.name || getPlaceholderText(m, 'athlete2')}
                                             </p>
                                             {m.athlete2_club?.name && (
                                               <p className="text-[9px] text-muted-foreground">{m.athlete2_club.name}</p>
