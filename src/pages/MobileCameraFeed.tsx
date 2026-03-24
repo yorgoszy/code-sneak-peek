@@ -163,14 +163,28 @@ const MobileCameraFeed: React.FC = () => {
       const video = videoRef.current;
       if (!video || !ctx || video.readyState < 2) return;
 
-      const sourceWidth = video.videoWidth || 720;
-      const sourceHeight = video.videoHeight || 1280;
+      // Always output landscape 320x180 (16:9)
       const targetWidth = 320;
-      const targetHeight = Math.round((sourceHeight / sourceWidth) * targetWidth);
-
+      const targetHeight = 180;
       canvas.width = targetWidth;
       canvas.height = targetHeight;
-      ctx.drawImage(video, 0, 0, targetWidth, targetHeight);
+
+      const vw = video.videoWidth || 640;
+      const vh = video.videoHeight || 480;
+      const isVideoPortrait = vh > vw;
+
+      if (isVideoPortrait) {
+        // Portrait source: crop center to fill landscape canvas
+        // We need to take a horizontal slice from the portrait video
+        const sourceAspect = targetWidth / targetHeight; // 16/9
+        const cropHeight = vw / sourceAspect; // height of crop area in source
+        const cropY = Math.max(0, (vh - cropHeight) / 2);
+        ctx.drawImage(video, 0, cropY, vw, cropHeight, 0, 0, targetWidth, targetHeight);
+      } else {
+        // Landscape source: draw normally
+        ctx.drawImage(video, 0, 0, targetWidth, targetHeight);
+      }
+
       const frame = canvas.toDataURL('image/jpeg', 0.55);
 
       channel.send({
