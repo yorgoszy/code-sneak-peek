@@ -58,7 +58,7 @@ const FederationFightCard: React.FC = () => {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [selectedCompId, setSelectedCompId] = useState('');
   const [matches, setMatches] = useState<MatchRow[]>([]);
-  const [allCompMatches, setAllCompMatches] = useState<{ id: string; match_number: number; match_order: number | null; round_number: number; category_id: string; athlete1_id: string | null; athlete2_id: string | null }[]>([]);
+  const [allCompMatches, setAllCompMatches] = useState<{ id: string; match_number: number; match_order: number | null; round_number: number; category_id: string; athlete1_id: string | null; athlete2_id: string | null; winner_id: string | null }[]>([]);
   const [rings, setRings] = useState<RingInfo[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -106,7 +106,7 @@ const FederationFightCard: React.FC = () => {
       // Load ALL matches (lightweight) for bracket lookup
       supabase
         .from('competition_matches')
-        .select('id, match_number, match_order, round_number, category_id, athlete1_id, athlete2_id')
+        .select('id, match_number, match_order, round_number, category_id, athlete1_id, athlete2_id, winner_id')
         .eq('competition_id', selectedCompId)
         .order('match_number', { ascending: true }),
       supabase
@@ -205,28 +205,29 @@ const FederationFightCard: React.FC = () => {
     });
   }, [matches, searchTerm, genderFilter, ageFilter, weightFilter]);
 
-  // Build source match lookup using ALL matches (including byes)
+  // Build source match lookup using same logic as Brackets/Live pages
   const getPlaceholderText = useCallback((match: MatchRow, athleteSlot: 'athlete1' | 'athlete2') => {
-    // Use allCompMatches which includes ALL matches (byes, unassigned, etc.)
-    const sameCategoryAll = allCompMatches.filter(m => m.category_id === match.category_id);
+    const allWithByes = allCompMatches;
     
-    // Get matches in the previous round, sorted by match_number
-    const prevRoundMatches = sameCategoryAll
-      .filter(m => m.round_number === match.round_number - 1)
-      .sort((a, b) => (a.match_number || 0) - (b.match_number || 0));
+    // Use same feeder logic as Brackets and Live pages
+    const feederRound = (match.round_number || 1) * 2;
+    const feederMatchNum = athleteSlot === 'athlete1' 
+      ? ((match.match_number || 1) * 2) - 1 
+      : (match.match_number || 1) * 2;
     
-    // Get current match's position within its round (0-indexed)
-    const sameRoundMatches = sameCategoryAll
-      .filter(m => m.round_number === match.round_number)
-      .sort((a, b) => (a.match_number || 0) - (b.match_number || 0));
-    const matchPositionInRound = sameRoundMatches.findIndex(m => m.id === match.id);
+    const feeder = allWithByes.find((fm: any) => 
+      fm.category_id === match.category_id && 
+      fm.round_number === feederRound && 
+      fm.match_number === feederMatchNum
+    );
     
-    if (prevRoundMatches.length > 0 && matchPositionInRound >= 0) {
-      const sourceIndex = athleteSlot === 'athlete1' ? matchPositionInRound * 2 : matchPositionInRound * 2 + 1;
-      const sourceMatch = prevRoundMatches[sourceIndex];
-      if (sourceMatch) {
-        return `Νικητής αγ. ${sourceMatch.match_order || sourceMatch.match_number}`;
+    if (feeder) {
+      if (feeder.winner_id) {
+        const winnerName = feeder.athlete1_id === feeder.winner_id 
+          ? (feeder as any).athlete1?.name : (feeder as any).athlete2?.name;
+        if (winnerName) return winnerName;
       }
+      return `Νικητής αγ. ${feeder.match_order || feederMatchNum}`;
     }
     return `Νικητής αγ. ?`;
   }, [allCompMatches]);
