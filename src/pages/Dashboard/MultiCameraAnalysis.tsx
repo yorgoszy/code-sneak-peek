@@ -122,6 +122,9 @@ const MultiCameraAnalysis: React.FC = () => {
   // Camera dialog
   const [cameraDialogOpen, setCameraDialogOpen] = useState(false);
   const [selectedCameraIndex, setSelectedCameraIndex] = useState<number | null>(null);
+  const [availableDevices, setAvailableDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
+  const [cameraSourceType, setCameraSourceType] = useState<'webcam' | 'ip'>('webcam');
 
   // Load available rings when no ringId in params
   useEffect(() => {
