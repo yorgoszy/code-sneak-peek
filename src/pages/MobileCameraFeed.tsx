@@ -240,8 +240,8 @@ const MobileCameraFeed: React.FC = () => {
   }, [isFrontCamera, isLandscape, rotationDegrees]);
 
   const drawBroadcastFrame = useCallback((context: CanvasRenderingContext2D) => {
-    const targetWidth = 1280;
-    const targetHeight = 720;
+    const targetWidth = 320;
+    const targetHeight = 180;
 
     if (context.canvas.width !== targetWidth || context.canvas.height !== targetHeight) {
       context.canvas.width = targetWidth;
@@ -317,7 +317,7 @@ const MobileCameraFeed: React.FC = () => {
           facingMode,
         },
       });
-    }, 33);
+    }, 500);
 
     return () => {
       clearInterval(interval);
