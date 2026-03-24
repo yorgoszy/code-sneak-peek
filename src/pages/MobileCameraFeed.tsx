@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Camera, Wifi, WifiOff, RotateCcw } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const positionLabels: Record<string, string> = {
   left: 'Αριστερά / Left',
@@ -20,10 +21,66 @@ const MobileCameraFeed: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
   const [connected, setConnected] = useState(false);
+  const [dbRegistered, setDbRegistered] = useState(false);
+
+  // Register this mobile camera in the database
+  const registerCamera = async () => {
+    if (!ringId) return;
+    try {
+      const camNum = Number(camIndex);
+      // Check if camera row exists for this ring + camera_index
+      const { data: existing } = await supabase
+        .from('ring_analysis_cameras')
+        .select('id')
+        .eq('ring_id', ringId)
+        .eq('camera_index', camNum)
+        .maybeSingle();
+
+      if (existing) {
+        // Update: mark as active with mobile source
+        await supabase
+          .from('ring_analysis_cameras')
+          .update({
+            is_active: true,
+            stream_url: `mobile:${Date.now()}`,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existing.id);
+      } else {
+        // Insert new camera entry
+        await supabase.from('ring_analysis_cameras').insert({
+          ring_id: ringId,
+          camera_index: camNum,
+          camera_label: `Camera ${camNum + 1}`,
+          position: position,
+          stream_url: `mobile:${Date.now()}`,
+          is_active: true,
+          fps: 30,
+        });
+      }
+      setDbRegistered(true);
+    } catch (err) {
+      console.error('Failed to register camera:', err);
+    }
+  };
+
+  // Unregister on unmount
+  const unregisterCamera = async () => {
+    if (!ringId) return;
+    const camNum = Number(camIndex);
+    await supabase
+      .from('ring_analysis_cameras')
+      .update({
+        is_active: false,
+        stream_url: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('ring_id', ringId)
+      .eq('camera_index', camNum);
+  };
 
   const startCamera = async (facing: 'environment' | 'user') => {
     try {
-      // Stop existing stream
       if (stream) {
         stream.getTracks().forEach(t => t.stop());
       }
@@ -43,6 +100,9 @@ const MobileCameraFeed: React.FC = () => {
       }
       setStream(mediaStream);
       setConnected(true);
+
+      // Register in DB once camera is working
+      registerCamera();
     } catch (err: any) {
       console.error('Camera error:', err);
       setError(err.message || 'Δεν ήταν δυνατή η πρόσβαση στην κάμερα');
@@ -52,10 +112,27 @@ const MobileCameraFeed: React.FC = () => {
 
   useEffect(() => {
     startCamera(facingMode);
+
+    // Cleanup on unmount
     return () => {
       stream?.getTracks().forEach(t => t.stop());
+      unregisterCamera();
     };
   }, []);
+
+  // Keep-alive: update timestamp every 10 seconds so AI Lab knows we're still connected
+  useEffect(() => {
+    if (!dbRegistered || !connected || !ringId) return;
+    const interval = setInterval(async () => {
+      const camNum = Number(camIndex);
+      await supabase
+        .from('ring_analysis_cameras')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('ring_id', ringId)
+        .eq('camera_index', camNum);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [dbRegistered, connected, ringId, camIndex]);
 
   const toggleCamera = () => {
     const newFacing = facingMode === 'environment' ? 'user' : 'environment';
@@ -123,12 +200,13 @@ const MobileCameraFeed: React.FC = () => {
         )}
       </div>
 
-      {/* Bottom bar with position indicator */}
+      {/* Bottom bar */}
       <div className="bg-black/80 text-white px-4 py-2 flex items-center justify-center z-10">
         <div className="flex items-center gap-2">
           <div className={`w-2 h-2 rounded-full ${connected ? 'bg-[#00ffba] animate-pulse' : 'bg-red-400'}`} />
           <span className="text-xs text-white/70">
             Ring • {positionLabels[position] || position}
+            {dbRegistered && ' • Synced'}
           </span>
         </div>
       </div>
