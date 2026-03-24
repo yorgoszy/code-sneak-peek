@@ -666,6 +666,9 @@ const MultiCameraAnalysis: React.FC = () => {
                       className={`p-2 border rounded-none text-center cursor-pointer transition-colors hover:bg-muted/50 ${cam.is_active ? 'border-foreground/30' : 'border-border'}`}
                       onClick={() => {
                         setSelectedCameraIndex(i);
+                        setCameraSourceType(cam.stream_url?.startsWith('webcam:') ? 'webcam' : cam.stream_url ? 'ip' : 'webcam');
+                        setSelectedDeviceId(cam.stream_url?.startsWith('webcam:') ? cam.stream_url.replace('webcam:', '') : '');
+                        loadWebcamDevices();
                         setCameraDialogOpen(true);
                       }}
                     >
