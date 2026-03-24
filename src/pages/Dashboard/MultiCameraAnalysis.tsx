@@ -126,6 +126,19 @@ const MultiCameraAnalysis: React.FC = () => {
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
   const [cameraSourceType, setCameraSourceType] = useState<'webcam' | 'ip'>('webcam');
 
+  // Enumerate webcam devices
+  const loadWebcamDevices = useCallback(async () => {
+    try {
+      // Request permission first
+      await navigator.mediaDevices.getUserMedia({ video: true }).then(s => s.getTracks().forEach(t => t.stop()));
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(d => d.kind === 'videoinput');
+      setAvailableDevices(videoDevices);
+    } catch (err) {
+      console.warn('Cannot enumerate devices:', err);
+    }
+  }, []);
+
   // Load available rings when no ringId in params
   useEffect(() => {
     if (!ringIdParam) {
