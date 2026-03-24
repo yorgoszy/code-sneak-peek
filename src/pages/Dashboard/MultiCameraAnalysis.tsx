@@ -29,8 +29,9 @@ import {
   Menu, ArrowLeft, Camera, Settings, Play, Square, RotateCcw,
   Brain, Target, Activity, Save, Loader2, Video, MonitorPlay,
   Maximize2, Tag, Download, ChevronRight, Zap, Eye,
-  AlertCircle, CheckCircle, Wifi, WifiOff
+  AlertCircle, CheckCircle, Wifi, WifiOff, Smartphone, Monitor
 } from "lucide-react";
+import { QRCodeSVG } from 'qrcode.react';
 import { supabase } from "@/integrations/supabase/client";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { toast } from "sonner";
