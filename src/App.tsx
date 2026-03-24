@@ -264,6 +264,9 @@ function App() {
                       <Route path="/dashboard/user-profile/:userId/edit" element={<ProtectedRoute><ProfileEdit /></ProtectedRoute>} />
                       <Route path="/dashboard/user-profile/:userId/shop" element={<ProtectedRoute><ShopWithSidebar /></ProtectedRoute>} />
 
+                      {/* Mobile camera feed - public, no auth needed */}
+                      <Route path="/mobile-camera" element={<MobileCameraFeed />} />
+
                       {/* 404 */}
                       <Route path="*" element={<NotFound />} />
                     </Routes>
