@@ -199,6 +199,9 @@ export function useCompetitionPoseAnalysis(onFighterFrame?: (fighters: FighterPo
               // Draw overlay
               drawPoseOverlay(ctx, fighters, overlayCanvas.width, overlayCanvas.height);
 
+              // Notify strike detection
+              onFighterFrame?.(fighters, cameraIndex);
+
               // Update state
               setState(s => ({
                 ...s,
