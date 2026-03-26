@@ -845,28 +845,39 @@ const FederationLive = () => {
                         className="rounded-none h-7 text-xs flex-1"
                       />
                     ) : (
-                      <Select
-                        value={rc.camera_device_id || ''}
-                        onValueChange={(val) => {
-                          const updated = [...ringConfigs];
-                          updated[idx].camera_device_id = val;
-                          setRingConfigs(updated);
-                        }}
-                      >
-                        <SelectTrigger className="rounded-none h-7 text-xs flex-1">
-                        <SelectValue placeholder={t('federation.live.selectCamera')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {availableCameras.map((cam, i) => (
-                            <SelectItem key={cam.deviceId} value={cam.deviceId}>
-                              {cam.label || `Camera ${i + 1}`}
-                            </SelectItem>
-                          ))}
-                          {availableCameras.length === 0 && (
-                            <div className="px-2 py-1 text-xs text-muted-foreground">{t('federation.live.noCameras')}</div>
-                          )}
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center gap-1 flex-1">
+                        <Select
+                          value={rc.camera_device_id || ''}
+                          onValueChange={(val) => {
+                            const updated = [...ringConfigs];
+                            updated[idx].camera_device_id = val;
+                            setRingConfigs(updated);
+                          }}
+                        >
+                          <SelectTrigger className="rounded-none h-7 text-xs flex-1">
+                          <SelectValue placeholder={t('federation.live.selectCamera')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableCameras.map((cam, i) => (
+                              <SelectItem key={cam.deviceId} value={cam.deviceId}>
+                                {cam.label || `Camera ${i + 1}`}
+                              </SelectItem>
+                            ))}
+                            {availableCameras.length === 0 && (
+                              <div className="px-2 py-1 text-xs text-muted-foreground">{t('federation.live.noCameras')}</div>
+                            )}
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="rounded-none h-7 w-7 p-0 shrink-0"
+                          onClick={refreshCameras}
+                          title="Refresh cameras"
+                        >
+                          <RefreshCw className="h-3 w-3" />
+                        </Button>
+                      </div>
                     )}
 
                     <Input
