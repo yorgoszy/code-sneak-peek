@@ -136,7 +136,7 @@ const FederationLive = () => {
   const [editRing, setEditRing] = useState<Ring | null>(null);
   const [editYoutubeUrl, setEditYoutubeUrl] = useState('');
   const [editCurrentMatchId, setEditCurrentMatchId] = useState('');
-  const [editSourceType, setEditSourceType] = useState<'youtube' | 'camera'>('youtube');
+  const [editSourceType, setEditSourceType] = useState<'youtube' | 'camera' | 'screen'>('youtube');
   const [editCameraDeviceId, setEditCameraDeviceId] = useState('');
   const [editRingName, setEditRingName] = useState('');
   const [editMatchRangeStart, setEditMatchRangeStart] = useState('');
