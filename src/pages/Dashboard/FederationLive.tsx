@@ -397,7 +397,7 @@ const FederationLive = () => {
     setEditRing(ring);
     setEditYoutubeUrl(ring.youtube_live_url || '');
     setEditCurrentMatchId(ring.current_match_id || '');
-    setEditSourceType((ring.source_type as 'youtube' | 'camera') || 'youtube');
+    setEditSourceType((ring.source_type as 'youtube' | 'camera' | 'screen') || 'youtube');
     setEditCameraDeviceId(ring.camera_device_id || '');
     setEditRingName(ring.ring_name || '');
     setEditMatchRangeStart(ring.match_range_start?.toString() || '');
