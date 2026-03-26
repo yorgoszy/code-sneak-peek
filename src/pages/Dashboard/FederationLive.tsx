@@ -903,6 +903,11 @@ const FederationLive = () => {
                       placeholder="YouTube URL..."
                       className="rounded-none h-7 text-xs w-full"
                     />
+                  ) : rc.source_type === 'screen' ? (
+                    <div className="flex items-center gap-2 h-7 px-2 bg-muted text-xs text-muted-foreground">
+                      <Monitor className="h-3 w-3" />
+                      <span>Θα επιλέξετε παράθυρο κατά την προβολή</span>
+                    </div>
                   ) : (
                     <div className="flex items-center gap-1">
                       <Select
