@@ -37,9 +37,9 @@ export const RingScreenBroadcaster: React.FC<RingScreenBroadcasterProps> = ({ ri
       }
 
       const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { cursor: "never" },
+        video: true,
         audio: false,
-      });
+      } as any);
 
       streamRef.current = stream;
       setNeedsPrompt(false);
