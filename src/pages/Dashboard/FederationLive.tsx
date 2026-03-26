@@ -833,6 +833,17 @@ const FederationLive = () => {
                       >
                         Camera
                       </button>
+                      <button
+                        type="button"
+                        className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${rc.source_type === 'screen' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
+                        onClick={() => {
+                          const updated = [...ringConfigs];
+                          updated[idx].source_type = 'screen';
+                          setRingConfigs(updated);
+                        }}
+                      >
+                        Screen
+                      </button>
                     </div>
 
                     <div className="flex-1" />
