@@ -129,13 +129,14 @@ export function useCompetitionPoseAnalysis() {
         const labelBg = fighter.corner === 'red' ? 'rgba(255,0,0,0.7)' : 'rgba(0,100,255,0.7)';
 
         // Draw connections
-        drawingUtils.drawConnectors(fighter.landmarks, PoseLandmarker.POSE_CONNECTIONS, {
-          color,
-          lineWidth: 2,
-        });
+        drawingUtils.drawConnectors(
+          fighter.landmarks as any,
+          PoseLandmarker.POSE_CONNECTIONS,
+          { color, lineWidth: 2 }
+        );
 
         // Draw landmarks
-        drawingUtils.drawLandmarks(fighter.landmarks, {
+        drawingUtils.drawLandmarks(fighter.landmarks as any, {
           color: '#ffffff',
           lineWidth: 1,
           radius: 3,
