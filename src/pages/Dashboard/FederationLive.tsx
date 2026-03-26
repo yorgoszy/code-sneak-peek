@@ -25,6 +25,7 @@ import { RingScoreboard } from "@/components/federation/RingScoreboard";
 import { VideoOverlayScores } from "@/components/federation/VideoOverlayScores";
 import { SyncedYouTubePlayer } from "@/components/federation/SyncedYouTubePlayer";
 import { RingCameraBroadcaster } from "@/components/federation/webrtc/RingCameraBroadcaster";
+import { RingScreenBroadcaster } from "@/components/federation/webrtc/RingScreenBroadcaster";
 
 interface Competition {
   id: string;
