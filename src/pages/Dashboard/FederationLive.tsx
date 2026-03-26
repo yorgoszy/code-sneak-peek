@@ -991,9 +991,14 @@ const FederationLive = () => {
               {/* Row 2: YouTube URL / Camera + Match Range */}
               <div className="flex items-end gap-2">
                 <div className="flex-1">
-                  <Label className="text-xs">{editSourceType === 'youtube' ? 'YouTube URL' : t('federation.live.camera')}</Label>
+                  <Label className="text-xs">{editSourceType === 'youtube' ? 'YouTube URL' : editSourceType === 'screen' ? 'Screen' : t('federation.live.camera')}</Label>
                   {editSourceType === 'youtube' ? (
                     <Input value={editYoutubeUrl} onChange={(e) => setEditYoutubeUrl(e.target.value)} placeholder="https://youtube.com/live/..." className="rounded-none h-7 text-xs" />
+                  ) : editSourceType === 'screen' ? (
+                    <div className="flex items-center gap-2 h-7 px-2 bg-muted text-xs text-muted-foreground rounded-none border border-border">
+                      <Monitor className="h-3 w-3" />
+                      <span>Θα επιλέξετε παράθυρο κατά την προβολή</span>
+                    </div>
                   ) : (
                     <Select value={editCameraDeviceId} onValueChange={setEditCameraDeviceId}>
                       <SelectTrigger className="rounded-none h-7 text-xs"><SelectValue placeholder={t('federation.live.selectCamera')} /></SelectTrigger>
