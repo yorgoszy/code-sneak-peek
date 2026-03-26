@@ -18,6 +18,7 @@ import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { toast } from "sonner";
 import { SyncedYouTubePlayer } from "@/components/federation/SyncedYouTubePlayer";
 import { RingCameraBroadcaster } from "@/components/federation/webrtc/RingCameraBroadcaster";
+import { RingScreenBroadcaster } from "@/components/federation/webrtc/RingScreenBroadcaster";
 import { VideoOverlayScores } from "@/components/federation/VideoOverlayScores";
 import { ActivityBalanceBar } from "@/components/federation/live-analysis/ActivityBalanceBar";
 import { FightTimelineChart } from "@/components/video-analysis/FightTimelineChart";
