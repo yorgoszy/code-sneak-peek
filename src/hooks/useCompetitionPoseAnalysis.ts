@@ -8,7 +8,7 @@ import { PoseLandmarker, FilesetResolver, DrawingUtils } from '@mediapipe/tasks-
 
 export interface FighterPose {
   corner: 'red' | 'blue';
-  landmarks: Array<{ x: number; y: number; z: number; visibility?: number }>;
+  landmarks: Array<{ x: number; y: number; z: number; visibility: number }>;
   centerX: number; // normalized 0-1
   centerY: number;
 }
