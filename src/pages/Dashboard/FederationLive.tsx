@@ -145,21 +145,26 @@ const FederationLive = () => {
 
   const federationId = userProfile?.id;
 
-  // Enumerate cameras when setup or edit dialog opens
+  // Enumerate cameras
+  const refreshCameras = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      stream.getTracks().forEach(t => t.stop());
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      setAvailableCameras(devices.filter(d => d.kind === 'videoinput'));
+    } catch (err) {
+      console.error('Cannot enumerate cameras:', err);
+      setAvailableCameras([]);
+    }
+  };
+
+  // Load cameras when setup or edit dialog opens + listen for device changes
   useEffect(() => {
     if (!setupDialogOpen && !editRing) return;
-    const loadCameras = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        stream.getTracks().forEach(t => t.stop());
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        setAvailableCameras(devices.filter(d => d.kind === 'videoinput'));
-      } catch (err) {
-        console.error('Cannot enumerate cameras:', err);
-        setAvailableCameras([]);
-      }
-    };
-    loadCameras();
+    refreshCameras();
+    const handler = () => refreshCameras();
+    navigator.mediaDevices?.addEventListener('devicechange', handler);
+    return () => navigator.mediaDevices?.removeEventListener('devicechange', handler);
   }, [setupDialogOpen, editRing]);
 
   useEffect(() => {
