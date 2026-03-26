@@ -45,7 +45,11 @@ export const RingScreenBroadcaster: React.FC<RingScreenBroadcasterProps> = ({ ri
       setNeedsPrompt(false);
 
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+        const v = videoRef.current;
+        v.srcObject = stream;
+        v.muted = true;
+        v.playsInline = true;
+        v.onloadedmetadata = () => void v.play();
       }
 
       // Handle user stopping the share via browser UI
