@@ -754,12 +754,12 @@ const FederationLive = () => {
 
       {/* Ring Setup Dialog */}
       <Dialog open={setupDialogOpen} onOpenChange={setSetupDialogOpen}>
-        <DialogContent className="rounded-none max-w-lg max-h-[80vh] overflow-y-auto">
+        <DialogContent className="rounded-none max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t('federation.live.ringSetupTitle')}</DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label className="text-sm">{t('federation.live.numberOfRings')}: {ringCount}</Label>
               <div className="flex items-center gap-1">
@@ -802,11 +802,11 @@ const FederationLive = () => {
 
             {ringConfigs.map((rc, idx) => (
               <Card key={idx} className="rounded-none">
-                <CardContent className="p-2 space-y-1.5">
+                <CardContent className="p-3 space-y-2">
+                  {/* Row 1: Ring name, source toggle, delete */}
                   <div className="flex items-center gap-2">
                     <h4 className="font-medium text-xs whitespace-nowrap">Ring {getRingLetter(rc.ring_number)}</h4>
                     
-                    {/* Source type toggle */}
                     <div className="flex border border-border rounded-none overflow-hidden shrink-0">
                       <button
                         type="button"
@@ -832,77 +832,35 @@ const FederationLive = () => {
                       </button>
                     </div>
 
-                    {/* YouTube URL or Camera indicator */}
-                    {rc.source_type === 'youtube' ? (
+                    <div className="flex-1" />
+
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-muted-foreground">Αγώνες</span>
                       <Input
-                        value={rc.youtube_live_url}
+                        type="number"
+                        value={rc.match_range_start}
                         onChange={(e) => {
                           const updated = [...ringConfigs];
-                          updated[idx].youtube_live_url = e.target.value;
+                          updated[idx].match_range_start = e.target.value;
                           setRingConfigs(updated);
                         }}
-                        placeholder="YouTube URL..."
-                        className="rounded-none h-7 text-xs flex-1"
+                        placeholder="From"
+                        className="rounded-none h-7 text-xs w-16"
                       />
-                    ) : (
-                      <div className="flex items-center gap-1 flex-1">
-                        <Select
-                          value={rc.camera_device_id || ''}
-                          onValueChange={(val) => {
-                            const updated = [...ringConfigs];
-                            updated[idx].camera_device_id = val;
-                            setRingConfigs(updated);
-                          }}
-                        >
-                          <SelectTrigger className="rounded-none h-7 text-xs flex-1">
-                          <SelectValue placeholder={t('federation.live.selectCamera')} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {availableCameras.map((cam, i) => (
-                              <SelectItem key={cam.deviceId} value={cam.deviceId}>
-                                {cam.label || `Camera ${i + 1}`}
-                              </SelectItem>
-                            ))}
-                            {availableCameras.length === 0 && (
-                              <div className="px-2 py-1 text-xs text-muted-foreground">{t('federation.live.noCameras')}</div>
-                            )}
-                          </SelectContent>
-                        </Select>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="rounded-none h-7 w-7 p-0 shrink-0"
-                          onClick={refreshCameras}
-                          title="Refresh cameras"
-                        >
-                          <RefreshCw className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    )}
+                      <span className="text-xs text-muted-foreground">-</span>
+                      <Input
+                        type="number"
+                        value={rc.match_range_end}
+                        onChange={(e) => {
+                          const updated = [...ringConfigs];
+                          updated[idx].match_range_end = e.target.value;
+                          setRingConfigs(updated);
+                        }}
+                        placeholder="To"
+                        className="rounded-none h-7 text-xs w-16"
+                      />
+                    </div>
 
-                    <Input
-                      type="number"
-                      value={rc.match_range_start}
-                      onChange={(e) => {
-                        const updated = [...ringConfigs];
-                        updated[idx].match_range_start = e.target.value;
-                        setRingConfigs(updated);
-                      }}
-                      placeholder="From"
-                      className="rounded-none h-7 text-xs w-16"
-                    />
-                    <span className="text-xs text-muted-foreground">-</span>
-                    <Input
-                      type="number"
-                      value={rc.match_range_end}
-                      onChange={(e) => {
-                        const updated = [...ringConfigs];
-                        updated[idx].match_range_end = e.target.value;
-                        setRingConfigs(updated);
-                      }}
-                      placeholder="To"
-                      className="rounded-none h-7 text-xs w-16"
-                    />
                     {ringConfigs.length > 1 && (
                       <Button
                         variant="ghost"
@@ -918,6 +876,54 @@ const FederationLive = () => {
                       </Button>
                     )}
                   </div>
+
+                  {/* Row 2: Source input (full width) */}
+                  {rc.source_type === 'youtube' ? (
+                    <Input
+                      value={rc.youtube_live_url}
+                      onChange={(e) => {
+                        const updated = [...ringConfigs];
+                        updated[idx].youtube_live_url = e.target.value;
+                        setRingConfigs(updated);
+                      }}
+                      placeholder="YouTube URL..."
+                      className="rounded-none h-7 text-xs w-full"
+                    />
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      <Select
+                        value={rc.camera_device_id || ''}
+                        onValueChange={(val) => {
+                          const updated = [...ringConfigs];
+                          updated[idx].camera_device_id = val;
+                          setRingConfigs(updated);
+                        }}
+                      >
+                        <SelectTrigger className="rounded-none h-7 text-xs flex-1">
+                          <SelectValue placeholder={t('federation.live.selectCamera')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableCameras.map((cam, i) => (
+                            <SelectItem key={cam.deviceId} value={cam.deviceId}>
+                              {cam.label || `Camera ${i + 1}`}
+                            </SelectItem>
+                          ))}
+                          {availableCameras.length === 0 && (
+                            <div className="px-2 py-1 text-xs text-muted-foreground">{t('federation.live.noCameras')}</div>
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="rounded-none h-7 w-7 p-0 shrink-0"
+                        onClick={refreshCameras}
+                        title="Refresh cameras"
+                      >
+                        <RefreshCw className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
