@@ -983,6 +983,7 @@ const FederationLive = () => {
                   <div className="flex border border-border rounded-none overflow-hidden">
                     <button type="button" className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${editSourceType === 'youtube' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`} onClick={() => setEditSourceType('youtube')}>YouTube</button>
                     <button type="button" className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${editSourceType === 'camera' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`} onClick={() => setEditSourceType('camera')}>Camera</button>
+                    <button type="button" className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${editSourceType === 'screen' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`} onClick={() => setEditSourceType('screen')}>Screen</button>
                   </div>
                 </div>
               </div>
