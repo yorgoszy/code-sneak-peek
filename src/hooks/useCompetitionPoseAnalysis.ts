@@ -85,19 +85,18 @@ export function useCompetitionPoseAnalysis() {
    * Left fighter = Red, Right fighter = Blue (consistent with competition setup).
    */
   const assignCorners = (
-    poses: Array<{ landmarks: Array<{ x: number; y: number; z: number; visibility?: number }> }>
+    poses: Array<{ landmarks: Array<{ x: number; y: number; z: number; visibility: number }> }>
   ): FighterPose[] => {
     if (poses.length === 0) return [];
 
-    const fighters = poses.map(pose => {
-      // Calculate center from hip landmarks (23, 24) for stability
+    const fighters: FighterPose[] = poses.map(pose => {
       const lHip = pose.landmarks[23];
       const rHip = pose.landmarks[24];
       const centerX = (lHip.x + rHip.x) / 2;
       const centerY = (lHip.y + rHip.y) / 2;
 
       return {
-        corner: 'red' as const,
+        corner: 'red',
         landmarks: pose.landmarks,
         centerX,
         centerY,
