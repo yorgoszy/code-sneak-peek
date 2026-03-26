@@ -35,6 +35,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { supabase } from "@/integrations/supabase/client";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { toast } from "sonner";
+import { CompetitionAnalysisTab } from '@/components/ai-lab/CompetitionAnalysisTab';
 
 type CombatSport = 'muay_thai' | 'boxing' | 'kickboxing' | 'mma' | 'karate' | 'taekwondo' | 'judo';
 type AnalysisMode = 'strike_counting' | 'round_stats' | 'technique_evaluation' | 'fighter_comparison' | 'full';
@@ -738,6 +739,9 @@ const MultiCameraAnalysis: React.FC = () => {
                 <TabsTrigger value="training" className="rounded-none gap-1">
                   <Tag className="h-4 w-4" /> {t('aiLab.tabs.trainingData')}
                 </TabsTrigger>
+                <TabsTrigger value="pose" className="rounded-none gap-1">
+                  <Brain className="h-4 w-4" /> AI Pose Detection
+                </TabsTrigger>
               </TabsList>
 
               {/* ─── CAMERAS & ANALYSIS TAB (merged) ─── */}
@@ -1059,6 +1063,15 @@ const MultiCameraAnalysis: React.FC = () => {
                     </Button>
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              {/* ─── AI POSE DETECTION TAB ─── */}
+              <TabsContent value="pose" className="space-y-4">
+                <CompetitionAnalysisTab
+                  cameras={cameras}
+                  currentMatch={currentMatch}
+                  positionLabels={positionLabels}
+                />
               </TabsContent>
             </Tabs>
             ) : !ringIdParam && availableRings.length > 0 ? null : null}
