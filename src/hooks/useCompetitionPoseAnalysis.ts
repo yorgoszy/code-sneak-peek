@@ -28,7 +28,7 @@ interface CompetitionPoseState {
   fighterData: Record<number, FighterPose[]>; // keyed by camera index
 }
 
-export function useCompetitionPoseAnalysis() {
+export function useCompetitionPoseAnalysis(onFighterFrame?: (fighters: FighterPose[], cameraIndex: number) => void) {
   const [state, setState] = useState<CompetitionPoseState>({
     isInitialized: false,
     isLoading: false,
