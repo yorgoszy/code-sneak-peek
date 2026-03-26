@@ -1064,6 +1064,15 @@ const MultiCameraAnalysis: React.FC = () => {
                   </CardContent>
                 </Card>
               </TabsContent>
+
+              {/* ─── AI POSE DETECTION TAB ─── */}
+              <TabsContent value="pose" className="space-y-4">
+                <CompetitionAnalysisTab
+                  cameras={cameras}
+                  currentMatch={currentMatch}
+                  positionLabels={positionLabels}
+                />
+              </TabsContent>
             </Tabs>
             ) : !ringIdParam && availableRings.length > 0 ? null : null}
           </main>
