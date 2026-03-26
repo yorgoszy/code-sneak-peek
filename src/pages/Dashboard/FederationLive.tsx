@@ -126,7 +126,7 @@ const FederationLive = () => {
   const [ringConfigs, setRingConfigs] = useState<{
     ring_number: number;
     ring_name: string;
-    source_type: 'youtube' | 'camera';
+    source_type: 'youtube' | 'camera' | 'screen';
     youtube_live_url: string;
     camera_device_id: string;
     match_range_start: string;
