@@ -635,10 +635,12 @@ const FederationLive = () => {
                     </div>
 
                       <CardContent className="p-0">
-                      {(ring.youtube_live_url || (ring as any).source_type === 'camera') ? (
+                      {(ring.youtube_live_url || (ring as any).source_type === 'camera' || (ring as any).source_type === 'screen') ? (
                         <div id={`ring-video-${ring.id}`} className="relative bg-black group">
                           <AspectRatio ratio={16 / 9}>
-                            {(ring as any).source_type === 'camera' ? (
+                            {(ring as any).source_type === 'screen' ? (
+                              <RingScreenBroadcaster ringId={ring.id} className="w-full h-full object-cover" />
+                            ) : (ring as any).source_type === 'camera' ? (
                               <RingCameraBroadcaster ringId={ring.id} deviceId={(ring as any).camera_device_id} className="w-full h-full object-cover" />
                             ) : (
                               <SyncedYouTubePlayer
