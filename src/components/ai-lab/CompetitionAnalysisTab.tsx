@@ -1,20 +1,21 @@
 /**
  * CompetitionAnalysisTab
- * New tab in the AI Lab for real-time pose detection and fighter tracking.
+ * AI Lab tab for real-time pose detection, fighter tracking, and strike detection.
  * Phase 1: MediaPipe skeleton overlay + Red/Blue corner identification.
+ * Phase 2: Real-time strike classification with per-corner stats.
  */
 import React, { useCallback, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Progress } from '@/components/ui/progress';
 import {
-  Play, Square, Loader2, Brain, Activity, Zap, Users, Eye,
+  Play, Square, Loader2, Brain, Activity, Zap, Users, Eye, RotateCcw,
 } from 'lucide-react';
 import { PoseOverlayFeed } from './PoseOverlayFeed';
+import { StrikeFeedPanel } from './StrikeFeedPanel';
 import { useCompetitionPoseAnalysis } from '@/hooks/useCompetitionPoseAnalysis';
+import { useCompetitionStrikeDetection } from '@/hooks/useCompetitionStrikeDetection';
 
 interface AnalysisCamera {
   id: string;
@@ -38,7 +39,10 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
   currentMatch,
   positionLabels,
 }) => {
-  const { t } = useTranslation();
+  // Strike detection
+  const strikeDetection = useCompetitionStrikeDetection();
+
+  // Pose analysis with strike detection callback
   const {
     isInitialized,
     isLoading,
@@ -51,7 +55,7 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
     stopDetection,
     stopAll,
     destroy,
-  } = useCompetitionPoseAnalysis();
+  } = useCompetitionPoseAnalysis(strikeDetection.analyzeFrame);
 
   const activeCameras = cameras.filter(c => c.is_active && c.stream_url?.startsWith('webcam:'));
 
@@ -80,20 +84,23 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
     if (!isInitialized) {
       await initialize();
     }
-    // Detection will start when video feeds report ready
-    // We trigger a re-render by setting isRunning via startDetection
+    strikeDetection.start();
   };
 
   const handleStopAll = () => {
     stopAll();
+    strikeDetection.stop();
+  };
+
+  const handleReset = () => {
+    strikeDetection.reset();
   };
 
   // Count total detected fighters across all cameras
-  const totalFighters = Object.values(fighterData).reduce(
-    (sum, fighters) => sum + fighters.length, 0
-  );
   const redDetected = Object.values(fighterData).some(f => f.some(p => p.corner === 'red'));
   const blueDetected = Object.values(fighterData).some(f => f.some(p => p.corner === 'blue'));
+  const redStats = strikeDetection.getCornerStats('red');
+  const blueStats = strikeDetection.getCornerStats('blue');
 
   return (
     <div className="space-y-4">
@@ -102,11 +109,11 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
         <div>
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Brain className="h-5 w-5" />
-            AI Pose Detection
-            <Badge variant="outline" className="rounded-none text-[10px]">Phase 1</Badge>
+            AI Competition Analysis
+            <Badge variant="outline" className="rounded-none text-[10px]">Phase 2</Badge>
           </h2>
           <p className="text-xs text-muted-foreground">
-            Real-time fighter tracking με MediaPipe — Red/Blue corner identification
+            Real-time strike detection & fighter tracking — Red/Blue corner
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -114,6 +121,17 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
             <Badge className="rounded-none bg-[#00ffba] text-black text-xs">
               {fps} FPS
             </Badge>
+          )}
+          {strikeDetection.isActive && (
+            <Button
+              onClick={handleReset}
+              variant="outline"
+              size="sm"
+              className="rounded-none"
+              title="Reset strike counters"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+            </Button>
           )}
           <Button
             onClick={isRunning ? handleStopAll : handleStartAll}
@@ -124,9 +142,9 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
             {isLoading ? (
               <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Loading Model...</>
             ) : isRunning ? (
-              <><Square className="h-4 w-4 mr-1" /> Stop Detection</>
+              <><Square className="h-4 w-4 mr-1" /> Stop</>
             ) : (
-              <><Play className="h-4 w-4 mr-1" /> Start Detection</>
+              <><Play className="h-4 w-4 mr-1" /> Start Analysis</>
             )}
           </Button>
         </div>
@@ -185,6 +203,9 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
                       <span className="text-sm font-medium">
                         {(currentMatch as any).athlete1?.name || 'Red Corner'}
                       </span>
+                      <Badge variant="outline" className="rounded-none text-[9px] ml-1">
+                        {redStats.total} strikes
+                      </Badge>
                     </div>
                     <span className="text-muted-foreground text-xs">vs</span>
                     <div className="flex items-center gap-1">
@@ -192,6 +213,9 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
                       <span className="text-sm font-medium">
                         {(currentMatch as any).athlete2?.name || 'Blue Corner'}
                       </span>
+                      <Badge variant="outline" className="rounded-none text-[9px] ml-1">
+                        {blueStats.total} strikes
+                      </Badge>
                     </div>
                   </div>
                   <Badge variant="outline" className="rounded-none text-xs">
@@ -203,124 +227,99 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
           )}
         </div>
 
-        {/* Stats panel */}
-        <Card className="rounded-none h-fit">
-          <CardHeader className="p-3 pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Activity className="h-4 w-4" /> Live Detection Stats
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-3 pt-0 space-y-3">
-            {/* Status */}
-            <div className="space-y-1.5 text-xs">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Status:</span>
-                <span className={isRunning ? 'text-[#00ffba]' : 'text-muted-foreground'}>
-                  {isLoading ? 'Loading...' : isRunning ? 'Active' : 'Idle'}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Model:</span>
-                <span>PoseLandmarker Lite</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Cameras:</span>
-                <span>{activeCameras.length}/4</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">FPS:</span>
-                <span>{isRunning ? fps : '—'}</span>
-              </div>
-            </div>
+        {/* Right panel: Strike Detection + Detection Stats */}
+        <div className="space-y-3">
+          {/* Strike feed */}
+          <StrikeFeedPanel
+            strikes={strikeDetection.strikes}
+            redStats={redStats}
+            blueStats={blueStats}
+            isActive={strikeDetection.isActive}
+          />
 
-            <Separator />
-
-            {/* Fighter Detection */}
-            <div className="space-y-2">
-              <h4 className="text-xs font-medium flex items-center gap-1">
-                <Users className="h-3 w-3" /> Fighter Tracking
-              </h4>
-
-              <div className="flex items-center gap-2">
-                <div className={`flex-1 p-2 border rounded-none text-center ${redDetected ? 'border-red-500/50 bg-red-500/5' : 'border-border'}`}>
-                  <div className="w-2 h-2 bg-red-600 rounded-full mx-auto mb-1" />
-                  <p className="text-[10px] font-medium">RED</p>
-                  <p className={`text-[9px] ${redDetected ? 'text-red-500' : 'text-muted-foreground'}`}>
-                    {redDetected ? 'Detected' : 'Not found'}
-                  </p>
+          {/* Detection stats */}
+          <Card className="rounded-none h-fit">
+            <CardHeader className="p-3 pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Activity className="h-4 w-4" /> Detection Stats
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-3 pt-0 space-y-3">
+              <div className="space-y-1.5 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Status:</span>
+                  <span className={isRunning ? 'text-[#00ffba]' : 'text-muted-foreground'}>
+                    {isLoading ? 'Loading...' : isRunning ? 'Active' : 'Idle'}
+                  </span>
                 </div>
-                <div className={`flex-1 p-2 border rounded-none text-center ${blueDetected ? 'border-blue-500/50 bg-blue-500/5' : 'border-border'}`}>
-                  <div className="w-2 h-2 bg-blue-600 rounded-full mx-auto mb-1" />
-                  <p className="text-[10px] font-medium">BLUE</p>
-                  <p className={`text-[9px] ${blueDetected ? 'text-blue-500' : 'text-muted-foreground'}`}>
-                    {blueDetected ? 'Detected' : 'Not found'}
-                  </p>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Model:</span>
+                  <span>PoseLandmarker Lite</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Cameras:</span>
+                  <span>{activeCameras.length}/4</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">FPS:</span>
+                  <span>{isRunning ? fps : '—'}</span>
                 </div>
               </div>
-            </div>
 
-            <Separator />
+              <Separator />
 
-            {/* Per-camera stats */}
-            <div className="space-y-1.5">
-              <h4 className="text-xs font-medium">Per Camera</h4>
-              {cameras.map(cam => {
-                const fighters = fighterData[cam.camera_index] || [];
-                const isActive = cam.is_active && cam.stream_url?.startsWith('webcam:');
-                return (
-                  <div key={cam.camera_index} className="flex items-center justify-between text-[10px]">
-                    <span className="text-muted-foreground">
-                      CAM {cam.camera_index} ({positionLabels[cam.position] || cam.position})
-                    </span>
-                    {isActive && isRunning ? (
-                      <div className="flex items-center gap-1">
-                        {fighters.length > 0 ? (
-                          fighters.map((f, i) => (
-                            <div
-                              key={i}
-                              className={`w-2 h-2 rounded-full ${f.corner === 'red' ? 'bg-red-500' : 'bg-blue-500'}`}
-                            />
-                          ))
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground">OFF</span>
-                    )}
+              {/* Fighter Tracking */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-medium flex items-center gap-1">
+                  <Users className="h-3 w-3" /> Fighter Tracking
+                </h4>
+                <div className="flex items-center gap-2">
+                  <div className={`flex-1 p-2 border rounded-none text-center ${redDetected ? 'border-red-500/50 bg-red-500/5' : 'border-border'}`}>
+                    <div className="w-2 h-2 bg-red-600 rounded-full mx-auto mb-1" />
+                    <p className="text-[10px] font-medium">RED</p>
+                    <p className={`text-[9px] ${redDetected ? 'text-red-500' : 'text-muted-foreground'}`}>
+                      {redDetected ? 'Detected' : 'Not found'}
+                    </p>
                   </div>
-                );
-              })}
-            </div>
-
-            <Separator />
-
-            {/* Phase roadmap */}
-            <div className="space-y-1.5">
-              <h4 className="text-xs font-medium flex items-center gap-1">
-                <Zap className="h-3 w-3" /> Roadmap
-              </h4>
-              <div className="space-y-1">
-                <div className="flex items-center gap-1.5 text-[10px]">
-                  <div className="w-2 h-2 bg-[#00ffba] rounded-full" />
-                  <span className="font-medium">Phase 1: Pose Detection</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                  <div className="w-2 h-2 bg-muted-foreground/30 rounded-full" />
-                  <span>Phase 2: Strike Detection</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                  <div className="w-2 h-2 bg-muted-foreground/30 rounded-full" />
-                  <span>Phase 3: Scoring & Stats</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                  <div className="w-2 h-2 bg-muted-foreground/30 rounded-full" />
-                  <span>Phase 4: Model Fine-tuning</span>
+                  <div className={`flex-1 p-2 border rounded-none text-center ${blueDetected ? 'border-blue-500/50 bg-blue-500/5' : 'border-border'}`}>
+                    <div className="w-2 h-2 bg-blue-600 rounded-full mx-auto mb-1" />
+                    <p className="text-[10px] font-medium">BLUE</p>
+                    <p className={`text-[9px] ${blueDetected ? 'text-blue-500' : 'text-muted-foreground'}`}>
+                      {blueDetected ? 'Detected' : 'Not found'}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+
+              <Separator />
+
+              {/* Roadmap */}
+              <div className="space-y-1.5">
+                <h4 className="text-xs font-medium flex items-center gap-1">
+                  <Zap className="h-3 w-3" /> Roadmap
+                </h4>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 text-[10px]">
+                    <div className="w-2 h-2 bg-[#00ffba] rounded-full" />
+                    <span className="font-medium">Phase 1: Pose Detection</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[10px]">
+                    <div className="w-2 h-2 bg-[#00ffba] rounded-full" />
+                    <span className="font-medium">Phase 2: Strike Detection</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                    <div className="w-2 h-2 bg-muted-foreground/30 rounded-full" />
+                    <span>Phase 3: Scoring & Stats</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                    <div className="w-2 h-2 bg-muted-foreground/30 rounded-full" />
+                    <span>Phase 4: Model Fine-tuning</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
