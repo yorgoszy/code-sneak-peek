@@ -25,7 +25,6 @@ import { RingScoreboard } from "@/components/federation/RingScoreboard";
 import { VideoOverlayScores } from "@/components/federation/VideoOverlayScores";
 import { SyncedYouTubePlayer } from "@/components/federation/SyncedYouTubePlayer";
 import { RingCameraBroadcaster } from "@/components/federation/webrtc/RingCameraBroadcaster";
-import { RingScreenBroadcaster } from "@/components/federation/webrtc/RingScreenBroadcaster";
 
 interface Competition {
   id: string;
@@ -126,7 +125,7 @@ const FederationLive = () => {
   const [ringConfigs, setRingConfigs] = useState<{
     ring_number: number;
     ring_name: string;
-    source_type: 'youtube' | 'camera' | 'screen';
+    source_type: 'youtube' | 'camera';
     youtube_live_url: string;
     camera_device_id: string;
     match_range_start: string;
@@ -136,7 +135,7 @@ const FederationLive = () => {
   const [editRing, setEditRing] = useState<Ring | null>(null);
   const [editYoutubeUrl, setEditYoutubeUrl] = useState('');
   const [editCurrentMatchId, setEditCurrentMatchId] = useState('');
-  const [editSourceType, setEditSourceType] = useState<'youtube' | 'camera' | 'screen'>('youtube');
+  const [editSourceType, setEditSourceType] = useState<'youtube' | 'camera'>('youtube');
   const [editCameraDeviceId, setEditCameraDeviceId] = useState('');
   const [editRingName, setEditRingName] = useState('');
   const [editMatchRangeStart, setEditMatchRangeStart] = useState('');
@@ -397,7 +396,7 @@ const FederationLive = () => {
     setEditRing(ring);
     setEditYoutubeUrl(ring.youtube_live_url || '');
     setEditCurrentMatchId(ring.current_match_id || '');
-    setEditSourceType((ring.source_type as 'youtube' | 'camera' | 'screen') || 'youtube');
+    setEditSourceType((ring.source_type as 'youtube' | 'camera') || 'youtube');
     setEditCameraDeviceId(ring.camera_device_id || '');
     setEditRingName(ring.ring_name || '');
     setEditMatchRangeStart(ring.match_range_start?.toString() || '');
@@ -635,12 +634,10 @@ const FederationLive = () => {
                     </div>
 
                       <CardContent className="p-0">
-                      {(ring.youtube_live_url || (ring as any).source_type === 'camera' || (ring as any).source_type === 'screen') ? (
+                      {(ring.youtube_live_url || (ring as any).source_type === 'camera') ? (
                         <div id={`ring-video-${ring.id}`} className="relative bg-black group">
                           <AspectRatio ratio={16 / 9}>
-                            {(ring as any).source_type === 'screen' ? (
-                              <RingScreenBroadcaster ringId={ring.id} className="w-full h-full object-cover" />
-                            ) : (ring as any).source_type === 'camera' ? (
+                            {(ring as any).source_type === 'camera' ? (
                               <RingCameraBroadcaster ringId={ring.id} deviceId={(ring as any).camera_device_id} className="w-full h-full object-cover" />
                             ) : (
                               <SyncedYouTubePlayer
@@ -833,17 +830,6 @@ const FederationLive = () => {
                       >
                         Camera
                       </button>
-                      <button
-                        type="button"
-                        className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${rc.source_type === 'screen' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
-                        onClick={() => {
-                          const updated = [...ringConfigs];
-                          updated[idx].source_type = 'screen';
-                          setRingConfigs(updated);
-                        }}
-                      >
-                        Screen
-                      </button>
                     </div>
 
                     <div className="flex-1" />
@@ -903,11 +889,6 @@ const FederationLive = () => {
                       placeholder="YouTube URL..."
                       className="rounded-none h-7 text-xs w-full"
                     />
-                  ) : rc.source_type === 'screen' ? (
-                    <div className="flex items-center gap-2 h-7 px-2 bg-muted text-xs text-muted-foreground">
-                      <Monitor className="h-3 w-3" />
-                      <span>Θα επιλέξετε παράθυρο κατά την προβολή</span>
-                    </div>
                   ) : (
                     <div className="flex items-center gap-1">
                       <Select
@@ -983,7 +964,6 @@ const FederationLive = () => {
                   <div className="flex border border-border rounded-none overflow-hidden">
                     <button type="button" className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${editSourceType === 'youtube' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`} onClick={() => setEditSourceType('youtube')}>YouTube</button>
                     <button type="button" className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${editSourceType === 'camera' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`} onClick={() => setEditSourceType('camera')}>Camera</button>
-                    <button type="button" className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${editSourceType === 'screen' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`} onClick={() => setEditSourceType('screen')}>Screen</button>
                   </div>
                 </div>
               </div>
@@ -991,14 +971,9 @@ const FederationLive = () => {
               {/* Row 2: YouTube URL / Camera + Match Range */}
               <div className="flex items-end gap-2">
                 <div className="flex-1">
-                  <Label className="text-xs">{editSourceType === 'youtube' ? 'YouTube URL' : editSourceType === 'screen' ? 'Screen' : t('federation.live.camera')}</Label>
+                  <Label className="text-xs">{editSourceType === 'youtube' ? 'YouTube URL' : t('federation.live.camera')}</Label>
                   {editSourceType === 'youtube' ? (
                     <Input value={editYoutubeUrl} onChange={(e) => setEditYoutubeUrl(e.target.value)} placeholder="https://youtube.com/live/..." className="rounded-none h-7 text-xs" />
-                  ) : editSourceType === 'screen' ? (
-                    <div className="flex items-center gap-2 h-7 px-2 bg-muted text-xs text-muted-foreground rounded-none border border-border">
-                      <Monitor className="h-3 w-3" />
-                      <span>Θα επιλέξετε παράθυρο κατά την προβολή</span>
-                    </div>
                   ) : (
                     <Select value={editCameraDeviceId} onValueChange={setEditCameraDeviceId}>
                       <SelectTrigger className="rounded-none h-7 text-xs"><SelectValue placeholder={t('federation.live.selectCamera')} /></SelectTrigger>
