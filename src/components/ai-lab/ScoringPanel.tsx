@@ -10,7 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
-  Trophy, Timer, Play, Square, FileText, Loader2, BarChart3, Medal, Swords,
+  Trophy, Timer, Play, Square, FileText, Loader2, BarChart3, Medal, Swords, Link2,
 } from 'lucide-react';
 import type { RoundScore, FightReport, ActivitySnapshot } from '@/hooks/useCompetitionScoring';
 import type { CompetitionStrike } from '@/hooks/useCompetitionStrikeDetection';
@@ -27,6 +27,7 @@ interface ScoringPanelProps {
   onGenerateReport: () => void;
   onReset: () => void;
   totalStrikes: { red: number; blue: number };
+  ringSynced?: boolean;
 }
 
 export const ScoringPanel: React.FC<ScoringPanelProps> = ({
@@ -41,6 +42,7 @@ export const ScoringPanel: React.FC<ScoringPanelProps> = ({
   onGenerateReport,
   onReset,
   totalStrikes,
+  ringSynced = false,
 }) => {
   const [reportOpen, setReportOpen] = useState(false);
 
@@ -61,28 +63,42 @@ export const ScoringPanel: React.FC<ScoringPanelProps> = ({
         </CardHeader>
         <CardContent className="p-3 pt-0 space-y-3">
           {/* Round Controls */}
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={isRoundActive ? onEndRound : onStartRound}
-              size="sm"
-              className={`rounded-none flex-1 text-xs ${
-                isRoundActive
-                  ? 'bg-destructive hover:bg-destructive/90'
-                  : 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black'
-              }`}
-            >
-              {isRoundActive ? (
-                <><Square className="h-3 w-3 mr-1" /> End Round {currentRound}</>
-              ) : (
-                <><Play className="h-3 w-3 mr-1" /> Start Round {currentRound}</>
+          {ringSynced ? (
+            <div className="flex items-center gap-2 p-2 bg-muted/30 border border-border rounded-none">
+              <Link2 className="h-3.5 w-3.5 text-[#00ffba]" />
+              <span className="text-xs text-muted-foreground">
+                Synced με το χρονόμετρο ρινγκ
+              </span>
+              {isRoundActive && (
+                <Badge variant="outline" className="rounded-none animate-pulse text-[10px] ml-auto">
+                  <Timer className="h-3 w-3 mr-1" /> R{currentRound} LIVE
+                </Badge>
               )}
-            </Button>
-            {isRoundActive && (
-              <Badge variant="outline" className="rounded-none animate-pulse text-[10px]">
-                <Timer className="h-3 w-3 mr-1" /> R{currentRound} LIVE
-              </Badge>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={isRoundActive ? onEndRound : onStartRound}
+                size="sm"
+                className={`rounded-none flex-1 text-xs ${
+                  isRoundActive
+                    ? 'bg-destructive hover:bg-destructive/90'
+                    : 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black'
+                }`}
+              >
+                {isRoundActive ? (
+                  <><Square className="h-3 w-3 mr-1" /> End Round {currentRound}</>
+                ) : (
+                  <><Play className="h-3 w-3 mr-1" /> Start Round {currentRound}</>
+                )}
+              </Button>
+              {isRoundActive && (
+                <Badge variant="outline" className="rounded-none animate-pulse text-[10px]">
+                  <Timer className="h-3 w-3 mr-1" /> R{currentRound} LIVE
+                </Badge>
+              )}
+            </div>
+          )}
 
           {/* Scoreboard */}
           {roundScores.length > 0 && (

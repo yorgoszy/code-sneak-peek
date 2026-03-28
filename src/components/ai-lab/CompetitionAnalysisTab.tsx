@@ -3,7 +3,8 @@
  * AI Lab tab for real-time pose detection, fighter tracking, and strike detection.
  * Phase 1: MediaPipe skeleton overlay + Red/Blue corner identification.
  * Phase 2: Real-time strike classification with per-corner stats.
- * Phase 3: Round-based scoring, activity tracking, and AI post-fight reports.
+ * Phase 3: Round-based scoring synced with federation ring timer.
+ * Phase 4: Data labeling for model training.
  */
 import React, { useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,14 +12,16 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import {
-  Play, Square, Loader2, Brain, Activity, Zap, Users, Eye, RotateCcw,
+  Play, Square, Loader2, Brain, Activity, Zap, Users, Eye, RotateCcw, Link2,
 } from 'lucide-react';
 import { PoseOverlayFeed } from './PoseOverlayFeed';
 import { StrikeFeedPanel } from './StrikeFeedPanel';
 import { ScoringPanel } from './ScoringPanel';
+import { DataLabelingPanel } from './DataLabelingPanel';
 import { useCompetitionPoseAnalysis } from '@/hooks/useCompetitionPoseAnalysis';
 import { useCompetitionStrikeDetection } from '@/hooks/useCompetitionStrikeDetection';
 import { useCompetitionScoring } from '@/hooks/useCompetitionScoring';
+import { useRingScoringSync } from '@/hooks/useRingScoringSync';
 
 interface AnalysisCamera {
   id: string;
@@ -35,18 +38,33 @@ interface CompetitionAnalysisTabProps {
   cameras: AnalysisCamera[];
   currentMatch: any;
   positionLabels: Record<string, string>;
+  ringId?: string;
 }
 
 export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
   cameras,
   currentMatch,
   positionLabels,
+  ringId,
 }) => {
+  // Ring sync — reads round state from federation live dashboard
+  const ringSync = useRingScoringSync(ringId || null);
+
   // Strike detection
   const strikeDetection = useCompetitionStrikeDetection();
 
-  // Scoring engine (Phase 3)
+  // Scoring engine (Phase 3) — now synced with ring timer
   const scoring = useCompetitionScoring();
+
+  // Connect ring timer events to scoring engine
+  useEffect(() => {
+    ringSync.setOnRoundStart((round: number) => {
+      scoring.startRound(round);
+    });
+    ringSync.setOnRoundEnd((_round: number) => {
+      scoring.endRound();
+    });
+  }, [ringSync.setOnRoundStart, ringSync.setOnRoundEnd, scoring.startRound, scoring.endRound]);
 
   // Pose analysis with strike detection callback
   const {
@@ -112,6 +130,10 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
     strikeDetection.reset();
   };
 
+  // Use ring sync names if available, fallback to currentMatch
+  const redName = ringSync.connected ? ringSync.redName : ((currentMatch as any)?.athlete1?.name || 'Red Corner');
+  const blueName = ringSync.connected ? ringSync.blueName : ((currentMatch as any)?.athlete2?.name || 'Blue Corner');
+
   // Count total detected fighters across all cameras
   const redDetected = Object.values(fighterData).some(f => f.some(p => p.corner === 'red'));
   const blueDetected = Object.values(fighterData).some(f => f.some(p => p.corner === 'blue'));
@@ -126,13 +148,24 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Brain className="h-5 w-5" />
             AI Competition Analysis
-            <Badge variant="outline" className="rounded-none text-[10px]">Phase 3</Badge>
+            <Badge variant="outline" className="rounded-none text-[10px]">Phase 4</Badge>
           </h2>
           <p className="text-xs text-muted-foreground">
-            Real-time strike detection & fighter tracking — Red/Blue corner
+            Real-time strike detection, scoring & data labeling — Red/Blue corner
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {/* Ring sync indicator */}
+          {ringSync.connected && (
+            <Badge variant="outline" className="rounded-none text-[10px] border-[#00ffba]/50 text-[#00ffba]">
+              <Link2 className="h-3 w-3 mr-1" />
+              Ring Synced
+              {ringSync.isTimerRunning && !ringSync.isBreak && (
+                <span className="ml-1">• R{ringSync.currentRound}</span>
+              )}
+              {ringSync.isBreak && <span className="ml-1">• BRK</span>}
+            </Badge>
+          )}
           {isRunning && (
             <Badge className="rounded-none bg-[#00ffba] text-black text-xs">
               {fps} FPS
@@ -208,46 +241,47 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
             </div>
           )}
 
-          {/* Match Info */}
-          {currentMatch && (
-            <Card className="rounded-none">
-              <CardContent className="p-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-red-600 rounded-none" />
-                      <span className="text-sm font-medium">
-                        {(currentMatch as any).athlete1?.name || 'Red Corner'}
-                      </span>
-                      <Badge variant="outline" className="rounded-none text-[9px] ml-1">
-                        {redStats.total} strikes
-                      </Badge>
-                    </div>
-                    <span className="text-muted-foreground text-xs">vs</span>
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-blue-600 rounded-none" />
-                      <span className="text-sm font-medium">
-                        {(currentMatch as any).athlete2?.name || 'Blue Corner'}
-                      </span>
-                      <Badge variant="outline" className="rounded-none text-[9px] ml-1">
-                        {blueStats.total} strikes
-                      </Badge>
-                    </div>
+          {/* Match Info — now using ring sync data */}
+          <Card className="rounded-none">
+            <CardContent className="p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 bg-red-600 rounded-none" />
+                    <span className="text-sm font-medium">{redName}</span>
+                    <Badge variant="outline" className="rounded-none text-[9px] ml-1">
+                      {redStats.total} strikes
+                    </Badge>
                   </div>
+                  <span className="text-muted-foreground text-xs">vs</span>
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 bg-blue-600 rounded-none" />
+                    <span className="text-sm font-medium">{blueName}</span>
+                    <Badge variant="outline" className="rounded-none text-[9px] ml-1">
+                      {blueStats.total} strikes
+                    </Badge>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {ringSync.connected && ringSync.isTimerRunning && (
+                    <Badge variant={ringSync.isBreak ? 'secondary' : 'default'} className="rounded-none text-[10px]">
+                      {ringSync.isBreak ? 'BRK' : `R${ringSync.currentRound}`}
+                    </Badge>
+                  )}
                   <Badge variant="outline" className="rounded-none text-xs">
-                    {currentMatch.round_number || 3} Rounds
+                    {currentMatch?.round_number || 3} Rounds
                   </Badge>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Right panel: Strike Detection + Scoring + Detection Stats */}
+        {/* Right panel: Scoring + Strike Feed + Data Labeling + Stats */}
         <div className="space-y-3">
-          {/* Scoring Panel (Phase 3) */}
+          {/* Scoring Panel (Phase 3) — auto-synced with ring timer */}
           <ScoringPanel
-            currentRound={scoring.currentRound}
+            currentRound={ringSync.connected ? ringSync.currentRound : scoring.currentRound}
             roundScores={scoring.roundScores}
             isRoundActive={scoring.isRoundActive}
             report={scoring.report}
@@ -259,13 +293,22 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
               strikeDetection.strikes,
               'muay_thai',
               {
-                redName: (currentMatch as any)?.athlete1?.name,
-                blueName: (currentMatch as any)?.athlete2?.name,
+                redName,
+                blueName,
                 totalRounds: currentMatch?.round_number || 3,
               }
             )}
             onReset={() => scoring.resetScoring()}
             totalStrikes={{ red: redStats.total, blue: blueStats.total }}
+            ringSynced={ringSync.connected}
+          />
+
+          {/* Data Labeling (Phase 4) */}
+          <DataLabelingPanel
+            strikes={strikeDetection.strikes}
+            sessionId={undefined}
+            matchId={currentMatch?.id}
+            isActive={strikeDetection.isActive}
           />
 
           {/* Strike feed */}
@@ -303,6 +346,12 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
                   <span className="text-muted-foreground">FPS:</span>
                   <span>{isRunning ? fps : '—'}</span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Ring Sync:</span>
+                  <span className={ringSync.connected ? 'text-[#00ffba]' : 'text-muted-foreground'}>
+                    {ringSync.connected ? '● Connected' : '○ Not connected'}
+                  </span>
+                </div>
               </div>
 
               <Separator />
@@ -315,14 +364,14 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
                 <div className="flex items-center gap-2">
                   <div className={`flex-1 p-2 border rounded-none text-center ${redDetected ? 'border-red-500/50 bg-red-500/5' : 'border-border'}`}>
                     <div className="w-2 h-2 bg-red-600 rounded-full mx-auto mb-1" />
-                    <p className="text-[10px] font-medium">RED</p>
+                    <p className="text-[10px] font-medium">{redName.split(' ')[0]}</p>
                     <p className={`text-[9px] ${redDetected ? 'text-red-500' : 'text-muted-foreground'}`}>
                       {redDetected ? 'Detected' : 'Not found'}
                     </p>
                   </div>
                   <div className={`flex-1 p-2 border rounded-none text-center ${blueDetected ? 'border-blue-500/50 bg-blue-500/5' : 'border-border'}`}>
                     <div className="w-2 h-2 bg-blue-600 rounded-full mx-auto mb-1" />
-                    <p className="text-[10px] font-medium">BLUE</p>
+                    <p className="text-[10px] font-medium">{blueName.split(' ')[0]}</p>
                     <p className={`text-[9px] ${blueDetected ? 'text-blue-500' : 'text-muted-foreground'}`}>
                       {blueDetected ? 'Detected' : 'Not found'}
                     </p>
@@ -348,11 +397,15 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
                   </div>
                   <div className="flex items-center gap-1.5 text-[10px]">
                     <div className="w-2 h-2 bg-[#00ffba] rounded-full" />
-                    <span className="font-medium">Phase 3: Scoring & Stats</span>
+                    <span className="font-medium">Phase 3: Scoring & Ring Sync</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[10px]">
+                    <div className="w-2 h-2 bg-[#00ffba] rounded-full" />
+                    <span className="font-medium">Phase 4: Data Labeling</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                     <div className="w-2 h-2 bg-muted-foreground/30 rounded-full" />
-                    <span>Phase 4: Model Fine-tuning</span>
+                    <span>Phase 5: Model Fine-tuning</span>
                   </div>
                 </div>
               </div>
