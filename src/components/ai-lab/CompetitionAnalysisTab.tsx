@@ -116,7 +116,7 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Brain className="h-5 w-5" />
             AI Competition Analysis
-            <Badge variant="outline" className="rounded-none text-[10px]">Phase 2</Badge>
+            <Badge variant="outline" className="rounded-none text-[10px]">Phase 3</Badge>
           </h2>
           <p className="text-xs text-muted-foreground">
             Real-time strike detection & fighter tracking — Red/Blue corner
