@@ -15,8 +15,10 @@ import {
 } from 'lucide-react';
 import { PoseOverlayFeed } from './PoseOverlayFeed';
 import { StrikeFeedPanel } from './StrikeFeedPanel';
+import { ScoringPanel } from './ScoringPanel';
 import { useCompetitionPoseAnalysis } from '@/hooks/useCompetitionPoseAnalysis';
 import { useCompetitionStrikeDetection } from '@/hooks/useCompetitionStrikeDetection';
+import { useCompetitionScoring } from '@/hooks/useCompetitionScoring';
 
 interface AnalysisCamera {
   id: string;
