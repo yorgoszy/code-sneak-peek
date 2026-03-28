@@ -10,7 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
-  Trophy, Timer, Play, Square, FileText, Loader2, BarChart3, Medal, Swords,
+  Trophy, Timer, Play, Square, FileText, Loader2, BarChart3, Medal, Swords, Link2,
 } from 'lucide-react';
 import type { RoundScore, FightReport, ActivitySnapshot } from '@/hooks/useCompetitionScoring';
 import type { CompetitionStrike } from '@/hooks/useCompetitionStrikeDetection';
