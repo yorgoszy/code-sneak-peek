@@ -3,6 +3,7 @@
  * AI Lab tab for real-time pose detection, fighter tracking, and strike detection.
  * Phase 1: MediaPipe skeleton overlay + Red/Blue corner identification.
  * Phase 2: Real-time strike classification with per-corner stats.
+ * Phase 3: Round-based scoring, activity tracking, and AI post-fight reports.
  */
 import React, { useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
