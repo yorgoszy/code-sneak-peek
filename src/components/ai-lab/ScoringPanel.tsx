@@ -27,6 +27,7 @@ interface ScoringPanelProps {
   onGenerateReport: () => void;
   onReset: () => void;
   totalStrikes: { red: number; blue: number };
+  ringSynced?: boolean;
 }
 
 export const ScoringPanel: React.FC<ScoringPanelProps> = ({
