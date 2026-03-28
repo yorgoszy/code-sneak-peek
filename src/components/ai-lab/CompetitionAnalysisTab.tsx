@@ -45,6 +45,9 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
   // Strike detection
   const strikeDetection = useCompetitionStrikeDetection();
 
+  // Scoring engine (Phase 3)
+  const scoring = useCompetitionScoring();
+
   // Pose analysis with strike detection callback
   const {
     isInitialized,
