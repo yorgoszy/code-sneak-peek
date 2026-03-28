@@ -233,8 +233,31 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
           )}
         </div>
 
-        {/* Right panel: Strike Detection + Detection Stats */}
+        {/* Right panel: Strike Detection + Scoring + Detection Stats */}
         <div className="space-y-3">
+          {/* Scoring Panel (Phase 3) */}
+          <ScoringPanel
+            currentRound={scoring.currentRound}
+            roundScores={scoring.roundScores}
+            isRoundActive={scoring.isRoundActive}
+            report={scoring.report}
+            isGeneratingReport={scoring.isGeneratingReport}
+            activityTimeline={scoring.activityTimeline}
+            onStartRound={() => scoring.startRound()}
+            onEndRound={() => scoring.endRound()}
+            onGenerateReport={() => scoring.generateReport(
+              strikeDetection.strikes,
+              'muay_thai',
+              {
+                redName: (currentMatch as any)?.athlete1?.name,
+                blueName: (currentMatch as any)?.athlete2?.name,
+                totalRounds: currentMatch?.round_number || 3,
+              }
+            )}
+            onReset={() => scoring.resetScoring()}
+            totalStrikes={{ red: redStats.total, blue: blueStats.total }}
+          />
+
           {/* Strike feed */}
           <StrikeFeedPanel
             strikes={strikeDetection.strikes}
