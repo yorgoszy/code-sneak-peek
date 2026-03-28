@@ -65,6 +65,16 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
 
   const activeCameras = cameras.filter(c => c.is_active && c.stream_url?.startsWith('webcam:'));
 
+  // Feed new strikes to scoring engine
+  const prevStrikeCountRef = React.useRef(0);
+  useEffect(() => {
+    if (strikeDetection.strikes.length > prevStrikeCountRef.current) {
+      const newStrikes = strikeDetection.strikes.slice(prevStrikeCountRef.current);
+      newStrikes.forEach(s => scoring.recordStrike(s));
+      prevStrikeCountRef.current = strikeDetection.strikes.length;
+    }
+  }, [strikeDetection.strikes, scoring.recordStrike]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => { destroy(); };
