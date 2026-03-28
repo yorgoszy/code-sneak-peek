@@ -3,6 +3,7 @@
  * AI Lab tab for real-time pose detection, fighter tracking, and strike detection.
  * Phase 1: MediaPipe skeleton overlay + Red/Blue corner identification.
  * Phase 2: Real-time strike classification with per-corner stats.
+ * Phase 3: Round-based scoring, activity tracking, and AI post-fight reports.
  */
 import React, { useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,8 +15,10 @@ import {
 } from 'lucide-react';
 import { PoseOverlayFeed } from './PoseOverlayFeed';
 import { StrikeFeedPanel } from './StrikeFeedPanel';
+import { ScoringPanel } from './ScoringPanel';
 import { useCompetitionPoseAnalysis } from '@/hooks/useCompetitionPoseAnalysis';
 import { useCompetitionStrikeDetection } from '@/hooks/useCompetitionStrikeDetection';
+import { useCompetitionScoring } from '@/hooks/useCompetitionScoring';
 
 interface AnalysisCamera {
   id: string;
@@ -42,6 +45,9 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
   // Strike detection
   const strikeDetection = useCompetitionStrikeDetection();
 
+  // Scoring engine (Phase 3)
+  const scoring = useCompetitionScoring();
+
   // Pose analysis with strike detection callback
   const {
     isInitialized,
@@ -58,6 +64,16 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
   } = useCompetitionPoseAnalysis(strikeDetection.analyzeFrame);
 
   const activeCameras = cameras.filter(c => c.is_active && c.stream_url?.startsWith('webcam:'));
+
+  // Feed new strikes to scoring engine
+  const prevStrikeCountRef = React.useRef(0);
+  useEffect(() => {
+    if (strikeDetection.strikes.length > prevStrikeCountRef.current) {
+      const newStrikes = strikeDetection.strikes.slice(prevStrikeCountRef.current);
+      newStrikes.forEach(s => scoring.recordStrike(s));
+      prevStrikeCountRef.current = strikeDetection.strikes.length;
+    }
+  }, [strikeDetection.strikes, scoring.recordStrike]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -110,7 +126,7 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Brain className="h-5 w-5" />
             AI Competition Analysis
-            <Badge variant="outline" className="rounded-none text-[10px]">Phase 2</Badge>
+            <Badge variant="outline" className="rounded-none text-[10px]">Phase 3</Badge>
           </h2>
           <p className="text-xs text-muted-foreground">
             Real-time strike detection & fighter tracking — Red/Blue corner
@@ -227,8 +243,31 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
           )}
         </div>
 
-        {/* Right panel: Strike Detection + Detection Stats */}
+        {/* Right panel: Strike Detection + Scoring + Detection Stats */}
         <div className="space-y-3">
+          {/* Scoring Panel (Phase 3) */}
+          <ScoringPanel
+            currentRound={scoring.currentRound}
+            roundScores={scoring.roundScores}
+            isRoundActive={scoring.isRoundActive}
+            report={scoring.report}
+            isGeneratingReport={scoring.isGeneratingReport}
+            activityTimeline={scoring.activityTimeline}
+            onStartRound={() => scoring.startRound()}
+            onEndRound={() => scoring.endRound()}
+            onGenerateReport={() => scoring.generateReport(
+              strikeDetection.strikes,
+              'muay_thai',
+              {
+                redName: (currentMatch as any)?.athlete1?.name,
+                blueName: (currentMatch as any)?.athlete2?.name,
+                totalRounds: currentMatch?.round_number || 3,
+              }
+            )}
+            onReset={() => scoring.resetScoring()}
+            totalStrikes={{ red: redStats.total, blue: blueStats.total }}
+          />
+
           {/* Strike feed */}
           <StrikeFeedPanel
             strikes={strikeDetection.strikes}
@@ -307,9 +346,9 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
                     <div className="w-2 h-2 bg-[#00ffba] rounded-full" />
                     <span className="font-medium">Phase 2: Strike Detection</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                    <div className="w-2 h-2 bg-muted-foreground/30 rounded-full" />
-                    <span>Phase 3: Scoring & Stats</span>
+                  <div className="flex items-center gap-1.5 text-[10px]">
+                    <div className="w-2 h-2 bg-[#00ffba] rounded-full" />
+                    <span className="font-medium">Phase 3: Scoring & Stats</span>
                   </div>
                   <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                     <div className="w-2 h-2 bg-muted-foreground/30 rounded-full" />
