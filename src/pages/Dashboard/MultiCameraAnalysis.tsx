@@ -1071,6 +1071,7 @@ const MultiCameraAnalysis: React.FC = () => {
                   cameras={cameras}
                   currentMatch={currentMatch}
                   positionLabels={positionLabels}
+                  ringId={ringId || undefined}
                 />
               </TabsContent>
             </Tabs>
