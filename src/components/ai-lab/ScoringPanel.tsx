@@ -42,6 +42,7 @@ export const ScoringPanel: React.FC<ScoringPanelProps> = ({
   onGenerateReport,
   onReset,
   totalStrikes,
+  ringSynced = false,
 }) => {
   const [reportOpen, setReportOpen] = useState(false);
 
