@@ -422,9 +422,9 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
                     <div className="w-2 h-2 bg-[#00ffba] rounded-full" />
                     <span className="font-medium">Phase 4: Data Labeling</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                    <div className="w-2 h-2 bg-muted-foreground/30 rounded-full" />
-                    <span>Phase 5: Model Fine-tuning</span>
+                  <div className="flex items-center gap-1.5 text-[10px]">
+                    <div className="w-2 h-2 bg-[#00ffba] rounded-full" />
+                    <span className="font-medium">Phase 5: Adaptive Learning</span>
                   </div>
                 </div>
               </div>
