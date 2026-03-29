@@ -59,6 +59,16 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
   // Scoring engine (Phase 3) — now synced with ring timer
   const scoring = useCompetitionScoring();
 
+  // Adaptive learning (Phase 5)
+  const adaptiveLearning = useAdaptiveLearning();
+
+  // Apply learned thresholds when available
+  useEffect(() => {
+    if (adaptiveLearning.state.isLoaded && adaptiveLearning.state.totalTrainingSamples > 0) {
+      strikeDetection.setThresholds(adaptiveLearning.state.adjustedThresholds);
+    }
+  }, [adaptiveLearning.state.isLoaded, adaptiveLearning.state.adjustedThresholds]);
+
   // Connect ring timer events to scoring engine
   useEffect(() => {
     ringSync.setOnRoundStart((round: number) => {
