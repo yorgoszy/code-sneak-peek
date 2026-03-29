@@ -130,13 +130,13 @@ export function useCompetitionStrikeDetection() {
         const sI = side === 'left' ? POSE_LANDMARKS.LEFT_SHOULDER : POSE_LANDMARKS.RIGHT_SHOULDER;
 
         const v = calcVelocity(lm[wI], prev.landmarks[wI], dt);
-        if (v > V_THRESH.punch) {
+        if (v > thresholdsRef.current.punch) {
           const elbowAngle = calculateAngle(lm[sI], lm[eI], lm[wI]);
           const traj = trajectory(hist, wI);
           detected.push({
             id: crypto.randomUUID(),
             corner, type: classifyPunch(elbowAngle, traj, side),
-            category: 'punch', side, timestamp: now, confidence: Math.min(v / V_THRESH.punch / 3, 1),
+            category: 'punch', side, timestamp: now, confidence: Math.min(v / thresholdsRef.current.punch / 3, 1),
             velocity: v, trajectory: traj, cameraIndex,
           });
           break; // one punch per frame per fighter
@@ -151,13 +151,13 @@ export function useCompetitionStrikeDetection() {
           const hI = side === 'left' ? POSE_LANDMARKS.LEFT_HIP : POSE_LANDMARKS.RIGHT_HIP;
 
           const v = calcVelocity(lm[aI], prev.landmarks[aI], dt);
-          if (v > V_THRESH.kick) {
+          if (v > thresholdsRef.current.kick) {
             const kneeAngle = calculateAngle(lm[hI], lm[kI], lm[aI]);
             const traj = trajectory(hist, aI);
             detected.push({
               id: crypto.randomUUID(),
               corner, type: classifyKick(kneeAngle, traj),
-              category: 'kick', side, timestamp: now, confidence: Math.min(v / V_THRESH.kick / 3, 1),
+              category: 'kick', side, timestamp: now, confidence: Math.min(v / thresholdsRef.current.kick / 3, 1),
               velocity: v, trajectory: traj, cameraIndex,
             });
             break;
@@ -170,11 +170,11 @@ export function useCompetitionStrikeDetection() {
         for (const side of ['left', 'right'] as const) {
           const kI = side === 'left' ? POSE_LANDMARKS.LEFT_KNEE : POSE_LANDMARKS.RIGHT_KNEE;
           const v = calcVelocity(lm[kI], prev.landmarks[kI], dt);
-          if (v > V_THRESH.knee && lm[kI].y < prev.landmarks[kI].y) {
+          if (v > thresholdsRef.current.knee && lm[kI].y < prev.landmarks[kI].y) {
             detected.push({
               id: crypto.randomUUID(),
               corner, type: 'knee', category: 'knee', side,
-              timestamp: now, confidence: Math.min(v / V_THRESH.knee / 3, 1),
+              timestamp: now, confidence: Math.min(v / thresholdsRef.current.knee / 3, 1),
               velocity: v, trajectory: 'upward', cameraIndex,
             });
             break;
@@ -189,13 +189,13 @@ export function useCompetitionStrikeDetection() {
           const wI = side === 'left' ? POSE_LANDMARKS.LEFT_WRIST : POSE_LANDMARKS.RIGHT_WRIST;
           const eV = calcVelocity(lm[eI], prev.landmarks[eI], dt);
           const wV = calcVelocity(lm[wI], prev.landmarks[wI], dt);
-          if (eV > V_THRESH.elbow && eV > wV * 1.3) {
+          if (eV > thresholdsRef.current.elbow && eV > wV * 1.3) {
             const traj = trajectory(hist, eI);
             detected.push({
               id: crypto.randomUUID(),
               corner, type: traj === 'circular' ? 'spinning_elbow' : 'elbow',
               category: 'elbow', side, timestamp: now,
-              confidence: Math.min(eV / V_THRESH.elbow / 3, 1),
+              confidence: Math.min(eV / thresholdsRef.current.elbow / 3, 1),
               velocity: eV, trajectory: traj, cameraIndex,
             });
             break;
