@@ -58,6 +58,15 @@ export function useCompetitionStrikeDetection() {
   // Per-corner pose history: Map<cornerKey, PoseSnapshot[]>
   const historyRef = useRef<Record<string, PoseSnapshot[]>>({ red: [], blue: [] });
   const lastStrikeRef = useRef<Record<string, number>>({ red: 0, blue: 0 });
+  // Adaptive thresholds from Phase 5
+  const thresholdsRef = useRef({ ...DEFAULT_V_THRESH });
+
+  /**
+   * Update velocity thresholds from adaptive learning engine.
+   */
+  const setThresholds = (t: typeof DEFAULT_V_THRESH) => {
+    thresholdsRef.current = { ...t };
+  };
 
   const calcVelocity = (a: Landmark, b: Landmark, dt: number) =>
     dt > 0 ? calculateDistance(a, b) / dt : 0;
