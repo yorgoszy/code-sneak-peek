@@ -324,6 +324,12 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
             isActive={strikeDetection.isActive}
           />
 
+          {/* Model Performance (Phase 5) */}
+          <ModelPerformancePanel
+            state={adaptiveLearning.state}
+            onLearn={adaptiveLearning.loadAndLearn}
+          />
+
           {/* Strike feed */}
           <StrikeFeedPanel
             strikes={strikeDetection.strikes}
