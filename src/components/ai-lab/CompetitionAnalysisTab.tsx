@@ -5,6 +5,7 @@
  * Phase 2: Real-time strike classification with per-corner stats.
  * Phase 3: Round-based scoring synced with federation ring timer.
  * Phase 4: Data labeling for model training.
+ * Phase 5: Adaptive learning & model fine-tuning.
  */
 import React, { useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,10 +19,12 @@ import { PoseOverlayFeed } from './PoseOverlayFeed';
 import { StrikeFeedPanel } from './StrikeFeedPanel';
 import { ScoringPanel } from './ScoringPanel';
 import { DataLabelingPanel } from './DataLabelingPanel';
+import { ModelPerformancePanel } from './ModelPerformancePanel';
 import { useCompetitionPoseAnalysis } from '@/hooks/useCompetitionPoseAnalysis';
 import { useCompetitionStrikeDetection } from '@/hooks/useCompetitionStrikeDetection';
 import { useCompetitionScoring } from '@/hooks/useCompetitionScoring';
 import { useRingScoringSync } from '@/hooks/useRingScoringSync';
+import { useAdaptiveLearning } from '@/hooks/useAdaptiveLearning';
 
 interface AnalysisCamera {
   id: string;
@@ -55,6 +58,16 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
 
   // Scoring engine (Phase 3) — now synced with ring timer
   const scoring = useCompetitionScoring();
+
+  // Adaptive learning (Phase 5)
+  const adaptiveLearning = useAdaptiveLearning();
+
+  // Apply learned thresholds when available
+  useEffect(() => {
+    if (adaptiveLearning.state.isLoaded && adaptiveLearning.state.totalTrainingSamples > 0) {
+      strikeDetection.setThresholds(adaptiveLearning.state.adjustedThresholds);
+    }
+  }, [adaptiveLearning.state.isLoaded, adaptiveLearning.state.adjustedThresholds]);
 
   // Connect ring timer events to scoring engine
   useEffect(() => {
@@ -148,7 +161,7 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Brain className="h-5 w-5" />
             AI Competition Analysis
-            <Badge variant="outline" className="rounded-none text-[10px]">Phase 4</Badge>
+            <Badge variant="outline" className="rounded-none text-[10px]">Phase 5</Badge>
           </h2>
           <p className="text-xs text-muted-foreground">
             Real-time strike detection, scoring & data labeling — Red/Blue corner
@@ -311,6 +324,12 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
             isActive={strikeDetection.isActive}
           />
 
+          {/* Model Performance (Phase 5) */}
+          <ModelPerformancePanel
+            state={adaptiveLearning.state}
+            onLearn={adaptiveLearning.loadAndLearn}
+          />
+
           {/* Strike feed */}
           <StrikeFeedPanel
             strikes={strikeDetection.strikes}
@@ -403,9 +422,9 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
                     <div className="w-2 h-2 bg-[#00ffba] rounded-full" />
                     <span className="font-medium">Phase 4: Data Labeling</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                    <div className="w-2 h-2 bg-muted-foreground/30 rounded-full" />
-                    <span>Phase 5: Model Fine-tuning</span>
+                  <div className="flex items-center gap-1.5 text-[10px]">
+                    <div className="w-2 h-2 bg-[#00ffba] rounded-full" />
+                    <span className="font-medium">Phase 5: Adaptive Learning</span>
                   </div>
                 </div>
               </div>
