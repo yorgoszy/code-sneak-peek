@@ -249,5 +249,6 @@ export function useCompetitionStrikeDetection() {
     reset,
     analyzeFrame,
     getCornerStats,
+    setThresholds,
   };
 }

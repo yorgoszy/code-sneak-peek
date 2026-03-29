@@ -18,10 +18,12 @@ import { PoseOverlayFeed } from './PoseOverlayFeed';
 import { StrikeFeedPanel } from './StrikeFeedPanel';
 import { ScoringPanel } from './ScoringPanel';
 import { DataLabelingPanel } from './DataLabelingPanel';
+import { ModelPerformancePanel } from './ModelPerformancePanel';
 import { useCompetitionPoseAnalysis } from '@/hooks/useCompetitionPoseAnalysis';
 import { useCompetitionStrikeDetection } from '@/hooks/useCompetitionStrikeDetection';
 import { useCompetitionScoring } from '@/hooks/useCompetitionScoring';
 import { useRingScoringSync } from '@/hooks/useRingScoringSync';
+import { useAdaptiveLearning } from '@/hooks/useAdaptiveLearning';
 
 interface AnalysisCamera {
   id: string;
