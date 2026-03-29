@@ -38,8 +38,8 @@ export interface CornerStats {
 
 const EMPTY_STATS: CornerStats = { total: 0, punches: 0, kicks: 0, knees: 0, elbows: 0, lastStrike: null };
 
-// Velocity thresholds (normalized coords / second)
-const V_THRESH = { punch: 0.04, kick: 0.03, knee: 0.025, elbow: 0.03 };
+// Default velocity thresholds (normalized coords / second)
+const DEFAULT_V_THRESH = { punch: 0.04, kick: 0.03, knee: 0.025, elbow: 0.03 };
 const COOLDOWN_MS = 120;
 const MAX_HISTORY = 8;
 
