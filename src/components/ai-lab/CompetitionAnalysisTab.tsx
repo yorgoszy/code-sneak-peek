@@ -6,6 +6,7 @@
  * Phase 3: Round-based scoring synced with federation ring timer.
  * Phase 4: Data labeling for model training.
  * Phase 5: Adaptive learning & model fine-tuning.
+ */
 import React, { useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
