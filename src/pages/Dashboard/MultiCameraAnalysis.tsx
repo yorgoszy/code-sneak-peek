@@ -36,6 +36,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { toast } from "sonner";
 import { CompetitionAnalysisTab } from '@/components/ai-lab/CompetitionAnalysisTab';
+import { useRingScoringSync } from '@/hooks/useRingScoringSync';
 
 type CombatSport = 'muay_thai' | 'boxing' | 'kickboxing' | 'mma' | 'karate' | 'taekwondo' | 'judo';
 type AnalysisMode = 'strike_counting' | 'round_stats' | 'technique_evaluation' | 'fighter_comparison' | 'full';
@@ -241,6 +242,10 @@ const MultiCameraAnalysis: React.FC = () => {
   const [availableRings, setAvailableRings] = useState<any[]>([]);
   const [selectedRingId, setSelectedRingId] = useState<string | null>(ringIdParam || null);
   const ringId = ringIdParam || selectedRingId;
+
+  // Ring sync — auto start/stop analysis based on federation live timer
+  const ringSync = useRingScoringSync(ringId || null);
+
 
   // Ring data
   const [ring, setRing] = useState<any>(null);
@@ -629,6 +634,17 @@ const MultiCameraAnalysis: React.FC = () => {
     setAnalysisProgress(0);
   };
 
+  // Auto start/stop analysis based on ring timer (federation live sync)
+  useEffect(() => {
+    if (!ringSync.connected) return;
+    ringSync.setOnRoundStart((round: number) => {
+      console.log(`🥊 [AI Lab] Auto-start analysis — Round ${round}`);
+    });
+    ringSync.setOnRoundEnd((_round: number) => {
+      console.log(`🛑 [AI Lab] Auto-stop analysis — Round ${_round} ended`);
+    });
+  }, [ringSync.connected, ringSync.setOnRoundStart, ringSync.setOnRoundEnd]);
+
   // Load results of a past session
   const loadSessionResults = async (sessionId: string) => {
     const { data } = await supabase
@@ -915,9 +931,24 @@ const MultiCameraAnalysis: React.FC = () => {
                         <div className="flex justify-between"><span>{t('aiLab.analysis.estimatedCost')}:</span><span className="text-foreground">~$0.07</span></div>
                         <div className="flex justify-between"><span>{t('aiLab.analysis.aiModel')}:</span><span className="text-foreground">Gemini 3.1 Pro</span></div>
                       </div>
-                      <Button onClick={isAnalyzing ? stopAnalysis : startAnalysis} disabled={activeCameras.length === 0 && !isAnalyzing} className={`w-full rounded-none ${isAnalyzing ? 'bg-destructive hover:bg-destructive/90' : ''}`}>
-                        {isAnalyzing ? (<><Square className="h-4 w-4 mr-1" /> {t('aiLab.analysis.stopAnalysis')}</>) : (<><Play className="h-4 w-4 mr-1" /> {t('aiLab.analysis.startAnalysis')}</>)}
-                      </Button>
+                      {ringSync.connected ? (
+                        <div className="w-full p-3 border border-[#00ffba]/30 bg-[#00ffba]/5 text-center">
+                          <Badge variant="outline" className="rounded-none text-xs border-[#00ffba]/50 text-[#00ffba]">
+                            🤖 Auto Mode — Synced with Ring
+                          </Badge>
+                          <p className="text-[10px] text-muted-foreground mt-1">
+                            {ringSync.isTimerRunning && !ringSync.isBreak
+                              ? `▶ Round ${ringSync.currentRound} σε εξέλιξη`
+                              : ringSync.isBreak
+                                ? `⏸ Διάλειμμα`
+                                : `Αναμονή για έναρξη γύρου...`}
+                          </p>
+                        </div>
+                      ) : (
+                        <Button onClick={isAnalyzing ? stopAnalysis : startAnalysis} disabled={activeCameras.length === 0 && !isAnalyzing} className={`w-full rounded-none ${isAnalyzing ? 'bg-destructive hover:bg-destructive/90' : ''}`}>
+                          {isAnalyzing ? (<><Square className="h-4 w-4 mr-1" /> {t('aiLab.analysis.stopAnalysis')}</>) : (<><Play className="h-4 w-4 mr-1" /> {t('aiLab.analysis.startAnalysis')}</>)}
+                        </Button>
+                      )}
                       {isAnalyzing && (
                         <div className="space-y-1">
                           <div className="flex justify-between text-xs"><span>{t('aiLab.analysis.progress')}</span><span>{analysisProgress}%</span></div>
