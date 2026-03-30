@@ -69,15 +69,28 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
     }
   }, [adaptiveLearning.state.isLoaded, adaptiveLearning.state.adjustedThresholds]);
 
-  // Connect ring timer events to scoring engine
+  // Auto-initialize model once when ring is connected and cameras are available
+  const autoInitRef = React.useRef(false);
+  useEffect(() => {
+    if (ringSync.connected && activeCameras.length > 0 && !isInitialized && !isLoading && !autoInitRef.current) {
+      autoInitRef.current = true;
+      initialize().catch(console.error);
+    }
+  }, [ringSync.connected, activeCameras.length, isInitialized, isLoading, initialize]);
+
+  // Connect ring timer events to scoring engine AND auto-start/stop detection
   useEffect(() => {
     ringSync.setOnRoundStart((round: number) => {
+      console.log(`🥊 Auto-start AI analysis — Round ${round}`);
       scoring.startRound(round);
+      strikeDetection.start();
     });
     ringSync.setOnRoundEnd((_round: number) => {
+      console.log(`🛑 Auto-stop AI analysis — Round ${_round} ended`);
       scoring.endRound();
+      strikeDetection.stop();
     });
-  }, [ringSync.setOnRoundStart, ringSync.setOnRoundEnd, scoring.startRound, scoring.endRound]);
+  }, [ringSync.setOnRoundStart, ringSync.setOnRoundEnd, scoring.startRound, scoring.endRound, strikeDetection]);
 
   // Pose analysis with strike detection callback
   const {
