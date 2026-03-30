@@ -515,7 +515,42 @@ const MultiCameraAnalysis: React.FC = () => {
 
         const startTime = Date.now();
 
-        // Call edge function with multi-camera context
+        // Capture frames from live webcam video elements as base64
+        const captureFrameFromVideo = (videoEl: HTMLVideoElement): string | null => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = videoEl.videoWidth || 640;
+            canvas.height = videoEl.videoHeight || 480;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return null;
+            ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+            // Return base64 without the data:image/jpeg;base64, prefix
+            return canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+          } catch (e) {
+            console.error('Frame capture error:', e);
+            return null;
+          }
+        };
+
+        // Find all active video elements in the camera grid
+        const videoElements = document.querySelectorAll<HTMLVideoElement>('[data-camera-feed] video');
+        const capturedFrames: string[] = [];
+        videoElements.forEach(vid => {
+          if (vid.readyState >= 2) { // HAVE_CURRENT_DATA
+            const frame = captureFrameFromVideo(vid);
+            if (frame) capturedFrames.push(frame);
+          }
+        });
+
+        // Use the first captured frame as the primary image for analysis
+        const primaryFrame = capturedFrames[0] || null;
+
+        if (!primaryFrame) {
+          console.error('No frames captured from cameras');
+          continue;
+        }
+
+        // Call edge function with captured frame data
         const { data: analysisData, error: analysisError } = await supabase.functions.invoke(
           'analyze-combat-video',
           {
@@ -529,8 +564,7 @@ const MultiCameraAnalysis: React.FC = () => {
               } : undefined,
               camerasUsed: activeCameras.length,
               cameraPositions: activeCameras.map(c => c.position),
-              // In production, videoUrl would come from Mac Mini stream recorder
-              videoUrl: activeCameras[0]?.stream_url || undefined,
+              videoBase64: primaryFrame,
             }
           }
         );
@@ -811,7 +845,7 @@ const MultiCameraAnalysis: React.FC = () => {
                           const isMobile = cam.stream_url.startsWith('mobile:');
                           return (
                             <Card key={i} className="rounded-none overflow-hidden">
-                              <div className="relative aspect-video bg-black">
+                              <div className="relative aspect-video bg-black" data-camera-feed={cam.camera_index}>
                                 {isWebcam ? (
                                   <CameraFeedInline deviceId={cam.stream_url.replace('webcam:', '')} />
                                 ) : isMobile ? (
