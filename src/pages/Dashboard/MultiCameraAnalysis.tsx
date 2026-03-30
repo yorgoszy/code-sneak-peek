@@ -329,13 +329,16 @@ const MultiCameraAnalysis: React.FC = () => {
     if (!ringId) return;
 
     const interval = window.setInterval(() => {
-      loadCameras();
+      // Skip polling while camera settings dialog is open to prevent overwriting local edits
+      if (!cameraDialogOpen) {
+        loadCameras();
+      }
     }, 3000);
 
     return () => {
       window.clearInterval(interval);
     };
-  }, [ringId]);
+  }, [ringId, cameraDialogOpen]);
 
   const loadAvailableRings = async () => {
     const { data } = await supabase
