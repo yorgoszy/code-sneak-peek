@@ -257,12 +257,14 @@ serve(async (req) => {
     const parts: any[] = [{ text: systemPrompt + "\n\n" + userPrompt }];
 
     if (videoBase64) {
-      // Inline video data
+      // Detect mime type from base64 header
       const mimeType = videoBase64.startsWith("/9j/")
         ? "image/jpeg"
+        : videoBase64.startsWith("iVBOR")
+        ? "image/png"
         : videoBase64.startsWith("AAAA")
         ? "video/mp4"
-        : "video/mp4";
+        : "image/jpeg"; // Default to JPEG for webcam captures
 
       parts.unshift({
         inline_data: {
