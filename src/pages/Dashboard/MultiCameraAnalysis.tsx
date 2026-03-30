@@ -634,6 +634,17 @@ const MultiCameraAnalysis: React.FC = () => {
     setAnalysisProgress(0);
   };
 
+  // Auto start/stop analysis based on ring timer (federation live sync)
+  useEffect(() => {
+    if (!ringSync.connected) return;
+    ringSync.setOnRoundStart((round: number) => {
+      console.log(`🥊 [AI Lab] Auto-start analysis — Round ${round}`);
+    });
+    ringSync.setOnRoundEnd((_round: number) => {
+      console.log(`🛑 [AI Lab] Auto-stop analysis — Round ${_round} ended`);
+    });
+  }, [ringSync.connected, ringSync.setOnRoundStart, ringSync.setOnRoundEnd]);
+
   // Load results of a past session
   const loadSessionResults = async (sessionId: string) => {
     const { data } = await supabase
