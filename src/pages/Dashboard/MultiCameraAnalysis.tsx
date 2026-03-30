@@ -36,6 +36,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { toast } from "sonner";
 import { CompetitionAnalysisTab } from '@/components/ai-lab/CompetitionAnalysisTab';
+import { useRingScoringSync } from '@/hooks/useRingScoringSync';
 
 type CombatSport = 'muay_thai' | 'boxing' | 'kickboxing' | 'mma' | 'karate' | 'taekwondo' | 'judo';
 type AnalysisMode = 'strike_counting' | 'round_stats' | 'technique_evaluation' | 'fighter_comparison' | 'full';
