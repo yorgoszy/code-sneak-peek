@@ -314,8 +314,10 @@ const MultiCameraAnalysis: React.FC = () => {
           filter: `ring_id=eq.${ringId}`,
         },
         () => {
-          // Reload cameras when any change happens
-          loadCameras();
+          // Skip reload while camera settings dialog is open to prevent overwriting local edits
+          if (!cameraDialogOpen) {
+            loadCameras();
+          }
         }
       )
       .subscribe();
@@ -323,19 +325,22 @@ const MultiCameraAnalysis: React.FC = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [ringId]);
+  }, [ringId, cameraDialogOpen]);
 
   useEffect(() => {
     if (!ringId) return;
 
     const interval = window.setInterval(() => {
-      loadCameras();
+      // Skip polling while camera settings dialog is open to prevent overwriting local edits
+      if (!cameraDialogOpen) {
+        loadCameras();
+      }
     }, 3000);
 
     return () => {
       window.clearInterval(interval);
     };
-  }, [ringId]);
+  }, [ringId, cameraDialogOpen]);
 
   const loadAvailableRings = async () => {
     const { data } = await supabase
