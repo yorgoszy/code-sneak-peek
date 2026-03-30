@@ -246,22 +246,6 @@ const MultiCameraAnalysis: React.FC = () => {
   // Ring sync — auto start/stop analysis based on federation live timer
   const ringSync = useRingScoringSync(ringId || null);
 
-  // Auto start/stop analysis based on ring timer
-  useEffect(() => {
-    if (!ringSync.connected) return;
-    ringSync.setOnRoundStart((round: number) => {
-      console.log(`🥊 [AI Lab] Auto-start analysis — Round ${round}`);
-      if (!isAnalyzing && ringId && activeCameras.length > 0) {
-        startAnalysis();
-      }
-    });
-    ringSync.setOnRoundEnd((_round: number) => {
-      console.log(`🛑 [AI Lab] Auto-stop analysis — Round ${_round} ended`);
-      if (isAnalyzing) {
-        stopAnalysis();
-      }
-    });
-  }, [ringSync.connected, ringSync.setOnRoundStart, ringSync.setOnRoundEnd, isAnalyzing]);
 
   // Ring data
   const [ring, setRing] = useState<any>(null);
