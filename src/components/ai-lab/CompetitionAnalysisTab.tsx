@@ -69,6 +69,23 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
     }
   }, [adaptiveLearning.state.isLoaded, adaptiveLearning.state.adjustedThresholds]);
 
+  // Pose analysis with strike detection callback
+  const {
+    isInitialized,
+    isLoading,
+    isRunning,
+    error,
+    fps,
+    fighterData,
+    initialize,
+    startDetection,
+    stopDetection,
+    stopAll,
+    destroy,
+  } = useCompetitionPoseAnalysis(strikeDetection.analyzeFrame);
+
+  const activeCameras = cameras.filter(c => c.is_active && c.stream_url?.startsWith('webcam:'));
+
   // Auto-initialize model once when ring is connected and cameras are available
   const autoInitRef = React.useRef(false);
   useEffect(() => {
@@ -91,23 +108,6 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
       strikeDetection.stop();
     });
   }, [ringSync.setOnRoundStart, ringSync.setOnRoundEnd, scoring.startRound, scoring.endRound, strikeDetection]);
-
-  // Pose analysis with strike detection callback
-  const {
-    isInitialized,
-    isLoading,
-    isRunning,
-    error,
-    fps,
-    fighterData,
-    initialize,
-    startDetection,
-    stopDetection,
-    stopAll,
-    destroy,
-  } = useCompetitionPoseAnalysis(strikeDetection.analyzeFrame);
-
-  const activeCameras = cameras.filter(c => c.is_active && c.stream_url?.startsWith('webcam:'));
 
   // Feed new strikes to scoring engine
   const prevStrikeCountRef = React.useRef(0);
