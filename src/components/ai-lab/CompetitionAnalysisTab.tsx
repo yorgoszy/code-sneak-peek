@@ -208,20 +208,26 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
               <RotateCcw className="h-3.5 w-3.5" />
             </Button>
           )}
-          <Button
-            onClick={isRunning ? handleStopAll : handleStartAll}
-            disabled={isLoading || activeCameras.length === 0}
-            className={`rounded-none ${isRunning ? 'bg-destructive hover:bg-destructive/90' : ''}`}
-            size="sm"
-          >
-            {isLoading ? (
-              <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Loading Model...</>
-            ) : isRunning ? (
-              <><Square className="h-4 w-4 mr-1" /> Stop</>
-            ) : (
-              <><Play className="h-4 w-4 mr-1" /> Start Analysis</>
-            )}
-          </Button>
+          {ringSync.connected ? (
+            <Badge variant="outline" className="rounded-none text-[10px]">
+              {isInitialized ? '🤖 Auto Mode' : isLoading ? '⏳ Loading Model...' : '⏸ Waiting...'}
+            </Badge>
+          ) : (
+            <Button
+              onClick={isRunning ? handleStopAll : handleStartAll}
+              disabled={isLoading || activeCameras.length === 0}
+              className={`rounded-none ${isRunning ? 'bg-destructive hover:bg-destructive/90' : ''}`}
+              size="sm"
+            >
+              {isLoading ? (
+                <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Loading Model...</>
+              ) : isRunning ? (
+                <><Square className="h-4 w-4 mr-1" /> Stop</>
+              ) : (
+                <><Play className="h-4 w-4 mr-1" /> Start Analysis</>
+              )}
+            </Button>
+          )}
         </div>
       </div>
 
