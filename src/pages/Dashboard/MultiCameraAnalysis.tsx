@@ -818,23 +818,7 @@ const MultiCameraAnalysis: React.FC = () => {
                     <Card className="rounded-none">
                       <CardContent className="p-4">
                         <div className="relative w-full max-w-md mx-auto aspect-square border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
-                          <div className="text-center space-y-2">
-                            {ringSync.connected ? (
-                              <>
-                                <div className="flex items-center justify-center gap-3 text-xs">
-                                  <span className="text-red-500 font-bold">{ringSync.redName}</span>
-                                  <span className="text-muted-foreground">vs</span>
-                                  <span className="text-blue-500 font-bold">{ringSync.blueName}</span>
-                                </div>
-                                <div className="text-lg font-mono font-bold text-foreground">
-                                  {ringSync.isBreak ? 'BRK' : `R${ringSync.currentRound}`} — {ringSync.remainingSeconds != null ? `${ringSync.remainingSeconds}s` : '--'}
-                                </div>
-                                <div className={`w-2 h-2 rounded-full mx-auto ${ringSync.isTimerRunning ? 'bg-green-500 animate-pulse' : 'bg-muted-foreground/40'}`} />
-                              </>
-                            ) : (
-                              <div className="text-muted-foreground text-xs">RING</div>
-                            )}
-                          </div>
+                          <div className="text-center text-muted-foreground text-xs">RING</div>
                           {cameras.map((cam, i) => {
                             const positions: Record<string, string> = {
                               front: 'bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2',
@@ -947,7 +931,25 @@ const MultiCameraAnalysis: React.FC = () => {
                         <div className="flex justify-between"><span>{t('aiLab.analysis.estimatedCost')}:</span><span className="text-foreground">~$0.07</span></div>
                         <div className="flex justify-between"><span>{t('aiLab.analysis.aiModel')}:</span><span className="text-foreground">Gemini 3.1 Pro</span></div>
                       </div>
-                      {!ringSync.connected && (
+                      {ringSync.connected ? (
+                        <div className="w-full p-3 border border-border bg-muted/30 text-center space-y-1">
+                          <Badge variant="outline" className="rounded-none text-xs border-foreground text-foreground bg-foreground/5">
+                            🤖 Auto Mode — Synced with Ring
+                          </Badge>
+                          <p className="text-[10px] text-muted-foreground">
+                            {ringSync.isTimerRunning && !ringSync.isBreak
+                              ? `▶ Round ${ringSync.currentRound} • ${ringSync.remainingSeconds != null ? `${ringSync.remainingSeconds}s` : 'Live'}`
+                              : ringSync.isBreak
+                                ? `⏸ Διάλειμμα`
+                                : `Αναμονή για έναρξη γύρου...`}
+                          </p>
+                          <div className="flex items-center justify-center gap-2 text-[10px]">
+                            <span className="text-red-600 font-semibold">{ringSync.redName}</span>
+                            <span className="text-muted-foreground">vs</span>
+                            <span className="text-blue-600 font-semibold">{ringSync.blueName}</span>
+                          </div>
+                        </div>
+                      ) : (
                         <Button onClick={isAnalyzing ? stopAnalysis : startAnalysis} disabled={activeCameras.length === 0 && !isAnalyzing} className={`w-full rounded-none ${isAnalyzing ? 'bg-destructive hover:bg-destructive/90' : ''}`}>
                           {isAnalyzing ? (<><Square className="h-4 w-4 mr-1" /> {t('aiLab.analysis.stopAnalysis')}</>) : (<><Play className="h-4 w-4 mr-1" /> {t('aiLab.analysis.startAnalysis')}</>)}
                         </Button>
