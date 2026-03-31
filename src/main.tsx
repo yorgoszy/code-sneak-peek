@@ -5,13 +5,24 @@ import './index.css'
 import './i18n/config'
 import { registerSW } from 'virtual:pwa-register'
 
-// Register SW - auto update, reload when user returns to tab
-if ('serviceWorker' in navigator) {
+// Guard: never register SW in iframes or Lovable preview hosts
+const isInIframe = (() => {
+  try { return window.self !== window.top; } catch { return true; }
+})();
+const isPreviewHost =
+  window.location.hostname.includes('id-preview--') ||
+  window.location.hostname.includes('lovableproject.com');
+
+if (isPreviewHost || isInIframe) {
+  // Unregister any existing service workers in preview/iframe contexts
+  navigator.serviceWorker?.getRegistrations().then((registrations) => {
+    registrations.forEach((r) => r.unregister());
+  });
+} else if ('serviceWorker' in navigator) {
   const updateSW = registerSW({
     immediate: true,
     onNeedRefresh() {
       console.log('New content available - applying update immediately');
-      // Apply updates immediately to avoid users being stuck on stale UI/roles
       updateSW(true);
     },
     onOfflineReady() {
@@ -19,7 +30,6 @@ if ('serviceWorker' in navigator) {
     },
   });
 
-  // Also check for updates periodically (every 5 minutes)
   setInterval(() => {
     updateSW();
   }, 5 * 60 * 1000);
