@@ -19,6 +19,7 @@ export interface RingSyncState {
   isBreak: boolean;
   isTimerRunning: boolean;
   remainingSeconds: number | null;
+  liveRemainingSeconds: number | null;
   matchId: string | null;
   redName: string;
   blueName: string;
