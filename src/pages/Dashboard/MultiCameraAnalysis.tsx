@@ -818,7 +818,23 @@ const MultiCameraAnalysis: React.FC = () => {
                     <Card className="rounded-none">
                       <CardContent className="p-4">
                         <div className="relative w-full max-w-md mx-auto aspect-square border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
-                          <div className="text-center text-muted-foreground text-xs">RING</div>
+                          <div className="text-center space-y-2">
+                            {ringSync.connected ? (
+                              <>
+                                <div className="flex items-center justify-center gap-3 text-xs">
+                                  <span className="text-red-500 font-bold">{ringSync.redName}</span>
+                                  <span className="text-muted-foreground">vs</span>
+                                  <span className="text-blue-500 font-bold">{ringSync.blueName}</span>
+                                </div>
+                                <div className="text-lg font-mono font-bold text-foreground">
+                                  {ringSync.isBreak ? 'BRK' : `R${ringSync.currentRound}`} — {ringSync.remainingSeconds != null ? `${ringSync.remainingSeconds}s` : '--'}
+                                </div>
+                                <div className={`w-2 h-2 rounded-full mx-auto ${ringSync.isTimerRunning ? 'bg-green-500 animate-pulse' : 'bg-muted-foreground/40'}`} />
+                              </>
+                            ) : (
+                              <div className="text-muted-foreground text-xs">RING</div>
+                            )}
+                          </div>
                           {cameras.map((cam, i) => {
                             const positions: Record<string, string> = {
                               front: 'bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2',
