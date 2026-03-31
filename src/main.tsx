@@ -19,6 +19,8 @@ if (isPreviewHost || isInIframe) {
   navigator.serviceWorker?.getRegistrations().then((registrations) => {
     registrations.forEach((r) => r.unregister());
   });
+  // Also clear all caches
+  caches?.keys().then(keys => keys.forEach(k => caches.delete(k)));
 } else if ('serviceWorker' in navigator) {
   const updateSW = registerSW({
     immediate: true,
