@@ -931,25 +931,7 @@ const MultiCameraAnalysis: React.FC = () => {
                         <div className="flex justify-between"><span>{t('aiLab.analysis.estimatedCost')}:</span><span className="text-foreground">~$0.07</span></div>
                         <div className="flex justify-between"><span>{t('aiLab.analysis.aiModel')}:</span><span className="text-foreground">Gemini 3.1 Pro</span></div>
                       </div>
-                      {ringSync.connected ? (
-                        <div className="w-full p-3 border border-border bg-muted/30 text-center space-y-1">
-                          <Badge variant="outline" className="rounded-none text-xs border-foreground text-foreground bg-foreground/5">
-                            🤖 Auto Mode — Synced with Ring
-                          </Badge>
-                          <p className="text-[10px] text-muted-foreground">
-                            {ringSync.isTimerRunning && !ringSync.isBreak
-                              ? `▶ Round ${ringSync.currentRound} • ${ringSync.remainingSeconds != null ? `${ringSync.remainingSeconds}s` : 'Live'}`
-                              : ringSync.isBreak
-                                ? `⏸ Διάλειμμα`
-                                : `Αναμονή για έναρξη γύρου...`}
-                          </p>
-                          <div className="flex items-center justify-center gap-2 text-[10px]">
-                            <span className="text-red-600 font-semibold">{ringSync.redName}</span>
-                            <span className="text-muted-foreground">vs</span>
-                            <span className="text-blue-600 font-semibold">{ringSync.blueName}</span>
-                          </div>
-                        </div>
-                      ) : (
+                      {!ringSync.connected && (
                         <Button onClick={isAnalyzing ? stopAnalysis : startAnalysis} disabled={activeCameras.length === 0 && !isAnalyzing} className={`w-full rounded-none ${isAnalyzing ? 'bg-destructive hover:bg-destructive/90' : ''}`}>
                           {isAnalyzing ? (<><Square className="h-4 w-4 mr-1" /> {t('aiLab.analysis.stopAnalysis')}</>) : (<><Play className="h-4 w-4 mr-1" /> {t('aiLab.analysis.startAnalysis')}</>)}
                         </Button>
