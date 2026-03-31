@@ -34,6 +34,7 @@ const DEFAULT_STATE: RingSyncState = {
   isBreak: false,
   isTimerRunning: false,
   remainingSeconds: null,
+  liveRemainingSeconds: null,
   matchId: null,
   redName: 'Red Corner',
   blueName: 'Blue Corner',
