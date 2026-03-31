@@ -48,6 +48,8 @@ export function useRingScoringSync(ringId: string | null) {
   const prevRoundRef = useRef<number>(1);
   const prevBreakRef = useRef<boolean>(false);
   const prevRunningRef = useRef<boolean>(false);
+  const runningSinceRef = useRef<string | null>(null);
+  const baseRemainingRef = useRef<number | null>(null);
 
   // Callbacks that consumers can register
   const onRoundStartRef = useRef<((round: number) => void) | null>(null);
