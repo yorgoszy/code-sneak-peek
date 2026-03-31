@@ -11,13 +11,16 @@ const isInIframe = (() => {
 })();
 const isPreviewHost =
   window.location.hostname.includes('id-preview--') ||
-  window.location.hostname.includes('lovableproject.com');
+  window.location.hostname.includes('lovableproject.com') ||
+  window.location.hostname.includes('lovable.app');
 
 if (isPreviewHost || isInIframe) {
   // Unregister any existing service workers in preview/iframe contexts
   navigator.serviceWorker?.getRegistrations().then((registrations) => {
     registrations.forEach((r) => r.unregister());
   });
+  // Also clear all caches
+  caches?.keys().then(keys => keys.forEach(k => caches.delete(k)));
 } else if ('serviceWorker' in navigator) {
   const updateSW = registerSW({
     immediate: true,

@@ -932,17 +932,22 @@ const MultiCameraAnalysis: React.FC = () => {
                         <div className="flex justify-between"><span>{t('aiLab.analysis.aiModel')}:</span><span className="text-foreground">Gemini 3.1 Pro</span></div>
                       </div>
                       {ringSync.connected ? (
-                        <div className="w-full p-3 border border-[#00ffba]/30 bg-[#00ffba]/5 text-center">
-                          <Badge variant="outline" className="rounded-none text-xs border-[#00ffba]/50 text-[#00ffba]">
+                        <div className="w-full p-3 border border-border bg-muted/30 text-center space-y-1">
+                          <Badge variant="outline" className="rounded-none text-xs border-foreground text-foreground bg-foreground/5">
                             🤖 Auto Mode — Synced with Ring
                           </Badge>
-                          <p className="text-[10px] text-muted-foreground mt-1">
+                          <p className="text-[10px] text-muted-foreground">
                             {ringSync.isTimerRunning && !ringSync.isBreak
-                              ? `▶ Round ${ringSync.currentRound} σε εξέλιξη`
+                              ? `▶ Round ${ringSync.currentRound} • ${ringSync.remainingSeconds != null ? `${ringSync.remainingSeconds}s` : 'Live'}`
                               : ringSync.isBreak
                                 ? `⏸ Διάλειμμα`
                                 : `Αναμονή για έναρξη γύρου...`}
                           </p>
+                          <div className="flex items-center justify-center gap-2 text-[10px]">
+                            <span className="text-red-600 font-semibold">{ringSync.redName}</span>
+                            <span className="text-muted-foreground">vs</span>
+                            <span className="text-blue-600 font-semibold">{ringSync.blueName}</span>
+                          </div>
                         </div>
                       ) : (
                         <Button onClick={isAnalyzing ? stopAnalysis : startAnalysis} disabled={activeCameras.length === 0 && !isAnalyzing} className={`w-full rounded-none ${isAnalyzing ? 'bg-destructive hover:bg-destructive/90' : ''}`}>
