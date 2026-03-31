@@ -91,6 +91,8 @@ export function useRingScoringSync(ringId: string | null) {
     prevRoundRef.current = round;
     prevBreakRef.current = isBreak;
     prevRunningRef.current = isRunning;
+    runningSinceRef.current = runningSince;
+    baseRemainingRef.current = remaining;
 
     setState(prev => ({
       ...prev,
