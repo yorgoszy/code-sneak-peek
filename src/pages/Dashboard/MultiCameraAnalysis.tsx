@@ -827,7 +827,7 @@ const MultiCameraAnalysis: React.FC = () => {
                                   <span className="text-blue-500 font-bold">{ringSync.blueName}</span>
                                 </div>
                                 <div className="text-lg font-mono font-bold text-foreground">
-                                  {ringSync.isBreak ? 'BRK' : `R${ringSync.currentRound}`} — {ringSync.remainingSeconds != null ? `${ringSync.remainingSeconds}s` : '--'}
+                                  {ringSync.isBreak ? 'BRK' : `R${ringSync.currentRound}`} — {ringSync.liveRemainingSeconds != null ? `${ringSync.liveRemainingSeconds}s` : '--'}
                                 </div>
                                 <div className={`w-2 h-2 rounded-full mx-auto ${ringSync.isTimerRunning ? 'bg-green-500 animate-pulse' : 'bg-muted-foreground/40'}`} />
                               </>
@@ -837,10 +837,10 @@ const MultiCameraAnalysis: React.FC = () => {
                           </div>
                           {cameras.map((cam, i) => {
                             const positions: Record<string, string> = {
-                              front: 'bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2',
-                              back: 'top-0 left-1/2 -translate-x-1/2 -translate-y-1/2',
-                              left: 'left-0 top-1/2 -translate-y-1/2 -translate-x-1/2',
-                              right: 'right-0 top-1/2 -translate-y-1/2 translate-x-1/2',
+                              front: 'top-0 left-0 -translate-x-1/3 -translate-y-1/3',
+                              back: 'top-0 right-0 translate-x-1/3 -translate-y-1/3',
+                              left: 'bottom-0 left-0 -translate-x-1/3 translate-y-1/3',
+                              right: 'bottom-0 right-0 translate-x-1/3 translate-y-1/3',
                             };
                             return (
                               <div

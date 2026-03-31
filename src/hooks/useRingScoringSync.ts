@@ -19,6 +19,7 @@ export interface RingSyncState {
   isBreak: boolean;
   isTimerRunning: boolean;
   remainingSeconds: number | null;
+  liveRemainingSeconds: number | null;
   matchId: string | null;
   redName: string;
   blueName: string;
@@ -33,6 +34,7 @@ const DEFAULT_STATE: RingSyncState = {
   isBreak: false,
   isTimerRunning: false,
   remainingSeconds: null,
+  liveRemainingSeconds: null,
   matchId: null,
   redName: 'Red Corner',
   blueName: 'Blue Corner',
@@ -46,6 +48,8 @@ export function useRingScoringSync(ringId: string | null) {
   const prevRoundRef = useRef<number>(1);
   const prevBreakRef = useRef<boolean>(false);
   const prevRunningRef = useRef<boolean>(false);
+  const runningSinceRef = useRef<string | null>(null);
+  const baseRemainingRef = useRef<number | null>(null);
 
   // Callbacks that consumers can register
   const onRoundStartRef = useRef<((round: number) => void) | null>(null);
@@ -87,6 +91,8 @@ export function useRingScoringSync(ringId: string | null) {
     prevRoundRef.current = round;
     prevBreakRef.current = isBreak;
     prevRunningRef.current = isRunning;
+    runningSinceRef.current = runningSince;
+    baseRemainingRef.current = remaining;
 
     setState(prev => ({
       ...prev,
@@ -98,7 +104,25 @@ export function useRingScoringSync(ringId: string | null) {
     }));
   }, []);
 
-  // Load match info
+  // Live countdown timer — ticks every second
+  useEffect(() => {
+    const tick = () => {
+      const runningSince = runningSinceRef.current;
+      const baseRemaining = baseRemainingRef.current;
+      if (runningSince && baseRemaining != null) {
+        const elapsed = (Date.now() - new Date(runningSince).getTime()) / 1000;
+        const live = Math.max(0, Math.ceil(baseRemaining - elapsed));
+        setState(prev => prev.liveRemainingSeconds !== live ? { ...prev, liveRemainingSeconds: live } : prev);
+      } else {
+        setState(prev => prev.liveRemainingSeconds !== prev.remainingSeconds ? { ...prev, liveRemainingSeconds: prev.remainingSeconds } : prev);
+      }
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [state.isTimerRunning, state.remainingSeconds]);
+
+
   const loadMatchInfo = useCallback(async (matchId: string | null) => {
     if (!matchId) {
       setState(prev => ({
