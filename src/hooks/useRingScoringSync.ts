@@ -104,7 +104,25 @@ export function useRingScoringSync(ringId: string | null) {
     }));
   }, []);
 
-  // Load match info
+  // Live countdown timer — ticks every second
+  useEffect(() => {
+    const tick = () => {
+      const runningSince = runningSinceRef.current;
+      const baseRemaining = baseRemainingRef.current;
+      if (runningSince && baseRemaining != null) {
+        const elapsed = (Date.now() - new Date(runningSince).getTime()) / 1000;
+        const live = Math.max(0, Math.ceil(baseRemaining - elapsed));
+        setState(prev => prev.liveRemainingSeconds !== live ? { ...prev, liveRemainingSeconds: live } : prev);
+      } else {
+        setState(prev => prev.liveRemainingSeconds !== prev.remainingSeconds ? { ...prev, liveRemainingSeconds: prev.remainingSeconds } : prev);
+      }
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [state.isTimerRunning, state.remainingSeconds]);
+
+
   const loadMatchInfo = useCallback(async (matchId: string | null) => {
     if (!matchId) {
       setState(prev => ({
