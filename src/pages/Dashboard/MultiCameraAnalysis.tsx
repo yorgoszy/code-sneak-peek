@@ -837,10 +837,10 @@ const MultiCameraAnalysis: React.FC = () => {
                           </div>
                           {cameras.map((cam, i) => {
                             const positions: Record<string, string> = {
-                              front: 'bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2',
-                              back: 'top-0 left-1/2 -translate-x-1/2 -translate-y-1/2',
-                              left: 'left-0 top-1/2 -translate-y-1/2 -translate-x-1/2',
-                              right: 'right-0 top-1/2 -translate-y-1/2 translate-x-1/2',
+                              front: 'top-0 left-0 -translate-x-1/3 -translate-y-1/3',
+                              back: 'top-0 right-0 translate-x-1/3 -translate-y-1/3',
+                              left: 'bottom-0 left-0 -translate-x-1/3 translate-y-1/3',
+                              right: 'bottom-0 right-0 translate-x-1/3 translate-y-1/3',
                             };
                             return (
                               <div
