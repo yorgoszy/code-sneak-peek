@@ -946,11 +946,6 @@ const MultiCameraAnalysis: React.FC = () => {
                         </Select>
                       </div>
                       <Separator />
-                      <div className="space-y-1 text-xs text-muted-foreground">
-                        <div className="flex justify-between"><span>{t('aiLab.analysis.activeCameras')}:</span><span className="text-foreground">{activeCameras.length}/4</span></div>
-                        <div className="flex justify-between"><span>{t('aiLab.analysis.estimatedCost')}:</span><span className="text-foreground">~$0.07</span></div>
-                        <div className="flex justify-between"><span>{t('aiLab.analysis.aiModel')}:</span><span className="text-foreground">Gemini 3.1 Pro</span></div>
-                      </div>
                       {!ringSync.connected && (
                         <Button onClick={isAnalyzing ? stopAnalysis : startAnalysis} disabled={activeCameras.length === 0 && !isAnalyzing} className={`w-full rounded-none ${isAnalyzing ? 'bg-destructive hover:bg-destructive/90' : ''}`}>
                           {isAnalyzing ? (<><Square className="h-4 w-4 mr-1" /> {t('aiLab.analysis.stopAnalysis')}</>) : (<><Play className="h-4 w-4 mr-1" /> {t('aiLab.analysis.startAnalysis')}</>)}
