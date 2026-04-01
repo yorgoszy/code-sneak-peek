@@ -247,6 +247,9 @@ const MultiCameraAnalysis: React.FC = () => {
   // Ring sync — auto start/stop analysis based on federation live timer
   const ringSync = useRingScoringSync(ringId || null);
 
+  // Persist tab & ring selection to sessionStorage
+  useEffect(() => { sessionStorage.setItem('ailab-activeTab', activeTab); }, [activeTab]);
+  useEffect(() => { if (selectedRingId) sessionStorage.setItem('ailab-selectedRingId', selectedRingId); }, [selectedRingId]);
 
   // Ring data
   const [ring, setRing] = useState<any>(null);
