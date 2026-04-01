@@ -58,6 +58,19 @@
   <meta name="twitter:description" content="HYPERKIDS - Προπονητική και Διατροφή για Όλους">
 </head>
   <body>
+    <script>
+      // Force clear all caches and service workers on load
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          registrations.forEach(function(r) { r.unregister(); });
+        });
+      }
+      if (window.caches) {
+        caches.keys().then(function(keys) {
+          keys.forEach(function(k) { caches.delete(k); });
+        });
+      }
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script src="https://cdn.gpteng.co/gptengineer.js" defer></script>
