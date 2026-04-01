@@ -237,16 +237,19 @@ const MultiCameraAnalysis: React.FC = () => {
     left: t('aiLab.cameras.left'),
     right: t('aiLab.cameras.right'),
   }), [t]);
-  const [activeTab, setActiveTab] = useState('cameras');
+  const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('ailab-activeTab') || 'cameras');
 
   // Ring selector (when no ringId in URL)
   const [availableRings, setAvailableRings] = useState<any[]>([]);
-  const [selectedRingId, setSelectedRingId] = useState<string | null>(ringIdParam || null);
+  const [selectedRingId, setSelectedRingId] = useState<string | null>(() => ringIdParam || sessionStorage.getItem('ailab-selectedRingId') || null);
   const ringId = ringIdParam || selectedRingId;
 
   // Ring sync — auto start/stop analysis based on federation live timer
   const ringSync = useRingScoringSync(ringId || null);
 
+  // Persist tab & ring selection to sessionStorage
+  useEffect(() => { sessionStorage.setItem('ailab-activeTab', activeTab); }, [activeTab]);
+  useEffect(() => { if (selectedRingId) sessionStorage.setItem('ailab-selectedRingId', selectedRingId); }, [selectedRingId]);
 
   // Ring data
   const [ring, setRing] = useState<any>(null);
