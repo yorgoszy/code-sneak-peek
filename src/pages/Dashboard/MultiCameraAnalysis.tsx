@@ -827,7 +827,7 @@ const MultiCameraAnalysis: React.FC = () => {
                                   <span className="text-blue-500 font-bold">{ringSync.blueName}</span>
                                 </div>
                                 <div className="text-lg font-mono font-bold text-foreground">
-                                  {ringSync.isBreak ? 'BRK' : `R${ringSync.currentRound}`} — {ringSync.liveRemainingSeconds != null ? `${ringSync.liveRemainingSeconds}s` : '--'}
+                                  {ringSync.isBreak ? 'BRK' : `R${ringSync.currentRound}`} — {ringSync.liveRemainingSeconds != null ? formatSecondsToMMSS(ringSync.liveRemainingSeconds) : '--'}
                                 </div>
                                 <div className={`w-2 h-2 rounded-full mx-auto ${ringSync.isTimerRunning ? 'bg-green-500 animate-pulse' : 'bg-muted-foreground/40'}`} />
                               </>
