@@ -37,6 +37,7 @@ import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { toast } from "sonner";
 import { CompetitionAnalysisTab } from '@/components/ai-lab/CompetitionAnalysisTab';
 import { useRingScoringSync } from '@/hooks/useRingScoringSync';
+import { formatSecondsToMMSS } from '@/utils/timeFormatting';
 
 type CombatSport = 'muay_thai' | 'boxing' | 'kickboxing' | 'mma' | 'karate' | 'taekwondo' | 'judo';
 type AnalysisMode = 'strike_counting' | 'round_stats' | 'technique_evaluation' | 'fighter_comparison' | 'full';
@@ -827,7 +828,7 @@ const MultiCameraAnalysis: React.FC = () => {
                                   <span className="text-blue-500 font-bold">{ringSync.blueName}</span>
                                 </div>
                                 <div className="text-lg font-mono font-bold text-foreground">
-                                  {ringSync.isBreak ? 'BRK' : `R${ringSync.currentRound}`} — {ringSync.liveRemainingSeconds != null ? `${ringSync.liveRemainingSeconds}s` : '--'}
+                                  {ringSync.isBreak ? 'BRK' : `R${ringSync.currentRound}`} — {ringSync.liveRemainingSeconds != null ? formatSecondsToMMSS(ringSync.liveRemainingSeconds) : '--'}
                                 </div>
                                 <div className={`w-2 h-2 rounded-full mx-auto ${ringSync.isTimerRunning ? 'bg-green-500 animate-pulse' : 'bg-muted-foreground/40'}`} />
                               </>
