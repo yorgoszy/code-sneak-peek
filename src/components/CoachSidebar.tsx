@@ -232,6 +232,7 @@ export const CoachSidebar = ({
       badge: null,
       requiresSubscription: true,
     },
+    { type: "separator" },
     // App submenu placeholder
     { type: "app-menu" },
     {
