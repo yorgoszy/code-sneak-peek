@@ -377,8 +377,23 @@ export const ReceiptManagement: React.FC = () => {
                               />
                             </div>
                             <div className="flex gap-1 sm:gap-2 items-center">
-                              {receipt.invoiceMark && (
+                              {receipt.invoiceMark ? (
                                 <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-[#00ffba]" />
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="rounded-none text-xs px-1 sm:px-2 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
+                                  onClick={() => handleResendToMyData(receipt)}
+                                  disabled={resendingId === receipt.id}
+                                  title="Επαναποστολή στο MyData"
+                                >
+                                  {resendingId === receipt.id ? (
+                                    <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                                  ) : (
+                                    <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
+                                  )}
+                                </Button>
                               )}
                               <Button 
                                 variant="outline" 
