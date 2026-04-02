@@ -11,6 +11,8 @@ import {
   Plus, 
   Trash2,
   ExternalLink,
+  RefreshCw,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -130,6 +132,7 @@ export const ReceiptManagement: React.FC = () => {
   const [selectedReceipt, setSelectedReceipt] = useState<ReceiptData | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [receiptToDelete, setReceiptToDelete] = useState<ReceiptData | null>(null);
+  const [resendingId, setResendingId] = useState<string | null>(null);
 
   useEffect(() => {
     loadReceipts();
@@ -216,6 +219,92 @@ export const ReceiptManagement: React.FC = () => {
     }
   };
 
+  const handleResendToMyData = async (receipt: ReceiptData) => {
+    setResendingId(receipt.id);
+    try {
+      // Fetch the raw receipt from DB for net_amount/tax_amount
+      const { data: rawReceipt, error: fetchError } = await supabase
+        .from('receipts')
+        .select('*')
+        .eq('id', receipt.id)
+        .single();
+
+      if (fetchError || !rawReceipt) throw fetchError || new Error('Receipt not found');
+
+      const extractSeries = (rn: string) => {
+        const match = rn.match(/^([A-ZΑ-Ω]+)/i);
+        return match ? match[1] : 'A';
+      };
+      const extractNumber = (rn: string) => {
+        const match = rn.match(/(\d+)$/);
+        return match ? parseInt(match[1], 10) : Math.floor(Math.random() * 100000);
+      };
+
+      const myDataReceipt = {
+        issuer: { vatNumber: '128109909', country: 'GR', branch: 0 },
+        invoiceHeader: {
+          series: extractSeries(rawReceipt.receipt_number),
+          aa: extractNumber(rawReceipt.receipt_number),
+          issueDate: rawReceipt.issue_date,
+          invoiceType: '11.2',
+          currency: 'EUR'
+        },
+        invoiceDetails: [{
+          lineNumber: 1,
+          netValue: rawReceipt.subtotal,
+          vatCategory: 1,
+          vatAmount: rawReceipt.vat
+        }],
+        invoiceSummary: {
+          totalNetValue: rawReceipt.subtotal,
+          totalVatAmount: rawReceipt.vat,
+          totalWithheldAmount: 0,
+          totalFeesAmount: 0,
+          totalStampDutyAmount: 0,
+          totalOtherTaxesAmount: 0,
+          totalDeductionsAmount: 0,
+          totalGrossValue: rawReceipt.total
+        }
+      };
+
+      const { data, error } = await supabase.functions.invoke('mydata-send-receipt', {
+        body: {
+          environment: 'production',
+          receipt: myDataReceipt,
+          useStoredCredentials: true
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        await supabase
+          .from('receipts')
+          .update({
+            mydata_status: 'sent',
+            mydata_id: data.myDataId,
+            invoice_mark: data.invoiceMark,
+            invoice_uid: data.invoiceUid,
+            qr_url: data.qrUrl,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', receipt.id);
+
+        toast.success(`Η απόδειξη ${receipt.receiptNumber} στάλθηκε επιτυχώς στο MyData!`);
+        loadReceipts();
+      } else {
+        throw new Error(data?.error || 'Αποτυχία αποστολής');
+      }
+    } catch (error) {
+      console.error('Error resending to MyData:', error);
+      toast.error(`Σφάλμα αποστολής της ${receipt.receiptNumber} στο MyData`);
+    } finally {
+      setResendingId(null);
+    }
+  };
+
+  const receiptsWithoutMark = receipts.filter(r => !r.invoiceMark);
+
   return (
     <div className="p-4 sm:p-6">
       <Card className="rounded-none">
@@ -235,6 +324,16 @@ export const ReceiptManagement: React.FC = () => {
             <TabsContent value="history" className="mt-4 sm:mt-6">
               <div className="space-y-4">
                 <h4 className="font-semibold text-sm sm:text-base">Ιστορικό Αποδείξεων</h4>
+                
+                {/* Warning for receipts without MARK */}
+                {receiptsWithoutMark.length > 0 && (
+                  <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-none">
+                    <AlertTriangle className="h-4 w-4 text-yellow-600 flex-shrink-0" />
+                    <p className="text-sm text-yellow-800">
+                      <strong>{receiptsWithoutMark.length}</strong> απόδειξη/εις δεν έχουν ΜΑΡΚ από το MyData. Πατήστε το κουμπί επαναποστολής για να τις στείλετε ξανά.
+                    </p>
+                  </div>
+                )}
                 {loading ? (
                   <div className="text-center py-8">
                     <div className="animate-spin h-8 w-8 border-4 border-[#00ffba] border-t-transparent rounded-full mx-auto mb-2"></div>
@@ -278,8 +377,23 @@ export const ReceiptManagement: React.FC = () => {
                               />
                             </div>
                             <div className="flex gap-1 sm:gap-2 items-center">
-                              {receipt.invoiceMark && (
+                              {receipt.invoiceMark ? (
                                 <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-[#00ffba]" />
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="rounded-none text-xs px-1 sm:px-2 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
+                                  onClick={() => handleResendToMyData(receipt)}
+                                  disabled={resendingId === receipt.id}
+                                  title="Επαναποστολή στο MyData"
+                                >
+                                  {resendingId === receipt.id ? (
+                                    <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                                  ) : (
+                                    <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
+                                  )}
+                                </Button>
                               )}
                               <Button 
                                 variant="outline" 
@@ -346,6 +460,22 @@ export const ReceiptManagement: React.FC = () => {
                                   onUpdate={loadReceipts}
                                 />
                               </div>
+                              {!receipt.invoiceMark && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="rounded-none mt-4 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
+                                  onClick={() => handleResendToMyData(receipt)}
+                                  disabled={resendingId === receipt.id}
+                                  title="Επαναποστολή στο MyData"
+                                >
+                                  {resendingId === receipt.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <RefreshCw className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              )}
                               <Button 
                                 variant="outline" 
                                 size="sm" 
@@ -412,6 +542,22 @@ export const ReceiptManagement: React.FC = () => {
                                 />
                               </div>
                               <div className="flex gap-2">
+                                {!receipt.invoiceMark && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="rounded-none text-xs h-8 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
+                                    onClick={() => handleResendToMyData(receipt)}
+                                    disabled={resendingId === receipt.id}
+                                    title="Επαναποστολή στο MyData"
+                                  >
+                                    {resendingId === receipt.id ? (
+                                      <Loader2 className="h-3 w-3 animate-spin" />
+                                    ) : (
+                                      <RefreshCw className="h-3 w-3" />
+                                    )}
+                                  </Button>
+                                )}
                                 <Button 
                                   variant="outline" 
                                   size="sm" 
