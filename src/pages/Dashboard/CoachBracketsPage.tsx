@@ -366,7 +366,7 @@ const CoachBracketsPage = () => {
               const CARD_GAP = 40;
               const COL_W = 300;
               const CONNECTOR_W = 60;
-              const HEADER_H = 50;
+              const HEADER_H = 41;
 
               const roundMatchArrays = sortedRoundNumbers.map(rn =>
                 rounds[rn].filter(m => !m.is_bye).sort((a, b) => (a.match_order || a.match_number) - (b.match_order || b.match_number))
@@ -390,7 +390,7 @@ const CoachBracketsPage = () => {
 
               const firstRoundSpacing = Math.max((totalH - HEADER_H) / firstRoundCount, minSpacing);
               roundMatchArrays[0]?.forEach((m, i) => {
-                yPositions.set(m.id, HEADER_H + i * firstRoundSpacing + firstRoundSpacing / 2);
+                yPositions.set(m.id, HEADER_H + 20 + i * firstRoundSpacing + CARD_H / 2);
               });
 
               for (let ri = 1; ri < sortedRoundNumbers.length; ri++) {
