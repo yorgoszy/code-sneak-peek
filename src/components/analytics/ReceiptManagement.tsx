@@ -132,6 +132,7 @@ export const ReceiptManagement: React.FC = () => {
   const [selectedReceipt, setSelectedReceipt] = useState<ReceiptData | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [receiptToDelete, setReceiptToDelete] = useState<ReceiptData | null>(null);
+  const [resendingId, setResendingId] = useState<string | null>(null);
 
   useEffect(() => {
     loadReceipts();
