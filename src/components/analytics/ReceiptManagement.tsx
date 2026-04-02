@@ -251,13 +251,13 @@ export const ReceiptManagement: React.FC = () => {
         },
         invoiceDetails: [{
           lineNumber: 1,
-          netValue: rawReceipt.net_amount,
+          netValue: rawReceipt.subtotal,
           vatCategory: 1,
-          vatAmount: rawReceipt.tax_amount
+          vatAmount: rawReceipt.vat
         }],
         invoiceSummary: {
-          totalNetValue: rawReceipt.net_amount,
-          totalVatAmount: rawReceipt.tax_amount,
+          totalNetValue: rawReceipt.subtotal,
+          totalVatAmount: rawReceipt.vat,
           totalWithheldAmount: 0,
           totalFeesAmount: 0,
           totalStampDutyAmount: 0,
