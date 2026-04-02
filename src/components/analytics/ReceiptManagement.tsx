@@ -324,6 +324,16 @@ export const ReceiptManagement: React.FC = () => {
             <TabsContent value="history" className="mt-4 sm:mt-6">
               <div className="space-y-4">
                 <h4 className="font-semibold text-sm sm:text-base">Ιστορικό Αποδείξεων</h4>
+                
+                {/* Warning for receipts without MARK */}
+                {receiptsWithoutMark.length > 0 && (
+                  <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-none">
+                    <AlertTriangle className="h-4 w-4 text-yellow-600 flex-shrink-0" />
+                    <p className="text-sm text-yellow-800">
+                      <strong>{receiptsWithoutMark.length}</strong> απόδειξη/εις δεν έχουν ΜΑΡΚ από το MyData. Πατήστε το κουμπί επαναποστολής για να τις στείλετε ξανά.
+                    </p>
+                  </div>
+                )}
                 {loading ? (
                   <div className="text-center py-8">
                     <div className="animate-spin h-8 w-8 border-4 border-[#00ffba] border-t-transparent rounded-full mx-auto mb-2"></div>
