@@ -460,6 +460,22 @@ export const ReceiptManagement: React.FC = () => {
                                   onUpdate={loadReceipts}
                                 />
                               </div>
+                              {!receipt.invoiceMark && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="rounded-none mt-4 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
+                                  onClick={() => handleResendToMyData(receipt)}
+                                  disabled={resendingId === receipt.id}
+                                  title="Επαναποστολή στο MyData"
+                                >
+                                  {resendingId === receipt.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <RefreshCw className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              )}
                               <Button 
                                 variant="outline" 
                                 size="sm" 
