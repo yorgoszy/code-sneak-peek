@@ -219,6 +219,92 @@ export const ReceiptManagement: React.FC = () => {
     }
   };
 
+  const handleResendToMyData = async (receipt: ReceiptData) => {
+    setResendingId(receipt.id);
+    try {
+      // Fetch the raw receipt from DB for net_amount/tax_amount
+      const { data: rawReceipt, error: fetchError } = await supabase
+        .from('receipts')
+        .select('*')
+        .eq('id', receipt.id)
+        .single();
+
+      if (fetchError || !rawReceipt) throw fetchError || new Error('Receipt not found');
+
+      const extractSeries = (rn: string) => {
+        const match = rn.match(/^([A-ZΑ-Ω]+)/i);
+        return match ? match[1] : 'A';
+      };
+      const extractNumber = (rn: string) => {
+        const match = rn.match(/(\d+)$/);
+        return match ? parseInt(match[1], 10) : Math.floor(Math.random() * 100000);
+      };
+
+      const myDataReceipt = {
+        issuer: { vatNumber: '128109909', country: 'GR', branch: 0 },
+        invoiceHeader: {
+          series: extractSeries(rawReceipt.receipt_number),
+          aa: extractNumber(rawReceipt.receipt_number),
+          issueDate: rawReceipt.issue_date,
+          invoiceType: '11.2',
+          currency: 'EUR'
+        },
+        invoiceDetails: [{
+          lineNumber: 1,
+          netValue: rawReceipt.net_amount,
+          vatCategory: 1,
+          vatAmount: rawReceipt.tax_amount
+        }],
+        invoiceSummary: {
+          totalNetValue: rawReceipt.net_amount,
+          totalVatAmount: rawReceipt.tax_amount,
+          totalWithheldAmount: 0,
+          totalFeesAmount: 0,
+          totalStampDutyAmount: 0,
+          totalOtherTaxesAmount: 0,
+          totalDeductionsAmount: 0,
+          totalGrossValue: rawReceipt.total
+        }
+      };
+
+      const { data, error } = await supabase.functions.invoke('mydata-send-receipt', {
+        body: {
+          environment: 'production',
+          receipt: myDataReceipt,
+          useStoredCredentials: true
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        await supabase
+          .from('receipts')
+          .update({
+            mydata_status: 'sent',
+            mydata_id: data.myDataId,
+            invoice_mark: data.invoiceMark,
+            invoice_uid: data.invoiceUid,
+            qr_url: data.qrUrl,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', receipt.id);
+
+        toast.success(`Η απόδειξη ${receipt.receiptNumber} στάλθηκε επιτυχώς στο MyData!`);
+        loadReceipts();
+      } else {
+        throw new Error(data?.error || 'Αποτυχία αποστολής');
+      }
+    } catch (error) {
+      console.error('Error resending to MyData:', error);
+      toast.error(`Σφάλμα αποστολής της ${receipt.receiptNumber} στο MyData`);
+    } finally {
+      setResendingId(null);
+    }
+  };
+
+  const receiptsWithoutMark = receipts.filter(r => !r.invoiceMark);
+
   return (
     <div className="p-4 sm:p-6">
       <Card className="rounded-none">
