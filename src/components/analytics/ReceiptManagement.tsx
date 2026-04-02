@@ -542,6 +542,22 @@ export const ReceiptManagement: React.FC = () => {
                                 />
                               </div>
                               <div className="flex gap-2">
+                                {!receipt.invoiceMark && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="rounded-none text-xs h-8 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
+                                    onClick={() => handleResendToMyData(receipt)}
+                                    disabled={resendingId === receipt.id}
+                                    title="Επαναποστολή στο MyData"
+                                  >
+                                    {resendingId === receipt.id ? (
+                                      <Loader2 className="h-3 w-3 animate-spin" />
+                                    ) : (
+                                      <RefreshCw className="h-3 w-3" />
+                                    )}
+                                  </Button>
+                                )}
                                 <Button 
                                   variant="outline" 
                                   size="sm" 
