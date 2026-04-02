@@ -226,6 +226,12 @@ const CoachBracketsPage = () => {
     const feederMatchNumber = slot === 'athlete1' ? (match.match_number * 2) - 1 : match.match_number * 2;
 
     const feederRoundMatches = (rounds[feederRound] || []).slice().sort((a, b) => a.match_number - b.match_number);
+    
+    // No feeder round and no athlete - this is an empty slot (e.g., walkover/single athlete)
+    if (feederRoundMatches.length === 0 && !athleteId) {
+      return { name: 'No Athlete', isConfirmed: false };
+    }
+    
     const feederMatch = feederRoundMatches.find((m) => m.match_number === feederMatchNumber)
       || (feederRoundMatches.length === 1 ? feederRoundMatches[0] : undefined);
 
@@ -360,7 +366,7 @@ const CoachBracketsPage = () => {
               const CARD_GAP = 40;
               const COL_W = 300;
               const CONNECTOR_W = 60;
-              const HEADER_H = 50;
+              const HEADER_H = 41;
 
               const roundMatchArrays = sortedRoundNumbers.map(rn =>
                 rounds[rn].filter(m => !m.is_bye).sort((a, b) => (a.match_order || a.match_number) - (b.match_order || b.match_number))
@@ -384,7 +390,7 @@ const CoachBracketsPage = () => {
 
               const firstRoundSpacing = Math.max((totalH - HEADER_H) / firstRoundCount, minSpacing);
               roundMatchArrays[0]?.forEach((m, i) => {
-                yPositions.set(m.id, HEADER_H + i * firstRoundSpacing + firstRoundSpacing / 2);
+                yPositions.set(m.id, HEADER_H + 20 + i * firstRoundSpacing + CARD_H / 2);
               });
 
               for (let ri = 1; ri < sortedRoundNumbers.length; ri++) {
@@ -443,7 +449,7 @@ const CoachBracketsPage = () => {
                         <React.Fragment key={roundNum}>
                           {/* Round header */}
                           <div
-                            className="absolute bg-foreground text-background px-3 py-2 border border-border"
+                            className="absolute bg-foreground text-background px-3 py-1.5 border border-border"
                             style={{ left: xOffset, top: 0, width: COL_W }}
                           >
                             <h3 className="font-bold text-xs">{getRoundName(roundNum, t)}</h3>
