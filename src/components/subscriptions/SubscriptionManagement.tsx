@@ -2390,6 +2390,30 @@ export const SubscriptionManagement: React.FC = () => {
         onClose={() => setReceiptPreviewOpen(false)}
         receipt={selectedReceiptData}
       />
+
+      {/* MyData Error Dialog */}
+      <AlertDialog open={mydataErrorDialogOpen} onOpenChange={setMydataErrorDialogOpen}>
+        <AlertDialogContent className="rounded-none">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="w-5 h-5" />
+              Αποτυχία αποστολής MyData
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              Η απόδειξη <strong>{mydataErrorReceiptNumber}</strong> δημιουργήθηκε αλλά <strong>δεν έλαβε MARK</strong> από το MyData. 
+              Μπορείτε να την επαναποστείλετε από τη σελίδα Αποδείξεων.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction 
+              onClick={() => setMydataErrorDialogOpen(false)} 
+              className="rounded-none"
+            >
+              Κατάλαβα
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
