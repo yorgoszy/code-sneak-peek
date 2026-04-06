@@ -125,7 +125,7 @@ const FederationLive = () => {
   const [ringConfigs, setRingConfigs] = useState<{
     ring_number: number;
     ring_name: string;
-    source_type: 'youtube' | 'camera';
+    source_type: 'youtube' | 'camera' | 'screen';
     youtube_live_url: string;
     camera_device_id: string;
     match_range_start: string;
@@ -135,7 +135,7 @@ const FederationLive = () => {
   const [editRing, setEditRing] = useState<Ring | null>(null);
   const [editYoutubeUrl, setEditYoutubeUrl] = useState('');
   const [editCurrentMatchId, setEditCurrentMatchId] = useState('');
-  const [editSourceType, setEditSourceType] = useState<'youtube' | 'camera'>('youtube');
+  const [editSourceType, setEditSourceType] = useState<'youtube' | 'camera' | 'screen'>('youtube');
   const [editCameraDeviceId, setEditCameraDeviceId] = useState('');
   const [editRingName, setEditRingName] = useState('');
   const [editMatchRangeStart, setEditMatchRangeStart] = useState('');
@@ -396,7 +396,7 @@ const FederationLive = () => {
     setEditRing(ring);
     setEditYoutubeUrl(ring.youtube_live_url || '');
     setEditCurrentMatchId(ring.current_match_id || '');
-    setEditSourceType((ring.source_type as 'youtube' | 'camera') || 'youtube');
+    setEditSourceType((ring.source_type as 'youtube' | 'camera' | 'screen') || 'youtube');
     setEditCameraDeviceId(ring.camera_device_id || '');
     setEditRingName(ring.ring_name || '');
     setEditMatchRangeStart(ring.match_range_start?.toString() || '');
