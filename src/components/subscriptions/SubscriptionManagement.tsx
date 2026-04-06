@@ -5,12 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { matchesSearchTerm } from "@/lib/utils";
-import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown, Receipt, Pause, Play, RotateCcw, Trash2, UserCheck, CreditCard, Users, FileText } from "lucide-react";
+import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown, Receipt, Pause, Play, RotateCcw, Trash2, UserCheck, CreditCard, Users, FileText, AlertTriangle } from "lucide-react";
 import { ReceiptPreviewDialog } from "@/components/analytics/ReceiptPreviewDialog";
 import { ReceiptConfirmDialog } from './ReceiptConfirmDialog';
 import { SubscriptionDeleteDialog } from './SubscriptionDeleteDialog';
@@ -89,6 +90,8 @@ export const SubscriptionManagement: React.FC = () => {
   const [durationMultiplier, setDurationMultiplier] = useState(1);
   const [receiptPreviewOpen, setReceiptPreviewOpen] = useState(false);
   const [selectedReceiptData, setSelectedReceiptData] = useState<any>(null);
+  const [mydataErrorDialogOpen, setMydataErrorDialogOpen] = useState(false);
+  const [mydataErrorReceiptNumber, setMydataErrorReceiptNumber] = useState('');
 
   useEffect(() => {
     loadData();
@@ -502,6 +505,10 @@ export const SubscriptionManagement: React.FC = () => {
           updated_at: new Date().toISOString()
         })
         .eq('id', receiptId);
+
+      // Εμφάνιση dialog ειδοποίησης ότι δεν πήρε MARK
+      setMydataErrorReceiptNumber(receiptNumber);
+      setMydataErrorDialogOpen(true);
     }
   };
 
@@ -2383,6 +2390,30 @@ export const SubscriptionManagement: React.FC = () => {
         onClose={() => setReceiptPreviewOpen(false)}
         receipt={selectedReceiptData}
       />
+
+      {/* MyData Error Dialog */}
+      <AlertDialog open={mydataErrorDialogOpen} onOpenChange={setMydataErrorDialogOpen}>
+        <AlertDialogContent className="rounded-none">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="w-5 h-5" />
+              Αποτυχία αποστολής MyData
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              Η απόδειξη <strong>{mydataErrorReceiptNumber}</strong> δημιουργήθηκε αλλά <strong>δεν έλαβε MARK</strong> από το MyData. 
+              Μπορείτε να την επαναποστείλετε από τη σελίδα Αποδείξεων.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction 
+              onClick={() => setMydataErrorDialogOpen(false)} 
+              className="rounded-none"
+            >
+              Κατάλαβα
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
