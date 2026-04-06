@@ -505,6 +505,10 @@ export const SubscriptionManagement: React.FC = () => {
           updated_at: new Date().toISOString()
         })
         .eq('id', receiptId);
+
+      // Εμφάνιση dialog ειδοποίησης ότι δεν πήρε MARK
+      setMydataErrorReceiptNumber(receiptNumber);
+      setMydataErrorDialogOpen(true);
     }
   };
 
