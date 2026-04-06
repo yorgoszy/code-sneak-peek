@@ -987,10 +987,10 @@ const FederationLive = () => {
               {/* Row 2: YouTube URL / Camera + Match Range */}
               <div className="flex items-end gap-2">
                 <div className="flex-1">
-                  <Label className="text-xs">{editSourceType === 'youtube' ? 'YouTube URL' : t('federation.live.camera')}</Label>
+                  <Label className="text-xs">{editSourceType === 'youtube' ? 'YouTube URL' : editSourceType === 'screen' ? 'Screen Capture' : t('federation.live.camera')}</Label>
                   {editSourceType === 'youtube' ? (
                     <Input value={editYoutubeUrl} onChange={(e) => setEditYoutubeUrl(e.target.value)} placeholder="https://youtube.com/live/..." className="rounded-none h-7 text-xs" />
-                  ) : (
+                  ) : editSourceType === 'camera' ? (
                     <Select value={editCameraDeviceId} onValueChange={setEditCameraDeviceId}>
                       <SelectTrigger className="rounded-none h-7 text-xs"><SelectValue placeholder={t('federation.live.selectCamera')} /></SelectTrigger>
                       <SelectContent>
@@ -1000,6 +1000,10 @@ const FederationLive = () => {
                         {availableCameras.length === 0 && <div className="px-2 py-1 text-xs text-muted-foreground">{t('federation.live.noCameras')}</div>}
                       </SelectContent>
                     </Select>
+                  ) : (
+                    <div className="text-xs text-muted-foreground bg-muted/50 px-2 py-1.5 border border-border">
+                      🖥️ Θα ζητηθεί επιλογή παραθύρου (π.χ. LUMIX Tether) κατά την ενεργοποίηση — HD 1080p
+                    </div>
                   )}
                 </div>
                 <div className="shrink-0">
