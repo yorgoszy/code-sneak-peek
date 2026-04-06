@@ -14,10 +14,11 @@ type LeavePayload = { viewerId: string };
 interface RingCameraBroadcasterProps {
   ringId: string;
   deviceId?: string | null;
+  sourceType?: 'camera' | 'screen';
   className?: string;
 }
 
-export const RingCameraBroadcaster: React.FC<RingCameraBroadcasterProps> = ({ ringId, deviceId, className }) => {
+export const RingCameraBroadcaster: React.FC<RingCameraBroadcasterProps> = ({ ringId, deviceId, sourceType = 'camera', className }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const pcsRef = useRef<Record<string, RTCPeerConnection>>({});
@@ -39,12 +40,29 @@ export const RingCameraBroadcaster: React.FC<RingCameraBroadcasterProps> = ({ ri
           streamRef.current = null;
         }
 
-        const constraints: MediaStreamConstraints = {
-          video: deviceId ? { deviceId: { exact: deviceId } } : true,
-          audio: false,
-        };
+        let stream: MediaStream;
 
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        if (sourceType === 'screen') {
+          // Screen/Window capture (e.g. LUMIX Tether window) - force HD
+          stream = await navigator.mediaDevices.getDisplayMedia({
+            video: {
+              width: { ideal: 1920 },
+              height: { ideal: 1080 },
+              frameRate: { ideal: 30 },
+            },
+            audio: false,
+          });
+        } else {
+          // Webcam / USB capture
+          const constraints: MediaStreamConstraints = {
+            video: deviceId
+              ? { deviceId: { exact: deviceId }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+              : { width: { ideal: 1920 }, height: { ideal: 1080 } },
+            audio: false,
+          };
+          stream = await navigator.mediaDevices.getUserMedia(constraints);
+        }
+
         if (!active) {
           stream.getTracks().forEach((t) => t.stop());
           return;
@@ -54,9 +72,16 @@ export const RingCameraBroadcaster: React.FC<RingCameraBroadcasterProps> = ({ ri
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
+
+        // Handle user stopping screen share via browser UI
+        if (sourceType === 'screen') {
+          stream.getVideoTracks()[0]?.addEventListener('ended', () => {
+            setError("Screen share stopped");
+          });
+        }
       } catch (e) {
-        console.error("[WebRTC] broadcaster getUserMedia error", e);
-        setError("Camera not available");
+        console.error("[WebRTC] broadcaster capture error", e);
+        setError(sourceType === 'screen' ? "Screen capture cancelled" : "Camera not available");
       }
     };
 
@@ -69,7 +94,7 @@ export const RingCameraBroadcaster: React.FC<RingCameraBroadcasterProps> = ({ ri
         streamRef.current = null;
       }
     };
-  }, [deviceId]);
+  }, [deviceId, sourceType]);
 
   // Signaling
   useEffect(() => {

@@ -557,11 +557,11 @@ const LiveRingAnalysis: React.FC = () => {
                 {/* Live Video */}
                 <Card className="rounded-none overflow-hidden">
                   <CardContent className="p-0">
-                    {ring && (ring.youtube_live_url || ring.source_type === 'camera') ? (
+                    {ring && (ring.youtube_live_url || ring.source_type === 'camera' || ring.source_type === 'screen') ? (
                       <div className="relative bg-black">
                         <AspectRatio ratio={16 / 9}>
-                          {ring.source_type === 'camera' ? (
-                            <RingCameraBroadcaster ringId={ring.id} deviceId={ring.camera_device_id} className="w-full h-full object-cover" />
+                          {(ring.source_type === 'camera' || ring.source_type === 'screen') ? (
+                            <RingCameraBroadcaster ringId={ring.id} deviceId={ring.camera_device_id} sourceType={ring.source_type as 'camera' | 'screen'} className="w-full h-full object-cover" />
                           ) : (
                             <SyncedYouTubePlayer
                               ringId={ring.id}
