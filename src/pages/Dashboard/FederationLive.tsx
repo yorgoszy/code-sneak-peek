@@ -830,6 +830,17 @@ const FederationLive = () => {
                       >
                         Camera
                       </button>
+                      <button
+                        type="button"
+                        className={`px-2 py-0.5 text-[10px] font-medium transition-colors ${rc.source_type === 'screen' ? 'bg-foreground text-background' : 'bg-background text-foreground hover:bg-muted'}`}
+                        onClick={() => {
+                          const updated = [...ringConfigs];
+                          updated[idx].source_type = 'screen';
+                          setRingConfigs(updated);
+                        }}
+                      >
+                        Screen
+                      </button>
                     </div>
 
                     <div className="flex-1" />
@@ -889,7 +900,7 @@ const FederationLive = () => {
                       placeholder="YouTube URL..."
                       className="rounded-none h-7 text-xs w-full"
                     />
-                  ) : (
+                  ) : rc.source_type === 'camera' ? (
                     <div className="flex items-center gap-1">
                       <Select
                         value={rc.camera_device_id || ''}
@@ -922,6 +933,10 @@ const FederationLive = () => {
                       >
                         <RefreshCw className="h-3 w-3" />
                       </Button>
+                    </div>
+                  ) : (
+                    <div className="text-xs text-muted-foreground bg-muted/50 px-2 py-1.5 border border-border">
+                      🖥️ Θα ζητηθεί επιλογή παραθύρου (π.χ. LUMIX Tether) κατά την ενεργοποίηση — HD 1080p
                     </div>
                   )}
                 </CardContent>
