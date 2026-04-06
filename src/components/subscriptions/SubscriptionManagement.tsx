@@ -90,6 +90,8 @@ export const SubscriptionManagement: React.FC = () => {
   const [durationMultiplier, setDurationMultiplier] = useState(1);
   const [receiptPreviewOpen, setReceiptPreviewOpen] = useState(false);
   const [selectedReceiptData, setSelectedReceiptData] = useState<any>(null);
+  const [mydataErrorDialogOpen, setMydataErrorDialogOpen] = useState(false);
+  const [mydataErrorReceiptNumber, setMydataErrorReceiptNumber] = useState('');
 
   useEffect(() => {
     loadData();
