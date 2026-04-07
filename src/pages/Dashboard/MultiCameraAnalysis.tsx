@@ -36,6 +36,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { toast } from "sonner";
 import { CompetitionAnalysisTab } from '@/components/ai-lab/CompetitionAnalysisTab';
+import { LiveVisionPanel } from '@/components/ai-lab/LiveVisionPanel';
 import { useRingScoringSync } from '@/hooks/useRingScoringSync';
 import { formatSecondsToMMSS } from '@/utils/timeFormatting';
 
