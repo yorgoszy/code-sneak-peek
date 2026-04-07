@@ -329,11 +329,15 @@ const PPGHRVPage = () => {
     const values = data.map(d => d.redValue);
     const timestamps = data.map(d => d.timestamp);
     
-    // Apply smoothing filter
-    const smoothed = movingAverage(values, 5);
+    // Calculate actual sample rate from timestamps
+    const totalTime = (timestamps[timestamps.length - 1] - timestamps[0]) / 1000; // seconds
+    const actualSampleRate = Math.round(values.length / totalTime);
     
-    // Detect peaks (heartbeats)
-    const peaks = findPeaks(smoothed, 10);
+    // Apply bandpass filter to isolate heart rate frequencies
+    const filtered = bandpassFilter(values, actualSampleRate);
+    
+    // Detect peaks with adaptive threshold
+    const peaks = findPeaksAdaptive(filtered, actualSampleRate);
     
     if (peaks.length < 3) {
       toast.error('Δεν εντοπίστηκαν αρκετοί καρδιακοί παλμοί. Δοκιμάστε ξανά.');
