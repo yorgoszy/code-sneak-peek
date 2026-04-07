@@ -979,6 +979,18 @@ const MultiCameraAnalysis: React.FC = () => {
                       </div>
                     </CardContent>
                   </Card>
+
+                  {/* Live AI Vision Panel */}
+                  <LiveVisionPanel
+                    sport={selectedSport}
+                    roundNumber={ringSync.connected ? ringSync.currentRound : undefined}
+                    fighterNames={currentMatch ? {
+                      red: (currentMatch as any).athlete1?.name || 'Red',
+                      blue: (currentMatch as any).athlete2?.name || 'Blue',
+                    } : undefined}
+                    cameraPositions={activeCameras.map(c => c.position)}
+                    isTimerRunning={ringSync.isTimerRunning}
+                  />
                 </div>
               </TabsContent>
 
