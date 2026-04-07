@@ -310,8 +310,20 @@ export const CompetitionAnalysisTab: React.FC<CompetitionAnalysisTabProps> = ({
           </Card>
         </div>
 
-        {/* Right panel: Scoring + Strike Feed + Data Labeling + Stats */}
+        {/* Right panel: AI Vision + Scoring + Strike Feed + Data Labeling + Stats */}
         <div className="space-y-3">
+          {/* Live AI Vision (Gemini real-time analysis) */}
+          <LiveVisionPanel
+            sport="muay_thai"
+            roundNumber={ringSync.connected ? ringSync.currentRound : undefined}
+            fighterNames={
+              (redName !== 'Red Corner' || blueName !== 'Blue Corner')
+                ? { red: redName, blue: blueName }
+                : undefined
+            }
+            cameraPositions={activeCameras.map(c => c.position)}
+            isTimerRunning={ringSync.isTimerRunning}
+          />
           {/* Scoring Panel (Phase 3) — auto-synced with ring timer */}
           <ScoringPanel
             currentRound={ringSync.connected ? ringSync.currentRound : scoring.currentRound}
