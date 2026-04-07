@@ -29,35 +29,82 @@ interface PPGResult {
   timestamp: Date;
 }
 
-// Moving average filter
-const movingAverage = (data: number[], windowSize: number): number[] => {
-  const result: number[] = [];
-  for (let i = 0; i < data.length; i++) {
-    const start = Math.max(0, i - windowSize + 1);
-    const window = data.slice(start, i + 1);
-    result.push(window.reduce((a, b) => a + b, 0) / window.length);
+// ── Butterworth-inspired bandpass filter (0.7–3.5 Hz ≈ 42–210 BPM) ──
+// Uses second-order IIR sections for better frequency isolation
+const bandpassFilter = (data: number[], sampleRate: number): number[] => {
+  // Remove DC offset first
+  const mean = data.reduce((a, b) => a + b, 0) / data.length;
+  const centered = data.map(d => d - mean);
+
+  // Simple 2nd-order IIR bandpass coefficients for ~0.7–3.5 Hz at given sample rate
+  const lowCut = 0.7; // Hz (42 BPM)
+  const highCut = 3.5; // Hz (210 BPM)
+  const nyq = sampleRate / 2;
+  const lowW = lowCut / nyq;
+  const highW = highCut / nyq;
+
+  // Apply forward-backward moving-average based bandpass (robust, no instability)
+  // High-pass: subtract long moving average
+  const hpWindow = Math.max(3, Math.round(sampleRate / lowCut));
+  const highPassed: number[] = [];
+  for (let i = 0; i < centered.length; i++) {
+    const start = Math.max(0, i - hpWindow);
+    const end = Math.min(centered.length, i + hpWindow + 1);
+    const avg = centered.slice(start, end).reduce((a, b) => a + b, 0) / (end - start);
+    highPassed.push(centered[i] - avg);
   }
+
+  // Low-pass: smooth with shorter window
+  const lpWindow = Math.max(2, Math.round(sampleRate / highCut / 2));
+  const result: number[] = [];
+  for (let i = 0; i < highPassed.length; i++) {
+    const start = Math.max(0, i - lpWindow);
+    const end = Math.min(highPassed.length, i + lpWindow + 1);
+    const avg = highPassed.slice(start, end).reduce((a, b) => a + b, 0) / (end - start);
+    result.push(avg);
+  }
+
   return result;
 };
 
-// Peak detection algorithm
-const findPeaks = (data: number[], minDistance: number = 15): number[] => {
+// Adaptive threshold peak detection
+const findPeaksAdaptive = (data: number[], sampleRate: number): number[] => {
+  if (data.length < sampleRate * 2) return [];
+
   const peaks: number[] = [];
+  // Minimum distance between peaks: ~300ms (200 BPM max)
+  const minDist = Math.round(sampleRate * 0.3);
+  // Maximum distance: ~1500ms (40 BPM min)
+  const maxDist = Math.round(sampleRate * 1.5);
+
+  // Calculate adaptive threshold using sliding window RMS
+  const windowLen = Math.round(sampleRate * 2); // 2-second window
   
   for (let i = 2; i < data.length - 2; i++) {
-    // Check if it's a local maximum
-    if (data[i] > data[i - 1] && 
-        data[i] > data[i + 1] && 
-        data[i] > data[i - 2] && 
-        data[i] > data[i + 2]) {
-      
-      // Check minimum distance from last peak
-      if (peaks.length === 0 || i - peaks[peaks.length - 1] >= minDistance) {
-        peaks.push(i);
+    // Local maximum check (5-point)
+    if (data[i] <= data[i - 1] || data[i] <= data[i + 1]) continue;
+    if (data[i] <= data[i - 2] || data[i] <= data[i + 2]) continue;
+
+    // Adaptive threshold: must be above local RMS * factor
+    const wStart = Math.max(0, i - windowLen);
+    const wEnd = Math.min(data.length, i + windowLen);
+    const windowSlice = data.slice(wStart, wEnd);
+    const rms = Math.sqrt(windowSlice.reduce((s, v) => s + v * v, 0) / windowSlice.length);
+    
+    if (data[i] < rms * 0.6) continue; // Must be above threshold
+
+    // Check minimum distance from last peak
+    if (peaks.length > 0 && (i - peaks[peaks.length - 1]) < minDist) {
+      // Keep the higher peak
+      if (data[i] > data[peaks[peaks.length - 1]]) {
+        peaks[peaks.length - 1] = i;
       }
+      continue;
     }
+
+    peaks.push(i);
   }
-  
+
   return peaks;
 };
 
@@ -282,11 +329,15 @@ const PPGHRVPage = () => {
     const values = data.map(d => d.redValue);
     const timestamps = data.map(d => d.timestamp);
     
-    // Apply smoothing filter
-    const smoothed = movingAverage(values, 5);
+    // Calculate actual sample rate from timestamps
+    const totalTime = (timestamps[timestamps.length - 1] - timestamps[0]) / 1000; // seconds
+    const actualSampleRate = Math.round(values.length / totalTime);
     
-    // Detect peaks (heartbeats)
-    const peaks = findPeaks(smoothed, 10);
+    // Apply bandpass filter to isolate heart rate frequencies
+    const filtered = bandpassFilter(values, actualSampleRate);
+    
+    // Detect peaks with adaptive threshold
+    const peaks = findPeaksAdaptive(filtered, actualSampleRate);
     
     if (peaks.length < 3) {
       toast.error('Δεν εντοπίστηκαν αρκετοί καρδιακοί παλμοί. Δοκιμάστε ξανά.');

@@ -36,6 +36,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { toast } from "sonner";
 import { CompetitionAnalysisTab } from '@/components/ai-lab/CompetitionAnalysisTab';
+import { LiveVisionPanel } from '@/components/ai-lab/LiveVisionPanel';
 import { useRingScoringSync } from '@/hooks/useRingScoringSync';
 import { formatSecondsToMMSS } from '@/utils/timeFormatting';
 
@@ -978,6 +979,18 @@ const MultiCameraAnalysis: React.FC = () => {
                       </div>
                     </CardContent>
                   </Card>
+
+                  {/* Live AI Vision Panel */}
+                  <LiveVisionPanel
+                    sport={selectedSport}
+                    roundNumber={ringSync.connected ? ringSync.currentRound : undefined}
+                    fighterNames={currentMatch ? {
+                      red: (currentMatch as any).athlete1?.name || 'Red',
+                      blue: (currentMatch as any).athlete2?.name || 'Blue',
+                    } : undefined}
+                    cameraPositions={activeCameras.map(c => c.position)}
+                    isTimerRunning={ringSync.isTimerRunning}
+                  />
                 </div>
               </TabsContent>
 
