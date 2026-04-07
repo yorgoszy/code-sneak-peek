@@ -16,6 +16,7 @@ import {
   Play, Square, Loader2, Brain, Activity, Zap, Users, Eye, RotateCcw, Link2,
 } from 'lucide-react';
 import { PoseOverlayFeed } from './PoseOverlayFeed';
+import { LiveVisionPanel } from './LiveVisionPanel';
 import { StrikeFeedPanel } from './StrikeFeedPanel';
 import { ScoringPanel } from './ScoringPanel';
 import { DataLabelingPanel } from './DataLabelingPanel';
