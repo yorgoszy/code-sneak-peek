@@ -31,7 +31,8 @@ import {
   Trophy,
   Compass,
   Heart,
-  HeartPulse
+  HeartPulse,
+  Gift
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
