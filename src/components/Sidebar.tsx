@@ -31,7 +31,8 @@ import {
   Trophy,
   Compass,
   Heart,
-  HeartPulse
+  HeartPulse,
+  Gift
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -495,6 +496,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       label: "Προσφορές",
       path: "/dashboard/offers",
       badge: availableOffers > 0 ? availableOffers.toString() : null
+    },
+    {
+      icon: Gift,
+      label: "Gift Cards",
+      path: "/dashboard/gift-cards",
+      badge: null
     },
     {
       icon: Video,

@@ -4918,6 +4918,108 @@ export type Database = {
           },
         ]
       }
+      gift_cards: {
+        Row: {
+          amount: number | null
+          card_type: string
+          code: string
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          message: string | null
+          purchase_method: string
+          recipient_email: string | null
+          recipient_name: string | null
+          redeemed_at: string | null
+          redeemed_by: string | null
+          sender_email: string | null
+          sender_name: string | null
+          status: string
+          stripe_payment_id: string | null
+          subscription_type_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number | null
+          card_type?: string
+          code: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          message?: string | null
+          purchase_method?: string
+          recipient_email?: string | null
+          recipient_name?: string | null
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+          sender_email?: string | null
+          sender_name?: string | null
+          status?: string
+          stripe_payment_id?: string | null
+          subscription_type_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number | null
+          card_type?: string
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          message?: string | null
+          purchase_method?: string
+          recipient_email?: string | null
+          recipient_name?: string | null
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+          sender_email?: string | null
+          sender_name?: string | null
+          status?: string
+          stripe_payment_id?: string | null
+          subscription_type_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gift_cards_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gift_cards_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gift_cards_redeemed_by_fkey"
+            columns: ["redeemed_by"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gift_cards_redeemed_by_fkey"
+            columns: ["redeemed_by"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gift_cards_subscription_type_id_fkey"
+            columns: ["subscription_type_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       group_assignment_users: {
         Row: {
           created_at: string | null
@@ -10042,6 +10144,7 @@ export type Database = {
       exec_sql: { Args: { query: string }; Returns: Json }
       force_delete_athlete: { Args: { athlete_id: string }; Returns: undefined }
       generate_coupon_code: { Args: never; Returns: string }
+      generate_gift_card_code: { Args: never; Returns: string }
       get_app_user_id_for_programs: {
         Args: { _auth_uid: string }
         Returns: string

@@ -98,6 +98,7 @@ import CognitivePage from "@/pages/Dashboard/CognitivePage";
 import JumpPage from "@/pages/Dashboard/JumpPage";
 import BarVelocityPage from "@/pages/Dashboard/BarVelocityPage";
 import HRVPage from "@/pages/Dashboard/HRVPage";
+import GiftCardsWithSidebar from "@/pages/Dashboard/GiftCardsWithSidebar";
 import HealthCardsPage from "@/pages/Dashboard/HealthCardsPage";
 import CoachCompetitionsPage from "@/pages/Dashboard/CoachCompetitionsPage";
 import CoachBracketsPage from "@/pages/Dashboard/CoachBracketsPage";
@@ -223,6 +224,7 @@ function App() {
                       <Route path="/dashboard/results" element={<ProtectedRoute requireAdmin><ResultsWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/shop" element={<ProtectedRoute requireAdmin><AdminShopWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/offers" element={<ProtectedRoute requireAdmin><Offers /></ProtectedRoute>} />
+                      <Route path="/dashboard/gift-cards" element={<ProtectedRoute requireAdmin><GiftCardsWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/online-coaching" element={<ProtectedRoute requireAdmin><OnlineCoachingWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/online-booking" element={<ProtectedRoute requireAdmin><OnlineBookingWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/booking-sections" element={<ProtectedRoute requireAdmin><BookingSectionsWithSidebar /></ProtectedRoute>} />

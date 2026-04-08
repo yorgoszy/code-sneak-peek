@@ -14,6 +14,7 @@ import EliteTrainingSection from "@/components/landing/EliteTrainingSection";
 import LiveProgramSection from "@/components/landing/LiveProgramSection";
 import BlogSection from "@/components/landing/BlogSection";
 import ResultsSection from "@/components/landing/ResultsSection";
+import GiftCardSection from "@/components/landing/GiftCardSection";
 
 import Footer from "@/components/landing/Footer";
 
@@ -166,6 +167,8 @@ const Index = () => {
       <ResultsSection 
         translations={correctedTranslations}
       />
+
+      <GiftCardSection translations={correctedTranslations} />
 
       {/* CTA Section */}
       <section className="py-20 bg-white">
