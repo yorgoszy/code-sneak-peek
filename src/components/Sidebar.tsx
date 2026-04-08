@@ -497,6 +497,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: availableOffers > 0 ? availableOffers.toString() : null
     },
     {
+      icon: Gift,
+      label: "Gift Cards",
+      path: "/dashboard/gift-cards",
+      badge: null
+    },
+    {
       icon: Video,
       label: "Online Coaching",
       path: "/dashboard/online-coaching",
