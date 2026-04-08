@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { ShopProgramsSection } from "@/components/user-profile/shop/ShopProgramsSection";
+import { ShopGiftCardSection } from "@/components/gift-cards/ShopGiftCardSection";
 
 interface SubscriptionType {
   id: string;
@@ -174,6 +175,9 @@ const Shop = ({ userProfile, userEmail, onSignOut }: ShopProps = {}) => {
             </div>
           )}
         </div>
+
+        {/* Gift Cards */}
+        <ShopGiftCardSection />
 
         {/* Προγράμματα Προπόνησης */}
         <ShopProgramsSection />
