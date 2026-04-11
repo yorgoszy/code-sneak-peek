@@ -39,27 +39,13 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
         .from('subscription_types')
         .select('id, name, description, price, duration_months')
         .eq('is_active', true)
-        .eq('is_gift_card', true)
         .order('price', { ascending: true });
 
       if (error) throw error;
       setSubscriptionTypes(data || []);
     } catch (error) {
       console.error('Error fetching subscription types:', error);
-      // Fallback: fetch all active subscription types if is_gift_card column doesn't exist
-      try {
-        const { data, error: fallbackError } = await supabase
-          .from('subscription_types')
-          .select('id, name, description, price, duration_months')
-          .eq('is_active', true)
-          .order('price', { ascending: true });
-
-        if (fallbackError) throw fallbackError;
-        setSubscriptionTypes(data || []);
-      } catch (fallbackErr) {
-        console.error('Fallback error:', fallbackErr);
-        toast.error('Σφάλμα φόρτωσης υπηρεσιών');
-      }
+      toast.error('Σφάλμα φόρτωσης υπηρεσιών');
     } finally {
       setLoading(false);
     }
