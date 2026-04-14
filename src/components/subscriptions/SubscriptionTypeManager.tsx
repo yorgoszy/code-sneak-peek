@@ -582,6 +582,28 @@ export const SubscriptionTypeManager: React.FC = () => {
     }
   };
 
+  const toggleGiftCard = async (type: SubscriptionType) => {
+    if (!isAdmin) {
+      toast.error('Δεν έχετε δικαιώματα διαχειριστή');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('subscription_types')
+        .update({ is_gift_card: !type.is_gift_card } as any)
+        .eq('id', type.id);
+
+      if (error) throw error;
+      
+      toast.success(`Ο τύπος συνδρομής ${!type.is_gift_card ? 'προστέθηκε στο' : 'αφαιρέθηκε από το'} Gift Card επιτυχώς!`);
+      await loadSubscriptionTypes();
+    } catch (error) {
+      console.error('Error toggling gift card:', error);
+      toast.error('Σφάλμα κατά την ενημέρωση: ' + (error as Error).message);
+    }
+  };
+
   const handleDeleteClick = (type: SubscriptionType) => {
     console.log('🗑️ Opening delete confirmation for:', type.name);
     setTypeToDelete(type);
