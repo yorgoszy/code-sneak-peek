@@ -30,7 +30,7 @@ serve(async (req) => {
     const user = userData.user;
     if (!user?.email) throw new Error("User not authenticated");
 
-    const { subscription_type_id, subscription_type_name, amount } = await req.json();
+    const { subscription_type_id, subscription_type_name, amount, recipient_email } = await req.json();
     if (!subscription_type_id || !amount) throw new Error("Missing required fields");
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
