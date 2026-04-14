@@ -846,6 +846,18 @@ export const SubscriptionTypeManager: React.FC = () => {
                             >
                               <UserCircle className="w-3 h-3" />
                             </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => toggleGiftCard(type)}
+                              className={`rounded-none p-2 ${
+                                type.is_gift_card 
+                                  ? 'bg-pink-500 text-white border-white hover:bg-pink-500/90' 
+                                  : 'text-gray-400 hover:text-gray-600 border-gray-300'
+                              }`}
+                              title="Διαθέσιμο ως Gift Card"
+                            >
+                              <Gift className="w-3 h-3" />
                           </div>
                         </td>
                       </tr>
