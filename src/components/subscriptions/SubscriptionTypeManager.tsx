@@ -858,6 +858,7 @@ export const SubscriptionTypeManager: React.FC = () => {
                               title="Διαθέσιμο ως Gift Card"
                             >
                               <Gift className="w-3 h-3" />
+                            </Button>
                           </div>
                         </td>
                       </tr>
