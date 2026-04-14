@@ -66,6 +66,7 @@ serve(async (req) => {
         type: "gift_card",
         subscription_type_id,
         buyer_user_id: user.id,
+        recipient_email: recipient_email || "",
       },
     });
 
