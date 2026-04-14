@@ -75,10 +75,15 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
     }
 
     setPurchasing(true);
+    let checkoutWindow: Window | null = null;
+
     try {
+      checkoutWindow = window.open('', '_blank', 'noopener,noreferrer');
+
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
+        checkoutWindow?.close();
         toast.error('Πρέπει να συνδεθείτε πρώτα');
         onClose();
         window.location.href = '/auth?redirect=gift-card';
@@ -97,11 +102,18 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
       if (error) throw error;
 
       if (data?.url) {
-        window.location.href = data.url;
+        if (checkoutWindow) {
+          checkoutWindow.location.href = data.url;
+          checkoutWindow.focus();
+        } else {
+          window.location.href = data.url;
+        }
       } else {
+        checkoutWindow?.close();
         throw new Error('No checkout URL returned');
       }
     } catch (error: any) {
+      checkoutWindow?.close();
       console.error('Purchase error:', error);
       toast.error('Σφάλμα δημιουργίας πληρωμής');
     } finally {
