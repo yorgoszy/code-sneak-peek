@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Edit2, Trash2, Search, Calendar, MapPin, ShoppingCart, Video, Dumbbell, UserCircle } from "lucide-react";
+import { Plus, Edit2, Trash2, Search, Calendar, MapPin, ShoppingCart, Video, Dumbbell, UserCircle, Gift } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { matchesSearchTerm } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -30,6 +30,7 @@ interface SubscriptionType {
   allowed_sections?: string[];
   program_id?: string;
   coach_shop_only?: boolean;
+  is_gift_card?: boolean;
 }
 
 interface BookingSection {
@@ -143,7 +144,7 @@ export const SubscriptionTypeManager: React.FC = () => {
       // Only load subscription types without coach_id (admin/global types)
       const { data, error } = await supabase
         .from('subscription_types')
-        .select('id, name, description, price, duration_months, features, is_active, subscription_mode, visit_count, visit_expiry_months, available_in_shop, single_purchase, allowed_sections, coach_shop_only')
+        .select('id, name, description, price, duration_months, features, is_active, subscription_mode, visit_count, visit_expiry_months, available_in_shop, single_purchase, allowed_sections, coach_shop_only, is_gift_card')
         .is('coach_id', null)
         .order('price');
 
@@ -581,6 +582,28 @@ export const SubscriptionTypeManager: React.FC = () => {
     }
   };
 
+  const toggleGiftCard = async (type: SubscriptionType) => {
+    if (!isAdmin) {
+      toast.error('Δεν έχετε δικαιώματα διαχειριστή');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('subscription_types')
+        .update({ is_gift_card: !type.is_gift_card } as any)
+        .eq('id', type.id);
+
+      if (error) throw error;
+      
+      toast.success(`Ο τύπος συνδρομής ${!type.is_gift_card ? 'προστέθηκε στο' : 'αφαιρέθηκε από το'} Gift Card επιτυχώς!`);
+      await loadSubscriptionTypes();
+    } catch (error) {
+      console.error('Error toggling gift card:', error);
+      toast.error('Σφάλμα κατά την ενημέρωση: ' + (error as Error).message);
+    }
+  };
+
   const handleDeleteClick = (type: SubscriptionType) => {
     console.log('🗑️ Opening delete confirmation for:', type.name);
     setTypeToDelete(type);
@@ -822,6 +845,19 @@ export const SubscriptionTypeManager: React.FC = () => {
                               title="Μόνο για Coach Shop"
                             >
                               <UserCircle className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => toggleGiftCard(type)}
+                              className={`rounded-none p-2 ${
+                                type.is_gift_card 
+                                  ? 'bg-pink-500 text-white border-white hover:bg-pink-500/90' 
+                                  : 'text-gray-400 hover:text-gray-600 border-gray-300'
+                              }`}
+                              title="Διαθέσιμο ως Gift Card"
+                            >
+                              <Gift className="w-3 h-3" />
                             </Button>
                           </div>
                         </td>

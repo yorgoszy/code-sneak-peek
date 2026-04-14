@@ -39,6 +39,7 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
         .from('subscription_types')
         .select('id, name, description, price, duration_months')
         .eq('is_active', true)
+        .eq('is_gift_card', true)
         .order('price', { ascending: true });
 
       if (error) throw error;

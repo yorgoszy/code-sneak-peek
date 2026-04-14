@@ -1,0 +1,1 @@
+ALTER TABLE public.subscription_types ADD COLUMN IF NOT EXISTS is_gift_card boolean NOT NULL DEFAULT false;

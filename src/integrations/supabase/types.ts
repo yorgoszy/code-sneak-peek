@@ -8283,6 +8283,7 @@ export type Database = {
           features: Json | null
           id: string
           is_active: boolean | null
+          is_gift_card: boolean
           name: string
           price: number
           program_id: string | null
@@ -8302,6 +8303,7 @@ export type Database = {
           features?: Json | null
           id?: string
           is_active?: boolean | null
+          is_gift_card?: boolean
           name: string
           price: number
           program_id?: string | null
@@ -8321,6 +8323,7 @@ export type Database = {
           features?: Json | null
           id?: string
           is_active?: boolean | null
+          is_gift_card?: boolean
           name?: string
           price?: number
           program_id?: string | null
