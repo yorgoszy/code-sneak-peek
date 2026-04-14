@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Edit2, Trash2, Search, Calendar, MapPin, ShoppingCart, Video, Dumbbell, UserCircle } from "lucide-react";
+import { Plus, Edit2, Trash2, Search, Calendar, MapPin, ShoppingCart, Video, Dumbbell, UserCircle, Gift } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { matchesSearchTerm } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -30,6 +30,7 @@ interface SubscriptionType {
   allowed_sections?: string[];
   program_id?: string;
   coach_shop_only?: boolean;
+  is_gift_card?: boolean;
 }
 
 interface BookingSection {
@@ -143,7 +144,7 @@ export const SubscriptionTypeManager: React.FC = () => {
       // Only load subscription types without coach_id (admin/global types)
       const { data, error } = await supabase
         .from('subscription_types')
-        .select('id, name, description, price, duration_months, features, is_active, subscription_mode, visit_count, visit_expiry_months, available_in_shop, single_purchase, allowed_sections, coach_shop_only')
+        .select('id, name, description, price, duration_months, features, is_active, subscription_mode, visit_count, visit_expiry_months, available_in_shop, single_purchase, allowed_sections, coach_shop_only, is_gift_card')
         .is('coach_id', null)
         .order('price');
 
