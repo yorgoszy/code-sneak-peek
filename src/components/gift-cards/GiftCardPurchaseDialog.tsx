@@ -47,7 +47,7 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
     try {
       const { data, error } = await supabase
         .from('subscription_types')
-        .select('id, name, description, price, duration_months, sessions_per_week')
+        .select('id, name, description, price, duration_months, visit_count, subscription_mode')
         .eq('is_active', true)
         .eq('is_gift_card', true)
         .order('price', { ascending: true });
