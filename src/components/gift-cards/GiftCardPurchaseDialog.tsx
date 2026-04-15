@@ -13,6 +13,8 @@ interface SubscriptionType {
   description: string | null;
   price: number;
   duration_months: number | null;
+  visit_count: number | null;
+  subscription_mode: string | null;
 }
 
 interface GiftCardPurchaseDialogProps {
@@ -45,7 +47,7 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
     try {
       const { data, error } = await supabase
         .from('subscription_types')
-        .select('id, name, description, price, duration_months')
+        .select('id, name, description, price, duration_months, visit_count, subscription_mode')
         .eq('is_active', true)
         .eq('is_gift_card', true)
         .order('price', { ascending: true });
@@ -75,15 +77,11 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
     }
 
     setPurchasing(true);
-    let checkoutWindow: Window | null = null;
 
     try {
-      checkoutWindow = window.open('', '_blank', 'noopener,noreferrer');
-
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        checkoutWindow?.close();
         toast.error('Πρέπει να συνδεθείτε πρώτα');
         onClose();
         window.location.href = '/auth?redirect=gift-card';
@@ -102,18 +100,11 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
       if (error) throw error;
 
       if (data?.url) {
-        if (checkoutWindow) {
-          checkoutWindow.location.href = data.url;
-          checkoutWindow.focus();
-        } else {
-          window.location.href = data.url;
-        }
+        window.open(data.url, '_blank', 'noopener,noreferrer');
       } else {
-        checkoutWindow?.close();
         throw new Error('No checkout URL returned');
       }
     } catch (error: any) {
-      checkoutWindow?.close();
       console.error('Purchase error:', error);
       toast.error('Σφάλμα δημιουργίας πληρωμής');
     } finally {
@@ -163,11 +154,15 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
                             {type.description}
                           </p>
                         )}
-                        {type.duration_months && (
+                        {type.subscription_mode === 'visit' && type.visit_count ? (
+                          <p className="text-xs text-gray-400 mt-1 font-['Roobert_Pro',sans-serif]">
+                            {type.visit_count} {type.visit_count === 1 ? 'επίσκεψη' : 'επισκέψεις'}
+                          </p>
+                        ) : type.duration_months ? (
                           <p className="text-xs text-gray-400 mt-1 font-['Roobert_Pro',sans-serif]">
                             Διάρκεια: {type.duration_months} {type.duration_months === 1 ? 'μήνας' : 'μήνες'}
                           </p>
-                        )}
+                        ) : null}
                       </div>
                       <div className="flex items-center gap-3 ml-4">
                         <span className="text-xl font-bold text-gray-900 font-['Roobert_Pro',sans-serif]">
