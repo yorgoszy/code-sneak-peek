@@ -31,8 +31,6 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
                   </div>
                   <img src={sloganLogo} alt="Trust The Process" className="h-10 w-auto" />
                 </div>
-                  <img src={sloganLogo} alt="Trust The Process" className="h-10 w-auto" />
-                </div>
 
                 <div className="flex justify-between items-end relative z-10">
                   <div>
