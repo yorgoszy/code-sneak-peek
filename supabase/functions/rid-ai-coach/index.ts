@@ -23,13 +23,15 @@ serve(async (req) => {
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const token = authHeader.replace("Bearer ", "");
 
-    const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false },
+    });
     const {
       data: { user },
       error: userError,
-    } = await authClient.auth.getUser(token);
+    } = await authClient.auth.getUser();
 
     if (userError || !user) {
       console.error("Auth error:", userError);
