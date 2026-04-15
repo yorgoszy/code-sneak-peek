@@ -39,7 +39,6 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
                     <p className="text-gray-500 text-xs mb-1 font-['Roobert_Pro',sans-serif]">GIFT CARD</p>
                     <p className="text-gray-400 text-xs font-['Roobert_Pro',sans-serif]">Χάρισε αθλητισμό</p>
                   </div>
-                  </div>
                   <p className="text-white text-2xl md:text-3xl font-bold font-['Roobert_Pro',sans-serif]">€50+</p>
                 </div>
               </div>
