@@ -154,11 +154,15 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
                             {type.description}
                           </p>
                         )}
-                        {type.duration_months && (
+                        {type.subscription_mode === 'visit' && type.visit_count ? (
+                          <p className="text-xs text-gray-400 mt-1 font-['Roobert_Pro',sans-serif]">
+                            {type.visit_count} {type.visit_count === 1 ? 'επίσκεψη' : 'επισκέψεις'}
+                          </p>
+                        ) : type.duration_months ? (
                           <p className="text-xs text-gray-400 mt-1 font-['Roobert_Pro',sans-serif]">
                             Διάρκεια: {type.duration_months} {type.duration_months === 1 ? 'μήνας' : 'μήνες'}
                           </p>
-                        )}
+                        ) : null}
                       </div>
                       <div className="flex items-center gap-3 ml-4">
                         <span className="text-xl font-bold text-gray-900 font-['Roobert_Pro',sans-serif]">
