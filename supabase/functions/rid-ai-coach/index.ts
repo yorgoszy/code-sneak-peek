@@ -1018,6 +1018,75 @@ serve(async (req) => {
       }
     }
 
+    // 🔗 ΦΟΡΤΩΣΗ ΣΥΝΔΕΔΕΜΕΝΩΝ ΑΣΚΗΣΕΩΝ (exercise_relationships)
+    let exerciseRelationshipsContext = '';
+    if (canAccessProgramBuilder) {
+      try {
+        const relResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/exercise_relationships?select=id,exercise_id,related_exercise_id,relationship_type,order_index&order=exercise_id.asc,order_index.asc`,
+          {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+          }
+        );
+        const relData = await relResponse.json();
+
+        if (Array.isArray(relData) && relData.length > 0) {
+          // Load exercise names for mapping
+          const allRelExIds = new Set<string>();
+          relData.forEach((r: any) => {
+            allRelExIds.add(r.exercise_id);
+            allRelExIds.add(r.related_exercise_id);
+          });
+
+          const exNamesResponse = await fetch(
+            `${SUPABASE_URL}/rest/v1/exercises?id=in.(${Array.from(allRelExIds).join(',')})&select=id,name`,
+            {
+              headers: {
+                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+              }
+            }
+          );
+          const exNamesData = await exNamesResponse.json();
+          const exNameMap: Record<string, string> = {};
+          if (Array.isArray(exNamesData)) {
+            exNamesData.forEach((e: any) => { exNameMap[e.id] = e.name; });
+          }
+
+          // Group by exercise
+          const grouped: Record<string, { type: string; name: string }[]> = {};
+          relData.forEach((r: any) => {
+            const mainName = exNameMap[r.exercise_id] || r.exercise_id;
+            if (!grouped[mainName]) grouped[mainName] = [];
+            grouped[mainName].push({
+              type: r.relationship_type,
+              name: exNameMap[r.related_exercise_id] || r.related_exercise_id
+            });
+          });
+
+          exerciseRelationshipsContext = `\n\n🔗 ΣΥΝΔΕΔΕΜΕΝΕΣ ΑΣΚΗΣΕΙΣ (exercise_relationships):\n`;
+          exerciseRelationshipsContext += `📌 Τύποι σχέσεων: mobility (κινητικότητα), stability (σταθεροποίηση), activation (ενεργοποίηση), neural act (νευρική ενεργοποίηση), recovery (αποκατάσταση), strength_variant (παραλλαγή δύναμης)\n\n`;
+
+          for (const [exerciseName, rels] of Object.entries(grouped)) {
+            const byType: Record<string, string[]> = {};
+            rels.forEach(r => {
+              if (!byType[r.type]) byType[r.type] = [];
+              byType[r.type].push(r.name);
+            });
+            const parts = Object.entries(byType).map(([type, names]) => `${type}: ${names.join(', ')}`);
+            exerciseRelationshipsContext += `  • ${exerciseName} → ${parts.join(' | ')}\n`;
+          }
+
+          console.log(`✅ Loaded ${relData.length} exercise relationships for ${Object.keys(grouped).length} exercises`);
+        }
+      } catch(e) {
+        console.log('⚠️ Error loading exercise relationships:', e);
+      }
+    }
+
     // 📅 ΦΟΡΤΩΣΗ ΕΤΗΣΙΟΥ ΠΡΟΓΡΑΜΜΑΤΙΣΜΟΥ (Annual Planning)
     let annualPlanningContext = '';
     let phaseConfigContext = '';
