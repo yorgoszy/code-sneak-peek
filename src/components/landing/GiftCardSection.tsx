@@ -29,17 +29,16 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
                   <div>
                     <img src={headerLogo} alt="HyperKids Logo" className="h-8 w-auto mb-2" />
                     <p className="text-gray-500 text-xs mt-1 font-['Roobert_Pro',sans-serif]">GIFT CARD</p>
+                    <p className="text-gray-500 text-xs mt-0.5 font-['Roobert_Pro',sans-serif]">Χάρισε αθλητισμό</p>
                   </div>
                   <img src={sloganLogo} alt="Trust The Process" className="h-10 w-auto" />
                 </div>
 
-                <div className="relative z-10">
-                  <p className="text-gray-500 text-xs mb-1 font-['Roobert_Pro',sans-serif]">ΚΩΔΙΚΟΣ</p>
-                  <p className="text-white text-lg md:text-xl font-mono tracking-widest">XXXX-XXXX-XXXX</p>
-                </div>
-
                 <div className="flex justify-between items-end relative z-10">
-                  <p className="text-gray-500 text-xs font-['Roobert_Pro',sans-serif]">Χάρισε αθλητισμό</p>
+                  <div>
+                    <p className="text-gray-500 text-xs mb-1 font-['Roobert_Pro',sans-serif]">ΚΩΔΙΚΟΣ</p>
+                    <p className="text-white text-lg md:text-xl font-mono tracking-widest">XXXX-XXXX-XXXX</p>
+                  </div>
                   <p className="text-white text-2xl md:text-3xl font-bold font-['Roobert_Pro',sans-serif]">€50+</p>
                 </div>
               </div>
