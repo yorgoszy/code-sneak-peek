@@ -5415,6 +5415,7 @@ ${isAdmin ? `
 → user_id = "Γιάννης" (ΟΧΙ Κυριάκος!)
 
 ${exerciseDatabaseContext}
+${exerciseRelationshipsContext}
 
 ⚠️⚠️⚠️ ΚΡΙΣΙΜΟ - FORMAT JSON:
 
@@ -5741,6 +5742,7 @@ Day 4:
 ΔΕΝ μπορείς να αναθέσεις σε άλλους χρήστες - αυτό απαιτεί admin δικαιώματα.
 
 ${exerciseDatabaseContext}
+${exerciseRelationshipsContext}
 
 ⚠️ ΕΠΙΤΡΕΠΤΕΣ ΤΙΜΕΣ training_type: "str", "str/end", "str/spd", "pwr", "pwr/end", "end", "spd/end", "hpr", "warm up", "mobility", "stability", "activation", "neural act", "recovery", "accessory", "rotational"
 
