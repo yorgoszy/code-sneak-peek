@@ -39,7 +39,10 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
 
                 <div className="flex justify-between items-end relative z-10">
                   <p className="text-gray-500 text-xs font-['Roobert_Pro',sans-serif]">Χάρισε αθλητισμό</p>
-                  <p className="text-white text-2xl md:text-3xl font-bold font-['Roobert_Pro',sans-serif]">€50+</p>
+                  <div className="flex items-end gap-3">
+                    <img src={sloganLogo} alt="Trust The Process" className="h-8 w-auto opacity-80" />
+                    <p className="text-white text-2xl md:text-3xl font-bold font-['Roobert_Pro',sans-serif]">€50+</p>
+                  </div>
                 </div>
               </div>
             </div>
