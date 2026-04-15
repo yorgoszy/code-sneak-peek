@@ -13,7 +13,8 @@ interface SubscriptionType {
   description: string | null;
   price: number;
   duration_months: number | null;
-  sessions_per_week: number | null;
+  visit_count: number | null;
+  subscription_mode: string | null;
 }
 
 interface GiftCardPurchaseDialogProps {
