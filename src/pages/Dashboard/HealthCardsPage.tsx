@@ -187,14 +187,14 @@ export default function HealthCardsPage() {
       if (selectedFile) {
         // If exists, delete old image
         if (existingCard?.image_url) {
-          const oldPath = existingCard.image_url.split("/").pop();
+          const oldPath = existingCard.image_url.split('/health-cards/')[1] || existingCard.image_url.split("/").pop();
           if (oldPath) {
             await supabase.storage.from("health-cards").remove([oldPath]);
           }
         }
 
         const fileExt = selectedFile.name.split(".").pop();
-        const fileName = `${selectedUser.id}-${Date.now()}.${fileExt}`;
+        const fileName = `${selectedUser.id}/health-card-${Date.now()}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
           .from("health-cards")
@@ -202,11 +202,8 @@ export default function HealthCardsPage() {
 
         if (uploadError) throw uploadError;
 
-        const { data: urlData } = supabase.storage
-          .from("health-cards")
-          .getPublicUrl(fileName);
-
-        imageUrl = urlData.publicUrl;
+        // Store the path, not the public URL (bucket is private)
+        imageUrl = fileName;
       }
 
       const startDateObj = new Date(startDate);
@@ -275,7 +272,9 @@ export default function HealthCardsPage() {
     try {
       // Delete image from storage
       if (deletingCard.image_url) {
-        const path = deletingCard.image_url.split("/").pop();
+        const path = deletingCard.image_url.includes('/health-cards/')
+          ? deletingCard.image_url.split('/health-cards/')[1]
+          : deletingCard.image_url;
         if (path) {
           await supabase.storage.from("health-cards").remove([path]);
         }
