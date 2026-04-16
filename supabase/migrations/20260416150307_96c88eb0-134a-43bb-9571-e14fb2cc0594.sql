@@ -1,0 +1,1 @@
+ALTER TABLE public.subscription_types DROP CONSTRAINT IF EXISTS subscription_types_name_key;
