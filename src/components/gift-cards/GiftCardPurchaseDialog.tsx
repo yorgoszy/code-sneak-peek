@@ -195,11 +195,16 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
                             {type.name}
                           </h3>
                           {type.description && (
-                            <span className="text-xs text-gray-400 font-['Roobert_Pro',sans-serif]">
-                              {type.description}
-                            </span>
-                          )}
-                        </div>
+                             <span className="text-xs text-gray-400 font-['Roobert_Pro',sans-serif]">
+                               {type.description}
+                             </span>
+                           )}
+                         </div>
+                         {type.duration_months && (
+                           <p className="text-xs text-gray-500 font-['Roobert_Pro',sans-serif]">
+                             Διάρκεια: {type.duration_months} {type.duration_months === 1 ? 'μήνας' : 'μήνες'}
+                           </p>
+                         )}
                       </div>
                       <div className="flex items-center gap-2 ml-3">
                         <span className="text-sm font-bold text-gray-900 font-['Roobert_Pro',sans-serif]">
