@@ -25,11 +25,10 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
               <div className="relative w-full aspect-[16/10] bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 p-6 md:p-8 flex flex-col justify-between shadow-2xl">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-white opacity-10 rounded-full -translate-y-1/2 translate-x-1/2" />
                 
-                <div className="flex justify-between items-start relative z-10">
+                <div className="relative z-10">
                   <div>
                     <img src={headerLogo} alt="HyperKids Logo" className="h-8 w-auto mb-2" />
                   </div>
-                  <img src={sloganLogo} alt="Trust The Process" className="h-10 w-auto" />
                 </div>
 
                 <div className="flex justify-between items-end relative z-10">
@@ -37,7 +36,7 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
                     <p className="text-gray-500 text-xs mb-1 font-['Roobert_Pro',sans-serif]">GIFT CARD</p>
                     <p className="text-gray-400 text-xs font-['Roobert_Pro',sans-serif]">Χάρισε αθλητισμό</p>
                   </div>
-                  <p className="text-white text-2xl md:text-3xl font-bold font-['Roobert_Pro',sans-serif]">€50+</p>
+                  <img src={sloganLogo} alt="Trust The Process" className="h-8 w-auto" />
                 </div>
               </div>
             </div>
