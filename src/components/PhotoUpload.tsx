@@ -46,12 +46,16 @@ export const PhotoUpload = ({ currentPhotoUrl, onPhotoChange, disabled }: PhotoU
     setUploading(true);
 
     try {
+      // Get current user's auth uid for path-based ownership
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
       // Process the image (crop to square, resize, compress)
       const processed = await processAvatarImage(file);
       
-      // Create a unique filename
+      // Create a unique filename under the user's folder
       const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.jpg`;
-      const filePath = `users/${fileName}`;
+      const filePath = `${user.id}/${fileName}`;
 
       // Upload processed file to Supabase Storage
       const { error: uploadError } = await supabase.storage
