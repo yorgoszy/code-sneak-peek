@@ -36,15 +36,24 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
   const [selectedSessions, setSelectedSessions] = useState<Record<string, string[]>>({});
   const [hasFunctionalTest, setHasFunctionalTest] = useState(false);
 
+  // CRITICAL: Reset ALL user-specific state when userId changes
+  useEffect(() => {
+    setRawHistoricalData([]);
+    setSelectedExercises([]);
+    setExerciseSessions({});
+    setSelectedSessions({});
+    setHasFunctionalTest(false);
+  }, [userId]);
+
   useEffect(() => {
     fetchExercises();
   }, []);
 
   useEffect(() => {
-    if (userId && selectedExercises.length === 0) {
+    if (userId && selectedExercises.length === 0 && rawHistoricalData.length > 0) {
       fetchLatestExerciseForUser();
     }
-  }, [userId, selectedExercises]);
+  }, [userId, selectedExercises, rawHistoricalData]);
 
   useEffect(() => {
     if (userId) {
