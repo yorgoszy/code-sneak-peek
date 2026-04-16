@@ -21,7 +21,7 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
             {/* Gift Card Visual */}
             <div className="flex-1 w-full">
               <div className="relative w-full aspect-[16/10] bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 p-6 md:p-8 flex flex-col justify-between shadow-2xl">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-white opacity-10 rounded-full -translate-y-1/2 translate-x-1/2" />
+                
                 
                 <div className="relative z-10">
                   <div>
