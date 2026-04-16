@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Gift, ArrowRight, ArrowLeft, Loader2, Mail } from "lucide-react";
+import { Gift, ArrowRight, ArrowLeft, Loader2, Mail, Plus, Minus, ShoppingBag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -15,6 +15,11 @@ interface SubscriptionType {
   duration_months: number | null;
   visit_count: number | null;
   subscription_mode: string | null;
+}
+
+interface CartItem {
+  type: SubscriptionType;
+  quantity: number;
 }
 
 interface GiftCardPurchaseDialogProps {
@@ -30,14 +35,14 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
   const [step, setStep] = useState<'select' | 'email'>('select');
-  const [selectedType, setSelectedType] = useState<SubscriptionType | null>(null);
+  const [cart, setCart] = useState<Record<string, number>>({});
   const [recipientEmail, setRecipientEmail] = useState('');
 
   useEffect(() => {
     if (isOpen) {
       fetchSubscriptionTypes();
       setStep('select');
-      setSelectedType(null);
+      setCart({});
       setRecipientEmail('');
     }
   }, [isOpen]);
@@ -62,13 +67,43 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
     }
   };
 
-  const handleSelectType = (type: SubscriptionType) => {
-    setSelectedType(type);
+  const getQuantity = (typeId: string) => cart[typeId] || 0;
+
+  const updateQuantity = (typeId: string, delta: number) => {
+    setCart(prev => {
+      const current = prev[typeId] || 0;
+      const next = Math.max(0, Math.min(10, current + delta));
+      if (next === 0) {
+        const { [typeId]: _, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [typeId]: next };
+    });
+  };
+
+  const getCartItems = (): CartItem[] => {
+    return Object.entries(cart)
+      .filter(([_, qty]) => qty > 0)
+      .map(([id, quantity]) => ({
+        type: subscriptionTypes.find(t => t.id === id)!,
+        quantity
+      }))
+      .filter(item => item.type);
+  };
+
+  const totalItems = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+  const totalPrice = getCartItems().reduce((sum, item) => sum + item.type.price * item.quantity, 0);
+
+  const handleProceed = () => {
+    if (totalItems === 0) {
+      toast.error('Επιλέξτε τουλάχιστον μία συνδρομή');
+      return;
+    }
     setStep('email');
   };
 
   const handlePurchase = async () => {
-    if (!selectedType || !recipientEmail) return;
+    if (totalItems === 0 || !recipientEmail) return;
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(recipientEmail)) {
@@ -88,12 +123,21 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
         return;
       }
 
+      const items = getCartItems().map(item => ({
+        subscription_type_id: item.type.id,
+        subscription_type_name: item.type.name,
+        amount: item.type.price,
+        quantity: item.quantity
+      }));
+
       const { data, error } = await supabase.functions.invoke('create-gift-card-checkout', {
         body: {
-          subscription_type_id: selectedType.id,
-          subscription_type_name: selectedType.name,
-          amount: selectedType.price,
-          recipient_email: recipientEmail
+          items,
+          recipient_email: recipientEmail,
+          // Backward compatibility for single item
+          subscription_type_id: items[0]?.subscription_type_id,
+          subscription_type_name: items[0]?.subscription_type_name,
+          amount: totalPrice
         }
       });
 
@@ -118,14 +162,14 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 font-['Roobert_Pro',sans-serif]">
             <Gift className="h-5 w-5" />
-            {step === 'select' ? 'Επιλέξτε υπηρεσία Gift Card' : 'Στοιχεία παραλήπτη'}
+            {step === 'select' ? 'Επιλέξτε συνδρομές Gift Card' : 'Στοιχεία παραλήπτη'}
           </DialogTitle>
         </DialogHeader>
 
         {step === 'select' && (
           <>
             <p className="text-sm text-gray-500 font-['Roobert_Pro',sans-serif]">
-              Επιλέξτε την υπηρεσία που θέλετε να χαρίσετε
+              Επιλέξτε τις συνδρομές που θέλετε να χαρίσετε και την ποσότητα
             </p>
 
             {loading ? (
@@ -134,57 +178,118 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
               </div>
             ) : subscriptionTypes.length === 0 ? (
               <div className="text-center py-8 text-gray-500 font-['Roobert_Pro',sans-serif]">
-                Δεν υπάρχουν διαθέσιμες υπηρεσίες αυτή τη στιγμή
+                Δεν υπάρχουν διαθέσιμες συνδρομές αυτή τη στιγμή
               </div>
             ) : (
               <div className="space-y-3 max-h-[400px] overflow-y-auto">
-                {subscriptionTypes.map((type) => (
-                  <div
-                    key={type.id}
-                    className="border border-gray-200 p-4 hover:border-black transition-colors cursor-pointer group"
-                    onClick={() => handleSelectType(type)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900 font-['Roobert_Pro',sans-serif]">
-                          {type.name}
-                        </h3>
-                        {type.description && (
-                          <p className="text-sm text-gray-500 mt-1 font-['Roobert_Pro',sans-serif]">
-                            {type.description}
-                          </p>
-                        )}
-                        {type.subscription_mode === 'visit' && type.visit_count ? (
-                          <p className="text-xs text-gray-400 mt-1 font-['Roobert_Pro',sans-serif]">
-                            {type.visit_count} {type.visit_count === 1 ? 'επίσκεψη' : 'επισκέψεις'}
-                          </p>
-                        ) : type.duration_months ? (
-                          <p className="text-xs text-gray-400 mt-1 font-['Roobert_Pro',sans-serif]">
-                            Διάρκεια: {type.duration_months} {type.duration_months === 1 ? 'μήνας' : 'μήνες'}
-                          </p>
-                        ) : null}
-                      </div>
-                      <div className="flex items-center gap-3 ml-4">
-                        <span className="text-xl font-bold text-gray-900 font-['Roobert_Pro',sans-serif]">
-                          €{type.price}
-                        </span>
-                        <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-black transition-colors" />
+                {subscriptionTypes.map((type) => {
+                  const qty = getQuantity(type.id);
+                  const isSelected = qty > 0;
+
+                  return (
+                    <div
+                      key={type.id}
+                      className={`border p-4 transition-colors ${
+                        isSelected ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-400'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 font-['Roobert_Pro',sans-serif]">
+                            {type.name}
+                          </h3>
+                          {type.description && (
+                            <p className="text-sm text-gray-500 mt-1 font-['Roobert_Pro',sans-serif]">
+                              {type.description}
+                            </p>
+                          )}
+                          {type.subscription_mode === 'visit' && type.visit_count ? (
+                            <p className="text-xs text-gray-400 mt-1 font-['Roobert_Pro',sans-serif]">
+                              {type.visit_count} {type.visit_count === 1 ? 'επίσκεψη' : 'επισκέψεις'}
+                            </p>
+                          ) : type.duration_months ? (
+                            <p className="text-xs text-gray-400 mt-1 font-['Roobert_Pro',sans-serif]">
+                              Διάρκεια: {type.duration_months} {type.duration_months === 1 ? 'μήνας' : 'μήνες'}
+                            </p>
+                          ) : null}
+                        </div>
+                        <div className="flex items-center gap-3 ml-4">
+                          <span className="text-lg font-bold text-gray-900 font-['Roobert_Pro',sans-serif]">
+                            €{type.price}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8 rounded-none"
+                              onClick={() => updateQuantity(type.id, -1)}
+                              disabled={qty === 0}
+                            >
+                              <Minus className="h-3 w-3" />
+                            </Button>
+                            <span className="w-8 text-center font-semibold text-sm font-['Roobert_Pro',sans-serif]">
+                              {qty}
+                            </span>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8 rounded-none"
+                              onClick={() => updateQuantity(type.id, 1)}
+                              disabled={qty >= 10}
+                            >
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Cart summary */}
+            {totalItems > 0 && (
+              <div className="border-t border-gray-200 pt-3 mt-3">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2 text-sm text-gray-600 font-['Roobert_Pro',sans-serif]">
+                    <ShoppingBag className="h-4 w-4" />
+                    <span>{totalItems} {totalItems === 1 ? 'συνδρομή' : 'συνδρομές'}</span>
                   </div>
-                ))}
+                  <span className="text-lg font-bold text-gray-900 font-['Roobert_Pro',sans-serif]">
+                    Σύνολο: €{totalPrice}
+                  </span>
+                </div>
+                <Button
+                  onClick={handleProceed}
+                  className="w-full bg-black text-white hover:bg-gray-800 rounded-none font-['Roobert_Pro',sans-serif]"
+                >
+                  Συνέχεια
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Button>
               </div>
             )}
           </>
         )}
 
-        {step === 'email' && selectedType && (
+        {step === 'email' && (
           <div className="space-y-4">
-            <div className="bg-gray-50 border border-gray-200 p-3">
-              <p className="text-sm text-gray-500 font-['Roobert_Pro',sans-serif]">Επιλεγμένη υπηρεσία</p>
-              <p className="font-semibold text-gray-900 font-['Roobert_Pro',sans-serif]">
-                {selectedType.name} — €{selectedType.price}
-              </p>
+            <div className="bg-gray-50 border border-gray-200 p-3 space-y-2">
+              <p className="text-sm text-gray-500 font-['Roobert_Pro',sans-serif]">Επιλεγμένες συνδρομές</p>
+              {getCartItems().map(item => (
+                <div key={item.type.id} className="flex items-center justify-between">
+                  <p className="font-semibold text-gray-900 text-sm font-['Roobert_Pro',sans-serif]">
+                    {item.type.name} × {item.quantity}
+                  </p>
+                  <p className="text-sm font-semibold text-gray-900 font-['Roobert_Pro',sans-serif]">
+                    €{item.type.price * item.quantity}
+                  </p>
+                </div>
+              ))}
+              <div className="border-t border-gray-300 pt-2 flex items-center justify-between">
+                <p className="font-bold text-gray-900 text-sm font-['Roobert_Pro',sans-serif]">Σύνολο</p>
+                <p className="font-bold text-gray-900 font-['Roobert_Pro',sans-serif]">€{totalPrice}</p>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -203,7 +308,7 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
                 />
               </div>
               <p className="text-xs text-gray-400 font-['Roobert_Pro',sans-serif]">
-                Η δωροκάρτα θα αποσταλεί σε αυτό το email
+                Οι δωροκάρτες θα αποσταλούν σε αυτό το email
               </p>
             </div>
 
