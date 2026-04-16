@@ -22,6 +22,8 @@ export const SprintProgressCard: React.FC<SprintProgressCardProps> = ({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setSessions([]);
+    setLoading(true);
     if (userId && exerciseName) {
       fetchSprintHistory();
     }

@@ -20,6 +20,8 @@ export const FarmerProgressCard: React.FC<FarmerProgressCardProps> = ({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setSessions([]);
+    setLoading(true);
     if (userId) {
       fetchFarmerHistory();
     }

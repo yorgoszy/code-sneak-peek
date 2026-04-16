@@ -21,6 +21,8 @@ export const VO2MaxProgressCard: React.FC<VO2MaxProgressCardProps> = ({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setSessions([]);
+    setLoading(true);
     if (userId) {
       fetchVO2MaxHistory();
     }

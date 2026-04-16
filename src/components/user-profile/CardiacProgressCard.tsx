@@ -21,6 +21,8 @@ export const CardiacProgressCard: React.FC<CardiacProgressCardProps> = ({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setSessions([]);
+    setLoading(true);
     if (userId) {
       fetchCardiacHistory();
     }
