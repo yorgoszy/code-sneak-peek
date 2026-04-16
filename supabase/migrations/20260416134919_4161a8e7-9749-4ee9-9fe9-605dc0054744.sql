@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Authenticated users can create sprint results" ON public.sprint_timing_results;
