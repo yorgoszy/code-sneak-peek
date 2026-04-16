@@ -622,9 +622,7 @@ export const GymBookingsCalendarView = () => {
                     "text-center p-1 border rounded-none",
                     isClosed 
                       ? "bg-red-100 border-red-300" 
-                      : hasBookings 
-                        ? "bg-[#00ffba]/20 border-gray-200"
-                        : "bg-gray-50 border-gray-200"
+                      : "bg-gray-50 border-gray-200"
                   )}
                 >
                   {/* Close Button */}
