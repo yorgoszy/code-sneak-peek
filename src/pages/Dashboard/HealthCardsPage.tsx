@@ -91,6 +91,36 @@ export default function HealthCardsPage() {
   // View dialog
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [viewingCard, setViewingCard] = useState<HealthCard | null>(null);
+  const [signedImageUrl, setSignedImageUrl] = useState<string | null>(null);
+
+  // Helper to get a signed URL for a health card image
+  const getSignedUrl = async (imageUrl: string): Promise<string | null> => {
+    if (!imageUrl) return null;
+    // If it's already a full URL (old public URL), extract path
+    const storagePath = imageUrl.includes('/health-cards/')
+      ? imageUrl.split('/health-cards/')[1]
+      : imageUrl.startsWith('http')
+        ? null // Can't resolve old full URLs that don't contain bucket path
+        : imageUrl; // It's already a storage path
+
+    if (!storagePath) return imageUrl; // Fallback to old URL
+
+    const { data, error } = await supabase.storage
+      .from('health-cards')
+      .createSignedUrl(storagePath, 3600); // 1 hour expiry
+
+    if (error || !data?.signedUrl) return null;
+    return data.signedUrl;
+  };
+
+  // Resolve signed URL when viewing a card
+  useEffect(() => {
+    if (viewingCard?.image_url && isViewDialogOpen) {
+      getSignedUrl(viewingCard.image_url).then(setSignedImageUrl);
+    } else {
+      setSignedImageUrl(null);
+    }
+  }, [viewingCard, isViewDialogOpen]);
 
   // Delete dialog
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
