@@ -72,10 +72,8 @@ export const useHealthCard = (userId?: string) => {
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('health-cards')
-        .getPublicUrl(fileName);
+      // Store the path (bucket is private, use signed URLs for display)
+      const storagePath = fileName;
 
       // Calculate end date (1 year from start date)
       const endDate = addYears(startDate, 1);
@@ -85,7 +83,7 @@ export const useHealthCard = (userId?: string) => {
         .from('health_cards')
         .upsert({
           user_id: userId,
-          image_url: publicUrl,
+          image_url: storagePath,
           start_date: format(startDate, 'yyyy-MM-dd'),
           end_date: format(endDate, 'yyyy-MM-dd'),
           notification_sent: false,
@@ -160,6 +158,27 @@ export const useHealthCard = (userId?: string) => {
     return daysLeft !== null && daysLeft < 0;
   };
 
+  const getSignedImageUrl = async (): Promise<string | null> => {
+    if (!healthCard?.image_url) return null;
+    const imageUrl = healthCard.image_url;
+    
+    // Extract storage path from old public URLs or use directly
+    const storagePath = imageUrl.includes('/health-cards/')
+      ? imageUrl.split('/health-cards/')[1]
+      : imageUrl.startsWith('http')
+        ? null
+        : imageUrl;
+
+    if (!storagePath) return imageUrl; // Fallback for old URLs
+
+    const { data, error } = await supabase.storage
+      .from('health-cards')
+      .createSignedUrl(storagePath, 3600);
+
+    if (error || !data?.signedUrl) return null;
+    return data.signedUrl;
+  };
+
   useEffect(() => {
     if (userId) {
       fetchHealthCard();
@@ -175,6 +194,7 @@ export const useHealthCard = (userId?: string) => {
     deleteHealthCard,
     getDaysUntilExpiry,
     isExpiringSoon,
-    isExpired
+    isExpired,
+    getSignedImageUrl
   };
 };

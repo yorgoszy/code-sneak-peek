@@ -91,6 +91,36 @@ export default function HealthCardsPage() {
   // View dialog
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [viewingCard, setViewingCard] = useState<HealthCard | null>(null);
+  const [signedImageUrl, setSignedImageUrl] = useState<string | null>(null);
+
+  // Helper to get a signed URL for a health card image
+  const getSignedUrl = async (imageUrl: string): Promise<string | null> => {
+    if (!imageUrl) return null;
+    // If it's already a full URL (old public URL), extract path
+    const storagePath = imageUrl.includes('/health-cards/')
+      ? imageUrl.split('/health-cards/')[1]
+      : imageUrl.startsWith('http')
+        ? null // Can't resolve old full URLs that don't contain bucket path
+        : imageUrl; // It's already a storage path
+
+    if (!storagePath) return imageUrl; // Fallback to old URL
+
+    const { data, error } = await supabase.storage
+      .from('health-cards')
+      .createSignedUrl(storagePath, 3600); // 1 hour expiry
+
+    if (error || !data?.signedUrl) return null;
+    return data.signedUrl;
+  };
+
+  // Resolve signed URL when viewing a card
+  useEffect(() => {
+    if (viewingCard?.image_url && isViewDialogOpen) {
+      getSignedUrl(viewingCard.image_url).then(setSignedImageUrl);
+    } else {
+      setSignedImageUrl(null);
+    }
+  }, [viewingCard, isViewDialogOpen]);
 
   // Delete dialog
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -187,14 +217,14 @@ export default function HealthCardsPage() {
       if (selectedFile) {
         // If exists, delete old image
         if (existingCard?.image_url) {
-          const oldPath = existingCard.image_url.split("/").pop();
+          const oldPath = existingCard.image_url.split('/health-cards/')[1] || existingCard.image_url.split("/").pop();
           if (oldPath) {
             await supabase.storage.from("health-cards").remove([oldPath]);
           }
         }
 
         const fileExt = selectedFile.name.split(".").pop();
-        const fileName = `${selectedUser.id}-${Date.now()}.${fileExt}`;
+        const fileName = `${selectedUser.id}/health-card-${Date.now()}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
           .from("health-cards")
@@ -202,11 +232,8 @@ export default function HealthCardsPage() {
 
         if (uploadError) throw uploadError;
 
-        const { data: urlData } = supabase.storage
-          .from("health-cards")
-          .getPublicUrl(fileName);
-
-        imageUrl = urlData.publicUrl;
+        // Store the path, not the public URL (bucket is private)
+        imageUrl = fileName;
       }
 
       const startDateObj = new Date(startDate);
@@ -275,7 +302,9 @@ export default function HealthCardsPage() {
     try {
       // Delete image from storage
       if (deletingCard.image_url) {
-        const path = deletingCard.image_url.split("/").pop();
+        const path = deletingCard.image_url.includes('/health-cards/')
+          ? deletingCard.image_url.split('/health-cards/')[1]
+          : deletingCard.image_url;
         if (path) {
           await supabase.storage.from("health-cards").remove([path]);
         }
@@ -741,16 +770,16 @@ export default function HealthCardsPage() {
               {t("healthCard.certificateOf")} {viewingCard?.user?.name}
             </DialogTitle>
           </DialogHeader>
-          {viewingCard?.image_url && (
-            viewingCard.image_url.toLowerCase().endsWith('.pdf') ? (
+          {signedImageUrl && (
+            signedImageUrl.toLowerCase().endsWith('.pdf') || viewingCard?.image_url?.toLowerCase().endsWith('.pdf') ? (
               <iframe
-                src={viewingCard.image_url}
+                src={signedImageUrl}
                 className="w-full h-[70vh] border-0"
                 title="Health Card PDF"
               />
             ) : (
               <img
-                src={viewingCard.image_url}
+                src={signedImageUrl}
                 alt="Health Card"
                 className="w-full object-contain max-h-[70vh]"
               />
