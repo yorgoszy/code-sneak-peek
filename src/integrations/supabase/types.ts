@@ -10239,6 +10239,18 @@ export type Database = {
             }
             Returns: boolean
           }
+      lookup_gift_card_by_code: {
+        Args: { p_code: string }
+        Returns: {
+          amount: number
+          card_type: string
+          code: string
+          expires_at: string
+          id: string
+          status: string
+          subscription_type_id: string
+        }[]
+      }
       mark_booking_completed: {
         Args: { booking_id: string }
         Returns: undefined
