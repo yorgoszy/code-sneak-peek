@@ -29,13 +29,11 @@ export const GiftCardRedeemDialog: React.FC<GiftCardRedeemDialogProps> = ({
     setResult(null);
 
     try {
-      // Find the gift card
-      const { data: giftCard, error: findError } = await supabase
-        .from('gift_cards')
-        .select('*')
-        .eq('code', code.trim().toUpperCase())
-        .eq('status', 'active')
-        .single();
+      // Find the gift card using secure function
+      const { data: giftCards, error: findError } = await supabase
+        .rpc('lookup_gift_card_by_code', { p_code: code.trim() });
+
+      const giftCard = giftCards?.[0];
 
       if (findError || !giftCard) {
         setResult('error');
