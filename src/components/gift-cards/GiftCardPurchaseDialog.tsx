@@ -244,8 +244,7 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
             )}
 
             {/* Cart summary */}
-            {totalItems > 0 && (
-              <div className="border-t border-gray-200 pt-3 mt-3">
+            <div className="border-t border-gray-200 pt-3 mt-3">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2 text-sm text-gray-600 font-['Roobert_Pro',sans-serif]">
                     <ShoppingBag className="h-4 w-4" />
@@ -257,13 +256,13 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
                 </div>
                 <Button
                   onClick={handleProceed}
-                  className="w-full bg-black text-white hover:bg-gray-800 rounded-none font-['Roobert_Pro',sans-serif]"
+                  disabled={totalItems === 0}
+                  className="w-full bg-black text-white hover:bg-gray-800 rounded-none font-['Roobert_Pro',sans-serif] disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Συνέχεια
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </div>
-            )}
           </>
         )}
 
