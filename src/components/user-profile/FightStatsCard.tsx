@@ -33,9 +33,19 @@ export const FightStatsCard: React.FC<FightStatsCardProps> = ({ userId }) => {
   const { stats, loading: statsLoading } = useFightStats(latestFight?.id || null);
   const { stats: prevStats } = useFightStats(previousFight?.id || null);
 
+  // Reset state when userId changes
+  useEffect(() => {
+    setLatestFight(null);
+    setPreviousFight(null);
+    setLoading(true);
+  }, [userId]);
+
   useEffect(() => {
     const fetchFights = async () => {
-      if (!userId) return;
+      if (!userId) {
+        setLoading(false);
+        return;
+      }
       
       try {
         const { data, error } = await supabase
@@ -53,7 +63,12 @@ export const FightStatsCard: React.FC<FightStatsCardProps> = ({ userId }) => {
           setLatestFight(data[0]);
           if (data.length > 1) {
             setPreviousFight(data[1]);
+          } else {
+            setPreviousFight(null);
           }
+        } else {
+          setLatestFight(null);
+          setPreviousFight(null);
         }
       } catch (error) {
         console.error('Error:', error);
