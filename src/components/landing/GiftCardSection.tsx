@@ -14,9 +14,7 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
   return (
     <>
       <section className="py-20 bg-black relative overflow-hidden">
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-white opacity-5 rounded-full -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-60 h-60 bg-white opacity-5 rounded-full translate-y-1/2 -translate-x-1/2" />
+        {/* Background */}
 
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-12">
