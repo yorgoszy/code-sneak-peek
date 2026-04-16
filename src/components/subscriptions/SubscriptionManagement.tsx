@@ -1682,7 +1682,7 @@ export const SubscriptionManagement: React.FC = () => {
       </div>
 
       {/* Στατιστικά */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="rounded-none">
           <CardContent className="p-4">
             <div className="flex items-center">
@@ -1736,25 +1736,6 @@ export const SubscriptionManagement: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card className="rounded-none">
-          <CardContent className="p-4">
-            <div className="flex items-center">
-              <DollarSign className="h-8 w-8 text-green-500" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Μηνιαίος Τζίρος</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  €{userSubscriptions
-                    .filter(s => s.status === 'active' && !s.is_paused)
-                    .reduce((sum, s) => sum + (s.subscription_types?.price || 0), 0)
-                    .toFixed(2)}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {monthlyChanges.monthlyRevenue > 0 ? '+' : ''}€{monthlyChanges.monthlyRevenue.toFixed(2)} από προηγούμενο μήνα
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         <Card className="rounded-none">
           <CardContent className="p-4">
