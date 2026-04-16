@@ -764,10 +764,10 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId, useCoachTables
           </Suspense>
           <OrbitControls 
             target={[0, 3, 0]}
-            enableZoom={true}
+            enableZoom={false}
             enablePan={false}
             minDistance={3}
-            maxDistance={10}
+            maxDistance={3}
           />
         </Canvas>
       </div>
