@@ -14,16 +14,14 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
   return (
     <>
       <section className="py-20 bg-black relative overflow-hidden">
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-white opacity-5 rounded-full -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-60 h-60 bg-white opacity-5 rounded-full translate-y-1/2 -translate-x-1/2" />
+        {/* Background */}
 
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-12">
             {/* Gift Card Visual */}
             <div className="flex-1 w-full">
               <div className="relative w-full aspect-[16/10] bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 p-6 md:p-8 flex flex-col justify-between shadow-2xl">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-white opacity-10 rounded-full -translate-y-1/2 translate-x-1/2" />
+                
                 
                 <div className="relative z-10">
                   <div>
