@@ -44,17 +44,17 @@ export const UserOneRMCard = ({ userName, userAvatar, exercises }: UserOneRMCard
             <p className="text-sm md:text-[10px]">Δεν υπάρχουν καταγραφές 1RM</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-wrap gap-2 md:gap-1">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:flex lg:flex-wrap gap-1.5">
             {exercises.map((exercise, index) => (
               <div
                 key={index}
-                className="flex flex-col items-center justify-center p-3 md:p-1.5 bg-gray-50 border border-gray-200 rounded-none min-w-[100px]"
+                className="flex flex-col items-center justify-center p-2 sm:p-1.5 bg-gray-50 border border-gray-200 rounded-none min-w-0"
               >
-                <p className="font-medium text-gray-900 text-xs md:text-[10px] text-center mb-1 md:mb-0.5">
+                <p className="font-medium text-gray-900 text-[10px] sm:text-xs lg:text-[10px] text-center mb-0.5 truncate w-full">
                   {exercise.exerciseName}
                 </p>
-                <p className="text-xl md:text-base font-bold text-[#cb8954] mb-1 md:mb-0.5">{exercise.weight} kg</p>
-                <p className="text-xs md:text-[10px] text-gray-500 tracking-wide">
+                <p className="text-base sm:text-lg lg:text-base font-bold text-[#cb8954] mb-0.5">{exercise.weight} kg</p>
+                <p className="text-[10px] text-gray-500 tracking-wide">
                   {format(new Date(exercise.recordedDate), 'dd/MM/yy')}
                 </p>
               </div>
