@@ -72,7 +72,7 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
   const updateQuantity = (typeId: string, delta: number) => {
     setCart(prev => {
       const current = prev[typeId] || 0;
-      const next = Math.max(0, Math.min(10, current + delta));
+      const next = Math.max(0, current + delta);
       if (next === 0) {
         const { [typeId]: _, ...rest } = prev;
         return rest;
@@ -235,7 +235,7 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
                               size="icon"
                               className="h-8 w-8 rounded-none"
                               onClick={() => updateQuantity(type.id, 1)}
-                              disabled={qty >= 10}
+                              disabled={false}
                             >
                               <Plus className="h-3 w-3" />
                             </Button>
