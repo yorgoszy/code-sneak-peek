@@ -770,16 +770,16 @@ export default function HealthCardsPage() {
               {t("healthCard.certificateOf")} {viewingCard?.user?.name}
             </DialogTitle>
           </DialogHeader>
-          {viewingCard?.image_url && (
-            viewingCard.image_url.toLowerCase().endsWith('.pdf') ? (
+          {signedImageUrl && (
+            signedImageUrl.toLowerCase().endsWith('.pdf') || viewingCard?.image_url?.toLowerCase().endsWith('.pdf') ? (
               <iframe
-                src={viewingCard.image_url}
+                src={signedImageUrl}
                 className="w-full h-[70vh] border-0"
                 title="Health Card PDF"
               />
             ) : (
               <img
-                src={viewingCard.image_url}
+                src={signedImageUrl}
                 alt="Health Card"
                 className="w-full object-contain max-h-[70vh]"
               />
