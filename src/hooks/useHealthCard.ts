@@ -72,10 +72,8 @@ export const useHealthCard = (userId?: string) => {
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('health-cards')
-        .getPublicUrl(fileName);
+      // Store the path (bucket is private, use signed URLs for display)
+      const storagePath = fileName;
 
       // Calculate end date (1 year from start date)
       const endDate = addYears(startDate, 1);
@@ -85,7 +83,7 @@ export const useHealthCard = (userId?: string) => {
         .from('health_cards')
         .upsert({
           user_id: userId,
-          image_url: publicUrl,
+          image_url: storagePath,
           start_date: format(startDate, 'yyyy-MM-dd'),
           end_date: format(endDate, 'yyyy-MM-dd'),
           notification_sent: false,
