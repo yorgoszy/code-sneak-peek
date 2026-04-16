@@ -168,20 +168,16 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
 
         {step === 'select' && (
           <>
-            <p className="text-sm text-gray-500 font-['Roobert_Pro',sans-serif]">
-              Επιλέξτε τις συνδρομές που θέλετε να χαρίσετε και την ποσότητα
-            </p>
-
             {loading ? (
-              <div className="flex items-center justify-center py-8">
+              <div className="flex items-center justify-center py-4">
                 <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
               </div>
             ) : subscriptionTypes.length === 0 ? (
-              <div className="text-center py-8 text-gray-500 font-['Roobert_Pro',sans-serif]">
-                Δεν υπάρχουν διαθέσιμες συνδρομές αυτή τη στιγμή
+              <div className="text-center py-4 text-gray-500 text-sm font-['Roobert_Pro',sans-serif]">
+                Δεν υπάρχουν διαθέσιμες συνδρομές
               </div>
             ) : (
-              <div className="space-y-3 max-h-[400px] overflow-y-auto">
+              <div className="space-y-1">
                 {subscriptionTypes.map((type) => {
                   const qty = getQuantity(type.id);
                   const isSelected = qty > 0;
@@ -189,57 +185,47 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
                   return (
                     <div
                       key={type.id}
-                      className={`border p-4 transition-colors ${
+                      className={`border px-3 py-2 transition-colors flex items-center justify-between ${
                         isSelected ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-400'
                       }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-900 font-['Roobert_Pro',sans-serif]">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-sm text-gray-900 font-['Roobert_Pro',sans-serif]">
                             {type.name}
                           </h3>
                           {type.description && (
-                            <p className="text-sm text-gray-500 mt-1 font-['Roobert_Pro',sans-serif]">
+                            <span className="text-xs text-gray-400 font-['Roobert_Pro',sans-serif]">
                               {type.description}
-                            </p>
-                          )}
-                          {type.subscription_mode === 'visit' && type.visit_count ? (
-                            <p className="text-xs text-gray-400 mt-1 font-['Roobert_Pro',sans-serif]">
-                              {type.visit_count} {type.visit_count === 1 ? 'επίσκεψη' : 'επισκέψεις'}
-                            </p>
-                          ) : type.duration_months ? (
-                            <p className="text-xs text-gray-400 mt-1 font-['Roobert_Pro',sans-serif]">
-                              Διάρκεια: {type.duration_months} {type.duration_months === 1 ? 'μήνας' : 'μήνες'}
-                            </p>
-                          ) : null}
-                        </div>
-                        <div className="flex items-center gap-3 ml-4">
-                          <span className="text-lg font-bold text-gray-900 font-['Roobert_Pro',sans-serif]">
-                            €{type.price}
-                          </span>
-                          <div className="flex items-center gap-1">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="h-8 w-8 rounded-none"
-                              onClick={() => updateQuantity(type.id, -1)}
-                              disabled={qty === 0}
-                            >
-                              <Minus className="h-3 w-3" />
-                            </Button>
-                            <span className="w-8 text-center font-semibold text-sm font-['Roobert_Pro',sans-serif]">
-                              {qty}
                             </span>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="h-8 w-8 rounded-none"
-                              onClick={() => updateQuantity(type.id, 1)}
-                              disabled={false}
-                            >
-                              <Plus className="h-3 w-3" />
-                            </Button>
-                          </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 ml-3">
+                        <span className="text-sm font-bold text-gray-900 font-['Roobert_Pro',sans-serif]">
+                          €{type.price}
+                        </span>
+                        <div className="flex items-center gap-0.5">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-7 w-7 rounded-none"
+                            onClick={() => updateQuantity(type.id, -1)}
+                            disabled={qty === 0}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <span className="w-6 text-center font-semibold text-xs font-['Roobert_Pro',sans-serif]">
+                            {qty}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-7 w-7 rounded-none"
+                            onClick={() => updateQuantity(type.id, 1)}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
                         </div>
                       </div>
                     </div>
