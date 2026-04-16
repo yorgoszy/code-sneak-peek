@@ -124,6 +124,11 @@ export const RidAiCoach = () => {
     setMessages(prev => [...prev, userMessage]);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('Πρέπει να είστε συνδεδεμένοι');
+      }
+
       // Prepare all messages including the new one for full conversation context
       const allMessages = [...messages, userMessage];
       
@@ -182,11 +187,12 @@ export const RidAiCoach = () => {
       console.log('🎯 UserContext:', userContext);
       
       const response = await fetch(
-        'https://dicwdviufetibnafzipa.supabase.co/functions/v1/rid-ai-coach',
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/rid-ai-coach`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({
             messages: allMessages,
@@ -198,7 +204,26 @@ export const RidAiCoach = () => {
       );
 
       if (!response.ok) {
-        throw new Error('Failed to get response');
+        let errorMessage = 'Σφάλμα επικοινωνίας με το AI';
+
+        try {
+          const errorData = await response.json();
+          if (typeof errorData?.error === 'string' && errorData.error.trim()) {
+            errorMessage = errorData.error;
+          }
+        } catch {
+          // ignore invalid error payloads
+        }
+
+        if (response.status === 401) {
+          errorMessage = 'Η συνεδρία έληξε. Κάνε ξανά σύνδεση.';
+        } else if (response.status === 429) {
+          errorMessage = 'Υπερβήκατε το όριο αιτημάτων. Δοκιμάστε ξανά σε λίγο.';
+        } else if (response.status === 402) {
+          errorMessage = 'Απαιτείται πληρωμή για το Lovable AI workspace.';
+        }
+
+        throw new Error(errorMessage);
       }
 
       const reader = response.body?.getReader();
@@ -291,7 +316,8 @@ export const RidAiCoach = () => {
       }
     } catch (error) {
       console.error('Error sending message:', error);
-      toast.error('Σφάλμα κατά την αποστολή μηνύματος');
+      const errorMessage = error instanceof Error ? error.message : 'Σφάλμα κατά την αποστολή μηνύματος';
+      toast.error(errorMessage);
       // Remove optimistic messages
       setMessages(prev => prev.slice(0, -2));
       // Restore input
