@@ -31,6 +31,10 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
                   </div>
                 </div>
 
+                <div className="flex-1 flex items-center justify-center relative z-10">
+                  <p className="text-gray-500 text-sm tracking-[0.3em] font-mono font-['Roobert_Pro',sans-serif]">XXXX-XXXX-XXXX-XXXX</p>
+                </div>
+
                 <div className="flex justify-between items-end relative z-10">
                   <div>
                     <p className="text-gray-500 text-xs mb-1 font-['Roobert_Pro',sans-serif]">GIFT CARD</p>
