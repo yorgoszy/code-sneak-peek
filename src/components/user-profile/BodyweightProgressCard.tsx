@@ -20,6 +20,8 @@ export const BodyweightProgressCard: React.FC<BodyweightProgressCardProps> = ({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setSessions([]);
+    setLoading(true);
     if (userId) {
       fetchBodyweightHistory();
     }

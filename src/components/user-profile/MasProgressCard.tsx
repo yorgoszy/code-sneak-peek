@@ -20,6 +20,8 @@ export const MasProgressCard: React.FC<MasProgressCardProps> = ({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setSessions([]);
+    setLoading(true);
     if (userId) {
       fetchMasHistory();
     }

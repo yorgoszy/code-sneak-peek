@@ -20,6 +20,8 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setSessions([]);
+    setLoading(true);
     fetchAnthropometricData();
   }, [userId, useCoachTables, coachId]);
 

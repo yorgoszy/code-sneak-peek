@@ -583,6 +583,9 @@ export const BodyMapCard: React.FC<BodyMapCardProps> = ({ userId, useCoachTables
   }, [musclesToHighlight]);
 
   useEffect(() => {
+    setMusclesToHighlight([]);
+    setHasData(false);
+    setLoading(true);
     fetchMuscleData();
   }, [userId, useCoachTables, coachId]);
 

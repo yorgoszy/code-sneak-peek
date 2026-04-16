@@ -81,6 +81,11 @@ export const JumpProfileLatestCard: React.FC<JumpProfileLatestCardProps> = ({
   }>({ nonCmj: null, cmj: null, depthJump: null, broadJump: null, tripleJump: null });
 
   useEffect(() => {
+    // Reset state when userId changes
+    setLatestSessions({ nonCmj: null, cmj: null, depthJump: null, broadJump: null, tripleJump: null });
+    setPreviousSessions({ nonCmj: null, cmj: null, depthJump: null, broadJump: null, tripleJump: null });
+    setPercentageChanges({ nonCmj: null, cmj: null, depthJump: null, broadJump: null, tripleJump: null });
+    
     const load = async () => {
       if (!userId) return;
       
