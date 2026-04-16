@@ -432,7 +432,8 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
         </div>
       )}
 
-      {historicalData.length > 0 ? (
+      {/* Force/Velocity section - only if strength data exists */}
+      {historicalData.length > 0 && (
         <>
           {/* Progress Cards Container - Responsive */}
           <div className="flex gap-0 w-full">
@@ -517,35 +518,28 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
               {t('progress.selectAtLeastOne')}
             </div>
           )}
-
-          {/* MAS Card - First */}
-          <div className="w-full">
-            <MasProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
-          </div>
-
-          {/* Cardiac Data - Second */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-2xl">
-            <CardiacProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
-            <VO2MaxProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
-          </div>
-          
-          {/* Bodyweight (Push Ups, Pull Ups & T2B) - Third */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-2xl">
-            <BodyweightProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
-            <FarmerProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
-          </div>
-
-          {/* Sprint Track & Woodway - Last */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-2xl">
-            <SprintProgressCard userId={userId} exerciseName="Track" useCoachTables={useCoachTables} coachId={coachId} />
-            <SprintProgressCard userId={userId} exerciseName="Woodway" useCoachTables={useCoachTables} coachId={coachId} />
-          </div>
         </>
-      ) : (
-        <div className="text-center py-8 text-sm sm:text-base text-gray-500">
-          {t('progress.noProgressData')}
-        </div>
       )}
+
+      {/* Endurance Cards - always visible regardless of strength data */}
+      <div className="w-full">
+        <MasProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-2xl">
+        <CardiacProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
+        <VO2MaxProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
+      </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-2xl">
+        <BodyweightProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
+        <FarmerProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-2xl">
+        <SprintProgressCard userId={userId} exerciseName="Track" useCoachTables={useCoachTables} coachId={coachId} />
+        <SprintProgressCard userId={userId} exerciseName="Woodway" useCoachTables={useCoachTables} coachId={coachId} />
+      </div>
 
       {/* Jump Progress - Compact Grid to match Anthropometric width */}
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 w-full max-w-2xl mt-2">
