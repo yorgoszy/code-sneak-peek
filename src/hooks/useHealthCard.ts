@@ -158,6 +158,27 @@ export const useHealthCard = (userId?: string) => {
     return daysLeft !== null && daysLeft < 0;
   };
 
+  const getSignedImageUrl = async (): Promise<string | null> => {
+    if (!healthCard?.image_url) return null;
+    const imageUrl = healthCard.image_url;
+    
+    // Extract storage path from old public URLs or use directly
+    const storagePath = imageUrl.includes('/health-cards/')
+      ? imageUrl.split('/health-cards/')[1]
+      : imageUrl.startsWith('http')
+        ? null
+        : imageUrl;
+
+    if (!storagePath) return imageUrl; // Fallback for old URLs
+
+    const { data, error } = await supabase.storage
+      .from('health-cards')
+      .createSignedUrl(storagePath, 3600);
+
+    if (error || !data?.signedUrl) return null;
+    return data.signedUrl;
+  };
+
   useEffect(() => {
     if (userId) {
       fetchHealthCard();
@@ -173,6 +194,7 @@ export const useHealthCard = (userId?: string) => {
     deleteHealthCard,
     getDaysUntilExpiry,
     isExpiringSoon,
-    isExpired
+    isExpired,
+    getSignedImageUrl
   };
 };
