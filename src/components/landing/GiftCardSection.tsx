@@ -56,7 +56,7 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
               <ul className="text-gray-300 space-y-2 mb-8 text-sm font-['Roobert_Pro',sans-serif]">
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-white rounded-full" />
-                  Διαθέσιμο σε χρηματικό ποσό ή συνδρομή
+                  Διαθέσιμο σε συνδρομή
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 bg-white rounded-full" />
