@@ -265,28 +265,51 @@ const LandingChatbot: React.FC<LandingChatbotProps> = ({ language = 'el' }) => {
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 bg-gray-50">
-            {messages.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[85%] px-3 py-2 text-sm leading-relaxed ${
-                    msg.role === 'user'
-                      ? 'bg-black text-white'
-                      : 'bg-white border border-gray-200 text-gray-900'
-                  }`}
-                >
-                  {msg.role === 'assistant' ? (
-                    <div className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-strong:text-black">
-                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+            {messages.map((msg, idx) => {
+              const displayContent = msg.role === 'assistant' ? stripLeadMarker(msg.content) : msg.content;
+              return (
+                <React.Fragment key={idx}>
+                  {displayContent && (
+                    <div
+                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`max-w-[85%] px-3 py-2 text-sm leading-relaxed ${
+                          msg.role === 'user'
+                            ? 'bg-black text-white'
+                            : 'bg-white border border-gray-200 text-gray-900'
+                        }`}
+                      >
+                        {msg.role === 'assistant' ? (
+                          <div className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-strong:text-black">
+                            <ReactMarkdown>{displayContent}</ReactMarkdown>
+                          </div>
+                        ) : (
+                          <p className="whitespace-pre-wrap">{displayContent}</p>
+                        )}
+                      </div>
                     </div>
-                  ) : (
-                    <p className="whitespace-pre-wrap">{msg.content}</p>
                   )}
-                </div>
-              </div>
-            ))}
+                  {msg.role === 'assistant' && msg.showLeadForm && !msg.leadSubmitted && (
+                    <div className="flex justify-start">
+                      <div className="max-w-[95%] w-full">
+                        <LeadForm
+                          language={language}
+                          sessionId={sessionId}
+                          onSubmitted={() => {
+                            setMessages((prev) =>
+                              prev.map((m, i) =>
+                                i === idx ? { ...m, leadSubmitted: true } : m
+                              )
+                            );
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </React.Fragment>
+              );
+            })}
             {loading && messages[messages.length - 1]?.role === 'user' && (
               <div className="flex justify-start">
                 <div className="bg-white border border-gray-200 px-3 py-2 flex items-center gap-2 text-gray-500 text-sm">
@@ -296,6 +319,31 @@ const LandingChatbot: React.FC<LandingChatbotProps> = ({ language = 'el' }) => {
               </div>
             )}
             <div ref={messagesEndRef} />
+          </div>
+
+          {/* Quick action: open lead form manually */}
+          <div className="border-t border-gray-200 px-3 pt-2 pb-1 bg-white">
+            <button
+              type="button"
+              onClick={() => {
+                const last = messages[messages.length - 1];
+                if (last?.role === 'assistant' && last.showLeadForm && !last.leadSubmitted) return;
+                setMessages((prev) => [
+                  ...prev,
+                  {
+                    role: 'assistant',
+                    content: language === 'en'
+                      ? 'Sure — leave your details and our team will reach out:'
+                      : 'Φυσικά — άφησε τα στοιχεία σου και θα επικοινωνήσουμε:',
+                    showLeadForm: true,
+                  },
+                ]);
+              }}
+              className="w-full flex items-center justify-center gap-2 text-xs text-gray-700 hover:text-black border border-gray-200 hover:border-[#00ffba] py-2 transition-colors"
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              {language === 'en' ? 'Leave your details' : 'Άφησε τα στοιχεία σου'}
+            </button>
           </div>
 
           {/* Input */}
