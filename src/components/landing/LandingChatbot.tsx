@@ -188,6 +188,17 @@ const LandingChatbot: React.FC<LandingChatbotProps> = ({ language = 'el' }) => {
           } catch {}
         }
       }
+
+      // Detect lead form marker after stream completes
+      if (hasLeadMarker(assistantSoFar)) {
+        setMessages((prev) =>
+          prev.map((m, i) =>
+            i === prev.length - 1 && m.role === 'assistant'
+              ? { ...m, showLeadForm: true }
+              : m
+          )
+        );
+      }
     } catch (err: any) {
       const errMsg =
         err?.message ||
