@@ -35,6 +35,105 @@ function formatRoundGuide(language: "el" | "en") {
     : "R32=Φάση των 32 | R16=Φάση των 16 | R8=Προημιτελικά | R4=Ημιτελικά | R2=Τελικός | R1=Νικητής";
 }
 
+function normalizeSearchText(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ς/g, "σ")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function escapeLike(value: string) {
+  return value.replace(/[%_]/g, "");
+}
+
+function parseAthleteClubLookup(message: string) {
+  const match = message.match(/([^\[\]\n]+?)\s*\[([^\]]+)\]/);
+  if (!match) return null;
+
+  const athleteName = match[1].trim();
+  const clubName = match[2].trim();
+  if (!athleteName || !clubName) return null;
+
+  return { athleteName, clubName };
+}
+
+function isCompetitionLookupIntent(message: string) {
+  const normalized = normalizeSearchText(message);
+  const keywords = ["κληρωση", "αγωνα", "αγωνα", "παιζω", "παιζει", "αντιπαλο", "bracket", "draw", "match"];
+  return keywords.some((keyword) => normalized.includes(keyword));
+}
+
+function sseFromText(content: string) {
+  const payload = `data: ${JSON.stringify({ choices: [{ delta: { content } }] })}\n\n`;
+  return `${payload}data: [DONE]\n\n`;
+}
+
+async function lookupAthleteCompetitionAnswer(
+  supabase: any,
+  lastUserMessage: string,
+  language: "el" | "en"
+) {
+  if (!isCompetitionLookupIntent(lastUserMessage)) return null;
+
+  const parsed = parseAthleteClubLookup(lastUserMessage);
+  if (!parsed) return null;
+
+  const athleteLike = `%${escapeLike(parsed.athleteName)}%`;
+  const clubLike = `%${escapeLike(parsed.clubName)}%`;
+
+  const { data: rows } = await supabase
+    .from("competition_matches")
+    .select("id, match_order, match_number, status, scheduled_time, ring_number, athlete1:app_users!competition_matches_athlete1_id_fkey(name), athlete2:app_users!competition_matches_athlete2_id_fkey(name), athlete1_club:app_users!competition_matches_athlete1_club_id_fkey(name), athlete2_club:app_users!competition_matches_athlete2_club_id_fkey(name), category:federation_competition_categories!competition_matches_category_id_fkey(name), competition:federation_competitions!competition_matches_competition_id_fkey(id,name,competition_date)")
+    .or(`athlete1.name.ilike.${athleteLike},athlete2.name.ilike.${athleteLike}`)
+    .order("match_order", { ascending: true, nullsFirst: false })
+    .limit(100);
+
+  if (!Array.isArray(rows) || rows.length === 0) return null;
+
+  const athleteNeedle = normalizeSearchText(parsed.athleteName);
+  const clubNeedle = normalizeSearchText(parsed.clubName);
+
+  const matches = rows.filter((row: any) => {
+    const athlete1 = normalizeSearchText(row.athlete1?.name || "");
+    const athlete2 = normalizeSearchText(row.athlete2?.name || "");
+    const club1 = normalizeSearchText(row.athlete1_club?.name || "");
+    const club2 = normalizeSearchText(row.athlete2_club?.name || "");
+
+    const athleteMatched = athlete1.includes(athleteNeedle) || athlete2.includes(athleteNeedle);
+    const clubMatched = club1.includes(clubNeedle) || club2.includes(clubNeedle);
+
+    return athleteMatched && clubMatched;
+  });
+
+  if (matches.length === 0) return null;
+
+  const lines = matches.slice(0, 3).map((row: any) => {
+    const athlete1 = row.athlete1?.name || "TBD";
+    const athlete2 = row.athlete2?.name || "TBD";
+    const competitionName = row.competition?.name || "τη διοργάνωση";
+    const competitionDate = row.competition?.competition_date || "-";
+    const order = row.match_order || row.match_number || "-";
+    const ring = row.ring_number ? `, ring ${row.ring_number}` : "";
+    const time = row.scheduled_time
+      ? `, ${new Date(row.scheduled_time).toLocaleTimeString(language === "en" ? "en-GB" : "el-GR", { hour: "2-digit", minute: "2-digit" })}`
+      : "";
+    const category = row.category?.name ? ` [${row.category.name}]` : "";
+    return language === "en"
+      ? `- ${competitionName} (${competitionDate}): match #${order}${ring}${time} — ${athlete1} vs ${athlete2}${category}`
+      : `- ${competitionName} (${competitionDate}): αγώνας #${order}${ring}${time} — ${athlete1} vs ${athlete2}${category}`;
+  });
+
+  const intro = language === "en"
+    ? `Yes, the draw is out. I found ${matches.length === 1 ? "this match" : `${matches.length} matches`} for ${parsed.athleteName} [${parsed.clubName}]:`
+    : `Ναι, η κλήρωση έχει βγει. Βρήκα ${matches.length === 1 ? "τον εξής αγώνα" : `τους εξής ${matches.length} αγώνες`} για ${parsed.athleteName} [${parsed.clubName}]:`;
+
+  return [intro, ...lines].join("\n");
+}
+
 async function buildCompetitionsContext(supabase: any, language: "el" | "en") {
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0];
@@ -329,6 +428,8 @@ serve(async (req) => {
       });
     }
 
+    const lastUserMessage = [...messages].reverse().find((message: any) => message?.role === "user")?.content;
+
     // Fetch live class schedule
     let sectionsBlock = "";
     try {
@@ -350,6 +451,19 @@ serve(async (req) => {
       competitionsBlock = await buildCompetitionsContext(supabase, language);
     } catch (e) {
       console.error("Failed to fetch competitions:", e);
+    }
+
+    if (typeof lastUserMessage === "string") {
+      try {
+        const deterministicAnswer = await lookupAthleteCompetitionAnswer(supabase, lastUserMessage, language);
+        if (deterministicAnswer) {
+          return new Response(sseFromText(deterministicAnswer), {
+            headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+          });
+        }
+      } catch (e) {
+        console.error("Deterministic competition lookup failed:", e);
+      }
     }
 
     const baseSystemPrompt =
