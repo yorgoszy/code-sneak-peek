@@ -7,7 +7,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT_EL = `Είσαι ο "Hyper Coach AI" — ένας φιλικός, έμπειρος και επαγγελματίας ψηφιακός σύμβουλος της HYPERKIDS / RID ATHLETICS.
+const SYSTEM_PROMPT_EL = `Είσαι ο "RidAI" — ένας φιλικός, έμπειρος και επαγγελματίας ψηφιακός σύμβουλος της HYPERKIDS / RID ATHLETICS.
 
 🎯 Στόχος σου:
 1. Καλωσορίζεις τον επισκέπτη του site με ζεστό αλλά επαγγελματικό τόνο.
@@ -66,7 +66,7 @@ const SYSTEM_PROMPT_EL = `Είσαι ο "Hyper Coach AI" — ένας φιλικ
 
 Μην επινοείς πληροφορίες που δεν υπάρχουν παραπάνω. Αν δεν ξέρεις, παραπέμπεις στην ομάδα.`;
 
-const SYSTEM_PROMPT_EN = `You are "Hyper Coach AI" — a friendly, experienced and professional digital advisor for HYPERKIDS / RID ATHLETICS.
+const SYSTEM_PROMPT_EN = `You are "RidAI" — a friendly, experienced and professional digital advisor for HYPERKIDS / RID ATHLETICS.
 
 🎯 Your goals:
 1. Warmly welcome website visitors with a professional tone.
