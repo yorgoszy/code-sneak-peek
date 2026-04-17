@@ -98,7 +98,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
           phone: phone.trim() || undefined,
           email: email.trim() || undefined,
           message: message.trim() || undefined,
-          interest,
+          interest: service || interest,
           sessionId,
           language,
           userAgent: navigator.userAgent,
