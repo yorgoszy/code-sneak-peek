@@ -5,7 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { LeadForm } from './LeadForm';
 
-type ChatMessage = { role: 'user' | 'assistant'; content: string };
+type ChatMessage = { role: 'user' | 'assistant'; content: string; showLeadForm?: boolean; leadSubmitted?: boolean };
+
+const LEAD_FORM_MARKER = '[SHOW_LEAD_FORM]';
+const stripLeadMarker = (s: string) => s.replace(/\[SHOW_LEAD_FORM\]/gi, '').trim();
+const hasLeadMarker = (s: string) => /\[SHOW_LEAD_FORM\]/i.test(s);
 
 interface LandingChatbotProps {
   language?: 'el' | 'en';
