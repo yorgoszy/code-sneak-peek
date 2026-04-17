@@ -35,7 +35,7 @@ function formatRoundGuide(language: "el" | "en") {
     : "R32=Φάση των 32 | R16=Φάση των 16 | R8=Προημιτελικά | R4=Ημιτελικά | R2=Τελικός | R1=Νικητής";
 }
 
-async function buildCompetitionsContext(supabase: ReturnType<typeof createClient>, language: "el" | "en") {
+async function buildCompetitionsContext(supabase: any, language: "el" | "en") {
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0];
   const detailStart = new Date(today.getTime() - 7 * 86400000);
@@ -70,7 +70,7 @@ async function buildCompetitionsContext(supabase: ReturnType<typeof createClient
       continue;
     }
 
-    const [{ data: matches }, { data: rings }, { data: weighs }] = await Promise.all([
+    const [matchesResult, ringsResult, weighsResult] = await Promise.all([
       supabase
         .from("competition_matches")
         .select("id, match_order, match_number, status, winner_id, scheduled_time, ring_number, is_bye, athlete1_id, athlete2_id, athlete1:app_users!competition_matches_athlete1_id_fkey(name), athlete2:app_users!competition_matches_athlete2_id_fkey(name), athlete1_club:app_users!competition_matches_athlete1_club_id_fkey(name), athlete2_club:app_users!competition_matches_athlete2_club_id_fkey(name), category:federation_competition_categories!competition_matches_category_id_fkey(name)")
@@ -90,6 +90,10 @@ async function buildCompetitionsContext(supabase: ReturnType<typeof createClient
         .limit(300),
     ]);
 
+    const matches = (matchesResult as any)?.data;
+    const rings = (ringsResult as any)?.data;
+    const weighs = (weighsResult as any)?.data;
+
     const validMatches = Array.isArray(matches) ? matches.filter((m: any) => !m.is_bye) : [];
 
     if (Array.isArray(rings) && rings.length > 0) {
@@ -99,7 +103,7 @@ async function buildCompetitionsContext(supabase: ReturnType<typeof createClient
         const liveLink = ring.youtube_live_url ? ` 🎥 LIVE: ${ring.youtube_live_url}` : language === "en" ? " (no live link yet)" : " (χωρίς live link ακόμη)";
         lines.push(`      Ring ${ring.ring_number} (${ring.ring_name || "-"}) ${live}${liveLink}`);
 
-        const currentMatch = ring.current_match_id
+        const currentMatch: any = ring.current_match_id
           ? validMatches.find((m: any) => m.id === ring.current_match_id)
           : null;
 
