@@ -12,6 +12,74 @@ const WELCOME: Msg = {
     "Γεια σου! Είμαι ο Hyper AI για τη διοργάνωση. Ρώτα με για αγώνες, ρινγκ, ζυγίσεις, αντιπάλους ή live links 🥊",
 };
 
+// Highlight corner athletes: red labels in red, blue labels in blue, "A vs B" => A red / B blue
+function renderColored(text: string): React.ReactNode {
+  const RED = "#ef4444";
+  const BLUE = "#3b82f6";
+  const lines = text.split("\n");
+
+  return lines.map((line, li) => {
+    const segments: { start: number; end: number; node: React.ReactNode }[] = [];
+    let key = 0;
+
+    const labelRegex =
+      /(Κόκκιν[ηοα][ςϊ]?[^:\n]{0,20}?:\s*|Red[^:\n]{0,20}?:\s*|Μπλε[^:\n]{0,20}?:\s*|Blue[^:\n]{0,20}?:\s*)([^\n,•|()]+?)(?=$|[,•|()]|\s{2,})/gi;
+    let m: RegExpExecArray | null;
+    while ((m = labelRegex.exec(line)) !== null) {
+      const label = m[1];
+      const name = m[2].trim();
+      const isRed = /κόκκιν|red/i.test(label);
+      segments.push({
+        start: m.index,
+        end: m.index + m[0].length,
+        node: (
+          <React.Fragment key={`lbl-${li}-${key++}`}>
+            {label}
+            <span style={{ color: isRed ? RED : BLUE, fontWeight: 600 }}>{name}</span>
+          </React.Fragment>
+        ),
+      });
+    }
+
+    const vsRegex =
+      /([A-Za-zΑ-Ωα-ωΆ-Ώά-ώϊϋΐΰ][A-Za-zΑ-Ωα-ωΆ-Ώά-ώϊϋΐΰ.\-' ]{1,40}?)\s+(vs\.?|VS|κατά)\s+([A-Za-zΑ-Ωα-ωΆ-Ώά-ώϊϋΐΰ][A-Za-zΑ-Ωα-ωΆ-Ώά-ώϊϋΐΰ.\-' ]{1,40}?)(?=$|[,•|()]|\s{2,}|\.\s|!|\?)/g;
+    while ((m = vsRegex.exec(line)) !== null) {
+      const overlap = segments.some(
+        (s) => !(m!.index + m![0].length <= s.start || m!.index >= s.end)
+      );
+      if (overlap) continue;
+      segments.push({
+        start: m.index,
+        end: m.index + m[0].length,
+        node: (
+          <React.Fragment key={`vs-${li}-${key++}`}>
+            <span style={{ color: RED, fontWeight: 600 }}>{m[1].trim()}</span>{" "}
+            {m[2]}{" "}
+            <span style={{ color: BLUE, fontWeight: 600 }}>{m[3].trim()}</span>
+          </React.Fragment>
+        ),
+      });
+    }
+
+    segments.sort((a, b) => a.start - b.start);
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    for (const seg of segments) {
+      if (seg.start > lastIndex) parts.push(line.slice(lastIndex, seg.start));
+      parts.push(seg.node);
+      lastIndex = seg.end;
+    }
+    if (lastIndex < line.length) parts.push(line.slice(lastIndex));
+
+    return (
+      <React.Fragment key={`line-${li}`}>
+        {parts.length ? parts : line}
+        {li < lines.length - 1 && "\n"}
+      </React.Fragment>
+    );
+  });
+}
+
 export default function CompetitionAI() {
   const [searchParams] = useSearchParams();
   const competitionId = searchParams.get("c") || undefined;
