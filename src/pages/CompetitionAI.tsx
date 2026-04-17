@@ -246,12 +246,13 @@ export default function CompetitionAI() {
                     : "bg-muted text-foreground border-border"
                 }`}
               >
-                {m.content ||
-                  (loading && i === messages.length - 1 ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    ""
-                  ))}
+                {m.content ? (
+                  m.role === "assistant" ? renderColored(m.content) : m.content
+                ) : loading && i === messages.length - 1 ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  ""
+                )}
               </div>
             </div>
           ))}
