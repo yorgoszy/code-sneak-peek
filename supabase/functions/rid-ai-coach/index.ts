@@ -947,6 +947,8 @@ serve(async (req) => {
               if (allMatches.length > 0) {
                 const validMatches = allMatches.filter((m: any) => !m.is_bye);
                 globalCompetitionsContext += `  🥊 ΚΛΗΡΩΣΗ / ΑΓΩΝΕΣ / BRACKETS (${validMatches.length}):\n`;
+                globalCompetitionsContext += `  ℹ️ ΕΠΕΞΗΓΗΣΗ ΓΥΡΩΝ (χρησιμοποίησε ΠΑΝΤΑ τους ελληνικούς όρους όταν αναφέρεις γύρους, ΠΟΤΕ R8/R4/R2/R1):\n`;
+                globalCompetitionsContext += `     R32=Φάση των 32 | R16=Φάση των 16 | R8=Προημιτελικά | R4=Ημιτελικά | R2=Τελικός | R1=Νικητής\n`;
                 validMatches.slice(0, 100).forEach((m: any) => {
                   const status = m.status === 'completed' ? '✅' : m.status === 'in_progress' ? '🔴' : '⏳';
                   const winner = m.winner_id ? (m.winner_id === m.athlete1_id ? m.athlete1?.name : m.athlete2?.name) : null;
