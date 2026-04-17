@@ -53,6 +53,8 @@ export default function CompetitionAI() {
       let assistant = "";
       setMessages((p) => [...p, { role: "assistant", content: "" }]);
 
+      const stripLead = (s: string) => s.replace(/\[LEAD_CAPTURE\][\s\S]*?\[\/LEAD_CAPTURE\]/g, "").trim();
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -70,12 +72,28 @@ export default function CompetitionAI() {
             const delta = parsed.choices?.[0]?.delta?.content;
             if (delta) {
               assistant += delta;
-              setMessages((p) => p.map((m, i) => (i === p.length - 1 ? { ...m, content: assistant } : m)));
+              const display = stripLead(assistant);
+              setMessages((p) => p.map((m, i) => (i === p.length - 1 ? { ...m, content: display } : m)));
             }
           } catch {
             buffer = line + "\n" + buffer;
             break;
           }
+        }
+      }
+
+      // After streaming, look for [LEAD_CAPTURE]{...}[/LEAD_CAPTURE] and submit
+      const leadMatch = assistant.match(/\[LEAD_CAPTURE\]([\s\S]*?)\[\/LEAD_CAPTURE\]/);
+      if (leadMatch) {
+        try {
+          const data = JSON.parse(leadMatch[1].trim());
+          await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/competition-public-ai?action=lead`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...data, competition_id: competitionId }),
+          });
+        } catch (err) {
+          console.error("Lead capture parse failed", err);
         }
       }
     } catch (e: any) {
