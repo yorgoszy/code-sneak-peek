@@ -297,11 +297,15 @@ const LandingChatbot: React.FC<LandingChatbotProps> = ({ language = 'el' }) => {
                           language={language}
                           sessionId={sessionId}
                           onSubmitted={() => {
-                            setMessages((prev) =>
-                              prev.map((m, i) =>
+                            setMessages((prev) => [
+                              ...prev.map((m, i) =>
                                 i === idx ? { ...m, leadSubmitted: true } : m
-                              )
-                            );
+                              ),
+                              {
+                                role: 'assistant',
+                                content: language === 'en' ? '✅ Successfully sent' : '✅ Επιτυχής αποστολή',
+                              },
+                            ]);
                           }}
                         />
                       </div>
