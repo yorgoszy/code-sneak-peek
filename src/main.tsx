@@ -22,20 +22,19 @@ if (isPreviewHost || isInIframe) {
   // Also clear all caches
   caches?.keys().then(keys => keys.forEach(k => caches.delete(k)));
 } else if ('serviceWorker' in navigator) {
-  const updateSW = registerSW({
+  // Register SW but DO NOT auto-reload on updates.
+  // Auto-reload causes the page to refresh when the device wakes from sleep,
+  // wiping in-progress chats and form state.
+  registerSW({
     immediate: true,
     onNeedRefresh() {
-      console.log('New content available - applying update immediately');
-      updateSW(true);
+      // New version available — will apply on next manual reload by the user.
+      console.log('New content available - will apply on next reload');
     },
     onOfflineReady() {
       console.log('App ready to work offline');
     },
   });
-
-  setInterval(() => {
-    updateSW();
-  }, 5 * 60 * 1000);
 }
 
 createRoot(document.getElementById("root")!).render(<App />);
