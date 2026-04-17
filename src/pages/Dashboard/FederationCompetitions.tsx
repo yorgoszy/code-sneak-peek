@@ -24,6 +24,7 @@ import { CompetitionCategoriesDialog } from "@/components/federation/competition
 import { CompetitionRegistrationsDialog } from "@/components/federation/competitions/CompetitionRegistrationsDialog";
 import { CategoryTemplatesDialog } from "@/components/federation/competitions/CategoryTemplatesDialog";
 import { GooglePlacesAutocomplete } from "@/components/ui/google-places-autocomplete";
+import { CompetitionAIQRDialog } from "@/components/competitions/CompetitionAIQRDialog";
 
 
 interface Competition {
