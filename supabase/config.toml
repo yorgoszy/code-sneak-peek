@@ -75,3 +75,6 @@ verify_jwt = false
 [functions.competition-public-ai]
 verify_jwt = false
 
+[functions.notify-ring-leads]
+verify_jwt = false
+
