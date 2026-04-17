@@ -670,7 +670,13 @@ const FederationCompetitions = () => {
                           <span className="sm:hidden">{t('federation.competitions.registrationsShort')}</span>
                         </Button>
                         <div className="flex items-center gap-1">
-                          <CompetitionAIQRDialog competitionId={comp.id} competitionName={comp.name} triggerLabel="QR AI" />
+                          <CompetitionAIQRDialog
+                            competitionId={comp.id}
+                            competitionName={comp.name}
+                            competitionDate={comp.competition_date}
+                            competitionLocation={comp.location || undefined}
+                            triggerLabel="QR AI"
+                          />
                           {comp.regulations_pdf_url && (
                             <a href={comp.regulations_pdf_url} target="_blank" rel="noopener noreferrer">
                               <Button variant="outline" size="sm" className="rounded-none h-8 w-8 p-0">
