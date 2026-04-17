@@ -549,6 +549,7 @@ const FederationCompetitions = () => {
                 <p className="text-sm text-muted-foreground">{t('federation.competitions.subtitle')}</p>
               </div>
               <div className="flex items-center gap-2">
+                <CompetitionAIQRDialog triggerLabel="Hyper AI QR" />
                 <Button variant="outline" onClick={() => setTemplatesDialogOpen(true)} className="rounded-none">
                   <Settings className="h-4 w-4 mr-2" /> {t('federation.competitions.manageCategories')}
                 </Button>
@@ -560,6 +561,7 @@ const FederationCompetitions = () => {
 
             {/* Mobile buttons */}
             <div className="lg:hidden mb-4 flex gap-2">
+              <CompetitionAIQRDialog triggerLabel="Hyper AI" triggerClassName="flex-1" />
               <Button variant="outline" onClick={() => setTemplatesDialogOpen(true)} className="flex-1 rounded-none">
                 <Settings className="h-4 w-4 mr-2" /> {t('federation.competitions.categories')}
               </Button>
