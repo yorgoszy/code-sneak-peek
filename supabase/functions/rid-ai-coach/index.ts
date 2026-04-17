@@ -943,18 +943,19 @@ serve(async (req) => {
                 }
               } catch(e) {}
 
-              // Λίστα αγώνων σήμερα (αν είναι σημερινός)
-              if (isToday && allMatches.length > 0) {
-                const todayMatches = allMatches.filter((m: any) => !m.is_bye).slice(0, 50);
-                globalCompetitionsContext += `  🥊 ΑΓΩΝΕΣ (${allMatches.filter((m: any) => !m.is_bye).length}):\n`;
-                todayMatches.forEach((m: any) => {
+              // 🥊 ΚΛΗΡΩΣΗ / ΑΓΩΝΕΣ — εμφάνιση πάντα όταν υπάρχουν matches (ζευγαρώματα = κλήρωση)
+              if (allMatches.length > 0) {
+                const validMatches = allMatches.filter((m: any) => !m.is_bye);
+                globalCompetitionsContext += `  🥊 ΚΛΗΡΩΣΗ / ΑΓΩΝΕΣ / BRACKETS (${validMatches.length}):\n`;
+                validMatches.slice(0, 100).forEach((m: any) => {
                   const status = m.status === 'completed' ? '✅' : m.status === 'in_progress' ? '🔴' : '⏳';
                   const winner = m.winner_id ? (m.winner_id === m.athlete1_id ? m.athlete1?.name : m.athlete2?.name) : null;
                   const ring = m.ring_number ? ` Ring${m.ring_number}` : '';
                   const time = m.scheduled_time ? ` ${new Date(m.scheduled_time).toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' })}` : '';
                   const club1 = m.athlete1_club?.name ? ` [${m.athlete1_club.name}]` : '';
                   const club2 = m.athlete2_club?.name ? ` [${m.athlete2_club.name}]` : '';
-                  globalCompetitionsContext += `    ${status} #${m.match_order || m.match_number}${ring}${time}: ${m.athlete1?.name || 'TBD'}${club1} vs ${m.athlete2?.name || 'TBD'}${club2}${winner ? ` → 🏆 ${winner}` : ''} [${m.category?.name || ''}]\n`;
+                  const round = m.round_number ? ` R${m.round_number}` : '';
+                  globalCompetitionsContext += `    ${status}${round} #${m.match_order || m.match_number}${ring}${time}: ${m.athlete1?.name || 'TBD'}${club1} vs ${m.athlete2?.name || 'TBD'}${club2}${winner ? ` → 🏆 ${winner}` : ''} [${m.category?.name || ''}]\n`;
                 });
               }
 
