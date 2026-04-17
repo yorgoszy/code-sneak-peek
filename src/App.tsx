@@ -20,6 +20,7 @@ import ResetPassword from "@/pages/ResetPassword";
 const PrivacyPolicy = React.lazy(() => import("@/pages/PrivacyPolicy"));
 const TermsOfService = React.lazy(() => import("@/pages/TermsOfService"));
 const JudgeScoring = React.lazy(() => import("@/pages/JudgeScoring"));
+const CompetitionAI = React.lazy(() => import("@/pages/CompetitionAI"));
 const MobileCameraFeed = React.lazy(() => import("@/pages/MobileCameraFeed"));
 import Dashboard from "@/pages/Dashboard";
 import Users from "@/pages/Users";
@@ -150,6 +151,7 @@ function App() {
                       <Route path="/privacy" element={<PrivacyPolicy />} />
                       <Route path="/terms" element={<TermsOfService />} />
                       <Route path="/judge" element={<JudgeScoring />} />
+                      <Route path="/competition-ai" element={<CompetitionAI />} />
                       <Route path="/shop" element={<Shop />} />
                       <Route path="/online-coaching" element={<OnlineCoaching />} />
                       <Route path="/payment-success" element={<PaymentSuccess />} />
