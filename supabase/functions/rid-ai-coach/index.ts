@@ -844,12 +844,10 @@ serve(async (req) => {
       try {
         console.log('🌍 Loading global competitions context (all federations)...');
         const todayStr = new Date().toISOString().split('T')[0];
-        const past30 = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
-        const future90 = new Date(Date.now() + 90 * 86400000).toISOString().split('T')[0];
 
-        // Φορτώνουμε αγώνες σε εύρος -30 / +90 ημερών για όλες τις ομοσπονδίες
+        // Φορτώνουμε ΟΛΟΥΣ τους αγώνες όλων των ομοσπονδιών (χωρίς χρονικό περιορισμό)
         const gCompsRes = await fetch(
-          `${SUPABASE_URL}/rest/v1/federation_competitions?competition_date=gte.${past30}&competition_date=lte.${future90}&select=*,federation:app_users!federation_competitions_federation_id_fkey(name)&order=competition_date.asc&limit=30`,
+          `${SUPABASE_URL}/rest/v1/federation_competitions?select=*,federation:app_users!federation_competitions_federation_id_fkey(name)&order=competition_date.asc&limit=200`,
           { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
         );
         const gCompsData = await gCompsRes.json();
@@ -930,12 +928,11 @@ serve(async (req) => {
                     if (cur) {
                       globalCompetitionsContext += `      🥊 Τώρα: #${cur.match_order || cur.match_number} ${cur.athlete1?.name || 'TBD'} vs ${cur.athlete2?.name || 'TBD'} [${cur.category?.name || ''}] (R${r.timer_current_round || 1}${r.timer_is_break ? ' BREAK' : ''})\n`;
                     }
-                    // Επόμενοι 3 αγώνες στο ring
+                    // ΟΛΟΙ οι επόμενοι αγώνες στο ring (χωρίς όριο)
                     if (r.match_range_start && r.match_range_end) {
                       const upcoming = allMatches
                         .filter((m: any) => m.match_order && m.match_order >= r.match_range_start && m.match_order <= r.match_range_end && m.status !== 'completed' && !m.is_bye && m.id !== r.current_match_id)
-                        .sort((a: any, b: any) => (a.match_order || 0) - (b.match_order || 0))
-                        .slice(0, 3);
+                        .sort((a: any, b: any) => (a.match_order || 0) - (b.match_order || 0));
                       upcoming.forEach((m: any) => {
                         globalCompetitionsContext += `      ⏭️ #${m.match_order}: ${m.athlete1?.name || 'TBD'} vs ${m.athlete2?.name || 'TBD'} [${m.category?.name || ''}]\n`;
                       });

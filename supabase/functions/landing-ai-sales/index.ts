@@ -196,16 +196,13 @@ serve(async (req) => {
     let competitionsBlock = "";
     try {
       const todayStr = new Date().toISOString().split("T")[0];
-      const future30 = new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0];
-      const past3 = new Date(Date.now() - 3 * 86400000).toISOString().split("T")[0];
 
+      // Όλοι οι αγώνες όλων των ομοσπονδιών (χωρίς χρονικό περιορισμό)
       const { data: comps } = await supabase
         .from("federation_competitions")
         .select("id, name, location, competition_date, status, federation:app_users!federation_competitions_federation_id_fkey(name)")
-        .gte("competition_date", past3)
-        .lte("competition_date", future30)
         .order("competition_date", { ascending: true })
-        .limit(15);
+        .limit(100);
 
       if (comps && comps.length > 0) {
         const lines: string[] = [
