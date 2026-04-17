@@ -388,6 +388,68 @@ export type Database = {
           },
         ]
       }
+      ai_competition_leads: {
+        Row: {
+          athlete_name: string | null
+          club: string | null
+          competition_id: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string | null
+          notified_bracket_at: string | null
+          notified_youtube_at: string | null
+          notify_bracket: boolean
+          notify_schedule: boolean
+          notify_youtube: boolean
+          phone: string | null
+          raw_message: string | null
+          source: string | null
+        }
+        Insert: {
+          athlete_name?: string | null
+          club?: string | null
+          competition_id?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string | null
+          notified_bracket_at?: string | null
+          notified_youtube_at?: string | null
+          notify_bracket?: boolean
+          notify_schedule?: boolean
+          notify_youtube?: boolean
+          phone?: string | null
+          raw_message?: string | null
+          source?: string | null
+        }
+        Update: {
+          athlete_name?: string | null
+          club?: string | null
+          competition_id?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string | null
+          notified_bracket_at?: string | null
+          notified_youtube_at?: string | null
+          notify_bracket?: boolean
+          notify_schedule?: boolean
+          notify_youtube?: boolean
+          phone?: string | null
+          raw_message?: string | null
+          source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_competition_leads_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "federation_competitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_conversations: {
         Row: {
           content: string
