@@ -835,6 +835,170 @@ serve(async (req) => {
       } catch(e) { console.log('⚠️ Error loading federation competitions:', e); }
     }
 
+    // 🌍 GLOBAL COMPETITIONS CONTEXT — διαθέσιμο σε ΟΛΟΥΣ τους χρήστες
+    // Φορτώνει ενεργούς/σημερινούς αγώνες ΟΛΩΝ των ομοσπονδιών της πλατφόρμας
+    // ώστε ο AI να μπορεί να απαντά σε ερωτήσεις για: σειρά αγώνα, ώρα, ρινγκ,
+    // αντίπαλο, link streaming, κιλά ζύγισης, ομάδα/club, σύνολο αγώνων αθλητή κ.ά.
+    let globalCompetitionsContext = '';
+    if (!targetUserId) {
+      try {
+        console.log('🌍 Loading global competitions context (all federations)...');
+        const todayStr = new Date().toISOString().split('T')[0];
+        const past30 = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+        const future90 = new Date(Date.now() + 90 * 86400000).toISOString().split('T')[0];
+
+        // Φορτώνουμε αγώνες σε εύρος -30 / +90 ημερών για όλες τις ομοσπονδίες
+        const gCompsRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/federation_competitions?competition_date=gte.${past30}&competition_date=lte.${future90}&select=*,federation:app_users!federation_competitions_federation_id_fkey(name)&order=competition_date.asc&limit=30`,
+          { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+        );
+        const gCompsData = await gCompsRes.json();
+
+        if (Array.isArray(gCompsData) && gCompsData.length > 0) {
+          // Ξεχωρίζουμε σημερινούς από upcoming/recent
+          const todayComps = gCompsData.filter((c: any) => c.competition_date === todayStr);
+          const upcomingComps = gCompsData.filter((c: any) => c.competition_date > todayStr);
+          const recentComps = gCompsData.filter((c: any) => c.competition_date < todayStr);
+
+          globalCompetitionsContext = `\n\n🌍 ΑΓΩΝΕΣ ΠΛΑΤΦΟΡΜΑΣ (όλες οι ομοσπονδίες - σήμερα: ${todayStr})\n`;
+          globalCompetitionsContext += `📊 Σύνολο: ${gCompsData.length} | Σήμερα: ${todayComps.length} | Επερχόμενοι: ${upcomingComps.length} | Πρόσφατοι: ${recentComps.length}\n`;
+
+          // Για τους σημερινούς και τους επόμενους 7 ημέρες φορτώνουμε ΠΛΗΡΗ data (matches/rings/registrations)
+          const detailedComps = [
+            ...todayComps,
+            ...upcomingComps.filter((c: any) => {
+              const diff = (new Date(c.competition_date).getTime() - Date.now()) / 86400000;
+              return diff <= 7;
+            })
+          ];
+
+          // Cache για aggregate stats αθλητών
+          const athleteMatchCounts = new Map<string, { name: string; total: number; today: number; wins: number }>();
+
+          for (const comp of gCompsData) {
+            const fedName = comp.federation?.name || 'Άγνωστη Ομοσπονδία';
+            const isToday = comp.competition_date === todayStr;
+            const isFuture = comp.competition_date > todayStr;
+            const dayLabel = isToday ? '🔴 ΣΗΜΕΡΑ' : isFuture ? '📅' : '📜';
+
+            globalCompetitionsContext += `\n${dayLabel} ${comp.name} — ${fedName}\n`;
+            globalCompetitionsContext += `  📅 ${comp.competition_date}${comp.end_date ? ` → ${comp.end_date}` : ''} | 📍 ${comp.location || '-'} | Status: ${comp.status}\n`;
+
+            const isDetailed = detailedComps.some((d: any) => d.id === comp.id);
+
+            // Φόρτωση matches για detailed competitions (σήμερα + επόμενοι 7)
+            let allMatches: any[] = [];
+            if (isDetailed) {
+              try {
+                const mRes = await fetch(
+                  `${SUPABASE_URL}/rest/v1/competition_matches?competition_id=eq.${comp.id}&select=id,match_order,match_number,round_number,status,winner_id,result_type,scheduled_time,ring_number,is_bye,athlete1_id,athlete2_id,athlete1_score,athlete2_score,athlete1:app_users!competition_matches_athlete1_id_fkey(name),athlete2:app_users!competition_matches_athlete2_id_fkey(name),athlete1_club:app_users!competition_matches_athlete1_club_id_fkey(name),athlete2_club:app_users!competition_matches_athlete2_club_id_fkey(name),category:federation_competition_categories!competition_matches_category_id_fkey(name)&order=match_order.asc.nullslast,round_number.desc,match_number.asc&limit=300`,
+                  { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+                );
+                allMatches = await mRes.json();
+                if (!Array.isArray(allMatches)) allMatches = [];
+              } catch(e) { allMatches = []; }
+
+              // Aggregate athlete stats
+              for (const m of allMatches) {
+                if (m.is_bye) continue;
+                const isMatchToday = m.scheduled_time && m.scheduled_time.startsWith(todayStr);
+                for (const aId of [m.athlete1_id, m.athlete2_id]) {
+                  if (!aId) continue;
+                  const aName = aId === m.athlete1_id ? m.athlete1?.name : m.athlete2?.name;
+                  const ex = athleteMatchCounts.get(aId) || { name: aName || '?', total: 0, today: 0, wins: 0 };
+                  ex.total += 1;
+                  if (isMatchToday) ex.today += 1;
+                  if (m.winner_id === aId) ex.wins += 1;
+                  athleteMatchCounts.set(aId, ex);
+                }
+              }
+
+              // Φόρτωση rings με streaming links
+              try {
+                const rRes = await fetch(
+                  `${SUPABASE_URL}/rest/v1/competition_rings?competition_id=eq.${comp.id}&select=*&order=ring_number.asc`,
+                  { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+                );
+                const rings = await rRes.json();
+                if (Array.isArray(rings) && rings.length > 0) {
+                  globalCompetitionsContext += `  📺 RINGS (${rings.length}):\n`;
+                  rings.forEach((r: any) => {
+                    const cur = r.current_match_id ? allMatches.find((m: any) => m.id === r.current_match_id) : null;
+                    const liveLink = r.youtube_live_url ? ` | 🎥 LIVE: ${r.youtube_live_url}` : '';
+                    const liveTag = r.is_active ? '🔴 LIVE' : '⚪';
+                    globalCompetitionsContext += `    Ring ${r.ring_number} (${r.ring_name || '-'}) ${liveTag}${liveLink}\n`;
+                    if (cur) {
+                      globalCompetitionsContext += `      🥊 Τώρα: #${cur.match_order || cur.match_number} ${cur.athlete1?.name || 'TBD'} vs ${cur.athlete2?.name || 'TBD'} [${cur.category?.name || ''}] (R${r.timer_current_round || 1}${r.timer_is_break ? ' BREAK' : ''})\n`;
+                    }
+                    // Επόμενοι 3 αγώνες στο ring
+                    if (r.match_range_start && r.match_range_end) {
+                      const upcoming = allMatches
+                        .filter((m: any) => m.match_order && m.match_order >= r.match_range_start && m.match_order <= r.match_range_end && m.status !== 'completed' && !m.is_bye && m.id !== r.current_match_id)
+                        .sort((a: any, b: any) => (a.match_order || 0) - (b.match_order || 0))
+                        .slice(0, 3);
+                      upcoming.forEach((m: any) => {
+                        globalCompetitionsContext += `      ⏭️ #${m.match_order}: ${m.athlete1?.name || 'TBD'} vs ${m.athlete2?.name || 'TBD'} [${m.category?.name || ''}]\n`;
+                      });
+                    }
+                  });
+                }
+              } catch(e) {}
+
+              // Λίστα αγώνων σήμερα (αν είναι σημερινός)
+              if (isToday && allMatches.length > 0) {
+                const todayMatches = allMatches.filter((m: any) => !m.is_bye).slice(0, 50);
+                globalCompetitionsContext += `  🥊 ΑΓΩΝΕΣ (${allMatches.filter((m: any) => !m.is_bye).length}):\n`;
+                todayMatches.forEach((m: any) => {
+                  const status = m.status === 'completed' ? '✅' : m.status === 'in_progress' ? '🔴' : '⏳';
+                  const winner = m.winner_id ? (m.winner_id === m.athlete1_id ? m.athlete1?.name : m.athlete2?.name) : null;
+                  const ring = m.ring_number ? ` Ring${m.ring_number}` : '';
+                  const time = m.scheduled_time ? ` ${new Date(m.scheduled_time).toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' })}` : '';
+                  const club1 = m.athlete1_club?.name ? ` [${m.athlete1_club.name}]` : '';
+                  const club2 = m.athlete2_club?.name ? ` [${m.athlete2_club.name}]` : '';
+                  globalCompetitionsContext += `    ${status} #${m.match_order || m.match_number}${ring}${time}: ${m.athlete1?.name || 'TBD'}${club1} vs ${m.athlete2?.name || 'TBD'}${club2}${winner ? ` → 🏆 ${winner}` : ''} [${m.category?.name || ''}]\n`;
+                });
+              }
+
+              // Φόρτωση weigh-in data
+              try {
+                const wRes = await fetch(
+                  `${SUPABASE_URL}/rest/v1/federation_competition_registrations?competition_id=eq.${comp.id}&select=weigh_in_weight,weigh_in_status,athlete:app_users!federation_competition_registrations_athlete_id_fkey(name),club:app_users!federation_competition_registrations_club_id_fkey(name),category:federation_competition_categories(name,min_weight,max_weight)&weigh_in_status=in.(passed,failed)&limit=200`,
+                  { headers: { "apikey": SUPABASE_SERVICE_ROLE_KEY!, "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } }
+                );
+                const weighData = await wRes.json();
+                if (Array.isArray(weighData) && weighData.length > 0) {
+                  globalCompetitionsContext += `  ⚖️ ΖΥΓΙΣΕΙΣ (${weighData.length}):\n`;
+                  weighData.slice(0, 50).forEach((w: any) => {
+                    const ok = w.weigh_in_status === 'passed' ? '✅' : '❌';
+                    const club = w.club?.name ? ` [${w.club.name}]` : '';
+                    globalCompetitionsContext += `    ${ok} ${w.athlete?.name || '?'}${club}: ${w.weigh_in_weight || '?'}kg [${w.category?.name || '-'}]\n`;
+                  });
+                }
+              } catch(e) {}
+            }
+          }
+
+          // Top αθλητές με περισσότερους αγώνες σήμερα
+          if (athleteMatchCounts.size > 0) {
+            const todayLeaders = Array.from(athleteMatchCounts.values())
+              .filter(a => a.today > 0)
+              .sort((a, b) => b.today - a.today)
+              .slice(0, 15);
+            if (todayLeaders.length > 0) {
+              globalCompetitionsContext += `\n👤 ΑΓΩΝΕΣ ΑΘΛΗΤΩΝ ΣΗΜΕΡΑ:\n`;
+              todayLeaders.forEach(a => {
+                globalCompetitionsContext += `  • ${a.name}: ${a.today} σήμερα (${a.wins}W) — σύνολο στις διοργανώσεις: ${a.total}\n`;
+              });
+            }
+          }
+
+          console.log(`✅ Global competitions context: ${globalCompetitionsContext.length} chars`);
+        }
+      } catch(e) {
+        console.log('⚠️ Error loading global competitions:', e);
+      }
+    }
+
     // 🏛️ FEDERATION SUBSCRIPTIONS & RECEIPTS
     let federationSubscriptionsContext = '';
     let federationReceiptsContext = '';
@@ -4925,7 +5089,7 @@ FEDERATION DATA - Έχεις πρόσβαση σε:
 6. Συμβουλές για τις συγκεκριμένες ασκήσεις που έχει ο χρήστης
 7. Ανάλυση της εξέλιξης και σύγκριση αποτελεσμάτων
       
-${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.created_at ? `\nΗμ/νία εγγραφής: ${new Date(userProfile.created_at).toLocaleDateString('el-GR')}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${(userProfile as any).subscriptionContext || ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${workoutHistoryContext}${enduranceContext}${jumpContext}${anthropometricContext}${functionalContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${adminAllUsersContext}${adminProgramsMenuContext}${adminAnnualPlanningContext}${phaseConfigContext}${annualPlanningContext}${coachAthletesContext}${coachSubscriptionsContext}${coachProgressContext}${federationContext}${federationSubscriptionsContext}${federationReceiptsContext}${federationCompetitionsContext}${userContext ? `
+${userProfile.name ? `\n\nΜιλάς με: ${userProfile.name}` : ''}${userProfile.created_at ? `\nΗμ/νία εγγραφής: ${new Date(userProfile.created_at).toLocaleDateString('el-GR')}` : ''}${userProfile.birth_date ? `\nΗλικία: ${new Date().getFullYear() - new Date(userProfile.birth_date).getFullYear()} ετών` : ''}${(userProfile as any).subscriptionContext || ''}${exerciseContext}${programContext}${calendarContext}${workoutStatsContext}${workoutHistoryContext}${enduranceContext}${jumpContext}${anthropometricContext}${functionalContext}${availableAthletesContext}${oneRMContext}${athletesProgressContext}${todayProgramContext}${allDaysContext}${overviewStatsContext}${adminActiveProgramsContext}${adminProgressContext}${adminAllUsersContext}${adminProgramsMenuContext}${adminAnnualPlanningContext}${phaseConfigContext}${annualPlanningContext}${coachAthletesContext}${coachSubscriptionsContext}${coachProgressContext}${federationContext}${federationSubscriptionsContext}${federationReceiptsContext}${federationCompetitionsContext}${globalCompetitionsContext}${userContext ? `
 
 🏆 ΑΓΩΝΕΣ & ΤΕΣΤ ΤΟΥ ΧΡΗΣΤΗ:
 ${userContext.pastCompetitions?.length > 0 ? `\n📅 ΠΑΡΕΛΘΟΝΤΕΣ ΑΓΩΝΕΣ:\n${userContext.pastCompetitions.map((c: any) => `- ${c.date} (πριν ${c.daysAgo} ημέρες) - ${c.programName || ''} ${c.dayName || ''}`).join('\n')}` : ''}
