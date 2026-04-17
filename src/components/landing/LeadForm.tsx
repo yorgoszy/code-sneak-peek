@@ -1,9 +1,25 @@
 import React, { useState } from 'react';
-import { Loader2, CheckCircle2, User, Phone, Mail, MessageSquare } from 'lucide-react';
+import { Loader2, CheckCircle2, User, Phone, Mail, MessageSquare, Dumbbell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
+
+const SERVICES: Array<{ value: string; el: string; en: string }> = [
+  { value: 'hyperkids', el: 'Hyperkids (4-12 ετών)', en: 'Hyperkids (ages 4-12)' },
+  { value: 'hypergym', el: 'HyperGym / Open Gym', en: 'HyperGym / Open Gym' },
+  { value: 'muaythai', el: 'Muay Thai / HyperAthletes', en: 'Muay Thai / HyperAthletes' },
+  { value: 'elite', el: 'Elite Training (1-on-1)', en: 'Elite Training (1-on-1)' },
+  { value: 'live', el: 'Live Online Program', en: 'Live Online Program' },
+  { value: 'other', el: 'Άλλο / Δεν είμαι σίγουρος/η', en: 'Other / Not sure' },
+];
 
 interface LeadFormProps {
   language?: 'el' | 'en';
