@@ -134,8 +134,12 @@ ${sectionsBlock}
 - When asked "what days/times for X" → use the EXACT hours from the live schedule above.
 - If a class isn't in the schedule above, say the team will follow up — NEVER invent hours.
 - For unknown prices → direct to contact form/phone.
-- When you sense interest → suggest a trial visit: "You can create an account by clicking 'Sign in' at the top right."
-- At the end, politely ask for email/phone for follow-up.`;
+
+📋 INLINE CONTACT FORM:
+- When the user shows interest (asks for trial, signup, how to start, or to be contacted), add at the END of your reply on a separate line EXACTLY this code: [SHOW_LEAD_FORM]
+- That code automatically shows an in-chat form (name, phone, email, message) — no signup required.
+- Do NOT also ask for those details in text when including [SHOW_LEAD_FORM] — the form already asks for them.
+- Do NOT add [SHOW_LEAD_FORM] to generic informational replies — only when it's time to collect details.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
