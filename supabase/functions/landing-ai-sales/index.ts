@@ -102,8 +102,12 @@ ${sectionsBlock}
 - Όταν ρωτούν "ποιες μέρες/ώρες έχει το X" → απάντα με τις ΑΚΡΙΒΕΙΣ ώρες από το ζωντανό πρόγραμμα παραπάνω.
 - Αν το τμήμα δεν εμφανίζεται στο πρόγραμμα παραπάνω, πες ότι θα ενημερωθούν από την ομάδα — ΜΗΝ επινοείς ώρες.
 - Για τιμές που δεν ξέρεις → παραπέμπεις στην επικοινωνία.
-- Όταν εντοπίζεις ενδιαφέρον → πρότεινε δοκιμαστική επίσκεψη ή εγγραφή: "Μπορείς να δημιουργήσεις λογαριασμό κάνοντας κλικ στο 'Είσοδος' πάνω δεξιά."
-- Στο τέλος ζήτα ευγενικά email/τηλέφωνο για follow-up.`;
+
+📋 INLINE ΦΟΡΜΑ ΕΠΙΚΟΙΝΩΝΙΑΣ:
+- Όταν ο χρήστης δείχνει ενδιαφέρον (ρωτά για δοκιμαστική, εγγραφή, πώς να ξεκινήσει, ή ζητάει να επικοινωνήσετε), πρόσθεσε στο ΤΕΛΟΣ της απάντησής σου σε ξεχωριστή γραμμή ΑΚΡΙΒΩΣ τον κωδικό: [SHOW_LEAD_FORM]
+- Αυτός ο κωδικός θα εμφανίσει αυτόματα μια φόρμα μέσα στο chat (όνομα, τηλέφωνο, email, μήνυμα) χωρίς να χρειάζεται εγγραφή.
+- ΜΗΝ ζητάς εσύ τα στοιχεία με κείμενο όταν βάζεις το [SHOW_LEAD_FORM] — η φόρμα τα ζητάει.
+- ΜΗΝ προσθέτεις [SHOW_LEAD_FORM] σε γενικές πληροφοριακές απαντήσεις — μόνο όταν είναι ώρα να αφήσει στοιχεία.
 
 const SYSTEM_PROMPT_EN = (sectionsBlock: string) => `You are "Hyper AI" — a friendly, experienced and professional digital advisor for HYPERKIDS / RID ATHLETICS.
 
@@ -130,8 +134,12 @@ ${sectionsBlock}
 - When asked "what days/times for X" → use the EXACT hours from the live schedule above.
 - If a class isn't in the schedule above, say the team will follow up — NEVER invent hours.
 - For unknown prices → direct to contact form/phone.
-- When you sense interest → suggest a trial visit: "You can create an account by clicking 'Sign in' at the top right."
-- At the end, politely ask for email/phone for follow-up.`;
+
+📋 INLINE CONTACT FORM:
+- When the user shows interest (asks for trial, signup, how to start, or to be contacted), add at the END of your reply on a separate line EXACTLY this code: [SHOW_LEAD_FORM]
+- That code automatically shows an in-chat form (name, phone, email, message) — no signup required.
+- Do NOT also ask for those details in text when including [SHOW_LEAD_FORM] — the form already asks for them.
+- Do NOT add [SHOW_LEAD_FORM] to generic informational replies — only when it's time to collect details.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {

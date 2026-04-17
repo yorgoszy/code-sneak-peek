@@ -5518,6 +5518,48 @@ export type Database = {
         }
         Relationships: []
       }
+      landing_leads: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          interest: string | null
+          language: string | null
+          message: string | null
+          name: string
+          notified: boolean
+          phone: string | null
+          session_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          interest?: string | null
+          language?: string | null
+          message?: string | null
+          name: string
+          notified?: boolean
+          phone?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          interest?: string | null
+          language?: string | null
+          message?: string | null
+          name?: string
+          notified?: boolean
+          phone?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       landing_page_layouts: {
         Row: {
           created_at: string
