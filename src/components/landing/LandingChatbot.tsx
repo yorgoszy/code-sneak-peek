@@ -25,9 +25,9 @@ const getOrCreateSessionId = (): string => {
 };
 
 const WELCOME_EL =
-  'Γεια σου! 👋 Είμαι ο **Hyper Coach AI**. Μπορώ να σε βοηθήσω να βρεις το ιδανικό πρόγραμμα — Hyperkids, Hypergym, Hyperathletes ή Elite Training. Πες μου, τι ψάχνεις;';
+  'Γεια σου! 👋 Είμαι ο **RidAI**. Μπορώ να σε βοηθήσω να βρεις το ιδανικό πρόγραμμα — Hyperkids, Hypergym, Hyperathletes ή Elite Training. Πες μου, τι ψάχνεις;';
 const WELCOME_EN =
-  "Hi! 👋 I'm **Hyper Coach AI**. I can help you find the perfect program — Hyperkids, Hypergym, Hyperathletes or Elite Training. What are you looking for?";
+  "Hi! 👋 I'm **RidAI**. I can help you find the perfect program — Hyperkids, Hypergym, Hyperathletes or Elite Training. What are you looking for?";
 
 const PLACEHOLDER_EL = 'Γράψε το μήνυμά σου...';
 const PLACEHOLDER_EN = 'Type your message...';
