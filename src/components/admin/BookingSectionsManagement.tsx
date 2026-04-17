@@ -241,14 +241,20 @@ export const BookingSectionsManagement = () => {
                 </div>
               </div>
               <div>
-                <Label htmlFor="description">Περιγραφή (προαιρετική)</Label>
+                <Label htmlFor="description">
+                  Περιγραφή τμήματος (διαβάζεται από τον Hyper AI 🤖)
+                </Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   className="rounded-none"
-                  rows={3}
+                  rows={5}
+                  placeholder="π.χ. Ηλικιακή ομάδα 4-7 ετών. Παιγνιώδης προπόνηση με έμφαση στον συντονισμό, την ισορροπία και την κοινωνικοποίηση. Χτίζουμε αθλητικές βάσεις μέσα από παιχνίδια κίνησης..."
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  💡 Γράψε εδώ τι ηλικίες αφορά, τι ακριβώς κάνετε στο τμήμα και τυχόν ιδιαιτερότητες. Ο Hyper AI στο landing page θα χρησιμοποιεί αυτή την περιγραφή για να απαντά στους επισκέπτες.
+                </p>
               </div>
               <div className="space-y-4">
                 <AvailableHoursSelector

@@ -48,8 +48,16 @@ function buildSectionsContext(
         dayParts.push(`${labels[d]}: ${slots.join(", ")}`);
       }
     }
-    if (dayParts.length === 0) continue;
-    lines.push(`• **${s.name}** (${language === "en" ? "max" : "max"} ${s.max_capacity}) — ${dayParts.join(" | ")}`);
+    const hasDesc = s.description && s.description.trim().length > 0;
+    if (dayParts.length === 0 && !hasDesc) continue;
+    lines.push(`• **${s.name}** (max ${s.max_capacity})`);
+    if (hasDesc) {
+      lines.push(`   ${language === "en" ? "About" : "Περιγραφή"}: ${s.description!.trim()}`);
+    }
+    if (dayParts.length > 0) {
+      lines.push(`   ${language === "en" ? "Schedule" : "Πρόγραμμα"}: ${dayParts.join(" | ")}`);
+    }
+    lines.push("");
   }
   return lines.join("\n");
 }
