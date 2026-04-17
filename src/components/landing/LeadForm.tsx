@@ -174,6 +174,22 @@ export const LeadForm: React.FC<LeadFormProps> = ({
       </div>
 
       <div className="relative">
+        <Dumbbell className="w-3.5 h-3.5 text-gray-400 absolute left-2 top-1/2 -translate-y-1/2 z-10 pointer-events-none" />
+        <Select value={service} onValueChange={setService} disabled={loading}>
+          <SelectTrigger className="rounded-none h-9 text-sm pl-7">
+            <SelectValue placeholder={t.service} />
+          </SelectTrigger>
+          <SelectContent className="rounded-none">
+            {SERVICES.map((s) => (
+              <SelectItem key={s.value} value={s.value} className="rounded-none text-sm">
+                {language === 'en' ? s.en : s.el}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="relative">
         <MessageSquare className="w-3.5 h-3.5 text-gray-400 absolute left-2 top-2.5" />
         <Textarea
           value={message}
