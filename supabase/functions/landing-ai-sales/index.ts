@@ -192,8 +192,82 @@ serve(async (req) => {
       console.error("Failed to fetch sections:", e);
     }
 
-    const systemPrompt =
+    // Fetch active/today competitions across ALL federations on the platform
+    let competitionsBlock = "";
+    try {
+      const todayStr = new Date().toISOString().split("T")[0];
+      const future30 = new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0];
+      const past3 = new Date(Date.now() - 3 * 86400000).toISOString().split("T")[0];
+
+      const { data: comps } = await supabase
+        .from("federation_competitions")
+        .select("id, name, location, competition_date, status, federation:app_users!federation_competitions_federation_id_fkey(name)")
+        .gte("competition_date", past3)
+        .lte("competition_date", future30)
+        .order("competition_date", { ascending: true })
+        .limit(15);
+
+      if (comps && comps.length > 0) {
+        const lines: string[] = [
+          language === "en"
+            ? `\n🥊 LIVE COMPETITIONS ON THE PLATFORM (today: ${todayStr}):`
+            : `\n🥊 ΑΓΩΝΕΣ ΣΤΗΝ ΠΛΑΤΦΟΡΜΑ (σήμερα: ${todayStr}):`,
+        ];
+
+        for (const c of comps as any[]) {
+          const isToday = c.competition_date === todayStr;
+          const tag = isToday ? "🔴 TODAY" : c.competition_date > todayStr ? "📅" : "📜";
+          const fedName = c.federation?.name || "-";
+          lines.push(`${tag} ${c.name} — ${fedName} | ${c.competition_date} | ${c.location || "-"}`);
+
+          // For today/upcoming within 7 days fetch live rings + current matches
+          const diffDays = (new Date(c.competition_date).getTime() - Date.now()) / 86400000;
+          if (isToday || (diffDays >= 0 && diffDays <= 7)) {
+            const { data: rings } = await supabase
+              .from("competition_rings")
+              .select("ring_number, ring_name, youtube_live_url, is_active, current_match_id, timer_current_round, timer_is_break")
+              .eq("competition_id", c.id)
+              .order("ring_number");
+
+            if (rings && rings.length > 0) {
+              for (const r of rings as any[]) {
+                const live = r.is_active ? "🔴 LIVE" : "⚪";
+                const link = r.youtube_live_url ? ` 🎥 ${r.youtube_live_url}` : "";
+                lines.push(`   Ring ${r.ring_number} (${r.ring_name || "-"}) ${live}${link}`);
+
+                if (r.current_match_id) {
+                  const { data: cur } = await supabase
+                    .from("competition_matches")
+                    .select("match_order, match_number, athlete1:app_users!competition_matches_athlete1_id_fkey(name), athlete2:app_users!competition_matches_athlete2_id_fkey(name), category:federation_competition_categories!competition_matches_category_id_fkey(name)")
+                    .eq("id", r.current_match_id)
+                    .maybeSingle();
+                  if (cur) {
+                    const a1 = (cur as any).athlete1?.name || "TBD";
+                    const a2 = (cur as any).athlete2?.name || "TBD";
+                    const cat = (cur as any).category?.name || "";
+                    lines.push(`      🥊 #${(cur as any).match_order || (cur as any).match_number}: ${a1} vs ${a2} [${cat}]`);
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        competitionsBlock = lines.join("\n") + "\n";
+      }
+    } catch (e) {
+      console.error("Failed to fetch competitions:", e);
+    }
+
+    const baseSystemPrompt =
       language === "en" ? SYSTEM_PROMPT_EN(sectionsBlock) : SYSTEM_PROMPT_EL(sectionsBlock);
+    const systemPrompt = competitionsBlock
+      ? `${baseSystemPrompt}\n\n${competitionsBlock}\n${
+          language === "en"
+            ? "When users ask about live matches, fights, who's fighting, schedules, weigh-ins or live streams, use the data above. Share live YouTube links freely — they are public broadcasts."
+            : "Όταν οι χρήστες ρωτούν για ζωντανούς αγώνες, ποιος παίζει, ώρες, ζυγίσεις ή live μεταδόσεις, χρησιμοποίησε τα παραπάνω δεδομένα. Δίνε ελεύθερα τα YouTube live links — είναι δημόσιες μεταδόσεις."
+        }`
+      : baseSystemPrompt;
 
     // Persist session
     try {
