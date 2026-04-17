@@ -5473,6 +5473,51 @@ export type Database = {
           },
         ]
       }
+      landing_chat_leads: {
+        Row: {
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          interested_program: string | null
+          language: string | null
+          message_count: number
+          messages: Json
+          session_id: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          interested_program?: string | null
+          language?: string | null
+          message_count?: number
+          messages?: Json
+          session_id: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          interested_program?: string | null
+          language?: string | null
+          message_count?: number
+          messages?: Json
+          session_id?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       landing_page_layouts: {
         Row: {
           created_at: string
