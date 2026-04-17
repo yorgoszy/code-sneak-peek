@@ -71,3 +71,7 @@ verify_jwt = false
 
 [functions.submit-landing-lead]
 verify_jwt = false
+
+[functions.competition-public-ai]
+verify_jwt = false
+
