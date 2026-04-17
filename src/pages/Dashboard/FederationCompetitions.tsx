@@ -549,6 +549,7 @@ const FederationCompetitions = () => {
                 <p className="text-sm text-muted-foreground">{t('federation.competitions.subtitle')}</p>
               </div>
               <div className="flex items-center gap-2">
+                <CompetitionAIQRDialog triggerLabel="Hyper AI QR" />
                 <Button variant="outline" onClick={() => setTemplatesDialogOpen(true)} className="rounded-none">
                   <Settings className="h-4 w-4 mr-2" /> {t('federation.competitions.manageCategories')}
                 </Button>
@@ -560,6 +561,7 @@ const FederationCompetitions = () => {
 
             {/* Mobile buttons */}
             <div className="lg:hidden mb-4 flex gap-2">
+              <CompetitionAIQRDialog triggerLabel="Hyper AI" triggerClassName="flex-1" />
               <Button variant="outline" onClick={() => setTemplatesDialogOpen(true)} className="flex-1 rounded-none">
                 <Settings className="h-4 w-4 mr-2" /> {t('federation.competitions.categories')}
               </Button>
@@ -668,7 +670,13 @@ const FederationCompetitions = () => {
                           <span className="sm:hidden">{t('federation.competitions.registrationsShort')}</span>
                         </Button>
                         <div className="flex items-center gap-1">
-                          <CompetitionAIQRDialog competitionId={comp.id} competitionName={comp.name} triggerLabel="QR AI" />
+                          <CompetitionAIQRDialog
+                            competitionId={comp.id}
+                            competitionName={comp.name}
+                            competitionDate={comp.competition_date}
+                            competitionLocation={comp.location || undefined}
+                            triggerLabel="QR AI"
+                          />
                           {comp.regulations_pdf_url && (
                             <a href={comp.regulations_pdf_url} target="_blank" rel="noopener noreferrer">
                               <Button variant="outline" size="sm" className="rounded-none h-8 w-8 p-0">
