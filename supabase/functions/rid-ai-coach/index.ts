@@ -840,7 +840,7 @@ serve(async (req) => {
     // ώστε ο AI να μπορεί να απαντά σε ερωτήσεις για: σειρά αγώνα, ώρα, ρινγκ,
     // αντίπαλο, link streaming, κιλά ζύγισης, ομάδα/club, σύνολο αγώνων αθλητή κ.ά.
     let globalCompetitionsContext = '';
-    if (!targetUserId) {
+    {
       try {
         console.log('🌍 Loading global competitions context (all federations)...');
         const todayStr = new Date().toISOString().split('T')[0];
