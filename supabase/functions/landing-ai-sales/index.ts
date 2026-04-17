@@ -29,6 +29,153 @@ const DAY_LABELS_EN: Record<string, string> = {
 
 const DAY_ORDER = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
+function formatRoundGuide(language: "el" | "en") {
+  return language === "en"
+    ? "R32=Round of 32 | R16=Round of 16 | R8=Quarterfinals | R4=Semifinals | R2=Final | R1=Winner"
+    : "R32=Φάση των 32 | R16=Φάση των 16 | R8=Προημιτελικά | R4=Ημιτελικά | R2=Τελικός | R1=Νικητής";
+}
+
+async function buildCompetitionsContext(supabase: ReturnType<typeof createClient>, language: "el" | "en") {
+  const today = new Date();
+  const todayStr = today.toISOString().split("T")[0];
+  const detailStart = new Date(today.getTime() - 7 * 86400000);
+  const detailEnd = new Date(today.getTime() + 30 * 86400000);
+
+  const { data: comps } = await supabase
+    .from("federation_competitions")
+    .select("id, name, location, competition_date, end_date, status, federation:app_users!federation_competitions_federation_id_fkey(name)")
+    .order("competition_date", { ascending: true })
+    .limit(40);
+
+  if (!comps || comps.length === 0) return "";
+
+  const lines: string[] = [
+    language === "en"
+      ? `🥊 LIVE COMPETITIONS ON THE PLATFORM (today: ${todayStr}):`
+      : `🥊 ΑΓΩΝΕΣ ΣΤΗΝ ΠΛΑΤΦΟΡΜΑ (σήμερα: ${todayStr}):`,
+    "",
+  ];
+
+  for (const comp of comps as any[]) {
+    const fedName = comp.federation?.name || "-";
+    const isToday = comp.competition_date === todayStr;
+    const tag = isToday ? (language === "en" ? "🔴 TODAY" : "🔴 ΣΗΜΕΡΑ") : comp.competition_date > todayStr ? "📅" : "📜";
+    lines.push(`${tag} ${comp.name} — ${fedName} (competition_id=${comp.id})`);
+    lines.push(`   📍 ${comp.location || "-"} | ${comp.competition_date}${comp.end_date ? ` → ${comp.end_date}` : ""} | Status: ${comp.status}`);
+
+    const compDate = new Date(comp.competition_date);
+    const shouldIncludeDetails = !Number.isNaN(compDate.getTime()) && compDate >= detailStart && compDate <= detailEnd;
+    if (!shouldIncludeDetails) {
+      lines.push("");
+      continue;
+    }
+
+    const [{ data: matches }, { data: rings }, { data: weighs }] = await Promise.all([
+      supabase
+        .from("competition_matches")
+        .select("id, match_order, match_number, status, winner_id, scheduled_time, ring_number, is_bye, athlete1_id, athlete2_id, athlete1:app_users!competition_matches_athlete1_id_fkey(name), athlete2:app_users!competition_matches_athlete2_id_fkey(name), athlete1_club:app_users!competition_matches_athlete1_club_id_fkey(name), athlete2_club:app_users!competition_matches_athlete2_club_id_fkey(name), category:federation_competition_categories!competition_matches_category_id_fkey(name)")
+        .eq("competition_id", comp.id)
+        .order("match_order", { ascending: true, nullsFirst: false })
+        .limit(500),
+      supabase
+        .from("competition_rings")
+        .select("ring_number, ring_name, youtube_live_url, is_active, current_match_id, timer_current_round, timer_is_break, match_range_start, match_range_end")
+        .eq("competition_id", comp.id)
+        .order("ring_number", { ascending: true }),
+      supabase
+        .from("federation_competition_registrations")
+        .select("weigh_in_weight, weigh_in_status, athlete:app_users!federation_competition_registrations_athlete_id_fkey(name), club:app_users!federation_competition_registrations_club_id_fkey(name), category:federation_competition_categories(name,min_weight,max_weight)")
+        .eq("competition_id", comp.id)
+        .in("weigh_in_status", ["passed", "failed"])
+        .limit(300),
+    ]);
+
+    const validMatches = Array.isArray(matches) ? matches.filter((m: any) => !m.is_bye) : [];
+
+    if (Array.isArray(rings) && rings.length > 0) {
+      lines.push(language === "en" ? "   📺 RINGS:" : "   📺 RINGS:");
+      for (const ring of rings as any[]) {
+        const live = ring.is_active ? "🔴 LIVE" : "⚪";
+        const liveLink = ring.youtube_live_url ? ` 🎥 LIVE: ${ring.youtube_live_url}` : language === "en" ? " (no live link yet)" : " (χωρίς live link ακόμη)";
+        lines.push(`      Ring ${ring.ring_number} (${ring.ring_name || "-"}) ${live}${liveLink}`);
+
+        const currentMatch = ring.current_match_id
+          ? validMatches.find((m: any) => m.id === ring.current_match_id)
+          : null;
+
+        if (currentMatch) {
+          lines.push(
+            `         🥊 ${language === "en" ? "Now" : "Τώρα"}: #${currentMatch.match_order || currentMatch.match_number} ${currentMatch.athlete1?.name || "TBD"} vs ${currentMatch.athlete2?.name || "TBD"} [${currentMatch.category?.name || ""}] (${language === "en" ? "Round" : "Γύρος"} ${ring.timer_current_round || 1}${ring.timer_is_break ? " BREAK" : ""})`
+          );
+        }
+
+        if (ring.match_range_start && ring.match_range_end) {
+          const upcoming = validMatches
+            .filter(
+              (m: any) =>
+                m.match_order &&
+                m.match_order >= ring.match_range_start &&
+                m.match_order <= ring.match_range_end &&
+                m.status !== "completed" &&
+                m.id !== ring.current_match_id
+            )
+            .sort((a: any, b: any) => (a.match_order || 0) - (b.match_order || 0));
+
+          upcoming.forEach((m: any) => {
+            lines.push(`         ⏭️ #${m.match_order}: ${m.athlete1?.name || "TBD"} vs ${m.athlete2?.name || "TBD"} [${m.category?.name || ""}]`);
+          });
+        }
+      }
+    }
+
+    if (validMatches.length > 0) {
+      lines.push(
+        language === "en"
+          ? `   🥊 DRAW / MATCHES / BRACKETS (${validMatches.length} matches — THE DRAW IS OUT):`
+          : `   🥊 ΚΛΗΡΩΣΗ / ΑΓΩΝΕΣ / BRACKETS (${validMatches.length} αγώνες — Η ΚΛΗΡΩΣΗ ΕΧΕΙ ΒΓΕΙ):`
+      );
+      lines.push(
+        language === "en"
+          ? `   ℹ️ ROUND GUIDE (prefer human-friendly names): ${formatRoundGuide(language)}`
+          : `   ℹ️ ΕΠΕΞΗΓΗΣΗ ΓΥΡΩΝ (χρησιμοποίησε ανθρώπινους όρους): ${formatRoundGuide(language)}`
+      );
+
+      validMatches.forEach((m: any) => {
+        const status = m.status === "completed" ? "✅" : m.status === "in_progress" ? "🔴" : "⏳";
+        const winner = m.winner_id ? (m.winner_id === m.athlete1_id ? m.athlete1?.name : m.athlete2?.name) : null;
+        const ring = m.ring_number ? ` Ring${m.ring_number}` : "";
+        const time = m.scheduled_time
+          ? ` ${new Date(m.scheduled_time).toLocaleTimeString(language === "en" ? "en-GB" : "el-GR", { hour: "2-digit", minute: "2-digit" })}`
+          : "";
+        const club1 = m.athlete1_club?.name ? ` [${m.athlete1_club.name}]` : "";
+        const club2 = m.athlete2_club?.name ? ` [${m.athlete2_club.name}]` : "";
+        lines.push(
+          `      ${status} #${m.match_order || m.match_number}${ring}${time}: ${m.athlete1?.name || "TBD"}${club1} vs ${m.athlete2?.name || "TBD"}${club2}${winner ? ` → 🏆 ${winner}` : ""} [${m.category?.name || ""}]`
+        );
+      });
+    } else {
+      lines.push(
+        language === "en"
+          ? "   ⚠️ No draw / published matches found in the current data for this competition yet."
+          : "   ⚠️ Δεν βρέθηκαν ακόμη δημοσιευμένοι αγώνες / κλήρωση στα τρέχοντα δεδομένα για αυτή τη διοργάνωση."
+      );
+    }
+
+    if (Array.isArray(weighs) && weighs.length > 0) {
+      lines.push(language === "en" ? `   ⚖️ WEIGH-INS (${weighs.length}):` : `   ⚖️ ΖΥΓΙΣΕΙΣ (${weighs.length}):`);
+      weighs.forEach((w: any) => {
+        const ok = w.weigh_in_status === "passed" ? "✅" : "❌";
+        const club = w.club?.name ? ` [${w.club.name}]` : "";
+        lines.push(`      ${ok} ${w.athlete?.name || "?"}${club}: ${w.weigh_in_weight || "?"}kg [${w.category?.name || "-"}]`);
+      });
+    }
+
+    lines.push("");
+  }
+
+  return lines.join("\n").trim();
+}
+
 function buildSectionsContext(
   sections: Array<{ name: string; available_hours: any; max_capacity: number; description?: string | null }>,
   language: "el" | "en"
@@ -193,66 +340,10 @@ serve(async (req) => {
       console.error("Failed to fetch sections:", e);
     }
 
-    // Fetch active/today competitions across ALL federations on the platform
+    // Fetch active/upcoming competitions, rings, brackets and weigh-ins across ALL federations
     let competitionsBlock = "";
     try {
-      const todayStr = new Date().toISOString().split("T")[0];
-
-      // Όλοι οι αγώνες όλων των ομοσπονδιών (χωρίς χρονικό περιορισμό)
-      const { data: comps } = await supabase
-        .from("federation_competitions")
-        .select("id, name, location, competition_date, status, federation:app_users!federation_competitions_federation_id_fkey(name)")
-        .order("competition_date", { ascending: true })
-        .limit(100);
-
-      if (comps && comps.length > 0) {
-        const lines: string[] = [
-          language === "en"
-            ? `\n🥊 LIVE COMPETITIONS ON THE PLATFORM (today: ${todayStr}):`
-            : `\n🥊 ΑΓΩΝΕΣ ΣΤΗΝ ΠΛΑΤΦΟΡΜΑ (σήμερα: ${todayStr}):`,
-        ];
-
-        for (const c of comps as any[]) {
-          const isToday = c.competition_date === todayStr;
-          const tag = isToday ? "🔴 TODAY" : c.competition_date > todayStr ? "📅" : "📜";
-          const fedName = c.federation?.name || "-";
-          lines.push(`${tag} ${c.name} — ${fedName} | ${c.competition_date} | ${c.location || "-"}`);
-
-          // For today/upcoming within 7 days fetch live rings + current matches
-          const diffDays = (new Date(c.competition_date).getTime() - Date.now()) / 86400000;
-          if (isToday || (diffDays >= 0 && diffDays <= 7)) {
-            const { data: rings } = await supabase
-              .from("competition_rings")
-              .select("ring_number, ring_name, youtube_live_url, is_active, current_match_id, timer_current_round, timer_is_break")
-              .eq("competition_id", c.id)
-              .order("ring_number");
-
-            if (rings && rings.length > 0) {
-              for (const r of rings as any[]) {
-                const live = r.is_active ? "🔴 LIVE" : "⚪";
-                const link = r.youtube_live_url ? ` 🎥 ${r.youtube_live_url}` : "";
-                lines.push(`   Ring ${r.ring_number} (${r.ring_name || "-"}) ${live}${link}`);
-
-                if (r.current_match_id) {
-                  const { data: cur } = await supabase
-                    .from("competition_matches")
-                    .select("match_order, match_number, athlete1:app_users!competition_matches_athlete1_id_fkey(name), athlete2:app_users!competition_matches_athlete2_id_fkey(name), category:federation_competition_categories!competition_matches_category_id_fkey(name)")
-                    .eq("id", r.current_match_id)
-                    .maybeSingle();
-                  if (cur) {
-                    const a1 = (cur as any).athlete1?.name || "TBD";
-                    const a2 = (cur as any).athlete2?.name || "TBD";
-                    const cat = (cur as any).category?.name || "";
-                    lines.push(`      🥊 #${(cur as any).match_order || (cur as any).match_number}: ${a1} vs ${a2} [${cat}]`);
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        competitionsBlock = lines.join("\n") + "\n";
-      }
+      competitionsBlock = await buildCompetitionsContext(supabase, language);
     } catch (e) {
       console.error("Failed to fetch competitions:", e);
     }
@@ -262,8 +353,8 @@ serve(async (req) => {
     const systemPrompt = competitionsBlock
       ? `${baseSystemPrompt}\n\n${competitionsBlock}\n${
           language === "en"
-            ? "When users ask about live matches, fights, who's fighting, schedules, weigh-ins or live streams, use the data above. Share live YouTube links freely — they are public broadcasts."
-            : "Όταν οι χρήστες ρωτούν για ζωντανούς αγώνες, ποιος παίζει, ώρες, ζυγίσεις ή live μεταδόσεις, χρησιμοποίησε τα παραπάνω δεδομένα. Δίνε ελεύθερα τα YouTube live links — είναι δημόσιες μεταδόσεις."
+            ? "When users ask about fights, brackets, opponents, schedules, weigh-ins or live streams, use the data above. If the context includes DRAW / MATCHES / BRACKETS, the draw is out — never say it hasn't been announced or that you don't have access. Share public YouTube live links freely."
+            : "Όταν οι χρήστες ρωτούν για αγώνες, κλήρωση, αντιπάλους, ώρες, ζυγίσεις ή live μεταδόσεις, χρησιμοποίησε τα παραπάνω δεδομένα. Αν στο context υπάρχει ΚΛΗΡΩΣΗ / ΑΓΩΝΕΣ / BRACKETS, η κλήρωση έχει βγει — απαγορεύεται να πεις ότι δεν έχει ανακοινωθεί ή ότι δεν έχεις πρόσβαση. Δίνε ελεύθερα τα δημόσια YouTube live links."
         }`
       : baseSystemPrompt;
 
