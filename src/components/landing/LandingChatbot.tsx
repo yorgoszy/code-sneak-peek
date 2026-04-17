@@ -220,7 +220,7 @@ const LandingChatbot: React.FC<LandingChatbotProps> = ({ language = 'el' }) => {
             <span className="absolute -top-1 -right-1 w-3 h-3 bg-[#00ffba] rounded-full animate-pulse group-hover:bg-black" />
           </div>
           <span className="text-sm font-semibold hidden sm:inline">
-            {language === 'en' ? 'Hyper Coach AI' : 'Hyper Coach AI'}
+            RidAI
           </span>
         </button>
       )}
@@ -235,7 +235,7 @@ const LandingChatbot: React.FC<LandingChatbotProps> = ({ language = 'el' }) => {
                 <Sparkles className="w-5 h-5 text-black" />
               </div>
               <div>
-                <p className="text-sm font-semibold leading-tight">Hyper Coach AI</p>
+                <p className="text-sm font-semibold leading-tight">RidAI</p>
                 <p className="text-[11px] text-gray-300 leading-tight">
                   {language === 'en' ? 'Online · Powered by GPT-5' : 'Online · Με GPT-5'}
                 </p>
