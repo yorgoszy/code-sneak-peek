@@ -71,9 +71,9 @@ async function buildCompetitionsContext(competitionId?: string): Promise<string>
       }
     }
 
-    // Όλοι οι αγώνες
+    // Όλοι οι αγώνες (η κλήρωση/bracket)
     if (validMatches.length > 0) {
-      ctx += `  🥊 ΑΓΩΝΕΣ (${validMatches.length}):\n`;
+      ctx += `  🥊 ΚΛΗΡΩΣΗ / ΑΓΩΝΕΣ / BRACKETS (${validMatches.length}):\n`;
       validMatches.forEach((m: any) => {
         const status = m.status === "completed" ? "✅" : m.status === "in_progress" ? "🔴" : "⏳";
         const winner = m.winner_id ? (m.winner_id === m.athlete1_id ? m.athlete1?.name : m.athlete2?.name) : null;
