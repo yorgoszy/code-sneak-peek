@@ -25,9 +25,9 @@ const getOrCreateSessionId = (): string => {
 };
 
 const WELCOME_EL =
-  'Γεια σου! 👋 Είμαι ο **RidAI**. Μπορώ να σε βοηθήσω να βρεις το ιδανικό πρόγραμμα — Hyperkids, Hypergym, Hyperathletes ή Elite Training. Πες μου, τι ψάχνεις;';
+  'Γεια σου! 👋 Είμαι ο **Hyper AI**. Μπορώ να σε βοηθήσω να βρεις το ιδανικό πρόγραμμα και να σου πω ώρες/μέρες τμημάτων — Hyperkids, Open Gym, Muay Thai, Elite Training. Πες μου, τι ψάχνεις;';
 const WELCOME_EN =
-  "Hi! 👋 I'm **RidAI**. I can help you find the perfect program — Hyperkids, Hypergym, Hyperathletes or Elite Training. What are you looking for?";
+  "Hi! 👋 I'm **Hyper AI**. I can help you pick the right program and share class days/times — Hyperkids, Open Gym, Muay Thai, Elite Training. What are you looking for?";
 
 const PLACEHOLDER_EL = 'Γράψε το μήνυμά σου...';
 const PLACEHOLDER_EN = 'Type your message...';
@@ -220,7 +220,7 @@ const LandingChatbot: React.FC<LandingChatbotProps> = ({ language = 'el' }) => {
             <span className="absolute -top-1 -right-1 w-3 h-3 bg-[#00ffba] rounded-full animate-pulse group-hover:bg-black" />
           </div>
           <span className="text-sm font-semibold hidden sm:inline">
-            RidAI
+            Hyper AI
           </span>
         </button>
       )}
@@ -235,7 +235,7 @@ const LandingChatbot: React.FC<LandingChatbotProps> = ({ language = 'el' }) => {
                 <Sparkles className="w-5 h-5 text-black" />
               </div>
               <div>
-                <p className="text-sm font-semibold leading-tight">RidAI</p>
+                <p className="text-sm font-semibold leading-tight">Hyper AI</p>
                 <p className="text-[11px] text-gray-300 leading-tight">
                   {language === 'en' ? 'Online · Powered by GPT-5' : 'Online · Με GPT-5'}
                 </p>
