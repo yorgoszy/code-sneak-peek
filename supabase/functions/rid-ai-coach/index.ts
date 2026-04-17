@@ -861,12 +861,14 @@ serve(async (req) => {
           globalCompetitionsContext = `\n\n🌍 ΑΓΩΝΕΣ ΠΛΑΤΦΟΡΜΑΣ (όλες οι ομοσπονδίες - σήμερα: ${todayStr})\n`;
           globalCompetitionsContext += `📊 Σύνολο: ${gCompsData.length} | Σήμερα: ${todayComps.length} | Επερχόμενοι: ${upcomingComps.length} | Πρόσφατοι: ${recentComps.length}\n`;
 
-          // Για τους σημερινούς και τους επόμενους 7 ημέρες φορτώνουμε ΠΛΗΡΗ data (matches/rings/registrations)
+          // Φορτώνουμε ΠΛΗΡΗ data (matches/brackets/rings/weigh-ins) για ΟΛΟΥΣ τους σημερινούς + μελλοντικούς
+          // + πρόσφατους (μέχρι 60 ημέρες πίσω) ώστε να βλέπει κληρώσεις, αποτελέσματα κ.ά.
           const detailedComps = [
             ...todayComps,
-            ...upcomingComps.filter((c: any) => {
-              const diff = (new Date(c.competition_date).getTime() - Date.now()) / 86400000;
-              return diff <= 7;
+            ...upcomingComps,
+            ...recentComps.filter((c: any) => {
+              const diff = (Date.now() - new Date(c.competition_date).getTime()) / 86400000;
+              return diff <= 60;
             })
           ];
 
