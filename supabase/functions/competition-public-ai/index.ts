@@ -74,6 +74,8 @@ async function buildCompetitionsContext(competitionId?: string): Promise<string>
     // Όλοι οι αγώνες (η κλήρωση/bracket)
     if (validMatches.length > 0) {
       ctx += `  🥊 ΚΛΗΡΩΣΗ / ΑΓΩΝΕΣ / BRACKETS (${validMatches.length}):\n`;
+      ctx += `  ℹ️ ΕΠΕΞΗΓΗΣΗ ΓΥΡΩΝ (χρησιμοποίησε ΠΑΝΤΑ τους ελληνικούς όρους όταν αναφέρεις γύρους, ΠΟΤΕ R8/R4/R2/R1):\n`;
+      ctx += `     R32=Φάση των 32 | R16=Φάση των 16 | R8=Προημιτελικά | R4=Ημιτελικά | R2=Τελικός | R1=Νικητής\n`;
       validMatches.forEach((m: any) => {
         const status = m.status === "completed" ? "✅" : m.status === "in_progress" ? "🔴" : "⏳";
         const winner = m.winner_id ? (m.winner_id === m.athlete1_id ? m.athlete1?.name : m.athlete2?.name) : null;
