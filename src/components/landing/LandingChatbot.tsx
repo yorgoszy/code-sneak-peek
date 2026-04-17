@@ -247,7 +247,7 @@ const LandingChatbot: React.FC<LandingChatbotProps> = ({ language = 'el' }) => {
           {/* Header */}
           <div className="bg-black text-white px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 border border-[#00ffba] flex items-center justify-center">
+              <div className="w-9 h-9 flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-[#00ffba]" />
               </div>
               <div>
