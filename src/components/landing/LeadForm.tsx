@@ -1,9 +1,25 @@
 import React, { useState } from 'react';
-import { Loader2, CheckCircle2, User, Phone, Mail, MessageSquare } from 'lucide-react';
+import { Loader2, CheckCircle2, User, Phone, Mail, MessageSquare, Dumbbell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
+
+const SERVICES: Array<{ value: string; el: string; en: string }> = [
+  { value: 'hyperkids', el: 'Hyperkids (4-12 ετών)', en: 'Hyperkids (ages 4-12)' },
+  { value: 'hypergym', el: 'HyperGym / Open Gym', en: 'HyperGym / Open Gym' },
+  { value: 'muaythai', el: 'Muay Thai / HyperAthletes', en: 'Muay Thai / HyperAthletes' },
+  { value: 'elite', el: 'Elite Training (1-on-1)', en: 'Elite Training (1-on-1)' },
+  { value: 'live', el: 'Live Online Program', en: 'Live Online Program' },
+  { value: 'other', el: 'Άλλο / Δεν είμαι σίγουρος/η', en: 'Other / Not sure' },
+];
 
 interface LeadFormProps {
   language?: 'el' | 'en';
@@ -20,6 +36,7 @@ const T = {
     phone: 'Τηλέφωνο',
     email: 'Email (προαιρετικό)',
     message: 'Μήνυμα (προαιρετικό)',
+    service: 'Υπηρεσία που σε ενδιαφέρει (προαιρετικό)',
     submit: 'Αποστολή',
     sending: 'Αποστολή...',
     success: 'Ευχαριστούμε! Θα επικοινωνήσουμε σύντομα.',
@@ -34,6 +51,7 @@ const T = {
     phone: 'Phone',
     email: 'Email (optional)',
     message: 'Message (optional)',
+    service: 'Service of interest (optional)',
     submit: 'Send',
     sending: 'Sending...',
     success: "Thanks! We'll be in touch soon.",
@@ -54,6 +72,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
+  const [service, setService] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -79,7 +98,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
           phone: phone.trim() || undefined,
           email: email.trim() || undefined,
           message: message.trim() || undefined,
-          interest,
+          interest: service || interest,
           sessionId,
           language,
           userAgent: navigator.userAgent,
@@ -152,6 +171,22 @@ export const LeadForm: React.FC<LeadFormProps> = ({
           disabled={loading}
           maxLength={255}
         />
+      </div>
+
+      <div className="relative">
+        <Dumbbell className="w-3.5 h-3.5 text-gray-400 absolute left-2 top-1/2 -translate-y-1/2 z-10 pointer-events-none" />
+        <Select value={service} onValueChange={setService} disabled={loading}>
+          <SelectTrigger className="rounded-none h-9 text-sm pl-7">
+            <SelectValue placeholder={t.service} />
+          </SelectTrigger>
+          <SelectContent className="rounded-none">
+            {SERVICES.map((s) => (
+              <SelectItem key={s.value} value={s.value} className="rounded-none text-sm">
+                {language === 'en' ? s.en : s.el}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="relative">
