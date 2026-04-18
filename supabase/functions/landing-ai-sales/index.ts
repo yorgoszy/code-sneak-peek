@@ -691,15 +691,31 @@ serve(async (req) => {
       }
     }
 
+    // Fetch logged-in user context (auth + role-based test access)
+    let userContextBlock = "";
+    try {
+      userContextBlock = await buildLoggedInUserContext(supabase, req.headers.get("Authorization"), language);
+    } catch (e) {
+      console.error("Failed to build user context:", e);
+    }
+
     const baseSystemPrompt =
       language === "en" ? SYSTEM_PROMPT_EN(sectionsBlock) : SYSTEM_PROMPT_EL(sectionsBlock);
-    const systemPrompt = competitionsBlock
+    let systemPrompt = competitionsBlock
       ? `${baseSystemPrompt}\n\n${competitionsBlock}\n${
           language === "en"
             ? "When users ask about fights, brackets, opponents, schedules, weigh-ins or live streams, use the data above. If the context includes DRAW / MATCHES / BRACKETS, the draw is out — never say it hasn't been announced or that you don't have access. Share public YouTube live links freely."
             : "Όταν οι χρήστες ρωτούν για αγώνες, κλήρωση, αντιπάλους, ώρες, ζυγίσεις ή live μεταδόσεις, χρησιμοποίησε τα παραπάνω δεδομένα. Αν στο context υπάρχει ΚΛΗΡΩΣΗ / ΑΓΩΝΕΣ / BRACKETS, η κλήρωση έχει βγει — απαγορεύεται να πεις ότι δεν έχει ανακοινωθεί ή ότι δεν έχεις πρόσβαση. Δίνε ελεύθερα τα δημόσια YouTube live links."
         }`
       : baseSystemPrompt;
+
+    if (userContextBlock) {
+      systemPrompt += `\n\n${userContextBlock}\n\n${
+        language === "en"
+          ? "🔐 The user above is LOGGED IN. When they ask about themselves (e.g. \"do you know me?\", \"my 1RM\", \"my tests\"), use this private context. NEVER expose private data of other users unless the role scope above explicitly allows it (admin/coach/federation)."
+          : "🔐 Ο χρήστης παραπάνω είναι ΣΥΝΔΕΔΕΜΕΝΟΣ. Όταν ρωτά για τον εαυτό του (\"με ξέρεις;\", \"το 1RM μου\", \"τα τεστ μου\"), χρησιμοποίησε αυτό το private context. ΠΟΤΕ μην αποκαλύπτεις δεδομένα άλλων χρηστών εκτός αν το role scope παραπάνω το επιτρέπει ρητά (admin/coach/federation)."
+      }`;
+    }
 
     // Persist session
     try {
