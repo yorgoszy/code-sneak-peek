@@ -14,6 +14,7 @@ import {
   Radio,
   ClipboardList,
   Scale,
+  UserCheck,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
