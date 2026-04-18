@@ -340,7 +340,7 @@ const LandingChatbot: React.FC<LandingChatbotProps> = ({ language = 'el' }) => {
           {/* Messages */}
           <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 bg-gray-50">
             {messages.map((msg, idx) => {
-              const displayContent = msg.role === 'assistant' ? stripLeadMarker(msg.content) : msg.content;
+              const displayContent = msg.role === 'assistant' ? stripAIActionBlock(stripLeadMarker(msg.content)) : msg.content;
               return (
                 <React.Fragment key={idx}>
                   {displayContent && (
