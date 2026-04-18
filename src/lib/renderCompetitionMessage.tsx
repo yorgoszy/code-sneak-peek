@@ -34,50 +34,10 @@ export function renderCompetitionMessage(text: string): React.ReactNode {
       );
     }
 
-    const labelRegex = new RegExp(
-      `(Κόκκιν\\w*[^:\\n]{0,25}?:|Red[^:\\n]{0,25}?:|Μπλε[^:\\n]{0,25}?:|Blue[^:\\n]{0,25}?:)\\s*(${NAME})${SIDE_META}`,
-      "giu"
-    );
-    while ((match = labelRegex.exec(line)) !== null) {
-      const toneStyle = /κόκκιν|red/i.test(match[1]) ? RED_STYLE : BLUE_STYLE;
-      pushSeg(
-        match.index,
-        match.index + match[0].length,
-        <React.Fragment key={`lbl-${li}-${key++}`}>
-          {match[1]}{" "}
-          <span style={toneStyle}>{match[2]}</span>
-          {match[3] || ""}
-        </React.Fragment>
-      );
-    }
-
-    const vsRegex = new RegExp(
-      `(${NAME})${SIDE_META}\\s*(vs\\.?|VS|κατά|—|–|\\||-)\\s*(🔵|🔴)?\\s*(${NAME})${SIDE_META}`,
-      "gu"
-    );
-    while ((match = vsRegex.exec(line)) !== null) {
-      const firstName = match[1]?.trim();
-      const firstMeta = match[2] || "";
-      const separator = match[3] || "";
-      const cornerEmoji = match[4] ? `${match[4]} ` : "";
-      const secondName = match[5]?.trim();
-      const secondMeta = match[6] || "";
-
-      if (!firstName || !secondName) continue;
-
-      pushSeg(
-        match.index,
-        match.index + match[0].length,
-        <React.Fragment key={`vs-${li}-${key++}`}>
-          <span style={RED_STYLE}>{firstName}</span>
-          {firstMeta}
-          {" "}{separator}{" "}
-          {cornerEmoji}
-          <span style={BLUE_STYLE}>{secondName}</span>
-          {secondMeta}
-        </React.Fragment>
-      );
-    }
+    // Note: athlete names are colored ONLY when their corner emoji (🔴/🔵)
+    // explicitly appears in front of them — i.e. live match contexts.
+    // We intentionally do NOT colorize "Name vs Name" or "Red:/Blue:" labels
+    // anywhere else, so subscription/user lists stay neutral.
 
     const urlRegex = /(https?:\/\/[^\s<>"'`]+[^\s<>"'`.,;:!?)\]])/g;
     while ((match = urlRegex.exec(line)) !== null) {
