@@ -14,7 +14,7 @@ export const LoadingState: React.FC<LoadingStateProps> = ({ message, isMobile = 
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2">
           <Bot className="w-5 h-5 text-[#00ffba]" />
-          RID AI Προπονητής
+          HyperAI
         </DialogTitle>
       </DialogHeader>
       <div className="text-center py-6">
