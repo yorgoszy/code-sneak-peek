@@ -240,56 +240,84 @@ async function buildLoggedInUserContext(authHeader: string | null): Promise<stri
       }
     }
 
-    const latestAnth = Array.isArray(anthropometric) ? anthropometric[0] : null;
-    const latestStrength = Array.isArray(strength) ? strength[0] : null;
-    const latestEndurance = Array.isArray(endurance) ? endurance[0] : null;
-    const latestJump = Array.isArray(jump) ? jump[0] : null;
+    const anthArr = Array.isArray(anthropometric) ? anthropometric : [];
+    const strArr = Array.isArray(strength) ? strength : [];
+    const endArr = Array.isArray(endurance) ? endurance : [];
+    const jmpArr = Array.isArray(jump) ? jump : [];
+    const fncArr = Array.isArray(functional) ? functional : [];
 
-    if (latestAnth || latestStrength || latestEndurance || latestJump) {
-      ctx += `\n📈 ΤΕΛΕΥΤΑΙΑ ΜΕΤΡΗΣΗ / ΤΕΣΤ:\n`;
-      if (latestAnth) {
-        const anthParts = [];
-        if (latestAnth.weight) anthParts.push(`Βάρος ${latestAnth.weight}kg`);
-        if (latestAnth.body_fat_percentage) anthParts.push(`Λίπος ${latestAnth.body_fat_percentage}%`);
-        if (latestAnth.muscle_mass_percentage) anthParts.push(`Μυϊκή μάζα ${latestAnth.muscle_mass_percentage}%`);
-        if (anthParts.length > 0) {
-          ctx += `- Σωματομετρικά: ${anthParts.join(", ")}`;
-          const anthDate = latestAnth.anthropometric_test_sessions?.[0]?.test_date;
-          if (anthDate) ctx += ` (${anthDate})`;
-          ctx += `\n`;
-        }
+    if (anthArr.length || strArr.length || endArr.length || jmpArr.length || fncArr.length) {
+      ctx += `\n📊 ΙΣΤΟΡΙΚΟ ΠΡΟΣΩΠΙΚΩΝ ΤΕΣΤ:\n`;
+      if (anthArr.length) {
+        ctx += `• Σωματομετρικά:\n`;
+        anthArr.forEach((a: any) => {
+          const d = a.anthropometric_test_sessions?.test_date || "?";
+          const parts = [];
+          if (a.weight) parts.push(`${a.weight}kg`);
+          if (a.height) parts.push(`${a.height}cm`);
+          if (a.body_fat_percentage) parts.push(`λίπος ${a.body_fat_percentage}%`);
+          if (a.muscle_mass_percentage) parts.push(`μυϊκή ${a.muscle_mass_percentage}%`);
+          ctx += `   - ${d}: ${parts.join(", ")}\n`;
+        });
       }
-      if (latestStrength) {
-        ctx += `- Δύναμη: ${latestStrength.exercises?.name || "Άσκηση"} ${latestStrength.weight_kg || "?"}kg`;
-        if (latestStrength.velocity_ms) ctx += ` @ ${latestStrength.velocity_ms} m/s`;
-        const strengthDate = latestStrength.strength_test_sessions?.[0]?.test_date;
-        if (strengthDate) ctx += ` (${strengthDate})`;
-        ctx += `\n`;
+      if (strArr.length) {
+        ctx += `• Δύναμη (1RM / Force-Velocity):\n`;
+        strArr.forEach((s: any) => {
+          const d = s.strength_test_sessions?.test_date || "?";
+          const ex = s.exercises?.name || "?";
+          const v = s.velocity_ms ? ` @ ${s.velocity_ms} m/s` : "";
+          const rm = s.is_1rm ? " [1RM]" : "";
+          ctx += `   - ${d}: ${ex} ${s.weight_kg}kg${v}${rm}\n`;
+        });
       }
-      if (latestEndurance) {
-        const enduranceParts = [];
-        if (latestEndurance.vo2_max) enduranceParts.push(`VO2max ${latestEndurance.vo2_max}`);
-        if (latestEndurance.mas_kmh) enduranceParts.push(`MAS ${latestEndurance.mas_kmh} km/h`);
-        if (latestEndurance.push_ups) enduranceParts.push(`Push-ups ${latestEndurance.push_ups}`);
-        if (latestEndurance.pull_ups) enduranceParts.push(`Pull-ups ${latestEndurance.pull_ups}`);
-        if (enduranceParts.length > 0) {
-          ctx += `- Αντοχή: ${enduranceParts.join(", ")}`;
-          const enduranceDate = latestEndurance.endurance_test_sessions?.[0]?.test_date;
-          if (enduranceDate) ctx += ` (${enduranceDate})`;
-          ctx += `\n`;
-        }
+      if (endArr.length) {
+        ctx += `• Αντοχή:\n`;
+        endArr.forEach((e: any) => {
+          const d = e.endurance_test_sessions?.test_date || "?";
+          const parts = [];
+          if (e.vo2_max) parts.push(`VO2max ${e.vo2_max}`);
+          if (e.mas_kmh) parts.push(`MAS ${e.mas_kmh}km/h`);
+          if (e.push_ups) parts.push(`push-ups ${e.push_ups}`);
+          if (e.pull_ups) parts.push(`pull-ups ${e.pull_ups}`);
+          if (e.crunches) parts.push(`crunches ${e.crunches}`);
+          if (parts.length) ctx += `   - ${d}: ${parts.join(", ")}\n`;
+        });
       }
-      if (latestJump) {
-        const jumpParts = [];
-        if (latestJump.counter_movement_jump) jumpParts.push(`CMJ ${latestJump.counter_movement_jump}cm`);
-        if (latestJump.broad_jump) jumpParts.push(`Broad ${latestJump.broad_jump}cm`);
-        if (jumpParts.length > 0) {
-          ctx += `- Άλματα: ${jumpParts.join(", ")}`;
-          const jumpDate = latestJump.jump_test_sessions?.[0]?.test_date;
-          if (jumpDate) ctx += ` (${jumpDate})`;
-          ctx += `\n`;
-        }
+      if (jmpArr.length) {
+        ctx += `• Άλματα:\n`;
+        jmpArr.forEach((j: any) => {
+          const d = j.jump_test_sessions?.test_date || "?";
+          const parts = [];
+          if (j.counter_movement_jump) parts.push(`CMJ ${j.counter_movement_jump}cm`);
+          if (j.non_counter_movement_jump) parts.push(`NCMJ ${j.non_counter_movement_jump}cm`);
+          if (j.broad_jump) parts.push(`Broad ${j.broad_jump}cm`);
+          if (j.depth_jump) parts.push(`Depth ${j.depth_jump}cm`);
+          if (parts.length) ctx += `   - ${d}: ${parts.join(", ")}\n`;
+        });
       }
+      if (fncArr.length) {
+        ctx += `• Λειτουργικά:\n`;
+        fncArr.forEach((f: any) => {
+          const d = f.functional_test_sessions?.test_date || "?";
+          const parts = [];
+          if (f.fms_score) parts.push(`FMS ${f.fms_score}`);
+          if (f.sit_and_reach) parts.push(`Sit&Reach ${f.sit_and_reach}cm`);
+          if (f.flamingo_balance) parts.push(`Flamingo ${f.flamingo_balance}`);
+          if (parts.length) ctx += `   - ${d}: ${parts.join(", ")}\n`;
+        });
+      }
+    }
+
+    // Scope athletes (coach/federation modes)
+    if ((isCoach || isFederation) && scopeAthletes.length > 0) {
+      ctx += `\n👥 ΑΘΛΗΤΕΣ ΣΤΟ SCOPE ΣΟΥ (${scopeAthletes.length}):\n`;
+      scopeAthletes.slice(0, 60).forEach((a: any) => {
+        const reg = a.registration_number ? ` [δελτίο: ${a.registration_number}]` : "";
+        ctx += `   - ${a.name}${a.birth_date ? ` (${a.birth_date})` : ""}${a.gender ? ` ${a.gender}` : ""}${reg}\n`;
+      });
+      if (scopeAthletes.length > 60) ctx += `   ...και ${scopeAthletes.length - 60} ακόμη\n`;
+    } else if (isAdmin) {
+      ctx += `\n🔓 ADMIN MODE: Έχεις πρόσβαση σε ΟΛΟΥΣ τους αθλητές της βάσης.\n`;
     }
 
     if (Array.isArray(registrations) && registrations.length > 0) {
