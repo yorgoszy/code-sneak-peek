@@ -51,6 +51,8 @@ html, body {
     --auth-gray: 34 10% 65%; /* #aca097 */
     --auth-black: 0 0% 0%; /* #000000 */
     --sidebar-active: 35 49% 56%; /* #cb8954 - gold color for active sidebar items */
+    --competition-red: 0 84% 60%;
+    --competition-blue: 217 91% 60%;
 
     --metric-green: 120 60% 40%; /* grass green for jump numbers */
 
@@ -95,6 +97,8 @@ html, body {
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
+    --competition-red: 0 82% 67%;
+    --competition-blue: 217 92% 70%;
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;

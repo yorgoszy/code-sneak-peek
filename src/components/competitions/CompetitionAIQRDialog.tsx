@@ -188,7 +188,7 @@ export const CompetitionAIQRDialog: React.FC<Props> = ({
               >
                 <div className="px-5 pt-5 pb-3 flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-[10px] tracking-[0.2em] uppercase">
-                    <Sparkles className="w-3 h-3" style={{ color: "#00ffba" }} />
+                    <Sparkles className="w-3 h-3" />
                     <span>Hyper AI</span>
                   </div>
                   <span

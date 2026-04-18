@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,6 +15,15 @@ const sbHeaders = {
   Authorization: `Bearer ${SERVICE_KEY}`,
   "Content-Type": "application/json",
 };
+
+async function fetchSbJson(path: string) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers: sbHeaders });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Supabase fetch failed (${res.status}): ${text}`);
+  }
+  return res.json();
+}
 
 async function buildCompetitionsContext(competitionId?: string): Promise<string> {
   const todayStr = new Date().toISOString().split("T")[0];
@@ -58,14 +68,14 @@ async function buildCompetitionsContext(competitionId?: string): Promise<string>
         ctx += `    Ring ${r.ring_number} (${r.ring_name || "-"}) ${live}${liveLink}\n`;
         const cur = r.current_match_id ? validMatches.find((m: any) => m.id === r.current_match_id) : null;
         if (cur) {
-          ctx += `      🥊 Τώρα: #${cur.match_order || cur.match_number} ${cur.athlete1?.name || "TBD"} vs ${cur.athlete2?.name || "TBD"} [${cur.category?.name || ""}] (Round ${r.timer_current_round || 1}${r.timer_is_break ? " BREAK" : ""})\n`;
+          ctx += `      🥊 Τώρα: #${cur.match_order || cur.match_number} 🔴 ${cur.athlete1?.name || "TBD"}${cur.athlete1_club?.name ? ` [${cur.athlete1_club.name}]` : ""} vs 🔵 ${cur.athlete2?.name || "TBD"}${cur.athlete2_club?.name ? ` [${cur.athlete2_club.name}]` : ""} [${cur.category?.name || ""}] (Round ${r.timer_current_round || 1}${r.timer_is_break ? " BREAK" : ""})\n`;
         }
         if (r.match_range_start && r.match_range_end) {
           const upcoming = validMatches
             .filter((m: any) => m.match_order && m.match_order >= r.match_range_start && m.match_order <= r.match_range_end && m.status !== "completed" && m.id !== r.current_match_id)
             .sort((a: any, b: any) => (a.match_order || 0) - (b.match_order || 0));
           upcoming.forEach((m: any) => {
-            ctx += `      ⏭️ #${m.match_order}: ${m.athlete1?.name || "TBD"} vs ${m.athlete2?.name || "TBD"} [${m.category?.name || ""}]\n`;
+            ctx += `      ⏭️ #${m.match_order}: 🔴 ${m.athlete1?.name || "TBD"}${m.athlete1_club?.name ? ` [${m.athlete1_club.name}]` : ""} vs 🔵 ${m.athlete2?.name || "TBD"}${m.athlete2_club?.name ? ` [${m.athlete2_club.name}]` : ""} [${m.category?.name || ""}]\n`;
           });
         }
       }
@@ -82,7 +92,7 @@ async function buildCompetitionsContext(competitionId?: string): Promise<string>
         const time = m.scheduled_time ? ` ${new Date(m.scheduled_time).toLocaleTimeString("el-GR", { hour: "2-digit", minute: "2-digit" })}` : "";
         const c1 = m.athlete1_club?.name ? ` [${m.athlete1_club.name}]` : "";
         const c2 = m.athlete2_club?.name ? ` [${m.athlete2_club.name}]` : "";
-        ctx += `    ${status} #${m.match_order || m.match_number}${ring}${time}: ${m.athlete1?.name || "TBD"}${c1} vs ${m.athlete2?.name || "TBD"}${c2}${winner ? ` → 🏆 ${winner}` : ""} [${m.category?.name || ""}]\n`;
+        ctx += `    ${status} #${m.match_order || m.match_number}${ring}${time}: 🔴 ${m.athlete1?.name || "TBD"}${c1} vs 🔵 ${m.athlete2?.name || "TBD"}${c2}${winner ? ` → 🏆 ${winner}` : ""} [${m.category?.name || ""}]\n`;
       });
     } else {
       ctx += `  ⚠️ Η κλήρωση ΔΕΝ έχει βγει ακόμη για αυτή τη διοργάνωση.\n`;
@@ -104,6 +114,172 @@ async function buildCompetitionsContext(competitionId?: string): Promise<string>
   }
 
   return ctx;
+}
+
+async function buildLoggedInUserContext(authHeader: string | null): Promise<string> {
+  if (!authHeader?.startsWith("Bearer ")) return "";
+
+  try {
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    if (!anonKey) return "";
+
+    const authClient = createClient(SUPABASE_URL, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false },
+    });
+
+    const {
+      data: { user },
+      error,
+    } = await authClient.auth.getUser();
+
+    if (error || !user) return "";
+
+    const profileRows = await fetchSbJson(
+      `app_users?auth_user_id=eq.${user.id}&select=id,name,email,phone,birth_date,gender,category,role,user_status,subscription_status&limit=1`
+    ).catch(() => []);
+    const profile = Array.isArray(profileRows) ? profileRows[0] : null;
+    if (!profile?.id) return "";
+
+    const userId = profile.id;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const [subscriptions, anthropometric, strength, endurance, jump, registrations] = await Promise.all([
+      fetchSbJson(
+        `user_subscriptions?user_id=eq.${userId}&select=start_date,end_date,status,is_paid,is_paused,subscription_types(name,price,duration_months)&order=end_date.desc&limit=5`
+      ).catch(() => []),
+      fetchSbJson(
+        `anthropometric_test_data?select=weight,body_fat_percentage,muscle_mass_percentage,anthropometric_test_sessions!inner(test_date)&anthropometric_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=3`
+      ).catch(() => []),
+      fetchSbJson(
+        `strength_test_attempts?select=weight_kg,velocity_ms,exercises(name),strength_test_sessions!inner(test_date)&strength_test_sessions.user_id=eq.${userId}&order=strength_test_sessions.test_date.desc&limit=5`
+      ).catch(() => []),
+      fetchSbJson(
+        `endurance_test_data?select=vo2_max,mas_kmh,push_ups,pull_ups,endurance_test_sessions!inner(test_date)&endurance_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=3`
+      ).catch(() => []),
+      fetchSbJson(
+        `jump_test_data?select=counter_movement_jump,broad_jump,jump_test_sessions!inner(test_date)&jump_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=3`
+      ).catch(() => []),
+      fetchSbJson(
+        `federation_competition_registrations?athlete_id=eq.${userId}&select=competition_id,weigh_in_weight,weigh_in_status,created_at&order=created_at.desc&limit=8`
+      ).catch(() => []),
+    ]);
+
+    let competitionMap = new Map<string, any>();
+    if (Array.isArray(registrations) && registrations.length > 0) {
+      const competitionIds = [...new Set(registrations.map((r: any) => r.competition_id).filter(Boolean))];
+      if (competitionIds.length > 0) {
+        const competitions = await fetchSbJson(
+          `federation_competitions?id=in.(${competitionIds.join(",")})&select=id,name,competition_date,status&limit=20`
+        ).catch(() => []);
+        if (Array.isArray(competitions)) {
+          competitionMap = new Map(competitions.map((c: any) => [c.id, c]));
+        }
+      }
+    }
+
+    let ctx = `👤 ΣΥΝΔΕΔΕΜΕΝΟΣ ΧΡΗΣΤΗΣ (ιδιωτικό context — μόνο για τον ίδιο):\n`;
+    ctx += `- Όνομα: ${profile.name || "—"}\n`;
+    ctx += `- Email: ${profile.email || "—"}\n`;
+    if (profile.phone) ctx += `- Τηλέφωνο: ${profile.phone}\n`;
+    if (profile.birth_date) ctx += `- Ημ/νία γέννησης: ${profile.birth_date}\n`;
+    if (profile.gender) ctx += `- Φύλο: ${profile.gender}\n`;
+    if (profile.category) ctx += `- Κατηγορία: ${profile.category}\n`;
+    if (profile.role) ctx += `- Ρόλος: ${profile.role}\n`;
+    if (profile.user_status) ctx += `- Κατάσταση λογαριασμού: ${profile.user_status}\n`;
+    if (profile.subscription_status) ctx += `- Κατάσταση συνδρομής προφίλ: ${profile.subscription_status}\n`;
+
+    if (Array.isArray(subscriptions) && subscriptions.length > 0) {
+      const activeSub = subscriptions.find((sub: any) => {
+        const endDate = new Date(sub.end_date);
+        endDate.setHours(23, 59, 59, 999);
+        return endDate >= today && sub.status === "active";
+      }) || subscriptions[0];
+
+      if (activeSub) {
+        const endDate = activeSub.end_date ? new Date(activeSub.end_date) : null;
+        const daysUntil = endDate ? Math.ceil((endDate.getTime() - today.getTime()) / 86400000) : null;
+        ctx += `\n💳 ΣΥΝΔΡΟΜΗ:\n`;
+        ctx += `- Τύπος: ${activeSub.subscription_types?.name || "—"}\n`;
+        if (activeSub.start_date) ctx += `- Έναρξη: ${activeSub.start_date}\n`;
+        if (activeSub.end_date) ctx += `- Λήξη: ${activeSub.end_date}${daysUntil !== null ? ` (${daysUntil >= 0 ? `σε ${daysUntil} ημέρες` : `έληξε πριν ${Math.abs(daysUntil)} ημέρες`})` : ""}\n`;
+        if (activeSub.status) ctx += `- Status: ${activeSub.status}\n`;
+        if (activeSub.is_paid === false) ctx += `- Πληρωμή: Εκκρεμεί\n`;
+        if (activeSub.is_paused) ctx += `- Παύση: Ναι\n`;
+      }
+    }
+
+    const latestAnth = Array.isArray(anthropometric) ? anthropometric[0] : null;
+    const latestStrength = Array.isArray(strength) ? strength[0] : null;
+    const latestEndurance = Array.isArray(endurance) ? endurance[0] : null;
+    const latestJump = Array.isArray(jump) ? jump[0] : null;
+
+    if (latestAnth || latestStrength || latestEndurance || latestJump) {
+      ctx += `\n📈 ΤΕΛΕΥΤΑΙΑ ΜΕΤΡΗΣΗ / ΤΕΣΤ:\n`;
+      if (latestAnth) {
+        const anthParts = [];
+        if (latestAnth.weight) anthParts.push(`Βάρος ${latestAnth.weight}kg`);
+        if (latestAnth.body_fat_percentage) anthParts.push(`Λίπος ${latestAnth.body_fat_percentage}%`);
+        if (latestAnth.muscle_mass_percentage) anthParts.push(`Μυϊκή μάζα ${latestAnth.muscle_mass_percentage}%`);
+        if (anthParts.length > 0) {
+          ctx += `- Σωματομετρικά: ${anthParts.join(", ")}`;
+          const anthDate = latestAnth.anthropometric_test_sessions?.[0]?.test_date;
+          if (anthDate) ctx += ` (${anthDate})`;
+          ctx += `\n`;
+        }
+      }
+      if (latestStrength) {
+        ctx += `- Δύναμη: ${latestStrength.exercises?.name || "Άσκηση"} ${latestStrength.weight_kg || "?"}kg`;
+        if (latestStrength.velocity_ms) ctx += ` @ ${latestStrength.velocity_ms} m/s`;
+        const strengthDate = latestStrength.strength_test_sessions?.[0]?.test_date;
+        if (strengthDate) ctx += ` (${strengthDate})`;
+        ctx += `\n`;
+      }
+      if (latestEndurance) {
+        const enduranceParts = [];
+        if (latestEndurance.vo2_max) enduranceParts.push(`VO2max ${latestEndurance.vo2_max}`);
+        if (latestEndurance.mas_kmh) enduranceParts.push(`MAS ${latestEndurance.mas_kmh} km/h`);
+        if (latestEndurance.push_ups) enduranceParts.push(`Push-ups ${latestEndurance.push_ups}`);
+        if (latestEndurance.pull_ups) enduranceParts.push(`Pull-ups ${latestEndurance.pull_ups}`);
+        if (enduranceParts.length > 0) {
+          ctx += `- Αντοχή: ${enduranceParts.join(", ")}`;
+          const enduranceDate = latestEndurance.endurance_test_sessions?.[0]?.test_date;
+          if (enduranceDate) ctx += ` (${enduranceDate})`;
+          ctx += `\n`;
+        }
+      }
+      if (latestJump) {
+        const jumpParts = [];
+        if (latestJump.counter_movement_jump) jumpParts.push(`CMJ ${latestJump.counter_movement_jump}cm`);
+        if (latestJump.broad_jump) jumpParts.push(`Broad ${latestJump.broad_jump}cm`);
+        if (jumpParts.length > 0) {
+          ctx += `- Άλματα: ${jumpParts.join(", ")}`;
+          const jumpDate = latestJump.jump_test_sessions?.[0]?.test_date;
+          if (jumpDate) ctx += ` (${jumpDate})`;
+          ctx += `\n`;
+        }
+      }
+    }
+
+    if (Array.isArray(registrations) && registrations.length > 0) {
+      ctx += `\n🥊 ΔΗΛΩΣΕΙΣ / ΔΙΟΡΓΑΝΩΣΕΙΣ ΧΡΗΣΤΗ:\n`;
+      registrations.forEach((registration: any) => {
+        const competition = competitionMap.get(registration.competition_id);
+        const label = competition?.name || `Competition ${registration.competition_id}`;
+        const date = competition?.competition_date ? ` (${competition.competition_date})` : "";
+        const weighIn = registration.weigh_in_status
+          ? ` | Ζύγιση: ${registration.weigh_in_status}${registration.weigh_in_weight ? ` (${registration.weigh_in_weight}kg)` : ""}`
+          : "";
+        ctx += `- ${label}${date}${competition?.status ? ` | Status: ${competition.status}` : ""}${weighIn}\n`;
+      });
+    }
+
+    return ctx;
+  } catch (e) {
+    console.error("buildLoggedInUserContext error:", e);
+    return "";
+  }
 }
 
 async function saveLead(payload: any): Promise<{ ok: boolean; error?: string }> {
@@ -142,7 +318,6 @@ serve(async (req) => {
     const url = new URL(req.url);
     const action = url.searchParams.get("action");
 
-    // Lead capture endpoint (called from frontend after AI signals [LEAD_CAPTURE])
     if (action === "lead" && req.method === "POST") {
       const body = await req.json();
       const result = await saveLead(body);
@@ -161,7 +336,10 @@ serve(async (req) => {
       });
     }
 
-    const compsContext = await buildCompetitionsContext(competitionId);
+    const [compsContext, userProfileContext] = await Promise.all([
+      buildCompetitionsContext(competitionId),
+      buildLoggedInUserContext(req.headers.get("Authorization")),
+    ]);
 
     const systemPrompt = `Είσαι ο "Hyper AI" — ψηφιακός βοηθός για τις διοργανώσεις της πλατφόρμας HYPERKIDS / RID ATHLETICS.
 
@@ -173,10 +351,14 @@ serve(async (req) => {
 - Live YouTube links ανά ρινγκ (είναι δημόσια — μοιράσου τα ελεύθερα)
 - Τρέχων αγώνας σε κάθε ρινγκ + επόμενοι
 - Κατηγορίες, νικητές, αποτελέσματα
+${userProfileContext ? "- Προσωποποιημένες πληροφορίες για τον συνδεδεμένο χρήστη, μόνο για το δικό του προφίλ" : ""}
 
 📊 ΖΩΝΤΑΝΑ ΔΕΔΟΜΕΝΑ ΔΙΟΡΓΑΝΩΣΕΩΝ (πραγματικά, από τη βάση δεδομένων ΑΥΤΗ ΤΗ ΣΤΙΓΜΗ):
 ${compsContext}
-
+${userProfileContext ? `
+🔐 PRIVATE CONTEXT ΣΥΝΔΕΔΕΜΕΝΟΥ ΧΡΗΣΤΗ (χρησιμοποίησέ το ΜΟΝΟ για τον ίδιο χρήστη):
+${userProfileContext}
+` : ""}
 🚨 ΑΠΟΛΥΤΟΙ ΚΑΝΟΝΕΣ:
 1. ΑΝ στα δεδομένα παραπάνω εμφανίζεται "ΚΛΗΡΩΣΗ / ΑΓΩΝΕΣ / BRACKETS" με αγώνες, η κλήρωση ΕΧΕΙ ΒΓΕΙ. ΑΠΑΓΟΡΕΥΕΤΑΙ να πεις "δεν έχει βγει η κλήρωση" ή "δεν έχω πρόσβαση". Διάβασε τα δεδομένα και απάντησε.
 2. ΑΝ ένα ρινγκ έχει "🎥 LIVE: <url>", το URL είναι ΔΗΜΟΣΙΟ — δώσ' το χωρίς δισταγμό όταν το ζητάνε.
@@ -185,6 +367,9 @@ ${compsContext}
 5. Αν κάτι όντως δεν υπάρχει στα δεδομένα (π.χ. δεν υπάρχει YouTube link, δεν υπάρχει ζύγιση), πες ότι "δεν έχει ανακοινωθεί ακόμη".
 6. Όταν αναφέρεις γύρους πες ΠΑΝΤΑ Προημιτελικά/Ημιτελικά/Τελικός — ΠΟΤΕ R8/R4/R2/R1.
 7. Σύντομες, καθαρές απαντήσεις στα ελληνικά.
+8. Όταν υπάρχει private context συνδεδεμένου χρήστη και σε ρωτά για τον εαυτό του (π.χ. "εγώ", "το προφίλ μου", "η συνδρομή μου", "οι μετρήσεις μου", "σε ποιον αγώνα παίζω"), χρησιμοποίησε το private context για προσωποποιημένη απάντηση.
+9. Μην αποκαλύπτεις private στοιχεία αν δεν αφορά τον ίδιο τον συνδεδεμένο χρήστη.
+10. Όταν αναφέρεις matchup/ζευγάρι, προτίμησε format όπως: "🔴 Όνομα [Σύλλογος] vs 🔵 Όνομα [Σύλλογος]".
 
 📩 LEAD CAPTURE (πολύ σημαντικό):
 Αν ο χρήστης ζητήσει ΕΝΗΜΕΡΩΣΗ (π.χ. "ενημέρωσέ με όταν βγει το live link", "θέλω να μάθω όταν βγει η κλήρωση", "στείλτε μου ειδοποίηση"):
