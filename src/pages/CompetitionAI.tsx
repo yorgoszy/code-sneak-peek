@@ -12,53 +12,79 @@ const WELCOME: Msg = {
     "Γεια σου! Είμαι ο Hyper AI για τη διοργάνωση. Ρώτα με για αγώνες, ρινγκ, ζυγίσεις, αντιπάλους ή live links 🥊",
 };
 
-// Highlight corner athletes: red labels in red, blue labels in blue, "A vs B" => A red / B blue
+// Highlight athletes: red corner red, blue corner blue.
+// Supports: "A vs B", "A - B", "A | B", emoji 🔴/🔵, labels (Κόκκιν*/Red/Μπλε/Blue),
+// markdown **bold** around names, and removes ** markers.
 function renderColored(text: string): React.ReactNode {
   const RED = "#ef4444";
   const BLUE = "#3b82f6";
-  const lines = text.split("\n");
+
+  // Strip markdown bold markers (**) — we'll apply our own emphasis via color.
+  const clean = text.replace(/\*\*/g, "");
+  const lines = clean.split("\n");
+
+  // Greek + Latin letter class (with accents)
+  const L = "A-Za-zΑ-Ωα-ωΆΈΉΊΌΎΏάέήίόύώϊϋΐΰΪΫ";
+  const NAME = `[${L}][${L}.\\-']*(?:\\s+[${L}][${L}.\\-']*){0,4}`;
 
   return lines.map((line, li) => {
     const segments: { start: number; end: number; node: React.ReactNode }[] = [];
     let key = 0;
-
-    const labelRegex =
-      /(Κόκκιν[ηοα][ςϊ]?[^:\n]{0,20}?:\s*|Red[^:\n]{0,20}?:\s*|Μπλε[^:\n]{0,20}?:\s*|Blue[^:\n]{0,20}?:\s*)([^\n,•|()]+?)(?=$|[,•|()]|\s{2,})/gi;
     let m: RegExpExecArray | null;
-    while ((m = labelRegex.exec(line)) !== null) {
-      const label = m[1];
-      const name = m[2].trim();
-      const isRed = /κόκκιν|red/i.test(label);
-      segments.push({
-        start: m.index,
-        end: m.index + m[0].length,
-        node: (
-          <React.Fragment key={`lbl-${li}-${key++}`}>
-            {label}
-            <span style={{ color: isRed ? RED : BLUE, fontWeight: 600 }}>{name}</span>
-          </React.Fragment>
-        ),
-      });
+
+    const pushSeg = (start: number, end: number, node: React.ReactNode) => {
+      const overlap = segments.some(
+        (s) => !(end <= s.start || start >= s.end)
+      );
+      if (!overlap) segments.push({ start, end, node });
+    };
+
+    // 1) Emoji-tagged names: 🔴 Name  /  🔵 Name
+    const emojiRegex = new RegExp(`(🔴|🔵)\\s*(${NAME})`, "gu");
+    while ((m = emojiRegex.exec(line)) !== null) {
+      const isRed = m[1] === "🔴";
+      pushSeg(
+        m.index,
+        m.index + m[0].length,
+        <React.Fragment key={`em-${li}-${key++}`}>
+          {m[1]}{" "}
+          <span style={{ color: isRed ? RED : BLUE, fontWeight: 700 }}>{m[2]}</span>
+        </React.Fragment>
+      );
     }
 
-    const vsRegex =
-      /([A-Za-zΑ-Ωα-ωΆ-Ώά-ώϊϋΐΰ][A-Za-zΑ-Ωα-ωΆ-Ώά-ώϊϋΐΰ.\-' ]{1,40}?)\s+(vs\.?|VS|κατά)\s+([A-Za-zΑ-Ωα-ωΆ-Ώά-ώϊϋΐΰ][A-Za-zΑ-Ωα-ωΆ-Ώά-ώϊϋΐΰ.\-' ]{1,40}?)(?=$|[,•|()]|\s{2,}|\.\s|!|\?)/g;
-    while ((m = vsRegex.exec(line)) !== null) {
-      const overlap = segments.some(
-        (s) => !(m!.index + m![0].length <= s.start || m!.index >= s.end)
+    // 2) Labels: "Κόκκινη γωνία:", "Red corner:", "Μπλε:", "Blue:" followed by a name
+    const labelRegex = new RegExp(
+      `(Κόκκιν\\w*[^:\\n]{0,25}?:|Red[^:\\n]{0,25}?:|Μπλε[^:\\n]{0,25}?:|Blue[^:\\n]{0,25}?:)\\s*(${NAME})`,
+      "giu"
+    );
+    while ((m = labelRegex.exec(line)) !== null) {
+      const isRed = /κόκκιν|red/i.test(m[1]);
+      pushSeg(
+        m.index,
+        m.index + m[0].length,
+        <React.Fragment key={`lbl-${li}-${key++}`}>
+          {m[1]}{" "}
+          <span style={{ color: isRed ? RED : BLUE, fontWeight: 700 }}>{m[2]}</span>
+        </React.Fragment>
       );
-      if (overlap) continue;
-      segments.push({
-        start: m.index,
-        end: m.index + m[0].length,
-        node: (
-          <React.Fragment key={`vs-${li}-${key++}`}>
-            <span style={{ color: RED, fontWeight: 600 }}>{m[1].trim()}</span>{" "}
-            {m[2]}{" "}
-            <span style={{ color: BLUE, fontWeight: 600 }}>{m[3].trim()}</span>
-          </React.Fragment>
-        ),
-      });
+    }
+
+    // 3) Versus patterns: "Name1 vs Name2" / "VS" / "κατά" / "—" / "-" / "|"
+    const vsRegex = new RegExp(
+      `(${NAME})\\s*(vs\\.?|VS|κατά|—|–|\\||-)\\s*(${NAME})`,
+      "gu"
+    );
+    while ((m = vsRegex.exec(line)) !== null) {
+      pushSeg(
+        m.index,
+        m.index + m[0].length,
+        <React.Fragment key={`vs-${li}-${key++}`}>
+          <span style={{ color: RED, fontWeight: 700 }}>{m[1].trim()}</span>{" "}
+          {m[2]}{" "}
+          <span style={{ color: BLUE, fontWeight: 700 }}>{m[3].trim()}</span>
+        </React.Fragment>
+      );
     }
 
     segments.sort((a, b) => a.start - b.start);
