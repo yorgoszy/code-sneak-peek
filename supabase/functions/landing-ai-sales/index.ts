@@ -643,7 +643,52 @@ serve(async (req) => {
       language = "el",
       userAgent,
       contactInfo,
+      targetUserId,
+      userContext,
     } = body;
+
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      try {
+        const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+        const authClient = createClient(supabaseUrl, anonKey, {
+          global: { headers: { Authorization: authHeader } },
+          auth: { persistSession: false },
+        });
+        const { data: { user } } = await authClient.auth.getUser();
+
+        if (user) {
+          const proxyResp = await fetch(`${supabaseUrl}/functions/v1/rid-ai-coach`, {
+            method: "POST",
+            headers: {
+              Authorization: authHeader,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              messages,
+              targetUserId,
+              userContext,
+              source: "landing-ai-sales",
+            }),
+          });
+
+          if (!proxyResp.ok || !proxyResp.body) {
+            const errorText = await proxyResp.text();
+            return new Response(errorText || JSON.stringify({ error: "rid-ai-coach proxy failed" }), {
+              status: proxyResp.status || 500,
+              headers: { ...corsHeaders, "Content-Type": proxyResp.headers.get("Content-Type") || "application/json" },
+            });
+          }
+
+          return new Response(proxyResp.body, {
+            status: proxyResp.status,
+            headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+          });
+        }
+      } catch (e) {
+        console.error("landing-ai-sales auth proxy skipped:", e);
+      }
+    }
 
     if (!sessionId || typeof sessionId !== "string") {
       return new Response(JSON.stringify({ error: "sessionId required" }), {
