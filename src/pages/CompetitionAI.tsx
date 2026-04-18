@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
 import { Send, Sparkles, Loader2, RotateCcw } from "lucide-react";
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -14,18 +15,13 @@ const WELCOME: Msg = {
 
 // Highlight athletes: red corner red, blue corner blue.
 // Supports: "A vs B", "A - B", "A | B", emoji 🔴/🔵, labels (Κόκκιν*/Red/Μπλε/Blue),
-// markdown **bold** around names, and removes ** markers.
+// optional club tags like [Club], and strips markdown ** markers.
 function renderColored(text: string): React.ReactNode {
-  const RED = "#ef4444";
-  const BLUE = "#3b82f6";
-
-  // Strip markdown bold markers (**) — we'll apply our own emphasis via color.
   const clean = text.replace(/\*\*/g, "");
   const lines = clean.split("\n");
-
-  // Greek + Latin letter class (with accents)
   const L = "A-Za-zΑ-Ωα-ωΆΈΉΊΌΎΏάέήίόύώϊϋΐΰΪΫ";
   const NAME = `[${L}][${L}.\\-']*(?:\\s+[${L}][${L}.\\-']*){0,4}`;
+  const SIDE_META = `(\\s*(?:\\[[^\\]]+\\]|\\([^\\)]+\\)))?`;
 
   return lines.map((line, li) => {
     const segments: { start: number; end: number; node: React.ReactNode }[] = [];
@@ -33,46 +29,43 @@ function renderColored(text: string): React.ReactNode {
     let m: RegExpExecArray | null;
 
     const pushSeg = (start: number, end: number, node: React.ReactNode) => {
-      const overlap = segments.some(
-        (s) => !(end <= s.start || start >= s.end)
-      );
+      const overlap = segments.some((s) => !(end <= s.start || start >= s.end));
       if (!overlap) segments.push({ start, end, node });
     };
 
-    // 1) Emoji-tagged names: 🔴 Name  /  🔵 Name
-    const emojiRegex = new RegExp(`(🔴|🔵)\\s*(${NAME})`, "gu");
+    const emojiRegex = new RegExp(`(🔴|🔵)\\s*(${NAME})${SIDE_META}`, "gu");
     while ((m = emojiRegex.exec(line)) !== null) {
-      const isRed = m[1] === "🔴";
+      const toneClass = m[1] === "🔴" ? "text-competition-red" : "text-competition-blue";
       pushSeg(
         m.index,
         m.index + m[0].length,
         <React.Fragment key={`em-${li}-${key++}`}>
           {m[1]}{" "}
-          <span style={{ color: isRed ? RED : BLUE, fontWeight: 700 }}>{m[2]}</span>
+          <span className={`${toneClass} font-semibold`}>{m[2]}</span>
+          {m[3] || ""}
         </React.Fragment>
       );
     }
 
-    // 2) Labels: "Κόκκινη γωνία:", "Red corner:", "Μπλε:", "Blue:" followed by a name
     const labelRegex = new RegExp(
-      `(Κόκκιν\\w*[^:\\n]{0,25}?:|Red[^:\\n]{0,25}?:|Μπλε[^:\\n]{0,25}?:|Blue[^:\\n]{0,25}?:)\\s*(${NAME})`,
+      `(Κόκκιν\\w*[^:\\n]{0,25}?:|Red[^:\\n]{0,25}?:|Μπλε[^:\\n]{0,25}?:|Blue[^:\\n]{0,25}?:)\\s*(${NAME})${SIDE_META}`,
       "giu"
     );
     while ((m = labelRegex.exec(line)) !== null) {
-      const isRed = /κόκκιν|red/i.test(m[1]);
+      const toneClass = /κόκκιν|red/i.test(m[1]) ? "text-competition-red" : "text-competition-blue";
       pushSeg(
         m.index,
         m.index + m[0].length,
         <React.Fragment key={`lbl-${li}-${key++}`}>
           {m[1]}{" "}
-          <span style={{ color: isRed ? RED : BLUE, fontWeight: 700 }}>{m[2]}</span>
+          <span className={`${toneClass} font-semibold`}>{m[2]}</span>
+          {m[3] || ""}
         </React.Fragment>
       );
     }
 
-    // 3) Versus patterns: "Name1 vs Name2" / "VS" / "κατά" / "—" / "-" / "|"
     const vsRegex = new RegExp(
-      `(${NAME})\\s*(vs\\.?|VS|κατά|—|–|\\||-)\\s*(${NAME})`,
+      `(${NAME})${SIDE_META}\\s*(vs\\.?|VS|κατά|—|–|\\||-)\\s*(🔵|🔴)?\\s*(${NAME})${SIDE_META}`,
       "gu"
     );
     while ((m = vsRegex.exec(line)) !== null) {
@@ -80,9 +73,11 @@ function renderColored(text: string): React.ReactNode {
         m.index,
         m.index + m[0].length,
         <React.Fragment key={`vs-${li}-${key++}`}>
-          <span style={{ color: RED, fontWeight: 700 }}>{m[1].trim()}</span>{" "}
-          {m[2]}{" "}
-          <span style={{ color: BLUE, fontWeight: 700 }}>{m[3].trim()}</span>
+          <span className="text-competition-red font-semibold">{m[1].trim()}</span>
+          {m[2] || ""}{" "}
+          {m[3] ? `${m[3]} ` : ""}
+          <span className="text-competition-blue font-semibold">{m[4].trim()}</span>
+          {m[5] || ""}
         </React.Fragment>
       );
     }
@@ -130,14 +125,12 @@ export default function CompetitionAI() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  // Persist
   useEffect(() => {
     try {
       localStorage.setItem(storageKey, JSON.stringify(messages));
     } catch {}
   }, [messages, storageKey]);
 
-  // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, loading]);
@@ -159,10 +152,21 @@ export default function CompetitionAI() {
     setLoading(true);
 
     try {
+      const requestHeaders: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (data.session?.access_token) {
+          requestHeaders.Authorization = `Bearer ${data.session.access_token}`;
+        }
+      } catch {}
+
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/competition-public-ai`;
       const resp = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: requestHeaders,
         body: JSON.stringify({ messages: next, competitionId }),
       });
 
@@ -218,7 +222,7 @@ export default function CompetitionAI() {
             `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/competition-public-ai?action=lead`,
             {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: requestHeaders,
               body: JSON.stringify({ ...data, competition_id: competitionId }),
             }
           );
@@ -238,10 +242,9 @@ export default function CompetitionAI() {
       className="fixed inset-0 flex flex-col bg-background"
       style={{ height: "100dvh" }}
     >
-      {/* Fixed Header */}
       <header className="flex-shrink-0 bg-foreground text-background px-4 py-3 flex items-center justify-between border-b border-border z-10">
         <div className="flex items-center gap-3">
-          <Sparkles className="w-6 h-6" style={{ color: "#00ffba" }} />
+          <Sparkles className="w-6 h-6" />
           <div>
             <h1 className="text-base font-semibold leading-tight">Hyper AI</h1>
             <p className="text-[11px] opacity-70">Βοηθός Διοργάνωσης</p>
@@ -257,7 +260,6 @@ export default function CompetitionAI() {
         </button>
       </header>
 
-      {/* Scrollable Messages */}
       <div ref={scrollAreaRef} className="flex-1 overflow-y-auto overscroll-contain">
         <div className="max-w-2xl mx-auto px-4 py-4 space-y-3">
           {messages.map((m, i) => (
@@ -294,7 +296,6 @@ export default function CompetitionAI() {
         </div>
       </div>
 
-      {/* Fixed Input */}
       <div
         className="flex-shrink-0 border-t border-border bg-background p-3"
         style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}

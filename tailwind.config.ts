@@ -72,7 +72,9 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				'magic-box': 'hsl(var(--magic-box))'
+				'magic-box': 'hsl(var(--magic-box))',
+				'competition-red': 'hsl(var(--competition-red))',
+				'competition-blue': 'hsl(var(--competition-blue))'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
