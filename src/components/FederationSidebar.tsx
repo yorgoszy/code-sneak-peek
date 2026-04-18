@@ -101,7 +101,7 @@ export const FederationSidebar = ({
         <Brain className="w-5 h-5 flex-shrink-0" />
         {!isCollapsed && (
           <div className="flex flex-col items-start min-w-0">
-            <span className="text-sm font-medium truncate">RidAI Βοηθός</span>
+            <span className="text-sm font-medium truncate">HyperAI</span>
             <span className="text-xs text-muted-foreground truncate">powered by hyperteam</span>
           </div>
         )}

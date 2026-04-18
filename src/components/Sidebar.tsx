@@ -831,7 +831,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
         <Brain className="h-5 w-5 flex-shrink-0 text-black" />
         {(!isCollapsed || isMobile) && (
           <div className="flex flex-col items-start min-w-0">
-            <span className="text-sm font-medium truncate">RidAI Προπονητής</span>
+            <span className="text-sm font-medium truncate">HyperAI</span>
             <span className="text-xs text-gray-500 truncate">powered by hyperteam</span>
           </div>
         )}

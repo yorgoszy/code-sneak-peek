@@ -209,7 +209,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
       id: 'welcome',
       content: `Γεια σου${athleteName ? ` ${athleteName}` : ''}! 👋
 
-Είμαι ο **RID AI Προπονητής** και είμαι εδώ για να σε βοηθήσω με:
+Είμαι ο **HyperAI** και είμαι εδώ για να σε βοηθήσω με:
 
 🏋️ Προπονητικές συμβουλές
 🥗 Διατροφή και σχεδιασμό γευμάτων  
@@ -1164,7 +1164,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
           <DialogTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div className="flex items-center gap-2">
               <Brain className="w-5 h-5 text-[#cb8954] flex-shrink-0" />
-              <span className="truncate">RidAI Προπονητής</span>
+              <span className="truncate">HyperAI</span>
               {athleteName && (
                 <span className="text-xs sm:text-sm font-normal text-gray-600 truncate hidden sm:inline">
                   για {athleteName}

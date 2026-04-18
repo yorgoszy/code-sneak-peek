@@ -342,7 +342,7 @@ export const RidAiCoach = () => {
           <div>
             <CardTitle className="flex items-center gap-2">
               <Bot className="w-5 h-5 text-[#00ffba]" />
-              RID AI Coach
+              HyperAI
             </CardTitle>
             <p className="text-sm text-gray-600">
               Ο προσωπικός σου προπονητής που σε θυμάται και μαθαίνει από κάθε συζήτηση

@@ -482,7 +482,7 @@ export const CoachSidebar = ({
         )}
         {(!isCollapsed || isMobile) && (
           <div className="flex flex-col items-start min-w-0">
-            <span className="text-sm font-medium truncate">RidAI Προπονητής</span>
+            <span className="text-sm font-medium truncate">HyperAI</span>
             <span className="text-xs text-muted-foreground truncate">powered by hyperteam</span>
           </div>
         )}
