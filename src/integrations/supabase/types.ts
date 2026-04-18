@@ -1095,6 +1095,68 @@ export type Database = {
           },
         ]
       }
+      athlete_federations: {
+        Row: {
+          athlete_id: string
+          created_at: string
+          federation_id: string
+          id: string
+          is_active: boolean
+          joined_at: string
+          registration_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          athlete_id: string
+          created_at?: string
+          federation_id: string
+          id?: string
+          is_active?: boolean
+          joined_at?: string
+          registration_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          athlete_id?: string
+          created_at?: string
+          federation_id?: string
+          id?: string
+          is_active?: boolean
+          joined_at?: string
+          registration_number?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "athlete_federations_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "athlete_federations_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "athlete_federations_federation_id_fkey"
+            columns: ["federation_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "athlete_federations_federation_id_fkey"
+            columns: ["federation_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       block_templates: {
         Row: {
           block_sets: number | null
@@ -10302,7 +10364,15 @@ export type Database = {
         Returns: string
       }
       get_app_user_id_safe: { Args: { user_auth_id: string }; Returns: string }
+      get_athlete_federation_ids: {
+        Args: { _athlete_id: string }
+        Returns: string[]
+      }
       get_current_user_role: { Args: never; Returns: string }
+      get_federation_athlete_ids: {
+        Args: { _federation_auth_uid: string }
+        Returns: string[]
+      }
       get_latest_1rm: {
         Args: { athlete_id: string; exercise_id: string }
         Returns: number
