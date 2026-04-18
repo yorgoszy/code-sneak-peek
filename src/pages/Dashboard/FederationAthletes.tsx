@@ -104,7 +104,9 @@ const FederationAthletes: React.FC = () => {
     setDeleteId(null);
   };
 
-  const renderSidebar = () => <FederationSidebar />;
+  const renderSidebar = () => (
+    <FederationSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+  );
 
   return (
     <SidebarProvider>
