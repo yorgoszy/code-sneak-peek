@@ -248,6 +248,7 @@ function App() {
                       <Route element={<FederationPersistentLayout />}>
                         <Route path="/dashboard/federation-overview" element={<ProtectedRoute><FederationOverview /></ProtectedRoute>} />
                         <Route path="/dashboard/federation-users" element={<ProtectedRoute><FederationUsers /></ProtectedRoute>} />
+                        <Route path="/dashboard/federation-athletes" element={<ProtectedRoute><FederationAthletes /></ProtectedRoute>} />
                         <Route path="/dashboard/federation-progress" element={<ProtectedRoute><FederationProgress /></ProtectedRoute>} />
                         
                         <Route path="/dashboard/federation-subscriptions" element={<ProtectedRoute><FederationSubscriptions /></ProtectedRoute>} />
