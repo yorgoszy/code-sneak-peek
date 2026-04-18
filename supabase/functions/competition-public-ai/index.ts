@@ -218,6 +218,7 @@ async function buildLoggedInUserContext(authHeader: string | null): Promise<stri
     if (profile.role) ctx += `- Ρόλος: ${profile.role}\n`;
     if (profile.user_status) ctx += `- Κατάσταση λογαριασμού: ${profile.user_status}\n`;
     if (profile.subscription_status) ctx += `- Κατάσταση συνδρομής προφίλ: ${profile.subscription_status}\n`;
+    ctx += `- 🔐 Εύρος πρόσβασης: ${scopeLabel}\n`;
 
     if (Array.isArray(subscriptions) && subscriptions.length > 0) {
       const activeSub = subscriptions.find((sub: any) => {
