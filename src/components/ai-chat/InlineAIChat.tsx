@@ -22,50 +22,72 @@ interface InlineAIChatProps {
   athletePhotoUrl?: string;
 }
 
-// Κλήσεις στα AI Edge Functions
-const callGeminiAI = async (message: string, userId?: string, userName?: string): Promise<string> => {
+// Κλήση στο HyperAI (rid-ai-coach edge function) - πλήρης πρόσβαση σε δεδομένα
+const callHyperAI = async (message: string, userId?: string): Promise<string> => {
   try {
-    const { data, error } = await supabase.functions.invoke('gemini-ai-chat', {
-      body: { 
-        message,
-        userId,
-        userName
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      throw new Error('Πρέπει να είστε συνδεδεμένοι');
+    }
+
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/rid-ai-coach`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: message }],
+          targetUserId: userId,
+        }),
       }
-    });
+    );
 
-    if (error) throw error;
-    return data?.response || 'Σφάλμα στην απάντηση του Gemini AI';
+    if (!response.ok) {
+      if (response.status === 429) throw new Error('Υπερβήκατε το όριο αιτημάτων.');
+      if (response.status === 402) throw new Error('Απαιτείται πληρωμή — προσθέστε credits στο Lovable AI workspace.');
+      throw new Error('Σφάλμα επικοινωνίας με το HyperAI');
+    }
+
+    // Parse SSE stream
+    const reader = response.body?.getReader();
+    if (!reader) throw new Error('No response stream');
+    const decoder = new TextDecoder();
+    let textBuffer = '';
+    let fullResponse = '';
+    let streamDone = false;
+
+    while (!streamDone) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      textBuffer += decoder.decode(value, { stream: true });
+
+      let newlineIndex: number;
+      while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+        let line = textBuffer.slice(0, newlineIndex);
+        textBuffer = textBuffer.slice(newlineIndex + 1);
+        if (line.endsWith('\r')) line = line.slice(0, -1);
+        if (line.startsWith(':') || line.trim() === '') continue;
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') { streamDone = true; break; }
+        try {
+          const parsed = JSON.parse(data);
+          const content = parsed.choices?.[0]?.delta?.content;
+          if (content) fullResponse += content;
+        } catch {
+          textBuffer = line + '\n' + textBuffer;
+          break;
+        }
+      }
+    }
+
+    return fullResponse || 'Δεν έλαβα απάντηση από το HyperAI.';
   } catch (error) {
-    console.error('Gemini AI Error:', error);
-    throw new Error('Το Gemini AI δεν είναι διαθέσιμο αυτή τη στιγμή');
-  }
-};
-
-const callOpenAI = async (message: string): Promise<string> => {
-  try {
-    const { data, error } = await supabase.functions.invoke('ai-fitness-chat', {
-      body: { message }
-    });
-
-    if (error) throw error;
-    return data?.response || 'Σφάλμα στην απάντηση του OpenAI';
-  } catch (error) {
-    console.error('OpenAI Error:', error);
-    throw new Error('Το OpenAI δεν είναι διαθέσιμο αυτή τη στιγμή');
-  }
-};
-
-const callPerplexityAI = async (message: string): Promise<string> => {
-  try {
-    const { data, error } = await supabase.functions.invoke('perplexity-search', {
-      body: { message }
-    });
-
-    if (error) throw error;
-    return data?.response || 'Σφάλμα στην απάντηση του Perplexity AI';
-  } catch (error) {
-    console.error('Perplexity AI Error:', error);
-    throw new Error('Το Perplexity AI δεν είναι διαθέσιμο αυτή τη στιγμή');
+    console.error('HyperAI Error:', error);
+    throw error instanceof Error ? error : new Error('Το HyperAI δεν είναι διαθέσιμο αυτή τη στιγμή');
   }
 };
 
@@ -93,21 +115,21 @@ export const InlineAIChat: React.FC<InlineAIChatProps> = ({
       id: 'welcome',
       content: `Γεια σου${athleteName ? ` ${athleteName}` : ''}! 👋
 
-Είμαι ο **RidAI Προπονητής** - ένα έξυπνο σύστημα τεχνητής νοημοσύνης.
+Είμαι ο **HyperAI** — ο έξυπνος βοηθός σου με πλήρη πρόσβαση σε όλα τα δεδομένα της εφαρμογής.
 
 **Τι μπορώ να κάνω για εσένα:**
+🥊 Πληροφορίες αγώνων, ρινγκ & κληρώσεων (live)
 🏋️ Δημιουργία προγραμμάτων προπόνησης
-🥗 Συμβουλές διατροφής 
-📊 Ανάλυση προόδου
-💪 Συμβουλές ανάκαμψης
-🎯 Στόχους fitness
+🥗 Συμβουλές διατροφής
+📊 Ανάλυση προόδου & τεστ (1RM, FMS, κλπ.)
+💪 Συμβουλές ανάκαμψης & κίνησης
 
 **Παραδείγματα ερωτήσεων:**
-• "Δημιούργησε μου πρόγραμμα για δύναμη"
-• "Τι να φάω για μυϊκή μάζα;"
-• "Πώς να βελτιώσω την αντοχή μου;"
+• "Στο ρινγκ 1 ποιοι παίζουν;"
+• "Δώσε μου τις απλήρωτες συνδρομές"
+• "Πρόγραμμα δύναμης για 4 εβδομάδες"
 
-Τι θα θέλες να μάθεις σήμερα; 🚀`,
+Τι θα ήθελες να μάθεις; 🚀`,
       role: 'assistant',
       timestamp: new Date(),
       aiType: 'rid-smart'
@@ -140,20 +162,8 @@ export const InlineAIChat: React.FC<InlineAIChatProps> = ({
     setIsLoading(true);
 
     try {
-      let response: string;
-      
-      // Χρησιμοποιούμε διαφορετικά AI ανάλογα με το περιεχόμενο
-      if (userInput.toLowerCase().includes('τελευταίες νέα') || 
-          userInput.toLowerCase().includes('έρευνα') ||
-          userInput.toLowerCase().includes('τάσεις')) {
-        response = await callPerplexityAI(userInput);
-      } else if (userInput.toLowerCase().includes('προπόνηση') ||
-                 userInput.toLowerCase().includes('άσκηση') ||
-                 userInput.toLowerCase().includes('workout')) {
-        response = await callOpenAI(userInput);
-      } else {
-        response = await callGeminiAI(userInput, athleteId, athleteName);
-      }
+      // Ενιαίο HyperAI για όλες τις ερωτήσεις (πλήρες context)
+      const response = await callHyperAI(userInput, athleteId);
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -166,7 +176,8 @@ export const InlineAIChat: React.FC<InlineAIChatProps> = ({
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error('AI Error:', error);
-      toast.error('Σφάλμα στον RidAI Προπονητή');
+      const errorMsg = error instanceof Error ? error.message : 'Σφάλμα στο HyperAI';
+      toast.error(errorMsg);
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -198,8 +209,8 @@ export const InlineAIChat: React.FC<InlineAIChatProps> = ({
             <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
           </div>
           <div>
-            <h3 className="font-medium text-gray-900">RidAI Προπονητής</h3>
-            <p className="text-sm text-gray-500">Έξυπνος AI Προπονητής</p>
+            <h3 className="font-medium text-gray-900">HyperAI</h3>
+            <p className="text-sm text-gray-500">Έξυπνος AI Βοηθός</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
@@ -250,7 +261,7 @@ export const InlineAIChat: React.FC<InlineAIChatProps> = ({
                     minute: '2-digit' 
                   })}
                   {message.aiType && (
-                    <span className="ml-2 font-medium">• RID Smart AI</span>
+                    <span className="ml-2 font-medium">• HyperAI</span>
                   )}
                 </div>
               </div>
@@ -294,7 +305,7 @@ export const InlineAIChat: React.FC<InlineAIChatProps> = ({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Ρώτα τον RidAI Προπονητή για προπόνηση, διατροφή, ανάκαμψη..."
+            placeholder="Ρώτα τον HyperAI για αγώνες, προπόνηση, διατροφή, δεδομένα..."
             disabled={isLoading}
             className="flex-1 rounded-none border-gray-300 focus:border-[#00ffba] focus:ring-[#00ffba]"
           />
