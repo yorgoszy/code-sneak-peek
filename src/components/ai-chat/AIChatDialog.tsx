@@ -37,7 +37,7 @@ export const AIChatDialog: React.FC<AIChatDialogProps> = ({
     if (isOpen) {
       setMessages([{
         id: 'welcome',
-        content: `Γεια σας! Είμαι ο AI βοηθός σας για διατροφικές και ασκησιολογικές συμβουλές. ${athleteName ? `Μπορώ να σας βοηθήσω με ερωτήσεις σχετικά με τον αθλητή ${athleteName}.` : 'Πώς μπορώ να σας βοηθήσω σήμερα;'}`,
+        content: `Γεια σας! Είμαι ο **HyperAI** — έξυπνος βοηθός με πλήρη πρόσβαση στα δεδομένα σας. ${athleteName ? `Μπορώ να σας βοηθήσω με ερωτήσεις σχετικά με τον αθλητή ${athleteName}.` : 'Πώς μπορώ να σας βοηθήσω σήμερα;'}`,
         role: 'assistant',
         timestamp: new Date()
       }]);
@@ -61,40 +61,91 @@ export const AIChatDialog: React.FC<AIChatDialogProps> = ({
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = input;
     setInput('');
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('ai-fitness-chat', {
-        body: {
-          message: input,
-          athleteId,
-          athleteName,
-          conversationHistory: messages.slice(-10) // Κρατάμε τα τελευταία 10 μηνύματα για context
-        }
-      });
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('Πρέπει να είστε συνδεδεμένοι');
 
-      if (error) throw error;
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/rid-ai-coach`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            messages: [
+              ...messages.slice(-10).map(m => ({ role: m.role, content: m.content })),
+              { role: 'user', content: currentInput }
+            ],
+            targetUserId: athleteId,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        if (response.status === 429) throw new Error('Υπερβήκατε το όριο αιτημάτων.');
+        if (response.status === 402) throw new Error('Απαιτείται πληρωμή — προσθέστε credits στο workspace.');
+        throw new Error('Σφάλμα επικοινωνίας με το HyperAI');
+      }
+
+      // Parse SSE stream
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('No response stream');
+      const decoder = new TextDecoder();
+      let textBuffer = '';
+      let fullResponse = '';
+      let streamDone = false;
+
+      while (!streamDone) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+          if (line.endsWith('\r')) line = line.slice(0, -1);
+          if (line.startsWith(':') || line.trim() === '') continue;
+          if (!line.startsWith('data: ')) continue;
+          const data = line.slice(6).trim();
+          if (data === '[DONE]') { streamDone = true; break; }
+          try {
+            const parsed = JSON.parse(data);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) fullResponse += content;
+          } catch {
+            textBuffer = line + '\n' + textBuffer;
+            break;
+          }
+        }
+      }
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: data.response,
+        content: fullResponse || 'Δεν έλαβα απάντηση.',
         role: 'assistant',
         timestamp: new Date()
       };
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('AI Chat Error:', error);
-      toast.error('Σφάλμα στην επικοινωνία με τον AI βοηθό');
-      
+      console.error('HyperAI Error:', error);
+      const msg = error instanceof Error ? error.message : 'Σφάλμα στην επικοινωνία με το HyperAI';
+      toast.error(msg);
+
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: 'Λυπάμαι, αντιμετωπίζω τεχνικά προβλήματα. Παρακαλώ δοκιμάστε ξανά αργότερα.',
         role: 'assistant',
         timestamp: new Date()
       };
-      
+
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
@@ -114,7 +165,7 @@ export const AIChatDialog: React.FC<AIChatDialogProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Bot className="w-5 h-5 text-[#00ffba]" />
-            AI Βοηθός - Διατροφή & Άσκηση
+            HyperAI - Διατροφή & Άσκηση
             {athleteName && (
               <span className="text-sm font-normal text-gray-600">
                 για {athleteName}
