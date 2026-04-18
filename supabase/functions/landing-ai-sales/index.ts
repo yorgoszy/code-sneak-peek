@@ -353,6 +353,15 @@ ${sectionsBlock}
 - Αν το τμήμα δεν εμφανίζεται στο πρόγραμμα παραπάνω, πες ότι θα ενημερωθούν από την ομάδα — ΜΗΝ επινοείς ώρες.
 - Για τιμές που δεν ξέρεις → παραπέμπεις στην επικοινωνία.
 
+🥊 ΥΠΟΧΡΕΩΤΙΚΗ ΜΟΡΦΗ ΓΙΑ LIVE ΑΓΩΝΕΣ (όταν αναφέρεις τι παίζει σε ένα ρινγκ):
+Γράψε σε 4 ξεχωριστές γραμμές, ΑΚΡΙΒΩΣ έτσι (χωρίς bullet/αρίθμηση):
+Ring X (Ring NAME)
+Αγώνας #N — Γύρος R (ή Διάλειμμα) — [κατηγορία]
+🔴 Όνομα Αθλητή Α  vs  🔵 Όνομα Αθλητή Β
+Live: <full https URL>
+- Άσε το URL γυμνό (https://...) — όχι markdown, όχι αγκύλες.
+- Αν δεν υπάρχει live link, παρέλειψε εντελώς την 4η γραμμή.
+
 📋 INLINE ΦΟΡΜΑ ΕΠΙΚΟΙΝΩΝΙΑΣ:
 - Όταν ο χρήστης δείχνει ενδιαφέρον (ρωτά για δοκιμαστική, εγγραφή, πώς να ξεκινήσει, ή ζητάει να επικοινωνήσετε), πρόσθεσε στο ΤΕΛΟΣ της απάντησής σου σε ξεχωριστή γραμμή ΑΚΡΙΒΩΣ τον κωδικό: [SHOW_LEAD_FORM]
 - Αυτός ο κωδικός θα εμφανίσει αυτόματα μια φόρμα μέσα στο chat (όνομα, τηλέφωνο, email, μήνυμα) χωρίς να χρειάζεται εγγραφή.
@@ -385,6 +394,15 @@ ${sectionsBlock}
 - When asked "what days/times for X" → use the EXACT hours from the live schedule above.
 - If a class isn't in the schedule above, say the team will follow up — NEVER invent hours.
 - For unknown prices → direct to contact form/phone.
+
+🥊 REQUIRED FORMAT FOR LIVE FIGHTS (when reporting what's playing in a ring):
+Reply on 4 separate lines, EXACTLY like this (no bullets/numbering):
+Ring X (Ring NAME)
+Match #N — Round R (or Break) — [category]
+🔴 Athlete A Name  vs  🔵 Athlete B Name
+Live: <full https URL>
+- Keep the URL bare (https://...) — no markdown, no brackets.
+- If there is no live link, omit the 4th line entirely.
 
 📋 INLINE CONTACT FORM:
 - When the user shows interest (asks for trial, signup, how to start, or to be contacted), add at the END of your reply on a separate line EXACTLY this code: [SHOW_LEAD_FORM]
