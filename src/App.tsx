@@ -106,6 +106,7 @@ import CoachBracketsPage from "@/pages/Dashboard/CoachBracketsPage";
 import CoachLivePage from "@/pages/Dashboard/CoachLivePage";
 import FederationOverview from "@/pages/Dashboard/FederationOverview";
 import FederationUsers from "@/pages/Dashboard/FederationUsers";
+import FederationAthletes from "@/pages/Dashboard/FederationAthletes";
 import FederationProgress from "@/pages/Dashboard/FederationProgress";
 import FederationEditProfile from "@/pages/Dashboard/FederationEditProfile";
 
