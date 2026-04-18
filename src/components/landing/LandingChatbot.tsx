@@ -240,37 +240,53 @@ const LandingChatbot: React.FC<LandingChatbotProps> = ({ language = 'el' }) => {
 
       // Auto-execute AI action (e.g., create_program) silently — no confirmation
       const actionJsonStr = extractActionJson(assistantSoFar);
-      if (actionJsonStr && authToken) {
-        try {
-          let cleaned = actionJsonStr.replace(/,(\s*[}\]])/g, '$1');
-          const ob = (cleaned.match(/\{/g) || []).length;
-          const cb = (cleaned.match(/\}/g) || []).length;
-          const oS = (cleaned.match(/\[/g) || []).length;
-          const cS = (cleaned.match(/\]/g) || []).length;
-          for (let i = 0; i < oS - cS; i++) cleaned += ']';
-          for (let i = 0; i < ob - cb; i++) cleaned += '}';
-          const actionData = JSON.parse(cleaned);
-
-          const actionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-program-actions`;
-          const res = await fetch(actionUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${authToken}`,
-            },
-            body: JSON.stringify(actionData),
-          });
-          const result = await res.json().catch(() => ({}));
-          const okMsg = result?.message ||
-            (language === 'en' ? '✅ Program assigned.' : '✅ Το πρόγραμμα ανατέθηκε.');
-          const failMsg = result?.error ||
-            (language === 'en' ? 'Action failed.' : 'Η ενέργεια απέτυχε.');
+      if (actionJsonStr) {
+        if (!authToken) {
           setMessages((prev) => [
             ...prev,
-            { role: 'assistant', content: result?.success === false ? `⚠️ ${failMsg}` : okMsg },
+            { role: 'assistant', content: language === 'en'
+              ? '⚠️ You need to be logged in to assign programs.'
+              : '⚠️ Πρέπει να συνδεθείς για να ανατεθεί το πρόγραμμα.' },
           ]);
-        } catch (e) {
-          console.error('Auto-execute AI action failed:', e);
+        } else {
+          try {
+            let cleaned = actionJsonStr.replace(/,(\s*[}\]])/g, '$1');
+            const ob = (cleaned.match(/\{/g) || []).length;
+            const cb = (cleaned.match(/\}/g) || []).length;
+            const oS = (cleaned.match(/\[/g) || []).length;
+            const cS = (cleaned.match(/\]/g) || []).length;
+            for (let i = 0; i < oS - cS; i++) cleaned += ']';
+            for (let i = 0; i < ob - cb; i++) cleaned += '}';
+            const actionData = JSON.parse(cleaned);
+
+            console.log('🚀 Auto-executing AI action:', actionData.action);
+            const actionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-program-actions`;
+            const res = await fetch(actionUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${authToken}`,
+              },
+              body: JSON.stringify(actionData),
+            });
+            const result = await res.json().catch(() => ({} as any));
+            console.log('🚀 Action result:', res.status, result);
+            const isOk = res.ok && result?.success !== false;
+            const okMsg = result?.message ||
+              (language === 'en' ? '✅ Program assigned successfully.' : '✅ Το πρόγραμμα ανατέθηκε επιτυχώς.');
+            const failMsg = result?.error ||
+              (language === 'en' ? 'Action failed.' : 'Η ενέργεια απέτυχε.');
+            setMessages((prev) => [
+              ...prev,
+              { role: 'assistant', content: isOk ? okMsg : `⚠️ ${failMsg}` },
+            ]);
+          } catch (e: any) {
+            console.error('Auto-execute AI action failed:', e);
+            setMessages((prev) => [
+              ...prev,
+              { role: 'assistant', content: `⚠️ ${language === 'en' ? 'Could not assign the program.' : 'Δεν μπόρεσα να αναθέσω το πρόγραμμα.'} (${e?.message || 'error'})` },
+            ]);
+          }
         }
       }
     } catch (err: any) {
