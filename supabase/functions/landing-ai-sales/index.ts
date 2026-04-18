@@ -556,6 +556,9 @@ ${sectionsBlock}
 🗣️ ΚΑΝΟΝΕΣ:
 - Απαντάς ΠΑΝΤΑ στα ελληνικά (εκτός αν ο χρήστης γράψει αγγλικά).
 - Σύντομες, καθαρές απαντήσεις (max 4-5 προτάσεις).
+- Απαντάς ΜΟΝΟ στην τελευταία ερώτηση/πρόθεση του χρήστη. ΜΗΝ κάνεις dump παλιότερα ή άσχετα δεδομένα από το context.
+- Αν η ερώτηση είναι συγκεκριμένη (π.χ. "πόσες απλήρωτες πληρωμές υπάρχουν;"), δίνεις μόνο το ζητούμενο αποτέλεσμα και 1 σύντομη διευκρίνιση αν χρειάζεται.
+- ΜΗΝ συνδυάζεις διαφορετικά θέματα στην ίδια απάντηση εκτός αν ο χρήστης το ζητήσει ρητά.
 - Όταν ρωτούν "ποιες μέρες/ώρες έχει το X" → απάντα με τις ΑΚΡΙΒΕΙΣ ώρες από το ζωντανό πρόγραμμα παραπάνω.
 - Αν το τμήμα δεν εμφανίζεται στο πρόγραμμα παραπάνω, πες ότι θα ενημερωθούν από την ομάδα — ΜΗΝ επινοείς ώρες.
 - Για τιμές που δεν ξέρεις → παραπέμπεις στην επικοινωνία.
@@ -598,6 +601,9 @@ ${sectionsBlock}
 🗣️ RULES:
 - Reply in English (unless the user writes in Greek).
 - Short, clear answers (max 4-5 sentences).
+- Answer ONLY the user's latest question/intent. Do NOT dump unrelated or older context just because it is available.
+- If the question is specific (e.g. "how many unpaid payments are there?"), return only that result plus one short clarification if needed.
+- Do NOT merge multiple topics into one answer unless the user explicitly asks for that.
 - When asked "what days/times for X" → use the EXACT hours from the live schedule above.
 - If a class isn't in the schedule above, say the team will follow up — NEVER invent hours.
 - For unknown prices → direct to contact form/phone.
@@ -699,6 +705,12 @@ serve(async (req) => {
       console.error("Failed to build user context:", e);
     }
 
+    const latestUserInstruction = typeof lastUserMessage === "string" && lastUserMessage.trim().length > 0
+      ? language === "en"
+        ? `\n\n🎯 LATEST USER QUESTION TO ANSWER NOW:\n${lastUserMessage}\n\nIMPORTANT: Focus on this latest question only.`
+        : `\n\n🎯 ΤΕΛΕΥΤΑΙΑ ΕΡΩΤΗΣΗ ΧΡΗΣΤΗ ΠΟΥ ΠΡΕΠΕΙ ΝΑ ΑΠΑΝΤΗΣΕΙΣ ΤΩΡΑ:\n${lastUserMessage}\n\nΣΗΜΑΝΤΙΚΟ: Εστίασε μόνο σε αυτή την τελευταία ερώτηση.`
+      : "";
+
     const baseSystemPrompt =
       language === "en" ? SYSTEM_PROMPT_EN(sectionsBlock) : SYSTEM_PROMPT_EL(sectionsBlock);
     let systemPrompt = competitionsBlock
@@ -716,6 +728,8 @@ serve(async (req) => {
           : "🔐 Ο χρήστης παραπάνω είναι ΣΥΝΔΕΔΕΜΕΝΟΣ. Όταν ρωτά για τον εαυτό του (\"με ξέρεις;\", \"το 1RM μου\", \"τα τεστ μου\"), χρησιμοποίησε αυτό το private context. ΠΟΤΕ μην αποκαλύπτεις δεδομένα άλλων χρηστών εκτός αν το role scope παραπάνω το επιτρέπει ρητά (admin/coach/federation)."
       }`;
     }
+
+    systemPrompt += latestUserInstruction;
 
     // Persist session
     try {
@@ -750,7 +764,7 @@ serve(async (req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "openai/gpt-5",
+          model: "google/gemini-2.5-flash",
           messages: [
             { role: "system", content: systemPrompt },
             ...messages,
