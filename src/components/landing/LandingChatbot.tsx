@@ -11,6 +11,34 @@ const LEAD_FORM_MARKER = '[SHOW_LEAD_FORM]';
 const stripLeadMarker = (s: string) => s.replace(/\[SHOW_LEAD_FORM\]/gi, '').trim();
 const hasLeadMarker = (s: string) => /\[SHOW_LEAD_FORM\]/i.test(s);
 
+// Strip ai-action code blocks + raw action JSON so the user never sees them
+const ACTION_KEYS = '(create_program|open_program_builder|create_nutrition_plan|create_annual_plan|delete_annual_plan|create_subscription|pause_subscription|resume_subscription|renew_subscription|create_booking|cancel_booking|update_subscription_end_date|toggle_payment|record_visit|update_user_section|confirm_receipt_mark)';
+const stripAIActionBlock = (s: string): string => {
+  let out = s.replace(/```ai-action[\s\S]*?```/g, '');
+  // Also strip partial fenced block while streaming (no closing fence yet)
+  out = out.replace(/```ai-action[\s\S]*$/g, '');
+  // Remove raw JSON object that starts an action (best-effort, balanced braces)
+  const re = new RegExp(`\\{[^\\{\\}]*"action"\\s*:\\s*"${ACTION_KEYS}"[\\s\\S]*?\\}(?:\\s*\\})*`, 'g');
+  out = out.replace(re, '');
+  return out;
+};
+
+const extractActionJson = (text: string): string | null => {
+  const fenced = text.match(/```ai-action\s*([\s\S]*?)```/);
+  if (fenced?.[1]) return fenced[1].trim();
+  const markerIdx = text.search(new RegExp(`"action"\\s*:\\s*"${ACTION_KEYS}"`));
+  if (markerIdx === -1) return null;
+  const startIdx = text.lastIndexOf('{', markerIdx);
+  if (startIdx === -1) return null;
+  let depth = 0;
+  for (let i = startIdx; i < text.length; i++) {
+    if (text[i] === '{') depth++;
+    if (text[i] === '}') depth--;
+    if (depth === 0) return text.slice(startIdx, i + 1).trim();
+  }
+  return null;
+};
+
 interface LandingChatbotProps {
   language?: 'el' | 'en';
 }
@@ -209,6 +237,42 @@ const LandingChatbot: React.FC<LandingChatbotProps> = ({ language = 'el' }) => {
           )
         );
       }
+
+      // Auto-execute AI action (e.g., create_program) silently — no confirmation
+      const actionJsonStr = extractActionJson(assistantSoFar);
+      if (actionJsonStr && authToken) {
+        try {
+          let cleaned = actionJsonStr.replace(/,(\s*[}\]])/g, '$1');
+          const ob = (cleaned.match(/\{/g) || []).length;
+          const cb = (cleaned.match(/\}/g) || []).length;
+          const oS = (cleaned.match(/\[/g) || []).length;
+          const cS = (cleaned.match(/\]/g) || []).length;
+          for (let i = 0; i < oS - cS; i++) cleaned += ']';
+          for (let i = 0; i < ob - cb; i++) cleaned += '}';
+          const actionData = JSON.parse(cleaned);
+
+          const actionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-program-actions`;
+          const res = await fetch(actionUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${authToken}`,
+            },
+            body: JSON.stringify(actionData),
+          });
+          const result = await res.json().catch(() => ({}));
+          const okMsg = result?.message ||
+            (language === 'en' ? '✅ Program assigned.' : '✅ Το πρόγραμμα ανατέθηκε.');
+          const failMsg = result?.error ||
+            (language === 'en' ? 'Action failed.' : 'Η ενέργεια απέτυχε.');
+          setMessages((prev) => [
+            ...prev,
+            { role: 'assistant', content: result?.success === false ? `⚠️ ${failMsg}` : okMsg },
+          ]);
+        } catch (e) {
+          console.error('Auto-execute AI action failed:', e);
+        }
+      }
     } catch (err: any) {
       const errMsg =
         err?.message ||
@@ -276,7 +340,7 @@ const LandingChatbot: React.FC<LandingChatbotProps> = ({ language = 'el' }) => {
           {/* Messages */}
           <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 bg-gray-50">
             {messages.map((msg, idx) => {
-              const displayContent = msg.role === 'assistant' ? stripLeadMarker(msg.content) : msg.content;
+              const displayContent = msg.role === 'assistant' ? stripAIActionBlock(stripLeadMarker(msg.content)) : msg.content;
               return (
                 <React.Fragment key={idx}>
                   {displayContent && (
