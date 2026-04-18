@@ -106,6 +106,7 @@ import CoachBracketsPage from "@/pages/Dashboard/CoachBracketsPage";
 import CoachLivePage from "@/pages/Dashboard/CoachLivePage";
 import FederationOverview from "@/pages/Dashboard/FederationOverview";
 import FederationUsers from "@/pages/Dashboard/FederationUsers";
+import FederationAthletes from "@/pages/Dashboard/FederationAthletes";
 import FederationProgress from "@/pages/Dashboard/FederationProgress";
 import FederationEditProfile from "@/pages/Dashboard/FederationEditProfile";
 
@@ -247,6 +248,7 @@ function App() {
                       <Route element={<FederationPersistentLayout />}>
                         <Route path="/dashboard/federation-overview" element={<ProtectedRoute><FederationOverview /></ProtectedRoute>} />
                         <Route path="/dashboard/federation-users" element={<ProtectedRoute><FederationUsers /></ProtectedRoute>} />
+                        <Route path="/dashboard/federation-athletes" element={<ProtectedRoute><FederationAthletes /></ProtectedRoute>} />
                         <Route path="/dashboard/federation-progress" element={<ProtectedRoute><FederationProgress /></ProtectedRoute>} />
                         
                         <Route path="/dashboard/federation-subscriptions" element={<ProtectedRoute><FederationSubscriptions /></ProtectedRoute>} />
