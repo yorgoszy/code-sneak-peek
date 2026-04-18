@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { MessageCircle, X, Send, Loader2, Sparkles, UserPlus } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { LeadForm } from './LeadForm';
+import { renderCompetitionMessage } from '@/lib/renderCompetitionMessage';
 
 type ChatMessage = { role: 'user' | 'assistant'; content: string; showLeadForm?: boolean; leadSubmitted?: boolean };
 
@@ -281,8 +281,8 @@ const LandingChatbot: React.FC<LandingChatbotProps> = ({ language = 'el' }) => {
                         }`}
                       >
                         {msg.role === 'assistant' ? (
-                          <div className="prose prose-sm max-w-none prose-p:my-1 prose-ul:my-1 prose-strong:text-black">
-                            <ReactMarkdown>{displayContent}</ReactMarkdown>
+                          <div className="whitespace-pre-wrap">
+                            {renderCompetitionMessage(displayContent)}
                           </div>
                         ) : (
                           <p className="whitespace-pre-wrap">{displayContent}</p>
