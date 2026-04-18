@@ -11,6 +11,34 @@ const LEAD_FORM_MARKER = '[SHOW_LEAD_FORM]';
 const stripLeadMarker = (s: string) => s.replace(/\[SHOW_LEAD_FORM\]/gi, '').trim();
 const hasLeadMarker = (s: string) => /\[SHOW_LEAD_FORM\]/i.test(s);
 
+// Strip ai-action code blocks + raw action JSON so the user never sees them
+const ACTION_KEYS = '(create_program|open_program_builder|create_nutrition_plan|create_annual_plan|delete_annual_plan|create_subscription|pause_subscription|resume_subscription|renew_subscription|create_booking|cancel_booking|update_subscription_end_date|toggle_payment|record_visit|update_user_section|confirm_receipt_mark)';
+const stripAIActionBlock = (s: string): string => {
+  let out = s.replace(/```ai-action[\s\S]*?```/g, '');
+  // Also strip partial fenced block while streaming (no closing fence yet)
+  out = out.replace(/```ai-action[\s\S]*$/g, '');
+  // Remove raw JSON object that starts an action (best-effort, balanced braces)
+  const re = new RegExp(`\\{[^\\{\\}]*"action"\\s*:\\s*"${ACTION_KEYS}"[\\s\\S]*?\\}(?:\\s*\\})*`, 'g');
+  out = out.replace(re, '');
+  return out;
+};
+
+const extractActionJson = (text: string): string | null => {
+  const fenced = text.match(/```ai-action\s*([\s\S]*?)```/);
+  if (fenced?.[1]) return fenced[1].trim();
+  const markerIdx = text.search(new RegExp(`"action"\\s*:\\s*"${ACTION_KEYS}"`));
+  if (markerIdx === -1) return null;
+  const startIdx = text.lastIndexOf('{', markerIdx);
+  if (startIdx === -1) return null;
+  let depth = 0;
+  for (let i = startIdx; i < text.length; i++) {
+    if (text[i] === '{') depth++;
+    if (text[i] === '}') depth--;
+    if (depth === 0) return text.slice(startIdx, i + 1).trim();
+  }
+  return null;
+};
+
 interface LandingChatbotProps {
   language?: 'el' | 'en';
 }
