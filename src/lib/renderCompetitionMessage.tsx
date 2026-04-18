@@ -56,16 +56,25 @@ export function renderCompetitionMessage(text: string): React.ReactNode {
       "gu"
     );
     while ((match = vsRegex.exec(line)) !== null) {
-      if (!match[1] || !match[4]) continue;
+      const firstName = match[1]?.trim();
+      const firstMeta = match[2] || "";
+      const separator = match[3] || "";
+      const cornerEmoji = match[4] ? `${match[4]} ` : "";
+      const secondName = match[5]?.trim();
+      const secondMeta = match[6] || "";
+
+      if (!firstName || !secondName) continue;
+
       pushSeg(
         match.index,
         match.index + match[0].length,
         <React.Fragment key={`vs-${li}-${key++}`}>
-          <span style={RED_STYLE}>{match[1].trim()}</span>
-          {" "}{match[2] || ""}{" "}
-          {match[3] ? `${match[3]} ` : ""}
-          <span style={BLUE_STYLE}>{match[4].trim()}</span>
-          {match[5] || ""}
+          <span style={RED_STYLE}>{firstName}</span>
+          {firstMeta}
+          {" "}{separator}{" "}
+          {cornerEmoji}
+          <span style={BLUE_STYLE}>{secondName}</span>
+          {secondMeta}
         </React.Fragment>
       );
     }
