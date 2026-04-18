@@ -142,24 +142,53 @@ async function buildLoggedInUserContext(authHeader: string | null): Promise<stri
     if (!profile?.id) return "";
 
     const userId = profile.id;
+    const role = (profile.role || "general").toLowerCase();
+    const isAdmin = role === "admin";
+    const isCoach = role === "coach" || role === "trainer";
+    const isFederation = role === "federation";
+
+    // Determine scope (athletes accessible to the AI for this user)
+    let scopeAthletes: any[] = [];
+    let scopeLabel = "USER MODE — μόνο προσωπικά δεδομένα";
+    if (isAdmin) {
+      scopeLabel = "ADMIN MODE — πλήρης πρόσβαση σε όλη τη βάση";
+    } else if (isCoach) {
+      scopeAthletes = await fetchSbJson(
+        `app_users?coach_id=eq.${userId}&select=id,name,birth_date,gender&limit=300`
+      ).catch(() => []);
+      scopeLabel = `COACH MODE — ${scopeAthletes.length} αθλητές υπό την εποπτεία σου`;
+    } else if (isFederation) {
+      const fedRows = await fetchSbJson(
+        `athlete_federations?federation_id=eq.${userId}&is_active=eq.true&select=athlete_id,registration_number,athlete:app_users!athlete_federations_athlete_id_fkey(id,name,birth_date,gender)&limit=500`
+      ).catch(() => []);
+      scopeAthletes = (Array.isArray(fedRows) ? fedRows : []).map((r: any) => ({
+        ...(r.athlete || {}),
+        registration_number: r.registration_number,
+      })).filter((a: any) => a.id);
+      scopeLabel = `FEDERATION MODE — ${scopeAthletes.length} εγγεγραμμένοι αθλητές`;
+    }
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const [subscriptions, anthropometric, strength, endurance, jump, registrations] = await Promise.all([
+    const [subscriptions, anthropometric, strength, endurance, jump, functional, registrations] = await Promise.all([
       fetchSbJson(
         `user_subscriptions?user_id=eq.${userId}&select=start_date,end_date,status,is_paid,is_paused,subscription_types(name,price,duration_months)&order=end_date.desc&limit=5`
       ).catch(() => []),
       fetchSbJson(
-        `anthropometric_test_data?select=weight,body_fat_percentage,muscle_mass_percentage,anthropometric_test_sessions!inner(test_date)&anthropometric_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=3`
+        `anthropometric_test_data?select=weight,body_fat_percentage,muscle_mass_percentage,height,anthropometric_test_sessions!inner(test_date)&anthropometric_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=5`
       ).catch(() => []),
       fetchSbJson(
-        `strength_test_attempts?select=weight_kg,velocity_ms,exercises(name),strength_test_sessions!inner(test_date)&strength_test_sessions.user_id=eq.${userId}&order=strength_test_sessions.test_date.desc&limit=5`
+        `strength_test_attempts?select=weight_kg,velocity_ms,is_1rm,exercises(name),strength_test_sessions!inner(test_date)&strength_test_sessions.user_id=eq.${userId}&order=strength_test_sessions.test_date.desc&limit=15`
       ).catch(() => []),
       fetchSbJson(
-        `endurance_test_data?select=vo2_max,mas_kmh,push_ups,pull_ups,endurance_test_sessions!inner(test_date)&endurance_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=3`
+        `endurance_test_data?select=vo2_max,mas_kmh,push_ups,pull_ups,crunches,endurance_test_sessions!inner(test_date)&endurance_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=5`
       ).catch(() => []),
       fetchSbJson(
-        `jump_test_data?select=counter_movement_jump,broad_jump,jump_test_sessions!inner(test_date)&jump_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=3`
+        `jump_test_data?select=counter_movement_jump,non_counter_movement_jump,broad_jump,depth_jump,jump_test_sessions!inner(test_date)&jump_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=5`
+      ).catch(() => []),
+      fetchSbJson(
+        `functional_test_data?select=fms_score,sit_and_reach,flamingo_balance,functional_test_sessions!inner(test_date)&functional_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=5`
       ).catch(() => []),
       fetchSbJson(
         `federation_competition_registrations?athlete_id=eq.${userId}&select=competition_id,weigh_in_weight,weigh_in_status,created_at&order=created_at.desc&limit=8`
