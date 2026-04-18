@@ -279,6 +279,213 @@ async function buildCompetitionsContext(supabase: any, language: "el" | "en") {
   return lines.join("\n").trim();
 }
 
+async function buildLoggedInUserContext(
+  supabase: any,
+  authHeader: string | null,
+  language: "el" | "en"
+): Promise<string> {
+  if (!authHeader?.startsWith("Bearer ")) return "";
+  try {
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    if (!anonKey) return "";
+    const authClient = createClient(Deno.env.get("SUPABASE_URL")!, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false },
+    });
+    const { data: { user }, error } = await authClient.auth.getUser();
+    if (error || !user) return "";
+
+    const { data: profileRows } = await supabase
+      .from("app_users")
+      .select("id,name,email,phone,birth_date,gender,category,role,user_status,subscription_status,coach_id")
+      .eq("auth_user_id", user.id)
+      .limit(1);
+    const profile = Array.isArray(profileRows) ? profileRows[0] : null;
+    if (!profile?.id) return "";
+
+    const role = (profile.role || "general").toLowerCase();
+    const isAdmin = role === "admin";
+    const isCoach = role === "coach" || role === "trainer";
+    const isFederation = role === "federation";
+
+    // Determine target athlete IDs based on role/mode
+    let athleteIds: string[] = [profile.id];
+    let scopeLabel = language === "en" ? "Personal data only" : "Μόνο προσωπικά δεδομένα";
+
+    if (isAdmin) {
+      scopeLabel = language === "en" ? "ADMIN MODE — full database access" : "ADMIN MODE — πλήρης πρόσβαση στη βάση";
+      // For admin, we don't pre-load all athletes (too much). Fetch on demand by name in queries.
+      athleteIds = [profile.id];
+    } else if (isCoach) {
+      const { data: coachAthletes } = await supabase
+        .from("app_users")
+        .select("id")
+        .eq("coach_id", profile.id);
+      athleteIds = [profile.id, ...(coachAthletes || []).map((a: any) => a.id)];
+      scopeLabel = language === "en"
+        ? `COACH MODE — ${athleteIds.length - 1} athletes`
+        : `COACH MODE — ${athleteIds.length - 1} αθλητές`;
+    } else if (isFederation) {
+      const { data: fedAthletes } = await supabase
+        .from("athlete_federations")
+        .select("athlete_id")
+        .eq("federation_id", profile.id)
+        .eq("is_active", true);
+      athleteIds = [profile.id, ...(fedAthletes || []).map((a: any) => a.athlete_id)];
+      scopeLabel = language === "en"
+        ? `FEDERATION MODE — ${athleteIds.length - 1} athletes`
+        : `FEDERATION MODE — ${athleteIds.length - 1} αθλητές`;
+    }
+
+    // Fetch all tests for the user themselves (always)
+    const myId = profile.id;
+    const [anth, strength, endurance, jump, functional] = await Promise.all([
+      supabase.from("anthropometric_test_data")
+        .select("weight,body_fat_percentage,muscle_mass_percentage,height,anthropometric_test_sessions!inner(test_date,user_id)")
+        .eq("anthropometric_test_sessions.user_id", myId)
+        .order("created_at", { ascending: false }).limit(5),
+      supabase.from("strength_test_attempts")
+        .select("weight_kg,velocity_ms,is_1rm,exercises(name),strength_test_sessions!inner(test_date,user_id)")
+        .eq("strength_test_sessions.user_id", myId)
+        .order("created_at", { ascending: false }).limit(15),
+      supabase.from("endurance_test_data")
+        .select("vo2_max,mas_kmh,push_ups,pull_ups,crunches,endurance_test_sessions!inner(test_date,user_id)")
+        .eq("endurance_test_sessions.user_id", myId)
+        .order("created_at", { ascending: false }).limit(5),
+      supabase.from("jump_test_data")
+        .select("counter_movement_jump,non_counter_movement_jump,broad_jump,depth_jump,jump_test_sessions!inner(test_date,user_id)")
+        .eq("jump_test_sessions.user_id", myId)
+        .order("created_at", { ascending: false }).limit(5),
+      supabase.from("functional_test_data")
+        .select("fms_score,sit_and_reach,flamingo_balance,functional_test_sessions!inner(test_date,user_id)")
+        .eq("functional_test_sessions.user_id", myId)
+        .order("created_at", { ascending: false }).limit(5),
+    ]);
+
+    const lines: string[] = [];
+    lines.push(language === "en"
+      ? `👤 LOGGED-IN USER (private context — use only for them):`
+      : `👤 ΣΥΝΔΕΔΕΜΕΝΟΣ ΧΡΗΣΤΗΣ (ιδιωτικό context — μόνο για τον ίδιο):`);
+    lines.push(`- ${language === "en" ? "Name" : "Όνομα"}: ${profile.name || "—"}`);
+    lines.push(`- Email: ${profile.email || "—"}`);
+    if (profile.phone) lines.push(`- ${language === "en" ? "Phone" : "Τηλέφωνο"}: ${profile.phone}`);
+    if (profile.birth_date) lines.push(`- ${language === "en" ? "Birth date" : "Ημ/νία γέννησης"}: ${profile.birth_date}`);
+    if (profile.gender) lines.push(`- ${language === "en" ? "Gender" : "Φύλο"}: ${profile.gender}`);
+    if (profile.role) lines.push(`- ${language === "en" ? "Role" : "Ρόλος"}: ${profile.role}`);
+    lines.push(`- ${language === "en" ? "Access scope" : "Εύρος πρόσβασης"}: ${scopeLabel}`);
+
+    const anthArr = (anth as any)?.data || [];
+    const strArr = (strength as any)?.data || [];
+    const endArr = (endurance as any)?.data || [];
+    const jmpArr = (jump as any)?.data || [];
+    const fncArr = (functional as any)?.data || [];
+
+    if (anthArr.length || strArr.length || endArr.length || jmpArr.length || fncArr.length) {
+      lines.push("");
+      lines.push(language === "en" ? "📊 PERSONAL TEST HISTORY:" : "📊 ΙΣΤΟΡΙΚΟ ΠΡΟΣΩΠΙΚΩΝ ΤΕΣΤ:");
+
+      if (anthArr.length) {
+        lines.push(language === "en" ? "• Anthropometric:" : "• Σωματομετρικά:");
+        anthArr.forEach((a: any) => {
+          const d = a.anthropometric_test_sessions?.test_date || "?";
+          const parts = [];
+          if (a.weight) parts.push(`${a.weight}kg`);
+          if (a.height) parts.push(`${a.height}cm`);
+          if (a.body_fat_percentage) parts.push(`fat ${a.body_fat_percentage}%`);
+          if (a.muscle_mass_percentage) parts.push(`muscle ${a.muscle_mass_percentage}%`);
+          lines.push(`   - ${d}: ${parts.join(", ")}`);
+        });
+      }
+
+      if (strArr.length) {
+        lines.push(language === "en" ? "• Strength (1RM / Force-Velocity):" : "• Δύναμη (1RM / Force-Velocity):");
+        strArr.forEach((s: any) => {
+          const d = s.strength_test_sessions?.test_date || "?";
+          const ex = s.exercises?.name || "?";
+          const v = s.velocity_ms ? ` @ ${s.velocity_ms} m/s` : "";
+          const rm = s.is_1rm ? " [1RM]" : "";
+          lines.push(`   - ${d}: ${ex} ${s.weight_kg}kg${v}${rm}`);
+        });
+      }
+
+      if (endArr.length) {
+        lines.push(language === "en" ? "• Endurance:" : "• Αντοχή:");
+        endArr.forEach((e: any) => {
+          const d = e.endurance_test_sessions?.test_date || "?";
+          const parts = [];
+          if (e.vo2_max) parts.push(`VO2max ${e.vo2_max}`);
+          if (e.mas_kmh) parts.push(`MAS ${e.mas_kmh} km/h`);
+          if (e.push_ups) parts.push(`push-ups ${e.push_ups}`);
+          if (e.pull_ups) parts.push(`pull-ups ${e.pull_ups}`);
+          if (e.crunches) parts.push(`crunches ${e.crunches}`);
+          if (parts.length) lines.push(`   - ${d}: ${parts.join(", ")}`);
+        });
+      }
+
+      if (jmpArr.length) {
+        lines.push(language === "en" ? "• Jumps:" : "• Άλματα:");
+        jmpArr.forEach((j: any) => {
+          const d = j.jump_test_sessions?.test_date || "?";
+          const parts = [];
+          if (j.counter_movement_jump) parts.push(`CMJ ${j.counter_movement_jump}cm`);
+          if (j.non_counter_movement_jump) parts.push(`NCMJ ${j.non_counter_movement_jump}cm`);
+          if (j.broad_jump) parts.push(`Broad ${j.broad_jump}cm`);
+          if (j.depth_jump) parts.push(`Depth ${j.depth_jump}cm`);
+          if (parts.length) lines.push(`   - ${d}: ${parts.join(", ")}`);
+        });
+      }
+
+      if (fncArr.length) {
+        lines.push(language === "en" ? "• Functional:" : "• Λειτουργικά:");
+        fncArr.forEach((f: any) => {
+          const d = f.functional_test_sessions?.test_date || "?";
+          const parts = [];
+          if (f.fms_score) parts.push(`FMS ${f.fms_score}`);
+          if (f.sit_and_reach) parts.push(`Sit&Reach ${f.sit_and_reach}cm`);
+          if (f.flamingo_balance) parts.push(`Flamingo ${f.flamingo_balance}`);
+          if (parts.length) lines.push(`   - ${d}: ${parts.join(", ")}`);
+        });
+      }
+    }
+
+    // For admin/coach/federation, also fetch summary of their athletes' latest tests
+    if ((isCoach || isFederation) && athleteIds.length > 1) {
+      const otherIds = athleteIds.filter((id) => id !== myId);
+      const { data: athletes } = await supabase
+        .from("app_users")
+        .select("id,name,birth_date,gender")
+        .in("id", otherIds)
+        .limit(200);
+
+      if (athletes && athletes.length) {
+        lines.push("");
+        lines.push(language === "en"
+          ? `👥 ATHLETES UNDER YOUR SCOPE (${athletes.length}) — you can answer questions about their tests:`
+          : `👥 ΑΘΛΗΤΕΣ ΣΤΟ SCOPE ΣΟΥ (${athletes.length}) — μπορείς να απαντάς για τα τεστ τους:`);
+        athletes.slice(0, 50).forEach((a: any) => {
+          lines.push(`   - ${a.name}${a.birth_date ? ` (${a.birth_date})` : ""}${a.gender ? ` ${a.gender}` : ""}`);
+        });
+        if (athletes.length > 50) {
+          lines.push(language === "en" ? `   ...and ${athletes.length - 50} more` : `   ...και ${athletes.length - 50} ακόμη`);
+        }
+        lines.push(language === "en"
+          ? `   ℹ️ When asked about a specific athlete by name, search the athlete_federations / coach relationships.`
+          : `   ℹ️ Όταν σε ρωτούν για συγκεκριμένο αθλητή με όνομα, ψάξε στις σχέσεις athlete_federations / coach.`);
+      }
+    } else if (isAdmin) {
+      lines.push("");
+      lines.push(language === "en"
+        ? `🔓 ADMIN MODE: You can answer questions about ANY athlete in the database. Ask the user for the athlete name and infer from competition/match data above.`
+        : `🔓 ADMIN MODE: Μπορείς να απαντάς για ΟΠΟΙΟΝΔΗΠΟΤΕ αθλητή στη βάση. Ζήτα το όνομα και χρησιμοποίησε τα δεδομένα αγώνων παραπάνω.`);
+    }
+
+    return lines.join("\n");
+  } catch (e) {
+    console.error("buildLoggedInUserContext (landing) failed:", e);
+    return "";
+  }
+}
+
 function buildSectionsContext(
   sections: Array<{ name: string; available_hours: any; max_capacity: number; description?: string | null }>,
   language: "el" | "en"
