@@ -142,9 +142,9 @@ const CoachLivePage = () => {
               ? feeder.athlete1?.name : feeder.athlete2?.name;
             if (winnerName) return winnerName;
           }
-          return `${t('federation.live.winnerFight')} ${feeder.match_order || feederMatchNum}`;
+          return `${t('federation.live.winnerFight')}${feeder.match_order || feederMatchNum}`;
         }
-        return `${t('federation.live.winnerFight')} ?`;
+        return `${t('federation.live.winnerFight')}?`;
       };
       
       return {
