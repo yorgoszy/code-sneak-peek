@@ -3,9 +3,11 @@ import React from "react";
 const LETTERS = "A-Za-zΑ-Ωα-ωΆΈΉΊΌΎΏάέήίόύώϊϋΐΰΪΫ";
 const NAME = `[${LETTERS}][${LETTERS}.\\-']*(?:\\s+[${LETTERS}][${LETTERS}.\\-']*){0,4}`;
 const SIDE_META = `(\\s*(?:\\[[^\\]]+\\]|\\([^\\)]+\\)))?`;
+const RED_STYLE = { color: "hsl(var(--competition-red))", fontWeight: 700 } as const;
+const BLUE_STYLE = { color: "hsl(var(--competition-blue))", fontWeight: 700 } as const;
 
 export function renderCompetitionMessage(text: string): React.ReactNode {
-  const clean = text.replace(/\*\*/g, "");
+  const clean = (text ?? "").replace(/\*\*/g, "");
   const lines = clean.split("\n");
 
   return lines.map((line, li) => {
@@ -20,13 +22,13 @@ export function renderCompetitionMessage(text: string): React.ReactNode {
 
     const emojiRegex = new RegExp(`(🔴|🔵)\\s*(${NAME})${SIDE_META}`, "gu");
     while ((match = emojiRegex.exec(line)) !== null) {
-      const toneClass = match[1] === "🔴" ? "text-competition-red" : "text-competition-blue";
+      const toneStyle = match[1] === "🔴" ? RED_STYLE : BLUE_STYLE;
       pushSeg(
         match.index,
         match.index + match[0].length,
         <React.Fragment key={`em-${li}-${key++}`}>
           {match[1]}{" "}
-          <span className={`${toneClass} font-semibold`}>{match[2]}</span>
+          <span style={toneStyle}>{match[2]}</span>
           {match[3] || ""}
         </React.Fragment>
       );
@@ -37,13 +39,13 @@ export function renderCompetitionMessage(text: string): React.ReactNode {
       "giu"
     );
     while ((match = labelRegex.exec(line)) !== null) {
-      const toneClass = /κόκκιν|red/i.test(match[1]) ? "text-competition-red" : "text-competition-blue";
+      const toneStyle = /κόκκιν|red/i.test(match[1]) ? RED_STYLE : BLUE_STYLE;
       pushSeg(
         match.index,
         match.index + match[0].length,
         <React.Fragment key={`lbl-${li}-${key++}`}>
           {match[1]}{" "}
-          <span className={`${toneClass} font-semibold`}>{match[2]}</span>
+          <span style={toneStyle}>{match[2]}</span>
           {match[3] || ""}
         </React.Fragment>
       );
@@ -59,10 +61,10 @@ export function renderCompetitionMessage(text: string): React.ReactNode {
         match.index,
         match.index + match[0].length,
         <React.Fragment key={`vs-${li}-${key++}`}>
-          <span className="text-competition-red font-semibold">{match[1].trim()}</span>
-          {match[2] || ""}{" "}
+          <span style={RED_STYLE}>{match[1].trim()}</span>
+          {" "}{match[2] || ""}{" "}
           {match[3] ? `${match[3]} ` : ""}
-          <span className="text-competition-blue font-semibold">{match[4].trim()}</span>
+          <span style={BLUE_STYLE}>{match[4].trim()}</span>
           {match[5] || ""}
         </React.Fragment>
       );
