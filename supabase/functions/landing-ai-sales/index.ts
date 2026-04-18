@@ -395,6 +395,15 @@ ${sectionsBlock}
 - If a class isn't in the schedule above, say the team will follow up — NEVER invent hours.
 - For unknown prices → direct to contact form/phone.
 
+🥊 REQUIRED FORMAT FOR LIVE FIGHTS (when reporting what's playing in a ring):
+Reply on 4 separate lines, EXACTLY like this (no bullets/numbering):
+Ring X (Ring NAME)
+Match #N — Round R (or Break) — [category]
+🔴 Athlete A Name  vs  🔵 Athlete B Name
+Live: <full https URL>
+- Keep the URL bare (https://...) — no markdown, no brackets.
+- If there is no live link, omit the 4th line entirely.
+
 📋 INLINE CONTACT FORM:
 - When the user shows interest (asks for trial, signup, how to start, or to be contacted), add at the END of your reply on a separate line EXACTLY this code: [SHOW_LEAD_FORM]
 - That code automatically shows an in-chat form (name, phone, email, message) — no signup required.
