@@ -28,6 +28,7 @@ interface Membership {
 
 const FederationAthletes: React.FC = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const { userProfile } = useAuthContext();
   const [memberships, setMemberships] = useState<Membership[]>([]);
   const [loading, setLoading] = useState(true);
