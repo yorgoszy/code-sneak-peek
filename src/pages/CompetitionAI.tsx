@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { renderCompetitionMessage } from "@/lib/renderCompetitionMessage";
 import { Send, Sparkles, Loader2, RotateCcw } from "lucide-react";
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -12,94 +13,6 @@ const WELCOME: Msg = {
   content:
     "Γεια σου! Είμαι ο Hyper AI για τη διοργάνωση. Ρώτα με για αγώνες, ρινγκ, ζυγίσεις, αντιπάλους ή live links 🥊",
 };
-
-// Highlight athletes: red corner red, blue corner blue.
-// Supports: "A vs B", "A - B", "A | B", emoji 🔴/🔵, labels (Κόκκιν*/Red/Μπλε/Blue),
-// optional club tags like [Club], and strips markdown ** markers.
-function renderColored(text: string): React.ReactNode {
-  const clean = text.replace(/\*\*/g, "");
-  const lines = clean.split("\n");
-  const L = "A-Za-zΑ-Ωα-ωΆΈΉΊΌΎΏάέήίόύώϊϋΐΰΪΫ";
-  const NAME = `[${L}][${L}.\\-']*(?:\\s+[${L}][${L}.\\-']*){0,4}`;
-  const SIDE_META = `(\\s*(?:\\[[^\\]]+\\]|\\([^\\)]+\\)))?`;
-
-  return lines.map((line, li) => {
-    const segments: { start: number; end: number; node: React.ReactNode }[] = [];
-    let key = 0;
-    let m: RegExpExecArray | null;
-
-    const pushSeg = (start: number, end: number, node: React.ReactNode) => {
-      const overlap = segments.some((s) => !(end <= s.start || start >= s.end));
-      if (!overlap) segments.push({ start, end, node });
-    };
-
-    const emojiRegex = new RegExp(`(🔴|🔵)\\s*(${NAME})${SIDE_META}`, "gu");
-    while ((m = emojiRegex.exec(line)) !== null) {
-      const toneClass = m[1] === "🔴" ? "text-competition-red" : "text-competition-blue";
-      pushSeg(
-        m.index,
-        m.index + m[0].length,
-        <React.Fragment key={`em-${li}-${key++}`}>
-          {m[1]}{" "}
-          <span className={`${toneClass} font-semibold`}>{m[2]}</span>
-          {m[3] || ""}
-        </React.Fragment>
-      );
-    }
-
-    const labelRegex = new RegExp(
-      `(Κόκκιν\\w*[^:\\n]{0,25}?:|Red[^:\\n]{0,25}?:|Μπλε[^:\\n]{0,25}?:|Blue[^:\\n]{0,25}?:)\\s*(${NAME})${SIDE_META}`,
-      "giu"
-    );
-    while ((m = labelRegex.exec(line)) !== null) {
-      const toneClass = /κόκκιν|red/i.test(m[1]) ? "text-competition-red" : "text-competition-blue";
-      pushSeg(
-        m.index,
-        m.index + m[0].length,
-        <React.Fragment key={`lbl-${li}-${key++}`}>
-          {m[1]}{" "}
-          <span className={`${toneClass} font-semibold`}>{m[2]}</span>
-          {m[3] || ""}
-        </React.Fragment>
-      );
-    }
-
-    const vsRegex = new RegExp(
-      `(${NAME})${SIDE_META}\\s*(vs\\.?|VS|κατά|—|–|\\||-)\\s*(🔵|🔴)?\\s*(${NAME})${SIDE_META}`,
-      "gu"
-    );
-    while ((m = vsRegex.exec(line)) !== null) {
-      pushSeg(
-        m.index,
-        m.index + m[0].length,
-        <React.Fragment key={`vs-${li}-${key++}`}>
-          <span className="text-competition-red font-semibold">{m[1].trim()}</span>
-          {m[2] || ""}{" "}
-          {m[3] ? `${m[3]} ` : ""}
-          <span className="text-competition-blue font-semibold">{m[4].trim()}</span>
-          {m[5] || ""}
-        </React.Fragment>
-      );
-    }
-
-    segments.sort((a, b) => a.start - b.start);
-    const parts: React.ReactNode[] = [];
-    let lastIndex = 0;
-    for (const seg of segments) {
-      if (seg.start > lastIndex) parts.push(line.slice(lastIndex, seg.start));
-      parts.push(seg.node);
-      lastIndex = seg.end;
-    }
-    if (lastIndex < line.length) parts.push(line.slice(lastIndex));
-
-    return (
-      <React.Fragment key={`line-${li}`}>
-        {parts.length ? parts : line}
-        {li < lines.length - 1 && "\n"}
-      </React.Fragment>
-    );
-  });
-}
 
 export default function CompetitionAI() {
   const [searchParams] = useSearchParams();
@@ -275,7 +188,7 @@ export default function CompetitionAI() {
                 }`}
               >
                 {m.content ? (
-                  m.role === "assistant" ? renderColored(m.content) : m.content
+                  m.role === "assistant" ? renderCompetitionMessage(m.content) : m.content
                 ) : loading && i === messages.length - 1 ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
