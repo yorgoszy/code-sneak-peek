@@ -54,6 +54,7 @@ export function renderCompetitionMessage(text: string): React.ReactNode {
       "gu"
     );
     while ((match = vsRegex.exec(line)) !== null) {
+      if (!match[1] || !match[4]) continue;
       pushSeg(
         match.index,
         match.index + match[0].length,
