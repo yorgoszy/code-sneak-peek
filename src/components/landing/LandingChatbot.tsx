@@ -89,14 +89,24 @@ const LandingChatbot: React.FC<LandingChatbotProps> = ({ language = 'el' }) => {
       const ctrl = new AbortController();
       abortRef.current = ctrl;
 
+      // Try to attach the logged-in user's auth token if present
+      let authToken: string | null = null;
+      try {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const { data } = await supabase.auth.getSession();
+        authToken = data?.session?.access_token || null;
+      } catch {}
+
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/landing-ai-sales`;
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      };
+
       const resp = await fetch(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        },
+        headers,
         body: JSON.stringify({
           messages: nextMessages,
           sessionId,

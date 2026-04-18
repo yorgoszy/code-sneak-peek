@@ -142,24 +142,53 @@ async function buildLoggedInUserContext(authHeader: string | null): Promise<stri
     if (!profile?.id) return "";
 
     const userId = profile.id;
+    const role = (profile.role || "general").toLowerCase();
+    const isAdmin = role === "admin";
+    const isCoach = role === "coach" || role === "trainer";
+    const isFederation = role === "federation";
+
+    // Determine scope (athletes accessible to the AI for this user)
+    let scopeAthletes: any[] = [];
+    let scopeLabel = "USER MODE — μόνο προσωπικά δεδομένα";
+    if (isAdmin) {
+      scopeLabel = "ADMIN MODE — πλήρης πρόσβαση σε όλη τη βάση";
+    } else if (isCoach) {
+      scopeAthletes = await fetchSbJson(
+        `app_users?coach_id=eq.${userId}&select=id,name,birth_date,gender&limit=300`
+      ).catch(() => []);
+      scopeLabel = `COACH MODE — ${scopeAthletes.length} αθλητές υπό την εποπτεία σου`;
+    } else if (isFederation) {
+      const fedRows = await fetchSbJson(
+        `athlete_federations?federation_id=eq.${userId}&is_active=eq.true&select=athlete_id,registration_number,athlete:app_users!athlete_federations_athlete_id_fkey(id,name,birth_date,gender)&limit=500`
+      ).catch(() => []);
+      scopeAthletes = (Array.isArray(fedRows) ? fedRows : []).map((r: any) => ({
+        ...(r.athlete || {}),
+        registration_number: r.registration_number,
+      })).filter((a: any) => a.id);
+      scopeLabel = `FEDERATION MODE — ${scopeAthletes.length} εγγεγραμμένοι αθλητές`;
+    }
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const [subscriptions, anthropometric, strength, endurance, jump, registrations] = await Promise.all([
+    const [subscriptions, anthropometric, strength, endurance, jump, functional, registrations] = await Promise.all([
       fetchSbJson(
         `user_subscriptions?user_id=eq.${userId}&select=start_date,end_date,status,is_paid,is_paused,subscription_types(name,price,duration_months)&order=end_date.desc&limit=5`
       ).catch(() => []),
       fetchSbJson(
-        `anthropometric_test_data?select=weight,body_fat_percentage,muscle_mass_percentage,anthropometric_test_sessions!inner(test_date)&anthropometric_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=3`
+        `anthropometric_test_data?select=weight,body_fat_percentage,muscle_mass_percentage,height,anthropometric_test_sessions!inner(test_date)&anthropometric_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=5`
       ).catch(() => []),
       fetchSbJson(
-        `strength_test_attempts?select=weight_kg,velocity_ms,exercises(name),strength_test_sessions!inner(test_date)&strength_test_sessions.user_id=eq.${userId}&order=strength_test_sessions.test_date.desc&limit=5`
+        `strength_test_attempts?select=weight_kg,velocity_ms,is_1rm,exercises(name),strength_test_sessions!inner(test_date)&strength_test_sessions.user_id=eq.${userId}&order=strength_test_sessions.test_date.desc&limit=15`
       ).catch(() => []),
       fetchSbJson(
-        `endurance_test_data?select=vo2_max,mas_kmh,push_ups,pull_ups,endurance_test_sessions!inner(test_date)&endurance_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=3`
+        `endurance_test_data?select=vo2_max,mas_kmh,push_ups,pull_ups,crunches,endurance_test_sessions!inner(test_date)&endurance_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=5`
       ).catch(() => []),
       fetchSbJson(
-        `jump_test_data?select=counter_movement_jump,broad_jump,jump_test_sessions!inner(test_date)&jump_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=3`
+        `jump_test_data?select=counter_movement_jump,non_counter_movement_jump,broad_jump,depth_jump,jump_test_sessions!inner(test_date)&jump_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=5`
+      ).catch(() => []),
+      fetchSbJson(
+        `functional_test_data?select=fms_score,sit_and_reach,flamingo_balance,functional_test_sessions!inner(test_date)&functional_test_sessions.user_id=eq.${userId}&order=created_at.desc&limit=5`
       ).catch(() => []),
       fetchSbJson(
         `federation_competition_registrations?athlete_id=eq.${userId}&select=competition_id,weigh_in_weight,weigh_in_status,created_at&order=created_at.desc&limit=8`
@@ -189,6 +218,7 @@ async function buildLoggedInUserContext(authHeader: string | null): Promise<stri
     if (profile.role) ctx += `- Ρόλος: ${profile.role}\n`;
     if (profile.user_status) ctx += `- Κατάσταση λογαριασμού: ${profile.user_status}\n`;
     if (profile.subscription_status) ctx += `- Κατάσταση συνδρομής προφίλ: ${profile.subscription_status}\n`;
+    ctx += `- 🔐 Εύρος πρόσβασης: ${scopeLabel}\n`;
 
     if (Array.isArray(subscriptions) && subscriptions.length > 0) {
       const activeSub = subscriptions.find((sub: any) => {
@@ -210,56 +240,84 @@ async function buildLoggedInUserContext(authHeader: string | null): Promise<stri
       }
     }
 
-    const latestAnth = Array.isArray(anthropometric) ? anthropometric[0] : null;
-    const latestStrength = Array.isArray(strength) ? strength[0] : null;
-    const latestEndurance = Array.isArray(endurance) ? endurance[0] : null;
-    const latestJump = Array.isArray(jump) ? jump[0] : null;
+    const anthArr = Array.isArray(anthropometric) ? anthropometric : [];
+    const strArr = Array.isArray(strength) ? strength : [];
+    const endArr = Array.isArray(endurance) ? endurance : [];
+    const jmpArr = Array.isArray(jump) ? jump : [];
+    const fncArr = Array.isArray(functional) ? functional : [];
 
-    if (latestAnth || latestStrength || latestEndurance || latestJump) {
-      ctx += `\n📈 ΤΕΛΕΥΤΑΙΑ ΜΕΤΡΗΣΗ / ΤΕΣΤ:\n`;
-      if (latestAnth) {
-        const anthParts = [];
-        if (latestAnth.weight) anthParts.push(`Βάρος ${latestAnth.weight}kg`);
-        if (latestAnth.body_fat_percentage) anthParts.push(`Λίπος ${latestAnth.body_fat_percentage}%`);
-        if (latestAnth.muscle_mass_percentage) anthParts.push(`Μυϊκή μάζα ${latestAnth.muscle_mass_percentage}%`);
-        if (anthParts.length > 0) {
-          ctx += `- Σωματομετρικά: ${anthParts.join(", ")}`;
-          const anthDate = latestAnth.anthropometric_test_sessions?.[0]?.test_date;
-          if (anthDate) ctx += ` (${anthDate})`;
-          ctx += `\n`;
-        }
+    if (anthArr.length || strArr.length || endArr.length || jmpArr.length || fncArr.length) {
+      ctx += `\n📊 ΙΣΤΟΡΙΚΟ ΠΡΟΣΩΠΙΚΩΝ ΤΕΣΤ:\n`;
+      if (anthArr.length) {
+        ctx += `• Σωματομετρικά:\n`;
+        anthArr.forEach((a: any) => {
+          const d = a.anthropometric_test_sessions?.test_date || "?";
+          const parts = [];
+          if (a.weight) parts.push(`${a.weight}kg`);
+          if (a.height) parts.push(`${a.height}cm`);
+          if (a.body_fat_percentage) parts.push(`λίπος ${a.body_fat_percentage}%`);
+          if (a.muscle_mass_percentage) parts.push(`μυϊκή ${a.muscle_mass_percentage}%`);
+          ctx += `   - ${d}: ${parts.join(", ")}\n`;
+        });
       }
-      if (latestStrength) {
-        ctx += `- Δύναμη: ${latestStrength.exercises?.name || "Άσκηση"} ${latestStrength.weight_kg || "?"}kg`;
-        if (latestStrength.velocity_ms) ctx += ` @ ${latestStrength.velocity_ms} m/s`;
-        const strengthDate = latestStrength.strength_test_sessions?.[0]?.test_date;
-        if (strengthDate) ctx += ` (${strengthDate})`;
-        ctx += `\n`;
+      if (strArr.length) {
+        ctx += `• Δύναμη (1RM / Force-Velocity):\n`;
+        strArr.forEach((s: any) => {
+          const d = s.strength_test_sessions?.test_date || "?";
+          const ex = s.exercises?.name || "?";
+          const v = s.velocity_ms ? ` @ ${s.velocity_ms} m/s` : "";
+          const rm = s.is_1rm ? " [1RM]" : "";
+          ctx += `   - ${d}: ${ex} ${s.weight_kg}kg${v}${rm}\n`;
+        });
       }
-      if (latestEndurance) {
-        const enduranceParts = [];
-        if (latestEndurance.vo2_max) enduranceParts.push(`VO2max ${latestEndurance.vo2_max}`);
-        if (latestEndurance.mas_kmh) enduranceParts.push(`MAS ${latestEndurance.mas_kmh} km/h`);
-        if (latestEndurance.push_ups) enduranceParts.push(`Push-ups ${latestEndurance.push_ups}`);
-        if (latestEndurance.pull_ups) enduranceParts.push(`Pull-ups ${latestEndurance.pull_ups}`);
-        if (enduranceParts.length > 0) {
-          ctx += `- Αντοχή: ${enduranceParts.join(", ")}`;
-          const enduranceDate = latestEndurance.endurance_test_sessions?.[0]?.test_date;
-          if (enduranceDate) ctx += ` (${enduranceDate})`;
-          ctx += `\n`;
-        }
+      if (endArr.length) {
+        ctx += `• Αντοχή:\n`;
+        endArr.forEach((e: any) => {
+          const d = e.endurance_test_sessions?.test_date || "?";
+          const parts = [];
+          if (e.vo2_max) parts.push(`VO2max ${e.vo2_max}`);
+          if (e.mas_kmh) parts.push(`MAS ${e.mas_kmh}km/h`);
+          if (e.push_ups) parts.push(`push-ups ${e.push_ups}`);
+          if (e.pull_ups) parts.push(`pull-ups ${e.pull_ups}`);
+          if (e.crunches) parts.push(`crunches ${e.crunches}`);
+          if (parts.length) ctx += `   - ${d}: ${parts.join(", ")}\n`;
+        });
       }
-      if (latestJump) {
-        const jumpParts = [];
-        if (latestJump.counter_movement_jump) jumpParts.push(`CMJ ${latestJump.counter_movement_jump}cm`);
-        if (latestJump.broad_jump) jumpParts.push(`Broad ${latestJump.broad_jump}cm`);
-        if (jumpParts.length > 0) {
-          ctx += `- Άλματα: ${jumpParts.join(", ")}`;
-          const jumpDate = latestJump.jump_test_sessions?.[0]?.test_date;
-          if (jumpDate) ctx += ` (${jumpDate})`;
-          ctx += `\n`;
-        }
+      if (jmpArr.length) {
+        ctx += `• Άλματα:\n`;
+        jmpArr.forEach((j: any) => {
+          const d = j.jump_test_sessions?.test_date || "?";
+          const parts = [];
+          if (j.counter_movement_jump) parts.push(`CMJ ${j.counter_movement_jump}cm`);
+          if (j.non_counter_movement_jump) parts.push(`NCMJ ${j.non_counter_movement_jump}cm`);
+          if (j.broad_jump) parts.push(`Broad ${j.broad_jump}cm`);
+          if (j.depth_jump) parts.push(`Depth ${j.depth_jump}cm`);
+          if (parts.length) ctx += `   - ${d}: ${parts.join(", ")}\n`;
+        });
       }
+      if (fncArr.length) {
+        ctx += `• Λειτουργικά:\n`;
+        fncArr.forEach((f: any) => {
+          const d = f.functional_test_sessions?.test_date || "?";
+          const parts = [];
+          if (f.fms_score) parts.push(`FMS ${f.fms_score}`);
+          if (f.sit_and_reach) parts.push(`Sit&Reach ${f.sit_and_reach}cm`);
+          if (f.flamingo_balance) parts.push(`Flamingo ${f.flamingo_balance}`);
+          if (parts.length) ctx += `   - ${d}: ${parts.join(", ")}\n`;
+        });
+      }
+    }
+
+    // Scope athletes (coach/federation modes)
+    if ((isCoach || isFederation) && scopeAthletes.length > 0) {
+      ctx += `\n👥 ΑΘΛΗΤΕΣ ΣΤΟ SCOPE ΣΟΥ (${scopeAthletes.length}):\n`;
+      scopeAthletes.slice(0, 60).forEach((a: any) => {
+        const reg = a.registration_number ? ` [δελτίο: ${a.registration_number}]` : "";
+        ctx += `   - ${a.name}${a.birth_date ? ` (${a.birth_date})` : ""}${a.gender ? ` ${a.gender}` : ""}${reg}\n`;
+      });
+      if (scopeAthletes.length > 60) ctx += `   ...και ${scopeAthletes.length - 60} ακόμη\n`;
+    } else if (isAdmin) {
+      ctx += `\n🔓 ADMIN MODE: Έχεις πρόσβαση σε ΟΛΟΥΣ τους αθλητές της βάσης.\n`;
     }
 
     if (Array.isArray(registrations) && registrations.length > 0) {
