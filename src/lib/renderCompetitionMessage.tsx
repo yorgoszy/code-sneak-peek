@@ -79,6 +79,24 @@ export function renderCompetitionMessage(text: string): React.ReactNode {
       );
     }
 
+    const urlRegex = /(https?:\/\/[^\s<>"'`]+[^\s<>"'`.,;:!?)\]])/g;
+    while ((match = urlRegex.exec(line)) !== null) {
+      const href = match[1];
+      pushSeg(
+        match.index,
+        match.index + match[0].length,
+        <a
+          key={`url-${li}-${key++}`}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline text-primary break-all"
+        >
+          {href}
+        </a>
+      );
+    }
+
     segments.sort((a, b) => a.start - b.start);
     const parts: React.ReactNode[] = [];
     let lastIndex = 0;
