@@ -186,11 +186,6 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
             </div>
           </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="phone" className="text-xs">Τηλέφωνο</Label>
-            <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Τηλέφωνο" className="rounded-none h-9" />
-          </div>
-
           {role === "parent" && (
             <ChildrenFields
               children={children}
