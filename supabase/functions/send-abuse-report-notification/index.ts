@@ -118,7 +118,7 @@ Deno.serve(async (req) => {
       .join(', ');
 
     const reporterDisplay = report.is_anonymous
-      ? 'Ανώνυμος αθλητής'
+      ? 'Ανώνυμος αθλητής (στοιχεία απόκρυφα κατόπιν αιτήματος)'
       : `${athlete.name} (${athlete.email})`;
 
     const incidentDateText = report.incident_date

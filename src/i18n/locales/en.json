@@ -77,7 +77,50 @@
     "quickOverview": "Quick Overview",
     "nutrition": "Nutrition",
     "editProfile": "Edit Profile",
-    "downloadApp": "Download the App"
+    "downloadApp": "Download the App",
+    "safety": "Safety"
+  },
+  "safety": {
+    "title": "Abuse Report",
+    "intro": "If you have experienced any form of abuse from your coach or club, you can submit a confidential report. The report is sent directly to the federations the coach/club belongs to for investigation.",
+    "abuseTypeLabel": "Type of abuse (select one or more)",
+    "types": {
+      "physical": "Physical abuse",
+      "psychological": "Psychological abuse",
+      "sexual": "Sexual harassment / abuse",
+      "verbal": "Verbal violence",
+      "bullying": "Bullying",
+      "other": "Other"
+    },
+    "incidentDate": "Date of incident (optional)",
+    "description": "Description of incident *",
+    "descriptionPlaceholder": "Describe in your own words what happened. Include any details you find relevant (when, where, who was present)...",
+    "charactersMin": "{{count}} characters (minimum 20)",
+    "anonymous": "Anonymous submission",
+    "anonymousHint": "Your name will not be shown to the federations (admin always sees it).",
+    "submit": "Submit Report",
+    "myReports": "My reports",
+    "noReports": "You have not submitted any reports.",
+    "loading": "Loading...",
+    "adminViewTitle": "Athlete reports (Admin View)",
+    "adminNoReports": "No reports from this athlete.",
+    "confirmTitle": "Confirm submission",
+    "confirmDesc": "The report will be sent to all federations the coach/club belongs to. Please submit only if the facts are true. Continue?",
+    "cancel": "Cancel",
+    "anonymousBadge": "Anonymous",
+    "typesLabel": "Types",
+    "adminNotes": "Admin notes",
+    "notifiedFeds": "Notified federations",
+    "errorMinTypes": "Select at least one type",
+    "errorMinDesc": "Description must be at least 20 characters",
+    "successSubmit": "Report submitted. The relevant federations have been notified.",
+    "errorSubmit": "Submission error",
+    "status": {
+      "pending": "Pending",
+      "investigating": "Investigating",
+      "resolved": "Resolved",
+      "dismissed": "Dismissed"
+    }
   },
   "overview": {
     "title": "Profile Overview",
