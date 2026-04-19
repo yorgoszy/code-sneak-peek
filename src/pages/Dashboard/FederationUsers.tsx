@@ -142,41 +142,125 @@ const FederationUsers = () => {
   const resetAddForm = () => {
     setNewClubName(""); setNewClubEmail(""); setNewClubPhone(""); setNewClubPhoto("");
     setMatchedUsers([]); setShowMatchPopup(false); setMatchedExistingId(null);
+    setEmailExistsNoMatch(null);
   };
 
-  const searchByField = async (field: 'email' | 'name', value: string) => {
-    if (value.trim().length < 2) { setMatchedUsers([]); setShowMatchPopup(false); return; }
-    const { data } = await supabase.from("app_users")
-      .select("id, name, email, phone, photo_url, avatar_url, role")
-      .ilike(field, `%${value.trim()}%`)
-      .in("role", ["coach", "trainer"])
-      .limit(5);
+  const searchByField = async (value: string) => {
+    if (value.trim().length < 2) { setMatchedUsers([]); setShowMatchPopup(false); setEmailExistsNoMatch(null); return; }
+    const { data, error } = await supabase.rpc('find_user_by_contact', { _query: value.trim() });
+    if (error) { console.error('find_user_by_contact error', error); return; }
     const existingClubIds = clubs.map((c) => c.club_id);
     const filtered = (data || []).filter((u: any) => !existingClubIds.includes(u.id) && u.id !== userProfile?.id);
     setMatchedUsers(filtered);
     setShowMatchPopup(filtered.length > 0);
+
+    if (value.includes('@')) {
+      const exact = (data || []).find((u: any) => u.email?.toLowerCase() === value.trim().toLowerCase());
+      setEmailExistsNoMatch(exact && !filtered.some((f: any) => f.id === exact.id) ? exact : null);
+    } else {
+      setEmailExistsNoMatch(null);
+    }
   };
 
   const handleEmailChange = (val: string) => {
-    setNewClubEmail(val);
-    setMatchedExistingId(null);
-    searchByField('email', val);
+    setNewClubEmail(val); setMatchedExistingId(null); searchByField(val);
   };
-
   const handleNameChange = (val: string) => {
-    setNewClubName(val);
-    setMatchedExistingId(null);
-    searchByField('name', val);
+    setNewClubName(val); setMatchedExistingId(null); searchByField(val);
   };
-
   const handleSelectMatch = (user: any) => {
     setNewClubName(user.name || "");
     setNewClubEmail(user.email || "");
     setNewClubPhone(user.phone || "");
     setNewClubPhoto(user.photo_url || user.avatar_url || "");
     setMatchedExistingId(user.id);
-    setMatchedUsers([]);
-    setShowMatchPopup(false);
+    setMatchedUsers([]); setShowMatchPopup(false); setEmailExistsNoMatch(null);
+  };
+
+  // ===== Athlete add helpers =====
+  const resetAthleteForm = () => {
+    setNewAthName(""); setNewAthEmail(""); setNewAthPhone(""); setNewAthPhoto("");
+    setNewAthClubId(""); setAthMatched([]); setAthShowMatch(false);
+    setAthMatchedExistingId(null); setAthEmailExists(null);
+  };
+
+  const searchAthleteByField = async (value: string) => {
+    if (value.trim().length < 2) { setAthMatched([]); setAthShowMatch(false); setAthEmailExists(null); return; }
+    const { data, error } = await supabase.rpc('find_user_by_contact', { _query: value.trim() });
+    if (error) { console.error(error); return; }
+    setAthMatched(data || []);
+    setAthShowMatch((data || []).length > 0);
+    if (value.includes('@')) {
+      const exact = (data || []).find((u: any) => u.email?.toLowerCase() === value.trim().toLowerCase());
+      setAthEmailExists(exact || null);
+    } else {
+      setAthEmailExists(null);
+    }
+  };
+
+  const handleAthEmailChange = (val: string) => {
+    setNewAthEmail(val); setAthMatchedExistingId(null); searchAthleteByField(val);
+  };
+  const handleAthNameChange = (val: string) => {
+    setNewAthName(val); setAthMatchedExistingId(null); searchAthleteByField(val);
+  };
+  const handleSelectAthMatch = (user: any) => {
+    setNewAthName(user.name || "");
+    setNewAthEmail(user.email || "");
+    setNewAthPhone(user.phone || "");
+    setNewAthPhoto(user.photo_url || user.avatar_url || "");
+    setAthMatchedExistingId(user.id);
+    setAthMatched([]); setAthShowMatch(false); setAthEmailExists(null);
+  };
+
+  const handleCreateAthlete = async () => {
+    if (!userProfile?.id || !newAthName.trim() || !newAthEmail.trim() || !newAthClubId) {
+      toast({ variant: "destructive", title: t("federation.common.error"), description: language === 'el' ? 'Συμπληρώστε όνομα, email και επιλέξτε σύλλογο' : 'Fill name, email and select club' });
+      return;
+    }
+    setCreatingAthlete(true);
+    try {
+      let existingId = athMatchedExistingId;
+      if (!existingId) {
+        const { data: existing } = await supabase.rpc('find_user_by_contact', { _query: newAthEmail.trim() });
+        const exact = (existing || []).find((u: any) => u.email?.toLowerCase() === newAthEmail.trim().toLowerCase());
+        existingId = exact?.id || null;
+      }
+
+      if (existingId) {
+        const { error: assignErr } = await supabase.rpc('federation_assign_athlete', {
+          _user_id: existingId, _club_id: newAthClubId,
+        });
+        if (assignErr) {
+          console.error('assign athlete error', assignErr);
+          toast({ variant: "destructive", title: t("federation.common.error"), description: assignErr.message });
+          setCreatingAthlete(false); return;
+        }
+      } else {
+        const { error: insErr } = await supabase.from("app_users").insert({
+          name: newAthName.trim(),
+          email: newAthEmail.trim(),
+          phone: newAthPhone.trim() || null,
+          photo_url: newAthPhoto || null,
+          role: "athlete",
+          coach_id: newAthClubId,
+          user_status: "active",
+        });
+        if (insErr) {
+          console.error('insert athlete error', insErr);
+          toast({ variant: "destructive", title: t("federation.common.error"), description: insErr.message });
+          setCreatingAthlete(false); return;
+        }
+      }
+
+      toast({ title: t("federation.common.success"), description: language === 'el' ? 'Ο αθλητής προστέθηκε' : 'Athlete added' });
+      setAddAthleteDialogOpen(false); resetAthleteForm(); fetchAthletes(); fetchClubs();
+    } catch (err: any) {
+      console.error(err);
+      toast({ variant: "destructive", title: t("federation.common.error"), description: err.message });
+    } finally {
+      setCreatingAthlete(false);
+    }
   };
 
   const handleCreateClub = async () => {
