@@ -61,9 +61,7 @@ export const VelocityCameraDialog: React.FC<VelocityCameraDialogProps> = ({
         .eq('exercise_id', exerciseId)
         .maybeSingle();
       if (data) {
-        const ppm = data.bar_length_cm && data.bar_length_pixels
-          ? data.bar_length_pixels / (data.bar_length_cm / 100)
-          : DEFAULT_CALIBRATION.pixels_per_meter;
+        const ppm = data.pixels_per_meter ?? DEFAULT_CALIBRATION.pixels_per_meter;
         setCalibration({
           pixels_per_meter: ppm,
           hsv_lower: (data.hsv_lower as number[] as [number, number, number]) ?? DEFAULT_CALIBRATION.hsv_lower,

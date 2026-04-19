@@ -6,7 +6,7 @@ import { Camera, X } from "lucide-react";
 import { getWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
 import { formatVelocityMs } from '@/utils/timeCalculations';
 import { VelocityCameraDialog } from './VelocityCameraDialog';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 interface ExerciseActualValuesProps {
   exercise: any;
@@ -65,7 +65,7 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
     }
   };
 
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const [cameraOpen, setCameraOpen] = useState(false);
 
   if (!workoutInProgress) {
