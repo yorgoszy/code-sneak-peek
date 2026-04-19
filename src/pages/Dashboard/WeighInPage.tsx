@@ -49,7 +49,11 @@ interface Competition {
   weigh_in_ended_at?: string | null;
 }
 
-const WeighInPage: React.FC = () => {
+interface WeighInPageProps {
+  embedded?: boolean;
+}
+
+const WeighInPage: React.FC<WeighInPageProps> = ({ embedded = false }) => {
   const { t } = useTranslation();
   const { userProfile, isAdmin, isFederation, isCoach } = useRoleCheck();
   const [isCollapsed, setIsCollapsed] = useState(false);
