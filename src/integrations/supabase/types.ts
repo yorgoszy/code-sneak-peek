@@ -88,6 +88,38 @@ export type Database = {
           },
         ]
       }
+      acknowledged_abuse_reports: {
+        Row: {
+          acknowledged_at: string
+          created_at: string
+          id: string
+          report_id: string
+          user_id: string
+        }
+        Insert: {
+          acknowledged_at?: string
+          created_at?: string
+          id?: string
+          report_id: string
+          user_id: string
+        }
+        Update: {
+          acknowledged_at?: string
+          created_at?: string
+          id?: string
+          report_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "acknowledged_abuse_reports_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "abuse_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       acknowledged_gym_bookings: {
         Row: {
           acknowledged_at: string
