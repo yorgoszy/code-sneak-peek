@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from "react-i18next";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { CoachSidebar } from "@/components/CoachSidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
-import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Menu, Radio, Monitor, Maximize } from "lucide-react";
