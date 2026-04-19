@@ -129,14 +129,14 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
         <Card className="rounded-none border-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" /> {t('safety.adminViewTitle')}
+              <Shield className="h-5 w-5" /> {t(viewTitleKey)}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
               <p className="text-gray-500">{t('safety.loading')}</p>
             ) : reports.length === 0 ? (
-              <p className="text-gray-500">{t('safety.adminNoReports')}</p>
+              <p className="text-gray-500">{t(viewEmptyKey)}</p>
             ) : (
               <ReportList reports={reports} />
             )}
