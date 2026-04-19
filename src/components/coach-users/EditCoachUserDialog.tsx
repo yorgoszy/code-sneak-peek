@@ -70,8 +70,8 @@ export const EditCoachUserDialog = ({
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error("Το αρχείο είναι πολύ μεγάλο (max 10MB)");
+      if (file.size > 50 * 1024 * 1024) {
+        toast.error("Το αρχείο είναι πολύ μεγάλο (max 50MB)");
         return;
       }
       

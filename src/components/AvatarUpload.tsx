@@ -32,8 +32,8 @@ export const AvatarUpload = ({
       toast({ variant: "destructive", title: "Σφάλμα", description: "Παρακαλώ επιλέξτε μια έγκυρη εικόνα" });
       return;
     }
-    if (file.size > 10 * 1024 * 1024) {
-      toast({ variant: "destructive", title: "Σφάλμα", description: "Η εικόνα δεν μπορεί να είναι μεγαλύτερη από 10MB" });
+    if (file.size > 50 * 1024 * 1024) {
+      toast({ variant: "destructive", title: "Σφάλμα", description: "Η εικόνα δεν μπορεί να είναι μεγαλύτερη από 50MB" });
       return;
     }
 

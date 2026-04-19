@@ -33,12 +33,12 @@ export const PhotoUpload = ({ currentPhotoUrl, onPhotoChange, disabled }: PhotoU
       return;
     }
 
-    // Validate file size (max 10MB for original - will be compressed)
-    if (file.size > 10 * 1024 * 1024) {
+    // Validate file size (max 50MB for original - will be compressed)
+    if (file.size > 50 * 1024 * 1024) {
       toast({
         variant: "destructive",
         title: "Σφάλμα",
-        description: "Η εικόνα δεν μπορεί να είναι μεγαλύτερη από 10MB",
+        description: "Η εικόνα δεν μπορεί να είναι μεγαλύτερη από 50MB",
       });
       return;
     }

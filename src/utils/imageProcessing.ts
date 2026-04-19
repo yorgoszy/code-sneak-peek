@@ -4,7 +4,9 @@
  */
 
 const MAX_AVATAR_SIZE = 400; // Maximum dimension for avatars
-const JPEG_QUALITY = 0.85; // Quality for JPEG compression
+const JPEG_QUALITY = 0.85; // Initial quality for JPEG compression
+const MAX_AVATAR_BYTES = 300 * 1024; // Target max file size for avatars (~300KB)
+const MIN_QUALITY = 0.5; // Don't go below this quality
 
 interface ProcessedImage {
   blob: Blob;
@@ -65,24 +67,23 @@ export const processAvatarImage = async (file: File): Promise<ProcessedImage> =>
   // Clean up object URL
   URL.revokeObjectURL(img.src);
   
-  // Convert to blob with compression
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => {
-        if (blob) {
-          resolve({
-            blob,
-            width: outputSize,
-            height: outputSize
-          });
-        } else {
-          reject(new Error('Αποτυχία μετατροπής εικόνας'));
-        }
-      },
-      'image/jpeg',
-      JPEG_QUALITY
-    );
-  });
+  // Iteratively compress until under target size (handles very large source images)
+  const toBlob = (quality: number): Promise<Blob | null> =>
+    new Promise((resolve) => canvas.toBlob((b) => resolve(b), 'image/jpeg', quality));
+
+  let quality = JPEG_QUALITY;
+  let blob = await toBlob(quality);
+
+  while (blob && blob.size > MAX_AVATAR_BYTES && quality > MIN_QUALITY) {
+    quality = Math.max(MIN_QUALITY, quality - 0.1);
+    blob = await toBlob(quality);
+  }
+
+  if (!blob) {
+    throw new Error('Αποτυχία μετατροπής εικόνας');
+  }
+
+  return { blob, width: outputSize, height: outputSize };
 };
 
 /**
