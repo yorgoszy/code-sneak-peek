@@ -25,7 +25,7 @@ interface VelocityCameraDialogProps {
   exerciseResultId?: string;
 }
 
-type MarkerColor = 'green' | 'red' | 'yellow' | 'blue' | 'orange' | 'pink' | 'custom';
+type MarkerColor = 'green' | 'red' | 'yellow' | 'blue' | 'orange' | 'purple' | 'white' | 'black' | 'custom';
 
 const COLOR_PRESETS: Record<Exclude<MarkerColor, 'custom'>, { label: string; emoji: string; lower: [number, number, number]; upper: [number, number, number] }> = {
   green:  { label: 'Πράσινο',  emoji: '🟢', lower: [35, 100, 100], upper: [85, 255, 255] },
