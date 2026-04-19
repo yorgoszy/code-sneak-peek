@@ -41,11 +41,30 @@ const getWeightLabel = (name: string): string => {
   return m ? m[1] : name;
 };
 
-const RankingPage = () => {
+interface RankingPageProps {
+  embedded?: boolean;
+  contextUserId?: string;
+}
+
+const RankingPage: React.FC<RankingPageProps> = ({ embedded = false, contextUserId }) => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const { userProfile } = useRoleCheck();
+  const { userProfile: loggedInProfile } = useRoleCheck();
+  const [contextProfile, setContextProfile] = useState<any>(null);
+  const userProfile = embedded && contextProfile ? contextProfile : loggedInProfile;
   const { t } = useTranslation();
+
+  // Fetch the context user's profile when embedded
+  useEffect(() => {
+    if (embedded && contextUserId) {
+      supabase
+        .from('app_users')
+        .select('id, name, role, coach_id')
+        .eq('id', contextUserId)
+        .maybeSingle()
+        .then(({ data }) => setContextProfile(data));
+    }
+  }, [embedded, contextUserId]);
 
   const [federationId, setFederationId] = useState<string | null>(null);
   const [federationName, setFederationName] = useState('');
@@ -226,33 +245,10 @@ const RankingPage = () => {
     return <span className="text-sm font-bold text-muted-foreground w-6 text-center">{position}</span>;
   };
 
-  return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        <div className="hidden lg:block">{renderSidebar()}</div>
-
-        {isMobileOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden">
-            <div className="absolute inset-0 bg-black/50" onClick={() => setIsMobileOpen(false)} />
-            <div className="relative w-64 h-full">{renderSidebar()}</div>
-          </div>
-        )}
-
-        <div className="flex-1 flex flex-col min-w-0">
-          <div className="sticky top-0 z-40 bg-background border-b border-border p-3 lg:hidden">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Button variant="outline" size="sm" onClick={() => setIsMobileOpen(true)} className="rounded-none">
-                  <Menu className="h-5 w-5" />
-                </Button>
-                <h1 className="text-lg font-semibold">{t('federation.ranking.title')}</h1>
-              </div>
-            </div>
-          </div>
-
+  const mainContent = (
           <main className="flex-1 p-4 lg:p-6 overflow-auto">
             {/* Desktop Header */}
-            <div className="hidden lg:flex items-center justify-between mb-6">
+            <div className={`${embedded ? 'flex' : 'hidden lg:flex'} items-center justify-between mb-6`}>
               <div>
                 <h1 className="text-2xl font-bold flex items-center gap-2">
                   <Trophy className="h-6 w-6 text-[#cb8954]" /> {t('federation.ranking.title')}
@@ -272,45 +268,31 @@ const RankingPage = () => {
               <div className="text-center py-12 text-muted-foreground">{t('federation.common.loading')}</div>
             ) : (
               <div className="space-y-4">
-                {/* Filters */}
                 <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3">
                   <Select value={selectedGender} onValueChange={v => { setSelectedGender(v); setSelectedAge('all'); setSelectedCategory('all'); }}>
-                    <SelectTrigger className="w-full sm:w-[140px] rounded-none">
-                      <SelectValue />
-                    </SelectTrigger>
+                    <SelectTrigger className="w-full sm:w-[140px] rounded-none"><SelectValue /></SelectTrigger>
                     <SelectContent className="rounded-none">
                       <SelectItem value="all">{t('federation.ranking.all')}</SelectItem>
                       <SelectItem value="male">{t('federation.ranking.male')}</SelectItem>
                       <SelectItem value="female">{t('federation.ranking.female')}</SelectItem>
                     </SelectContent>
                   </Select>
-
                   <Select value={selectedAge} onValueChange={v => { setSelectedAge(v); setSelectedCategory('all'); }}>
-                    <SelectTrigger className="w-full sm:w-[160px] rounded-none">
-                      <SelectValue placeholder={t('federation.ranking.allAges')} />
-                    </SelectTrigger>
+                    <SelectTrigger className="w-full sm:w-[160px] rounded-none"><SelectValue placeholder={t('federation.ranking.allAges')} /></SelectTrigger>
                     <SelectContent className="rounded-none">
                       <SelectItem value="all">{t('federation.ranking.allAges')}</SelectItem>
-                      {getAgeGroups().map(age => (
-                        <SelectItem key={age} value={age}>{age}</SelectItem>
-                      ))}
+                      {getAgeGroups().map(age => (<SelectItem key={age} value={age}>{age}</SelectItem>))}
                     </SelectContent>
                   </Select>
-
                   <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <SelectTrigger className="w-full sm:w-[180px] rounded-none">
-                      <SelectValue placeholder={t('federation.ranking.allCategories')} />
-                    </SelectTrigger>
+                    <SelectTrigger className="w-full sm:w-[180px] rounded-none"><SelectValue placeholder={t('federation.ranking.allCategories')} /></SelectTrigger>
                     <SelectContent className="rounded-none">
                       <SelectItem value="all">{t('federation.ranking.allCategories')}</SelectItem>
-                      {getFilteredCategories().map(cat => (
-                        <SelectItem key={cat.id} value={cat.id}>{getWeightLabel(cat.name)}</SelectItem>
-                      ))}
+                      {getFilteredCategories().map(cat => (<SelectItem key={cat.id} value={cat.id}>{getWeightLabel(cat.name)}</SelectItem>))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                {/* Ranking Table */}
                 {ranking.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground border border-border">
                     <Trophy className="h-10 w-10 mx-auto mb-3 opacity-30" />
@@ -319,7 +301,6 @@ const RankingPage = () => {
                   </div>
                 ) : (
                   <>
-                    {/* Desktop Table */}
                     <div className="border border-border hidden md:block">
                       <div className="grid grid-cols-[50px_1fr_120px_120px_100px] bg-muted text-xs font-bold text-foreground px-3 py-2">
                         <span>#</span>
@@ -329,12 +310,7 @@ const RankingPage = () => {
                         <span className="text-right">{t('federation.ranking.points')}</span>
                       </div>
                       {ranking.map((entry, index) => (
-                        <div
-                          key={entry.athlete_id}
-                          className={`grid grid-cols-[50px_1fr_120px_120px_100px] items-center px-3 py-2 text-sm border-t border-border/50 ${
-                            index < 3 ? 'bg-[#cb8954]/5' : ''
-                          }`}
-                        >
+                        <div key={entry.athlete_id} className={`grid grid-cols-[50px_1fr_120px_120px_100px] items-center px-3 py-2 text-sm border-t border-border/50 ${index < 3 ? 'bg-[#cb8954]/5' : ''}`}>
                           <div className="flex items-center">{getMedalIcon(index + 1)}</div>
                           <div className="flex items-center gap-2 min-w-0">
                             <Avatar className="h-7 w-7 rounded-full shrink-0">
@@ -357,13 +333,9 @@ const RankingPage = () => {
                       ))}
                     </div>
 
-                    {/* Mobile Cards */}
                     <div className="md:hidden space-y-2">
                       {ranking.map((entry, index) => (
-                        <div
-                          key={entry.athlete_id}
-                          className={`border border-border p-3 ${index < 3 ? 'bg-[#cb8954]/5' : ''}`}
-                        >
+                        <div key={entry.athlete_id} className={`border border-border p-3 ${index < 3 ? 'bg-[#cb8954]/5' : ''}`}>
                           <div className="flex items-center gap-3">
                             <div className="flex items-center shrink-0 w-8">{getMedalIcon(index + 1)}</div>
                             <Avatar className="h-8 w-8 rounded-full shrink-0">
@@ -400,6 +372,35 @@ const RankingPage = () => {
               </div>
             )}
           </main>
+  );
+
+  if (embedded) return mainContent;
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <div className="hidden lg:block">{renderSidebar()}</div>
+
+        {isMobileOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <div className="absolute inset-0 bg-black/50" onClick={() => setIsMobileOpen(false)} />
+            <div className="relative w-64 h-full">{renderSidebar()}</div>
+          </div>
+        )}
+
+        <div className="flex-1 flex flex-col min-w-0">
+          <div className="sticky top-0 z-40 bg-background border-b border-border p-3 lg:hidden">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Button variant="outline" size="sm" onClick={() => setIsMobileOpen(true)} className="rounded-none">
+                  <Menu className="h-5 w-5" />
+                </Button>
+                <h1 className="text-lg font-semibold">{t('federation.ranking.title')}</h1>
+              </div>
+            </div>
+          </div>
+
+          {mainContent}
         </div>
       </div>
     </SidebarProvider>

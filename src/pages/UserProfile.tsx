@@ -173,6 +173,13 @@ const UserProfile = () => {
             isCollapsed={isCollapsed}
             setIsCollapsed={setIsCollapsed}
             contextCoachId={userId}
+            onNavigateOverride={(path) => {
+              const p = path.split('?')[0];
+              if (p === '/dashboard/coach-brackets') { setActiveTab('coach-brackets'); return true; }
+              if (p === '/dashboard/coach-live') { setActiveTab('coach-live'); return true; }
+              if (p === '/dashboard/ranking') { setActiveTab('coach-ranking'); return true; }
+              return false;
+            }}
           />
         ) : (
           <UserProfileSidebar
@@ -200,6 +207,13 @@ const UserProfile = () => {
                 isCollapsed={false}
                 setIsCollapsed={setIsCollapsed}
                 contextCoachId={userId}
+                onNavigateOverride={(path) => {
+                  const p = path.split('?')[0];
+                  if (p === '/dashboard/coach-brackets') { setActiveTab('coach-brackets'); return true; }
+                  if (p === '/dashboard/coach-live') { setActiveTab('coach-live'); return true; }
+                  if (p === '/dashboard/ranking') { setActiveTab('coach-ranking'); return true; }
+                  return false;
+                }}
               />
             ) : (
               <UserProfileSidebar
