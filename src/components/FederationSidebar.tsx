@@ -41,13 +41,15 @@ export const FederationSidebar = ({
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const { t } = useTranslation();
 
+  const rankingPath = userProfile?.id ? `/dashboard/ranking?federationId=${userProfile.id}` : "/dashboard/ranking";
+
   const menuItems = [
     { icon: Home, label: t("federation.sidebar.overview"), path: "/dashboard/federation-overview" },
     { icon: Users, label: t("federation.sidebar.users"), path: "/dashboard/federation-users" },
     { icon: UserCheck, label: "Αθλητές Ομοσπονδίας", path: "/dashboard/federation-athletes" },
     { icon: CreditCard, label: t("federation.sidebar.subscriptions"), path: "/dashboard/federation-subscriptions" },
     { icon: TrendingUp, label: "Athletes Progress", path: "/dashboard/federation-progress" },
-    { icon: Trophy, label: "Ranking", path: "/dashboard/ranking" },
+    { icon: Trophy, label: "Ranking", path: rankingPath },
     { icon: Swords, label: t("federation.sidebar.competitions"), path: "/dashboard/federation-competitions" },
     { icon: Scale, label: t("federation.sidebar.weighIn"), path: "/dashboard/weigh-in" },
     { icon: Shuffle, label: t("federation.sidebar.brackets"), path: "/dashboard/federation-brackets" },
