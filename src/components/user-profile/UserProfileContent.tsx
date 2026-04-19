@@ -97,7 +97,7 @@ export const UserProfileContent = ({
   const hasSubscription = isAdmin() || hasActiveSubscription;
   
   // Allowed tabs without subscription
-  const allowedWithoutSubscription = ['shop', 'edit-profile', 'download-app'];
+  const allowedWithoutSubscription = ['shop', 'edit-profile', 'download-app', 'safety'];
 
   // Άνοιγμα του AI chat dialog όταν το tab είναι "ai-trainer" - χρησιμοποιείται μόνο για άλλα components
   useEffect(() => {
