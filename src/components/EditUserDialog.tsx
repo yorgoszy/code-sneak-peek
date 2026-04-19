@@ -51,97 +51,66 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 mt-3">
-          <AvatarUpload
-            currentPhotoUrl={photoUrl || undefined}
-            onPhotoChange={setPhotoUrl}
-            disabled={loading}
-            fallbackText={fallback}
-            size={88}
-          />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label htmlFor="name" className="text-xs">Όνομα *</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Όνομα"
-                className="rounded-none h-9"
+        <div className="space-y-3 mt-3">
+          <div className="flex gap-4 items-start">
+            <div className="flex-shrink-0 pt-1">
+              <AvatarUpload
+                currentPhotoUrl={photoUrl || undefined}
+                onPhotoChange={setPhotoUrl}
                 disabled={loading}
-                required
+                fallbackText={fallback}
+                size={120}
               />
             </div>
 
-            <div className="space-y-1">
-              <Label htmlFor="email" className="text-xs">Email *</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="email@example.com"
-                className="rounded-none h-9"
-                disabled={loading}
-                required
-              />
-            </div>
+            <div className="flex-1 min-w-0 space-y-2">
+              <div className="space-y-1">
+                <Label htmlFor="name" className="text-xs">Όνομα *</Label>
+                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Όνομα" className="rounded-none h-9" disabled={loading} required />
+              </div>
 
-            <div className="space-y-1">
-              <Label htmlFor="phone" className="text-xs">Τηλέφωνο</Label>
-              <Input
-                id="phone"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="Τηλέφωνο"
-                className="rounded-none h-9"
-                disabled={loading}
-              />
-            </div>
+              <div className="space-y-1">
+                <Label htmlFor="email" className="text-xs">Email *</Label>
+                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" className="rounded-none h-9" disabled={loading} required />
+              </div>
 
-            <div className="space-y-1">
-              <Label htmlFor="birthDate" className="text-xs">Ημ. Γέννησης</Label>
-              <Input
-                id="birthDate"
-                type="date"
-                value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
-                className="rounded-none h-9"
-                disabled={loading}
-              />
-            </div>
+              <div className="space-y-1">
+                <Label htmlFor="birthDate" className="text-xs">Ημ. Γέννησης</Label>
+                <Input id="birthDate" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} className="rounded-none h-9" disabled={loading} />
+              </div>
 
-            <div className="space-y-1">
-              <Label htmlFor="role" className="text-xs">Ρόλος</Label>
-              <Select value={role} onValueChange={setRole} disabled={loading}>
-                <SelectTrigger className="rounded-none h-9">
-                  <SelectValue placeholder="Ρόλος" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="coach">Coach</SelectItem>
-                  <SelectItem value="federation">Federation</SelectItem>
-                  <SelectItem value="trainer">Trainer</SelectItem>
-                  <SelectItem value="athlete">Athlete</SelectItem>
-                  <SelectItem value="parent">Parent</SelectItem>
-                  <SelectItem value="general">General</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              <div className="space-y-1">
+                <Label htmlFor="gender" className="text-xs">Φύλο</Label>
+                <Select value={gender} onValueChange={setGender} disabled={loading}>
+                  <SelectTrigger className="rounded-none h-9"><SelectValue placeholder="Φύλο" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="male">Άνδρας</SelectItem>
+                    <SelectItem value="female">Γυναίκα</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="space-y-1">
-              <Label htmlFor="gender" className="text-xs">Φύλο</Label>
-              <Select value={gender} onValueChange={setGender} disabled={loading}>
-                <SelectTrigger className="rounded-none h-9">
-                  <SelectValue placeholder="Φύλο" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="male">Άνδρας</SelectItem>
-                  <SelectItem value="female">Γυναίκα</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="space-y-1">
+                <Label htmlFor="role" className="text-xs">Ρόλος</Label>
+                <Select value={role} onValueChange={setRole} disabled={loading}>
+                  <SelectTrigger className="rounded-none h-9"><SelectValue placeholder="Ρόλος" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="coach">Coach</SelectItem>
+                    <SelectItem value="federation">Federation</SelectItem>
+                    <SelectItem value="trainer">Trainer</SelectItem>
+                    <SelectItem value="athlete">Athlete</SelectItem>
+                    <SelectItem value="parent">Parent</SelectItem>
+                    <SelectItem value="general">General</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="phone" className="text-xs">Τηλέφωνο</Label>
+            <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Τηλέφωνο" className="rounded-none h-9" disabled={loading} />
           </div>
 
           {role === "parent" && (
