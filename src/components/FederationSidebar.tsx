@@ -15,6 +15,7 @@ import {
   ClipboardList,
   Scale,
   UserCheck,
+  ShieldAlert,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -24,6 +25,7 @@ import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useAuth } from "@/hooks/useAuth";
 import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useFederationAbuseReportsCount } from "@/hooks/useFederationAbuseReportsCount";
 
 interface FederationSidebarProps {
   isCollapsed: boolean;
@@ -40,6 +42,7 @@ export const FederationSidebar = ({
   const { signOut } = useAuth();
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const { t } = useTranslation();
+  const { count: abuseCount } = useFederationAbuseReportsCount(userProfile?.id);
 
   const rankingPath = userProfile?.id ? `/dashboard/ranking?federationId=${userProfile.id}` : "/dashboard/ranking";
 
@@ -55,6 +58,7 @@ export const FederationSidebar = ({
     { icon: Shuffle, label: t("federation.sidebar.brackets"), path: "/dashboard/federation-brackets" },
     { icon: Radio, label: t("federation.sidebar.live"), path: "/dashboard/federation-live" },
     { icon: ClipboardList, label: t("federation.sidebar.fightCard"), path: "/dashboard/federation-fight-card" },
+    { icon: ShieldAlert, label: "Καταγγελίες", path: "/dashboard/federation-abuse-reports", badge: abuseCount },
     { icon: Brain, label: "AI Lab", path: "/dashboard/ai-lab" },
     { icon: Settings, label: t("federation.sidebar.editProfile"), path: "/dashboard/federation-profile" },
   ];
@@ -83,14 +87,30 @@ export const FederationSidebar = ({
         <button
           key={item.path}
           onClick={() => navigate(item.path)}
-          className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors rounded-none ${
+          className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-colors rounded-none relative ${
             isActive(item.path)
               ? "bg-black/10 text-foreground font-medium border-r-2 border-foreground"
               : "text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
         >
-          <item.icon className="w-5 h-5 flex-shrink-0" />
-          {!isCollapsed && <span>{item.label}</span>}
+          <div className="relative flex-shrink-0">
+            <item.icon className="w-5 h-5" />
+            {isCollapsed && (item as any).badge > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 bg-red-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                {(item as any).badge > 9 ? "9+" : (item as any).badge}
+              </span>
+            )}
+          </div>
+          {!isCollapsed && (
+            <span className="flex-1 flex items-center justify-between">
+              <span>{item.label}</span>
+              {(item as any).badge > 0 && (
+                <span className="min-w-[20px] h-5 px-1.5 bg-red-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                  {(item as any).badge > 99 ? "99+" : (item as any).badge}
+                </span>
+              )}
+            </span>
+          )}
         </button>
       ))}
 
