@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Navigate, useSearchParams } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { CoachSidebar } from "@/components/CoachSidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
@@ -87,6 +88,7 @@ const CoachBracketsPage: React.FC<CoachBracketsPageProps> = ({ embedded = false 
   const [filterAge, setFilterAge] = useState('');
   const [filterWeight, setFilterWeight] = useState('');
   const [registrationCounts, setRegistrationCounts] = useState<Map<string, number>>(new Map());
+  const [searchParams] = useSearchParams();
 
   const clubId = userProfile?.role === 'coach' ? userProfile?.id : userProfile?.coach_id;
 
@@ -255,12 +257,21 @@ const CoachBracketsPage: React.FC<CoachBracketsPageProps> = ({ embedded = false 
     return { name: `${t('federation.brackets.winnerFight')} ${feederMatchNumber}`, isConfirmed: false };
   };
 
+  const queryCoachId = searchParams.get('coachId');
   const role = userProfile?.role;
   const renderSidebar = () => {
     if (role === 'federation') return <FederationSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
-    if (role === 'coach') return <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
-    return <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
+    return <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} contextCoachId={queryCoachId || undefined} />;
   };
+
+  if (!embedded && role === 'admin') {
+    const target = queryCoachId
+      ? `/dashboard/user-profile/${queryCoachId}?tab=coach-brackets`
+      : userProfile?.id
+        ? `/dashboard/user-profile/${userProfile.id}`
+        : '/dashboard';
+    return <Navigate to={target} replace />;
+  }
 
   const mainContent = (
     <main className="flex-1 p-2 lg:p-3 overflow-auto flex flex-col min-h-0">
