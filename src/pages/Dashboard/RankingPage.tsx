@@ -41,11 +41,30 @@ const getWeightLabel = (name: string): string => {
   return m ? m[1] : name;
 };
 
-const RankingPage = () => {
+interface RankingPageProps {
+  embedded?: boolean;
+  contextUserId?: string;
+}
+
+const RankingPage: React.FC<RankingPageProps> = ({ embedded = false, contextUserId }) => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const { userProfile } = useRoleCheck();
+  const { userProfile: loggedInProfile } = useRoleCheck();
+  const [contextProfile, setContextProfile] = useState<any>(null);
+  const userProfile = embedded && contextProfile ? contextProfile : loggedInProfile;
   const { t } = useTranslation();
+
+  // Fetch the context user's profile when embedded
+  useEffect(() => {
+    if (embedded && contextUserId) {
+      supabase
+        .from('app_users')
+        .select('id, name, role, coach_id')
+        .eq('id', contextUserId)
+        .maybeSingle()
+        .then(({ data }) => setContextProfile(data));
+    }
+  }, [embedded, contextUserId]);
 
   const [federationId, setFederationId] = useState<string | null>(null);
   const [federationName, setFederationName] = useState('');
