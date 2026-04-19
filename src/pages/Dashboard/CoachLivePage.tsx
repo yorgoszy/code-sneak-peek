@@ -38,7 +38,6 @@ interface Match {
   category?: { name: string; gender?: string; min_age?: number | null; max_age?: number | null; min_weight?: number | null; max_weight?: number | null } | null;
 }
 
-const CoachLivePage = () => {
 interface CoachLivePageProps {
   embedded?: boolean;
 }
