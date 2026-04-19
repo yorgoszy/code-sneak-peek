@@ -1,8 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Camera } from "lucide-react";
 import { VideoThumbnail } from '@/components/user-profile/daily-program/VideoThumbnail';
 import { formatVelocityMs } from '@/utils/timeCalculations';
+import { VelocityCameraDialog } from './VelocityCameraDialog';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 const REPS_MODE_LABELS: Record<string, string> = {
   'reps': 'Reps',
@@ -31,6 +35,8 @@ interface ExerciseDetailsProps {
   getKg: (exerciseId: string) => string;
   getReps: (exerciseId: string) => string;
   getVelocity: (exerciseId: string) => string;
+  program?: any;
+  selectedDate?: Date;
 }
 
 export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({ 
@@ -45,8 +51,12 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
   updateVelocity,
   getKg,
   getReps,
-  getVelocity
+  getVelocity,
+  program,
+  selectedDate,
 }) => {
+  const { user } = useAuthContext();
+  const [cameraOpen, setCameraOpen] = useState(false);
   const handleSetsClick = (event: React.MouseEvent) => {
     event.stopPropagation();
     if (workoutInProgress && onSetClick) {
@@ -169,7 +179,7 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
                 className="h-4 text-[8px] md:text-[9px] rounded-none w-full text-center p-0.5"
               />
             </div>
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center gap-0.5">
               <Input
                 type="text"
                 placeholder={exercise.velocity_ms?.toString() ?? ''}
@@ -177,12 +187,35 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
                 onChange={(e) => handleVelocityChange(e.target.value)}
                 className="h-4 text-[8px] md:text-[9px] rounded-none w-full text-center p-0.5"
               />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={(e) => { e.stopPropagation(); setCameraOpen(true); }}
+                className="h-4 w-full p-0 rounded-none"
+                title="Track velocity με κάμερα"
+              >
+                <Camera className="w-2.5 h-2.5" />
+              </Button>
             </div>
             <div></div> {/* Empty space for Tempo column */}
             <div></div> {/* Empty space for Rest column */}
           </div>
         )}
       </div>
+
+      {cameraOpen && (
+        <VelocityCameraDialog
+          isOpen={cameraOpen}
+          onClose={() => setCameraOpen(false)}
+          exerciseId={exercise.exercise_id || exercise.exercises?.id || exercise.id}
+          exerciseName={exercise.exercises?.name || 'Exercise'}
+          userId={program?.user_id || program?.app_users?.id || user?.id || ''}
+          loadKg={Number(currentKg || exercise.kg || 0) || 0}
+          setNumber={1}
+          totalReps={Number(exercise.reps) || 1}
+        />
+      )}
     </div>
   );
 };
