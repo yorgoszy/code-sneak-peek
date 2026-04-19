@@ -35,6 +35,8 @@ interface ExerciseDetailsProps {
   getKg: (exerciseId: string) => string;
   getReps: (exerciseId: string) => string;
   getVelocity: (exerciseId: string) => string;
+  program?: any;
+  selectedDate?: Date;
 }
 
 export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({ 
@@ -49,8 +51,12 @@ export const ExerciseDetails: React.FC<ExerciseDetailsProps> = ({
   updateVelocity,
   getKg,
   getReps,
-  getVelocity
+  getVelocity,
+  program,
+  selectedDate,
 }) => {
+  const { user } = useAuthContext();
+  const [cameraOpen, setCameraOpen] = useState(false);
   const handleSetsClick = (event: React.MouseEvent) => {
     event.stopPropagation();
     if (workoutInProgress && onSetClick) {
