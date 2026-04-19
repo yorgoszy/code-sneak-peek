@@ -5,7 +5,7 @@ import { FederationSidebar } from "@/components/FederationSidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu, Users, Search, Eye, Building2, Plus, Trash2 } from "lucide-react";
+import { Menu, Users, Search, Eye, Building2, Plus, Trash2, UserPlus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -58,9 +58,23 @@ const FederationUsers = () => {
   const [creatingClub, setCreatingClub] = useState(false);
   const [matchedUsers, setMatchedUsers] = useState<any[]>([]);
   const [showMatchPopup, setShowMatchPopup] = useState(false);
+  const [emailExistsNoMatch, setEmailExistsNoMatch] = useState<any | null>(null);
   const [clubsList, setClubsList] = useState<{ id: string; name: string }[]>([]);
   const [newClubPhoto, setNewClubPhoto] = useState<string>("");
   const [matchedExistingId, setMatchedExistingId] = useState<string | null>(null);
+
+  // Add Athlete dialog state
+  const [addAthleteDialogOpen, setAddAthleteDialogOpen] = useState(false);
+  const [newAthName, setNewAthName] = useState("");
+  const [newAthEmail, setNewAthEmail] = useState("");
+  const [newAthPhone, setNewAthPhone] = useState("");
+  const [newAthPhoto, setNewAthPhoto] = useState("");
+  const [newAthClubId, setNewAthClubId] = useState<string>("");
+  const [creatingAthlete, setCreatingAthlete] = useState(false);
+  const [athMatched, setAthMatched] = useState<any[]>([]);
+  const [athShowMatch, setAthShowMatch] = useState(false);
+  const [athMatchedExistingId, setAthMatchedExistingId] = useState<string | null>(null);
+  const [athEmailExists, setAthEmailExists] = useState<any | null>(null);
 
   useEffect(() => {
     if (userProfile?.id) { fetchClubs(); fetchClubsList(); }
