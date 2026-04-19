@@ -53,12 +53,19 @@ interface CoachSidebarProps {
   isCollapsed: boolean;
   setIsCollapsed: (collapsed: boolean) => void;
   contextCoachId?: string;
+  /**
+   * When provided, navigation for embeddable paths (coach-brackets, coach-live, ranking)
+   * is intercepted and converted to a tab key, keeping the user inside the profile view.
+   * Return true if handled, false to fall back to default navigate().
+   */
+  onNavigateOverride?: (path: string) => boolean;
 }
 
 export const CoachSidebar = ({
   isCollapsed,
   setIsCollapsed,
   contextCoachId,
+  onNavigateOverride,
 }: CoachSidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -316,6 +323,9 @@ export const CoachSidebar = ({
     if (item.external) {
       window.open(item.path, "_blank");
     } else {
+      if (onNavigateOverride && onNavigateOverride(item.path)) {
+        return;
+      }
       navigate(item.path);
     }
   };
