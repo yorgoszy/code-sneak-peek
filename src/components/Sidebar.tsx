@@ -45,6 +45,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { useExpiringHealthCards } from "@/hooks/useExpiringHealthCards";
+import { useAdminAbuseReportsCount } from "@/hooks/useAdminAbuseReportsCount";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -66,6 +67,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   const [newUsers, setNewUsers] = useState(0);
   const isMobile = useIsMobile();
   const { expiringCount: expiringHealthCards } = useExpiringHealthCards(userProfile?.id);
+  const { count: newAbuseReports } = useAdminAbuseReportsCount();
 
   const loadAvailableOffers = async () => {
     if (!userProfile?.id) return;
@@ -472,7 +474,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: ShieldAlert,
       label: "Καταγγελίες",
       path: "/dashboard/abuse-reports",
-      badge: null
+      badge: userProfile?.role === 'admin' && newAbuseReports > 0 ? newAbuseReports.toString() : null
     },
     { 
       icon: UsersIcon, 
