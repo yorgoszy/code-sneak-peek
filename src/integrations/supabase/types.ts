@@ -19,13 +19,16 @@ export type Database = {
           abuse_types: string[]
           admin_notes: string | null
           athlete_id: string
+          club_id: string | null
           coach_id: string | null
+          coach_name_text: string | null
           created_at: string
           description: string
           id: string
           incident_date: string | null
           is_anonymous: boolean
           notified_federation_ids: string[]
+          sport: string | null
           status: string
           updated_at: string
         }
@@ -33,13 +36,16 @@ export type Database = {
           abuse_types?: string[]
           admin_notes?: string | null
           athlete_id: string
+          club_id?: string | null
           coach_id?: string | null
+          coach_name_text?: string | null
           created_at?: string
           description: string
           id?: string
           incident_date?: string | null
           is_anonymous?: boolean
           notified_federation_ids?: string[]
+          sport?: string | null
           status?: string
           updated_at?: string
         }
@@ -47,13 +53,16 @@ export type Database = {
           abuse_types?: string[]
           admin_notes?: string | null
           athlete_id?: string
+          club_id?: string | null
           coach_id?: string | null
+          coach_name_text?: string | null
           created_at?: string
           description?: string
           id?: string
           incident_date?: string | null
           is_anonymous?: boolean
           notified_federation_ids?: string[]
+          sport?: string | null
           status?: string
           updated_at?: string
         }
@@ -68,6 +77,20 @@ export type Database = {
           {
             foreignKeyName: "abuse_reports_athlete_id_fkey"
             columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "abuse_reports_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "abuse_reports_club_id_fkey"
+            columns: ["club_id"]
             isOneToOne: false
             referencedRelation: "public_competition_athletes"
             referencedColumns: ["id"]
@@ -1015,6 +1038,7 @@ export type Database = {
           qr_code: string | null
           role: string
           section_id: string | null
+          sport: string | null
           subscription_status: string | null
           updated_at: string | null
           user_status: string
@@ -1038,6 +1062,7 @@ export type Database = {
           qr_code?: string | null
           role: string
           section_id?: string | null
+          sport?: string | null
           subscription_status?: string | null
           updated_at?: string | null
           user_status?: string
@@ -1061,6 +1086,7 @@ export type Database = {
           qr_code?: string | null
           role?: string
           section_id?: string | null
+          sport?: string | null
           subscription_status?: string | null
           updated_at?: string | null
           user_status?: string
