@@ -14,28 +14,23 @@ import {
 import { AlertTriangle, Shield, Send, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { useTranslation } from "react-i18next";
 
 interface UserProfileSafetyProps {
   userProfile: any;
 }
 
-const ABUSE_TYPES = [
-  { id: 'physical', label: 'Σωματική κακοποίηση' },
-  { id: 'psychological', label: 'Ψυχολογική κακοποίηση' },
-  { id: 'sexual', label: 'Σεξουαλική παρενόχληση/κακοποίηση' },
-  { id: 'verbal', label: 'Λεκτική βία' },
-  { id: 'bullying', label: 'Εκφοβισμός / Bullying' },
-  { id: 'other', label: 'Άλλο' },
-];
+const ABUSE_TYPE_IDS = ['physical', 'psychological', 'sexual', 'verbal', 'bullying', 'other'] as const;
 
-const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  pending: { label: 'Εκκρεμής', color: 'bg-yellow-100 text-yellow-800' },
-  investigating: { label: 'Υπό έρευνα', color: 'bg-blue-100 text-blue-800' },
-  resolved: { label: 'Επιλύθηκε', color: 'bg-green-100 text-green-800' },
-  dismissed: { label: 'Απορρίφθηκε', color: 'bg-gray-100 text-gray-800' },
+const STATUS_COLORS: Record<string, string> = {
+  pending: 'bg-yellow-100 text-yellow-800',
+  investigating: 'bg-blue-100 text-blue-800',
+  resolved: 'bg-green-100 text-green-800',
+  dismissed: 'bg-gray-100 text-gray-800',
 };
 
 export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
+  const { t } = useTranslation();
   const { userProfile: currentUser, isAdmin } = useRoleCheck();
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,11 +68,11 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
 
   const handleSubmit = async () => {
     if (selectedTypes.length === 0) {
-      toast.error('Επίλεξε τουλάχιστον έναν τύπο');
+      toast.error(t('safety.errorMinTypes'));
       return;
     }
     if (description.trim().length < 20) {
-      toast.error('Η περιγραφή πρέπει να έχει τουλάχιστον 20 χαρακτήρες');
+      toast.error(t('safety.errorMinDesc'));
       return;
     }
     setConfirmOpen(true);
@@ -102,7 +97,6 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
 
       if (error) throw error;
 
-      // Στείλε ειδοποίηση στις ομοσπονδίες
       try {
         await supabase.functions.invoke('send-abuse-report-notification', {
           body: { reportId: inserted.id },
@@ -111,7 +105,7 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
         console.error('Notification error:', e);
       }
 
-      toast.success('Η καταγγελία υποβλήθηκε. Οι αρμόδιες ομοσπονδίες ειδοποιήθηκαν.');
+      toast.success(t('safety.successSubmit'));
       setSelectedTypes([]);
       setDescription("");
       setIncidentDate("");
@@ -119,7 +113,7 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
       loadReports();
     } catch (e: any) {
       console.error(e);
-      toast.error(e.message || 'Σφάλμα υποβολής');
+      toast.error(e.message || t('safety.errorSubmit'));
     } finally {
       setSubmitting(false);
     }
@@ -131,14 +125,14 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
         <Card className="rounded-none border-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" /> Καταγγελίες αθλητή (Admin View)
+              <Shield className="h-5 w-5" /> {t('safety.adminViewTitle')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <p className="text-gray-500">Φόρτωση...</p>
+              <p className="text-gray-500">{t('safety.loading')}</p>
             ) : reports.length === 0 ? (
-              <p className="text-gray-500">Δεν υπάρχουν καταγγελίες από τον αθλητή.</p>
+              <p className="text-gray-500">{t('safety.adminNoReports')}</p>
             ) : (
               <ReportList reports={reports} />
             )}
@@ -153,28 +147,24 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
       <Card className="rounded-none border-2 border-red-200">
         <CardHeader className="bg-red-50">
           <CardTitle className="flex items-center gap-2 text-red-800">
-            <AlertTriangle className="h-5 w-5" /> Αναφορά Κακοποίησης
+            <AlertTriangle className="h-5 w-5" /> {t('safety.title')}
           </CardTitle>
-          <p className="text-sm text-red-700 mt-2">
-            Αν έχεις υποστεί οποιαδήποτε μορφή κακοποίησης από τον προπονητή ή το σωματείο σου,
-            μπορείς να υποβάλεις εμπιστευτική καταγγελία. Η αναφορά αποστέλλεται απευθείας στις
-            αρμόδιες ομοσπονδίες όπου ανήκει ο προπονητής/σωματείο σου για διερεύνηση.
-          </p>
+          <p className="text-sm text-red-700 mt-2">{t('safety.intro')}</p>
         </CardHeader>
         <CardContent className="space-y-4 pt-6">
           <div>
-            <Label className="font-medium mb-2 block">Τύπος κακοποίησης (επιλέγεις ένα ή περισσότερα)</Label>
+            <Label className="font-medium mb-2 block">{t('safety.abuseTypeLabel')}</Label>
             <div className="space-y-2">
-              {ABUSE_TYPES.map(t => (
+              {ABUSE_TYPE_IDS.map(id => (
                 <div
-                  key={t.id}
-                  onClick={() => toggleType(t.id)}
+                  key={id}
+                  onClick={() => toggleType(id)}
                   className={`flex items-center gap-3 p-3 border cursor-pointer transition-colors ${
-                    selectedTypes.includes(t.id) ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:bg-gray-50'
+                    selectedTypes.includes(id) ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:bg-gray-50'
                   }`}
                 >
-                  <Checkbox checked={selectedTypes.includes(t.id)} />
-                  <span className="text-sm">{t.label}</span>
+                  <Checkbox checked={selectedTypes.includes(id)} />
+                  <span className="text-sm">{t(`safety.types.${id}`)}</span>
                 </div>
               ))}
             </div>
@@ -182,7 +172,7 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
 
           <div>
             <Label htmlFor="incident-date" className="font-medium mb-2 block">
-              Ημερομηνία περιστατικού (προαιρετικό)
+              {t('safety.incidentDate')}
             </Label>
             <Input
               id="incident-date"
@@ -195,17 +185,17 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
 
           <div>
             <Label htmlFor="description" className="font-medium mb-2 block">
-              Περιγραφή περιστατικού *
+              {t('safety.description')}
             </Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Περίγραψε με δικά σου λόγια τι συνέβη. Δώσε όσες λεπτομέρειες θεωρείς σχετικές (πότε, πού, ποιοι ήταν παρόντες)..."
+              placeholder={t('safety.descriptionPlaceholder')}
               rows={6}
               className="rounded-none"
             />
-            <p className="text-xs text-gray-500 mt-1">{description.length} χαρακτήρες (ελάχιστο 20)</p>
+            <p className="text-xs text-gray-500 mt-1">{t('safety.charactersMin', { count: description.length })}</p>
           </div>
 
           <div
@@ -216,10 +206,8 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
           >
             <Checkbox checked={isAnonymous} />
             <div>
-              <span className="text-sm font-medium">Ανώνυμη υποβολή</span>
-              <p className="text-xs text-gray-500">
-                Το όνομά σου δεν θα εμφανιστεί στις ομοσπονδίες (ο admin το βλέπει πάντα).
-              </p>
+              <span className="text-sm font-medium">{t('safety.anonymous')}</span>
+              <p className="text-xs text-gray-500">{t('safety.anonymousHint')}</p>
             </div>
           </div>
 
@@ -229,20 +217,20 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
             className="w-full bg-red-600 hover:bg-red-700 text-white rounded-none"
           >
             {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
-            Υποβολή Καταγγελίας
+            {t('safety.submit')}
           </Button>
         </CardContent>
       </Card>
 
       <Card className="rounded-none">
         <CardHeader>
-          <CardTitle className="text-base">Οι καταγγελίες μου</CardTitle>
+          <CardTitle className="text-base">{t('safety.myReports')}</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-gray-500 text-sm">Φόρτωση...</p>
+            <p className="text-gray-500 text-sm">{t('safety.loading')}</p>
           ) : reports.length === 0 ? (
-            <p className="text-gray-500 text-sm">Δεν έχεις υποβάλει καμία καταγγελία.</p>
+            <p className="text-gray-500 text-sm">{t('safety.noReports')}</p>
           ) : (
             <ReportList reports={reports} />
           )}
@@ -252,16 +240,13 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent className="rounded-none">
           <AlertDialogHeader>
-            <AlertDialogTitle>Επιβεβαίωση υποβολής</AlertDialogTitle>
-            <AlertDialogDescription>
-              Η καταγγελία θα αποσταλεί σε όλες τις ομοσπονδίες όπου ανήκει ο προπονητής/σωματείο σου.
-              Παρακαλούμε υπόβαλε μόνο αν τα γεγονότα είναι αληθή. Συνέχεια;
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t('safety.confirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('safety.confirmDesc')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-none">{t('safety.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={confirmSubmit} className="bg-red-600 hover:bg-red-700 rounded-none">
-              Υποβολή
+              {t('safety.submit')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -270,35 +255,38 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
   );
 };
 
-const ReportList = ({ reports }: { reports: any[] }) => (
-  <div className="space-y-3">
-    {reports.map(r => {
-      const status = STATUS_LABELS[r.status] || STATUS_LABELS.pending;
-      return (
-        <div key={r.id} className="border p-3 space-y-2">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div className="flex items-center gap-2">
-              <Badge className={`${status.color} rounded-none`}>{status.label}</Badge>
-              {r.is_anonymous && <Badge variant="outline" className="rounded-none">Ανώνυμη</Badge>}
+const ReportList = ({ reports }: { reports: any[] }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="space-y-3">
+      {reports.map(r => {
+        const color = STATUS_COLORS[r.status] || STATUS_COLORS.pending;
+        return (
+          <div key={r.id} className="border p-3 space-y-2">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <Badge className={`${color} rounded-none`}>{t(`safety.status.${r.status}`)}</Badge>
+                {r.is_anonymous && <Badge variant="outline" className="rounded-none">{t('safety.anonymousBadge')}</Badge>}
+              </div>
+              <span className="text-xs text-gray-500">
+                {new Date(r.created_at).toLocaleString()}
+              </span>
             </div>
-            <span className="text-xs text-gray-500">
-              {new Date(r.created_at).toLocaleString('el-GR')}
-            </span>
-          </div>
-          <div className="text-xs text-gray-600">
-            Τύποι: {(r.abuse_types || []).join(', ')}
-          </div>
-          <p className="text-sm whitespace-pre-wrap">{r.description}</p>
-          {r.admin_notes && (
-            <div className="bg-gray-50 p-2 text-xs border-l-2 border-gray-400">
-              <strong>Σημειώσεις admin:</strong> {r.admin_notes}
+            <div className="text-xs text-gray-600">
+              {t('safety.typesLabel')}: {(r.abuse_types || []).map((x: string) => t(`safety.types.${x}`)).join(', ')}
             </div>
-          )}
-          <div className="text-xs text-gray-500">
-            Ειδοποιημένες ομοσπονδίες: {(r.notified_federation_ids || []).length}
+            <p className="text-sm whitespace-pre-wrap">{r.description}</p>
+            {r.admin_notes && (
+              <div className="bg-gray-50 p-2 text-xs border-l-2 border-gray-400">
+                <strong>{t('safety.adminNotes')}:</strong> {r.admin_notes}
+              </div>
+            )}
+            <div className="text-xs text-gray-500">
+              {t('safety.notifiedFeds')}: {(r.notified_federation_ids || []).length}
+            </div>
           </div>
-        </div>
-      );
-    })}
-  </div>
-);
+        );
+      })}
+    </div>
+  );
+};

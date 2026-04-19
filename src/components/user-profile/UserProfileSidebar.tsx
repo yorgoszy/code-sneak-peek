@@ -315,7 +315,7 @@ export const UserProfileSidebar = forwardRef<
     },
     {
       icon: ShieldAlert,
-      label: 'Ασφάλεια',
+      label: t('sidebar.safety'),
       key: "safety",
       badge: null,
       // Εμφανίζεται μόνο όταν ο ίδιος ο χρήστης βλέπει το προφίλ του (όχι σε admin/coach που το ανοίγει)
