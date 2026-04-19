@@ -161,27 +161,7 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
     }
   };
 
-      try {
-        await supabase.functions.invoke('send-abuse-report-notification', {
-          body: { reportId: inserted.id },
-        });
-      } catch (e) {
-        console.error('Notification error:', e);
-      }
 
-      toast.success(t('safety.successSubmit'));
-      setSelectedTypes([]);
-      setDescription("");
-      setIncidentDate("");
-      setIsAnonymous(false);
-      loadReports();
-    } catch (e: any) {
-      console.error(e);
-      toast.error(e.message || t('safety.errorSubmit'));
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   if (adminViewing) {
     return (
