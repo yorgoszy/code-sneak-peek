@@ -166,23 +166,39 @@ const FederationUsers = () => {
   };
 
   const handleCreateClub = async () => {
-    if (!userProfile?.id || !newClubName.trim() || !newClubEmail.trim()) return;
+    if (!userProfile?.id || !newClubName.trim() || !newClubEmail.trim()) {
+      toast({ variant: "destructive", title: t("federation.common.error"), description: language === 'el' ? 'Συμπληρώστε όνομα και email' : 'Fill name and email' });
+      return;
+    }
     setCreatingClub(true);
     try {
-      const { data: existing } = await supabase.from("app_users")
-        .select("id").eq("email", newClubEmail.trim()).maybeSingle();
-      
-      if (existing) {
-        await handleAddClub(existing.id);
+      // Prefer explicitly matched existing user if user clicked on a suggestion
+      let existingId = matchedExistingId;
+      if (!existingId) {
+        const { data: existing } = await supabase.from("app_users")
+          .select("id").eq("email", newClubEmail.trim()).maybeSingle();
+        existingId = existing?.id || null;
+      }
+
+      if (existingId) {
+        await handleAddClub(existingId);
         setCreatingClub(false);
         return;
       }
 
       const { data: newCoach, error: createError } = await supabase.from("app_users")
-        .insert({ name: newClubName.trim(), email: newClubEmail.trim(), phone: newClubPhone.trim() || null, role: "coach", user_status: "active" })
+        .insert({
+          name: newClubName.trim(),
+          email: newClubEmail.trim(),
+          phone: newClubPhone.trim() || null,
+          photo_url: newClubPhoto || null,
+          role: "coach",
+          user_status: "active",
+        })
         .select("id").single();
 
       if (createError) {
+        console.error('❌ Create coach error:', createError);
         toast({ variant: "destructive", title: t("federation.common.error"), description: createError.message });
         setCreatingClub(false); return;
       }
@@ -190,6 +206,7 @@ const FederationUsers = () => {
       const { error: linkError } = await supabase.from("federation_clubs")
         .insert({ federation_id: userProfile.id, club_id: newCoach.id });
       if (linkError) {
+        console.error('❌ Link club error:', linkError);
         toast({ variant: "destructive", title: t("federation.common.error"), description: linkError.message });
         setCreatingClub(false); return;
       }
@@ -197,6 +214,7 @@ const FederationUsers = () => {
       toast({ title: t("federation.common.success"), description: t("federation.users.clubAdded") });
       setAddDialogOpen(false); resetAddForm(); fetchClubs(); fetchClubsList();
     } catch (err: any) {
+      console.error('❌ handleCreateClub exception:', err);
       toast({ variant: "destructive", title: t("federation.common.error"), description: err.message });
     } finally {
       setCreatingClub(false);
