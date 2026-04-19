@@ -464,6 +464,7 @@ const WeighInPage: React.FC<WeighInPageProps> = ({ embedded = false }) => {
               </div>
             </div>
           </div>
+          )}
 
           <main className="flex-1 p-4 lg:p-6 overflow-auto">
             <div className="hidden lg:flex items-center justify-between mb-6">
