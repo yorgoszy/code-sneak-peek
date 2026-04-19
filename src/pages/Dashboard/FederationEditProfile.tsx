@@ -22,6 +22,7 @@ const FederationEditProfile = () => {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
+  const [sport, setSport] = useState("");
   const [saving, setSaving] = useState(false);
 
   const [newPassword, setNewPassword] = useState("");
@@ -34,6 +35,7 @@ const FederationEditProfile = () => {
       setEmail(userProfile.email || "");
       setPhone(userProfile.phone || "");
       setNotes(userProfile.notes || "");
+      setSport((userProfile as any).sport || "");
     }
   }, [userProfile]);
 
@@ -42,7 +44,7 @@ const FederationEditProfile = () => {
     setSaving(true);
     const { error } = await supabase
       .from("app_users")
-      .update({ name, phone, notes, updated_at: new Date().toISOString() })
+      .update({ name, phone, notes, sport, updated_at: new Date().toISOString() })
       .eq("id", userProfile.id);
 
     if (error) {
@@ -124,6 +126,18 @@ const FederationEditProfile = () => {
                   <div className="space-y-2">
                     <Label>{t("federation.editProfile.phone")}</Label>
                     <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="rounded-none" placeholder={t("federation.editProfile.phonePlaceholder")} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Άθλημα που υπηρετεί η ομοσπονδία</Label>
+                    <Input
+                      value={sport}
+                      onChange={(e) => setSport(e.target.value)}
+                      className="rounded-none"
+                      placeholder="π.χ. Muaythai, Καράτε, Τάε Κβον Ντο, Πυγμαχία..."
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Το άθλημα αυτό θα εμφανίζεται στις φόρμες καταγγελίας ως διαθέσιμη επιλογή.
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <Label>{t("federation.editProfile.notes")}</Label>
