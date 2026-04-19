@@ -151,6 +151,10 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
                 <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" className="rounded-none h-9" required />
               </div>
               <div className="space-y-1">
+                <Label htmlFor="phone" className="text-xs">Τηλέφωνο</Label>
+                <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Τηλέφωνο" className="rounded-none h-9" />
+              </div>
+              <div className="space-y-1">
                 <Label htmlFor="birthDate" className="text-xs">Ημ. Γέννησης</Label>
                 <Input id="birthDate" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} className="rounded-none h-9" />
               </div>
