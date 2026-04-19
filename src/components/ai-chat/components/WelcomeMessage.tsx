@@ -8,7 +8,7 @@ interface WelcomeMessageProps {
 export const WelcomeMessage: React.FC<WelcomeMessageProps> = ({ userName }) => {
   return (
     <div className="text-sm whitespace-pre-wrap">
-      {`Γεια σας! Είμαι ο έξυπνος RID AI βοηθός σας. ${userName ? `Έχω πρόσβαση στα δεδομένα του ${userName}` : 'Έχω πρόσβαση στα δεδομένα σας'} από την πλατφόρμα και μπορώ να δώσω εξατομικευμένες συμβουλές για:
+      {`Γεια σας! Είμαι ο έξυπνος HYPER AI βοηθός σας. ${userName ? `Έχω πρόσβαση στα δεδομένα του ${userName}` : 'Έχω πρόσβαση στα δεδομένα σας'} από την πλατφόρμα και μπορώ να δώσω εξατομικευμένες συμβουλές για:
 
 🏋️ Τα προγράμματά σας και τις ασκήσεις σας
 📊 Τα αποτελέσματα των τεστ σας  

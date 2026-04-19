@@ -1111,7 +1111,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
 
       // 🔔 Αν το dialog είναι κλειστό, δείξε notification
       if (!isOpenRef.current && finalVisibleResponse.trim()) {
-        toast('💬 Ο RidAI απάντησε!', {
+        toast('💬 Ο HyperAI απάντησε!', {
           description: finalVisibleResponse.substring(0, 100) + (finalVisibleResponse.length > 100 ? '...' : ''),
           duration: 8000,
         });
@@ -1121,7 +1121,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
       await processAIActions(fullResponse);
       
     } catch (error) {
-      console.error('RID AI Error:', error);
+      console.error('HYPER AI Error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Σφάλμα στην επικοινωνία με το AI';
       toast.error(errorMessage);
       
@@ -1280,7 +1280,7 @@ export const EnhancedAIChatDialog: React.FC<EnhancedAIChatDialogProps> = ({
                               </p>
                               {message.role === 'assistant' && (
                                 <span className="text-[10px] sm:text-xs opacity-70 ml-2">
-                                  RidAI
+                                  HyperAI
                                 </span>
                               )}
                             </div>

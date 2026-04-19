@@ -38,7 +38,11 @@ interface Match {
   category?: { name: string; gender?: string; min_age?: number | null; max_age?: number | null; min_weight?: number | null; max_weight?: number | null } | null;
 }
 
-const CoachLivePage = () => {
+interface CoachLivePageProps {
+  embedded?: boolean;
+}
+
+const CoachLivePage: React.FC<CoachLivePageProps> = ({ embedded = false }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { userProfile } = useRoleCheck();
@@ -182,28 +186,8 @@ const CoachLivePage = () => {
     return <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
   };
 
-  return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        <div className="hidden lg:block">{renderSidebar()}</div>
-        {isMobileOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden">
-            <div className="absolute inset-0 bg-black/50" onClick={() => setIsMobileOpen(false)} />
-            <div className="relative w-64 h-full">{renderSidebar()}</div>
-          </div>
-        )}
-
-        <div className="flex-1 flex flex-col min-w-0">
-          <div className="sticky top-0 z-40 bg-background border-b border-border p-3 lg:hidden">
-            <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" onClick={() => setIsMobileOpen(true)} className="rounded-none">
-                <Menu className="h-5 w-5" />
-              </Button>
-              <h1 className="text-lg font-semibold">{t('federation.live.mobileTitle')}</h1>
-            </div>
-          </div>
-
-          <main className="flex-1 p-4 lg:p-6 overflow-auto">
+  const mainContent = (
+    <main className="flex-1 p-4 lg:p-6 overflow-auto">
             <div className="hidden lg:flex items-center justify-between mb-6">
               <div>
                 <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
@@ -370,7 +354,31 @@ const CoachLivePage = () => {
                 </CardContent>
               </Card>
             ) : null}
-          </main>
+    </main>
+  );
+
+  if (embedded) return mainContent;
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <div className="hidden lg:block">{renderSidebar()}</div>
+        {isMobileOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <div className="absolute inset-0 bg-black/50" onClick={() => setIsMobileOpen(false)} />
+            <div className="relative w-64 h-full">{renderSidebar()}</div>
+          </div>
+        )}
+        <div className="flex-1 flex flex-col min-w-0">
+          <div className="sticky top-0 z-40 bg-background border-b border-border p-3 lg:hidden">
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" onClick={() => setIsMobileOpen(true)} className="rounded-none">
+                <Menu className="h-5 w-5" />
+              </Button>
+              <h1 className="text-lg font-semibold">{t('federation.live.mobileTitle')}</h1>
+            </div>
+          </div>
+          {mainContent}
         </div>
       </div>
     </SidebarProvider>

@@ -24,6 +24,8 @@ import { UserProfileHistory } from "./UserProfileHistory";
 import { SchoolNotes } from "@/pages/SchoolNotes";
 import { UserProfileNutrition } from "./UserProfileNutrition";
 import { UserProfileSafety } from "./UserProfileSafety";
+import CoachBracketsPage from "@/pages/Dashboard/CoachBracketsPage";
+import CoachLivePage from "@/pages/Dashboard/CoachLivePage";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useUserSubscriptionStatus } from "@/hooks/useUserSubscriptionStatus";
 
@@ -271,6 +273,20 @@ export const UserProfileContent = ({
           <div className="space-y-4">
             <BackButton />
             <UserProfileSafety userProfile={userProfile} />
+          </div>
+        );
+      case "coach-brackets":
+        return (
+          <div className="space-y-4">
+            <BackButton />
+            <CoachBracketsPage embedded />
+          </div>
+        );
+      case "coach-live":
+        return (
+          <div className="space-y-4">
+            <BackButton />
+            <CoachLivePage embedded />
           </div>
         );
       default:
