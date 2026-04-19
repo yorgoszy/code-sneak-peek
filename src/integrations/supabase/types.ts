@@ -3883,13 +3883,27 @@ export type Database = {
       }
       exercise_rep_velocities: {
         Row: {
+          bar_movement_duration_ms: number | null
+          concentric_duration_ms: number | null
           created_at: string
+          eccentric_duration_ms: number | null
           exercise_id: string
           exercise_result_id: string
           id: string
+          load_kg: number | null
+          mean_eccentric_velocity_ms: number | null
+          mean_power_w: number | null
+          mean_velocity_ms: number | null
+          peak_eccentric_velocity_ms: number | null
+          peak_power_w: number | null
           peak_velocity_ms: number | null
+          range_of_motion_cm: number | null
+          raw_samples: Json | null
           rep_duration_ms: number | null
+          rep_ended_at: string | null
           rep_number: number
+          rep_started_at: string | null
+          rep_total_duration_ms: number | null
           set_number: number
           source: string
           user_id: string
@@ -3897,13 +3911,27 @@ export type Database = {
           weight_kg: number | null
         }
         Insert: {
+          bar_movement_duration_ms?: number | null
+          concentric_duration_ms?: number | null
           created_at?: string
+          eccentric_duration_ms?: number | null
           exercise_id: string
           exercise_result_id: string
           id?: string
+          load_kg?: number | null
+          mean_eccentric_velocity_ms?: number | null
+          mean_power_w?: number | null
+          mean_velocity_ms?: number | null
+          peak_eccentric_velocity_ms?: number | null
+          peak_power_w?: number | null
           peak_velocity_ms?: number | null
+          range_of_motion_cm?: number | null
+          raw_samples?: Json | null
           rep_duration_ms?: number | null
+          rep_ended_at?: string | null
           rep_number: number
+          rep_started_at?: string | null
+          rep_total_duration_ms?: number | null
           set_number?: number
           source?: string
           user_id: string
@@ -3911,13 +3939,27 @@ export type Database = {
           weight_kg?: number | null
         }
         Update: {
+          bar_movement_duration_ms?: number | null
+          concentric_duration_ms?: number | null
           created_at?: string
+          eccentric_duration_ms?: number | null
           exercise_id?: string
           exercise_result_id?: string
           id?: string
+          load_kg?: number | null
+          mean_eccentric_velocity_ms?: number | null
+          mean_power_w?: number | null
+          mean_velocity_ms?: number | null
+          peak_eccentric_velocity_ms?: number | null
+          peak_power_w?: number | null
           peak_velocity_ms?: number | null
+          range_of_motion_cm?: number | null
+          raw_samples?: Json | null
           rep_duration_ms?: number | null
+          rep_ended_at?: string | null
           rep_number?: number
+          rep_started_at?: string | null
+          rep_total_duration_ms?: number | null
           set_number?: number
           source?: string
           user_id?: string
