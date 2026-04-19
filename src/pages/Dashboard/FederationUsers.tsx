@@ -544,6 +544,27 @@ const FederationUsers = () => {
               </div>
             )}
 
+            {emailExistsNoMatch && !matchedExistingId && (
+              <div className="border border-amber-500/50 rounded-none bg-amber-500/10 p-3 space-y-2">
+                <p className="text-xs font-medium text-foreground">
+                  {language === 'el'
+                    ? `⚠️ Το email υπάρχει ήδη στη βάση (ρόλος: ${emailExistsNoMatch.role}). Θέλετε να αντληθούν τα στοιχεία;`
+                    : `⚠️ This email already exists (role: ${emailExistsNoMatch.role}). Use existing details?`}
+                </p>
+                <button onClick={() => handleSelectMatch(emailExistsNoMatch)}
+                  className="w-full flex items-center gap-3 p-2 border border-border rounded-none hover:bg-muted transition-colors text-left bg-background">
+                  <Avatar className="h-7 w-7">
+                    <AvatarImage src={emailExistsNoMatch.photo_url || emailExistsNoMatch.avatar_url || ""} />
+                    <AvatarFallback className="rounded-full bg-muted text-foreground text-xs">{emailExistsNoMatch.name?.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-medium">{emailExistsNoMatch.name}</p>
+                    <p className="text-xs text-muted-foreground">{emailExistsNoMatch.email} · {emailExistsNoMatch.role}</p>
+                  </div>
+                </button>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label>{language === 'el' ? 'Τηλέφωνο' : 'Phone'}</Label>
               <Input value={newClubPhone} onChange={(e) => setNewClubPhone(e.target.value)} className="rounded-none" placeholder={language === 'el' ? 'Προαιρετικό' : 'Optional'} />
