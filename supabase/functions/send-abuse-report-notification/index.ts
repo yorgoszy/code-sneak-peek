@@ -77,30 +77,44 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Coach info
-    let coachName = 'Άγνωστος';
-    let coachEmail = '';
-    if (report.coach_id) {
-      const { data: coach } = await supabase
+    // Coach / Club info
+    let coachName = report.coach_name_text || 'Δεν αναφέρθηκε';
+    let clubName = 'Άγνωστος';
+    let clubEmail = '';
+    const clubLookupId = report.club_id || report.coach_id;
+    if (clubLookupId) {
+      const { data: club } = await supabase
         .from('app_users')
         .select('name, email')
-        .eq('id', report.coach_id)
+        .eq('id', clubLookupId)
         .maybeSingle();
-      if (coach) {
-        coachName = coach.name;
-        coachEmail = coach.email;
+      if (club) {
+        clubName = club.name;
+        clubEmail = club.email;
       }
     }
 
-    // Βρες ομοσπονδίες όπου ανήκει ο coach
-    const { data: federationLinks } = await supabase
-      .from('federation_clubs')
-      .select('federation_id, federation:app_users!federation_clubs_federation_id_fkey(id, name, email)')
-      .eq('club_id', report.coach_id);
+    // Find federations: prefer those that declare the same sport, else by club link
+    let federations: any[] = [];
+    if (report.sport) {
+      const { data: bySport } = await supabase
+        .from('app_users')
+        .select('id, name, email, sport')
+        .eq('role', 'federation')
+        .ilike('sport', report.sport);
+      federations = (bySport || []).filter((f: any) => f.email);
+    }
 
-    const federations = (federationLinks || [])
-      .map((l: any) => l.federation)
-      .filter(Boolean);
+    if (federations.length === 0) {
+      // Fallback: federations linked to the club
+      const { data: federationLinks } = await supabase
+        .from('federation_clubs')
+        .select('federation_id, federation:app_users!federation_clubs_federation_id_fkey(id, name, email)')
+        .eq('club_id', clubLookupId);
+      federations = (federationLinks || [])
+        .map((l: any) => l.federation)
+        .filter(Boolean);
+    }
 
     if (federations.length === 0) {
       return new Response(JSON.stringify({
