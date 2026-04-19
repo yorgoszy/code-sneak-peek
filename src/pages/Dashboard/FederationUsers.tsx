@@ -590,6 +590,104 @@ const FederationUsers = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Add Athlete Dialog */}
+      <Dialog open={addAthleteDialogOpen} onOpenChange={(open) => { setAddAthleteDialogOpen(open); if (!open) resetAthleteForm(); }}>
+        <DialogContent className="rounded-none">
+          <DialogHeader><DialogTitle>{language === 'el' ? 'Προσθήκη Αθλητή' : 'Add Athlete'}</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>{language === 'el' ? 'Σύλλογος' : 'Club'} *</Label>
+              <Select value={newAthClubId} onValueChange={setNewAthClubId}>
+                <SelectTrigger className="rounded-none">
+                  <SelectValue placeholder={language === 'el' ? 'Επιλέξτε σύλλογο' : 'Select club'} />
+                </SelectTrigger>
+                <SelectContent>
+                  {clubsList.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>{language === 'el' ? 'Όνομα' : 'Name'} *</Label>
+              <Input value={newAthName} onChange={(e) => handleAthNameChange(e.target.value)} className="rounded-none" />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Email *</Label>
+              <Input type="email" value={newAthEmail} onChange={(e) => handleAthEmailChange(e.target.value)} className="rounded-none" />
+            </div>
+
+            {athShowMatch && athMatched.length > 0 && (
+              <div className="border border-border rounded-none bg-muted/50 p-3 space-y-2">
+                <p className="text-xs font-medium text-foreground">
+                  {language === 'el' ? '⚠️ Βρέθηκαν υπάρχοντες χρήστες - να αντληθούν τα στοιχεία;' : '⚠️ Existing users found - use details?'}
+                </p>
+                <div className="max-h-40 overflow-y-auto space-y-1">
+                  {athMatched.map((user) => (
+                    <button key={user.id} onClick={() => handleSelectAthMatch(user)}
+                      className="w-full flex items-center gap-3 p-2 border border-border rounded-none hover:bg-muted transition-colors text-left">
+                      <Avatar className="h-7 w-7">
+                        <AvatarImage src={user.photo_url || user.avatar_url || ""} />
+                        <AvatarFallback className="rounded-full bg-muted text-foreground text-xs">{user.name?.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-sm font-medium">{user.name}</p>
+                        <p className="text-xs text-muted-foreground">{user.email} · {user.role}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {athEmailExists && !athMatchedExistingId && !athMatched.some((m: any) => m.id === athEmailExists.id) && (
+              <div className="border border-border rounded-none bg-muted p-3 space-y-2">
+                <p className="text-xs font-medium text-foreground">
+                  {language === 'el'
+                    ? `⚠️ Το email υπάρχει ήδη (ρόλος: ${athEmailExists.role}). Να αντληθούν τα στοιχεία;`
+                    : `⚠️ Email already exists (role: ${athEmailExists.role}). Use details?`}
+                </p>
+                <button onClick={() => handleSelectAthMatch(athEmailExists)}
+                  className="w-full flex items-center gap-3 p-2 border border-border rounded-none hover:bg-muted transition-colors text-left bg-background">
+                  <Avatar className="h-7 w-7">
+                    <AvatarImage src={athEmailExists.photo_url || athEmailExists.avatar_url || ""} />
+                    <AvatarFallback className="rounded-full bg-muted text-foreground text-xs">{athEmailExists.name?.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-medium">{athEmailExists.name}</p>
+                    <p className="text-xs text-muted-foreground">{athEmailExists.email} · {athEmailExists.role}</p>
+                  </div>
+                </button>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label>{language === 'el' ? 'Τηλέφωνο' : 'Phone'}</Label>
+              <Input value={newAthPhone} onChange={(e) => setNewAthPhone(e.target.value)} className="rounded-none" />
+            </div>
+
+            {(newAthPhoto || athMatchedExistingId) && (
+              <div className="flex items-center gap-3 p-2 border border-border rounded-none bg-muted/30">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={newAthPhoto || ""} />
+                  <AvatarFallback className="rounded-full bg-muted text-foreground text-xs">{newAthName?.charAt(0) || "?"}</AvatarFallback>
+                </Avatar>
+                <div className="text-xs text-muted-foreground">
+                  {language === 'el' ? 'Στοιχεία από υπάρχοντα χρήστη' : 'Details from existing user'}
+                </div>
+              </div>
+            )}
+
+            <Button onClick={handleCreateAthlete} disabled={creatingAthlete || !newAthName.trim() || !newAthEmail.trim() || !newAthClubId} className="w-full rounded-none bg-foreground hover:bg-foreground/90 text-background">
+              <UserPlus className="h-4 w-4 mr-2" />
+              {creatingAthlete ? (language === 'el' ? 'Αποθήκευση...' : 'Saving...') : (language === 'el' ? 'Προσθήκη Αθλητή' : 'Add Athlete')}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="rounded-none">
           <AlertDialogHeader>
