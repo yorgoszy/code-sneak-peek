@@ -67,6 +67,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
   const [newUsers, setNewUsers] = useState(0);
   const isMobile = useIsMobile();
   const { expiringCount: expiringHealthCards } = useExpiringHealthCards(userProfile?.id);
+  const { count: newAbuseReports } = useAdminAbuseReportsCount();
 
   const loadAvailableOffers = async () => {
     if (!userProfile?.id) return;
