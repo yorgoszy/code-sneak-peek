@@ -264,8 +264,6 @@ const CoachBracketsPage: React.FC<CoachBracketsPageProps> = ({ embedded = false 
 
   const mainContent = (
     <main className="flex-1 p-2 lg:p-3 overflow-auto flex flex-col min-h-0">
-
-          <main className="flex-1 p-2 lg:p-3 overflow-auto flex flex-col min-h-0">
             {/* Compact header row */}
             <div className="flex flex-wrap items-center gap-2 mb-2">
               <h1 className="hidden lg:block text-lg font-bold text-foreground whitespace-nowrap">{t('federation.brackets.title')}</h1>
