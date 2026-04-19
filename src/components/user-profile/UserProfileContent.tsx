@@ -23,6 +23,7 @@ import { UserProgressSection } from "./UserProgressSection";
 import { UserProfileHistory } from "./UserProfileHistory";
 import { SchoolNotes } from "@/pages/SchoolNotes";
 import { UserProfileNutrition } from "./UserProfileNutrition";
+import { UserProfileSafety } from "./UserProfileSafety";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useUserSubscriptionStatus } from "@/hooks/useUserSubscriptionStatus";
 
@@ -263,6 +264,13 @@ export const UserProfileContent = ({
           <div className="space-y-4">
             <BackButton />
             <UserProfileNutrition userId={userProfile?.id} userProfile={userProfile} />
+          </div>
+        );
+      case "safety":
+        return (
+          <div className="space-y-4">
+            <BackButton />
+            <UserProfileSafety userProfile={userProfile} />
           </div>
         );
       default:
