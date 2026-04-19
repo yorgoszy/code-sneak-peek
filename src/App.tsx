@@ -103,8 +103,11 @@ import HRVPage from "@/pages/Dashboard/HRVPage";
 import GiftCardsWithSidebar from "@/pages/Dashboard/GiftCardsWithSidebar";
 import HealthCardsPage from "@/pages/Dashboard/HealthCardsPage";
 import CoachCompetitionsPage from "@/pages/Dashboard/CoachCompetitionsPage";
-import CoachBracketsPage from "@/pages/Dashboard/CoachBracketsPage";
-import CoachLivePage from "@/pages/Dashboard/CoachLivePage";
+const CoachBracketsScopedPage = React.lazy(() => import("@/pages/coach/CoachBracketsScopedPage"));
+const CoachLiveScopedPage = React.lazy(() => import("@/pages/coach/CoachLiveScopedPage"));
+const CoachRankingScopedPage = React.lazy(() => import("@/pages/coach/CoachRankingScopedPage"));
+const CoachWeighInScopedPage = React.lazy(() => import("@/pages/coach/CoachWeighInScopedPage"));
+const UserScopedRedirect = React.lazy(() => import("@/pages/user/UserScopedRedirect"));
 import FederationOverview from "@/pages/Dashboard/FederationOverview";
 import FederationUsers from "@/pages/Dashboard/FederationUsers";
 import FederationAthletes from "@/pages/Dashboard/FederationAthletes";
@@ -206,9 +209,16 @@ function App() {
                       <Route path="/dashboard/hrv" element={<ProtectedRoute><HRVPage /></ProtectedRoute>} />
                       <Route path="/dashboard/health-cards" element={<ProtectedRoute><HealthCardsPage /></ProtectedRoute>} />
                       <Route path="/dashboard/coach-competitions" element={<ProtectedRoute><CoachCompetitionsPage /></ProtectedRoute>} />
-                      <Route path="/dashboard/coach-brackets" element={<ProtectedRoute><CoachBracketsPage /></ProtectedRoute>} />
-                      <Route path="/dashboard/coach-live" element={<ProtectedRoute><CoachLivePage /></ProtectedRoute>} />
-                      <Route path="/dashboard/weigh-in" element={<ProtectedRoute><WeighInPage /></ProtectedRoute>} />
+                      {/* Coach-scoped competition pages (replace old /dashboard/coach-brackets, /dashboard/coach-live, /dashboard/weigh-in) */}
+                      <Route path="/coach/:coachId/brackets" element={<ProtectedRoute><CoachBracketsScopedPage /></ProtectedRoute>} />
+                      <Route path="/coach/:coachId/live" element={<ProtectedRoute><CoachLiveScopedPage /></ProtectedRoute>} />
+                      <Route path="/coach/:coachId/ranking" element={<ProtectedRoute><CoachRankingScopedPage /></ProtectedRoute>} />
+                      <Route path="/coach/:coachId/weigh-in" element={<ProtectedRoute><CoachWeighInScopedPage /></ProtectedRoute>} />
+                      {/* User-scoped competition pages — redirect to user-profile with embedded tab */}
+                      <Route path="/user/:userId/brackets" element={<ProtectedRoute><UserScopedRedirect tab="coach-brackets" /></ProtectedRoute>} />
+                      <Route path="/user/:userId/live" element={<ProtectedRoute><UserScopedRedirect tab="coach-live" /></ProtectedRoute>} />
+                      <Route path="/user/:userId/ranking" element={<ProtectedRoute><UserScopedRedirect tab="coach-ranking" /></ProtectedRoute>} />
+                      <Route path="/user/:userId/weigh-in" element={<ProtectedRoute><UserScopedRedirect tab="coach-weigh-in" /></ProtectedRoute>} />
                       {/* Admin-only routes */}
                       <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />
                       <Route path="/dashboard/users" element={<ProtectedRoute requireAdmin><Users /></ProtectedRoute>} />
