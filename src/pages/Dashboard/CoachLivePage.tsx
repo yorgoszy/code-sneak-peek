@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from "react-i18next";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { CoachSidebar } from "@/components/CoachSidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
-import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Menu, Radio, Monitor, Maximize } from "lucide-react";
@@ -179,12 +179,28 @@ const CoachLivePage: React.FC<CoachLivePageProps> = ({ embedded = false }) => {
     return () => { supabase.removeChannel(channel); };
   }, [selectedCompId, loadRings, loadMatches]);
 
+  const [searchParams] = useSearchParams();
+  const queryCoachId = searchParams.get('coachId');
   const role = userProfile?.role;
+
   const renderSidebar = () => {
     if (role === 'federation') return <FederationSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
-    if (role === 'coach') return <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
-    return <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
+    // Default to CoachSidebar for coach role and any other case (incl. admin viewing a coach context).
+    // Never render the admin Sidebar from this page to avoid exposing admin navigation.
+    return <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} contextCoachId={queryCoachId || undefined} />;
   };
+
+  // Security: if an admin lands on this page directly, redirect them into the
+  // contextual user profile (when a coachId is provided) or to their own profile.
+  // We never want the admin Sidebar to render on this route.
+  if (!embedded && role === 'admin') {
+    const target = queryCoachId
+      ? `/dashboard/user-profile/${queryCoachId}?tab=coach-live`
+      : userProfile?.id
+        ? `/dashboard/user-profile/${userProfile.id}`
+        : '/dashboard';
+    return <Navigate to={target} replace />;
+  }
 
   const mainContent = (
     <main className="flex-1 p-4 lg:p-6 overflow-auto">
