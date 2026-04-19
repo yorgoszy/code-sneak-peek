@@ -59,6 +59,8 @@ const FederationUsers = () => {
   const [matchedUsers, setMatchedUsers] = useState<any[]>([]);
   const [showMatchPopup, setShowMatchPopup] = useState(false);
   const [clubsList, setClubsList] = useState<{ id: string; name: string }[]>([]);
+  const [newClubPhoto, setNewClubPhoto] = useState<string>("");
+  const [matchedExistingId, setMatchedExistingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (userProfile?.id) { fetchClubs(); fetchClubsList(); }
@@ -124,18 +126,18 @@ const FederationUsers = () => {
   };
 
   const resetAddForm = () => {
-    setNewClubName(""); setNewClubEmail(""); setNewClubPhone(""); setMatchedUsers([]); setShowMatchPopup(false);
+    setNewClubName(""); setNewClubEmail(""); setNewClubPhone(""); setNewClubPhoto("");
+    setMatchedUsers([]); setShowMatchPopup(false); setMatchedExistingId(null);
   };
 
   const searchByField = async (field: 'email' | 'name', value: string) => {
     if (value.trim().length < 2) { setMatchedUsers([]); setShowMatchPopup(false); return; }
     const { data } = await supabase.from("app_users")
-      .select("id, name, email, phone, photo_url, role")
+      .select("id, name, email, phone, photo_url, avatar_url, role")
       .ilike(field, `%${value.trim()}%`)
-      .eq("role", "coach")
+      .in("role", ["coach", "trainer"])
       .limit(5);
     const existingClubIds = clubs.map((c) => c.club_id);
-    // Exclude already-linked clubs and the federation's own account
     const filtered = (data || []).filter((u: any) => !existingClubIds.includes(u.id) && u.id !== userProfile?.id);
     setMatchedUsers(filtered);
     setShowMatchPopup(filtered.length > 0);
@@ -143,40 +145,60 @@ const FederationUsers = () => {
 
   const handleEmailChange = (val: string) => {
     setNewClubEmail(val);
+    setMatchedExistingId(null);
     searchByField('email', val);
   };
 
   const handleNameChange = (val: string) => {
     setNewClubName(val);
+    setMatchedExistingId(null);
     searchByField('name', val);
   };
 
   const handleSelectMatch = (user: any) => {
-    setNewClubName(user.name);
-    setNewClubEmail(user.email);
+    setNewClubName(user.name || "");
+    setNewClubEmail(user.email || "");
     setNewClubPhone(user.phone || "");
+    setNewClubPhoto(user.photo_url || user.avatar_url || "");
+    setMatchedExistingId(user.id);
     setMatchedUsers([]);
     setShowMatchPopup(false);
   };
 
   const handleCreateClub = async () => {
-    if (!userProfile?.id || !newClubName.trim() || !newClubEmail.trim()) return;
+    if (!userProfile?.id || !newClubName.trim() || !newClubEmail.trim()) {
+      toast({ variant: "destructive", title: t("federation.common.error"), description: language === 'el' ? 'Συμπληρώστε όνομα και email' : 'Fill name and email' });
+      return;
+    }
     setCreatingClub(true);
     try {
-      const { data: existing } = await supabase.from("app_users")
-        .select("id").eq("email", newClubEmail.trim()).maybeSingle();
-      
-      if (existing) {
-        await handleAddClub(existing.id);
+      // Prefer explicitly matched existing user if user clicked on a suggestion
+      let existingId = matchedExistingId;
+      if (!existingId) {
+        const { data: existing } = await supabase.from("app_users")
+          .select("id").eq("email", newClubEmail.trim()).maybeSingle();
+        existingId = existing?.id || null;
+      }
+
+      if (existingId) {
+        await handleAddClub(existingId);
         setCreatingClub(false);
         return;
       }
 
       const { data: newCoach, error: createError } = await supabase.from("app_users")
-        .insert({ name: newClubName.trim(), email: newClubEmail.trim(), phone: newClubPhone.trim() || null, role: "coach", user_status: "active" })
+        .insert({
+          name: newClubName.trim(),
+          email: newClubEmail.trim(),
+          phone: newClubPhone.trim() || null,
+          photo_url: newClubPhoto || null,
+          role: "coach",
+          user_status: "active",
+        })
         .select("id").single();
 
       if (createError) {
+        console.error('❌ Create coach error:', createError);
         toast({ variant: "destructive", title: t("federation.common.error"), description: createError.message });
         setCreatingClub(false); return;
       }
@@ -184,6 +206,7 @@ const FederationUsers = () => {
       const { error: linkError } = await supabase.from("federation_clubs")
         .insert({ federation_id: userProfile.id, club_id: newCoach.id });
       if (linkError) {
+        console.error('❌ Link club error:', linkError);
         toast({ variant: "destructive", title: t("federation.common.error"), description: linkError.message });
         setCreatingClub(false); return;
       }
@@ -191,6 +214,7 @@ const FederationUsers = () => {
       toast({ title: t("federation.common.success"), description: t("federation.users.clubAdded") });
       setAddDialogOpen(false); resetAddForm(); fetchClubs(); fetchClubsList();
     } catch (err: any) {
+      console.error('❌ handleCreateClub exception:', err);
       toast({ variant: "destructive", title: t("federation.common.error"), description: err.message });
     } finally {
       setCreatingClub(false);
@@ -422,6 +446,19 @@ const FederationUsers = () => {
               <Label>{language === 'el' ? 'Τηλέφωνο' : 'Phone'}</Label>
               <Input value={newClubPhone} onChange={(e) => setNewClubPhone(e.target.value)} className="rounded-none" placeholder={language === 'el' ? 'Προαιρετικό' : 'Optional'} />
             </div>
+
+            {(newClubPhoto || matchedExistingId) && (
+              <div className="flex items-center gap-3 p-2 border border-border rounded-none bg-muted/30">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={newClubPhoto || ""} />
+                  <AvatarFallback className="rounded-full bg-muted text-foreground text-xs">{newClubName?.charAt(0) || "?"}</AvatarFallback>
+                </Avatar>
+                <div className="text-xs text-muted-foreground">
+                  {language === 'el' ? 'Στοιχεία από υπάρχοντα χρήστη' : 'Details from existing user'}
+                </div>
+              </div>
+            )}
+
             <Button onClick={handleCreateClub} disabled={creatingClub || !newClubName.trim() || !newClubEmail.trim()} className="w-full rounded-none bg-foreground hover:bg-foreground/90 text-background">
               <Plus className="h-4 w-4 mr-2" />
               {creatingClub ? (language === 'el' ? 'Δημιουργία...' : 'Creating...') : (language === 'el' ? 'Προσθήκη Συλλόγου' : 'Add Club')}
