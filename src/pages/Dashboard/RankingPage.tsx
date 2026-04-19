@@ -279,6 +279,7 @@ const RankingPage: React.FC<RankingPageProps> = ({ embedded = false, contextUser
   const ranking = buildRanking();
 
   const renderSidebar = () => {
+    if (usesContextProfile && (contextLoading || !userProfile)) return null;
     if (role === 'federation') return <FederationSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
     if (role === 'coach') return <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} contextCoachId={userProfile?.id} />;
     return <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
