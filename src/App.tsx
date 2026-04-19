@@ -56,6 +56,7 @@ import { OneRMManagementWithSidebar } from "@/pages/Dashboard/OneRMManagementWit
 import { AthletesProgressWithSidebar } from "@/pages/Dashboard/AthletesProgressWithSidebar";
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import Offers from "@/pages/Offers";
+import AbuseReports from "@/pages/AbuseReports";
 import ProfileEdit from "@/pages/ProfileEdit";
 import InstallPWA from "@/pages/InstallPWA";
 import CalendarWidget from "@/pages/CalendarWidget";
@@ -227,6 +228,7 @@ function App() {
                       <Route path="/dashboard/results" element={<ProtectedRoute requireAdmin><ResultsWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/shop" element={<ProtectedRoute requireAdmin><AdminShopWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/offers" element={<ProtectedRoute requireAdmin><Offers /></ProtectedRoute>} />
+                      <Route path="/dashboard/abuse-reports" element={<ProtectedRoute requireAdmin><AbuseReports /></ProtectedRoute>} />
                       <Route path="/dashboard/gift-cards" element={<ProtectedRoute requireAdmin><GiftCardsWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/online-coaching" element={<ProtectedRoute requireAdmin><OnlineCoachingWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/online-booking" element={<ProtectedRoute requireAdmin><OnlineBookingWithSidebar /></ProtectedRoute>} />

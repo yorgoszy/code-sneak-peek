@@ -32,7 +32,8 @@ import {
   Compass,
   Heart,
   HeartPulse,
-  Gift
+  Gift,
+  ShieldAlert
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -466,6 +467,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       label: "Χρήστες", 
       path: "/dashboard/users",
       badge: userProfile?.role === 'admin' && newUsers > 0 ? newUsers.toString() : null
+    },
+    {
+      icon: ShieldAlert,
+      label: "Καταγγελίες",
+      path: "/dashboard/abuse-reports",
+      badge: null
     },
     { 
       icon: UsersIcon, 

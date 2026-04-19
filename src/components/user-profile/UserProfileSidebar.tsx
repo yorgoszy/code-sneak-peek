@@ -17,7 +17,8 @@ import {
   Download,
   Utensils,
   Shuffle,
-  Radio
+  Radio,
+  ShieldAlert
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
@@ -310,6 +311,16 @@ export const UserProfileSidebar = forwardRef<
       key: "edit-profile",
       badge: null,
       visible: true,
+      disabled: false
+    },
+    {
+      icon: ShieldAlert,
+      label: 'Ασφάλεια',
+      key: "safety",
+      badge: null,
+      // Εμφανίζεται μόνο όταν ο ίδιος ο χρήστης βλέπει το προφίλ του (όχι σε admin/coach που το ανοίγει)
+      // Επίσης ορατό σε admin για read-only πρόσβαση στο ιστορικό
+      visible: (isAdmin || (userProfile?.role === 'athlete' || userProfile?.role === 'general' || userProfile?.role === 'parent')),
       disabled: false
     },
     {
