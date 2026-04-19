@@ -179,11 +179,15 @@ const CoachLivePage: React.FC<CoachLivePageProps> = ({ embedded = false }) => {
     return () => { supabase.removeChannel(channel); };
   }, [selectedCompId, loadRings, loadMatches]);
 
+  const [searchParams] = useSearchParams();
+  const queryCoachId = searchParams.get('coachId');
   const role = userProfile?.role;
+
   const renderSidebar = () => {
     if (role === 'federation') return <FederationSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
-    if (role === 'coach') return <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
-    return <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
+    // Default to CoachSidebar for coach role and any other case (incl. admin viewing a coach context).
+    // Never render the admin Sidebar from this page to avoid exposing admin navigation.
+    return <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} contextCoachId={queryCoachId || undefined} />;
   };
 
   const mainContent = (
