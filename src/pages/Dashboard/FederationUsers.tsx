@@ -59,6 +59,8 @@ const FederationUsers = () => {
   const [matchedUsers, setMatchedUsers] = useState<any[]>([]);
   const [showMatchPopup, setShowMatchPopup] = useState(false);
   const [clubsList, setClubsList] = useState<{ id: string; name: string }[]>([]);
+  const [newClubPhoto, setNewClubPhoto] = useState<string>("");
+  const [matchedExistingId, setMatchedExistingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (userProfile?.id) { fetchClubs(); fetchClubsList(); }
