@@ -446,6 +446,19 @@ const FederationUsers = () => {
               <Label>{language === 'el' ? 'Τηλέφωνο' : 'Phone'}</Label>
               <Input value={newClubPhone} onChange={(e) => setNewClubPhone(e.target.value)} className="rounded-none" placeholder={language === 'el' ? 'Προαιρετικό' : 'Optional'} />
             </div>
+
+            {(newClubPhoto || matchedExistingId) && (
+              <div className="flex items-center gap-3 p-2 border border-border rounded-none bg-muted/30">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={newClubPhoto || ""} />
+                  <AvatarFallback className="rounded-full bg-muted text-foreground text-xs">{newClubName?.charAt(0) || "?"}</AvatarFallback>
+                </Avatar>
+                <div className="text-xs text-muted-foreground">
+                  {language === 'el' ? 'Στοιχεία από υπάρχοντα χρήστη' : 'Details from existing user'}
+                </div>
+              </div>
+            )}
+
             <Button onClick={handleCreateClub} disabled={creatingClub || !newClubName.trim() || !newClubEmail.trim()} className="w-full rounded-none bg-foreground hover:bg-foreground/90 text-background">
               <Plus className="h-4 w-4 mr-2" />
               {creatingClub ? (language === 'el' ? 'Δημιουργία...' : 'Creating...') : (language === 'el' ? 'Προσθήκη Συλλόγου' : 'Add Club')}
