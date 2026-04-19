@@ -268,6 +268,15 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
                     onUpdateBlockDuration={handleUpdateBlockDuration}
                     onUpdateBlockSets={handleUpdateBlockSets}
                     getDayLabel={(w, d) => {
+                      // Αν δεν υπάρχουν πραγματικές training_dates, χρησιμοποιούμε το όνομα της ημέρας
+                      const hasRealDate =
+                        assignment?.training_dates &&
+                        assignment.training_dates.length > 0;
+
+                      if (!hasRealDate) {
+                        return d.name || `Day ${d.day_number}`;
+                      }
+
                       const date = getDateForDay(w, d);
                       try {
                         // Short day format: Δε, Τρ, Τε, Πε, Πα, Σα, Κυ (Greek) or Mo, Tu, We... (English)
