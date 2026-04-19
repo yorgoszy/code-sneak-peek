@@ -553,7 +553,7 @@ const CoachBracketsPage: React.FC<CoachBracketsPageProps> = ({ embedded = false 
                 </div>
               );
             })()}
-          </main>
+    </main>
   );
 
   if (embedded) return mainContent;
