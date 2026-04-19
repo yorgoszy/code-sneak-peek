@@ -25,11 +25,29 @@ interface VelocityCameraDialogProps {
   exerciseResultId?: string;
 }
 
+type MarkerColor = 'green' | 'red' | 'yellow' | 'blue' | 'orange' | 'pink' | 'custom';
+
+const COLOR_PRESETS: Record<Exclude<MarkerColor, 'custom'>, { label: string; emoji: string; lower: [number, number, number]; upper: [number, number, number] }> = {
+  green:  { label: 'Πράσινο',  emoji: '🟢', lower: [35, 100, 100], upper: [85, 255, 255] },
+  red:    { label: 'Κόκκινο',  emoji: '🔴', lower: [0, 120, 70],   upper: [10, 255, 255] },
+  yellow: { label: 'Κίτρινο',  emoji: '🟡', lower: [20, 100, 100], upper: [35, 255, 255] },
+  blue:   { label: 'Μπλε',     emoji: '🔵', lower: [100, 150, 0],  upper: [140, 255, 255] },
+  orange: { label: 'Πορτοκαλί',emoji: '🟠', lower: [10, 150, 150], upper: [20, 255, 255] },
+  pink:   { label: 'Ροζ',      emoji: '🩷', lower: [140, 100, 100],upper: [170, 255, 255] },
+};
+
 const DEFAULT_CALIBRATION: TrackerCalibration = {
   pixels_per_meter: 800,
-  hsv_lower: [35, 100, 100],
-  hsv_upper: [85, 255, 255],
+  hsv_lower: COLOR_PRESETS.green.lower,
+  hsv_upper: COLOR_PRESETS.green.upper,
 };
+
+function detectColorFromHsv(lower: [number, number, number], upper: [number, number, number]): MarkerColor {
+  for (const [key, p] of Object.entries(COLOR_PRESETS)) {
+    if (p.lower[0] === lower[0] && p.upper[0] === upper[0]) return key as MarkerColor;
+  }
+  return 'custom';
+}
 
 export const VelocityCameraDialog: React.FC<VelocityCameraDialogProps> = ({
   isOpen,
