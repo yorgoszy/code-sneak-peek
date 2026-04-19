@@ -215,7 +215,57 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
           </div>
 
           <div>
-            <Label htmlFor="incident-date" className="font-medium mb-2 block">
+            <Label className="font-medium mb-2 block">Σύλλογος / Σωματείο *</Label>
+            <Select value={clubId} onValueChange={setClubId}>
+              <SelectTrigger className="rounded-none">
+                <SelectValue placeholder="Επιλέξτε σύλλογο..." />
+              </SelectTrigger>
+              <SelectContent className="max-h-72">
+                {clubs.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="coach-name" className="font-medium mb-2 block">
+              Όνομα Προπονητή
+            </Label>
+            <Input
+              id="coach-name"
+              value={coachNameText}
+              onChange={(e) => setCoachNameText(e.target.value)}
+              placeholder="Γράψτε το ονοματεπώνυμο του προπονητή"
+              className="rounded-none"
+            />
+          </div>
+
+          <div>
+            <Label className="font-medium mb-2 block">Άθλημα *</Label>
+            <Select value={sport} onValueChange={setSport}>
+              <SelectTrigger className="rounded-none">
+                <SelectValue placeholder="Επιλέξτε άθλημα..." />
+              </SelectTrigger>
+              <SelectContent className="max-h-72">
+                {sports.length === 0 ? (
+                  <div className="px-2 py-3 text-xs text-muted-foreground">
+                    Δεν έχουν δηλωθεί ακόμη αθλήματα από ομοσπονδίες.
+                  </div>
+                ) : (
+                  sports.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
               {t('safety.incidentDate')}
             </Label>
             <Input
