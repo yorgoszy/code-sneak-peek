@@ -43,7 +43,11 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
   const [isAnonymous, setIsAnonymous] = useState(false);
 
   const isOwnProfile = currentUser?.id === userProfile?.id;
+  const profileRole = (userProfile?.role || '').toLowerCase();
+  const isFederationProfile = profileRole === 'federation';
   const adminViewing = isAdmin() && !isOwnProfile;
+  const viewTitleKey = isFederationProfile ? 'safety.federationViewTitle' : 'safety.userViewTitle';
+  const viewEmptyKey = isFederationProfile ? 'safety.federationNoReports' : 'safety.userNoReports';
 
   useEffect(() => {
     loadReports();
