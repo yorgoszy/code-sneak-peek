@@ -49,7 +49,7 @@ export const FederationSidebar = ({
   const menuItems = [
     { icon: Home, label: t("federation.sidebar.overview"), path: "/dashboard/federation-overview" },
     { icon: Users, label: t("federation.sidebar.users"), path: "/dashboard/federation-users" },
-    { icon: UserCheck, label: "Αθλητές Ομοσπονδίας", path: "/dashboard/federation-athletes" },
+    
     { icon: CreditCard, label: t("federation.sidebar.subscriptions"), path: "/dashboard/federation-subscriptions" },
     { icon: TrendingUp, label: "Athletes Progress", path: "/dashboard/federation-progress" },
     { icon: Trophy, label: "Ranking", path: rankingPath },
