@@ -1,4 +1,3 @@
-
 import {
   Dialog,
   DialogContent,
@@ -6,10 +5,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { PhotoUpload } from "./PhotoUpload";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { AvatarUpload } from "./AvatarUpload";
 import { useEditUserDialog } from "./edit-user/useEditUserDialog";
-import { BasicInfoFields } from "./edit-user/BasicInfoFields";
-import { RoleStatusFields } from "./edit-user/RoleStatusFields";
 import { ChildrenFields } from "./edit-user/ChildrenFields";
 import { DialogActions } from "./edit-user/DialogActions";
 import type { EditUserDialogProps } from "./edit-user/types";
@@ -20,7 +26,6 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
     email, setEmail,
     phone, setPhone,
     role, setRole,
-    category, setCategory,
     gender, setGender,
     birthDate, setBirthDate,
     photoUrl, setPhotoUrl,
@@ -29,53 +34,117 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
     children,
     addChild,
     removeChild,
-    updateChild
+    updateChild,
   } = useEditUserDialog(user, isOpen);
 
-  const onSubmit = () => {
-    handleSubmit(onUserUpdated, onClose);
-  };
+  const onSubmit = () => handleSubmit(onUserUpdated, onClose);
+
+  const fallback = (name || email || "?").trim().charAt(0).toUpperCase();
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] max-h-[80vh] overflow-y-auto rounded-none">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[560px] max-h-[90vh] overflow-y-auto rounded-none p-5">
+        <DialogHeader className="space-y-1">
           <DialogTitle>Επεξεργασία Χρήστη</DialogTitle>
-          <DialogDescription>
-            Επεξεργαστείτε τις πληροφορίες του χρήστη. Μόνο το όνομα και το email είναι υποχρεωτικά.
+          <DialogDescription className="text-xs">
+            Μόνο το όνομα και το email είναι υποχρεωτικά.
           </DialogDescription>
         </DialogHeader>
-        
-        <div className="space-y-4">
-          <BasicInfoFields
-            name={name}
-            setName={setName}
-            email={email}
-            setEmail={setEmail}
-            phone={phone}
-            setPhone={setPhone}
-            category={category}
-            setCategory={setCategory}
-            birthDate={birthDate}
-            setBirthDate={setBirthDate}
-            loading={loading}
-          />
 
-          <PhotoUpload
+        <div className="space-y-4 mt-3">
+          <AvatarUpload
             currentPhotoUrl={photoUrl || undefined}
             onPhotoChange={setPhotoUrl}
             disabled={loading}
+            fallbackText={fallback}
+            size={88}
           />
 
-          <RoleStatusFields
-            role={role}
-            setRole={setRole}
-            gender={gender}
-            setGender={setGender}
-            loading={loading}
-          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="name" className="text-xs">Όνομα *</Label>
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Όνομα"
+                className="rounded-none h-9"
+                disabled={loading}
+                required
+              />
+            </div>
 
-          {role === 'parent' && (
+            <div className="space-y-1">
+              <Label htmlFor="email" className="text-xs">Email *</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="email@example.com"
+                className="rounded-none h-9"
+                disabled={loading}
+                required
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="phone" className="text-xs">Τηλέφωνο</Label>
+              <Input
+                id="phone"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Τηλέφωνο"
+                className="rounded-none h-9"
+                disabled={loading}
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="birthDate" className="text-xs">Ημ. Γέννησης</Label>
+              <Input
+                id="birthDate"
+                type="date"
+                value={birthDate}
+                onChange={(e) => setBirthDate(e.target.value)}
+                className="rounded-none h-9"
+                disabled={loading}
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="role" className="text-xs">Ρόλος</Label>
+              <Select value={role} onValueChange={setRole} disabled={loading}>
+                <SelectTrigger className="rounded-none h-9">
+                  <SelectValue placeholder="Ρόλος" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="coach">Coach</SelectItem>
+                  <SelectItem value="federation">Federation</SelectItem>
+                  <SelectItem value="trainer">Trainer</SelectItem>
+                  <SelectItem value="athlete">Athlete</SelectItem>
+                  <SelectItem value="parent">Parent</SelectItem>
+                  <SelectItem value="general">General</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="gender" className="text-xs">Φύλο</Label>
+              <Select value={gender} onValueChange={setGender} disabled={loading}>
+                <SelectTrigger className="rounded-none h-9">
+                  <SelectValue placeholder="Φύλο" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="male">Άνδρας</SelectItem>
+                  <SelectItem value="female">Γυναίκα</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {role === "parent" && (
             <ChildrenFields
               children={children}
               addChild={addChild}
@@ -84,12 +153,8 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
               loading={loading}
             />
           )}
-          
-          <DialogActions
-            loading={loading}
-            onClose={onClose}
-            onSubmit={onSubmit}
-          />
+
+          <DialogActions loading={loading} onClose={onClose} onSubmit={onSubmit} />
         </div>
       </DialogContent>
     </Dialog>
