@@ -38,6 +38,9 @@ const UserProfile = () => {
   // Αν ο χρήστης είναι coach, δείχνουμε CoachSidebar
   // Αν ο χρήστης διαχειρίζεται από coach (coach_id δείχνει σε role=coach), δείχνουμε CoachSidebar
   const showCoachSidebar = userProfile?.role === 'coach' || isCoachManagedUser;
+  const coachContextId = userProfile?.role === 'coach'
+    ? userProfile.id
+    : userProfile?.coach_id ?? userId;
 
   // Έλεγχος αν ο χρήστης διαχειρίζεται από coach
   useEffect(() => {
@@ -172,7 +175,7 @@ const UserProfile = () => {
           <CoachSidebar
             isCollapsed={isCollapsed}
             setIsCollapsed={setIsCollapsed}
-            contextCoachId={userId}
+            contextCoachId={coachContextId}
             onNavigateOverride={(path) => {
               const p = path.split('?')[0];
               if (p === '/dashboard/coach-brackets') { setActiveTab('coach-brackets'); return true; }
@@ -207,7 +210,7 @@ const UserProfile = () => {
               <CoachSidebar
                 isCollapsed={false}
                 setIsCollapsed={setIsCollapsed}
-                contextCoachId={userId}
+                contextCoachId={coachContextId}
                 onNavigateOverride={(path) => {
                   const p = path.split('?')[0];
                   if (p === '/dashboard/coach-brackets') { setActiveTab('coach-brackets'); return true; }

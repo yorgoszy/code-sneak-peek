@@ -113,6 +113,7 @@ const RankingPage: React.FC<RankingPageProps> = ({ embedded = false, contextUser
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const role = userProfile?.role;
+  const coachContextId = role === 'coach' ? userProfile?.id : userProfile?.coach_id ?? null;
 
   useEffect(() => {
     if (contextLoading) return;
@@ -281,7 +282,9 @@ const RankingPage: React.FC<RankingPageProps> = ({ embedded = false, contextUser
   const renderSidebar = () => {
     if (usesContextProfile && (contextLoading || !userProfile)) return null;
     if (role === 'federation') return <FederationSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
-    if (role === 'coach') return <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} contextCoachId={userProfile?.id} />;
+    if (coachContextId) {
+      return <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} contextCoachId={coachContextId} />;
+    }
     return <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
   };
 
