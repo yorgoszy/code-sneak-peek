@@ -14,6 +14,80 @@ export type Database = {
   }
   public: {
     Tables: {
+      abuse_reports: {
+        Row: {
+          abuse_types: string[]
+          admin_notes: string | null
+          athlete_id: string
+          coach_id: string | null
+          created_at: string
+          description: string
+          id: string
+          incident_date: string | null
+          is_anonymous: boolean
+          notified_federation_ids: string[]
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          abuse_types?: string[]
+          admin_notes?: string | null
+          athlete_id: string
+          coach_id?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          incident_date?: string | null
+          is_anonymous?: boolean
+          notified_federation_ids?: string[]
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          abuse_types?: string[]
+          admin_notes?: string | null
+          athlete_id?: string
+          coach_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          incident_date?: string | null
+          is_anonymous?: boolean
+          notified_federation_ids?: string[]
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "abuse_reports_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "abuse_reports_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "abuse_reports_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "abuse_reports_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       acknowledged_gym_bookings: {
         Row: {
           acknowledged_at: string
@@ -10556,6 +10630,7 @@ export type Database = {
       }
       is_coach_safe: { Args: { user_auth_id: string }; Returns: boolean }
       is_coach_user: { Args: { _auth_uid: string }; Returns: boolean }
+      is_current_user_admin: { Args: never; Returns: boolean }
       is_federation_club_athlete: {
         Args: { _athlete_id: string; _user_auth_id: string }
         Returns: boolean
@@ -10564,6 +10639,8 @@ export type Database = {
         Args: { _athlete_id: string; _user_auth_id: string }
         Returns: boolean
       }
+      is_federation_for_coach: { Args: { _coach_id: string }; Returns: boolean }
+      is_report_owner: { Args: { _athlete_id: string }; Returns: boolean }
       join_waiting_list:
         | {
             Args: {
