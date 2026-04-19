@@ -142,6 +142,7 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
                         workoutInProgress={workoutInProgress}
                         isChecked={isExerciseComplete ? isExerciseComplete(exercise.id, exercise.sets || 1) : false}
                         onToggleCheck={handleToggleCheck}
+                        program={program}
                       />
                     ))}
                   </div>
