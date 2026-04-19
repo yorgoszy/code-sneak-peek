@@ -117,6 +117,7 @@ import FederationEditProfile from "@/pages/Dashboard/FederationEditProfile";
 import FederationSubscriptions from "@/pages/Dashboard/FederationSubscriptions";
 import FederationCompetitions from "@/pages/Dashboard/FederationCompetitions";
 import RankingPage from "@/pages/Dashboard/RankingPage";
+const FederationWeighInPage = React.lazy(() => import("@/pages/Dashboard/WeighInPage"));
 import FederationBrackets from "@/pages/Dashboard/FederationBrackets";
 const FederationFightCard = React.lazy(() => import("@/pages/Dashboard/FederationFightCard"));
 
@@ -273,6 +274,7 @@ function App() {
                         <Route path="/dashboard/ai-lab" element={<ProtectedRoute><MultiCameraAnalysis /></ProtectedRoute>} />
                         <Route path="/dashboard/federation-profile" element={<ProtectedRoute><FederationEditProfile /></ProtectedRoute>} />
                         <Route path="/dashboard/ranking" element={<ProtectedRoute><RankingPage /></ProtectedRoute>} />
+                        <Route path="/dashboard/federation-weigh-in" element={<ProtectedRoute><FederationWeighInPage /></ProtectedRoute>} />
                       </Route>
 
                       {/* Protected user routes */}
