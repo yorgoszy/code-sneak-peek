@@ -5,7 +5,7 @@ import { FederationSidebar } from "@/components/FederationSidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu, Users, Search, Eye, Building2, Plus, Trash2 } from "lucide-react";
+import { Menu, Users, Search, Eye, Building2, Plus, Trash2, UserPlus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -58,9 +58,23 @@ const FederationUsers = () => {
   const [creatingClub, setCreatingClub] = useState(false);
   const [matchedUsers, setMatchedUsers] = useState<any[]>([]);
   const [showMatchPopup, setShowMatchPopup] = useState(false);
+  const [emailExistsNoMatch, setEmailExistsNoMatch] = useState<any | null>(null);
   const [clubsList, setClubsList] = useState<{ id: string; name: string }[]>([]);
   const [newClubPhoto, setNewClubPhoto] = useState<string>("");
   const [matchedExistingId, setMatchedExistingId] = useState<string | null>(null);
+
+  // Add Athlete dialog state
+  const [addAthleteDialogOpen, setAddAthleteDialogOpen] = useState(false);
+  const [newAthName, setNewAthName] = useState("");
+  const [newAthEmail, setNewAthEmail] = useState("");
+  const [newAthPhone, setNewAthPhone] = useState("");
+  const [newAthPhoto, setNewAthPhoto] = useState("");
+  const [newAthClubId, setNewAthClubId] = useState<string>("");
+  const [creatingAthlete, setCreatingAthlete] = useState(false);
+  const [athMatched, setAthMatched] = useState<any[]>([]);
+  const [athShowMatch, setAthShowMatch] = useState(false);
+  const [athMatchedExistingId, setAthMatchedExistingId] = useState<string | null>(null);
+  const [athEmailExists, setAthEmailExists] = useState<any | null>(null);
 
   useEffect(() => {
     if (userProfile?.id) { fetchClubs(); fetchClubsList(); }
@@ -128,41 +142,125 @@ const FederationUsers = () => {
   const resetAddForm = () => {
     setNewClubName(""); setNewClubEmail(""); setNewClubPhone(""); setNewClubPhoto("");
     setMatchedUsers([]); setShowMatchPopup(false); setMatchedExistingId(null);
+    setEmailExistsNoMatch(null);
   };
 
-  const searchByField = async (field: 'email' | 'name', value: string) => {
-    if (value.trim().length < 2) { setMatchedUsers([]); setShowMatchPopup(false); return; }
-    const { data } = await supabase.from("app_users")
-      .select("id, name, email, phone, photo_url, avatar_url, role")
-      .ilike(field, `%${value.trim()}%`)
-      .in("role", ["coach", "trainer"])
-      .limit(5);
+  const searchByField = async (value: string) => {
+    if (value.trim().length < 2) { setMatchedUsers([]); setShowMatchPopup(false); setEmailExistsNoMatch(null); return; }
+    const { data, error } = await supabase.rpc('find_user_by_contact', { _query: value.trim() });
+    if (error) { console.error('find_user_by_contact error', error); return; }
     const existingClubIds = clubs.map((c) => c.club_id);
     const filtered = (data || []).filter((u: any) => !existingClubIds.includes(u.id) && u.id !== userProfile?.id);
     setMatchedUsers(filtered);
     setShowMatchPopup(filtered.length > 0);
+
+    if (value.includes('@')) {
+      const exact = (data || []).find((u: any) => u.email?.toLowerCase() === value.trim().toLowerCase());
+      setEmailExistsNoMatch(exact && !filtered.some((f: any) => f.id === exact.id) ? exact : null);
+    } else {
+      setEmailExistsNoMatch(null);
+    }
   };
 
   const handleEmailChange = (val: string) => {
-    setNewClubEmail(val);
-    setMatchedExistingId(null);
-    searchByField('email', val);
+    setNewClubEmail(val); setMatchedExistingId(null); searchByField(val);
   };
-
   const handleNameChange = (val: string) => {
-    setNewClubName(val);
-    setMatchedExistingId(null);
-    searchByField('name', val);
+    setNewClubName(val); setMatchedExistingId(null); searchByField(val);
   };
-
   const handleSelectMatch = (user: any) => {
     setNewClubName(user.name || "");
     setNewClubEmail(user.email || "");
     setNewClubPhone(user.phone || "");
     setNewClubPhoto(user.photo_url || user.avatar_url || "");
     setMatchedExistingId(user.id);
-    setMatchedUsers([]);
-    setShowMatchPopup(false);
+    setMatchedUsers([]); setShowMatchPopup(false); setEmailExistsNoMatch(null);
+  };
+
+  // ===== Athlete add helpers =====
+  const resetAthleteForm = () => {
+    setNewAthName(""); setNewAthEmail(""); setNewAthPhone(""); setNewAthPhoto("");
+    setNewAthClubId(""); setAthMatched([]); setAthShowMatch(false);
+    setAthMatchedExistingId(null); setAthEmailExists(null);
+  };
+
+  const searchAthleteByField = async (value: string) => {
+    if (value.trim().length < 2) { setAthMatched([]); setAthShowMatch(false); setAthEmailExists(null); return; }
+    const { data, error } = await supabase.rpc('find_user_by_contact', { _query: value.trim() });
+    if (error) { console.error(error); return; }
+    setAthMatched(data || []);
+    setAthShowMatch((data || []).length > 0);
+    if (value.includes('@')) {
+      const exact = (data || []).find((u: any) => u.email?.toLowerCase() === value.trim().toLowerCase());
+      setAthEmailExists(exact || null);
+    } else {
+      setAthEmailExists(null);
+    }
+  };
+
+  const handleAthEmailChange = (val: string) => {
+    setNewAthEmail(val); setAthMatchedExistingId(null); searchAthleteByField(val);
+  };
+  const handleAthNameChange = (val: string) => {
+    setNewAthName(val); setAthMatchedExistingId(null); searchAthleteByField(val);
+  };
+  const handleSelectAthMatch = (user: any) => {
+    setNewAthName(user.name || "");
+    setNewAthEmail(user.email || "");
+    setNewAthPhone(user.phone || "");
+    setNewAthPhoto(user.photo_url || user.avatar_url || "");
+    setAthMatchedExistingId(user.id);
+    setAthMatched([]); setAthShowMatch(false); setAthEmailExists(null);
+  };
+
+  const handleCreateAthlete = async () => {
+    if (!userProfile?.id || !newAthName.trim() || !newAthEmail.trim() || !newAthClubId) {
+      toast({ variant: "destructive", title: t("federation.common.error"), description: language === 'el' ? 'Συμπληρώστε όνομα, email και επιλέξτε σύλλογο' : 'Fill name, email and select club' });
+      return;
+    }
+    setCreatingAthlete(true);
+    try {
+      let existingId = athMatchedExistingId;
+      if (!existingId) {
+        const { data: existing } = await supabase.rpc('find_user_by_contact', { _query: newAthEmail.trim() });
+        const exact = (existing || []).find((u: any) => u.email?.toLowerCase() === newAthEmail.trim().toLowerCase());
+        existingId = exact?.id || null;
+      }
+
+      if (existingId) {
+        const { error: assignErr } = await supabase.rpc('federation_assign_athlete', {
+          _user_id: existingId, _club_id: newAthClubId,
+        });
+        if (assignErr) {
+          console.error('assign athlete error', assignErr);
+          toast({ variant: "destructive", title: t("federation.common.error"), description: assignErr.message });
+          setCreatingAthlete(false); return;
+        }
+      } else {
+        const { error: insErr } = await supabase.from("app_users").insert({
+          name: newAthName.trim(),
+          email: newAthEmail.trim(),
+          phone: newAthPhone.trim() || null,
+          photo_url: newAthPhoto || null,
+          role: "athlete",
+          coach_id: newAthClubId,
+          user_status: "active",
+        });
+        if (insErr) {
+          console.error('insert athlete error', insErr);
+          toast({ variant: "destructive", title: t("federation.common.error"), description: insErr.message });
+          setCreatingAthlete(false); return;
+        }
+      }
+
+      toast({ title: t("federation.common.success"), description: language === 'el' ? 'Ο αθλητής προστέθηκε' : 'Athlete added' });
+      setAddAthleteDialogOpen(false); resetAthleteForm(); fetchAthletes(); fetchClubs();
+    } catch (err: any) {
+      console.error(err);
+      toast({ variant: "destructive", title: t("federation.common.error"), description: err.message });
+    } finally {
+      setCreatingAthlete(false);
+    }
   };
 
   const handleCreateClub = async () => {
@@ -355,6 +453,10 @@ const FederationUsers = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                  <Button onClick={() => setAddAthleteDialogOpen(true)} className="rounded-none bg-foreground hover:bg-foreground/90 text-background" size="sm">
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    {language === 'el' ? 'Προσθήκη Αθλητή' : 'Add Athlete'}
+                  </Button>
                 </div>
 
                 <div className="grid gap-2">
@@ -442,6 +544,27 @@ const FederationUsers = () => {
               </div>
             )}
 
+            {emailExistsNoMatch && !matchedExistingId && (
+              <div className="border border-border rounded-none bg-muted p-3 space-y-2">
+                <p className="text-xs font-medium text-foreground">
+                  {language === 'el'
+                    ? `⚠️ Το email υπάρχει ήδη στη βάση (ρόλος: ${emailExistsNoMatch.role}). Θέλετε να αντληθούν τα στοιχεία;`
+                    : `⚠️ This email already exists (role: ${emailExistsNoMatch.role}). Use existing details?`}
+                </p>
+                <button onClick={() => handleSelectMatch(emailExistsNoMatch)}
+                  className="w-full flex items-center gap-3 p-2 border border-border rounded-none hover:bg-muted transition-colors text-left bg-background">
+                  <Avatar className="h-7 w-7">
+                    <AvatarImage src={emailExistsNoMatch.photo_url || emailExistsNoMatch.avatar_url || ""} />
+                    <AvatarFallback className="rounded-full bg-muted text-foreground text-xs">{emailExistsNoMatch.name?.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-medium">{emailExistsNoMatch.name}</p>
+                    <p className="text-xs text-muted-foreground">{emailExistsNoMatch.email} · {emailExistsNoMatch.role}</p>
+                  </div>
+                </button>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label>{language === 'el' ? 'Τηλέφωνο' : 'Phone'}</Label>
               <Input value={newClubPhone} onChange={(e) => setNewClubPhone(e.target.value)} className="rounded-none" placeholder={language === 'el' ? 'Προαιρετικό' : 'Optional'} />
@@ -462,6 +585,104 @@ const FederationUsers = () => {
             <Button onClick={handleCreateClub} disabled={creatingClub || !newClubName.trim() || !newClubEmail.trim()} className="w-full rounded-none bg-foreground hover:bg-foreground/90 text-background">
               <Plus className="h-4 w-4 mr-2" />
               {creatingClub ? (language === 'el' ? 'Δημιουργία...' : 'Creating...') : (language === 'el' ? 'Προσθήκη Συλλόγου' : 'Add Club')}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Athlete Dialog */}
+      <Dialog open={addAthleteDialogOpen} onOpenChange={(open) => { setAddAthleteDialogOpen(open); if (!open) resetAthleteForm(); }}>
+        <DialogContent className="rounded-none">
+          <DialogHeader><DialogTitle>{language === 'el' ? 'Προσθήκη Αθλητή' : 'Add Athlete'}</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>{language === 'el' ? 'Σύλλογος' : 'Club'} *</Label>
+              <Select value={newAthClubId} onValueChange={setNewAthClubId}>
+                <SelectTrigger className="rounded-none">
+                  <SelectValue placeholder={language === 'el' ? 'Επιλέξτε σύλλογο' : 'Select club'} />
+                </SelectTrigger>
+                <SelectContent>
+                  {clubsList.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>{language === 'el' ? 'Όνομα' : 'Name'} *</Label>
+              <Input value={newAthName} onChange={(e) => handleAthNameChange(e.target.value)} className="rounded-none" />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Email *</Label>
+              <Input type="email" value={newAthEmail} onChange={(e) => handleAthEmailChange(e.target.value)} className="rounded-none" />
+            </div>
+
+            {athShowMatch && athMatched.length > 0 && (
+              <div className="border border-border rounded-none bg-muted/50 p-3 space-y-2">
+                <p className="text-xs font-medium text-foreground">
+                  {language === 'el' ? '⚠️ Βρέθηκαν υπάρχοντες χρήστες - να αντληθούν τα στοιχεία;' : '⚠️ Existing users found - use details?'}
+                </p>
+                <div className="max-h-40 overflow-y-auto space-y-1">
+                  {athMatched.map((user) => (
+                    <button key={user.id} onClick={() => handleSelectAthMatch(user)}
+                      className="w-full flex items-center gap-3 p-2 border border-border rounded-none hover:bg-muted transition-colors text-left">
+                      <Avatar className="h-7 w-7">
+                        <AvatarImage src={user.photo_url || user.avatar_url || ""} />
+                        <AvatarFallback className="rounded-full bg-muted text-foreground text-xs">{user.name?.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-sm font-medium">{user.name}</p>
+                        <p className="text-xs text-muted-foreground">{user.email} · {user.role}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {athEmailExists && !athMatchedExistingId && !athMatched.some((m: any) => m.id === athEmailExists.id) && (
+              <div className="border border-border rounded-none bg-muted p-3 space-y-2">
+                <p className="text-xs font-medium text-foreground">
+                  {language === 'el'
+                    ? `⚠️ Το email υπάρχει ήδη (ρόλος: ${athEmailExists.role}). Να αντληθούν τα στοιχεία;`
+                    : `⚠️ Email already exists (role: ${athEmailExists.role}). Use details?`}
+                </p>
+                <button onClick={() => handleSelectAthMatch(athEmailExists)}
+                  className="w-full flex items-center gap-3 p-2 border border-border rounded-none hover:bg-muted transition-colors text-left bg-background">
+                  <Avatar className="h-7 w-7">
+                    <AvatarImage src={athEmailExists.photo_url || athEmailExists.avatar_url || ""} />
+                    <AvatarFallback className="rounded-full bg-muted text-foreground text-xs">{athEmailExists.name?.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-medium">{athEmailExists.name}</p>
+                    <p className="text-xs text-muted-foreground">{athEmailExists.email} · {athEmailExists.role}</p>
+                  </div>
+                </button>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label>{language === 'el' ? 'Τηλέφωνο' : 'Phone'}</Label>
+              <Input value={newAthPhone} onChange={(e) => setNewAthPhone(e.target.value)} className="rounded-none" />
+            </div>
+
+            {(newAthPhoto || athMatchedExistingId) && (
+              <div className="flex items-center gap-3 p-2 border border-border rounded-none bg-muted/30">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={newAthPhoto || ""} />
+                  <AvatarFallback className="rounded-full bg-muted text-foreground text-xs">{newAthName?.charAt(0) || "?"}</AvatarFallback>
+                </Avatar>
+                <div className="text-xs text-muted-foreground">
+                  {language === 'el' ? 'Στοιχεία από υπάρχοντα χρήστη' : 'Details from existing user'}
+                </div>
+              </div>
+            )}
+
+            <Button onClick={handleCreateAthlete} disabled={creatingAthlete || !newAthName.trim() || !newAthEmail.trim() || !newAthClubId} className="w-full rounded-none bg-foreground hover:bg-foreground/90 text-background">
+              <UserPlus className="h-4 w-4 mr-2" />
+              {creatingAthlete ? (language === 'el' ? 'Αποθήκευση...' : 'Saving...') : (language === 'el' ? 'Προσθήκη Αθλητή' : 'Add Athlete')}
             </Button>
           </div>
         </DialogContent>

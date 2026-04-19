@@ -10608,6 +10608,22 @@ export type Database = {
       create_exercise_tables: { Args: never; Returns: undefined }
       current_app_user_id: { Args: never; Returns: string }
       exec_sql: { Args: { query: string }; Returns: Json }
+      federation_assign_athlete: {
+        Args: { _club_id: string; _user_id: string }
+        Returns: undefined
+      }
+      find_user_by_contact: {
+        Args: { _query: string }
+        Returns: {
+          avatar_url: string
+          email: string
+          id: string
+          name: string
+          phone: string
+          photo_url: string
+          role: string
+        }[]
+      }
       force_delete_athlete: { Args: { athlete_id: string }; Returns: undefined }
       generate_coupon_code: { Args: never; Returns: string }
       generate_gift_card_code: { Args: never; Returns: string }
