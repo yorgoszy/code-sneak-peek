@@ -190,6 +190,18 @@ const CoachLivePage: React.FC<CoachLivePageProps> = ({ embedded = false }) => {
     return <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} contextCoachId={queryCoachId || undefined} />;
   };
 
+  // Security: if an admin lands on this page directly, redirect them into the
+  // contextual user profile (when a coachId is provided) or to their own profile.
+  // We never want the admin Sidebar to render on this route.
+  if (!embedded && role === 'admin') {
+    const target = queryCoachId
+      ? `/dashboard/user-profile/${queryCoachId}?tab=coach-live`
+      : userProfile?.id
+        ? `/dashboard/user-profile/${userProfile.id}`
+        : '/dashboard';
+    return <Navigate to={target} replace />;
+  }
+
   const mainContent = (
     <main className="flex-1 p-4 lg:p-6 overflow-auto">
             <div className="hidden lg:flex items-center justify-between mb-6">
