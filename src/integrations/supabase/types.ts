@@ -3734,6 +3734,57 @@ export type Database = {
           },
         ]
       }
+      exercise_camera_calibration: {
+        Row: {
+          bar_length_cm: number
+          camera_distance_cm: number
+          created_at: string
+          created_by: string | null
+          exercise_id: string
+          expected_rom_cm: number | null
+          hsv_lower: number[]
+          hsv_upper: number[]
+          id: string
+          marker_color_label: string | null
+          notes: string | null
+          pixels_per_meter: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bar_length_cm?: number
+          camera_distance_cm: number
+          created_at?: string
+          created_by?: string | null
+          exercise_id: string
+          expected_rom_cm?: number | null
+          hsv_lower?: number[]
+          hsv_upper?: number[]
+          id?: string
+          marker_color_label?: string | null
+          notes?: string | null
+          pixels_per_meter?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bar_length_cm?: number
+          camera_distance_cm?: number
+          created_at?: string
+          created_by?: string | null
+          exercise_id?: string
+          expected_rom_cm?: number | null
+          hsv_lower?: number[]
+          hsv_upper?: number[]
+          id?: string
+          marker_color_label?: string | null
+          notes?: string | null
+          pixels_per_meter?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       exercise_categories: {
         Row: {
           created_at: string | null
@@ -3826,6 +3877,59 @@ export type Database = {
             columns: ["related_exercise_id"]
             isOneToOne: false
             referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exercise_rep_velocities: {
+        Row: {
+          created_at: string
+          exercise_id: string
+          exercise_result_id: string
+          id: string
+          peak_velocity_ms: number | null
+          rep_duration_ms: number | null
+          rep_number: number
+          set_number: number
+          source: string
+          user_id: string
+          velocity_ms: number
+          weight_kg: number | null
+        }
+        Insert: {
+          created_at?: string
+          exercise_id: string
+          exercise_result_id: string
+          id?: string
+          peak_velocity_ms?: number | null
+          rep_duration_ms?: number | null
+          rep_number: number
+          set_number?: number
+          source?: string
+          user_id: string
+          velocity_ms: number
+          weight_kg?: number | null
+        }
+        Update: {
+          created_at?: string
+          exercise_id?: string
+          exercise_result_id?: string
+          id?: string
+          peak_velocity_ms?: number | null
+          rep_duration_ms?: number | null
+          rep_number?: number
+          set_number?: number
+          source?: string
+          user_id?: string
+          velocity_ms?: number
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_rep_velocities_exercise_result_id_fkey"
+            columns: ["exercise_result_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_results"
             referencedColumns: ["id"]
           },
         ]
