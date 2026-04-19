@@ -39,6 +39,11 @@ interface Match {
 }
 
 const CoachLivePage = () => {
+interface CoachLivePageProps {
+  embedded?: boolean;
+}
+
+const CoachLivePage: React.FC<CoachLivePageProps> = ({ embedded = false }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { userProfile } = useRoleCheck();
