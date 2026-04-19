@@ -1,10 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { Camera, X } from "lucide-react";
 import { getWorkoutData } from '@/hooks/useWorkoutCompletions/workoutDataService';
 import { formatVelocityMs } from '@/utils/timeCalculations';
+import { VelocityCameraDialog } from './VelocityCameraDialog';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 interface ExerciseActualValuesProps {
   exercise: any;
@@ -63,9 +65,15 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
     }
   };
 
+  const { user } = useAuthContext();
+  const [cameraOpen, setCameraOpen] = useState(false);
+
   if (!workoutInProgress) {
     return null;
   }
+
+  const targetUserId = program?.user_id || program?.app_users?.id || user?.id;
+  const loadKg = Number(savedData.kg ?? exercise.kg ?? 0) || 0;
 
   return (
     <div className="mt-3 grid grid-cols-3 gap-2">
@@ -102,17 +110,39 @@ export const ExerciseActualValues: React.FC<ExerciseActualValuesProps> = ({
         />
       </div>
 
-      <div className="col-span-3 mt-2">
+      <div className="col-span-3 mt-2 flex gap-2">
         <Button
           onClick={handleSetClick}
           variant="outline"
           size="sm"
-          className="w-full h-8 text-xs rounded-none"
+          className="flex-1 h-8 text-xs rounded-none"
           disabled={!workoutInProgress}
         >
           Complete Set {getRemainingText(exercise.id)}
         </Button>
+        <Button
+          onClick={(e) => { e.stopPropagation(); setCameraOpen(true); }}
+          variant="outline"
+          size="sm"
+          className="h-8 text-xs rounded-none"
+          title="Track velocity με κάμερα"
+        >
+          <Camera className="w-3 h-3 mr-1" /> Velocity
+        </Button>
       </div>
+
+      {cameraOpen && targetUserId && (
+        <VelocityCameraDialog
+          isOpen={cameraOpen}
+          onClose={() => setCameraOpen(false)}
+          exerciseId={exercise.exercise_id || exercise.exercises?.id || exercise.id}
+          exerciseName={exercise.exercises?.name || 'Exercise'}
+          userId={targetUserId}
+          loadKg={loadKg}
+          setNumber={1}
+          totalReps={Number(exercise.reps) || 1}
+        />
+      )}
     </div>
   );
 };
