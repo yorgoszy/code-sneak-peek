@@ -113,11 +113,6 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
             </div>
           </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="phone" className="text-xs">Τηλέφωνο</Label>
-            <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Τηλέφωνο" className="rounded-none h-9" disabled={loading} />
-          </div>
-
           {role === "parent" && (
             <ChildrenFields
               children={children}
