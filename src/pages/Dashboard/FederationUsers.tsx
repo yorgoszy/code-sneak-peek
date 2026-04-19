@@ -545,7 +545,7 @@ const FederationUsers = () => {
             )}
 
             {emailExistsNoMatch && !matchedExistingId && (
-              <div className="border border-amber-500/50 rounded-none bg-amber-500/10 p-3 space-y-2">
+              <div className="border border-border rounded-none bg-muted p-3 space-y-2">
                 <p className="text-xs font-medium text-foreground">
                   {language === 'el'
                     ? `⚠️ Το email υπάρχει ήδη στη βάση (ρόλος: ${emailExistsNoMatch.role}). Θέλετε να αντληθούν τα στοιχεία;`
