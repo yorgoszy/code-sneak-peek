@@ -453,6 +453,10 @@ const FederationUsers = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                  <Button onClick={() => setAddAthleteDialogOpen(true)} className="rounded-none bg-foreground hover:bg-foreground/90 text-background" size="sm">
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    {language === 'el' ? 'Προσθήκη Αθλητή' : 'Add Athlete'}
+                  </Button>
                 </div>
 
                 <div className="grid gap-2">
