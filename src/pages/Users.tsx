@@ -803,6 +803,8 @@ const Users = () => {
                         <SelectContent>
                           <SelectItem value="all">Όλοι οι ρόλοι</SelectItem>
                           <SelectItem value="admin">Admin</SelectItem>
+                          <SelectItem value="coach">Coach</SelectItem>
+                          <SelectItem value="federation">Federation</SelectItem>
                           <SelectItem value="trainer">Trainer</SelectItem>
                           <SelectItem value="athlete">Athlete</SelectItem>
                           <SelectItem value="general">General</SelectItem>
@@ -1276,10 +1278,6 @@ const Users = () => {
                         <SelectContent>
                           <SelectItem value="all">Όλοι οι ρόλοι</SelectItem>
                           <SelectItem value="athlete">Athlete</SelectItem>
-                          <SelectItem value="coach">Coach</SelectItem>
-                          <SelectItem value="federation">Federation</SelectItem>
-                          <SelectItem value="trainer">Trainer</SelectItem>
-                          <SelectItem value="parent">Parent</SelectItem>
                           <SelectItem value="general">General</SelectItem>
                         </SelectContent>
                       </Select>
