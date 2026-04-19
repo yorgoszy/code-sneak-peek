@@ -266,6 +266,7 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
           </div>
 
           <div>
+            <Label htmlFor="incident-date" className="font-medium mb-2 block">
               {t('safety.incidentDate')}
             </Label>
             <Input
