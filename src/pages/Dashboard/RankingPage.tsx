@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
@@ -47,24 +48,60 @@ interface RankingPageProps {
 }
 
 const RankingPage: React.FC<RankingPageProps> = ({ embedded = false, contextUserId }) => {
+  const [searchParams] = useSearchParams();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { userProfile: loggedInProfile } = useRoleCheck();
   const [contextProfile, setContextProfile] = useState<any>(null);
-  const userProfile = embedded && contextProfile ? contextProfile : loggedInProfile;
+  const [contextLoading, setContextLoading] = useState(false);
   const { t } = useTranslation();
 
-  // Fetch the context user's profile when embedded
+  const queryCoachId = searchParams.get('coachId');
+  const queryFederationId = searchParams.get('federationId');
+  const resolvedContextUserId = contextUserId || queryCoachId || queryFederationId;
+  const usesContextProfile = Boolean(embedded || resolvedContextUserId);
+  const userProfile = usesContextProfile ? contextProfile : loggedInProfile;
+
   useEffect(() => {
-    if (embedded && contextUserId) {
-      supabase
+    let isMounted = true;
+
+    const loadContextProfile = async () => {
+      if (!resolvedContextUserId) {
+        if (isMounted) {
+          setContextProfile(null);
+          setContextLoading(false);
+        }
+        return;
+      }
+
+      if (isMounted) {
+        setContextLoading(true);
+      }
+
+      const { data, error } = await supabase
         .from('app_users')
         .select('id, name, role, coach_id')
-        .eq('id', contextUserId)
-        .maybeSingle()
-        .then(({ data }) => setContextProfile(data));
-    }
-  }, [embedded, contextUserId]);
+        .eq('id', resolvedContextUserId)
+        .maybeSingle();
+
+      if (!isMounted) return;
+
+      if (error) {
+        console.error('Error loading ranking context profile:', error);
+        setContextProfile(null);
+      } else {
+        setContextProfile(data ?? null);
+      }
+
+      setContextLoading(false);
+    };
+
+    void loadContextProfile();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [resolvedContextUserId]);
 
   const [federationId, setFederationId] = useState<string | null>(null);
   const [federationName, setFederationName] = useState('');
@@ -78,10 +115,19 @@ const RankingPage: React.FC<RankingPageProps> = ({ embedded = false, contextUser
   const role = userProfile?.role;
 
   useEffect(() => {
+    if (contextLoading) return;
+
     if (userProfile?.id) {
       determineFederation();
+      return;
     }
-  }, [userProfile?.id]);
+
+    setFederationId(null);
+    setFederationName('');
+    setCategories([]);
+    setResults([]);
+    setLoading(false);
+  }, [userProfile?.id, userProfile?.role, userProfile?.coach_id, contextLoading]);
 
   const determineFederation = async () => {
     if (!userProfile) return;
@@ -234,7 +280,7 @@ const RankingPage: React.FC<RankingPageProps> = ({ embedded = false, contextUser
 
   const renderSidebar = () => {
     if (role === 'federation') return <FederationSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
-    if (role === 'coach') return <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
+    if (role === 'coach') return <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} contextCoachId={userProfile?.id} />;
     return <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
   };
 
@@ -259,7 +305,9 @@ const RankingPage: React.FC<RankingPageProps> = ({ embedded = false, contextUser
               </div>
             </div>
 
-            {!federationId ? (
+            {contextLoading ? (
+              <div className="text-center py-12 text-muted-foreground">{t('federation.common.loading')}</div>
+            ) : !federationId ? (
               <div className="text-center py-12 text-muted-foreground">
                 <Trophy className="h-12 w-12 mx-auto mb-3 opacity-30" />
                 <p>{t('federation.ranking.noFederation')}</p>

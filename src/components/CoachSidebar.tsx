@@ -259,7 +259,7 @@ export const CoachSidebar = ({
     {
       icon: Trophy,
       label: "Ranking",
-      path: "/dashboard/ranking",
+      path: effectiveCoachId ? `/dashboard/ranking?coachId=${effectiveCoachId}` : "/dashboard/ranking",
       badge: null,
       requiresSubscription: false,
     },
