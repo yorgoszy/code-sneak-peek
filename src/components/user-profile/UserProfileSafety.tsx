@@ -75,10 +75,6 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
       toast.error(t('safety.errorMinTypes'));
       return;
     }
-    if (description.trim().length < 20) {
-      toast.error(t('safety.errorMinDesc'));
-      return;
-    }
     setConfirmOpen(true);
   };
 
@@ -92,7 +88,7 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
           athlete_id: userProfile.id,
           coach_id: userProfile.coach_id || null,
           abuse_types: selectedTypes,
-          description: description.trim(),
+          description: description.trim() || '—',
           incident_date: incidentDate || null,
           is_anonymous: isAnonymous,
         })
@@ -199,7 +195,6 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
               rows={6}
               className="rounded-none"
             />
-            <p className="text-xs text-gray-500 mt-1">{t('safety.charactersMin', { count: description.length })}</p>
           </div>
 
           <div
