@@ -126,18 +126,18 @@ const FederationUsers = () => {
   };
 
   const resetAddForm = () => {
-    setNewClubName(""); setNewClubEmail(""); setNewClubPhone(""); setMatchedUsers([]); setShowMatchPopup(false);
+    setNewClubName(""); setNewClubEmail(""); setNewClubPhone(""); setNewClubPhoto("");
+    setMatchedUsers([]); setShowMatchPopup(false); setMatchedExistingId(null);
   };
 
   const searchByField = async (field: 'email' | 'name', value: string) => {
     if (value.trim().length < 2) { setMatchedUsers([]); setShowMatchPopup(false); return; }
     const { data } = await supabase.from("app_users")
-      .select("id, name, email, phone, photo_url, role")
+      .select("id, name, email, phone, photo_url, avatar_url, role")
       .ilike(field, `%${value.trim()}%`)
-      .eq("role", "coach")
+      .in("role", ["coach", "trainer"])
       .limit(5);
     const existingClubIds = clubs.map((c) => c.club_id);
-    // Exclude already-linked clubs and the federation's own account
     const filtered = (data || []).filter((u: any) => !existingClubIds.includes(u.id) && u.id !== userProfile?.id);
     setMatchedUsers(filtered);
     setShowMatchPopup(filtered.length > 0);
@@ -145,18 +145,22 @@ const FederationUsers = () => {
 
   const handleEmailChange = (val: string) => {
     setNewClubEmail(val);
+    setMatchedExistingId(null);
     searchByField('email', val);
   };
 
   const handleNameChange = (val: string) => {
     setNewClubName(val);
+    setMatchedExistingId(null);
     searchByField('name', val);
   };
 
   const handleSelectMatch = (user: any) => {
-    setNewClubName(user.name);
-    setNewClubEmail(user.email);
+    setNewClubName(user.name || "");
+    setNewClubEmail(user.email || "");
     setNewClubPhone(user.phone || "");
+    setNewClubPhoto(user.photo_url || user.avatar_url || "");
+    setMatchedExistingId(user.id);
     setMatchedUsers([]);
     setShowMatchPopup(false);
   };
