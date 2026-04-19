@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -41,6 +42,11 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
   const [description, setDescription] = useState("");
   const [incidentDate, setIncidentDate] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [clubId, setClubId] = useState<string>("");
+  const [coachNameText, setCoachNameText] = useState("");
+  const [sport, setSport] = useState<string>("");
+  const [clubs, setClubs] = useState<any[]>([]);
+  const [sports, setSports] = useState<string[]>([]);
 
   const isOwnProfile = currentUser?.id === userProfile?.id;
   const profileRole = (userProfile?.role || '').toLowerCase();
@@ -51,7 +57,29 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
 
   useEffect(() => {
     loadReports();
+    loadClubsAndSports();
   }, [userProfile?.id]);
+
+  const loadClubsAndSports = async () => {
+    // Load all clubs (admin/coach role users) for selection
+    const { data: clubsData } = await supabase
+      .from('app_users')
+      .select('id, name, sport')
+      .in('role', ['admin', 'coach', 'trainer'])
+      .order('name');
+    setClubs(clubsData || []);
+
+    // Load all sports declared by federations
+    const { data: fedData } = await supabase
+      .from('app_users')
+      .select('sport')
+      .eq('role', 'federation')
+      .not('sport', 'is', null);
+    const uniqueSports = Array.from(
+      new Set((fedData || []).map((f: any) => (f.sport || '').trim()).filter(Boolean))
+    ).sort();
+    setSports(uniqueSports);
+  };
 
   const loadReports = async () => {
     if (!userProfile?.id) return;
@@ -75,6 +103,14 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
       toast.error(t('safety.errorMinTypes'));
       return;
     }
+    if (!clubId) {
+      toast.error('Παρακαλώ επιλέξτε σύλλογο');
+      return;
+    }
+    if (!sport) {
+      toast.error('Παρακαλώ επιλέξτε άθλημα');
+      return;
+    }
     setConfirmOpen(true);
   };
 
@@ -86,7 +122,10 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
         .from('abuse_reports')
         .insert({
           athlete_id: userProfile.id,
-          coach_id: userProfile.coach_id || null,
+          coach_id: clubId || userProfile.coach_id || null,
+          club_id: clubId || null,
+          coach_name_text: coachNameText.trim() || null,
+          sport: sport || null,
           abuse_types: selectedTypes,
           description: description.trim() || '—',
           incident_date: incidentDate || null,
@@ -110,6 +149,9 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
       setDescription("");
       setIncidentDate("");
       setIsAnonymous(false);
+      setClubId("");
+      setCoachNameText("");
+      setSport("");
       loadReports();
     } catch (e: any) {
       console.error(e);
@@ -118,6 +160,8 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
       setSubmitting(false);
     }
   };
+
+
 
   if (adminViewing) {
     return (
@@ -168,6 +212,57 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
                 </div>
               ))}
             </div>
+          </div>
+
+          <div>
+            <Label className="font-medium mb-2 block">Σύλλογος / Σωματείο *</Label>
+            <Select value={clubId} onValueChange={setClubId}>
+              <SelectTrigger className="rounded-none">
+                <SelectValue placeholder="Επιλέξτε σύλλογο..." />
+              </SelectTrigger>
+              <SelectContent className="max-h-72">
+                {clubs.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="coach-name" className="font-medium mb-2 block">
+              Όνομα Προπονητή
+            </Label>
+            <Input
+              id="coach-name"
+              value={coachNameText}
+              onChange={(e) => setCoachNameText(e.target.value)}
+              placeholder="Γράψτε το ονοματεπώνυμο του προπονητή"
+              className="rounded-none"
+            />
+          </div>
+
+          <div>
+            <Label className="font-medium mb-2 block">Άθλημα *</Label>
+            <Select value={sport} onValueChange={setSport}>
+              <SelectTrigger className="rounded-none">
+                <SelectValue placeholder="Επιλέξτε άθλημα..." />
+              </SelectTrigger>
+              <SelectContent className="max-h-72">
+                {sports.length === 0 ? (
+                  <div className="px-2 py-3 text-xs text-muted-foreground">
+                    Δεν έχουν δηλωθεί ακόμη αθλήματα από ομοσπονδίες.
+                  </div>
+                ) : (
+                  sports.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>

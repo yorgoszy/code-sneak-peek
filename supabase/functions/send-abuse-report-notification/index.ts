@@ -77,30 +77,44 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Coach info
-    let coachName = 'Άγνωστος';
-    let coachEmail = '';
-    if (report.coach_id) {
-      const { data: coach } = await supabase
+    // Coach / Club info
+    let coachName = report.coach_name_text || 'Δεν αναφέρθηκε';
+    let clubName = 'Άγνωστος';
+    let clubEmail = '';
+    const clubLookupId = report.club_id || report.coach_id;
+    if (clubLookupId) {
+      const { data: club } = await supabase
         .from('app_users')
         .select('name, email')
-        .eq('id', report.coach_id)
+        .eq('id', clubLookupId)
         .maybeSingle();
-      if (coach) {
-        coachName = coach.name;
-        coachEmail = coach.email;
+      if (club) {
+        clubName = club.name;
+        clubEmail = club.email;
       }
     }
 
-    // Βρες ομοσπονδίες όπου ανήκει ο coach
-    const { data: federationLinks } = await supabase
-      .from('federation_clubs')
-      .select('federation_id, federation:app_users!federation_clubs_federation_id_fkey(id, name, email)')
-      .eq('club_id', report.coach_id);
+    // Find federations: prefer those that declare the same sport, else by club link
+    let federations: any[] = [];
+    if (report.sport) {
+      const { data: bySport } = await supabase
+        .from('app_users')
+        .select('id, name, email, sport')
+        .eq('role', 'federation')
+        .ilike('sport', report.sport);
+      federations = (bySport || []).filter((f: any) => f.email);
+    }
 
-    const federations = (federationLinks || [])
-      .map((l: any) => l.federation)
-      .filter(Boolean);
+    if (federations.length === 0) {
+      // Fallback: federations linked to the club
+      const { data: federationLinks } = await supabase
+        .from('federation_clubs')
+        .select('federation_id, federation:app_users!federation_clubs_federation_id_fkey(id, name, email)')
+        .eq('club_id', clubLookupId);
+      federations = (federationLinks || [])
+        .map((l: any) => l.federation)
+        .filter(Boolean);
+    }
 
     if (federations.length === 0) {
       return new Response(JSON.stringify({
@@ -135,7 +149,9 @@ Deno.serve(async (req) => {
 
         <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
           <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;width:40%;">Καταγγέλλων:</td><td style="padding:8px;border-bottom:1px solid #eee;">${reporterDisplay}</td></tr>
-          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Καταγγελλόμενος προπονητής:</td><td style="padding:8px;border-bottom:1px solid #eee;">${coachName}${coachEmail ? ` (${coachEmail})` : ''}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Άθλημα:</td><td style="padding:8px;border-bottom:1px solid #eee;">${report.sport || 'Δεν αναφέρθηκε'}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Σύλλογος / Σωματείο:</td><td style="padding:8px;border-bottom:1px solid #eee;">${clubName}${clubEmail ? ` (${clubEmail})` : ''}</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Καταγγελλόμενος προπονητής:</td><td style="padding:8px;border-bottom:1px solid #eee;">${coachName}</td></tr>
           <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Τύπος κακοποίησης:</td><td style="padding:8px;border-bottom:1px solid #eee;">${typesText}</td></tr>
           <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Ημερομηνία περιστατικού:</td><td style="padding:8px;border-bottom:1px solid #eee;">${incidentDateText}</td></tr>
           <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Ημερομηνία υποβολής:</td><td style="padding:8px;border-bottom:1px solid #eee;">${new Date(report.created_at).toLocaleString('el-GR')}</td></tr>
@@ -156,7 +172,7 @@ Deno.serve(async (req) => {
       </body></html>
     `;
 
-    const subject = `⚠️ Καταγγελία Κακοποίησης - Προπονητής: ${coachName}`;
+    const subject = `⚠️ Καταγγελία Κακοποίησης - ${clubName} (${report.sport || 'άθλημα ?'})`;
 
     // Στείλε email σε κάθε ομοσπονδία (αν υπάρχει send-transactional-email function)
     let emailsSent = 0;
@@ -172,7 +188,10 @@ Deno.serve(async (req) => {
               federationName: fed.name,
               reporterDisplay,
               coachName,
-              coachEmail,
+              coachEmail: '',
+              clubName,
+              clubEmail,
+              sport: report.sport || '',
               typesText,
               incidentDateText,
               description: report.description,
