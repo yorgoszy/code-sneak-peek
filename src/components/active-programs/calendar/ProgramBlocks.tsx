@@ -37,7 +37,8 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
   workoutInProgress,
   isExerciseComplete,
   onSetClick,
-  onVideoClick
+  onVideoClick,
+  program,
 }) => {
   const [openBlocks, setOpenBlocks] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
