@@ -1,8 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Camera } from "lucide-react";
 import { VideoThumbnail } from '@/components/user-profile/daily-program/VideoThumbnail';
 import { formatVelocityMs } from '@/utils/timeCalculations';
+import { VelocityCameraDialog } from './VelocityCameraDialog';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 const REPS_MODE_LABELS: Record<string, string> = {
   'reps': 'Reps',
