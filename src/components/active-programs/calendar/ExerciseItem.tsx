@@ -103,6 +103,8 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
           getKg={getKg}
           getReps={getReps}
           getVelocity={getVelocity}
+          program={program}
+          selectedDate={selectedDate}
         />
       </CardContent>
     </Card>
