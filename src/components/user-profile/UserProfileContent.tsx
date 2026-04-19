@@ -27,6 +27,7 @@ import { UserProfileSafety } from "./UserProfileSafety";
 import CoachBracketsPage from "@/pages/Dashboard/CoachBracketsPage";
 import CoachLivePage from "@/pages/Dashboard/CoachLivePage";
 import RankingPage from "@/pages/Dashboard/RankingPage";
+import WeighInPage from "@/pages/Dashboard/WeighInPage";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useUserSubscriptionStatus } from "@/hooks/useUserSubscriptionStatus";
 
@@ -295,6 +296,13 @@ export const UserProfileContent = ({
           <div className="space-y-4">
             <BackButton />
             <RankingPage embedded contextUserId={userProfile?.id} />
+          </div>
+        );
+      case "coach-weigh-in":
+        return (
+          <div className="space-y-4">
+            <BackButton />
+            <WeighInPage embedded />
           </div>
         );
       default:

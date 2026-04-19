@@ -178,10 +178,7 @@ const UserProfile = () => {
               if (p === '/dashboard/coach-brackets') { setActiveTab('coach-brackets'); return true; }
               if (p === '/dashboard/coach-live') { setActiveTab('coach-live'); return true; }
               if (p === '/dashboard/ranking') { setActiveTab('coach-ranking'); return true; }
-              if (p === '/dashboard/weigh-in') {
-                window.open(path, '_blank', 'noopener,noreferrer');
-                return true;
-              }
+              if (p === '/dashboard/weigh-in') { setActiveTab('coach-weigh-in'); return true; }
               return false;
             }}
           />
@@ -216,10 +213,7 @@ const UserProfile = () => {
                   if (p === '/dashboard/coach-brackets') { setActiveTab('coach-brackets'); return true; }
                   if (p === '/dashboard/coach-live') { setActiveTab('coach-live'); return true; }
                   if (p === '/dashboard/ranking') { setActiveTab('coach-ranking'); return true; }
-                  if (p === '/dashboard/weigh-in') {
-                    window.open(path, '_blank', 'noopener,noreferrer');
-                    return true;
-                  }
+                  if (p === '/dashboard/weigh-in') { setActiveTab('coach-weigh-in'); return true; }
                   return false;
                 }}
               />

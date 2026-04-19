@@ -49,7 +49,11 @@ interface Competition {
   weigh_in_ended_at?: string | null;
 }
 
-const WeighInPage: React.FC = () => {
+interface WeighInPageProps {
+  embedded?: boolean;
+}
+
+const WeighInPage: React.FC<WeighInPageProps> = ({ embedded = false }) => {
   const { t } = useTranslation();
   const { userProfile, isAdmin, isFederation, isCoach } = useRoleCheck();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -412,12 +416,14 @@ const WeighInPage: React.FC = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        <div className="hidden lg:block">
-          {renderSidebar()}
-        </div>
+      <div className={embedded ? "flex w-full bg-background" : "min-h-screen flex w-full bg-background"}>
+        {!embedded && (
+          <div className="hidden lg:block">
+            {renderSidebar()}
+          </div>
+        )}
 
-        {isMobileOpen && (
+        {!embedded && isMobileOpen && (
           <div className="fixed inset-0 z-50 lg:hidden">
             <div className="absolute inset-0 bg-black/50" onClick={() => setIsMobileOpen(false)} />
             <div className="relative w-64 h-full">
@@ -427,7 +433,9 @@ const WeighInPage: React.FC = () => {
         )}
 
         <div className="flex-1 flex flex-col min-w-0">
+          {!embedded && (
           <div className="sticky top-0 z-40 bg-background border-b border-border p-3 lg:hidden">
+
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Button variant="outline" size="sm" onClick={() => setIsMobileOpen(true)} className="rounded-none">
@@ -456,6 +464,7 @@ const WeighInPage: React.FC = () => {
               </div>
             </div>
           </div>
+          )}
 
           <main className="flex-1 p-4 lg:p-6 overflow-auto">
             <div className="hidden lg:flex items-center justify-between mb-6">
