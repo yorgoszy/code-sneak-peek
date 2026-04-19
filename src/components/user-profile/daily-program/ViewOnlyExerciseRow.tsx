@@ -1,7 +1,10 @@
 
-import React from 'react';
-import { Play, Check } from "lucide-react";
+import React, { useState } from 'react';
+import { Play, Check, Camera } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
+import { VelocityCameraDialog } from '@/components/active-programs/calendar/VelocityCameraDialog';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 interface Exercise {
   id: string;
@@ -32,6 +35,7 @@ interface ViewOnlyExerciseRowProps {
   workoutInProgress?: boolean;
   isChecked?: boolean;
   onToggleCheck?: (exerciseId: string) => void;
+  program?: any;
 }
 
 export const ViewOnlyExerciseRow: React.FC<ViewOnlyExerciseRowProps> = ({
@@ -40,8 +44,11 @@ export const ViewOnlyExerciseRow: React.FC<ViewOnlyExerciseRowProps> = ({
   onVideoClick,
   workoutInProgress = false,
   isChecked = false,
-  onToggleCheck
+  onToggleCheck,
+  program,
 }) => {
+  const { user } = useAuthContext();
+  const [cameraOpen, setCameraOpen] = useState(false);
   const videoUrl = exercise.exercises?.video_url;
   const hasValidVideo = videoUrl && isValidVideoUrl(videoUrl);
   const thumbnailUrl = hasValidVideo ? getVideoThumbnail(videoUrl) : null;
@@ -56,7 +63,6 @@ export const ViewOnlyExerciseRow: React.FC<ViewOnlyExerciseRowProps> = ({
     cursor: 'default'
   };
 
-  // Get label for reps mode
   const getRepsLabel = () => {
     const mode = exercise.reps_mode || 'reps';
     if (mode === 'reps') return 'Reps';
@@ -64,7 +70,6 @@ export const ViewOnlyExerciseRow: React.FC<ViewOnlyExerciseRowProps> = ({
     return 'Meter';
   };
 
-  // Get label for kg mode
   const getKgLabel = () => {
     const mode = exercise.kg_mode || 'kg';
     if (mode === 'kg') return 'Kg';
@@ -80,6 +85,8 @@ export const ViewOnlyExerciseRow: React.FC<ViewOnlyExerciseRowProps> = ({
     }
   };
 
+  const targetUserId = program?.user_id || program?.app_users?.id || user?.id || '';
+
   return (
     <div 
       className={`relative bg-white border-0 border-b w-full transition-opacity ${workoutInProgress ? 'cursor-pointer hover:bg-gray-50' : ''} ${isChecked ? 'opacity-30' : ''}`}
@@ -91,10 +98,9 @@ export const ViewOnlyExerciseRow: React.FC<ViewOnlyExerciseRowProps> = ({
           <Check className="w-10 h-10 text-[#00ffba] stroke-[3]" />
         </div>
       )}
-      {/* Exercise Name Row - Same as ExerciseSelectionButton */}
+      {/* Exercise Name Row */}
       <div className="px-2 py-0 border-b bg-gray-100 flex items-center w-full" style={{ minHeight: '28px' }}>
         <div className="flex items-center gap-2 w-full h-6 px-2 bg-gray-200" style={{ borderRadius: '0px' }}>
-          {/* Thumbnail on left */}
           {hasValidVideo && thumbnailUrl ? (
             <div 
               className="w-8 h-5 rounded-none overflow-hidden bg-gray-100 flex-shrink-0 cursor-pointer"
@@ -123,96 +129,74 @@ export const ViewOnlyExerciseRow: React.FC<ViewOnlyExerciseRowProps> = ({
             </div>
           )}
           
-          {/* Exercise Number */}
           {exerciseNumber && (
             <span className="text-xs bg-blue-100 text-blue-800 px-1 rounded-sm flex-shrink-0">
               {exerciseNumber}
             </span>
           )}
           
-          {/* Exercise Name */}
           <span className="truncate flex-1">{exercise.exercises?.name || 'Άγνωστη άσκηση'}</span>
+
+          {workoutInProgress && targetUserId && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={(e) => { e.stopPropagation(); setCameraOpen(true); }}
+              className="h-5 px-1.5 rounded-none flex-shrink-0"
+              title="Track velocity με κάμερα"
+            >
+              <Camera className="w-3 h-3 mr-1" />
+              <span className="text-[10px]">Velocity</span>
+            </Button>
+          )}
         </div>
       </div>
 
-      {/* Exercise Details Row - Same layout as ExerciseDetailsFormOptimized but read-only */}
+      {/* Exercise Details Row */}
       <div className="flex px-2 py-0 gap-0 w-full" style={{ minHeight: '28px' }}>
         <div className="flex flex-col items-center" style={{ width: '60px' }}>
-          <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>
-            Sets
-          </label>
-          <div 
-            className="text-center w-full flex items-center justify-center"
-            style={inputStyle}
-          >
-            {exercise.sets || '-'}
-          </div>
+          <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Sets</label>
+          <div className="text-center w-full flex items-center justify-center" style={inputStyle}>{exercise.sets || '-'}</div>
         </div>
-        
         <div className="flex flex-col items-center" style={{ width: '60px' }}>
-          <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>
-            {getRepsLabel()}
-          </label>
-          <div 
-            className="text-center w-full flex items-center justify-center"
-            style={inputStyle}
-          >
-            {exercise.reps || '-'}
-          </div>
+          <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>{getRepsLabel()}</label>
+          <div className="text-center w-full flex items-center justify-center" style={inputStyle}>{exercise.reps || '-'}</div>
         </div>
-        
         <div className="flex flex-col items-center" style={{ width: '60px' }}>
           <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>%1RM</label>
-          <div 
-            className="text-center w-full flex items-center justify-center"
-            style={inputStyle}
-          >
-            {exercise.percentage_1rm || '-'}
-          </div>
+          <div className="text-center w-full flex items-center justify-center" style={inputStyle}>{exercise.percentage_1rm || '-'}</div>
         </div>
-        
         <div className="flex flex-col items-center" style={{ width: '60px' }}>
-          <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>
-            {getKgLabel()}
-          </label>
-          <div 
-            className="text-center w-full flex items-center justify-center"
-            style={inputStyle}
-          >
-            {exercise.kg || '-'}
-          </div>
+          <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>{getKgLabel()}</label>
+          <div className="text-center w-full flex items-center justify-center" style={inputStyle}>{exercise.kg || '-'}</div>
         </div>
-        
         <div className="flex flex-col items-center" style={{ width: '60px' }}>
           <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>m/s</label>
-          <div 
-            className="text-center w-full flex items-center justify-center"
-            style={inputStyle}
-          >
-            {exercise.velocity_ms || '-'}
-          </div>
+          <div className="text-center w-full flex items-center justify-center" style={inputStyle}>{exercise.velocity_ms || '-'}</div>
         </div>
-        
         <div className="flex flex-col items-center" style={{ width: '60px' }}>
           <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Tempo</label>
-          <div 
-            className="text-center w-full flex items-center justify-center"
-            style={inputStyle}
-          >
-            {exercise.tempo || '-'}
-          </div>
+          <div className="text-center w-full flex items-center justify-center" style={inputStyle}>{exercise.tempo || '-'}</div>
         </div>
-        
         <div className="flex flex-col items-center" style={{ width: '52px' }}>
           <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Rest</label>
-          <div 
-            className="text-center w-full flex items-center justify-center"
-            style={inputStyle}
-          >
-            {exercise.rest || '-'}
-          </div>
+          <div className="text-center w-full flex items-center justify-center" style={inputStyle}>{exercise.rest || '-'}</div>
         </div>
       </div>
+
+      {cameraOpen && targetUserId && (
+        <VelocityCameraDialog
+          isOpen={cameraOpen}
+          onClose={() => setCameraOpen(false)}
+          exerciseId={exercise.exercise_id || exercise.exercises?.id || exercise.id}
+          exerciseName={exercise.exercises?.name || 'Exercise'}
+          userId={targetUserId}
+          loadKg={Number(exercise.kg || 0) || 0}
+          setNumber={1}
+          totalReps={Number(exercise.reps) || 1}
+        />
+      )}
     </div>
   );
 };
