@@ -68,6 +68,45 @@ export const VelocityCameraDialog: React.FC<VelocityCameraDialogProps> = ({
   const [reps, setReps] = useState<RepMetrics[]>([]);
   const [calibration, setCalibration] = useState<TrackerCalibration>(DEFAULT_CALIBRATION);
   const [loading, setLoading] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [calibratingPpm, setCalibratingPpm] = useState(false);
+  const [calibPoints, setCalibPoints] = useState<{ x: number; y: number }[]>([]);
+  const selectedColor = detectColorFromHsv(calibration.hsv_lower, calibration.hsv_upper);
+
+  const setColor = (c: MarkerColor) => {
+    if (c === 'custom') return;
+    const p = COLOR_PRESETS[c];
+    setCalibration(prev => ({ ...prev, hsv_lower: p.lower, hsv_upper: p.upper }));
+  };
+
+  const handleVideoClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!calibratingPpm) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const video = videoRef.current;
+    if (!video) return;
+    const scaleX = (video.videoWidth || rect.width) / rect.width;
+    const scaleY = (video.videoHeight || rect.height) / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    const next = [...calibPoints, { x, y }];
+    if (next.length === 2) {
+      const dx = next[1].x - next[0].x;
+      const dy = next[1].y - next[0].y;
+      const distPx = Math.sqrt(dx * dx + dy * dy);
+      if (distPx < 20) {
+        toast.error('Πολύ κοντινά σημεία — δοκίμασε ξανά');
+        setCalibPoints([]);
+        return;
+      }
+      setCalibration(prev => ({ ...prev, pixels_per_meter: Math.round(distPx) }));
+      toast.success(`Calibration: ${Math.round(distPx)} px = 1m`);
+      setCalibPoints([]);
+      setCalibratingPpm(false);
+    } else {
+      setCalibPoints(next);
+      toast.info('Τώρα κάνε κλικ στο 2ο άκρο (1 μέτρο μακριά)');
+    }
+  };
 
   // Φόρτωση αποθηκευμένης calibration για το συγκεκριμένο exercise/user
   useEffect(() => {
