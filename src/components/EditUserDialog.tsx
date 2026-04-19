@@ -75,6 +75,11 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
               </div>
 
               <div className="space-y-1">
+                <Label htmlFor="phone" className="text-xs">Τηλέφωνο</Label>
+                <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Τηλέφωνο" className="rounded-none h-9" disabled={loading} />
+              </div>
+
+              <div className="space-y-1">
                 <Label htmlFor="birthDate" className="text-xs">Ημ. Γέννησης</Label>
                 <Input id="birthDate" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} className="rounded-none h-9" disabled={loading} />
               </div>
