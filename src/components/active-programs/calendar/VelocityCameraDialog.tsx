@@ -229,10 +229,13 @@ export const VelocityCameraDialog: React.FC<VelocityCameraDialogProps> = ({
         </DialogHeader>
 
         <div className="space-y-3">
-          <div className="relative bg-black aspect-video">
+          <div
+            className={`relative bg-black aspect-video ${calibratingPpm ? 'cursor-crosshair ring-2 ring-[#00ffba]' : ''}`}
+            onClick={handleVideoClick}
+          >
             <video
               ref={videoRef}
-              className="w-full h-full object-contain"
+              className="w-full h-full object-contain pointer-events-none"
               playsInline
               muted
               autoPlay
@@ -250,43 +253,92 @@ export const VelocityCameraDialog: React.FC<VelocityCameraDialogProps> = ({
                 </Badge>
               )}
             </div>
+            {calibratingPpm && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/40 pointer-events-none">
+                <div className="bg-background/90 px-4 py-2 text-sm">
+                  {calibPoints.length === 0
+                    ? '👉 Κάνε κλικ στο 1ο άκρο μιας απόστασης 1 μέτρου'
+                    : '👉 Κάνε κλικ στο 2ο άκρο (1 μέτρο μακριά)'}
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
+          {/* Friendly calibration controls */}
+          <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-xs">Pixels / meter (calibration)</Label>
-              <Input
-                type="number"
-                value={calibration.pixels_per_meter}
-                onChange={(e) =>
-                  setCalibration(c => ({ ...c, pixels_per_meter: Number(e.target.value) || 1 }))
-                }
-                className="h-8 rounded-none"
-              />
+              <Label className="text-xs">Χρώμα marker στη μπάρα</Label>
+              <Select value={selectedColor === 'custom' ? '' : selectedColor} onValueChange={(v) => setColor(v as MarkerColor)}>
+                <SelectTrigger className="h-9 rounded-none">
+                  <SelectValue placeholder="Διάλεξε χρώμα..." />
+                </SelectTrigger>
+                <SelectContent className="rounded-none">
+                  {Object.entries(COLOR_PRESETS).map(([key, p]) => (
+                    <SelectItem key={key} value={key}>
+                      {p.emoji} {p.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
-              <Label className="text-xs">HSV Lower (H,S,V)</Label>
-              <Input
-                value={calibration.hsv_lower.join(',')}
-                onChange={(e) => {
-                  const parts = e.target.value.split(',').map(n => Number(n.trim()) || 0);
-                  if (parts.length === 3) setCalibration(c => ({ ...c, hsv_lower: parts as [number, number, number] }));
-                }}
-                className="h-8 rounded-none"
-              />
-            </div>
-            <div>
-              <Label className="text-xs">HSV Upper (H,S,V)</Label>
-              <Input
-                value={calibration.hsv_upper.join(',')}
-                onChange={(e) => {
-                  const parts = e.target.value.split(',').map(n => Number(n.trim()) || 0);
-                  if (parts.length === 3) setCalibration(c => ({ ...c, hsv_upper: parts as [number, number, number] }));
-                }}
-                className="h-8 rounded-none"
-              />
+              <Label className="text-xs">Calibration απόστασης</Label>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => { setCalibPoints([]); setCalibratingPpm(true); toast.info('Κάνε κλικ στα 2 άκρα μιας απόστασης 1 μέτρου'); }}
+                className="h-9 w-full rounded-none justify-start"
+              >
+                <Ruler className="w-4 h-4 mr-2" />
+                {calibration.pixels_per_meter} px = 1m · Επανα-calibrate
+              </Button>
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={() => setShowAdvanced(s => !s)}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <Settings2 className="w-3 h-3" />
+            {showAdvanced ? 'Απόκρυψη' : 'Εμφάνιση'} προηγμένων (HSV)
+          </button>
+
+          {showAdvanced && (
+            <div className="grid grid-cols-3 gap-2 p-2 border border-border bg-muted/30">
+              <div>
+                <Label className="text-xs">Pixels / meter</Label>
+                <Input
+                  type="number"
+                  value={calibration.pixels_per_meter}
+                  onChange={(e) => setCalibration(c => ({ ...c, pixels_per_meter: Number(e.target.value) || 1 }))}
+                  className="h-8 rounded-none"
+                />
+              </div>
+              <div>
+                <Label className="text-xs">HSV Lower (H,S,V)</Label>
+                <Input
+                  value={calibration.hsv_lower.join(',')}
+                  onChange={(e) => {
+                    const parts = e.target.value.split(',').map(n => Number(n.trim()) || 0);
+                    if (parts.length === 3) setCalibration(c => ({ ...c, hsv_lower: parts as [number, number, number] }));
+                  }}
+                  className="h-8 rounded-none"
+                />
+              </div>
+              <div>
+                <Label className="text-xs">HSV Upper (H,S,V)</Label>
+                <Input
+                  value={calibration.hsv_upper.join(',')}
+                  onChange={(e) => {
+                    const parts = e.target.value.split(',').map(n => Number(n.trim()) || 0);
+                    if (parts.length === 3) setCalibration(c => ({ ...c, hsv_upper: parts as [number, number, number] }));
+                  }}
+                  className="h-8 rounded-none"
+                />
+              </div>
+            </div>
+          )}
 
           <div className="flex gap-2">
             {!tracking ? (
