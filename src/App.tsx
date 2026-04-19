@@ -57,6 +57,7 @@ import { AthletesProgressWithSidebar } from "@/pages/Dashboard/AthletesProgressW
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import Offers from "@/pages/Offers";
 import AbuseReports from "@/pages/AbuseReports";
+import FederationAbuseReports from "@/pages/Dashboard/FederationAbuseReports";
 import ProfileEdit from "@/pages/ProfileEdit";
 import InstallPWA from "@/pages/InstallPWA";
 import CalendarWidget from "@/pages/CalendarWidget";
@@ -274,7 +275,8 @@ function App() {
                         <Route path="/dashboard/ai-lab" element={<ProtectedRoute><MultiCameraAnalysis /></ProtectedRoute>} />
                         <Route path="/dashboard/federation-profile" element={<ProtectedRoute><FederationEditProfile /></ProtectedRoute>} />
                         <Route path="/dashboard/ranking" element={<ProtectedRoute><RankingPage /></ProtectedRoute>} />
-                        <Route path="/dashboard/federation-weigh-in" element={<ProtectedRoute><FederationWeighInPage /></ProtectedRoute>} />
+                       <Route path="/dashboard/federation-weigh-in" element={<ProtectedRoute><FederationWeighInPage /></ProtectedRoute>} />
+                       <Route path="/dashboard/federation-abuse-reports" element={<ProtectedRoute><FederationAbuseReports /></ProtectedRoute>} />
                       </Route>
 
                       {/* Protected user routes */}
