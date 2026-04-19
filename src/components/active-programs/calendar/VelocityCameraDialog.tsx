@@ -33,7 +33,9 @@ const COLOR_PRESETS: Record<Exclude<MarkerColor, 'custom'>, { label: string; emo
   yellow: { label: 'Κίτρινο',  emoji: '🟡', lower: [20, 100, 100], upper: [35, 255, 255] },
   blue:   { label: 'Μπλε',     emoji: '🔵', lower: [100, 150, 0],  upper: [140, 255, 255] },
   orange: { label: 'Πορτοκαλί',emoji: '🟠', lower: [10, 150, 150], upper: [20, 255, 255] },
-  pink:   { label: 'Ροζ',      emoji: '🩷', lower: [140, 100, 100],upper: [170, 255, 255] },
+  purple: { label: 'Μωβ',      emoji: '🟣', lower: [140, 100, 100],upper: [170, 255, 255] },
+  white:  { label: 'Άσπρο',    emoji: '⚪', lower: [0, 0, 200],    upper: [180, 30, 255] },
+  black:  { label: 'Μαύρο',    emoji: '⚫', lower: [0, 0, 0],      upper: [180, 255, 50] },
 };
 
 const DEFAULT_CALIBRATION: TrackerCalibration = {
