@@ -414,6 +414,15 @@ const WeighInPage: React.FC<WeighInPageProps> = ({ embedded = false }) => {
     return <CoachSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />;
   };
 
+  if (embedded) {
+    return (
+      <>
+        {mainContent}
+        {historyDialog}
+      </>
+    );
+  }
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
