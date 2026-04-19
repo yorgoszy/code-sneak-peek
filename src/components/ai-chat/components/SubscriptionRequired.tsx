@@ -27,7 +27,7 @@ export const SubscriptionRequired: React.FC<SubscriptionRequiredProps> = ({ isMo
         <div className="bg-blue-50 p-4 rounded-none mb-4">
           <h4 className="font-medium text-blue-900 mb-2">Τι περιλαμβάνει η συνδρομή:</h4>
           <ul className="text-sm text-blue-800 text-left space-y-1">
-            <li>• Απεριόριστη πρόσβαση στον RID AI</li>
+            <li>• Απεριόριστη πρόσβαση στον HYPER AI</li>
             <li>• Εξατομικευμένες συμβουλές διατροφής</li>
             <li>• Ανάλυση προόδου και τεστ</li>
             <li>• Υπολογισμοί θερμίδων και μακροθρεπτικών</li>
