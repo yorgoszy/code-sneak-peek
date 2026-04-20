@@ -26,6 +26,15 @@ import { ReceiptPreviewDialog } from "./ReceiptPreviewDialog";
 import { ReceiptMyDataIntegration } from "@/components/receipts/ReceiptMyDataIntegration";
 import { MyDataSettings } from "@/components/admin/MyDataSettings";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // MarkInput component
 const MarkInput: React.FC<{
@@ -35,6 +44,8 @@ const MarkInput: React.FC<{
 }> = ({ receiptId, currentMark, onUpdate }) => {
   const [mark, setMark] = useState(currentMark);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [successOpen, setSuccessOpen] = useState(false);
+  const [savedMark, setSavedMark] = useState('');
 
   const updateMark = async () => {
     if (mark === currentMark) return;
@@ -49,6 +60,8 @@ const MarkInput: React.FC<{
       if (error) throw error;
       
       toast.success('Το ΜΑΡΚ ενημερώθηκε επιτυχώς!');
+      setSavedMark(mark.trim());
+      setSuccessOpen(true);
       onUpdate();
     } catch (error) {
       console.error('Error updating mark:', error);
