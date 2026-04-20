@@ -72,28 +72,49 @@ const MarkInput: React.FC<{
   };
 
   return (
-    <div className="flex gap-1">
-      <Input
-        value={mark}
-        onChange={(e) => setMark(e.target.value)}
-        placeholder="Εισάγετε ΜΑΡΚ"
-        className="rounded-none text-xs h-8 flex-1"
-        disabled={isUpdating}
-      />
-      <Button
-        onClick={updateMark}
-        size="sm"
-        disabled={isUpdating || mark === currentMark}
-        className="rounded-none h-8 px-2"
-        variant="outline"
-      >
-        {isUpdating ? (
-          <Loader2 className="h-3 w-3 animate-spin" />
-        ) : (
-          <CheckCircle className="h-3 w-3" />
-        )}
-      </Button>
-    </div>
+    <>
+      <div className="flex gap-1">
+        <Input
+          value={mark}
+          onChange={(e) => setMark(e.target.value)}
+          placeholder="Εισάγετε ΜΑΡΚ"
+          className="rounded-none text-xs h-8 flex-1"
+          disabled={isUpdating}
+        />
+        <Button
+          onClick={updateMark}
+          size="sm"
+          disabled={isUpdating || mark === currentMark}
+          className="rounded-none h-8 px-2"
+          variant="outline"
+        >
+          {isUpdating ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <CheckCircle className="h-3 w-3" />
+          )}
+        </Button>
+      </div>
+
+      <AlertDialog open={successOpen} onOpenChange={setSuccessOpen}>
+        <AlertDialogContent className="rounded-none">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-[#00ffba]" />
+              Επιτυχής Καταχώρηση
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Το ΜΑΡΚ <strong className="font-mono">{savedMark}</strong> καταχωρήθηκε επιτυχώς στην απόδειξη.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none">
+              Εντάξει
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 
