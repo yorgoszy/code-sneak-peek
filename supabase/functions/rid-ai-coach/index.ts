@@ -6120,9 +6120,9 @@ ${isAdmin ? `
           .reverse();
 
         dbConversationMessages = filtered
-          .filter((m: any) => m?.content && m.message_type === "user")
+          .filter((m: any) => m?.content && (m.message_type === "user" || m.message_type === "assistant"))
           .map((m: any) => ({
-            role: "user" as const,
+            role: m.message_type === "assistant" ? ("assistant" as const) : ("user" as const),
             content: String(m.content),
           }));
       }
@@ -6136,6 +6136,13 @@ ${isAdmin ? `
     const mergedMessages = shouldMergeDbHistory
       ? [...dbConversationMessages, ...requestMessages]
       : requestMessages;
+
+    const dedupedMessages = mergedMessages.filter((message, index, array) => {
+      const firstMatchIndex = array.findIndex(
+        (candidate) => candidate.role === message.role && candidate.content === message.content,
+      );
+      return firstMatchIndex === index;
+    });
 
     // Extra guard: αν υπάρχει ιστορικό, απαγορεύεται welcome / reset
     const conversationGuard = shouldMergeDbHistory
@@ -6211,8 +6218,8 @@ ${isAdmin ? `
           body: JSON.stringify({
             model: "google/gemini-2.5-flash",
             messages: conversationGuard
-              ? [systemPrompt, conversationGuard, ...mergedMessages]
-              : [systemPrompt, ...mergedMessages],
+              ? [systemPrompt, conversationGuard, ...dedupedMessages]
+              : [systemPrompt, ...dedupedMessages],
             stream: true,
           }),
         });
