@@ -3644,6 +3644,147 @@ export type Database = {
           },
         ]
       }
+      ekouros_club_federations: {
+        Row: {
+          club_id: string
+          federation_id: string
+        }
+        Insert: {
+          club_id: string
+          federation_id: string
+        }
+        Update: {
+          club_id?: string
+          federation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ekouros_club_federations_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "ekouros_clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ekouros_club_federations_federation_id_fkey"
+            columns: ["federation_id"]
+            isOneToOne: false
+            referencedRelation: "ekouros_federations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ekouros_club_sports: {
+        Row: {
+          club_id: string
+          sport_id: string
+        }
+        Insert: {
+          club_id: string
+          sport_id: string
+        }
+        Update: {
+          club_id?: string
+          sport_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ekouros_club_sports_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "ekouros_clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ekouros_club_sports_sport_id_fkey"
+            columns: ["sport_id"]
+            isOneToOne: false
+            referencedRelation: "ekouros_sports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ekouros_clubs: {
+        Row: {
+          created_at: string
+          gga_code: string
+          id: string
+          name: string
+          name_normalized: string
+          registration_date: string | null
+          sports_text: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          gga_code: string
+          id?: string
+          name: string
+          name_normalized: string
+          registration_date?: string | null
+          sports_text?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          gga_code?: string
+          id?: string
+          name?: string
+          name_normalized?: string
+          registration_date?: string | null
+          sports_text?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ekouros_federations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          name_normalized: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          name_normalized: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          name_normalized?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ekouros_sports: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          name_normalized: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          name_normalized: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          name_normalized?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       endurance_test_data: {
         Row: {
           created_at: string | null
