@@ -189,112 +189,16 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
   return (
     <div className="space-y-4">
       <Card className="rounded-none border-2 border-red-200">
-        <CardHeader className="bg-red-50">
-          <CardTitle className="flex items-center gap-2 text-red-800">
-            <AlertTriangle className="h-5 w-5" /> {t('safety.title')}
+        <CardHeader className="bg-red-50 py-3">
+          <CardTitle className="flex items-center gap-2 text-red-800 text-base">
+            <AlertTriangle className="h-4 w-4" /> {t('safety.title')}
           </CardTitle>
-          <p className="text-sm text-red-700 mt-2">{t('safety.intro')}</p>
+          <p className="text-xs text-red-700 mt-1">{t('safety.intro')}</p>
         </CardHeader>
-        <CardContent className="space-y-4 pt-6">
-          <div>
-            <Label className="font-medium mb-2 block">{t('safety.abuseTypeLabel')}</Label>
-            <div className="space-y-2">
-              {ABUSE_TYPE_IDS.map(id => (
-                <div
-                  key={id}
-                  onClick={() => toggleType(id)}
-                  className={`flex items-center gap-3 p-3 border cursor-pointer transition-colors ${
-                    selectedTypes.includes(id) ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:bg-gray-50'
-                  }`}
-                >
-                  <Checkbox checked={selectedTypes.includes(id)} />
-                  <span className="text-sm">{t(`safety.types.${id}`)}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <Label className="font-medium mb-2 block">Σύλλογος / Σωματείο *</Label>
-            <Select value={clubId} onValueChange={setClubId}>
-              <SelectTrigger className="rounded-none">
-                <SelectValue placeholder="Επιλέξτε σύλλογο..." />
-              </SelectTrigger>
-              <SelectContent className="max-h-72">
-                {clubs.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="coach-name" className="font-medium mb-2 block">
-              Όνομα Προπονητή
-            </Label>
-            <Input
-              id="coach-name"
-              value={coachNameText}
-              onChange={(e) => setCoachNameText(e.target.value)}
-              placeholder="Γράψτε το ονοματεπώνυμο του προπονητή"
-              className="rounded-none"
-            />
-          </div>
-
-          <div>
-            <Label className="font-medium mb-2 block">Άθλημα *</Label>
-            <Select value={sport} onValueChange={setSport}>
-              <SelectTrigger className="rounded-none">
-                <SelectValue placeholder="Επιλέξτε άθλημα..." />
-              </SelectTrigger>
-              <SelectContent className="max-h-72">
-                {sports.length === 0 ? (
-                  <div className="px-2 py-3 text-xs text-muted-foreground">
-                    Δεν έχουν δηλωθεί ακόμη αθλήματα από ομοσπονδίες.
-                  </div>
-                ) : (
-                  sports.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {s}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="incident-date" className="font-medium mb-2 block">
-              {t('safety.incidentDate')}
-            </Label>
-            <Input
-              id="incident-date"
-              type="date"
-              value={incidentDate}
-              onChange={(e) => setIncidentDate(e.target.value)}
-              className="rounded-none max-w-xs"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="description" className="font-medium mb-2 block">
-              {t('safety.description')}
-            </Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder={t('safety.descriptionPlaceholder')}
-              rows={6}
-              className="rounded-none"
-            />
-          </div>
-
+        <CardContent className="space-y-3 pt-3">
           <div
             onClick={() => setIsAnonymous(!isAnonymous)}
-            className={`flex items-center gap-3 p-3 border cursor-pointer transition-colors ${
+            className={`flex items-center gap-2 p-2 border cursor-pointer transition-colors ${
               isAnonymous ? 'border-gray-700 bg-gray-50' : 'border-gray-200 hover:bg-gray-50'
             }`}
           >
@@ -305,10 +209,105 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
             </div>
           </div>
 
+          <div>
+            <Label className="font-medium mb-1.5 block text-sm">{t('safety.abuseTypeLabel')}</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {ABUSE_TYPE_IDS.map(id => (
+                <div
+                  key={id}
+                  onClick={() => toggleType(id)}
+                  className={`flex items-center gap-2 p-2 border cursor-pointer transition-colors ${
+                    selectedTypes.includes(id) ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  <Checkbox checked={selectedTypes.includes(id)} />
+                  <span className="text-xs">{t(`safety.types.${id}`)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <Label className="font-medium mb-1.5 block text-sm">Σύλλογος *</Label>
+              <Select value={clubId} onValueChange={setClubId}>
+                <SelectTrigger className="rounded-none h-9">
+                  <SelectValue placeholder="Επιλέξτε..." />
+                </SelectTrigger>
+                <SelectContent className="max-h-72">
+                  {clubs.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="coach-name" className="font-medium mb-1.5 block text-sm">
+                Όνομα Προπονητή
+              </Label>
+              <Input
+                id="coach-name"
+                value={coachNameText}
+                onChange={(e) => setCoachNameText(e.target.value)}
+                placeholder="Ονοματεπώνυμο"
+                className="rounded-none h-9"
+              />
+            </div>
+
+            <div>
+              <Label className="font-medium mb-1.5 block text-sm">Άθλημα *</Label>
+              <Select value={sport} onValueChange={setSport}>
+                <SelectTrigger className="rounded-none h-9">
+                  <SelectValue placeholder="Επιλέξτε..." />
+                </SelectTrigger>
+                <SelectContent className="max-h-72">
+                  {sports.length === 0 ? (
+                    <div className="px-2 py-3 text-xs text-muted-foreground">
+                      Δεν έχουν δηλωθεί αθλήματα.
+                    </div>
+                  ) : (
+                    sports.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="incident-date" className="font-medium mb-1.5 block text-sm">
+              {t('safety.incidentDate')}
+            </Label>
+            <Input
+              id="incident-date"
+              type="date"
+              value={incidentDate}
+              onChange={(e) => setIncidentDate(e.target.value)}
+              className="rounded-none max-w-xs h-9"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="description" className="font-medium mb-1.5 block text-sm">
+              {t('safety.description')}
+            </Label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={t('safety.descriptionPlaceholder')}
+              rows={3}
+              className="rounded-none"
+            />
+          </div>
+
           <Button
             onClick={handleSubmit}
             disabled={submitting}
-            className="w-full bg-red-600 hover:bg-red-700 text-white rounded-none"
+            size="sm"
+            className="bg-red-600 hover:bg-red-700 text-white rounded-none"
           >
             {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
             {t('safety.submit')}
