@@ -48,18 +48,37 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
   const [incidentDate, setIncidentDate] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [clubId, setClubId] = useState<string>("");
+  const [clubNameText, setClubNameText] = useState("");
+  const [clubAddress, setClubAddress] = useState("");
+  const [clubCity, setClubCity] = useState("");
+  const [clubCountry, setClubCountry] = useState("Ελλάδα");
+  const [coachId, setCoachId] = useState<string>("");
   const [coachNameText, setCoachNameText] = useState("");
   const [sport, setSport] = useState<string>("");
   const [clubs, setClubs] = useState<any[]>([]);
+  const [coaches, setCoaches] = useState<any[]>([]);
   const [sports, setSports] = useState<string[]>([]);
   const [clubOpen, setClubOpen] = useState(false);
+  const [coachOpen, setCoachOpen] = useState(false);
   const [clubSearch, setClubSearch] = useState("");
+  const [coachSearch, setCoachSearch] = useState("");
+
+  const [reporterName, setReporterName] = useState("");
+  const [reporterEmail, setReporterEmail] = useState("");
+  const [reporterPhone, setReporterPhone] = useState("");
 
   const filteredClubs = useMemo(() => {
     const q = normalize(clubSearch);
     if (!q) return clubs.slice(0, 50);
     return clubs.filter((c) => normalize(c.name).includes(q)).slice(0, 50);
   }, [clubs, clubSearch]);
+
+  const filteredCoaches = useMemo(() => {
+    const q = normalize(coachSearch);
+    const base = clubId ? coaches.filter((c) => c.id === clubId || c.coach_id === clubId) : coaches;
+    if (!q) return base.slice(0, 50);
+    return base.filter((c) => normalize(c.name).includes(q)).slice(0, 50);
+  }, [coaches, coachSearch, clubId]);
 
   const isOwnProfile = currentUser?.id === userProfile?.id;
   const profileRole = (userProfile?.role || '').toLowerCase();
@@ -83,6 +102,7 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
     const { data: dirData } = await supabase.rpc('get_public_clubs_directory');
     const all = (dirData as any[]) || [];
     setClubs(all.filter((u) => ['admin', 'coach', 'trainer'].includes(u.role)));
+    setCoaches(all.filter((u) => ['coach', 'trainer'].includes(u.role)));
     const uniqueSports = Array.from(
       new Set(
         all
@@ -112,16 +132,24 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
   };
 
   const handleSubmit = async () => {
-    if (selectedTypes.length === 0) {
-      toast.error(t('safety.errorMinTypes'));
+    if (!reporterName.trim() || !reporterEmail.trim()) {
+      toast.error("Συμπληρώστε όνομα και email");
       return;
     }
-    if (!clubId) {
-      toast.error('Παρακαλώ επιλέξτε σύλλογο');
+    if (!/^\S+@\S+\.\S+$/.test(reporterEmail)) {
+      toast.error("Μη έγκυρο email");
       return;
     }
     if (!sport) {
       toast.error('Παρακαλώ επιλέξτε άθλημα');
+      return;
+    }
+    if (!clubId && !clubNameText.trim()) {
+      toast.error("Επιλέξτε σύλλογο ή γράψτε όνομα");
+      return;
+    }
+    if (selectedTypes.length === 0) {
+      toast.error(t('safety.errorMinTypes'));
       return;
     }
     setConfirmOpen(true);
@@ -135,9 +163,16 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
         .from('abuse_reports')
         .insert({
           athlete_id: userProfile.id,
-          coach_id: clubId || userProfile.coach_id || null,
+          coach_id: coachId || (clubId || userProfile.coach_id || null),
           club_id: clubId || null,
-          coach_name_text: coachNameText.trim() || null,
+          club_name_text: clubId ? null : (clubNameText.trim() || null),
+          club_address: clubAddress.trim() || null,
+          club_city: clubCity.trim() || null,
+          club_country: clubCountry.trim() || null,
+          coach_name_text: coachId ? null : (coachNameText.trim() || null),
+          reporter_name: reporterName.trim() || null,
+          reporter_email: reporterEmail.trim() || null,
+          reporter_phone: reporterPhone.trim() || null,
           sport: sport || null,
           abuse_types: selectedTypes,
           description: description.trim() || '—',
@@ -163,8 +198,15 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
       setIncidentDate("");
       setIsAnonymous(false);
       setClubId("");
+      setClubNameText("");
+      setClubAddress("");
+      setClubCity("");
+      setCoachId("");
       setCoachNameText("");
       setSport("");
+      setReporterName("");
+      setReporterEmail("");
+      setReporterPhone("");
       loadReports();
     } catch (e: any) {
       console.error(e);
@@ -209,16 +251,24 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
           <p className="text-[10px] text-muted-foreground mt-0.5">{t('safety.intro')}</p>
         </CardHeader>
         <CardContent className="space-y-2 pt-2 px-3 pb-3">
-          <div
-            onClick={() => setIsAnonymous(!isAnonymous)}
-            className={cn(
-              "flex items-center gap-2 px-2 py-1 border cursor-pointer transition-colors",
-              isAnonymous ? "border-foreground bg-muted" : "border-border hover:bg-muted/50"
-            )}
-          >
-            <Checkbox checked={isAnonymous} />
-            <span className="text-xs font-medium">{t('safety.anonymous')}</span>
-            <span className="text-[10px] text-muted-foreground hidden md:inline">— {t('safety.anonymousHint')}</span>
+          <div className="space-y-1.5">
+            <h3 className="font-semibold text-[11px] uppercase tracking-wide text-muted-foreground border-b pb-0.5">Καταγγέλλων</h3>
+            <div className="grid md:grid-cols-3 gap-1.5">
+              <Input value={reporterName} onChange={(e) => setReporterName(e.target.value)} className="rounded-none h-8 text-xs" placeholder="Ονοματεπώνυμο *" />
+              <Input type="email" value={reporterEmail} onChange={(e) => setReporterEmail(e.target.value)} className="rounded-none h-8 text-xs" placeholder="Email *" />
+              <Input type="tel" value={reporterPhone} onChange={(e) => setReporterPhone(e.target.value)} className="rounded-none h-8 text-xs" placeholder="Τηλέφωνο" />
+            </div>
+            <div
+              onClick={() => setIsAnonymous(!isAnonymous)}
+              className={cn(
+                "flex items-center gap-2 px-2 py-1 border cursor-pointer transition-colors",
+                isAnonymous ? "border-foreground bg-muted" : "border-border hover:bg-muted/50"
+              )}
+            >
+              <Checkbox checked={isAnonymous} />
+              <span className="text-xs font-medium">{t('safety.anonymous')}</span>
+              <span className="text-[10px] text-muted-foreground hidden md:inline">— {t('safety.anonymousHint')}</span>
+            </div>
           </div>
 
           <div className="space-y-1.5">
@@ -236,6 +286,7 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
                   ) : (
                     sports.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)
                   )}
+                  <SelectItem value="Άλλο">Άλλο</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -243,7 +294,7 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
                 <PopoverTrigger asChild>
                   <Button variant="outline" role="combobox" className="w-full justify-between rounded-none h-8 font-normal text-xs">
                     <span className="truncate">
-                      {clubId ? clubs.find((c) => c.id === clubId)?.name : "Σύλλογος *"}
+                      {clubId ? clubs.find((c) => c.id === clubId)?.name : (clubNameText || "Σύλλογος *")}
                     </span>
                     <ChevronsUpDown className="ml-2 h-3 w-3 opacity-50" />
                   </Button>
@@ -253,7 +304,7 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
                     <CommandInput placeholder="Πληκτρολογήστε..." value={clubSearch} onValueChange={setClubSearch} />
                     <CommandList>
                       <CommandEmpty>
-                        <div className="p-2 text-xs text-muted-foreground">Δεν βρέθηκε.</div>
+                        <div className="p-2 text-xs text-muted-foreground">Δεν βρέθηκε. Γράψτε ελεύθερα παρακάτω.</div>
                       </CommandEmpty>
                       <CommandGroup>
                         {filteredClubs.map((c) => (
@@ -262,6 +313,7 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
                             value={c.id}
                             onSelect={() => {
                               setClubId(c.id);
+                              setClubNameText("");
                               setClubOpen(false);
                             }}
                           >
@@ -276,12 +328,63 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
               </Popover>
             </div>
 
-            <Input
-              value={coachNameText}
-              onChange={(e) => setCoachNameText(e.target.value)}
-              placeholder="Ονοματεπώνυμο προπονητή"
-              className="rounded-none h-8 text-xs"
-            />
+            {!clubId && (
+              <Input
+                placeholder="Αν δεν υπάρχει στη λίστα, γράψτε όνομα συλλόγου..."
+                value={clubNameText}
+                onChange={(e) => setClubNameText(e.target.value)}
+                className="rounded-none h-8 text-xs"
+              />
+            )}
+
+            <div className="grid md:grid-cols-3 gap-1.5">
+              <Input value={clubAddress} onChange={(e) => setClubAddress(e.target.value)} className="rounded-none h-8 text-xs" placeholder="Διεύθυνση" />
+              <Input value={clubCity} onChange={(e) => setClubCity(e.target.value)} className="rounded-none h-8 text-xs" placeholder="Πόλη" />
+              <Input value={clubCountry} onChange={(e) => setClubCountry(e.target.value)} className="rounded-none h-8 text-xs" placeholder="Χώρα" />
+            </div>
+
+            <Popover open={coachOpen} onOpenChange={setCoachOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" role="combobox" className="w-full justify-between rounded-none h-8 font-normal text-xs">
+                  <span className="truncate">{coachId ? coaches.find((c) => c.id === coachId)?.name : (coachNameText || "Προπονητής")}</span>
+                  <ChevronsUpDown className="ml-2 h-3 w-3 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[--radix-popover-trigger-width] p-0 rounded-none" align="start">
+                <Command shouldFilter={false}>
+                  <CommandInput placeholder="Πληκτρολογήστε..." value={coachSearch} onValueChange={setCoachSearch} />
+                  <CommandList>
+                    <CommandEmpty>
+                      <div className="p-2 text-xs text-muted-foreground">Δεν βρέθηκε. Γράψτε ελεύθερα παρακάτω.</div>
+                    </CommandEmpty>
+                    <CommandGroup>
+                      {filteredCoaches.map((c) => (
+                        <CommandItem
+                          key={c.id}
+                          value={c.id}
+                          onSelect={() => {
+                            setCoachId(c.id);
+                            setCoachNameText("");
+                            setCoachOpen(false);
+                          }}
+                        >
+                          <Check className={cn("mr-2 h-4 w-4", coachId === c.id ? "opacity-100" : "opacity-0")} />
+                          {c.name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            {!coachId && (
+              <Input
+                placeholder="Ή γράψτε ονοματεπώνυμο προπονητή..."
+                value={coachNameText}
+                onChange={(e) => setCoachNameText(e.target.value)}
+                className="rounded-none h-8 text-xs"
+              />
+            )}
           </div>
 
           <div className="space-y-1.5">
