@@ -57,6 +57,8 @@ import { AthletesProgressWithSidebar } from "@/pages/Dashboard/AthletesProgressW
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import Offers from "@/pages/Offers";
 import AbuseReports from "@/pages/AbuseReports";
+const PublicReportAbuse = React.lazy(() => import("@/pages/PublicReportAbuse"));
+const PublicReportAbuseThankYou = React.lazy(() => import("@/pages/PublicReportAbuseThankYou"));
 import FederationAbuseReports from "@/pages/Dashboard/FederationAbuseReports";
 import ProfileEdit from "@/pages/ProfileEdit";
 import InstallPWA from "@/pages/InstallPWA";
@@ -163,6 +165,8 @@ function App() {
                       <Route path="/online-coaching" element={<OnlineCoaching />} />
                       <Route path="/payment-success" element={<PaymentSuccess />} />
                       <Route path="/install" element={<InstallPWA />} />
+                      <Route path="/report-abuse" element={<PublicReportAbuse />} />
+                      <Route path="/report-abuse/thank-you" element={<PublicReportAbuseThankYou />} />
                       <Route path="/install-calendar" element={<ProtectedRoute><InstallCalendarWidget /></ProtectedRoute>} />
                       <Route path="/calendar-widget" element={<ProtectedRoute><CalendarWidget /></ProtectedRoute>} />
                       <Route path="/install-subscriptions" element={<ProtectedRoute><InstallSubscriptionsWidget /></ProtectedRoute>} />
