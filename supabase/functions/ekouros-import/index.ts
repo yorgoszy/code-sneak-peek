@@ -1,5 +1,6 @@
 // One-shot bulk import for e-kouros sports/federations/clubs.
 // SECURITY: requires the caller to provide an admin secret token. Delete after use.
+// v2 - trigger redeploy
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
