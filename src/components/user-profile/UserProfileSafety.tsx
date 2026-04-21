@@ -89,18 +89,6 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
     return matches.slice(0, 50);
   }, [sports, sport]);
 
-  const filteredClubs = useMemo(() => {
-    const q = normalize(clubSearch);
-    if (!q) return clubs.slice(0, 50);
-    return clubs.filter((c) => normalize(c.name).includes(q)).slice(0, 50);
-  }, [clubs, clubSearch]);
-
-  const filteredCoaches = useMemo(() => {
-    const q = normalize(coachSearch);
-    const base = clubId ? coaches.filter((c) => c.id === clubId || c.coach_id === clubId) : coaches;
-    if (!q) return base.slice(0, 50);
-    return base.filter((c) => normalize(c.name).includes(q)).slice(0, 50);
-  }, [coaches, coachSearch, clubId]);
 
   const isOwnProfile = currentUser?.id === userProfile?.id;
   const profileRole = (userProfile?.role || '').toLowerCase();
