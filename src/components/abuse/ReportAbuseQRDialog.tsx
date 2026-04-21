@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Download, Printer, QrCode } from "lucide-react";
 
-const PUBLIC_URL = "https://hyperkids.lovable.app/report-abuse";
+const PUBLIC_URL = "https://hyperkids.gr/report-abuse";
 
 export const ReportAbuseQRDialog = () => {
   const svgRef = useRef<HTMLDivElement>(null);
