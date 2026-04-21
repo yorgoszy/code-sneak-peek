@@ -60,12 +60,34 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
   const [sports, setSports] = useState<string[]>([]);
   const [clubOpen, setClubOpen] = useState(false);
   const [coachOpen, setCoachOpen] = useState(false);
+  const [sportOpen, setSportOpen] = useState(false);
   const [clubSearch, setClubSearch] = useState("");
   const [coachSearch, setCoachSearch] = useState("");
 
   const [reporterName, setReporterName] = useState("");
   const [reporterEmail, setReporterEmail] = useState("");
   const [reporterPhone, setReporterPhone] = useState("");
+
+  const filteredClubs = useMemo(() => {
+    const q = normalize(clubSearch);
+    if (!q) return [];
+    return clubs.filter((c) => normalize(c.name).includes(q)).slice(0, 50);
+  }, [clubs, clubSearch]);
+
+  const filteredCoaches = useMemo(() => {
+    const q = normalize(coachSearch);
+    if (!q) return [];
+    const base = clubId ? coaches.filter((c) => c.id === clubId || c.coach_id === clubId) : coaches;
+    return base.filter((c) => normalize(c.name).includes(q)).slice(0, 50);
+  }, [coaches, coachSearch, clubId]);
+
+  const filteredSports = useMemo(() => {
+    const q = normalize(sport);
+    if (!q) return [];
+    const matches = sports.filter((s) => normalize(s).includes(q));
+    if (matches.length === 1 && normalize(matches[0]) === q) return [];
+    return matches.slice(0, 50);
+  }, [sports, sport]);
 
   const filteredClubs = useMemo(() => {
     const q = normalize(clubSearch);
