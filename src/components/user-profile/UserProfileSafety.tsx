@@ -67,22 +67,16 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
   }, [userProfile?.coach_id]);
 
   const loadClubsAndSports = async () => {
-    // Load all clubs (admin/coach role users) for selection
-    const { data: clubsData } = await supabase
-      .from('app_users')
-      .select('id, name, sport')
-      .in('role', ['admin', 'coach', 'trainer'])
-      .order('name');
-    setClubs(clubsData || []);
-
-    // Load all sports declared by federations
-    const { data: fedData } = await supabase
-      .from('app_users')
-      .select('sport')
-      .eq('role', 'federation')
-      .not('sport', 'is', null);
+    const { data: dirData } = await supabase.rpc('get_public_clubs_directory');
+    const all = (dirData as any[]) || [];
+    setClubs(all.filter((u) => ['admin', 'coach', 'trainer'].includes(u.role)));
     const uniqueSports = Array.from(
-      new Set((fedData || []).map((f: any) => (f.sport || '').trim()).filter(Boolean))
+      new Set(
+        all
+          .filter((u) => u.role === 'federation')
+          .map((u: any) => (u.sport || '').trim())
+          .filter(Boolean)
+      )
     ).sort();
     setSports(uniqueSports);
   };
