@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { useEkourosDirectory } from "@/hooks/useEkourosDirectory";
 
 const normalize = (s: string) =>
   (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
