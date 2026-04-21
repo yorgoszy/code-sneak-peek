@@ -18,8 +18,12 @@ export type Database = {
         Row: {
           abuse_types: string[]
           admin_notes: string | null
-          athlete_id: string
+          athlete_id: string | null
+          club_address: string | null
+          club_city: string | null
+          club_country: string | null
           club_id: string | null
+          club_name_text: string | null
           coach_id: string | null
           coach_name_text: string | null
           created_at: string
@@ -27,7 +31,11 @@ export type Database = {
           id: string
           incident_date: string | null
           is_anonymous: boolean
+          is_public_submission: boolean
           notified_federation_ids: string[]
+          reporter_email: string | null
+          reporter_name: string | null
+          reporter_phone: string | null
           sport: string | null
           status: string
           updated_at: string
@@ -35,8 +43,12 @@ export type Database = {
         Insert: {
           abuse_types?: string[]
           admin_notes?: string | null
-          athlete_id: string
+          athlete_id?: string | null
+          club_address?: string | null
+          club_city?: string | null
+          club_country?: string | null
           club_id?: string | null
+          club_name_text?: string | null
           coach_id?: string | null
           coach_name_text?: string | null
           created_at?: string
@@ -44,7 +56,11 @@ export type Database = {
           id?: string
           incident_date?: string | null
           is_anonymous?: boolean
+          is_public_submission?: boolean
           notified_federation_ids?: string[]
+          reporter_email?: string | null
+          reporter_name?: string | null
+          reporter_phone?: string | null
           sport?: string | null
           status?: string
           updated_at?: string
@@ -52,8 +68,12 @@ export type Database = {
         Update: {
           abuse_types?: string[]
           admin_notes?: string | null
-          athlete_id?: string
+          athlete_id?: string | null
+          club_address?: string | null
+          club_city?: string | null
+          club_country?: string | null
           club_id?: string | null
+          club_name_text?: string | null
           coach_id?: string | null
           coach_name_text?: string | null
           created_at?: string
@@ -61,7 +81,11 @@ export type Database = {
           id?: string
           incident_date?: string | null
           is_anonymous?: boolean
+          is_public_submission?: boolean
           notified_federation_ids?: string[]
+          reporter_email?: string | null
+          reporter_name?: string | null
+          reporter_phone?: string | null
           sport?: string | null
           status?: string
           updated_at?: string
