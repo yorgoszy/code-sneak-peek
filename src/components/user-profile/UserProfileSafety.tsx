@@ -60,6 +60,12 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
     loadClubsAndSports();
   }, [userProfile?.id]);
 
+  useEffect(() => {
+    if (userProfile?.coach_id) {
+      setClubId(userProfile.coach_id);
+    }
+  }, [userProfile?.coach_id]);
+
   const loadClubsAndSports = async () => {
     // Load all clubs (admin/coach role users) for selection
     const { data: clubsData } = await supabase
