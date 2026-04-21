@@ -52,6 +52,14 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
   const [sport, setSport] = useState<string>("");
   const [clubs, setClubs] = useState<any[]>([]);
   const [sports, setSports] = useState<string[]>([]);
+  const [clubOpen, setClubOpen] = useState(false);
+  const [clubSearch, setClubSearch] = useState("");
+
+  const filteredClubs = useMemo(() => {
+    const q = normalize(clubSearch);
+    if (!q) return clubs.slice(0, 50);
+    return clubs.filter((c) => normalize(c.name).includes(q)).slice(0, 50);
+  }, [clubs, clubSearch]);
 
   const isOwnProfile = currentUser?.id === userProfile?.id;
   const profileRole = (userProfile?.role || '').toLowerCase();
