@@ -173,7 +173,7 @@ export default function PublicReportAbuse() {
                 type="button"
                 onClick={() => setIsAnonymous(!isAnonymous)}
                 className={cn(
-                  "inline-flex items-center px-2 py-0.5 border text-[10px] font-medium transition-colors",
+                  "inline-flex items-center px-3 py-1 border text-xs font-medium transition-colors",
                   isAnonymous
                     ? "border-destructive bg-destructive/10 text-destructive"
                     : "border-destructive text-destructive hover:bg-destructive/5"
