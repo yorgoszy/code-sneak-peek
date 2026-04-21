@@ -6171,6 +6171,42 @@ ${isAdmin ? `
       normalizedLatestUserMessage.includes("απληρωτ") &&
       normalizedLatestUserMessage.includes("συνδρομ");
 
+    const shortFollowUpPatterns = [
+      "οι αλλοι",
+      "και οι αλλοι",
+      "και οι υπολοιποι",
+      "για τους αλλους",
+      "και ο αλλος",
+      "και οι αλλεσ",
+      "what about the others",
+      "the others",
+    ];
+    const isShortFollowUp =
+      normalizedLatestUserMessage.length > 0 &&
+      normalizedLatestUserMessage.length <= 40 &&
+      shortFollowUpPatterns.some((pattern) => normalizedLatestUserMessage.includes(pattern));
+
+    const previousConversationMessages = dedupedMessages.slice(0, -1);
+    const previousUserMessage = [...previousConversationMessages]
+      .reverse()
+      .find((m: any) => m?.role === "user")?.content || "";
+    const previousAssistantMessage = [...previousConversationMessages]
+      .reverse()
+      .find((m: any) => m?.role === "assistant")?.content || "";
+
+    const followUpGuard = isShortFollowUp
+      ? {
+          role: "system",
+          content:
+            `ΤΟ ΤΕΛΕΥΤΑΙΟ ΜΗΝΥΜΑ ΤΟΥ ΧΡΗΣΤΗ (${latestUserMessage}) ΕΙΝΑΙ ΣΥΝΤΟΜΟ FOLLOW-UP. ` +
+            `ΣΥΝΕΧΙΣΕ ΑΚΡΙΒΩΣ ΤΟ ΙΔΙΟ ΘΕΜΑ με βάση το αμέσως προηγούμενο context. ` +
+            `Προηγούμενο αίτημα χρήστη: ${previousUserMessage || "-"}. ` +
+            `Προηγούμενη απάντηση assistant: ${previousAssistantMessage || "-"}. ` +
+            `ΑΠΑΝΤΑΣ μόνο για τους υπόλοιπους αθλητές/ονόματα του ίδιου scope ή για το ίδιο metric που λείπει. ` +
+            `ΜΗΝ ανοίγεις την απάντηση σε όλους τους αθλητές της βάσης εκτός αν ο χρήστης ζητήσει ρητά όλους.`,
+        }
+      : null;
+
     const directAdminUnpaidReply = isAdmin && !targetUserId && asksForUnpaidSubscriptions
       ? (adminGlobalUnpaidSubscriptions.length === 0
           ? "Δεν υπάρχουν απλήρωτες συνδρομές αυτή τη στιγμή."
@@ -6217,9 +6253,12 @@ ${isAdmin ? `
           },
           body: JSON.stringify({
             model: "google/gemini-2.5-flash",
-            messages: conversationGuard
-              ? [systemPrompt, conversationGuard, ...dedupedMessages]
-              : [systemPrompt, ...dedupedMessages],
+            messages: [
+              systemPrompt,
+              ...(conversationGuard ? [conversationGuard] : []),
+              ...(followUpGuard ? [followUpGuard] : []),
+              ...dedupedMessages,
+            ],
             stream: true,
           }),
         });
