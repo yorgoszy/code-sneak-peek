@@ -1,21 +1,26 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { AlertTriangle, Shield, Send, Loader2 } from "lucide-react";
+import { AlertTriangle, Shield, Send, Loader2, Check, ChevronsUpDown } from "lucide-react";
 import { toast } from "sonner";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
+
+const normalize = (s: string) =>
+  (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
 interface UserProfileSafetyProps {
   userProfile: any;
@@ -47,6 +52,14 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
   const [sport, setSport] = useState<string>("");
   const [clubs, setClubs] = useState<any[]>([]);
   const [sports, setSports] = useState<string[]>([]);
+  const [clubOpen, setClubOpen] = useState(false);
+  const [clubSearch, setClubSearch] = useState("");
+
+  const filteredClubs = useMemo(() => {
+    const q = normalize(clubSearch);
+    if (!q) return clubs.slice(0, 50);
+    return clubs.filter((c) => normalize(c.name).includes(q)).slice(0, 50);
+  }, [clubs, clubSearch]);
 
   const isOwnProfile = currentUser?.id === userProfile?.id;
   const profileRole = (userProfile?.role || '').toLowerCase();
@@ -187,127 +200,128 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
   }
 
   return (
-    <div className="space-y-4">
-      <Card className="rounded-none border-2 border-red-200">
-        <CardHeader className="bg-red-50 py-3">
-          <CardTitle className="flex items-center gap-2 text-red-800 text-base">
-            <AlertTriangle className="h-4 w-4" /> {t('safety.title')}
+    <div className="space-y-2">
+      <Card className="rounded-none border border-destructive/30">
+        <CardHeader className="bg-destructive/5 py-1.5 px-3">
+          <CardTitle className="flex items-center gap-1.5 text-destructive text-xs">
+            <AlertTriangle className="h-3.5 w-3.5" /> {t('safety.title')}
           </CardTitle>
-          <p className="text-xs text-red-700 mt-1">{t('safety.intro')}</p>
+          <p className="text-[10px] text-muted-foreground mt-0.5">{t('safety.intro')}</p>
         </CardHeader>
-        <CardContent className="space-y-3 pt-3">
+        <CardContent className="space-y-2 pt-2 px-3 pb-3">
           <div
             onClick={() => setIsAnonymous(!isAnonymous)}
-            className={`flex items-center gap-2 p-2 border cursor-pointer transition-colors ${
-              isAnonymous ? 'border-gray-700 bg-gray-50' : 'border-gray-200 hover:bg-gray-50'
-            }`}
+            className={cn(
+              "flex items-center gap-2 px-2 py-1 border cursor-pointer transition-colors",
+              isAnonymous ? "border-foreground bg-muted" : "border-border hover:bg-muted/50"
+            )}
           >
             <Checkbox checked={isAnonymous} />
-            <div>
-              <span className="text-sm font-medium">{t('safety.anonymous')}</span>
-              <p className="text-xs text-gray-500">{t('safety.anonymousHint')}</p>
-            </div>
+            <span className="text-xs font-medium">{t('safety.anonymous')}</span>
+            <span className="text-[10px] text-muted-foreground hidden md:inline">— {t('safety.anonymousHint')}</span>
           </div>
 
-          <div>
-            <Label className="font-medium mb-1.5 block text-sm">{t('safety.abuseTypeLabel')}</Label>
-            <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-1.5">
+            <h3 className="font-semibold text-[11px] uppercase tracking-wide text-muted-foreground border-b pb-0.5">
+              Σύλλογος
+            </h3>
+            <div className="grid md:grid-cols-2 gap-1.5">
+              <Select value={sport} onValueChange={setSport}>
+                <SelectTrigger className="rounded-none h-8 text-xs">
+                  <SelectValue placeholder="Άθλημα *" />
+                </SelectTrigger>
+                <SelectContent className="max-h-72">
+                  {sports.length === 0 ? (
+                    <div className="px-2 py-3 text-xs text-muted-foreground">Δεν έχουν δηλωθεί αθλήματα.</div>
+                  ) : (
+                    sports.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)
+                  )}
+                </SelectContent>
+              </Select>
+
+              <Popover open={clubOpen} onOpenChange={setClubOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" role="combobox" className="w-full justify-between rounded-none h-8 font-normal text-xs">
+                    <span className="truncate">
+                      {clubId ? clubs.find((c) => c.id === clubId)?.name : "Σύλλογος *"}
+                    </span>
+                    <ChevronsUpDown className="ml-2 h-3 w-3 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0 rounded-none" align="start">
+                  <Command shouldFilter={false}>
+                    <CommandInput placeholder="Πληκτρολογήστε..." value={clubSearch} onValueChange={setClubSearch} />
+                    <CommandList>
+                      <CommandEmpty>
+                        <div className="p-2 text-xs text-muted-foreground">Δεν βρέθηκε.</div>
+                      </CommandEmpty>
+                      <CommandGroup>
+                        {filteredClubs.map((c) => (
+                          <CommandItem
+                            key={c.id}
+                            value={c.id}
+                            onSelect={() => {
+                              setClubId(c.id);
+                              setClubOpen(false);
+                            }}
+                          >
+                            <Check className={cn("mr-2 h-4 w-4", clubId === c.id ? "opacity-100" : "opacity-0")} />
+                            {c.name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <Input
+              value={coachNameText}
+              onChange={(e) => setCoachNameText(e.target.value)}
+              placeholder="Ονοματεπώνυμο προπονητή"
+              className="rounded-none h-8 text-xs"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <h3 className="font-semibold text-[11px] uppercase tracking-wide text-muted-foreground border-b pb-0.5">
+              Περιστατικό
+            </h3>
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-1">
               {ABUSE_TYPE_IDS.map(id => (
                 <div
                   key={id}
                   onClick={() => toggleType(id)}
-                  className={`flex items-center gap-2 p-2 border cursor-pointer transition-colors ${
-                    selectedTypes.includes(id) ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:bg-gray-50'
-                  }`}
+                  className={cn(
+                    "flex items-center gap-1 px-1.5 py-1 border cursor-pointer transition-colors",
+                    selectedTypes.includes(id) ? "border-destructive bg-destructive/10" : "border-border hover:bg-muted/50"
+                  )}
                 >
-                  <Checkbox checked={selectedTypes.includes(id)} />
-                  <span className="text-xs">{t(`safety.types.${id}`)}</span>
+                  <Checkbox checked={selectedTypes.includes(id)} className="h-3 w-3" />
+                  <span className="text-[11px]">{t(`safety.types.${id}`)}</span>
                 </div>
               ))}
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div>
-              <Label className="font-medium mb-1.5 block text-sm">Σύλλογος *</Label>
-              <Select value={clubId} onValueChange={setClubId}>
-                <SelectTrigger className="rounded-none h-9">
-                  <SelectValue placeholder="Επιλέξτε..." />
-                </SelectTrigger>
-                <SelectContent className="max-h-72">
-                  {clubs.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="coach-name" className="font-medium mb-1.5 block text-sm">
-                Όνομα Προπονητή
-              </Label>
-              <Input
-                id="coach-name"
-                value={coachNameText}
-                onChange={(e) => setCoachNameText(e.target.value)}
-                placeholder="Ονοματεπώνυμο"
-                className="rounded-none h-9"
-              />
-            </div>
-
-            <div>
-              <Label className="font-medium mb-1.5 block text-sm">Άθλημα *</Label>
-              <Select value={sport} onValueChange={setSport}>
-                <SelectTrigger className="rounded-none h-9">
-                  <SelectValue placeholder="Επιλέξτε..." />
-                </SelectTrigger>
-                <SelectContent className="max-h-72">
-                  {sports.length === 0 ? (
-                    <div className="px-2 py-3 text-xs text-muted-foreground">
-                      Δεν έχουν δηλωθεί αθλήματα.
-                    </div>
-                  ) : (
-                    sports.map((s) => (
-                      <SelectItem key={s} value={s}>{s}</SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="incident-date" className="font-medium mb-1.5 block text-sm">
-              {t('safety.incidentDate')}
-            </Label>
             <Input
-              id="incident-date"
               type="date"
               value={incidentDate}
               onChange={(e) => setIncidentDate(e.target.value)}
-              className="rounded-none max-w-xs h-9"
+              className="rounded-none h-8 text-xs max-w-[180px]"
             />
-          </div>
-
-          <div>
-            <Label htmlFor="description" className="font-medium mb-1.5 block text-sm">
-              {t('safety.description')}
-            </Label>
             <Textarea
-              id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder={t('safety.descriptionPlaceholder')}
               rows={3}
-              className="rounded-none"
+              className="rounded-none text-xs"
+              placeholder={t('safety.descriptionPlaceholder')}
             />
           </div>
 
           <Button
             onClick={handleSubmit}
             disabled={submitting}
-            size="sm"
-            className="bg-red-600 hover:bg-red-700 text-white rounded-none"
+            className="w-full bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-none h-9 text-sm"
           >
             {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
             {t('safety.submit')}
@@ -316,14 +330,14 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
       </Card>
 
       <Card className="rounded-none">
-        <CardHeader>
-          <CardTitle className="text-base">{t('safety.myReports')}</CardTitle>
+        <CardHeader className="py-2 px-3">
+          <CardTitle className="text-xs">{t('safety.myReports')}</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-3 pb-3">
           {loading ? (
-            <p className="text-gray-500 text-sm">{t('safety.loading')}</p>
+            <p className="text-muted-foreground text-xs">{t('safety.loading')}</p>
           ) : reports.length === 0 ? (
-            <p className="text-gray-500 text-sm">{t('safety.noReports')}</p>
+            <p className="text-muted-foreground text-xs">{t('safety.noReports')}</p>
           ) : (
             <ReportList reports={reports} />
           )}
@@ -338,7 +352,7 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="rounded-none">{t('safety.cancel')}</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmSubmit} className="bg-red-600 hover:bg-red-700 rounded-none">
+            <AlertDialogAction onClick={confirmSubmit} className="bg-destructive hover:bg-destructive/90 rounded-none">
               {t('safety.submit')}
             </AlertDialogAction>
           </AlertDialogFooter>
