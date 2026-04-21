@@ -251,16 +251,24 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
           <p className="text-[10px] text-muted-foreground mt-0.5">{t('safety.intro')}</p>
         </CardHeader>
         <CardContent className="space-y-2 pt-2 px-3 pb-3">
-          <div
-            onClick={() => setIsAnonymous(!isAnonymous)}
-            className={cn(
-              "flex items-center gap-2 px-2 py-1 border cursor-pointer transition-colors",
-              isAnonymous ? "border-foreground bg-muted" : "border-border hover:bg-muted/50"
-            )}
-          >
-            <Checkbox checked={isAnonymous} />
-            <span className="text-xs font-medium">{t('safety.anonymous')}</span>
-            <span className="text-[10px] text-muted-foreground hidden md:inline">— {t('safety.anonymousHint')}</span>
+          <div className="space-y-1.5">
+            <h3 className="font-semibold text-[11px] uppercase tracking-wide text-muted-foreground border-b pb-0.5">Καταγγέλλων</h3>
+            <div className="grid md:grid-cols-3 gap-1.5">
+              <Input value={reporterName} onChange={(e) => setReporterName(e.target.value)} className="rounded-none h-8 text-xs" placeholder="Ονοματεπώνυμο *" />
+              <Input type="email" value={reporterEmail} onChange={(e) => setReporterEmail(e.target.value)} className="rounded-none h-8 text-xs" placeholder="Email *" />
+              <Input type="tel" value={reporterPhone} onChange={(e) => setReporterPhone(e.target.value)} className="rounded-none h-8 text-xs" placeholder="Τηλέφωνο" />
+            </div>
+            <div
+              onClick={() => setIsAnonymous(!isAnonymous)}
+              className={cn(
+                "flex items-center gap-2 px-2 py-1 border cursor-pointer transition-colors",
+                isAnonymous ? "border-foreground bg-muted" : "border-border hover:bg-muted/50"
+              )}
+            >
+              <Checkbox checked={isAnonymous} />
+              <span className="text-xs font-medium">{t('safety.anonymous')}</span>
+              <span className="text-[10px] text-muted-foreground hidden md:inline">— {t('safety.anonymousHint')}</span>
+            </div>
           </div>
 
           <div className="space-y-1.5">
@@ -278,6 +286,7 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
                   ) : (
                     sports.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)
                   )}
+                  <SelectItem value="Άλλο">Άλλο</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -285,7 +294,7 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
                 <PopoverTrigger asChild>
                   <Button variant="outline" role="combobox" className="w-full justify-between rounded-none h-8 font-normal text-xs">
                     <span className="truncate">
-                      {clubId ? clubs.find((c) => c.id === clubId)?.name : "Σύλλογος *"}
+                      {clubId ? clubs.find((c) => c.id === clubId)?.name : (clubNameText || "Σύλλογος *")}
                     </span>
                     <ChevronsUpDown className="ml-2 h-3 w-3 opacity-50" />
                   </Button>
@@ -295,7 +304,7 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
                     <CommandInput placeholder="Πληκτρολογήστε..." value={clubSearch} onValueChange={setClubSearch} />
                     <CommandList>
                       <CommandEmpty>
-                        <div className="p-2 text-xs text-muted-foreground">Δεν βρέθηκε.</div>
+                        <div className="p-2 text-xs text-muted-foreground">Δεν βρέθηκε. Γράψτε ελεύθερα παρακάτω.</div>
                       </CommandEmpty>
                       <CommandGroup>
                         {filteredClubs.map((c) => (
@@ -304,6 +313,7 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
                             value={c.id}
                             onSelect={() => {
                               setClubId(c.id);
+                              setClubNameText("");
                               setClubOpen(false);
                             }}
                           >
@@ -318,12 +328,63 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
               </Popover>
             </div>
 
-            <Input
-              value={coachNameText}
-              onChange={(e) => setCoachNameText(e.target.value)}
-              placeholder="Ονοματεπώνυμο προπονητή"
-              className="rounded-none h-8 text-xs"
-            />
+            {!clubId && (
+              <Input
+                placeholder="Αν δεν υπάρχει στη λίστα, γράψτε όνομα συλλόγου..."
+                value={clubNameText}
+                onChange={(e) => setClubNameText(e.target.value)}
+                className="rounded-none h-8 text-xs"
+              />
+            )}
+
+            <div className="grid md:grid-cols-3 gap-1.5">
+              <Input value={clubAddress} onChange={(e) => setClubAddress(e.target.value)} className="rounded-none h-8 text-xs" placeholder="Διεύθυνση" />
+              <Input value={clubCity} onChange={(e) => setClubCity(e.target.value)} className="rounded-none h-8 text-xs" placeholder="Πόλη" />
+              <Input value={clubCountry} onChange={(e) => setClubCountry(e.target.value)} className="rounded-none h-8 text-xs" placeholder="Χώρα" />
+            </div>
+
+            <Popover open={coachOpen} onOpenChange={setCoachOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" role="combobox" className="w-full justify-between rounded-none h-8 font-normal text-xs">
+                  <span className="truncate">{coachId ? coaches.find((c) => c.id === coachId)?.name : (coachNameText || "Προπονητής")}</span>
+                  <ChevronsUpDown className="ml-2 h-3 w-3 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[--radix-popover-trigger-width] p-0 rounded-none" align="start">
+                <Command shouldFilter={false}>
+                  <CommandInput placeholder="Πληκτρολογήστε..." value={coachSearch} onValueChange={setCoachSearch} />
+                  <CommandList>
+                    <CommandEmpty>
+                      <div className="p-2 text-xs text-muted-foreground">Δεν βρέθηκε. Γράψτε ελεύθερα παρακάτω.</div>
+                    </CommandEmpty>
+                    <CommandGroup>
+                      {filteredCoaches.map((c) => (
+                        <CommandItem
+                          key={c.id}
+                          value={c.id}
+                          onSelect={() => {
+                            setCoachId(c.id);
+                            setCoachNameText("");
+                            setCoachOpen(false);
+                          }}
+                        >
+                          <Check className={cn("mr-2 h-4 w-4", coachId === c.id ? "opacity-100" : "opacity-0")} />
+                          {c.name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            {!coachId && (
+              <Input
+                placeholder="Ή γράψτε ονοματεπώνυμο προπονητή..."
+                value={coachNameText}
+                onChange={(e) => setCoachNameText(e.target.value)}
+                className="rounded-none h-8 text-xs"
+              />
+            )}
           </div>
 
           <div className="space-y-1.5">
