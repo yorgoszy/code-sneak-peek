@@ -102,6 +102,7 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
     const { data: dirData } = await supabase.rpc('get_public_clubs_directory');
     const all = (dirData as any[]) || [];
     setClubs(all.filter((u) => ['admin', 'coach', 'trainer'].includes(u.role)));
+    setCoaches(all.filter((u) => ['coach', 'trainer'].includes(u.role)));
     const uniqueSports = Array.from(
       new Set(
         all
