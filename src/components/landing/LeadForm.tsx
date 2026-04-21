@@ -128,60 +128,58 @@ export const LeadForm: React.FC<LeadFormProps> = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="border border-gray-200 bg-white p-3 space-y-2"
+      className="border border-gray-200 bg-white p-2 space-y-1.5"
     >
-      <div>
-        <p className="text-sm font-semibold text-gray-900">{t.title}</p>
-        <p className="text-[11px] text-gray-500">{t.subtitle}</p>
+      <p className="text-xs font-semibold text-gray-900 leading-tight">{t.title}</p>
+
+      <div className="grid grid-cols-2 gap-1.5">
+        <div className="relative">
+          <User className="w-3 h-3 text-gray-400 absolute left-1.5 top-1/2 -translate-y-1/2" />
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={t.name + ' *'}
+            className="rounded-none h-8 text-xs pl-6"
+            disabled={loading}
+            maxLength={100}
+          />
+        </div>
+        <div className="relative">
+          <Phone className="w-3 h-3 text-gray-400 absolute left-1.5 top-1/2 -translate-y-1/2" />
+          <Input
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder={t.phone}
+            type="tel"
+            className="rounded-none h-8 text-xs pl-6"
+            disabled={loading}
+            maxLength={30}
+          />
+        </div>
       </div>
 
       <div className="relative">
-        <User className="w-3.5 h-3.5 text-gray-400 absolute left-2 top-1/2 -translate-y-1/2" />
-        <Input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder={t.name + ' *'}
-          className="rounded-none h-9 text-sm pl-7"
-          disabled={loading}
-          maxLength={100}
-        />
-      </div>
-
-      <div className="relative">
-        <Phone className="w-3.5 h-3.5 text-gray-400 absolute left-2 top-1/2 -translate-y-1/2" />
-        <Input
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          placeholder={t.phone}
-          type="tel"
-          className="rounded-none h-9 text-sm pl-7"
-          disabled={loading}
-          maxLength={30}
-        />
-      </div>
-
-      <div className="relative">
-        <Mail className="w-3.5 h-3.5 text-gray-400 absolute left-2 top-1/2 -translate-y-1/2" />
+        <Mail className="w-3 h-3 text-gray-400 absolute left-1.5 top-1/2 -translate-y-1/2" />
         <Input
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder={t.email}
           type="email"
-          className="rounded-none h-9 text-sm pl-7"
+          className="rounded-none h-8 text-xs pl-6"
           disabled={loading}
           maxLength={255}
         />
       </div>
 
       <div className="relative">
-        <Dumbbell className="w-3.5 h-3.5 text-gray-400 absolute left-2 top-1/2 -translate-y-1/2 z-10 pointer-events-none" />
+        <Dumbbell className="w-3 h-3 text-gray-400 absolute left-1.5 top-1/2 -translate-y-1/2 z-10 pointer-events-none" />
         <Select value={service} onValueChange={setService} disabled={loading}>
-          <SelectTrigger className="rounded-none h-9 text-sm pl-7">
+          <SelectTrigger className="rounded-none h-8 text-xs pl-6">
             <SelectValue placeholder={t.service} />
           </SelectTrigger>
           <SelectContent className="rounded-none">
             {SERVICES.map((s) => (
-              <SelectItem key={s.value} value={s.value} className="rounded-none text-sm">
+              <SelectItem key={s.value} value={s.value} className="rounded-none text-xs">
                 {language === 'en' ? s.en : s.el}
               </SelectItem>
             ))}
@@ -189,29 +187,16 @@ export const LeadForm: React.FC<LeadFormProps> = ({
         </Select>
       </div>
 
-      <div className="relative">
-        <MessageSquare className="w-3.5 h-3.5 text-gray-400 absolute left-2 top-2.5" />
-        <Textarea
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder={t.message}
-          rows={2}
-          className="rounded-none text-sm pl-7 resize-none min-h-[60px]"
-          disabled={loading}
-          maxLength={1000}
-        />
-      </div>
-
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-[11px] text-red-600">{error}</p>}
 
       <Button
         type="submit"
         disabled={loading}
-        className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-9"
+        className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-8 text-xs font-semibold"
       >
         {loading ? (
           <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />
             {t.sending}
           </>
         ) : (
