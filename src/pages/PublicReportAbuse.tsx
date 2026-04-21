@@ -12,7 +12,7 @@ import { AlertTriangle, Loader2, Send, Check, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useEkourosDirectory } from "@/hooks/useEkourosDirectory";
-import reportAbuseIcon from "@/assets/report-abuse-icon.png";
+import reportAbuseFormIcon from "@/assets/report-abuse-form-icon.png";
 
 const ABUSE_TYPES = [
   { id: 'physical', label: 'Σωματική' },
@@ -170,17 +170,17 @@ export default function PublicReportAbuse() {
     <div className="min-h-screen bg-background py-3 px-2">
       <div className="max-w-2xl mx-auto space-y-2">
         <div className="text-center space-y-1">
-          <div className="flex items-center justify-center gap-2">
-            <img src={reportAbuseIcon} alt="" className="h-7 w-auto" />
-            <h1 className="text-base font-bold">Καταγγελία Κακοποίησης στον Αθλητισμό</h1>
-          </div>
+          <h1 className="text-base font-bold">Καταγγελία Κακοποίησης στον Αθλητισμό</h1>
           <p className="text-[11px] text-muted-foreground">Όλα τα στοιχεία είναι εμπιστευτικά.</p>
         </div>
 
         <Card className="rounded-none border border-destructive/30">
           <CardHeader className="bg-destructive/5 py-1.5 px-3">
-            <CardTitle className="flex items-center gap-1.5 text-destructive text-xs">
-              <AlertTriangle className="h-3.5 w-3.5" /> Φόρμα Καταγγελίας
+            <CardTitle className="flex items-center justify-between text-destructive text-xs">
+              <span className="flex items-center gap-1.5">
+                <AlertTriangle className="h-3.5 w-3.5" /> Φόρμα Καταγγελίας
+              </span>
+              <img src={reportAbuseFormIcon} alt="" className="h-5 w-auto" />
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 pt-2 px-3 pb-3">
