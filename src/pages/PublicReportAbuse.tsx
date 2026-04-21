@@ -12,7 +12,7 @@ import { AlertTriangle, Loader2, Send, Check, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useEkourosDirectory } from "@/hooks/useEkourosDirectory";
-import hyperkidsLogo from "@/assets/hyperkids-logo-black.png";
+import reportAbuseIcon from "@/assets/report-abuse-icon.png";
 
 const ABUSE_TYPES = [
   { id: 'physical', label: 'Σωματική' },
@@ -170,7 +170,10 @@ export default function PublicReportAbuse() {
     <div className="min-h-screen bg-background py-3 px-2">
       <div className="max-w-2xl mx-auto space-y-2">
         <div className="text-center space-y-1">
-          <h1 className="text-base font-bold">Καταγγελία Κακοποίησης στον Αθλητισμό</h1>
+          <div className="flex items-center justify-center gap-2">
+            <img src={reportAbuseIcon} alt="" className="h-7 w-auto" />
+            <h1 className="text-base font-bold">Καταγγελία Κακοποίησης στον Αθλητισμό</h1>
+          </div>
           <p className="text-[11px] text-muted-foreground">Όλα τα στοιχεία είναι εμπιστευτικά.</p>
         </div>
 
