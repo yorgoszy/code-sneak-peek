@@ -11,6 +11,7 @@ import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui
 import { AlertTriangle, Loader2, Send, Check, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useEkourosDirectory } from "@/hooks/useEkourosDirectory";
 
 const ABUSE_TYPES = [
   { id: 'physical', label: 'Σωματική' },
@@ -70,11 +71,20 @@ export default function PublicReportAbuse() {
     })();
   }, []);
 
+  const { searchClubs: searchEkourosClubs, searchSports: searchEkourosSports } = useEkourosDirectory();
+
   const filteredClubs = useMemo(() => {
     const q = normalize(clubSearch);
-    if (!q) return [];
-    return clubs.filter((c) => normalize(c.name).includes(q)).slice(0, 50);
-  }, [clubs, clubSearch]);
+    if (!q) return [] as any[];
+    const local = clubs
+      .filter((c) => normalize(c.name).includes(q))
+      .map((c) => ({ id: c.id, name: c.name, source: 'app' as const }));
+    const seen = new Set(local.map((c) => normalize(c.name)));
+    const ext = searchEkourosClubs(clubSearch, 100)
+      .filter((c) => !seen.has(normalize(c.name)))
+      .map((c) => ({ id: `ek:${c.id}`, name: c.name, source: 'ekouros' as const }));
+    return [...local, ...ext].slice(0, 50);
+  }, [clubs, clubSearch, searchEkourosClubs]);
 
   const filteredCoaches = useMemo(() => {
     const q = normalize(coachSearch);
@@ -85,11 +95,16 @@ export default function PublicReportAbuse() {
 
   const filteredSports = useMemo(() => {
     const q = normalize(sport);
-    if (!q) return [];
-    const matches = sports.filter((s) => normalize(s).includes(q));
-    if (matches.length === 1 && normalize(matches[0]) === q) return [];
-    return matches.slice(0, 50);
-  }, [sports, sport]);
+    if (!q) return [] as any[];
+    const local = sports.filter((s) => normalize(s).includes(q));
+    const seen = new Set(local.map((s) => normalize(s)));
+    const ext = searchEkourosSports(sport, 100)
+      .map((s) => s.name)
+      .filter((n) => !seen.has(normalize(n)));
+    const all = [...local, ...ext];
+    if (all.length === 1 && normalize(all[0]) === q) return [];
+    return all.slice(0, 50);
+  }, [sports, sport, searchEkourosSports]);
 
   const toggleType = (id: string) =>
     setSelectedTypes((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
