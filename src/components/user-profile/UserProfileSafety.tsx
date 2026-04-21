@@ -98,6 +98,14 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
     }
   }, [userProfile?.coach_id]);
 
+  useEffect(() => {
+    if (userProfile) {
+      if (userProfile.name) setReporterName(userProfile.name);
+      if (userProfile.email) setReporterEmail(userProfile.email);
+      if (userProfile.phone) setReporterPhone(userProfile.phone);
+    }
+  }, [userProfile?.id]);
+
   const loadClubsAndSports = async () => {
     const { data: dirData } = await supabase.rpc('get_public_clubs_directory');
     const all = (dirData as any[]) || [];
@@ -253,11 +261,6 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
         <CardContent className="space-y-2 pt-2 px-3 pb-3">
           <div className="space-y-1.5">
             <h3 className="font-semibold text-[11px] uppercase tracking-wide text-muted-foreground border-b pb-0.5">Καταγγέλλων</h3>
-            <div className="grid md:grid-cols-3 gap-1.5">
-              <Input value={reporterName} onChange={(e) => setReporterName(e.target.value)} className="rounded-none h-8 text-xs" placeholder="Ονοματεπώνυμο *" />
-              <Input type="email" value={reporterEmail} onChange={(e) => setReporterEmail(e.target.value)} className="rounded-none h-8 text-xs" placeholder="Email *" />
-              <Input type="tel" value={reporterPhone} onChange={(e) => setReporterPhone(e.target.value)} className="rounded-none h-8 text-xs" placeholder="Τηλέφωνο" />
-            </div>
             <div
               onClick={() => setIsAnonymous(!isAnonymous)}
               className={cn(
@@ -267,7 +270,11 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
             >
               <Checkbox checked={isAnonymous} />
               <span className="text-xs font-medium">{t('safety.anonymous')}</span>
-              <span className="text-[10px] text-muted-foreground hidden md:inline">— {t('safety.anonymousHint')}</span>
+            </div>
+            <div className={cn("grid md:grid-cols-3 gap-1.5 transition-opacity", isAnonymous && "opacity-40 pointer-events-none")}>
+              <Input value={reporterName} onChange={(e) => setReporterName(e.target.value)} disabled={isAnonymous} className="rounded-none h-8 text-xs" placeholder="Ονοματεπώνυμο *" />
+              <Input type="email" value={reporterEmail} onChange={(e) => setReporterEmail(e.target.value)} disabled={isAnonymous} className="rounded-none h-8 text-xs" placeholder="Email *" />
+              <Input type="tel" value={reporterPhone} onChange={(e) => setReporterPhone(e.target.value)} disabled={isAnonymous} className="rounded-none h-8 text-xs" placeholder="Τηλέφωνο" />
             </div>
           </div>
 
