@@ -135,7 +135,7 @@ export default function PublicReportAbuse() {
           coach_name_text: coachId ? null : coachNameText,
           abuse_types: selectedTypes,
           description,
-          incident_date: incidentDate || null,
+          incident_date: new Date().toISOString().split('T')[0],
           is_anonymous: isAnonymous,
         },
       });

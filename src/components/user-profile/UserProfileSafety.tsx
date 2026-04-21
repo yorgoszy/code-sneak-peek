@@ -194,7 +194,7 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
           sport: sport || null,
           abuse_types: selectedTypes,
           description: description.trim() || '—',
-          incident_date: incidentDate || null,
+          incident_date: new Date().toISOString().split('T')[0],
           is_anonymous: isAnonymous,
         })
         .select()
