@@ -282,116 +282,149 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
             <h3 className="font-semibold text-[11px] uppercase tracking-wide text-muted-foreground border-b pb-0.5">
               Σύλλογος
             </h3>
-            <div className="grid md:grid-cols-2 gap-1.5">
-              <Select value={sport} onValueChange={setSport}>
-                <SelectTrigger className="rounded-none h-8 text-xs">
-                  <SelectValue placeholder="Άθλημα *" />
-                </SelectTrigger>
-                <SelectContent className="max-h-72">
-                  {sports.length === 0 ? (
-                    <div className="px-2 py-3 text-xs text-muted-foreground">Δεν έχουν δηλωθεί αθλήματα.</div>
-                  ) : (
-                    sports.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)
-                  )}
-                  <SelectItem value="Άλλο">Άλλο</SelectItem>
-                </SelectContent>
-              </Select>
 
+            {/* Row 1: Club name + Coach name (autocomplete inputs) */}
+            <div className="grid md:grid-cols-2 gap-1.5">
               <Popover open={clubOpen} onOpenChange={setClubOpen}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" role="combobox" className="w-full justify-between rounded-none h-8 font-normal text-xs">
-                    <span className="truncate">
-                      {clubId ? clubs.find((c) => c.id === clubId)?.name : (clubNameText || "Σύλλογος *")}
-                    </span>
-                    <ChevronsUpDown className="ml-2 h-3 w-3 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[--radix-popover-trigger-width] p-0 rounded-none" align="start">
+                <PopoverAnchor asChild>
+                  <Input
+                    placeholder="Όνομα συλλόγου *"
+                    value={clubId ? (clubs.find(c => c.id === clubId)?.name || '') : clubNameText}
+                    onChange={(e) => {
+                      setClubId("");
+                      setClubNameText(e.target.value);
+                      setClubSearch(e.target.value);
+                      setClubOpen(true);
+                    }}
+                    onFocus={() => setClubOpen(true)}
+                    className="rounded-none h-8 text-xs"
+                  />
+                </PopoverAnchor>
+                {filteredClubs.length > 0 && (
+                  <PopoverContent
+                    className="w-[--radix-popover-trigger-width] p-0 rounded-none"
+                    align="start"
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                  >
+                    <Command shouldFilter={false}>
+                      <CommandList>
+                        <CommandGroup>
+                          {filteredClubs.map((c) => (
+                            <CommandItem
+                              key={c.id}
+                              value={c.id}
+                              onSelect={() => {
+                                setClubId(c.id);
+                                setClubNameText("");
+                                setClubOpen(false);
+                              }}
+                            >
+                              <Check className={cn("mr-2 h-4 w-4", clubId === c.id ? "opacity-100" : "opacity-0")} />
+                              {c.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                )}
+              </Popover>
+
+              <Popover open={coachOpen} onOpenChange={setCoachOpen}>
+                <PopoverAnchor asChild>
+                  <Input
+                    placeholder="Όνομα προπονητή"
+                    value={coachId ? (coaches.find(c => c.id === coachId)?.name || '') : coachNameText}
+                    onChange={(e) => {
+                      setCoachId("");
+                      setCoachNameText(e.target.value);
+                      setCoachSearch(e.target.value);
+                      setCoachOpen(true);
+                    }}
+                    onFocus={() => setCoachOpen(true)}
+                    className="rounded-none h-8 text-xs"
+                  />
+                </PopoverAnchor>
+                {filteredCoaches.length > 0 && (
+                  <PopoverContent
+                    className="w-[--radix-popover-trigger-width] p-0 rounded-none"
+                    align="start"
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                  >
+                    <Command shouldFilter={false}>
+                      <CommandList>
+                        <CommandGroup>
+                          {filteredCoaches.map((c) => (
+                            <CommandItem
+                              key={c.id}
+                              value={c.id}
+                              onSelect={() => {
+                                setCoachId(c.id);
+                                setCoachNameText("");
+                                setCoachOpen(false);
+                              }}
+                            >
+                              <Check className={cn("mr-2 h-4 w-4", coachId === c.id ? "opacity-100" : "opacity-0")} />
+                              {c.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                )}
+              </Popover>
+            </div>
+
+            {/* Row 2: Sport (autocomplete) */}
+            <Popover open={sportOpen} onOpenChange={setSportOpen}>
+              <PopoverAnchor asChild>
+                <Input
+                  placeholder="Άθλημα *"
+                  value={sport}
+                  onChange={(e) => {
+                    setSport(e.target.value);
+                    setSportOpen(true);
+                  }}
+                  onFocus={() => setSportOpen(true)}
+                  className="rounded-none h-8 text-xs"
+                />
+              </PopoverAnchor>
+              {filteredSports.length > 0 && (
+                <PopoverContent
+                  className="w-[--radix-popover-trigger-width] p-0 rounded-none"
+                  align="start"
+                  onOpenAutoFocus={(e) => e.preventDefault()}
+                >
                   <Command shouldFilter={false}>
-                    <CommandInput placeholder="Πληκτρολογήστε..." value={clubSearch} onValueChange={setClubSearch} />
                     <CommandList>
-                      <CommandEmpty>
-                        <div className="p-2 text-xs text-muted-foreground">Δεν βρέθηκε. Γράψτε ελεύθερα παρακάτω.</div>
-                      </CommandEmpty>
                       <CommandGroup>
-                        {filteredClubs.map((c) => (
+                        {filteredSports.map((s) => (
                           <CommandItem
-                            key={c.id}
-                            value={c.id}
+                            key={s}
+                            value={s}
                             onSelect={() => {
-                              setClubId(c.id);
-                              setClubNameText("");
-                              setClubOpen(false);
+                              setSport(s);
+                              setSportOpen(false);
                             }}
                           >
-                            <Check className={cn("mr-2 h-4 w-4", clubId === c.id ? "opacity-100" : "opacity-0")} />
-                            {c.name}
+                            <Check className={cn("mr-2 h-4 w-4", sport === s ? "opacity-100" : "opacity-0")} />
+                            {s}
                           </CommandItem>
                         ))}
                       </CommandGroup>
                     </CommandList>
                   </Command>
                 </PopoverContent>
-              </Popover>
-            </div>
+              )}
+            </Popover>
 
-            {!clubId && (
-              <Input
-                placeholder="Αν δεν υπάρχει στη λίστα, γράψτε όνομα συλλόγου..."
-                value={clubNameText}
-                onChange={(e) => setClubNameText(e.target.value)}
-                className="rounded-none h-8 text-xs"
-              />
-            )}
-
+            {/* Row 3: Address / City / Country */}
             <div className="grid md:grid-cols-3 gap-1.5">
               <Input value={clubAddress} onChange={(e) => setClubAddress(e.target.value)} className="rounded-none h-8 text-xs" placeholder="Διεύθυνση" />
               <Input value={clubCity} onChange={(e) => setClubCity(e.target.value)} className="rounded-none h-8 text-xs" placeholder="Πόλη" />
               <Input value={clubCountry} onChange={(e) => setClubCountry(e.target.value)} className="rounded-none h-8 text-xs" placeholder="Χώρα" />
             </div>
-
-            <Popover open={coachOpen} onOpenChange={setCoachOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" role="combobox" className="w-full justify-between rounded-none h-8 font-normal text-xs">
-                  <span className="truncate">{coachId ? coaches.find((c) => c.id === coachId)?.name : (coachNameText || "Προπονητής")}</span>
-                  <ChevronsUpDown className="ml-2 h-3 w-3 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[--radix-popover-trigger-width] p-0 rounded-none" align="start">
-                <Command shouldFilter={false}>
-                  <CommandInput placeholder="Πληκτρολογήστε..." value={coachSearch} onValueChange={setCoachSearch} />
-                  <CommandList>
-                    <CommandEmpty>
-                      <div className="p-2 text-xs text-muted-foreground">Δεν βρέθηκε. Γράψτε ελεύθερα παρακάτω.</div>
-                    </CommandEmpty>
-                    <CommandGroup>
-                      {filteredCoaches.map((c) => (
-                        <CommandItem
-                          key={c.id}
-                          value={c.id}
-                          onSelect={() => {
-                            setCoachId(c.id);
-                            setCoachNameText("");
-                            setCoachOpen(false);
-                          }}
-                        >
-                          <Check className={cn("mr-2 h-4 w-4", coachId === c.id ? "opacity-100" : "opacity-0")} />
-                          {c.name}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-            {!coachId && (
-              <Input
-                placeholder="Ή γράψτε ονοματεπώνυμο προπονητή..."
-                value={coachNameText}
-                onChange={(e) => setCoachNameText(e.target.value)}
-                className="rounded-none h-8 text-xs"
-              />
-            )}
           </div>
 
           <div className="space-y-1.5">
