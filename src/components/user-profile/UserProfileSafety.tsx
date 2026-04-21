@@ -132,16 +132,24 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
   };
 
   const handleSubmit = async () => {
-    if (selectedTypes.length === 0) {
-      toast.error(t('safety.errorMinTypes'));
+    if (!reporterName.trim() || !reporterEmail.trim()) {
+      toast.error("Συμπληρώστε όνομα και email");
       return;
     }
-    if (!clubId) {
-      toast.error('Παρακαλώ επιλέξτε σύλλογο');
+    if (!/^\S+@\S+\.\S+$/.test(reporterEmail)) {
+      toast.error("Μη έγκυρο email");
       return;
     }
     if (!sport) {
       toast.error('Παρακαλώ επιλέξτε άθλημα');
+      return;
+    }
+    if (!clubId && !clubNameText.trim()) {
+      toast.error("Επιλέξτε σύλλογο ή γράψτε όνομα");
+      return;
+    }
+    if (selectedTypes.length === 0) {
+      toast.error(t('safety.errorMinTypes'));
       return;
     }
     setConfirmOpen(true);
@@ -155,9 +163,16 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
         .from('abuse_reports')
         .insert({
           athlete_id: userProfile.id,
-          coach_id: clubId || userProfile.coach_id || null,
+          coach_id: coachId || (clubId || userProfile.coach_id || null),
           club_id: clubId || null,
-          coach_name_text: coachNameText.trim() || null,
+          club_name_text: clubId ? null : (clubNameText.trim() || null),
+          club_address: clubAddress.trim() || null,
+          club_city: clubCity.trim() || null,
+          club_country: clubCountry.trim() || null,
+          coach_name_text: coachId ? null : (coachNameText.trim() || null),
+          reporter_name: reporterName.trim() || null,
+          reporter_email: reporterEmail.trim() || null,
+          reporter_phone: reporterPhone.trim() || null,
           sport: sport || null,
           abuse_types: selectedTypes,
           description: description.trim() || '—',
@@ -183,8 +198,15 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
       setIncidentDate("");
       setIsAnonymous(false);
       setClubId("");
+      setClubNameText("");
+      setClubAddress("");
+      setClubCity("");
+      setCoachId("");
       setCoachNameText("");
       setSport("");
+      setReporterName("");
+      setReporterEmail("");
+      setReporterPhone("");
       loadReports();
     } catch (e: any) {
       console.error(e);
