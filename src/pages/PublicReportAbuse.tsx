@@ -12,7 +12,7 @@ import { AlertTriangle, Loader2, Send, Check, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useEkourosDirectory } from "@/hooks/useEkourosDirectory";
-import hyperkidsLogo from "@/assets/hyperkids-logo-transparent.png";
+import hyperkidsLogo from "@/assets/hyperkids-logo-black.png";
 
 const ABUSE_TYPES = [
   { id: 'physical', label: 'Σωματική' },
