@@ -98,6 +98,14 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
     }
   }, [userProfile?.coach_id]);
 
+  useEffect(() => {
+    if (userProfile) {
+      if (userProfile.name) setReporterName(userProfile.name);
+      if (userProfile.email) setReporterEmail(userProfile.email);
+      if (userProfile.phone) setReporterPhone(userProfile.phone);
+    }
+  }, [userProfile?.id]);
+
   const loadClubsAndSports = async () => {
     const { data: dirData } = await supabase.rpc('get_public_clubs_directory');
     const all = (dirData as any[]) || [];
