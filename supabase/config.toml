@@ -78,3 +78,7 @@ verify_jwt = false
 [functions.notify-ring-leads]
 verify_jwt = false
 
+
+[functions.ekouros-import]
+verify_jwt = false
+
