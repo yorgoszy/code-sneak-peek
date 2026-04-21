@@ -135,7 +135,7 @@ export default function PublicReportAbuse() {
           coach_name_text: coachId ? null : coachNameText,
           abuse_types: selectedTypes,
           description,
-          incident_date: incidentDate || null,
+          incident_date: new Date().toISOString().split('T')[0],
           is_anonymous: isAnonymous,
         },
       });
@@ -345,16 +345,14 @@ export default function PublicReportAbuse() {
                     key={t.id}
                     onClick={() => toggleType(t.id)}
                     className={cn(
-                      "flex items-center gap-1 px-1.5 py-1 border cursor-pointer transition-colors",
-                      selectedTypes.includes(t.id) ? "border-destructive bg-destructive/10" : "border-border hover:bg-muted/50"
+                      "flex items-center justify-center px-1.5 py-1 border cursor-pointer transition-colors",
+                      selectedTypes.includes(t.id) ? "border-destructive bg-destructive/10 text-destructive" : "border-border hover:bg-muted/50"
                     )}
                   >
-                    <Checkbox checked={selectedTypes.includes(t.id)} className="h-3 w-3" />
                     <span className="text-[11px]">{t.label}</span>
                   </div>
                 ))}
               </div>
-              <Input type="date" value={incidentDate} onChange={(e) => setIncidentDate(e.target.value)} className="rounded-none h-8 text-xs max-w-[180px]" />
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}

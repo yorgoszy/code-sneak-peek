@@ -194,7 +194,7 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
           sport: sport || null,
           abuse_types: selectedTypes,
           description: description.trim() || '—',
-          incident_date: incidentDate || null,
+          incident_date: new Date().toISOString().split('T')[0],
           is_anonymous: isAnonymous,
         })
         .select()
@@ -449,21 +449,14 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
                   key={id}
                   onClick={() => toggleType(id)}
                   className={cn(
-                    "flex items-center gap-1 px-1.5 py-1 border cursor-pointer transition-colors",
-                    selectedTypes.includes(id) ? "border-destructive bg-destructive/10" : "border-border hover:bg-muted/50"
+                    "flex items-center justify-center px-1.5 py-1 border cursor-pointer transition-colors",
+                    selectedTypes.includes(id) ? "border-destructive bg-destructive/10 text-destructive" : "border-border hover:bg-muted/50"
                   )}
                 >
-                  <Checkbox checked={selectedTypes.includes(id)} className="h-3 w-3" />
                   <span className="text-[11px]">{t(`safety.types.${id}`)}</span>
                 </div>
               ))}
             </div>
-            <Input
-              type="date"
-              value={incidentDate}
-              onChange={(e) => setIncidentDate(e.target.value)}
-              className="rounded-none h-8 text-xs max-w-[180px]"
-            />
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
