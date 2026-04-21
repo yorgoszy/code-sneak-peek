@@ -11,6 +11,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { Menu, ShieldAlert, Loader2, Save, Check, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
+import { ReportAbuseQRDialog } from "@/components/abuse/ReportAbuseQRDialog";
 
 const ABUSE_LABELS: Record<string, string> = {
   physical: "Σωματική",
@@ -139,12 +140,18 @@ export default function AbuseReports() {
 
         <main className="flex-1 p-4 lg:p-6 overflow-auto">
           <div className="max-w-6xl mx-auto space-y-4">
-            <div className="hidden lg:flex items-center gap-2 mb-2">
-              <ShieldAlert className="h-6 w-6 text-red-600" />
-              <h1 className="text-2xl font-bold">Καταγγελίες Κακοποίησης</h1>
-              {newCount > 0 && (
-                <Badge className="bg-red-600 text-white rounded-none ml-2">{newCount} νέες</Badge>
-              )}
+            <div className="hidden lg:flex items-center justify-between mb-2 gap-2">
+              <div className="flex items-center gap-2">
+                <ShieldAlert className="h-6 w-6 text-red-600" />
+                <h1 className="text-2xl font-bold">Καταγγελίες Κακοποίησης</h1>
+                {newCount > 0 && (
+                  <Badge className="bg-red-600 text-white rounded-none ml-2">{newCount} νέες</Badge>
+                )}
+              </div>
+              <ReportAbuseQRDialog />
+            </div>
+            <div className="lg:hidden">
+              <ReportAbuseQRDialog />
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
