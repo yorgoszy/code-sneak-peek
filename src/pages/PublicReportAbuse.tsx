@@ -233,13 +233,18 @@ export default function PublicReportAbuse() {
                       <Command shouldFilter={false}>
                         <CommandList>
                           <CommandGroup>
-                            {filteredClubs.map((c) => (
+                            {filteredClubs.map((c: any) => (
                               <CommandItem
                                 key={c.id}
                                 value={c.id}
                                 onSelect={() => {
-                                  setClubId(c.id);
-                                  setClubNameText("");
+                                  if (c.source === 'ekouros') {
+                                    setClubId("");
+                                    setClubNameText(c.name);
+                                  } else {
+                                    setClubId(c.id);
+                                    setClubNameText("");
+                                  }
                                   setClubOpen(false);
                                 }}
                               >
