@@ -180,7 +180,7 @@ export default function PublicReportAbuse() {
               <span className="flex items-center gap-1.5">
                 <AlertTriangle className="h-3.5 w-3.5" /> Φόρμα Καταγγελίας
               </span>
-              <img src={reportAbuseFormIcon} alt="" className="h-5 w-auto" />
+              <img src={reportAbuseFormIcon} alt="" className="h-5 w-auto [filter:brightness(0)_saturate(100%)_invert(27%)_sepia(91%)_saturate(2878%)_hue-rotate(346deg)_brightness(94%)_contrast(94%)]" />
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 pt-2 px-3 pb-3">
