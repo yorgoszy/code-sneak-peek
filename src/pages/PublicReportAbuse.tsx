@@ -207,8 +207,8 @@ export default function PublicReportAbuse() {
             <div className="space-y-1.5">
               <h3 className="font-semibold text-[11px] uppercase tracking-wide text-muted-foreground border-b pb-0.5">Σύλλογος</h3>
 
-              {/* Row 1: Club + Coach */}
-              <div className="grid md:grid-cols-2 gap-1.5">
+              {/* Row 1: Club + Coach + Sport */}
+              <div className="grid md:grid-cols-3 gap-1.5">
                 <Popover open={clubOpen} onOpenChange={setClubOpen}>
                   <PopoverAnchor asChild>
                     <Input
@@ -303,50 +303,49 @@ export default function PublicReportAbuse() {
                     </PopoverContent>
                   )}
                 </Popover>
-              </div>
 
-              {/* Row 2: Sport */}
-              <Popover open={sportOpen} onOpenChange={setSportOpen}>
-                <PopoverAnchor asChild>
-                  <Input
-                    placeholder="Άθλημα *"
-                    value={sport}
-                    onChange={(e) => {
-                      setSport(e.target.value);
-                      setSportOpen(true);
-                    }}
-                    onFocus={() => setSportOpen(true)}
-                    className="rounded-none h-8 text-xs"
-                  />
-                </PopoverAnchor>
-                {filteredSports.length > 0 && (
-                  <PopoverContent
-                    className="w-[--radix-popover-trigger-width] p-0 rounded-none"
-                    align="start"
-                    onOpenAutoFocus={(e) => e.preventDefault()}
-                  >
-                    <Command shouldFilter={false}>
-                      <CommandList>
-                        <CommandGroup>
-                          {filteredSports.map((s) => (
-                            <CommandItem
-                              key={s}
-                              value={s}
-                              onSelect={() => {
-                                setSport(s);
-                                setSportOpen(false);
-                              }}
-                            >
-                              <Check className={cn("mr-2 h-4 w-4", sport === s ? "opacity-100" : "opacity-0")} />
-                              {s}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                )}
-              </Popover>
+                <Popover open={sportOpen} onOpenChange={setSportOpen}>
+                  <PopoverAnchor asChild>
+                    <Input
+                      placeholder="Άθλημα *"
+                      value={sport}
+                      onChange={(e) => {
+                        setSport(e.target.value);
+                        setSportOpen(true);
+                      }}
+                      onFocus={() => setSportOpen(true)}
+                      className="rounded-none h-8 text-xs"
+                    />
+                  </PopoverAnchor>
+                  {filteredSports.length > 0 && (
+                    <PopoverContent
+                      className="w-[--radix-popover-trigger-width] p-0 rounded-none"
+                      align="start"
+                      onOpenAutoFocus={(e) => e.preventDefault()}
+                    >
+                      <Command shouldFilter={false}>
+                        <CommandList>
+                          <CommandGroup>
+                            {filteredSports.map((s) => (
+                              <CommandItem
+                                key={s}
+                                value={s}
+                                onSelect={() => {
+                                  setSport(s);
+                                  setSportOpen(false);
+                                }}
+                              >
+                                <Check className={cn("mr-2 h-4 w-4", sport === s ? "opacity-100" : "opacity-0")} />
+                                {s}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  )}
+                </Popover>
+              </div>
 
               {/* Row 3: Address / City / Country */}
               <div className="grid md:grid-cols-3 gap-1.5">
