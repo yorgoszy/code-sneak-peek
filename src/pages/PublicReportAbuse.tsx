@@ -170,8 +170,6 @@ export default function PublicReportAbuse() {
     <div className="min-h-screen bg-background py-3 px-2">
       <div className="max-w-2xl mx-auto space-y-2">
         <div className="text-center space-y-1">
-          <img src={hyperkidsLogo} alt="HyperKids" className="h-12 mx-auto mb-1" />
-          <Shield className="h-6 w-6 mx-auto text-foreground" />
           <h1 className="text-base font-bold">Καταγγελία Κακοποίησης στον Αθλητισμό</h1>
           <p className="text-[11px] text-muted-foreground">Όλα τα στοιχεία είναι εμπιστευτικά.</p>
         </div>
