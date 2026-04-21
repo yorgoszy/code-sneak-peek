@@ -271,16 +271,18 @@ export const UserProfileSafety = ({ userProfile }: UserProfileSafetyProps) => {
         <CardContent className="space-y-2 pt-2 px-3 pb-3">
           <div className="space-y-1.5">
             <h3 className="font-semibold text-[11px] uppercase tracking-wide text-muted-foreground border-b pb-0.5">Καταγγέλλων</h3>
-            <div
+            <button
+              type="button"
               onClick={() => setIsAnonymous(!isAnonymous)}
               className={cn(
-                "flex items-center gap-2 px-2 py-1 border cursor-pointer transition-colors",
-                isAnonymous ? "border-foreground bg-muted" : "border-border hover:bg-muted/50"
+                "inline-flex items-center px-2 py-0.5 border text-[10px] font-medium transition-colors",
+                isAnonymous
+                  ? "border-destructive bg-destructive/10 text-destructive"
+                  : "border-destructive text-destructive hover:bg-destructive/5"
               )}
             >
-              <Checkbox checked={isAnonymous} />
-              <span className="text-xs font-medium">{t('safety.anonymous')}</span>
-            </div>
+              {t('safety.anonymous')}
+            </button>
             <div className={cn("grid md:grid-cols-3 gap-1.5 transition-opacity", isAnonymous && "opacity-40 pointer-events-none")}>
               <Input value={reporterName} onChange={(e) => setReporterName(e.target.value)} disabled={isAnonymous} className="rounded-none h-8 text-xs" placeholder="Ονοματεπώνυμο *" />
               <Input type="email" value={reporterEmail} onChange={(e) => setReporterEmail(e.target.value)} disabled={isAnonymous} className="rounded-none h-8 text-xs" placeholder="Email *" />
