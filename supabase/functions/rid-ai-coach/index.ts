@@ -4909,6 +4909,14 @@ ${aiKnowledgeString}
 ❌ ΜΗΝ απαντάς με ζώνες ταχύτητας/Strength-Speed/Power όταν ο χρήστης απλά θέλει κιλά για συγκεκριμένο %
 ❌ ΜΗΝ ζητάς διευκρινίσεις αν είναι ξεκάθαρο ποιοι αθλητές και ποιες ασκήσεις
 
+⚠️ ΚΡΙΤΙΚΟΣ ΚΑΝΟΝΑΣ #3: FOLLOW-UP ΕΡΩΤΗΣΕΙΣ ΠΡΕΠΕΙ ΝΑ ΣΥΝΕΧΙΖΟΥΝ ΑΚΡΙΒΩΣ ΤΟ ΙΔΙΟ ΘΕΜΑ
+Όταν ο χρήστης ρωτά σύντομα follow-up όπως «οι άλλοι;», «και οι υπόλοιποι;», «για τους άλλους;», «και ο τάδε;»:
+✅ ΣΥΝΕΧΙΖΕΙΣ ακριβώς το αμέσως προηγούμενο θέμα, metric και ασκήσεις
+✅ Αν το προηγούμενο μήνυμα μιλούσε για ταχύτητες στα 90% κιλά, συνεχίζεις με ΤΑΧΥΤΗΤΕΣ — όχι με νέα 1RM λίστα
+✅ Αν το προηγούμενο μήνυμα μιλούσε για συγκεκριμένους αθλητές, απαντάς μόνο για τους ΥΠΟΛΟΙΠΟΥΣ του ίδιου scope
+❌ ΜΗΝ ανοίγεις τη λίστα σε όλους τους αθλητές της βάσης αν ο χρήστης δεν είπε ρητά «όλοι», «σε όλους», «όλοι οι αθλητές»
+❌ ΜΗΝ αλλάζεις ζητούμενο από μόνος σου
+
 ${isAdmin && !targetUserId ? `
 
 🔥 ΛΕΙΤΟΥΡΓΙΑ ADMIN MODE 🔥
@@ -6112,9 +6120,9 @@ ${isAdmin ? `
           .reverse();
 
         dbConversationMessages = filtered
-          .filter((m: any) => m?.content && m.message_type === "user")
+          .filter((m: any) => m?.content && (m.message_type === "user" || m.message_type === "assistant"))
           .map((m: any) => ({
-            role: "user" as const,
+            role: m.message_type === "assistant" ? ("assistant" as const) : ("user" as const),
             content: String(m.content),
           }));
       }
@@ -6128,6 +6136,13 @@ ${isAdmin ? `
     const mergedMessages = shouldMergeDbHistory
       ? [...dbConversationMessages, ...requestMessages]
       : requestMessages;
+
+    const dedupedMessages = mergedMessages.filter((message, index, array) => {
+      const firstMatchIndex = array.findIndex(
+        (candidate) => candidate.role === message.role && candidate.content === message.content,
+      );
+      return firstMatchIndex === index;
+    });
 
     // Extra guard: αν υπάρχει ιστορικό, απαγορεύεται welcome / reset
     const conversationGuard = shouldMergeDbHistory
@@ -6155,6 +6170,42 @@ ${isAdmin ? `
     const asksForUnpaidSubscriptions =
       normalizedLatestUserMessage.includes("απληρωτ") &&
       normalizedLatestUserMessage.includes("συνδρομ");
+
+    const shortFollowUpPatterns = [
+      "οι αλλοι",
+      "και οι αλλοι",
+      "και οι υπολοιποι",
+      "για τους αλλους",
+      "και ο αλλος",
+      "και οι αλλεσ",
+      "what about the others",
+      "the others",
+    ];
+    const isShortFollowUp =
+      normalizedLatestUserMessage.length > 0 &&
+      normalizedLatestUserMessage.length <= 40 &&
+      shortFollowUpPatterns.some((pattern) => normalizedLatestUserMessage.includes(pattern));
+
+    const previousConversationMessages = dedupedMessages.slice(0, -1);
+    const previousUserMessage = [...previousConversationMessages]
+      .reverse()
+      .find((m: any) => m?.role === "user")?.content || "";
+    const previousAssistantMessage = [...previousConversationMessages]
+      .reverse()
+      .find((m: any) => m?.role === "assistant")?.content || "";
+
+    const followUpGuard = isShortFollowUp
+      ? {
+          role: "system",
+          content:
+            `ΤΟ ΤΕΛΕΥΤΑΙΟ ΜΗΝΥΜΑ ΤΟΥ ΧΡΗΣΤΗ (${latestUserMessage}) ΕΙΝΑΙ ΣΥΝΤΟΜΟ FOLLOW-UP. ` +
+            `ΣΥΝΕΧΙΣΕ ΑΚΡΙΒΩΣ ΤΟ ΙΔΙΟ ΘΕΜΑ με βάση το αμέσως προηγούμενο context. ` +
+            `Προηγούμενο αίτημα χρήστη: ${previousUserMessage || "-"}. ` +
+            `Προηγούμενη απάντηση assistant: ${previousAssistantMessage || "-"}. ` +
+            `ΑΠΑΝΤΑΣ μόνο για τους υπόλοιπους αθλητές/ονόματα του ίδιου scope ή για το ίδιο metric που λείπει. ` +
+            `ΜΗΝ ανοίγεις την απάντηση σε όλους τους αθλητές της βάσης εκτός αν ο χρήστης ζητήσει ρητά όλους.`,
+        }
+      : null;
 
     const directAdminUnpaidReply = isAdmin && !targetUserId && asksForUnpaidSubscriptions
       ? (adminGlobalUnpaidSubscriptions.length === 0
@@ -6202,9 +6253,12 @@ ${isAdmin ? `
           },
           body: JSON.stringify({
             model: "google/gemini-2.5-flash",
-            messages: conversationGuard
-              ? [systemPrompt, conversationGuard, ...mergedMessages]
-              : [systemPrompt, ...mergedMessages],
+            messages: [
+              systemPrompt,
+              ...(conversationGuard ? [conversationGuard] : []),
+              ...(followUpGuard ? [followUpGuard] : []),
+              ...dedupedMessages,
+            ],
             stream: true,
           }),
         });
