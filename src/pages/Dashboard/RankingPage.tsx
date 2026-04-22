@@ -113,7 +113,12 @@ const RankingPage: React.FC<RankingPageProps> = ({ embedded = false, contextUser
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const role = userProfile?.role;
-  const coachContextId = role === 'coach' ? userProfile?.id : userProfile?.coach_id ?? null;
+  // Admins should always see the admin Sidebar, not a coach context sidebar
+  const coachContextId = role === 'admin'
+    ? null
+    : role === 'coach'
+      ? userProfile?.id
+      : userProfile?.coach_id ?? null;
 
   useEffect(() => {
     if (contextLoading) return;
