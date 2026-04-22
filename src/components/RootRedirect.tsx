@@ -6,14 +6,15 @@ import Index from '@/pages/Index';
 
 const PublicReportAbuse = lazy(() => import('@/pages/PublicReportAbuse'));
 
-// This project is dedicated to the public abuse-report form.
-// Always show the report form as the landing page, regardless of hostname.
-const SHOW_ABUSE_REPORT_AS_HOME = true;
+// Domains that should show the public report-abuse form as their landing page
+const ABUSE_REPORT_DOMAINS = ['pestomou.com', 'www.pestomou.com'];
 
 export const RootRedirect = () => {
   const { loading } = useAuth();
   const navigate = useNavigate();
-  const isAbuseReportDomain = SHOW_ABUSE_REPORT_AS_HOME;
+  const isAbuseReportDomain =
+    typeof window !== 'undefined' &&
+    ABUSE_REPORT_DOMAINS.includes(window.location.hostname);
 
   // Check for password recovery tokens and redirect to reset password page
   useEffect(() => {
