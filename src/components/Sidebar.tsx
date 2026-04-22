@@ -603,6 +603,24 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null
     },
     {
+      icon: Radio,
+      label: "Live",
+      path: "/dashboard/federation-live",
+      badge: null
+    },
+    {
+      icon: Shuffle,
+      label: "Κλήρωση",
+      path: "/dashboard/federation-brackets",
+      badge: null
+    },
+    {
+      icon: ClipboardList,
+      label: "Πρόγραμμα Αγώνων",
+      path: "/dashboard/federation-fight-card",
+      badge: null
+    },
+    {
       icon: MonitorPlay,
       label: "Video Analysis",
       path: "/dashboard/video-analysis",
