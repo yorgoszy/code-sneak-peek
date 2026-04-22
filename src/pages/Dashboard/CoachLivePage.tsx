@@ -18,30 +18,7 @@ import { ReadOnlyRingScoreboard } from "@/components/federation/ReadOnlyRingScor
 import { VideoOverlayScores } from "@/components/federation/VideoOverlayScores";
 import { SyncedYouTubePlayer } from "@/components/federation/SyncedYouTubePlayer";
 import { RingCameraViewer } from "@/components/federation/webrtc/RingCameraViewer";
-
-const getRingLetter = (num: number) => String.fromCharCode(64 + num);
-
-interface Match {
-  id: string;
-  match_order: number | null;
-  match_number: number;
-  round_number: number;
-  status: string;
-  athlete1?: { name: string } | null;
-  athlete2?: { name: string } | null;
-  athlete1_id?: string | null;
-  athlete2_id?: string | null;
-  winner_id?: string | null;
-  athlete1_display?: string;
-  athlete2_display?: string;
-  category_id: string;
-  category?: { name: string; gender?: string; min_age?: number | null; max_age?: number | null; min_weight?: number | null; max_weight?: number | null } | null;
-}
-
-interface CoachLivePageProps {
-  embedded?: boolean;
-}
-
+...
 const CoachLivePage: React.FC<CoachLivePageProps> = ({ embedded = false }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);

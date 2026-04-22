@@ -14,39 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTranslation } from "react-i18next";
-
-interface Match {
-  id: string;
-  competition_id: string;
-  category_id: string;
-  round_number: number;
-  match_number: number;
-  match_order: number | null;
-  athlete1_id: string | null;
-  athlete2_id: string | null;
-  athlete1_club_id: string | null;
-  athlete2_club_id: string | null;
-  winner_id: string | null;
-  athlete1_score: string | null;
-  athlete2_score: string | null;
-  result_type: string | null;
-  is_bye: boolean;
-  ring_number: number | null;
-  status: string;
-  athlete1?: { name: string; photo_url: string | null; avatar_url: string | null } | null;
-  athlete2?: { name: string; photo_url: string | null; avatar_url: string | null } | null;
-  athlete1_club?: { name: string } | null;
-  athlete2_club?: { name: string } | null;
-}
-
-interface CoachBracketsPageProps {
-  embedded?: boolean;
-}
-
-const AGE_ORDER = ['40+', '18-40', 'U23', '17-18', '15-16', '13-14', '11-12', '8-10', '5-7'];
-const getAgeLabel = (categoryName: string) => categoryName.split(' / ')[0] || categoryName;
-const getWeightLabel = (categoryName: string) => categoryName.split(' / ')[1] || categoryName;
-
+...
 const CoachBracketsPage: React.FC<CoachBracketsPageProps> = ({ embedded = false }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
