@@ -31,7 +31,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article, onReadMore, translat
           onClick={() => onReadMore(article)}
           className="font-semibold transition-colors mt-auto text-left text-[#aca097] hover:text-white"
         >
-          {translations.blog?.readMore || 'Διαβάστε περισσότερα →'}
+          {translations.blog?.readMore || (translations.language === 'en' ? 'Read more →' : 'Διαβάστε περισσότερα →')}
         </button>
       </div>
     </article>
