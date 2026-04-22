@@ -51,7 +51,7 @@ interface RingInfo {
 
 const FederationFightCard: React.FC = () => {
   const { t } = useTranslation();
-  const { userProfile } = useRoleCheck();
+  const { userProfile, isAdmin } = useRoleCheck();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -73,13 +73,15 @@ const FederationFightCard: React.FC = () => {
   // Load competitions
   useEffect(() => {
     if (!federationId) return;
-    supabase
+    let query = supabase
       .from('federation_competitions')
       .select('id, name, competition_date')
-      .eq('federation_id', federationId)
-      .order('competition_date', { ascending: false })
-      .then(({ data }) => setCompetitions(data || []));
-  }, [federationId]);
+      .order('competition_date', { ascending: false });
+    if (!isAdmin?.()) {
+      query = query.eq('federation_id', federationId);
+    }
+    query.then(({ data }) => setCompetitions(data || []));
+  }, [federationId, isAdmin]);
 
   // Load matches and rings
   const loadData = useCallback(async () => {

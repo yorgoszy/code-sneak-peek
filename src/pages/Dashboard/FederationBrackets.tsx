@@ -512,7 +512,7 @@ const BracketAgeGroup: React.FC<{
 const FederationBrackets = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { userProfile } = useRoleCheck();
+  const { userProfile, isAdmin } = useRoleCheck();
   const { t } = useTranslation();
 
   const [competitions, setCompetitions] = useState<Competition[]>([]);
@@ -546,15 +546,18 @@ const FederationBrackets = () => {
   useEffect(() => {
     if (!federationId) return;
     const load = async () => {
-      const { data } = await supabase
+      let query = supabase
         .from('federation_competitions')
         .select('id, name, competition_date, status, weigh_in_active, weigh_in_ended_at, competition_flow')
-        .eq('federation_id', federationId)
         .order('competition_date', { ascending: false });
+      if (!isAdmin?.()) {
+        query = query.eq('federation_id', federationId);
+      }
+      const { data } = await query;
       setCompetitions(data || []);
     };
     load();
-  }, [federationId]);
+  }, [federationId, isAdmin]);
 
   // Load categories, registration counts, and check for existing matches when competition changes
   useEffect(() => {
