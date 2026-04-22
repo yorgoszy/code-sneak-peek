@@ -110,7 +110,7 @@ const JudgeLinkRow: React.FC<{ judgeNum: number; url: string; t: any }> = ({ jud
 const FederationLive = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { userProfile } = useRoleCheck();
+  const { userProfile, isAdmin } = useRoleCheck();
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -170,15 +170,19 @@ const FederationLive = () => {
   useEffect(() => {
     if (!federationId) return;
     const load = async () => {
-      const { data } = await supabase
+      // Admins see ALL competitions across federations; federations see only their own.
+      let query = supabase
         .from('federation_competitions')
         .select('id, name, competition_date, status')
-        .eq('federation_id', federationId)
         .order('competition_date', { ascending: false });
+      if (!isAdmin?.()) {
+        query = query.eq('federation_id', federationId);
+      }
+      const { data } = await query;
       setCompetitions(data || []);
     };
     load();
-  }, [federationId]);
+  }, [federationId, isAdmin]);
 
   useEffect(() => {
     if (selectedCompId) localStorage.setItem('federation-live-comp', selectedCompId);
