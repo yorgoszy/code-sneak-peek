@@ -43,7 +43,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
           title: currentLanguage === 'el' ? article.title_el : (article.title_en || article.title_el),
           excerpt: currentLanguage === 'el' ? article.excerpt_el : (article.excerpt_en || article.excerpt_el),
           image: article.image_url || '',
-          date: new Date(article.published_date).toLocaleDateString('el-GR', {
+          date: new Date(article.published_date).toLocaleDateString(currentLanguage === 'el' ? 'el-GR' : 'en-US', {
             day: 'numeric',
             month: 'long',
             year: 'numeric'
