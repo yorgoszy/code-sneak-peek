@@ -50,5 +50,13 @@ export const RootRedirect = () => {
     return <CustomLoadingScreen />;
   }
 
+  if (isAbuseReportDomain) {
+    return (
+      <Suspense fallback={<CustomLoadingScreen />}>
+        <PublicReportAbuse />
+      </Suspense>
+    );
+  }
+
   return <Index />;
 };
