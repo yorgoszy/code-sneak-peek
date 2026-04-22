@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Navigate, useSearchParams } from "react-router-dom";
+import { Navigate, useParams, useSearchParams } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { CoachSidebar } from "@/components/CoachSidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
@@ -14,65 +14,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTranslation } from "react-i18next";
-
-interface Match {
-  id: string;
-  competition_id: string;
-  category_id: string;
-  round_number: number;
-  match_number: number;
-  match_order: number | null;
-  athlete1_id: string | null;
-  athlete2_id: string | null;
-  athlete1_club_id: string | null;
-  athlete2_club_id: string | null;
-  winner_id: string | null;
-  athlete1_score: string | null;
-  athlete2_score: string | null;
-  result_type: string | null;
-  is_bye: boolean;
-  ring_number: number | null;
-  status: string;
-  athlete1?: { name: string; photo_url: string | null; avatar_url: string | null } | null;
-  athlete2?: { name: string; photo_url: string | null; avatar_url: string | null } | null;
-  athlete1_club?: { name: string } | null;
-  athlete2_club?: { name: string } | null;
-}
-
-function getRoundName(roundNumber: number, t: any): string {
-  if (roundNumber === 1) return t('federation.brackets.final');
-  if (roundNumber === 2) return t('federation.brackets.semifinals');
-  if (roundNumber === 4) return t('federation.brackets.quarterfinals');
-  if (roundNumber === 8) return 'Προκριματικοί 1/8';
-  if (roundNumber === 16) return 'Προκριματικοί 1/16';
-  return `${t('federation.brackets.round')} ${roundNumber}`;
-}
-
-const AGE_ORDER = ['40+', '18-40', 'U23', '16-17', '14-15', '12-13', '10-11', '8-9', '5-7'];
-
-const getWeightLabel = (name: string): string => {
-  const m = name.match(/([-+±]\s*\d+[\d.,]*\s*kg)/i);
-  return m ? m[1] : name;
-};
-
-const getAgeLabel = (name: string): string => {
-  if (/Ενήλικοι/i.test(name)) return '18-40';
-  if (/U23/i.test(name)) return 'U23';
-  if (/Βετεράνοι|40\+/i.test(name)) return '40+';
-  const match = name.match(/Νέ(?:οι|ες)\s*(\d+-\d+)/);
-  if (match) return match[1];
-  const ageRange = name.match(/(\d+-\d+)/);
-  if (ageRange) return ageRange[1];
-  return name.replace(/([-+±]\s*\d+[\d.,]*\s*kg)/i, '').trim();
-};
-
-interface CoachBracketsPageProps {
-  embedded?: boolean;
-}
-
+...
 const CoachBracketsPage: React.FC<CoachBracketsPageProps> = ({ embedded = false }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { coachId: routeCoachId } = useParams<{ coachId: string }>();
   const { userProfile } = useRoleCheck();
   const { t } = useTranslation();
 
@@ -90,25 +36,40 @@ const CoachBracketsPage: React.FC<CoachBracketsPageProps> = ({ embedded = false 
   const [registrationCounts, setRegistrationCounts] = useState<Map<string, number>>(new Map());
   const [searchParams] = useSearchParams();
 
-  const clubId = userProfile?.role === 'coach' ? userProfile?.id : userProfile?.coach_id;
+  const clubId = routeCoachId || (userProfile?.role === 'coach' ? userProfile?.id : userProfile?.coach_id);
 
   // Load competitions
   useEffect(() => {
-    if (!clubId) return;
+    if (!clubId) {
+      setCompetitions([]);
+      setSelectedCompId('');
+      return;
+    }
+
     const load = async () => {
       const { data: fedLinks } = await supabase
         .from('federation_clubs')
         .select('federation_id')
         .eq('club_id', clubId);
-      if (!fedLinks?.length) return;
+
+      if (!fedLinks?.length) {
+        setCompetitions([]);
+        setSelectedCompId('');
+        return;
+      }
+
       const federationIds = [...new Set(fedLinks.map(f => f.federation_id))];
       const { data } = await supabase
         .from('federation_competitions')
         .select('id, name, competition_date, status')
         .in('federation_id', federationIds)
         .order('competition_date', { ascending: false });
-      setCompetitions(data || []);
+
+      const nextCompetitions = data || [];
+      setCompetitions(nextCompetitions);
+      setSelectedCompId(prev => nextCompetitions.some(c => c.id === prev) ? prev : (nextCompetitions[0]?.id || ''));
     };
+
     load();
   }, [clubId]);
 

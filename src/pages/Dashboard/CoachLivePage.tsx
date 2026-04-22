@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from "react-i18next";
-import { Navigate, useSearchParams } from "react-router-dom";
+import { Navigate, useParams, useSearchParams } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { CoachSidebar } from "@/components/CoachSidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
@@ -18,33 +18,11 @@ import { ReadOnlyRingScoreboard } from "@/components/federation/ReadOnlyRingScor
 import { VideoOverlayScores } from "@/components/federation/VideoOverlayScores";
 import { SyncedYouTubePlayer } from "@/components/federation/SyncedYouTubePlayer";
 import { RingCameraViewer } from "@/components/federation/webrtc/RingCameraViewer";
-
-const getRingLetter = (num: number) => String.fromCharCode(64 + num);
-
-interface Match {
-  id: string;
-  match_order: number | null;
-  match_number: number;
-  round_number: number;
-  status: string;
-  athlete1?: { name: string } | null;
-  athlete2?: { name: string } | null;
-  athlete1_id?: string | null;
-  athlete2_id?: string | null;
-  winner_id?: string | null;
-  athlete1_display?: string;
-  athlete2_display?: string;
-  category_id: string;
-  category?: { name: string; gender?: string; min_age?: number | null; max_age?: number | null; min_weight?: number | null; max_weight?: number | null } | null;
-}
-
-interface CoachLivePageProps {
-  embedded?: boolean;
-}
-
+...
 const CoachLivePage: React.FC<CoachLivePageProps> = ({ embedded = false }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { coachId: routeCoachId } = useParams<{ coachId: string }>();
   const { userProfile } = useRoleCheck();
   const { t } = useTranslation();
 
@@ -54,24 +32,39 @@ const CoachLivePage: React.FC<CoachLivePageProps> = ({ embedded = false }) => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const clubId = userProfile?.role === 'coach' ? userProfile?.id : userProfile?.coach_id;
+  const clubId = routeCoachId || (userProfile?.role === 'coach' ? userProfile?.id : userProfile?.coach_id);
 
   useEffect(() => {
-    if (!clubId) return;
+    if (!clubId) {
+      setCompetitions([]);
+      setSelectedCompId('');
+      return;
+    }
+
     const load = async () => {
       const { data: fedLinks } = await supabase
         .from('federation_clubs')
         .select('federation_id')
         .eq('club_id', clubId);
-      if (!fedLinks?.length) return;
+
+      if (!fedLinks?.length) {
+        setCompetitions([]);
+        setSelectedCompId('');
+        return;
+      }
+
       const federationIds = [...new Set(fedLinks.map(f => f.federation_id))];
       const { data } = await supabase
         .from('federation_competitions')
         .select('id, name, competition_date, status')
         .in('federation_id', federationIds)
         .order('competition_date', { ascending: false });
-      setCompetitions(data || []);
+
+      const nextCompetitions = data || [];
+      setCompetitions(nextCompetitions);
+      setSelectedCompId(prev => nextCompetitions.some(c => c.id === prev) ? prev : (nextCompetitions[0]?.id || ''));
     };
+
     load();
   }, [clubId]);
 
