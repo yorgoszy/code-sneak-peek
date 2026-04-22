@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { FederationSidebar } from '@/components/FederationSidebar';
 import { CoachSidebar } from '@/components/CoachSidebar';
@@ -21,62 +20,108 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
-...
+
+interface Registration {
+  id: string;
+  athlete_id: string;
+  club_id: string;
+  category_id: string;
+  competition_id: string;
+  is_paid: boolean | null;
+  weigh_in_status: string | null;
+  weigh_in_weight: number | null;
+  athlete: { name: string; photo_url: string | null; avatar_url: string | null; email: string } | null;
+  club: { name: string } | null;
+  category: { name: string; min_weight: number | null; max_weight: number | null; gender: string | null } | null;
+}
+
+interface Competition {
+  id: string;
+  name: string;
+  competition_date: string;
+  end_date?: string | null;
+  competition_flow?: string;
+  weigh_in_active?: boolean;
+  weigh_in_date?: string | null;
+  weigh_in_start_time?: string | null;
+  weigh_in_end_time?: string | null;
+  weigh_in_started_at?: string | null;
+  weigh_in_ended_at?: string | null;
+}
+
+interface WeighInPageProps {
+  embedded?: boolean;
+}
+
 const WeighInPage: React.FC<WeighInPageProps> = ({ embedded = false }) => {
   const { t } = useTranslation();
-  const { coachId: routeCoachId } = useParams<{ coachId: string }>();
   const { userProfile, isAdmin, isFederation, isCoach } = useRoleCheck();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-...
+
+  const [competitions, setCompetitions] = useState<Competition[]>([]);
+  const [selectedCompId, setSelectedCompId] = useState('');
+  const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [weighIns, setWeighIns] = useState<Record<string, any[]>>({});
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [weighInActive, setWeighInActive] = useState(false);
+  const [weighInEnded, setWeighInEnded] = useState(false);
+  const [togglingWeighIn, setTogglingWeighIn] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Inline state per registration
+  const [doctorChecks, setDoctorChecks] = useState<Record<string, boolean>>({});
+  const [weights, setWeights] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState<Record<string, boolean>>({});
+
+  // Schedule state
+  const [scheduleDate, setScheduleDate] = useState('');
+  const [scheduleStartTime, setScheduleStartTime] = useState('');
+  const [scheduleEndTime, setScheduleEndTime] = useState('');
+  const [savingSchedule, setSavingSchedule] = useState(false);
+
+  // History dialog
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [historyAthleteName, setHistoryAthleteName] = useState('');
+  const [allHistory, setAllHistory] = useState<any[]>([]);
+
   const isFederationUser = isFederation?.() || false;
   const isCoachUser = isCoach?.() || false;
   const isAdminUser = isAdmin?.() || false;
   const canManageWeighIn = isFederationUser || isAdminUser;
-  const effectiveClubId = routeCoachId || (isCoachUser ? userProfile?.id : userProfile?.coach_id);
 
   useEffect(() => {
     fetchCompetitions();
-  }, [userProfile?.id, routeCoachId]);
-...
+  }, [userProfile?.id]);
+
+  useEffect(() => {
+    if (selectedCompId) {
+      fetchRegistrations();
+      const comp = competitions.find(c => c.id === selectedCompId);
+      if (comp) {
+        setWeighInActive(comp.weigh_in_active || false);
+        setWeighInEnded(!!(comp.weigh_in_ended_at && !comp.weigh_in_active));
+        setScheduleDate(comp.weigh_in_date || comp.competition_date || '');
+        setScheduleStartTime(comp.weigh_in_start_time || '');
+        setScheduleEndTime(comp.weigh_in_end_time || '');
+      }
+    }
+  }, [selectedCompId, competitions]);
+
   const fetchCompetitions = async () => {
     if (!userProfile?.id) return;
-
     let query = supabase.from('federation_competitions')
       .select('id, name, competition_date, end_date, competition_flow, weigh_in_active, weigh_in_date, weigh_in_start_time, weigh_in_end_time, weigh_in_started_at, weigh_in_ended_at')
       .order('competition_date', { ascending: false });
-
-    if (isFederationUser) {
-      query = query.eq('federation_id', userProfile.id);
-    } else if (effectiveClubId) {
-      const { data: fedLinks } = await supabase
-        .from('federation_clubs')
-        .select('federation_id')
-        .eq('club_id', effectiveClubId);
-
-      if (!fedLinks?.length) {
-        setCompetitions([]);
-        setSelectedCompId('');
-        setWeighInActive(false);
-        setWeighInEnded(false);
-        return;
-      }
-
-      const federationIds = [...new Set(fedLinks.map(f => f.federation_id))];
-      query = query.in('federation_id', federationIds);
-    }
-
+    if (isFederationUser) query = query.eq('federation_id', userProfile.id);
     const { data } = await query as any;
-    const nextCompetitions = data || [];
-    setCompetitions(nextCompetitions);
-    const nextSelectedCompId = nextCompetitions.some((c: Competition) => c.id === selectedCompId)
-      ? selectedCompId
-      : (nextCompetitions[0]?.id || '');
-    setSelectedCompId(nextSelectedCompId);
-
-    const activeCompetition = nextCompetitions.find((c: Competition) => c.id === nextSelectedCompId) || nextCompetitions[0];
-    setWeighInActive(activeCompetition?.weigh_in_active || false);
-    setWeighInEnded(!!(activeCompetition?.weigh_in_ended_at && !activeCompetition?.weigh_in_active));
+    setCompetitions(data || []);
+    if (data && data.length > 0) {
+      setSelectedCompId(data[0].id);
+      setWeighInActive(data[0].weigh_in_active || false);
+      setWeighInEnded(!!(data[0].weigh_in_ended_at && !data[0].weigh_in_active));
+    }
   };
 
   const fetchRegistrations = async () => {
