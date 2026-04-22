@@ -33,7 +33,10 @@ import {
   Heart,
   HeartPulse,
   Gift,
-  ShieldAlert
+  ShieldAlert,
+  Radio,
+  Shuffle,
+  ClipboardList
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -597,6 +600,24 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: Trophy,
       label: "Ranking",
       path: "/dashboard/ranking",
+      badge: null
+    },
+    {
+      icon: Radio,
+      label: "Live",
+      path: "/dashboard/federation-live",
+      badge: null
+    },
+    {
+      icon: Shuffle,
+      label: "Κλήρωση",
+      path: "/dashboard/federation-brackets",
+      badge: null
+    },
+    {
+      icon: ClipboardList,
+      label: "Πρόγραμμα Αγώνων",
+      path: "/dashboard/federation-fight-card",
       badge: null
     },
     {
