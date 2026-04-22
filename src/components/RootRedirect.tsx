@@ -1,12 +1,20 @@
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { CustomLoadingScreen } from '@/components/ui/custom-loading';
 import Index from '@/pages/Index';
 
+const PublicReportAbuse = lazy(() => import('@/pages/PublicReportAbuse'));
+
+// Domains that should show the public report-abuse form as their landing page
+const ABUSE_REPORT_DOMAINS = ['pestomou.com', 'www.pestomou.com'];
+
 export const RootRedirect = () => {
   const { loading } = useAuth();
   const navigate = useNavigate();
+  const isAbuseReportDomain =
+    typeof window !== 'undefined' &&
+    ABUSE_REPORT_DOMAINS.includes(window.location.hostname);
 
   // Check for password recovery tokens and redirect to reset password page
   useEffect(() => {
@@ -40,6 +48,14 @@ export const RootRedirect = () => {
 
   if (loading) {
     return <CustomLoadingScreen />;
+  }
+
+  if (isAbuseReportDomain) {
+    return (
+      <Suspense fallback={<CustomLoadingScreen />}>
+        <PublicReportAbuse />
+      </Suspense>
+    );
   }
 
   return <Index />;
