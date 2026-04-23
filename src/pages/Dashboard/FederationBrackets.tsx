@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
+import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Menu, Shuffle, Trophy, ChevronRight, ChevronDown, User, Award, RotateCcw } from "lucide-react";
@@ -998,7 +999,9 @@ const FederationBrackets = () => {
   };
 
   const renderSidebar = () => (
-    <FederationSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+    isAdmin()
+      ? <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      : <FederationSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
   );
 
   const getAthleteAvatar = (athlete: { name: string; photo_url: string | null; avatar_url: string | null } | null | undefined) => {
