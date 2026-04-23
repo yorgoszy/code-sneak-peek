@@ -148,27 +148,56 @@ const LiveEventsManagement: React.FC = () => {
   const openCreateRing = (eventId: string) => {
     setActiveEventForRing(eventId);
     setEditingRing(null);
-    setRingForm({ ring_name: "", embed_url: "", display_order: (rings[eventId]?.length || 0) });
+    setRingForm({
+      ring_name: "",
+      embed_url: "",
+      display_order: rings[eventId]?.length || 0,
+      embed_url_day1: "",
+      embed_url_day2: "",
+      day1_date: "",
+      day2_date: "",
+    });
     setRingDialog(true);
   };
 
   const openEditRing = (r: LiveRing) => {
     setActiveEventForRing(r.event_id);
     setEditingRing(r);
-    setRingForm({ ring_name: r.ring_name, embed_url: r.embed_url, display_order: r.display_order });
+    setRingForm({
+      ring_name: r.ring_name,
+      embed_url: r.embed_url,
+      display_order: r.display_order,
+      embed_url_day1: r.embed_url_day1 || "",
+      embed_url_day2: r.embed_url_day2 || "",
+      day1_date: r.day1_date || "",
+      day2_date: r.day2_date || "",
+    });
     setRingDialog(true);
   };
 
   const saveRing = async () => {
-    if (!ringForm.ring_name.trim() || !ringForm.embed_url.trim() || !activeEventForRing) {
-      toast.error("Συμπληρώστε όνομα ρινγκ και link");
+    if (!ringForm.ring_name.trim() || !activeEventForRing) {
+      toast.error("Συμπληρώστε όνομα ρινγκ");
       return;
     }
+    if (!ringForm.embed_url_day1.trim() && !ringForm.embed_url_day2.trim() && !ringForm.embed_url.trim()) {
+      toast.error("Συμπληρώστε τουλάχιστον ένα link");
+      return;
+    }
+    const payload = {
+      ring_name: ringForm.ring_name,
+      embed_url: ringForm.embed_url || ringForm.embed_url_day1 || ringForm.embed_url_day2,
+      display_order: ringForm.display_order,
+      embed_url_day1: ringForm.embed_url_day1 || null,
+      embed_url_day2: ringForm.embed_url_day2 || null,
+      day1_date: ringForm.day1_date || null,
+      day2_date: ringForm.day2_date || null,
+    };
     if (editingRing) {
-      const { error } = await supabase.from("live_event_rings").update(ringForm).eq("id", editingRing.id);
+      const { error } = await supabase.from("live_event_rings").update(payload).eq("id", editingRing.id);
       if (error) { toast.error(error.message); return; }
     } else {
-      const { error } = await supabase.from("live_event_rings").insert({ ...ringForm, event_id: activeEventForRing });
+      const { error } = await supabase.from("live_event_rings").insert({ ...payload, event_id: activeEventForRing });
       if (error) { toast.error(error.message); return; }
     }
     toast.success("Αποθηκεύτηκε");
