@@ -77,7 +77,15 @@ const LiveEventsManagement: React.FC = () => {
   const [ringDialog, setRingDialog] = useState(false);
   const [activeEventForRing, setActiveEventForRing] = useState<string | null>(null);
   const [editingRing, setEditingRing] = useState<LiveRing | null>(null);
-  const [ringForm, setRingForm] = useState({ ring_name: "", embed_url: "", display_order: 0 });
+  const [ringForm, setRingForm] = useState({
+    ring_name: "",
+    embed_url: "",
+    display_order: 0,
+    embed_url_day1: "",
+    embed_url_day2: "",
+    day1_date: "",
+    day2_date: "",
+  });
 
   const [deleteEventId, setDeleteEventId] = useState<string | null>(null);
   const [deleteRingId, setDeleteRingId] = useState<string | null>(null);
