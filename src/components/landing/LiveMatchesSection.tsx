@@ -109,7 +109,14 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
         {events.map((event) => {
           const rings = ringsByEvent[event.id] || [];
           if (rings.length === 0) return null;
-          const cols = rings.length === 1 ? "grid-cols-1" : rings.length === 2 ? "md:grid-cols-2" : "md:grid-cols-2 lg:grid-cols-3";
+          const cols =
+            rings.length === 1
+              ? "grid-cols-1"
+              : rings.length === 2
+              ? "md:grid-cols-2"
+              : rings.length === 3
+              ? "md:grid-cols-3"
+              : "md:grid-cols-2";
           return (
             <div key={event.id} className="mb-12">
               <div className="text-center mb-6">
