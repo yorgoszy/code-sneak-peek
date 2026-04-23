@@ -6181,8 +6181,12 @@ export type Database = {
       live_event_rings: {
         Row: {
           created_at: string
+          day1_date: string | null
+          day2_date: string | null
           display_order: number
           embed_url: string
+          embed_url_day1: string | null
+          embed_url_day2: string | null
           event_id: string
           id: string
           ring_name: string
@@ -6190,8 +6194,12 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          day1_date?: string | null
+          day2_date?: string | null
           display_order?: number
           embed_url: string
+          embed_url_day1?: string | null
+          embed_url_day2?: string | null
           event_id: string
           id?: string
           ring_name: string
@@ -6199,8 +6207,12 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          day1_date?: string | null
+          day2_date?: string | null
           display_order?: number
           embed_url?: string
+          embed_url_day1?: string | null
+          embed_url_day2?: string | null
           event_id?: string
           id?: string
           ring_name?: string
