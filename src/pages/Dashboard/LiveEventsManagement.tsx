@@ -390,10 +390,36 @@ const LiveEventsManagement: React.FC = () => {
                 <Label>Όνομα Ρινγκ</Label>
                 <Input className="rounded-none" value={ringForm.ring_name} onChange={(e) => setRingForm({ ...ringForm, ring_name: e.target.value })} placeholder="π.χ. Α, Β, 1, 2" />
               </div>
+
+              <div className="border border-border p-3 space-y-2">
+                <Label className="font-semibold">Ημέρα 1</Label>
+                <div>
+                  <Label className="text-xs">Ημερομηνία</Label>
+                  <Input type="date" className="rounded-none" value={ringForm.day1_date} onChange={(e) => setRingForm({ ...ringForm, day1_date: e.target.value })} />
+                </div>
+                <div>
+                  <Label className="text-xs">Embed URL</Label>
+                  <Input className="rounded-none" value={ringForm.embed_url_day1} onChange={(e) => setRingForm({ ...ringForm, embed_url_day1: e.target.value })} placeholder="https://www.youtube.com/embed/..." />
+                </div>
+              </div>
+
+              <div className="border border-border p-3 space-y-2">
+                <Label className="font-semibold">Ημέρα 2</Label>
+                <div>
+                  <Label className="text-xs">Ημερομηνία</Label>
+                  <Input type="date" className="rounded-none" value={ringForm.day2_date} onChange={(e) => setRingForm({ ...ringForm, day2_date: e.target.value })} />
+                </div>
+                <div>
+                  <Label className="text-xs">Embed URL</Label>
+                  <Input className="rounded-none" value={ringForm.embed_url_day2} onChange={(e) => setRingForm({ ...ringForm, embed_url_day2: e.target.value })} placeholder="https://www.youtube.com/embed/..." />
+                </div>
+              </div>
+
+              <p className="text-xs text-muted-foreground">Το σύστημα εμφανίζει αυτόματα το link της ημέρας που ταιριάζει με τη σημερινή ημερομηνία.</p>
+
               <div>
-                <Label>Embed URL</Label>
-                <Input className="rounded-none" value={ringForm.embed_url} onChange={(e) => setRingForm({ ...ringForm, embed_url: e.target.value })} placeholder="https://www.youtube.com/embed/... ή άλλο iframe URL" />
-                <p className="text-xs text-muted-foreground mt-1">Για YouTube χρησιμοποιήστε embed URL (π.χ. https://www.youtube.com/embed/VIDEO_ID)</p>
+                <Label>Σειρά Εμφάνισης</Label>
+                <Input type="number" className="rounded-none" value={ringForm.display_order} onChange={(e) => setRingForm({ ...ringForm, display_order: parseInt(e.target.value) || 0 })} />
               </div>
               <div>
                 <Label>Σειρά Εμφάνισης</Label>
