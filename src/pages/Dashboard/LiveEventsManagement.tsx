@@ -13,6 +13,20 @@ import { Sidebar } from "@/components/Sidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { parseYouTubeId } from "@/utils/youtubeIframeApi";
+
+const normalizeEmbedUrl = (url: string): string => {
+  if (!url) return url;
+  if (url.includes("/embed/")) return url;
+  const ytId = parseYouTubeId(url);
+  if (ytId) return `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1`;
+  const twitchMatch = url.match(/twitch\.tv\/([a-zA-Z0-9_]+)/);
+  if (twitchMatch) {
+    const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
+    return `https://player.twitch.tv/?channel=${twitchMatch[1]}&parent=${host}&autoplay=true&muted=true`;
+  }
+  return url;
+};
 
 interface LiveEvent {
   id: string;
@@ -228,21 +242,37 @@ const LiveEventsManagement: React.FC = () => {
                       {(rings[event.id] || []).length === 0 ? (
                         <p className="text-sm text-muted-foreground">Δεν υπάρχουν ρινγκ.</p>
                       ) : (
-                        <div className="space-y-2">
+                        <div className={`grid gap-4 ${rings[event.id].length === 1 ? 'grid-cols-1' : rings[event.id].length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
                           {rings[event.id].map((r) => (
-                            <div key={r.id} className="flex items-center justify-between gap-2 p-3 border border-border">
-                              <div className="flex-1 min-w-0">
-                                <div className="font-medium">Ρινγκ {r.ring_name}</div>
-                                <div className="text-xs text-muted-foreground truncate">{r.embed_url}</div>
+                            <div key={r.id} className="border border-border bg-card">
+                              <div className="px-3 py-2 bg-[#00ffba] text-black font-bold flex items-center justify-between">
+                                <span className="flex items-center gap-2">
+                                  <Radio className="w-4 h-4" />
+                                  Ρινγκ {r.ring_name}
+                                </span>
+                                <div className="flex gap-1">
+                                  <Button variant="ghost" size="sm" className="rounded-none h-7 w-7 p-0 text-black hover:bg-black/10" onClick={() => openEditRing(r)}>
+                                    <Pencil className="h-3.5 w-3.5" />
+                                  </Button>
+                                  <Button variant="ghost" size="sm" className="rounded-none h-7 w-7 p-0 text-black hover:bg-black/10" onClick={() => setDeleteRingId(r.id)}>
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
                               </div>
-                              <div className="flex gap-2">
-                                <Button variant="outline" size="sm" className="rounded-none" onClick={() => openEditRing(r)}>
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                                <Button variant="outline" size="sm" className="rounded-none" onClick={() => setDeleteRingId(r.id)}>
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
+                              <div className="relative w-full bg-black" style={{ paddingBottom: "56.25%" }}>
+                                {r.embed_url ? (
+                                  <iframe
+                                    src={normalizeEmbedUrl(r.embed_url)}
+                                    className="absolute inset-0 w-full h-full"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                    title={`Ρινγκ ${r.ring_name}`}
+                                  />
+                                ) : (
+                                  <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm">Χωρίς link</div>
+                                )}
                               </div>
+                              <div className="px-3 py-2 text-xs text-muted-foreground truncate border-t border-border">{r.embed_url}</div>
                             </div>
                           ))}
                         </div>
