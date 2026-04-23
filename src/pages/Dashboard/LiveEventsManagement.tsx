@@ -41,7 +41,27 @@ interface LiveRing {
   ring_name: string;
   embed_url: string;
   display_order: number;
+  embed_url_day1: string | null;
+  embed_url_day2: string | null;
+  day1_date: string | null;
+  day2_date: string | null;
 }
+
+const todayStr = () => {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+const pickActiveEmbed = (r: LiveRing): string => {
+  const today = todayStr();
+  if (r.day1_date && r.embed_url_day1 && r.day1_date === today) return r.embed_url_day1;
+  if (r.day2_date && r.embed_url_day2 && r.day2_date === today) return r.embed_url_day2;
+  // Fallback: first available
+  return r.embed_url_day1 || r.embed_url_day2 || r.embed_url || "";
+};
 
 const LiveEventsManagement: React.FC = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -57,7 +77,15 @@ const LiveEventsManagement: React.FC = () => {
   const [ringDialog, setRingDialog] = useState(false);
   const [activeEventForRing, setActiveEventForRing] = useState<string | null>(null);
   const [editingRing, setEditingRing] = useState<LiveRing | null>(null);
-  const [ringForm, setRingForm] = useState({ ring_name: "", embed_url: "", display_order: 0 });
+  const [ringForm, setRingForm] = useState({
+    ring_name: "",
+    embed_url: "",
+    display_order: 0,
+    embed_url_day1: "",
+    embed_url_day2: "",
+    day1_date: "",
+    day2_date: "",
+  });
 
   const [deleteEventId, setDeleteEventId] = useState<string | null>(null);
   const [deleteRingId, setDeleteRingId] = useState<string | null>(null);
@@ -120,27 +148,56 @@ const LiveEventsManagement: React.FC = () => {
   const openCreateRing = (eventId: string) => {
     setActiveEventForRing(eventId);
     setEditingRing(null);
-    setRingForm({ ring_name: "", embed_url: "", display_order: (rings[eventId]?.length || 0) });
+    setRingForm({
+      ring_name: "",
+      embed_url: "",
+      display_order: rings[eventId]?.length || 0,
+      embed_url_day1: "",
+      embed_url_day2: "",
+      day1_date: "",
+      day2_date: "",
+    });
     setRingDialog(true);
   };
 
   const openEditRing = (r: LiveRing) => {
     setActiveEventForRing(r.event_id);
     setEditingRing(r);
-    setRingForm({ ring_name: r.ring_name, embed_url: r.embed_url, display_order: r.display_order });
+    setRingForm({
+      ring_name: r.ring_name,
+      embed_url: r.embed_url,
+      display_order: r.display_order,
+      embed_url_day1: r.embed_url_day1 || "",
+      embed_url_day2: r.embed_url_day2 || "",
+      day1_date: r.day1_date || "",
+      day2_date: r.day2_date || "",
+    });
     setRingDialog(true);
   };
 
   const saveRing = async () => {
-    if (!ringForm.ring_name.trim() || !ringForm.embed_url.trim() || !activeEventForRing) {
-      toast.error("Συμπληρώστε όνομα ρινγκ και link");
+    if (!ringForm.ring_name.trim() || !activeEventForRing) {
+      toast.error("Συμπληρώστε όνομα ρινγκ");
       return;
     }
+    if (!ringForm.embed_url_day1.trim() && !ringForm.embed_url_day2.trim() && !ringForm.embed_url.trim()) {
+      toast.error("Συμπληρώστε τουλάχιστον ένα link");
+      return;
+    }
+    const payload = {
+      ring_name: ringForm.ring_name,
+      embed_url: ringForm.embed_url || ringForm.embed_url_day1 || ringForm.embed_url_day2,
+      display_order: ringForm.display_order,
+      embed_url_day1: ringForm.embed_url_day1 || null,
+      embed_url_day2: ringForm.embed_url_day2 || null,
+      day1_date: ringForm.day1_date || null,
+      day2_date: ringForm.day2_date || null,
+    };
     if (editingRing) {
-      const { error } = await supabase.from("live_event_rings").update(ringForm).eq("id", editingRing.id);
+      const { error } = await supabase.from("live_event_rings").update(payload).eq("id", editingRing.id);
       if (error) { toast.error(error.message); return; }
     } else {
-      const { error } = await supabase.from("live_event_rings").insert({ ...ringForm, event_id: activeEventForRing });
+      const { error } = await supabase.from("live_event_rings").insert({ ...payload, event_id: activeEventForRing });
       if (error) { toast.error(error.message); return; }
     }
     toast.success("Αποθηκεύτηκε");
@@ -260,9 +317,9 @@ const LiveEventsManagement: React.FC = () => {
                                 </div>
                               </div>
                               <div className="relative w-full bg-black" style={{ paddingBottom: "56.25%" }}>
-                                {r.embed_url ? (
+                                {pickActiveEmbed(r) ? (
                                   <iframe
-                                    src={normalizeEmbedUrl(r.embed_url)}
+                                    src={normalizeEmbedUrl(pickActiveEmbed(r))}
                                     className="absolute inset-0 w-full h-full"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                     allowFullScreen
@@ -272,7 +329,17 @@ const LiveEventsManagement: React.FC = () => {
                                   <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm">Χωρίς link</div>
                                 )}
                               </div>
-                              <div className="px-3 py-2 text-xs text-muted-foreground truncate border-t border-border">{r.embed_url}</div>
+                              <div className="px-3 py-2 text-xs text-muted-foreground border-t border-border space-y-1">
+                                {r.day1_date && (
+                                  <div className="truncate"><span className="font-semibold">Ημέρα 1 ({r.day1_date}):</span> {r.embed_url_day1 || "—"}</div>
+                                )}
+                                {r.day2_date && (
+                                  <div className="truncate"><span className="font-semibold">Ημέρα 2 ({r.day2_date}):</span> {r.embed_url_day2 || "—"}</div>
+                                )}
+                                {!r.day1_date && !r.day2_date && (
+                                  <div className="truncate">{r.embed_url}</div>
+                                )}
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -323,10 +390,36 @@ const LiveEventsManagement: React.FC = () => {
                 <Label>Όνομα Ρινγκ</Label>
                 <Input className="rounded-none" value={ringForm.ring_name} onChange={(e) => setRingForm({ ...ringForm, ring_name: e.target.value })} placeholder="π.χ. Α, Β, 1, 2" />
               </div>
+
+              <div className="border border-border p-3 space-y-2">
+                <Label className="font-semibold">Ημέρα 1</Label>
+                <div>
+                  <Label className="text-xs">Ημερομηνία</Label>
+                  <Input type="date" className="rounded-none" value={ringForm.day1_date} onChange={(e) => setRingForm({ ...ringForm, day1_date: e.target.value })} />
+                </div>
+                <div>
+                  <Label className="text-xs">Embed URL</Label>
+                  <Input className="rounded-none" value={ringForm.embed_url_day1} onChange={(e) => setRingForm({ ...ringForm, embed_url_day1: e.target.value })} placeholder="https://www.youtube.com/embed/..." />
+                </div>
+              </div>
+
+              <div className="border border-border p-3 space-y-2">
+                <Label className="font-semibold">Ημέρα 2</Label>
+                <div>
+                  <Label className="text-xs">Ημερομηνία</Label>
+                  <Input type="date" className="rounded-none" value={ringForm.day2_date} onChange={(e) => setRingForm({ ...ringForm, day2_date: e.target.value })} />
+                </div>
+                <div>
+                  <Label className="text-xs">Embed URL</Label>
+                  <Input className="rounded-none" value={ringForm.embed_url_day2} onChange={(e) => setRingForm({ ...ringForm, embed_url_day2: e.target.value })} placeholder="https://www.youtube.com/embed/..." />
+                </div>
+              </div>
+
+              <p className="text-xs text-muted-foreground">Το σύστημα εμφανίζει αυτόματα το link της ημέρας που ταιριάζει με τη σημερινή ημερομηνία.</p>
+
               <div>
-                <Label>Embed URL</Label>
-                <Input className="rounded-none" value={ringForm.embed_url} onChange={(e) => setRingForm({ ...ringForm, embed_url: e.target.value })} placeholder="https://www.youtube.com/embed/... ή άλλο iframe URL" />
-                <p className="text-xs text-muted-foreground mt-1">Για YouTube χρησιμοποιήστε embed URL (π.χ. https://www.youtube.com/embed/VIDEO_ID)</p>
+                <Label>Σειρά Εμφάνισης</Label>
+                <Input type="number" className="rounded-none" value={ringForm.display_order} onChange={(e) => setRingForm({ ...ringForm, display_order: parseInt(e.target.value) || 0 })} />
               </div>
               <div>
                 <Label>Σειρά Εμφάνισης</Label>

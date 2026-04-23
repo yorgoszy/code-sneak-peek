@@ -1,0 +1,5 @@
+ALTER TABLE public.live_event_rings 
+  ADD COLUMN IF NOT EXISTS embed_url_day1 TEXT,
+  ADD COLUMN IF NOT EXISTS embed_url_day2 TEXT,
+  ADD COLUMN IF NOT EXISTS day1_date DATE,
+  ADD COLUMN IF NOT EXISTS day2_date DATE;

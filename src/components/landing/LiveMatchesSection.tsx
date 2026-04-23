@@ -38,7 +38,23 @@ interface LiveRing {
   ring_name: string;
   embed_url: string;
   display_order: number;
+  embed_url_day1: string | null;
+  embed_url_day2: string | null;
+  day1_date: string | null;
+  day2_date: string | null;
 }
+
+const todayStr = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+
+const pickActiveEmbed = (r: LiveRing): string => {
+  const today = todayStr();
+  if (r.day1_date && r.embed_url_day1 && r.day1_date === today) return r.embed_url_day1;
+  if (r.day2_date && r.embed_url_day2 && r.day2_date === today) return r.embed_url_day2;
+  return r.embed_url_day1 || r.embed_url_day2 || r.embed_url || "";
+};
 
 interface Props {
   translations?: any;
@@ -109,7 +125,7 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
                     </div>
                     <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
                       <iframe
-                        src={normalizeEmbedUrl(r.embed_url)}
+                        src={normalizeEmbedUrl(pickActiveEmbed(r))}
                         className="absolute inset-0 w-full h-full"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
