@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from "react-i18next";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { FederationSidebar } from "@/components/FederationSidebar";
+import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -248,7 +249,9 @@ const FederationFightCard: React.FC = () => {
   const ringNumbers = useMemo(() => Object.keys(matchesByRing).map(Number).sort((a, b) => a - b), [matchesByRing]);
 
   const renderSidebar = () => (
-    <FederationSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+    isAdmin()
+      ? <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      : <FederationSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
   );
 
   const getResultText = (m: MatchRow) => {
