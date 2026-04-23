@@ -1,6 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Radio } from "lucide-react";
+import { parseYouTubeId } from "@/utils/youtubeIframeApi";
+
+const normalizeEmbedUrl = (url: string): string => {
+  if (!url) return url;
+  // Already an embed URL
+  if (url.includes("/embed/")) return url;
+  // Try YouTube parsing
+  const ytId = parseYouTubeId(url);
+  if (ytId) return `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1`;
+  // Twitch channel
+  const twitchMatch = url.match(/twitch\.tv\/([a-zA-Z0-9_]+)/);
+  if (twitchMatch) {
+    const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
+    return `https://player.twitch.tv/?channel=${twitchMatch[1]}&parent=${host}&autoplay=true&muted=true`;
+  }
+  return url;
+};
 
 interface LiveEvent {
   id: string;
