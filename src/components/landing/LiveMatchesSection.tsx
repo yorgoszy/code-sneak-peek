@@ -103,7 +103,7 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
               <div className={`grid gap-4 ${cols}`}>
                 {rings.map((r) => (
                   <div key={r.id} className="bg-gray-900 border border-gray-800">
-                    <div className="px-4 py-2 bg-[#00ffba] text-black font-bold flex items-center justify-between">
+                    <div className="px-4 py-2 bg-white text-black font-bold flex items-center justify-between">
                       <span>{ringLabel} {r.ring_name}</span>
                       <Radio className="w-4 h-4" />
                     </div>
