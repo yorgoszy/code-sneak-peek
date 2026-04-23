@@ -331,10 +331,10 @@ const LiveEventsManagement: React.FC = () => {
                               </div>
                               <div className="px-3 py-2 text-xs text-muted-foreground border-t border-border space-y-1">
                                 {r.day1_date && (
-                                  <div className="truncate"><span className="font-semibold">Ημέρα 1 ({r.day1_date}):</span> {r.embed_url_day1 || "—"}</div>
+                                  <div className="truncate"><span className="font-semibold">Ημέρα 1 ({formatDateGR(r.day1_date)}):</span> {r.embed_url_day1 || "—"}</div>
                                 )}
                                 {r.day2_date && (
-                                  <div className="truncate"><span className="font-semibold">Ημέρα 2 ({r.day2_date}):</span> {r.embed_url_day2 || "—"}</div>
+                                  <div className="truncate"><span className="font-semibold">Ημέρα 2 ({formatDateGR(r.day2_date)}):</span> {r.embed_url_day2 || "—"}</div>
                                 )}
                                 {!r.day1_date && !r.day2_date && (
                                   <div className="truncate">{r.embed_url}</div>
