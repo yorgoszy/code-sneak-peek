@@ -12,6 +12,7 @@ import AboutSection from "@/components/landing/AboutSection";
 import CertificatesSection from "@/components/landing/CertificatesSection";
 import EliteTrainingSection from "@/components/landing/EliteTrainingSection";
 import LiveProgramSection from "@/components/landing/LiveProgramSection";
+import LiveMatchesSection from "@/components/landing/LiveMatchesSection";
 import BlogSection from "@/components/landing/BlogSection";
 import ResultsSection from "@/components/landing/ResultsSection";
 import GiftCardSection from "@/components/landing/GiftCardSection";
@@ -139,6 +140,8 @@ const Index = () => {
         translations={correctedTranslations}
         onGetStarted={handleGetStarted}
       />
+
+      <LiveMatchesSection translations={{ ...correctedTranslations, language }} />
 
       <ProgramsSection 
         programs={programs}
