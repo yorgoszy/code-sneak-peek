@@ -123,6 +123,7 @@ import RankingPage from "@/pages/Dashboard/RankingPage";
 const FederationWeighInPage = React.lazy(() => import("@/pages/Dashboard/WeighInPage"));
 import FederationBrackets from "@/pages/Dashboard/FederationBrackets";
 const FederationFightCard = React.lazy(() => import("@/pages/Dashboard/FederationFightCard"));
+const LiveEventsManagement = React.lazy(() => import("@/pages/Dashboard/LiveEventsManagement"));
 
 const LiveRingAnalysis = React.lazy(() => import("@/pages/Dashboard/LiveRingAnalysis"));
 const MultiCameraAnalysis = React.lazy(() => import("@/pages/Dashboard/MultiCameraAnalysis"));
@@ -273,6 +274,7 @@ function App() {
                         <Route path="/dashboard/federation-competitions" element={<ProtectedRoute><FederationCompetitions /></ProtectedRoute>} />
                         <Route path="/dashboard/federation-brackets" element={<ProtectedRoute><></></ProtectedRoute>} />
                         <Route path="/dashboard/federation-live" element={<ProtectedRoute><></></ProtectedRoute>} />
+                        <Route path="/dashboard/live-events" element={<ProtectedRoute><LiveEventsManagement /></ProtectedRoute>} />
                         <Route path="/dashboard/federation-fight-card" element={<ProtectedRoute><FederationFightCard /></ProtectedRoute>} />
                         <Route path="/dashboard/federation-live/ring/:ringId/analysis/:corner" element={<ProtectedRoute><LiveRingAnalysis /></ProtectedRoute>} />
                         <Route path="/dashboard/federation-live/ring/:ringId/ai-lab" element={<ProtectedRoute><MultiCameraAnalysis /></ProtectedRoute>} />
