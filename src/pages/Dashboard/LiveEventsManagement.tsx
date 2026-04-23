@@ -385,46 +385,35 @@ const LiveEventsManagement: React.FC = () => {
             <DialogHeader>
               <DialogTitle>{editingRing ? "Επεξεργασία Ρινγκ" : "Νέο Ρινγκ"}</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label>Όνομα Ρινγκ</Label>
-                <Input className="rounded-none" value={ringForm.ring_name} onChange={(e) => setRingForm({ ...ringForm, ring_name: e.target.value })} placeholder="π.χ. Α, Β, 1, 2" />
-              </div>
-
-              <div className="border border-border p-3 space-y-2">
-                <Label className="font-semibold">Ημέρα 1</Label>
-                <div>
-                  <Label className="text-xs">Ημερομηνία</Label>
-                  <Input type="date" className="rounded-none" value={ringForm.day1_date} onChange={(e) => setRingForm({ ...ringForm, day1_date: e.target.value })} />
+            <div className="space-y-3">
+              <div className="grid grid-cols-3 gap-2">
+                <div className="col-span-2">
+                  <Label className="text-xs">Όνομα Ρινγκ</Label>
+                  <Input className="rounded-none h-8" value={ringForm.ring_name} onChange={(e) => setRingForm({ ...ringForm, ring_name: e.target.value })} placeholder="π.χ. Α, Β, 1" />
                 </div>
                 <div>
-                  <Label className="text-xs">Embed URL</Label>
-                  <Input className="rounded-none" value={ringForm.embed_url_day1} onChange={(e) => setRingForm({ ...ringForm, embed_url_day1: e.target.value })} placeholder="https://www.youtube.com/embed/..." />
+                  <Label className="text-xs">Σειρά</Label>
+                  <Input type="number" className="rounded-none h-8" value={ringForm.display_order} onChange={(e) => setRingForm({ ...ringForm, display_order: parseInt(e.target.value) || 0 })} />
                 </div>
               </div>
 
-              <div className="border border-border p-3 space-y-2">
-                <Label className="font-semibold">Ημέρα 2</Label>
-                <div>
-                  <Label className="text-xs">Ημερομηνία</Label>
-                  <Input type="date" className="rounded-none" value={ringForm.day2_date} onChange={(e) => setRingForm({ ...ringForm, day2_date: e.target.value })} />
-                </div>
-                <div>
-                  <Label className="text-xs">Embed URL</Label>
-                  <Input className="rounded-none" value={ringForm.embed_url_day2} onChange={(e) => setRingForm({ ...ringForm, embed_url_day2: e.target.value })} placeholder="https://www.youtube.com/embed/..." />
+              <div className="border border-border p-2 space-y-2">
+                <Label className="font-semibold text-xs">Ημέρα 1</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  <Input type="date" className="rounded-none h-8 col-span-1" value={ringForm.day1_date} onChange={(e) => setRingForm({ ...ringForm, day1_date: e.target.value })} />
+                  <Input className="rounded-none h-8 col-span-2" value={ringForm.embed_url_day1} onChange={(e) => setRingForm({ ...ringForm, embed_url_day1: e.target.value })} placeholder="Embed URL" />
                 </div>
               </div>
 
-              <p className="text-xs text-muted-foreground">Το σύστημα εμφανίζει αυτόματα το link της ημέρας που ταιριάζει με τη σημερινή ημερομηνία.</p>
+              <div className="border border-border p-2 space-y-2">
+                <Label className="font-semibold text-xs">Ημέρα 2</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  <Input type="date" className="rounded-none h-8 col-span-1" value={ringForm.day2_date} onChange={(e) => setRingForm({ ...ringForm, day2_date: e.target.value })} />
+                  <Input className="rounded-none h-8 col-span-2" value={ringForm.embed_url_day2} onChange={(e) => setRingForm({ ...ringForm, embed_url_day2: e.target.value })} placeholder="Embed URL" />
+                </div>
+              </div>
 
-              <div>
-                <Label>Σειρά Εμφάνισης</Label>
-                <Input type="number" className="rounded-none" value={ringForm.display_order} onChange={(e) => setRingForm({ ...ringForm, display_order: parseInt(e.target.value) || 0 })} />
-              </div>
-              <div>
-                <Label>Σειρά Εμφάνισης</Label>
-                <Input type="number" className="rounded-none" value={ringForm.display_order} onChange={(e) => setRingForm({ ...ringForm, display_order: parseInt(e.target.value) || 0 })} />
-              </div>
+              <p className="text-xs text-muted-foreground">Εμφανίζεται αυτόματα το link που ταιριάζει με τη σημερινή ημερομηνία.</p>
             </div>
             <DialogFooter>
               <Button variant="outline" className="rounded-none" onClick={() => setRingDialog(false)}>Ακύρωση</Button>
