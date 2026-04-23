@@ -248,7 +248,6 @@ const FederationFightCard: React.FC = () => {
 
   const ringNumbers = useMemo(() => Object.keys(matchesByRing).map(Number).sort((a, b) => a - b), [matchesByRing]);
 
-  const { isAdmin } = useRoleCheck();
   const renderSidebar = () => (
     isAdmin()
       ? <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
