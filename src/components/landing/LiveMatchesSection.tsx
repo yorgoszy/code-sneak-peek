@@ -6,10 +6,17 @@ import { parseYouTubeId } from "@/utils/youtubeIframeApi";
 const normalizeEmbedUrl = (url: string): string => {
   if (!url) return url;
   // Already an embed URL
-  if (url.includes("/embed/")) return url;
+  // YouTube live params: autoplay, muted (required for autoplay), playsinline, loop
+  const ytParams = "autoplay=1&mute=1&playsinline=1&controls=1&rel=0&modestbranding=1";
+  if (url.includes("/embed/")) {
+    // Ensure autoplay/mute params are present
+    const hasParams = url.includes("?");
+    if (url.includes("autoplay=1")) return url;
+    return `${url}${hasParams ? "&" : "?"}${ytParams}`;
+  }
   // Try YouTube parsing
   const ytId = parseYouTubeId(url);
-  if (ytId) return `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1`;
+  if (ytId) return `https://www.youtube.com/embed/${ytId}?${ytParams}`;
   // Twitch channel
   const twitchMatch = url.match(/twitch\.tv\/([a-zA-Z0-9_]+)/);
   if (twitchMatch) {
