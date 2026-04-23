@@ -13,6 +13,20 @@ import { Sidebar } from "@/components/Sidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { parseYouTubeId } from "@/utils/youtubeIframeApi";
+
+const normalizeEmbedUrl = (url: string): string => {
+  if (!url) return url;
+  if (url.includes("/embed/")) return url;
+  const ytId = parseYouTubeId(url);
+  if (ytId) return `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1`;
+  const twitchMatch = url.match(/twitch\.tv\/([a-zA-Z0-9_]+)/);
+  if (twitchMatch) {
+    const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
+    return `https://player.twitch.tv/?channel=${twitchMatch[1]}&parent=${host}&autoplay=true&muted=true`;
+  }
+  return url;
+};
 
 interface LiveEvent {
   id: string;
