@@ -28,6 +28,13 @@ const normalizeEmbedUrl = (url: string): string => {
   return url;
 };
 
+const formatDateGR = (iso: string): string => {
+  if (!iso) return "";
+  const [y, m, d] = iso.split("-");
+  if (!y || !m || !d) return iso;
+  return `${d}/${m}/${y}`;
+};
+
 interface LiveEvent {
   id: string;
   title: string;
