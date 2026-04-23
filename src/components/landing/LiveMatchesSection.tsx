@@ -6,10 +6,17 @@ import { parseYouTubeId } from "@/utils/youtubeIframeApi";
 const normalizeEmbedUrl = (url: string): string => {
   if (!url) return url;
   // Already an embed URL
-  if (url.includes("/embed/")) return url;
+  // YouTube live params: autoplay, muted (required for autoplay), playsinline, loop
+  const ytParams = "autoplay=1&mute=1&playsinline=1&controls=1&rel=0&modestbranding=1";
+  if (url.includes("/embed/")) {
+    // Ensure autoplay/mute params are present
+    const hasParams = url.includes("?");
+    if (url.includes("autoplay=1")) return url;
+    return `${url}${hasParams ? "&" : "?"}${ytParams}`;
+  }
   // Try YouTube parsing
   const ytId = parseYouTubeId(url);
-  if (ytId) return `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&playsinline=1`;
+  if (ytId) return `https://www.youtube.com/embed/${ytId}?${ytParams}`;
   // Twitch channel
   const twitchMatch = url.match(/twitch\.tv\/([a-zA-Z0-9_]+)/);
   if (twitchMatch) {
@@ -96,7 +103,7 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
               <div className={`grid gap-4 ${cols}`}>
                 {rings.map((r) => (
                   <div key={r.id} className="bg-gray-900 border border-gray-800">
-                    <div className="px-4 py-2 bg-[#00ffba] text-black font-bold flex items-center justify-between">
+                    <div className="px-4 py-2 bg-white text-black font-bold flex items-center justify-between">
                       <span>{ringLabel} {r.ring_name}</span>
                       <Radio className="w-4 h-4" />
                     </div>
