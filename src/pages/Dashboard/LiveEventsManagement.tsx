@@ -317,9 +317,9 @@ const LiveEventsManagement: React.FC = () => {
                                 </div>
                               </div>
                               <div className="relative w-full bg-black" style={{ paddingBottom: "56.25%" }}>
-                                {r.embed_url ? (
+                                {pickActiveEmbed(r) ? (
                                   <iframe
-                                    src={normalizeEmbedUrl(r.embed_url)}
+                                    src={normalizeEmbedUrl(pickActiveEmbed(r))}
                                     className="absolute inset-0 w-full h-full"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                     allowFullScreen
@@ -329,7 +329,17 @@ const LiveEventsManagement: React.FC = () => {
                                   <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm">Χωρίς link</div>
                                 )}
                               </div>
-                              <div className="px-3 py-2 text-xs text-muted-foreground truncate border-t border-border">{r.embed_url}</div>
+                              <div className="px-3 py-2 text-xs text-muted-foreground border-t border-border space-y-1">
+                                {r.day1_date && (
+                                  <div className="truncate"><span className="font-semibold">Ημέρα 1 ({r.day1_date}):</span> {r.embed_url_day1 || "—"}</div>
+                                )}
+                                {r.day2_date && (
+                                  <div className="truncate"><span className="font-semibold">Ημέρα 2 ({r.day2_date}):</span> {r.embed_url_day2 || "—"}</div>
+                                )}
+                                {!r.day1_date && !r.day2_date && (
+                                  <div className="truncate">{r.embed_url}</div>
+                                )}
+                              </div>
                             </div>
                           ))}
                         </div>
