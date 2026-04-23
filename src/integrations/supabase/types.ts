@@ -6178,6 +6178,74 @@ export type Database = {
           },
         ]
       }
+      live_event_rings: {
+        Row: {
+          created_at: string
+          display_order: number
+          embed_url: string
+          event_id: string
+          id: string
+          ring_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          embed_url: string
+          event_id: string
+          id?: string
+          ring_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          embed_url?: string
+          event_id?: string
+          id?: string
+          ring_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_event_rings_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "live_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      live_events: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       magic_box_campaigns: {
         Row: {
           created_at: string
