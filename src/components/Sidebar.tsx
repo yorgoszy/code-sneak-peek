@@ -632,6 +632,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       path: "/dashboard/video-analysis",
       badge: null
     },
+    { type: 'separator' },
     {
       icon: Timer,
       label: "Sprint Timer",
