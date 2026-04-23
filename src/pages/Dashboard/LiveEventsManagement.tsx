@@ -41,7 +41,27 @@ interface LiveRing {
   ring_name: string;
   embed_url: string;
   display_order: number;
+  embed_url_day1: string | null;
+  embed_url_day2: string | null;
+  day1_date: string | null;
+  day2_date: string | null;
 }
+
+const todayStr = () => {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+const pickActiveEmbed = (r: LiveRing): string => {
+  const today = todayStr();
+  if (r.day1_date && r.embed_url_day1 && r.day1_date === today) return r.embed_url_day1;
+  if (r.day2_date && r.embed_url_day2 && r.day2_date === today) return r.embed_url_day2;
+  // Fallback: first available
+  return r.embed_url_day1 || r.embed_url_day2 || r.embed_url || "";
+};
 
 const LiveEventsManagement: React.FC = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
