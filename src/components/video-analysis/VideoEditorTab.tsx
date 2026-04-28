@@ -46,6 +46,7 @@ import { toast } from 'sonner';
 import { useVideoExport } from '@/hooks/useVideoExport';
 import { useStrikeTypes, StrikeType, categoryLabels, sideLabels } from '@/hooks/useStrikeTypes';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
+import { useCoachContext } from '@/contexts/CoachContext';
 import { supabase } from '@/integrations/supabase/client';
 import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
 import { AutoAnalysisPanel } from './AutoAnalysisPanel';
@@ -125,9 +126,11 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
   initialMatchTitle,
   compactMode = false,
 }) => {
-  // Role check & coach ID - use useEffectiveCoachId hook
+  // Role check & coach ID - align with VideoAnalysisOverview / StrikeTypesDialog
+  // so that strike types in the editor always match the ones from the management dialog.
   const { userProfile } = useRoleCheck();
-  const coachId = userProfile?.id || null;
+  const { coachId: contextCoachId } = useCoachContext();
+  const coachId = contextCoachId || userProfile?.id || null;
   
   // User selection and opponent name for saving fights
   const [selectedUserId, setSelectedUserId] = useState<string>('');
