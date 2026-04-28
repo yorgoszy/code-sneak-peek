@@ -322,7 +322,10 @@ const MatchVideoGalleryManagement: React.FC = () => {
               <Label className="text-red-600">Αθλητής Red corner</Label>
               <UserSearchCombobox
                 value={form.red_athlete_id || ""}
-                onValueChange={(v) => setForm({ ...form, red_athlete_id: v })}
+                onValueChange={(v) => {
+                  setForm({ ...form, red_athlete_id: v });
+                  if (v) autoDetectAgeCategory(v);
+                }}
                 placeholder="Επιλέξτε αθλητή Red..."
                 filterByCoach={false}
               />
