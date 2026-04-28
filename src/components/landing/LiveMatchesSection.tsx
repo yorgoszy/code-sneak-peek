@@ -3,21 +3,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { Radio } from "lucide-react";
 import { parseYouTubeId } from "@/utils/youtubeIframeApi";
 
-const normalizeEmbedUrl = (url: string): string => {
+const normalizeEmbedUrl = (url: string, startSec?: number | null, endSec?: number | null): string => {
   if (!url) return url;
-  // Already an embed URL
-  // YouTube live params: autoplay, muted (required for autoplay), playsinline, loop
-  const ytParams = "autoplay=1&mute=1&playsinline=1&controls=1&rel=0&modestbranding=1";
+  const ytParamsBase = "autoplay=1&mute=1&playsinline=1&controls=1&rel=0&modestbranding=1";
+  const extra: string[] = [];
+  if (typeof startSec === "number" && startSec > 0) extra.push(`start=${startSec}`);
+  if (typeof endSec === "number" && endSec > 0) extra.push(`end=${endSec}`);
+  const extraStr = extra.join("&");
+
   if (url.includes("/embed/")) {
-    // Ensure autoplay/mute params are present
     const hasParams = url.includes("?");
-    if (url.includes("autoplay=1")) return url;
-    return `${url}${hasParams ? "&" : "?"}${ytParams}`;
+    const sep = hasParams ? "&" : "?";
+    const needsAutoplay = !url.includes("autoplay=1");
+    let result = url;
+    if (needsAutoplay) result = `${result}${sep}${ytParamsBase}`;
+    if (extraStr) result = `${result}${result.includes("?") ? "&" : "?"}${extraStr}`;
+    return result;
   }
-  // Try YouTube parsing
   const ytId = parseYouTubeId(url);
-  if (ytId) return `https://www.youtube.com/embed/${ytId}?${ytParams}`;
-  // Twitch channel
+  if (ytId) {
+    const params = extraStr ? `${ytParamsBase}&${extraStr}` : ytParamsBase;
+    return `https://www.youtube.com/embed/${ytId}?${params}`;
+  }
   const twitchMatch = url.match(/twitch\.tv\/([a-zA-Z0-9_]+)/);
   if (twitchMatch) {
     const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
