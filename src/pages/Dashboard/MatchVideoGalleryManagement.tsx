@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Plus, Trash2, Pencil, Video, Copy, Scissors } from "lucide-react";
+import { Menu, Plus, Trash2, Pencil, Video, Copy, Scissors, X } from "lucide-react";
 import { VideoEditorTab } from "@/components/video-analysis/VideoEditorTab";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
