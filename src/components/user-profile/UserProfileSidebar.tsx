@@ -315,6 +315,14 @@ export const UserProfileSidebar = forwardRef<
       disabled: false
     },
     {
+      icon: Film,
+      label: t('sidebar.matchVideos', 'Βίντεο Αγώνων'),
+      key: "match-videos",
+      badge: null,
+      visible: userProfile?.role === 'athlete',
+      disabled: !hasSubscription
+    },
+    {
       icon: ShieldAlert,
       label: t('sidebar.safety'),
       key: "safety",
