@@ -1233,8 +1233,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
   }, [draggingRound, draggingFlag, handleRoundDrag, handleRoundDragEnd, handleFlagDrag, handleFlagDragEnd]);
 
   // Add strike marker at current time
-  const addStrikeMarker = (strikeType: StrikeType) => {
-    const owner = determineStrikeOwner(globalCurrentTime);
+  // owner is now explicitly passed based on which side (athlete/opponent) the user clicked
+  const addStrikeMarker = (strikeType: StrikeType, ownerOverride?: 'athlete' | 'opponent') => {
+    const owner = ownerOverride ?? determineStrikeOwner(globalCurrentTime);
     const roundInfo = determineRoundInfo(globalCurrentTime);
     
     const newMarker: StrikeMarker = {
