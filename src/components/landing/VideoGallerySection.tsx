@@ -24,10 +24,10 @@ interface MatchVideo {
 }
 
 interface AppUserLite {
-  user_id: string;
-  first_name: string | null;
-  last_name: string | null;
+  id: string;
+  name: string | null;
   avatar_url: string | null;
+  photo_url: string | null;
 }
 
 const parseYouTubeId = (url: string): string | null => {
@@ -56,15 +56,18 @@ const buildEmbedUrl = (url: string, start?: number | null, end?: number | null):
 
 const fullName = (u?: AppUserLite | null) => {
   if (!u) return "";
-  return `${u.first_name || ""} ${u.last_name || ""}`.trim();
+  return (u.name || "").trim();
 };
 
 const initials = (u?: AppUserLite | null) => {
   if (!u) return "?";
-  const f = (u.first_name || "").charAt(0);
-  const l = (u.last_name || "").charAt(0);
+  const parts = (u.name || "").trim().split(/\s+/);
+  const f = parts[0]?.charAt(0) || "";
+  const l = parts[1]?.charAt(0) || "";
   return (f + l).toUpperCase() || "?";
 };
+
+const getAvatar = (u?: AppUserLite | null) => u?.avatar_url || u?.photo_url || undefined;
 
 interface Props {
   translations?: any;
@@ -94,10 +97,10 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
       if (ids.length > 0) {
         const { data: usersData } = await (supabase as any)
           .from("app_users")
-          .select("user_id,first_name,last_name,avatar_url")
-          .in("user_id", ids);
+          .select("id,name,avatar_url,photo_url")
+          .in("id", ids);
         const map: Record<string, AppUserLite> = {};
-        (usersData || []).forEach((u: any) => { map[u.user_id] = u; });
+        (usersData || []).forEach((u: any) => { map[u.id] = u; });
         setUsers(map);
       }
     };
@@ -177,7 +180,7 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
                               {red && (
                                 <>
                                   <Avatar className="w-8 h-8 border-2 border-red-500">
-                                    <AvatarImage src={red.avatar_url || undefined} />
+                                    <AvatarImage src={getAvatar(red)} />
                                     <AvatarFallback className="text-xs bg-red-50 text-red-700">
                                       {initials(red)}
                                     </AvatarFallback>
@@ -196,7 +199,7 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
                                     {fullName(blue)}
                                   </span>
                                   <Avatar className="w-8 h-8 border-2 border-blue-500">
-                                    <AvatarImage src={blue.avatar_url || undefined} />
+                                    <AvatarImage src={getAvatar(blue)} />
                                     <AvatarFallback className="text-xs bg-blue-50 text-blue-700">
                                       {initials(blue)}
                                     </AvatarFallback>
