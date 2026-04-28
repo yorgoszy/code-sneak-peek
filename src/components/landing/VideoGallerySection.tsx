@@ -97,10 +97,10 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
       if (ids.length > 0) {
         const { data: usersData } = await (supabase as any)
           .from("app_users")
-          .select("user_id,first_name,last_name,avatar_url")
-          .in("user_id", ids);
+          .select("id,name,avatar_url,photo_url")
+          .in("id", ids);
         const map: Record<string, AppUserLite> = {};
-        (usersData || []).forEach((u: any) => { map[u.user_id] = u; });
+        (usersData || []).forEach((u: any) => { map[u.id] = u; });
         setUsers(map);
       }
     };
