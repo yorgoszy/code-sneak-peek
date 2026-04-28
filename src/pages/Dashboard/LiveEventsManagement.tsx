@@ -210,6 +210,10 @@ const LiveEventsManagement: React.FC = () => {
       embed_url_day2: r.embed_url_day2 || "",
       day1_date: r.day1_date || "",
       day2_date: r.day2_date || "",
+      day1_start: secondsToTime(r.day1_start_seconds),
+      day1_end: secondsToTime(r.day1_end_seconds),
+      day2_start: secondsToTime(r.day2_start_seconds),
+      day2_end: secondsToTime(r.day2_end_seconds),
     });
     setRingDialog(true);
   };
