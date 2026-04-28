@@ -9,13 +9,34 @@ interface MatchVideo {
   competition_name: string | null;
   match_date: string | null;
   youtube_url: string;
+  start_seconds: number | null;
+  end_seconds: number | null;
   red_athlete_id: string | null;
   blue_athlete_id: string | null;
 }
 
-const getYouTubeThumb = (url: string): string | null => {
+const parseYouTubeId = (url: string): string | null => {
   const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([\w-]{11})/);
-  return match ? `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg` : null;
+  return match ? match[1] : null;
+};
+
+const getYouTubeThumb = (url: string): string | null => {
+  const id = parseYouTubeId(url);
+  return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null;
+};
+
+const buildEmbedUrl = (url: string, start?: number | null, end?: number | null): string => {
+  const id = parseYouTubeId(url);
+  if (!id) return url;
+  const params = new URLSearchParams({
+    autoplay: "1",
+    rel: "0",
+    modestbranding: "1",
+    playsinline: "1",
+  });
+  if (typeof start === "number" && start > 0) params.set("start", String(start));
+  if (typeof end === "number" && end > 0) params.set("end", String(end));
+  return `https://www.youtube.com/embed/${id}?${params.toString()}`;
 };
 
 interface Props {
@@ -25,15 +46,16 @@ interface Props {
 const VideoGallerySection: React.FC<Props> = ({ translations }) => {
   const navigate = useNavigate();
   const [videos, setVideos] = useState<MatchVideo[]>([]);
+  const [playingId, setPlayingId] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
       const { data } = await supabase
         .from("match_videos")
-        .select("id,title,competition_name,match_date,youtube_url,red_athlete_id,blue_athlete_id")
+        .select("id,title,competition_name,match_date,youtube_url,start_seconds,end_seconds,red_athlete_id,blue_athlete_id")
         .order("match_date", { ascending: false, nullsFirst: false })
         .limit(6);
-      setVideos(data || []);
+      setVideos((data as MatchVideo[]) || []);
     };
     load();
   }, []);
@@ -62,26 +84,43 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
           {videos.map((v) => {
             const thumb = getYouTubeThumb(v.youtube_url);
+            const isPlaying = playingId === v.id;
             return (
-              <button
+              <div
                 key={v.id}
-                onClick={() => navigate("/video-gallery")}
-                className="group text-left bg-black border border-black overflow-hidden hover:opacity-90 transition-opacity"
+                className="text-left bg-black border border-black overflow-hidden"
               >
                 <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-                  {thumb ? (
-                    <img
-                      src={thumb}
-                      alt={v.title}
-                      className="absolute inset-0 w-full h-full object-cover"
-                      loading="lazy"
+                  {isPlaying ? (
+                    <iframe
+                      src={buildEmbedUrl(v.youtube_url, v.start_seconds, v.end_seconds)}
+                      className="absolute inset-0 w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      title={v.title}
                     />
                   ) : (
-                    <div className="absolute inset-0 bg-gray-900" />
+                    <button
+                      type="button"
+                      onClick={() => setPlayingId(v.id)}
+                      className="absolute inset-0 w-full h-full group"
+                      aria-label={`Play ${v.title}`}
+                    >
+                      {thumb ? (
+                        <img
+                          src={thumb}
+                          alt={v.title}
+                          className="absolute inset-0 w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-gray-900" />
+                      )}
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/10 transition-colors">
+                        <Play className="w-12 h-12 text-white" fill="white" />
+                      </div>
+                    </button>
                   )}
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/10 transition-colors">
-                    <Play className="w-12 h-12 text-white" fill="white" />
-                  </div>
                 </div>
                 <div className="p-3 bg-white">
                   <h3 className="font-bold text-black text-sm truncate">{v.title}</h3>
@@ -90,7 +129,7 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
                     {v.match_date ? ` · ${new Date(v.match_date).toLocaleDateString(lang === "en" ? "en-GB" : "el-GR")}` : ""}
                   </p>
                 </div>
-              </button>
+              </div>
             );
           })}
         </div>
