@@ -235,6 +235,10 @@ const LiveEventsManagement: React.FC = () => {
       embed_url_day2: ringForm.embed_url_day2 || null,
       day1_date: ringForm.day1_date || null,
       day2_date: ringForm.day2_date || null,
+      day1_start_seconds: parseTimeToSeconds(ringForm.day1_start),
+      day1_end_seconds: parseTimeToSeconds(ringForm.day1_end),
+      day2_start_seconds: parseTimeToSeconds(ringForm.day2_start),
+      day2_end_seconds: parseTimeToSeconds(ringForm.day2_end),
     };
     if (editingRing) {
       const { error } = await supabase.from("live_event_rings").update(payload).eq("id", editingRing.id);
