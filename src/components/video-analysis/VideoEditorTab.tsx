@@ -1899,49 +1899,65 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
             </div>
           )}
           
-          {/* Strike Buttons - Above Timeline */}
-          <div className={compactMode ? "mt-2 p-1 bg-gray-50 border border-gray-200 rounded-none shrink-0" : "mt-4 p-2 bg-gray-50 border border-gray-200 rounded-none"}>
-            <div className="flex items-center gap-2 flex-wrap">
-              <div className="flex items-center gap-1 mr-2">
-                <Target className="w-3 h-3 text-gray-600" />
-                <span className="text-xs font-medium">Χτυπήματα:</span>
-              </div>
-              {strikeTypesLoading ? (
-                <span className="text-xs text-gray-500">Φόρτωση...</span>
-              ) : strikeTypes.length === 0 ? (
-                <span className="text-xs text-gray-500">Δεν υπάρχουν χτυπήματα</span>
-              ) : (
-                [...strikeTypes]
-                  .sort((a, b) => {
-                    // Check if name is a number
-                    const aIsNumber = /^\d+$/.test(a.name.trim());
-                    const bIsNumber = /^\d+$/.test(b.name.trim());
-                    
-                    // Numbers come first
-                    if (aIsNumber && !bIsNumber) return -1;
-                    if (!aIsNumber && bIsNumber) return 1;
-                    
-                    // If both are numbers, sort numerically
-                    if (aIsNumber && bIsNumber) {
-                      return parseInt(a.name) - parseInt(b.name);
-                    }
-                    
-                    // Otherwise keep original order
-                    return 0;
-                  })
-                  .map((strike) => (
+          {/* Strike Buttons - Two sides: Athlete (left/red) | Opponent (right/blue) */}
+          <div className={compactMode ? "mt-2 shrink-0" : "mt-4"}>
+            {strikeTypesLoading ? (
+              <div className="p-2 bg-gray-50 border border-gray-200 rounded-none text-xs text-gray-500">Φόρτωση...</div>
+            ) : strikeTypes.length === 0 ? (
+              <div className="p-2 bg-gray-50 border border-gray-200 rounded-none text-xs text-gray-500">Δεν υπάρχουν χτυπήματα</div>
+            ) : (
+              (() => {
+                const sortedStrikes = [...strikeTypes].sort((a, b) => {
+                  const aIsNumber = /^\d+$/.test(a.name.trim());
+                  const bIsNumber = /^\d+$/.test(b.name.trim());
+                  if (aIsNumber && !bIsNumber) return -1;
+                  if (!aIsNumber && bIsNumber) return 1;
+                  if (aIsNumber && bIsNumber) return parseInt(a.name) - parseInt(b.name);
+                  return 0;
+                });
+                const renderButtons = (owner: 'athlete' | 'opponent') => (
+                  sortedStrikes.map((strike) => (
                     <Button
-                      key={strike.id}
+                      key={`${owner}-${strike.id}`}
                       size="sm"
                       variant="outline"
-                      className={compactMode ? "rounded-none h-5 text-[9px] px-1.5 hover:bg-[#cb8954] hover:text-white hover:border-[#cb8954]" : "rounded-none h-6 text-[10px] px-2 hover:bg-[#cb8954] hover:text-white hover:border-[#cb8954]"}
-                      onClick={() => addStrikeMarker(strike)}
+                      className={
+                        compactMode
+                          ? `rounded-none h-5 text-[9px] px-1.5 border ${owner === 'athlete' ? 'border-red-400 hover:bg-red-500 hover:text-white hover:border-red-500' : 'border-blue-400 hover:bg-blue-500 hover:text-white hover:border-blue-500'}`
+                          : `rounded-none h-6 text-[10px] px-2 border ${owner === 'athlete' ? 'border-red-400 hover:bg-red-500 hover:text-white hover:border-red-500' : 'border-blue-400 hover:bg-blue-500 hover:text-white hover:border-blue-500'}`
+                      }
+                      onClick={() => addStrikeMarker(strike, owner)}
                     >
                       {strike.name}
                     </Button>
                   ))
-              )}
-            </div>
+                );
+                return (
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Athlete side (Red - Left) */}
+                    <div className={compactMode ? "p-1 bg-red-50 border border-red-300 rounded-none" : "p-2 bg-red-50 border border-red-300 rounded-none"}>
+                      <div className="flex items-center gap-1 mb-1">
+                        <div className="w-2 h-2 bg-red-500" />
+                        <span className="text-xs font-semibold text-red-700">Αθλητής μας</span>
+                      </div>
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {renderButtons('athlete')}
+                      </div>
+                    </div>
+                    {/* Opponent side (Blue - Right) */}
+                    <div className={compactMode ? "p-1 bg-blue-50 border border-blue-300 rounded-none" : "p-2 bg-blue-50 border border-blue-300 rounded-none"}>
+                      <div className="flex items-center gap-1 mb-1">
+                        <div className="w-2 h-2 bg-blue-500" />
+                        <span className="text-xs font-semibold text-blue-700">Αντίπαλος</span>
+                      </div>
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {renderButtons('opponent')}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()
+            )}
           </div>
 
           {/* Timeline with Zoom */}
