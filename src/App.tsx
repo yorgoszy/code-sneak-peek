@@ -124,6 +124,8 @@ const FederationWeighInPage = React.lazy(() => import("@/pages/Dashboard/WeighIn
 import FederationBrackets from "@/pages/Dashboard/FederationBrackets";
 const FederationFightCard = React.lazy(() => import("@/pages/Dashboard/FederationFightCard"));
 const LiveEventsManagement = React.lazy(() => import("@/pages/Dashboard/LiveEventsManagement"));
+const MatchVideoGalleryManagement = React.lazy(() => import("@/pages/Dashboard/MatchVideoGalleryManagement"));
+const VideoGallery = React.lazy(() => import("@/pages/VideoGallery"));
 
 const LiveRingAnalysis = React.lazy(() => import("@/pages/Dashboard/LiveRingAnalysis"));
 const MultiCameraAnalysis = React.lazy(() => import("@/pages/Dashboard/MultiCameraAnalysis"));
