@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Play, Video } from "lucide-react";
+import { Play, Video, Scissors } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { VideoEditorTab } from "@/components/video-analysis/VideoEditorTab";
 
 interface MatchVideo {
   id: string;
@@ -63,6 +66,7 @@ export const UserProfileMatchVideos: React.FC<Props> = ({ userId }) => {
   const [users, setUsers] = useState<Record<string, AppUserLite>>({});
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [analyzeVideo, setAnalyzeVideo] = useState<MatchVideo | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -107,66 +111,94 @@ export const UserProfileMatchVideos: React.FC<Props> = ({ userId }) => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {videos.map((v) => {
-        const red = v.red_athlete_id ? users[v.red_athlete_id] : null;
-        const blue = v.blue_athlete_id ? users[v.blue_athlete_id] : null;
-        const thumb = getYouTubeThumb(v.youtube_url);
-        const isPlaying = playingId === v.id;
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {videos.map((v) => {
+          const red = v.red_athlete_id ? users[v.red_athlete_id] : null;
+          const blue = v.blue_athlete_id ? users[v.blue_athlete_id] : null;
+          const thumb = getYouTubeThumb(v.youtube_url);
+          const isPlaying = playingId === v.id;
 
-        return (
-          <div key={v.id} className="border border-gray-200 bg-white rounded-none overflow-hidden">
-            <div className="relative aspect-video bg-black">
-              {isPlaying ? (
-                <iframe
-                  src={buildEmbedUrl(v.youtube_url, v.start_seconds, v.end_seconds)}
-                  className="absolute inset-0 w-full h-full"
-                  allow="autoplay; encrypted-media; picture-in-picture"
-                  allowFullScreen
-                  title={v.title}
-                />
-              ) : (
-                <button
-                  onClick={() => setPlayingId(v.id)}
-                  className="absolute inset-0 w-full h-full group"
-                >
-                  {thumb && (
-                    <img src={thumb} alt={v.title} className="w-full h-full object-cover" />
-                  )}
-                  <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 flex items-center justify-center transition-colors">
-                    <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center">
-                      <Play className="h-6 w-6 text-black ml-1" />
+          return (
+            <div key={v.id} className="border border-gray-200 bg-white rounded-none overflow-hidden">
+              <div className="relative aspect-video bg-black">
+                {isPlaying ? (
+                  <iframe
+                    src={buildEmbedUrl(v.youtube_url, v.start_seconds, v.end_seconds)}
+                    className="absolute inset-0 w-full h-full"
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    allowFullScreen
+                    title={v.title}
+                  />
+                ) : (
+                  <button
+                    onClick={() => setPlayingId(v.id)}
+                    className="absolute inset-0 w-full h-full group"
+                  >
+                    {thumb && (
+                      <img src={thumb} alt={v.title} className="w-full h-full object-cover" />
+                    )}
+                    <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 flex items-center justify-center transition-colors">
+                      <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center">
+                        <Play className="h-6 w-6 text-black ml-1" />
+                      </div>
                     </div>
+                  </button>
+                )}
+              </div>
+              <div className="p-3 space-y-2">
+                <h3 className="font-semibold text-sm truncate">{v.title}</h3>
+                {v.competition_name && (
+                  <p className="text-xs text-gray-500 truncate">{v.competition_name}</p>
+                )}
+                <div className="flex items-center justify-between gap-2 pt-2 border-t border-gray-100">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Avatar className="h-7 w-7 ring-2 ring-red-500">
+                      <AvatarImage src={getAvatar(red)} />
+                      <AvatarFallback className="text-[10px]">{initials(red)}</AvatarFallback>
+                    </Avatar>
+                    <span className="text-xs truncate">{red?.name || "—"}</span>
                   </div>
-                </button>
-              )}
-            </div>
-            <div className="p-3 space-y-2">
-              <h3 className="font-semibold text-sm truncate">{v.title}</h3>
-              {v.competition_name && (
-                <p className="text-xs text-gray-500 truncate">{v.competition_name}</p>
-              )}
-              <div className="flex items-center justify-between gap-2 pt-2 border-t border-gray-100">
-                <div className="flex items-center gap-2 min-w-0">
-                  <Avatar className="h-7 w-7 ring-2 ring-red-500">
-                    <AvatarImage src={getAvatar(red)} />
-                    <AvatarFallback className="text-[10px]">{initials(red)}</AvatarFallback>
-                  </Avatar>
-                  <span className="text-xs truncate">{red?.name || "—"}</span>
+                  <span className="text-xs text-gray-400">vs</span>
+                  <div className="flex items-center gap-2 min-w-0 justify-end">
+                    <span className="text-xs truncate">{blue?.name || "—"}</span>
+                    <Avatar className="h-7 w-7 ring-2 ring-blue-500">
+                      <AvatarImage src={getAvatar(blue)} />
+                      <AvatarFallback className="text-[10px]">{initials(blue)}</AvatarFallback>
+                    </Avatar>
+                  </div>
                 </div>
-                <span className="text-xs text-gray-400">vs</span>
-                <div className="flex items-center gap-2 min-w-0 justify-end">
-                  <span className="text-xs truncate">{blue?.name || "—"}</span>
-                  <Avatar className="h-7 w-7 ring-2 ring-blue-500">
-                    <AvatarImage src={getAvatar(blue)} />
-                    <AvatarFallback className="text-[10px]">{initials(blue)}</AvatarFallback>
-                  </Avatar>
-                </div>
+                <Button
+                  onClick={() => setAnalyzeVideo(v)}
+                  variant="outline"
+                  size="sm"
+                  className="w-full rounded-none mt-2"
+                >
+                  <Scissors className="h-3.5 w-3.5 mr-2" />
+                  Ανάλυση Βίντεο
+                </Button>
               </div>
             </div>
-          </div>
-        );
-      })}
-    </div>
+          );
+        })}
+      </div>
+
+      <Dialog open={!!analyzeVideo} onOpenChange={(o) => !o && setAnalyzeVideo(null)}>
+        <DialogContent className="max-w-[98vw] w-[98vw] h-[95vh] max-h-[95vh] overflow-y-auto rounded-none p-4">
+          <DialogHeader>
+            <DialogTitle className="text-base">
+              Ανάλυση Βίντεο: {analyzeVideo?.title}
+            </DialogTitle>
+          </DialogHeader>
+          {analyzeVideo && (
+            <VideoEditorTab
+              key={analyzeVideo.id}
+              initialYoutubeUrl={analyzeVideo.youtube_url}
+              initialUserId={userId}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
