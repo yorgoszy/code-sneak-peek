@@ -92,6 +92,56 @@ const MatchVideoGalleryManagement: React.FC = () => {
 
   useEffect(() => { load(); }, []);
 
+  // Auto-detect ηλικιακή κατηγορία based on red athlete's birth_date + gender
+  const autoDetectAgeCategory = async (athleteId: string) => {
+    if (!athleteId) return;
+    const { data: u } = await supabase
+      .from("app_users")
+      .select("birth_date, gender")
+      .eq("id", athleteId)
+      .maybeSingle();
+    if (!u?.birth_date) return;
+    const dob = new Date(u.birth_date as string);
+    if (isNaN(dob.getTime())) return;
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+
+    const genderRaw = (u.gender || "").toString().toLowerCase();
+    const gender = genderRaw.startsWith("f") || genderRaw.includes("γυν") || genderRaw.includes("θηλ")
+      ? "female"
+      : (genderRaw.startsWith("m") || genderRaw.includes("αν") || genderRaw.includes("αρ")) ? "male" : null;
+
+    let q = supabase
+      .from("federation_category_templates")
+      .select("name, min_age, max_age, gender")
+      .lte("min_age", age);
+    const { data: cats } = await q;
+    if (!cats || cats.length === 0) return;
+
+    const matches = cats.filter((c: any) => {
+      const okMin = c.min_age == null || age >= c.min_age;
+      const okMax = c.max_age == null || age <= c.max_age;
+      const okGender = !c.gender || c.gender === "all" || !gender || c.gender === gender;
+      return okMin && okMax && okGender;
+    });
+    if (matches.length === 0) return;
+
+    // Prefer the most specific (smallest age range) and gender-matching
+    matches.sort((a: any, b: any) => {
+      const aGen = a.gender === gender ? 0 : 1;
+      const bGen = b.gender === gender ? 0 : 1;
+      if (aGen !== bGen) return aGen - bGen;
+      const aRange = (a.max_age ?? 99) - (a.min_age ?? 0);
+      const bRange = (b.max_age ?? 99) - (b.min_age ?? 0);
+      return aRange - bRange;
+    });
+    // Extract just the age portion (strip weight like " -45kg")
+    const cleanName = (matches[0].name || "").replace(/\s*[-+]?\s*\d+\s*kg.*/i, "").trim();
+    setForm((f) => ({ ...f, age_category: cleanName || f.age_category }));
+  };
+
   const openNew = () => { setForm(emptyForm); setDialogOpen(true); };
 
   const openEdit = (v: MatchVideo) => {
