@@ -1347,6 +1347,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
         strikeSide: strike.side,
         time: strike.timestamp,
         owner: 'athlete' as const, // AI detects athlete strikes
+        actionType: 'attack' as const,
         roundNumber: roundInfo.roundNumber,
         timeInRound: roundInfo.timeInRound,
         hitTarget: strike.isVerified && strike.confidence > 0.8,
