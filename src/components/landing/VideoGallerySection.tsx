@@ -24,10 +24,10 @@ interface MatchVideo {
 }
 
 interface AppUserLite {
-  user_id: string;
-  first_name: string | null;
-  last_name: string | null;
+  id: string;
+  name: string | null;
   avatar_url: string | null;
+  photo_url: string | null;
 }
 
 const parseYouTubeId = (url: string): string | null => {
