@@ -106,9 +106,11 @@ interface StrikeMarker {
 
 interface VideoEditorTabProps {
   onFightSaved?: () => void;
+  initialYoutubeUrl?: string;
+  initialUserId?: string;
 }
 
-export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved }) => {
+export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved, initialYoutubeUrl, initialUserId }) => {
   // Role check & coach ID - use useEffectiveCoachId hook
   const { userProfile } = useRoleCheck();
   const coachId = userProfile?.id || null;
