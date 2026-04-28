@@ -99,6 +99,7 @@ interface StrikeMarker {
   strikeSide: string | null;
   time: number;
   owner: 'athlete' | 'opponent'; // Determined by which flag it's inside
+  actionType: 'attack' | 'defense'; // athlete=attack, opponent=defense
   roundNumber: number | null; // Which round this strike is in
   timeInRound: number | null; // Time (in seconds) within the round
   hitTarget: boolean; // Did the strike hit the target? (ορθότητα)
@@ -1249,6 +1250,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
       strikeSide: strikeType.side,
       time: globalCurrentTime,
       owner,
+      actionType: owner === 'athlete' ? 'attack' : 'defense',
       roundNumber: roundInfo.roundNumber,
       timeInRound: roundInfo.timeInRound,
       hitTarget: false, // Default to false, user can toggle with click
@@ -1345,6 +1347,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
         strikeSide: strike.side,
         time: strike.timestamp,
         owner: 'athlete' as const, // AI detects athlete strikes
+        actionType: 'attack' as const,
         roundNumber: roundInfo.roundNumber,
         timeInRound: roundInfo.timeInRound,
         hitTarget: strike.isVerified && strike.confidence > 0.8,
