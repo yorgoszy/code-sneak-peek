@@ -2009,14 +2009,14 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
               </div>
               
               {/* Zoom */}
-                <div className={compactMode ? "hidden" : "flex items-center gap-1.5 pr-3 border-r border-gray-300"}>
-                <ZoomIn className="w-4 h-4 text-gray-500" />
-                <span className="text-xs text-gray-600">{timelineZoom.toFixed(1)}x</span>
-                <Button variant="outline" size="sm" className="h-6 w-6 p-0 rounded-none" onClick={() => setTimelineZoom(Math.max(1, timelineZoom - 0.5))} disabled={timelineZoom <= 1}>
+                <div className={compactMode ? "flex items-center gap-1 pr-1.5 border-r border-gray-300" : "flex items-center gap-1.5 pr-3 border-r border-gray-300"}>
+                <ZoomIn className={compactMode ? "w-3 h-3 text-gray-500" : "w-4 h-4 text-gray-500"} />
+                <span className={compactMode ? "text-[10px] text-gray-600" : "text-xs text-gray-600"}>{timelineZoom.toFixed(1)}x</span>
+                <Button variant="outline" size="sm" className={compactMode ? "h-5 w-5 p-0 rounded-none" : "h-6 w-6 p-0 rounded-none"} onClick={() => setTimelineZoom(Math.max(1, timelineZoom - 0.5))} disabled={timelineZoom <= 1}>
                   <Minus className="w-3 h-3" />
                 </Button>
-                <Slider value={[timelineZoom]} min={1} max={10} step={0.5} onValueChange={(value) => setTimelineZoom(value[0])} className="w-16" />
-                <Button variant="outline" size="sm" className="h-6 w-6 p-0 rounded-none" onClick={() => setTimelineZoom(Math.min(10, timelineZoom + 0.5))} disabled={timelineZoom >= 10}>
+                <Slider value={[timelineZoom]} min={1} max={10} step={0.5} onValueChange={(value) => setTimelineZoom(value[0])} className={compactMode ? "w-12" : "w-16"} />
+                <Button variant="outline" size="sm" className={compactMode ? "h-5 w-5 p-0 rounded-none" : "h-6 w-6 p-0 rounded-none"} onClick={() => setTimelineZoom(Math.min(10, timelineZoom + 0.5))} disabled={timelineZoom >= 10}>
                   <PlusIcon className="w-3 h-3" />
                 </Button>
               </div>
