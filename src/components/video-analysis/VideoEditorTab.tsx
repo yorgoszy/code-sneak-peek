@@ -1946,9 +1946,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
           {/* Timeline with Zoom */}
           <div className={compactMode ? "mt-1 space-y-1 shrink-0" : "mt-2 space-y-2"}>
             {/* Controls Row: Rounds + Σήμανση + Zoom + Volume + Speed */}
-            <div className="flex items-center bg-gray-50 border border-gray-200 p-1.5 rounded-none flex-wrap gap-3">
+              <div className={compactMode ? "flex items-center bg-gray-50 border border-gray-200 p-1 rounded-none flex-wrap gap-1.5" : "flex items-center bg-gray-50 border border-gray-200 p-1.5 rounded-none flex-wrap gap-3"}>
               {/* Round Controls */}
-              <div className="flex items-center gap-1.5 pr-3 border-r border-gray-300">
+                <div className={compactMode ? "flex items-center gap-1 pr-1.5 border-r border-gray-300" : "flex items-center gap-1.5 pr-3 border-r border-gray-300"}>
                 <CircleDot className="w-4 h-4 text-blue-600" />
                 {roundMarkers.length > 0 && (
                   <Badge variant="outline" className="rounded-none bg-blue-100 text-blue-700 text-xs px-1">
@@ -1977,7 +1977,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
               </div>
               
               {/* Action Flags Controls */}
-              <div className="flex items-center gap-1.5 pr-3 border-r border-gray-300">
+                <div className={compactMode ? "flex items-center gap-1 pr-1.5 border-r border-gray-300" : "flex items-center gap-1.5 pr-3 border-r border-gray-300"}>
                 <Flag className="w-4 h-4 text-gray-600" />
                 {activeFlag?.type === 'attack' ? (
                   <Button size="sm" className="rounded-none bg-[#00ffba] text-black animate-pulse h-6 text-xs px-2" onClick={closeActiveFlag}>
@@ -2009,7 +2009,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
               </div>
               
               {/* Zoom */}
-              <div className="flex items-center gap-1.5 pr-3 border-r border-gray-300">
+                <div className={compactMode ? "hidden" : "flex items-center gap-1.5 pr-3 border-r border-gray-300"}>
                 <ZoomIn className="w-4 h-4 text-gray-500" />
                 <span className="text-xs text-gray-600">{timelineZoom.toFixed(1)}x</span>
                 <Button variant="outline" size="sm" className="h-6 w-6 p-0 rounded-none" onClick={() => setTimelineZoom(Math.max(1, timelineZoom - 0.5))} disabled={timelineZoom <= 1}>
@@ -2022,7 +2022,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
               </div>
               
               {/* Volume */}
-              <div className="flex items-center gap-1.5 pr-3 border-r border-gray-300">
+                <div className={compactMode ? "hidden" : "flex items-center gap-1.5 pr-3 border-r border-gray-300"}>
                 <Button variant="ghost" size="sm" className="h-6 w-6 p-0 rounded-none" onClick={toggleMute}>
                   {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                 </Button>
@@ -2032,7 +2032,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
               </div>
               
               {/* Speed */}
-              <div className="flex items-center gap-1">
+                <div className={compactMode ? "flex items-center gap-0.5" : "flex items-center gap-1"}>
                 {[0.5, 1, 1.5, 2].map(rate => (
                   <Button
                     key={rate}
