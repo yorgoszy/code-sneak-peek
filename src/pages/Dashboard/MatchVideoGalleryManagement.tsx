@@ -202,6 +202,27 @@ const MatchVideoGalleryManagement: React.FC = () => {
     load();
   };
 
+  const duplicate = async (v: MatchVideo) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const payload: any = {
+      title: `${v.title} (αντίγραφο)`,
+      competition_name: v.competition_name,
+      match_date: v.match_date,
+      age_category: v.age_category,
+      weight_category: v.weight_category,
+      youtube_url: v.youtube_url,
+      start_seconds: v.start_seconds,
+      end_seconds: v.end_seconds,
+      red_athlete_id: v.red_athlete_id,
+      blue_athlete_id: v.blue_athlete_id,
+      created_by: user?.id,
+    };
+    const { error } = await supabase.from("match_videos" as any).insert(payload);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Αντιγράφηκε");
+    load();
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
