@@ -2002,24 +2002,6 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
               {/* Action Flags Controls */}
                 <div className={compactMode ? "flex items-center gap-1 pr-1.5 border-r border-gray-300" : "flex items-center gap-1.5 pr-3 border-r border-gray-300"}>
                 <Flag className="w-4 h-4 text-gray-600" />
-                {activeFlag?.type === 'attack' ? (
-                  <Button size="sm" className="rounded-none bg-[#00ffba] text-black animate-pulse h-6 text-xs px-2" onClick={closeActiveFlag}>
-                    <Swords className="w-3 h-3" />
-                  </Button>
-                ) : (
-                  <Button size="sm" variant="outline" className="rounded-none border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba] hover:text-black h-6 text-xs px-2" onClick={() => startActionFlag('attack')} disabled={activeFlag !== null}>
-                    <Swords className="w-3 h-3" />
-                  </Button>
-                )}
-                {activeFlag?.type === 'defense' ? (
-                  <Button size="sm" className="rounded-none bg-red-500 text-white animate-pulse h-6 text-xs px-2" onClick={closeActiveFlag}>
-                    <Shield className="w-3 h-3" />
-                  </Button>
-                ) : (
-                  <Button size="sm" variant="outline" className="rounded-none border-red-500 text-red-500 hover:bg-red-500 hover:text-white h-6 text-xs px-2" onClick={() => startActionFlag('defense')} disabled={activeFlag !== null}>
-                    <Shield className="w-3 h-3" />
-                  </Button>
-                )}
                 {activeFlag?.type === 'clinch' ? (
                   <Button size="sm" className="rounded-none bg-purple-500 text-white animate-pulse h-6 text-xs px-2" onClick={closeActiveFlag}>
                     CL
