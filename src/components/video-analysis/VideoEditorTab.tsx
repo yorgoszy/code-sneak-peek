@@ -2426,13 +2426,13 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
             />
             
             {/* Time display */}
-            <div className="flex justify-between text-xs text-gray-500">
+            <div className={compactMode ? "flex justify-between text-[10px] text-gray-500 leading-none" : "flex justify-between text-xs text-gray-500"}>
               <span>{formatTime(globalCurrentTime)}</span>
               <span>{formatTime(totalDuration > 0 ? totalDuration : duration)}</span>
             </div>
             
             {/* Strike History - Below time bar */}
-            {strikeMarkers.length > 0 && (
+            {strikeMarkers.length > 0 && !compactMode && (
               <div className="mt-2 max-h-32 overflow-y-auto border border-gray-200 rounded-none bg-gray-50">
                 <div className="p-2 space-y-1">
                   {[...strikeMarkers].reverse().map((marker, index) => {
@@ -2508,7 +2508,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
           </div>
           
           {/* Playback Controls */}
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+          <div className={compactMode ? "mt-1 flex flex-wrap items-center justify-center gap-1" : "mt-4 flex flex-wrap items-center justify-center gap-2"}>
             <Button variant="outline" size="sm" className="rounded-none" onClick={frameBack}>
               <ChevronLeft className="w-4 h-4" />
             </Button>
@@ -2562,7 +2562,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
       )}
 
       {/* Clips List */}
-      {clips.length > 0 && (
+      {clips.length > 0 && !compactMode && (
         <Card className="rounded-none">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center justify-between text-lg">
@@ -2628,7 +2628,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
       )}
 
       {/* Action Flags Stats & List */}
-      {actionFlags.length > 0 && (
+      {actionFlags.length > 0 && !compactMode && (
         <Card className="rounded-none">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center justify-between text-lg">
@@ -2752,7 +2752,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
       )}
 
       {/* Save & New Video Buttons */}
-      <div className="flex justify-center gap-2 flex-wrap">
+      <div className={compactMode ? "shrink-0 flex justify-center gap-1 flex-wrap" : "flex justify-center gap-2 flex-wrap"}>
         <Button
           variant="outline"
           size="sm"
