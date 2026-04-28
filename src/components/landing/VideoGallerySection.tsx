@@ -56,15 +56,18 @@ const buildEmbedUrl = (url: string, start?: number | null, end?: number | null):
 
 const fullName = (u?: AppUserLite | null) => {
   if (!u) return "";
-  return `${u.first_name || ""} ${u.last_name || ""}`.trim();
+  return (u.name || "").trim();
 };
 
 const initials = (u?: AppUserLite | null) => {
   if (!u) return "?";
-  const f = (u.first_name || "").charAt(0);
-  const l = (u.last_name || "").charAt(0);
+  const parts = (u.name || "").trim().split(/\s+/);
+  const f = parts[0]?.charAt(0) || "";
+  const l = parts[1]?.charAt(0) || "";
   return (f + l).toUpperCase() || "?";
 };
+
+const getAvatar = (u?: AppUserLite | null) => u?.avatar_url || u?.photo_url || undefined;
 
 interface Props {
   translations?: any;
