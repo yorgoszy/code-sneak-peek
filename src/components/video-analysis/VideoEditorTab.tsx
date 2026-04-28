@@ -1880,7 +1880,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
               <Sparkles className="w-4 h-4 mr-1" />
               AI Ανάλυση
             </Button>
-            {showAIPanel && (
+            {showAIPanel && !compactMode && (
               <span className="text-xs text-gray-500">
                 Αυτόματη ανίχνευση χτυπημάτων με AI
               </span>
@@ -1888,7 +1888,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
           </div>
           
           {/* AI Analysis Panel */}
-          {showAIPanel && (
+          {showAIPanel && !compactMode && (
             <div className="mt-3">
               <AutoAnalysisPanel
                 videoElement={getActiveVideoEl()}
@@ -1933,7 +1933,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                       key={strike.id}
                       size="sm"
                       variant="outline"
-                      className="rounded-none h-6 text-[10px] px-2 hover:bg-[#cb8954] hover:text-white hover:border-[#cb8954]"
+                      className={compactMode ? "rounded-none h-5 text-[9px] px-1.5 hover:bg-[#cb8954] hover:text-white hover:border-[#cb8954]" : "rounded-none h-6 text-[10px] px-2 hover:bg-[#cb8954] hover:text-white hover:border-[#cb8954]"}
                       onClick={() => addStrikeMarker(strike)}
                     >
                       {strike.name}
