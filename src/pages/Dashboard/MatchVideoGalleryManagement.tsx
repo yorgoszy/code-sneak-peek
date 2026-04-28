@@ -390,7 +390,7 @@ const MatchVideoGalleryManagement: React.FC = () => {
       </AlertDialog>
 
       <Dialog open={!!analyzeVideo} onOpenChange={(o) => !o && setAnalyzeVideo(null)}>
-        <DialogContent className="max-w-[98vw] w-[98vw] h-[95vh] max-h-[95vh] overflow-y-auto rounded-none p-4">
+        <DialogContent className="max-w-5xl w-[90vw] max-h-[85vh] overflow-y-auto rounded-none p-4">
           <DialogHeader>
             <DialogTitle className="text-base">
               Ανάλυση Βίντεο: {analyzeVideo?.title}

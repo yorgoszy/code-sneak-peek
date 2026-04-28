@@ -326,6 +326,13 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                       return u;
                     });
                   });
+                  // Auto-seek to initial start second from match video card
+                  if (typeof initialStartSeconds === 'number' && initialStartSeconds > 0) {
+                    try {
+                      event.target.seekTo(Math.max(0, Math.min(initialStartSeconds, dur)), true);
+                      setCurrentTime(initialStartSeconds);
+                    } catch {}
+                  }
                 }
               },
               onStateChange: (event: any) => {
@@ -379,7 +386,13 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
     ytTimerRef.current = window.setInterval(() => {
       try {
         const t = player.getCurrentTime();
-        if (typeof t === 'number') setCurrentTime(t);
+        if (typeof t === 'number') {
+          setCurrentTime(t);
+          // Auto-stop at initialEndSeconds (from match video card)
+          if (typeof initialEndSeconds === 'number' && initialEndSeconds > 0 && t >= initialEndSeconds) {
+            try { player.pauseVideo(); } catch {}
+          }
+        }
       } catch {}
     }, 200);
 
