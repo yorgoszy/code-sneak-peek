@@ -199,7 +199,7 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
                                     {fullName(blue)}
                                   </span>
                                   <Avatar className="w-8 h-8 border-2 border-blue-500">
-                                    <AvatarImage src={blue.avatar_url || undefined} />
+                                    <AvatarImage src={getAvatar(blue)} />
                                     <AvatarFallback className="text-xs bg-blue-50 text-blue-700">
                                       {initials(blue)}
                                     </AvatarFallback>
