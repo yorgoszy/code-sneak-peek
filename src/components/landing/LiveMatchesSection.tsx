@@ -49,6 +49,10 @@ interface LiveRing {
   embed_url_day2: string | null;
   day1_date: string | null;
   day2_date: string | null;
+  day1_start_seconds: number | null;
+  day1_end_seconds: number | null;
+  day2_start_seconds: number | null;
+  day2_end_seconds: number | null;
 }
 
 const todayStr = () => {
@@ -56,11 +60,17 @@ const todayStr = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 
-const pickActiveEmbed = (r: LiveRing): string => {
+const pickActiveEmbed = (r: LiveRing): { url: string; start: number | null; end: number | null } => {
   const today = todayStr();
-  if (r.day1_date && r.embed_url_day1 && r.day1_date === today) return r.embed_url_day1;
-  if (r.day2_date && r.embed_url_day2 && r.day2_date === today) return r.embed_url_day2;
-  return r.embed_url_day1 || r.embed_url_day2 || r.embed_url || "";
+  if (r.day1_date && r.embed_url_day1 && r.day1_date === today) {
+    return { url: r.embed_url_day1, start: r.day1_start_seconds, end: r.day1_end_seconds };
+  }
+  if (r.day2_date && r.embed_url_day2 && r.day2_date === today) {
+    return { url: r.embed_url_day2, start: r.day2_start_seconds, end: r.day2_end_seconds };
+  }
+  if (r.embed_url_day1) return { url: r.embed_url_day1, start: r.day1_start_seconds, end: r.day1_end_seconds };
+  if (r.embed_url_day2) return { url: r.embed_url_day2, start: r.day2_start_seconds, end: r.day2_end_seconds };
+  return { url: r.embed_url || "", start: null, end: null };
 };
 
 interface Props {
