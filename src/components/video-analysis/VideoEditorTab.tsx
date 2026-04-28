@@ -1698,7 +1698,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className={compactMode ? "h-full min-h-0 flex flex-col gap-2 overflow-hidden" : "space-y-4"}>
       {/* Hidden file input for adding more videos */}
       <input
         ref={fileInputRef}
@@ -1793,16 +1793,16 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
       )}
 
       {/* Video Player */}
-      <Card className="rounded-none">
-        <CardContent className="p-4">
-          <div className="relative bg-black rounded-none overflow-hidden" style={{ minHeight: '300px' }}>
+      <Card className={compactMode ? "rounded-none flex-1 min-h-0 overflow-hidden" : "rounded-none"}>
+        <CardContent className={compactMode ? "p-2 h-full min-h-0 flex flex-col overflow-hidden" : "p-4"}>
+          <div className="relative bg-black rounded-none overflow-hidden" style={{ minHeight: compactMode ? '0' : '300px', height: compactMode ? 'clamp(220px, 38vh, 360px)' : undefined }}>
             {videos.map((v, idx) => {
               // YouTube video
               if (v.isYouTube && v.youtubeId) {
                 return (
                   <div
                     key={v.id}
-                    className={`w-full aspect-video ${idx === activeVideoIndex ? 'block' : 'hidden'}`}
+                    className={`w-full ${compactMode ? 'h-full' : 'aspect-video'} ${idx === activeVideoIndex ? 'block' : 'hidden'}`}
                   >
                     {/* YouTube IFrame API will replace this div with an iframe */}
                     <div
@@ -1821,7 +1821,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                     videoElsRef.current[idx] = el;
                   }}
                   src={v.url}
-                  className={`w-full max-h-[60vh] object-contain ${idx === activeVideoIndex ? 'block' : 'hidden'}`}
+                  className={`w-full object-contain ${compactMode ? 'h-full' : 'max-h-[60vh]'} ${idx === activeVideoIndex ? 'block' : 'hidden'}`}
                   onLoadedMetadata={() => {
                     if (idx === activeVideoIndex) handleLoadedMetadata();
                   }}
@@ -1870,7 +1870,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
           </div>
           
           {/* AI Auto Analysis Toggle */}
-          <div className="mt-4 flex items-center gap-2">
+          <div className={compactMode ? "mt-2 flex items-center gap-2" : "mt-4 flex items-center gap-2"}>
             <Button
               variant={showAIPanel ? "default" : "outline"}
               size="sm"
@@ -1899,7 +1899,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
           )}
           
           {/* Strike Buttons - Above Timeline */}
-          <div className="mt-4 p-2 bg-gray-50 border border-gray-200 rounded-none">
+          <div className={compactMode ? "mt-2 p-1 bg-gray-50 border border-gray-200 rounded-none shrink-0" : "mt-4 p-2 bg-gray-50 border border-gray-200 rounded-none"}>
             <div className="flex items-center gap-2 flex-wrap">
               <div className="flex items-center gap-1 mr-2">
                 <Target className="w-3 h-3 text-gray-600" />
@@ -1944,7 +1944,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
           </div>
 
           {/* Timeline with Zoom */}
-          <div className="mt-2 space-y-2">
+          <div className={compactMode ? "mt-1 space-y-1 shrink-0" : "mt-2 space-y-2"}>
             {/* Controls Row: Rounds + Σήμανση + Zoom + Volume + Speed */}
             <div className="flex items-center bg-gray-50 border border-gray-200 p-1.5 rounded-none flex-wrap gap-3">
               {/* Round Controls */}
