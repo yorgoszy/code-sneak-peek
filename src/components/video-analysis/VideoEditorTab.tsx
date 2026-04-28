@@ -326,6 +326,13 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                       return u;
                     });
                   });
+                  // Auto-seek to initial start second from match video card
+                  if (typeof initialStartSeconds === 'number' && initialStartSeconds > 0) {
+                    try {
+                      event.target.seekTo(Math.max(0, Math.min(initialStartSeconds, dur)), true);
+                      setCurrentTime(initialStartSeconds);
+                    } catch {}
+                  }
                 }
               },
               onStateChange: (event: any) => {
