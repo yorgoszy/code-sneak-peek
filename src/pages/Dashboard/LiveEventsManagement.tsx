@@ -191,6 +191,10 @@ const LiveEventsManagement: React.FC = () => {
       embed_url_day2: "",
       day1_date: "",
       day2_date: "",
+      day1_start: "",
+      day1_end: "",
+      day2_start: "",
+      day2_end: "",
     });
     setRingDialog(true);
   };
