@@ -278,6 +278,14 @@ export const UserProfileContent = ({
             <UserProfileSafety userProfile={userProfile} />
           </div>
         );
+      case "match-videos":
+        return (
+          <div className="space-y-4">
+            <BackButton />
+            <h2 className="text-xl font-semibold">Βίντεο Αγώνων</h2>
+            <UserProfileMatchVideos userId={userProfile?.id} />
+          </div>
+        );
       case "coach-brackets":
         return (
           <div className="space-y-4">
