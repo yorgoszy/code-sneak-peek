@@ -2,6 +2,14 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Play, Video } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 interface MatchVideo {
   id: string;
@@ -13,6 +21,13 @@ interface MatchVideo {
   end_seconds: number | null;
   red_athlete_id: string | null;
   blue_athlete_id: string | null;
+}
+
+interface AppUserLite {
+  user_id: string;
+  first_name: string | null;
+  last_name: string | null;
+  avatar_url: string | null;
 }
 
 const parseYouTubeId = (url: string): string | null => {
@@ -39,6 +54,18 @@ const buildEmbedUrl = (url: string, start?: number | null, end?: number | null):
   return `https://www.youtube.com/embed/${id}?${params.toString()}`;
 };
 
+const fullName = (u?: AppUserLite | null) => {
+  if (!u) return "";
+  return `${u.first_name || ""} ${u.last_name || ""}`.trim();
+};
+
+const initials = (u?: AppUserLite | null) => {
+  if (!u) return "?";
+  const f = (u.first_name || "").charAt(0);
+  const l = (u.last_name || "").charAt(0);
+  return (f + l).toUpperCase() || "?";
+};
+
 interface Props {
   translations?: any;
 }
@@ -46,6 +73,7 @@ interface Props {
 const VideoGallerySection: React.FC<Props> = ({ translations }) => {
   const navigate = useNavigate();
   const [videos, setVideos] = useState<MatchVideo[]>([]);
+  const [users, setUsers] = useState<Record<string, AppUserLite>>({});
   const [playingId, setPlayingId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -54,8 +82,24 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
         .from("match_videos")
         .select("id,title,competition_name,match_date,youtube_url,start_seconds,end_seconds,red_athlete_id,blue_athlete_id")
         .order("match_date", { ascending: false, nullsFirst: false })
-        .limit(6);
-      setVideos((data as MatchVideo[]) || []);
+        .limit(12);
+      const list = (data as MatchVideo[]) || [];
+      setVideos(list);
+
+      const ids = Array.from(
+        new Set(
+          list.flatMap(v => [v.red_athlete_id, v.blue_athlete_id]).filter(Boolean) as string[]
+        )
+      );
+      if (ids.length > 0) {
+        const { data: usersData } = await supabase
+          .from("app_users")
+          .select("user_id,first_name,last_name,avatar_url")
+          .in("user_id", ids);
+        const map: Record<string, AppUserLite> = {};
+        (usersData || []).forEach((u: any) => { map[u.user_id] = u; });
+        setUsers(map);
+      }
     };
     load();
   }, []);
@@ -81,57 +125,101 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
           <p className="text-gray-600">{subtitle}</p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
-          {videos.map((v) => {
-            const thumb = getYouTubeThumb(v.youtube_url);
-            const isPlaying = playingId === v.id;
-            return (
-              <div
-                key={v.id}
-                className="text-left bg-black border border-black overflow-hidden"
-              >
-                <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-                  {isPlaying ? (
-                    <iframe
-                      src={buildEmbedUrl(v.youtube_url, v.start_seconds, v.end_seconds)}
-                      className="absolute inset-0 w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      title={v.title}
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setPlayingId(v.id)}
-                      className="absolute inset-0 w-full h-full group"
-                      aria-label={`Play ${v.title}`}
-                    >
-                      {thumb ? (
-                        <img
-                          src={thumb}
-                          alt={v.title}
-                          className="absolute inset-0 w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="absolute inset-0 bg-gray-900" />
-                      )}
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/10 transition-colors">
-                        <Play className="w-12 h-12 text-white" fill="white" />
+        <div className="max-w-6xl mx-auto mb-8">
+          <Carousel opts={{ align: "start", loop: true }} className="w-full">
+            <CarouselContent>
+              {videos.map((v) => {
+                const thumb = getYouTubeThumb(v.youtube_url);
+                const isPlaying = playingId === v.id;
+                const red = v.red_athlete_id ? users[v.red_athlete_id] : null;
+                const blue = v.blue_athlete_id ? users[v.blue_athlete_id] : null;
+                return (
+                  <CarouselItem key={v.id} className="md:basis-1/2 lg:basis-1/3">
+                    <div className="bg-black border border-black overflow-hidden h-full">
+                      <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+                        {isPlaying ? (
+                          <iframe
+                            src={buildEmbedUrl(v.youtube_url, v.start_seconds, v.end_seconds)}
+                            className="absolute inset-0 w-full h-full"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            title={v.title}
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setPlayingId(v.id)}
+                            className="absolute inset-0 w-full h-full group"
+                            aria-label={`Play ${v.title}`}
+                          >
+                            {thumb ? (
+                              <img
+                                src={thumb}
+                                alt={v.title}
+                                className="absolute inset-0 w-full h-full object-cover"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div className="absolute inset-0 bg-gray-900" />
+                            )}
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/10 transition-colors">
+                              <Play className="w-12 h-12 text-white" fill="white" />
+                            </div>
+                          </button>
+                        )}
                       </div>
-                    </button>
-                  )}
-                </div>
-                <div className="p-3 bg-white">
-                  <h3 className="font-bold text-black text-sm truncate">{v.title}</h3>
-                  <p className="text-xs text-gray-600 truncate">
-                    {v.competition_name || ""}
-                    {v.match_date ? ` · ${new Date(v.match_date).toLocaleDateString(lang === "en" ? "en-GB" : "el-GR")}` : ""}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
+                      <div className="p-3 bg-white">
+                        <h3 className="font-bold text-black text-sm truncate mb-2">{v.title}</h3>
+
+                        {(red || blue) && (
+                          <div className="flex items-center justify-between gap-2 mb-2">
+                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                              {red && (
+                                <>
+                                  <Avatar className="w-8 h-8 border-2 border-red-500">
+                                    <AvatarImage src={red.avatar_url || undefined} />
+                                    <AvatarFallback className="text-xs bg-red-50 text-red-700">
+                                      {initials(red)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="text-xs font-semibold text-black truncate">
+                                    {fullName(red)}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                            <span className="text-xs text-gray-400 font-bold">VS</span>
+                            <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
+                              {blue && (
+                                <>
+                                  <span className="text-xs font-semibold text-black truncate text-right">
+                                    {fullName(blue)}
+                                  </span>
+                                  <Avatar className="w-8 h-8 border-2 border-blue-500">
+                                    <AvatarImage src={blue.avatar_url || undefined} />
+                                    <AvatarFallback className="text-xs bg-blue-50 text-blue-700">
+                                      {initials(blue)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        <p className="text-xs text-gray-600 truncate">
+                          {v.competition_name || ""}
+                          {v.match_date ? ` · ${new Date(v.match_date).toLocaleDateString(lang === "en" ? "en-GB" : "el-GR")}` : ""}
+                        </p>
+                      </div>
+                    </div>
+                  </CarouselItem>
+                );
+              })}
+            </CarouselContent>
+            <CarouselPrevious className="rounded-none" />
+            <CarouselNext className="rounded-none" />
+          </Carousel>
         </div>
 
         <div className="text-center">
