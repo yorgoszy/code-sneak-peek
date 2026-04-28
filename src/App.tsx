@@ -170,6 +170,7 @@ function App() {
                       <Route path="/install" element={<InstallPWA />} />
                       <Route path="/report-abuse" element={<PublicReportAbuse />} />
                       <Route path="/report-abuse/thank-you" element={<PublicReportAbuseThankYou />} />
+                      <Route path="/video-gallery" element={<VideoGallery />} />
                       <Route path="/install-calendar" element={<ProtectedRoute><InstallCalendarWidget /></ProtectedRoute>} />
                       <Route path="/calendar-widget" element={<ProtectedRoute><CalendarWidget /></ProtectedRoute>} />
                       <Route path="/install-subscriptions" element={<ProtectedRoute><InstallSubscriptionsWidget /></ProtectedRoute>} />
