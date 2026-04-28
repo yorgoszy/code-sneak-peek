@@ -18,8 +18,7 @@ import {
   Utensils,
   Shuffle,
   Radio,
-  ShieldAlert,
-  Film
+  ShieldAlert
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
@@ -313,14 +312,6 @@ export const UserProfileSidebar = forwardRef<
       badge: null,
       visible: true,
       disabled: false
-    },
-    {
-      icon: Film,
-      label: t('sidebar.matchVideos', 'Βίντεο Αγώνων'),
-      key: "match-videos",
-      badge: null,
-      visible: userProfile?.role === 'athlete',
-      disabled: !hasSubscription
     },
     {
       icon: ShieldAlert,
