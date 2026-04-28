@@ -24,7 +24,7 @@ import { UserProfileHistory } from "./UserProfileHistory";
 import { SchoolNotes } from "@/pages/SchoolNotes";
 import { UserProfileNutrition } from "./UserProfileNutrition";
 import { UserProfileSafety } from "./UserProfileSafety";
-import { UserProfileMatchVideos } from "./UserProfileMatchVideos";
+
 import CoachBracketsPage from "@/pages/Dashboard/CoachBracketsPage";
 import CoachLivePage from "@/pages/Dashboard/CoachLivePage";
 import RankingPage from "@/pages/Dashboard/RankingPage";
