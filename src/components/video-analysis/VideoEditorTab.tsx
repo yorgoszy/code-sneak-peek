@@ -191,8 +191,35 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved, in
   const [draggingFlag, setDraggingFlag] = useState<{ id: string; edge: 'start' | 'end' } | null>(null);
   
   // YouTube URL input state
-  const [youtubeUrlInput, setYoutubeUrlInput] = useState('');
+  const [youtubeUrlInput, setYoutubeUrlInput] = useState(initialYoutubeUrl || '');
   const [isLoadingYouTube, setIsLoadingYouTube] = useState(false);
+  const initialLoadedRef = useRef(false);
+
+  // Auto-load initial YouTube URL & user
+  useEffect(() => {
+    if (initialUserId) setSelectedUserId(initialUserId);
+  }, [initialUserId]);
+
+  useEffect(() => {
+    if (initialYoutubeUrl && !initialLoadedRef.current && videos.length === 0) {
+      initialLoadedRef.current = true;
+      const id = initialYoutubeUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([\w-]{11})/)?.[1];
+      if (id) {
+        setVideos([{
+          id: `youtube-${Date.now()}`,
+          file: null,
+          url: initialYoutubeUrl,
+          name: `YouTube: ${id}`,
+          duration: 0,
+          startOffset: 0,
+          mimeType: 'video/youtube',
+          isYouTube: true,
+          youtubeId: id,
+        }]);
+        setActiveVideoIndex(0);
+      }
+    }
+  }, [initialYoutubeUrl, videos.length]);
   
   // Refs
   const videoElsRef = useRef<(HTMLVideoElement | null)[]>([]);
