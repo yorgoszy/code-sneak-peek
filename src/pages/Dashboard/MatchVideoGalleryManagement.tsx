@@ -349,24 +349,56 @@ const MatchVideoGalleryManagement: React.FC = () => {
             </div>
             <div>
               <Label className="text-red-600">Αθλητής Red corner</Label>
-              <UserSearchCombobox
-                value={form.red_athlete_id || ""}
-                onValueChange={(v) => {
-                  setForm({ ...form, red_athlete_id: v });
-                  if (v) autoDetectAgeCategory(v);
-                }}
-                placeholder="Επιλέξτε αθλητή Red..."
-                filterByCoach={false}
-              />
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <UserSearchCombobox
+                    value={form.red_athlete_id || ""}
+                    onValueChange={(v) => {
+                      setForm({ ...form, red_athlete_id: v });
+                      if (v) autoDetectAgeCategory(v);
+                    }}
+                    placeholder="Επιλέξτε αθλητή Red..."
+                    filterByCoach={false}
+                  />
+                </div>
+                {form.red_athlete_id && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="rounded-none shrink-0"
+                    onClick={() => setForm({ ...form, red_athlete_id: null })}
+                    title="Αφαίρεση αθλητή"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
             <div>
               <Label className="text-blue-600">Αθλητής Blue corner</Label>
-              <UserSearchCombobox
-                value={form.blue_athlete_id || ""}
-                onValueChange={(v) => setForm({ ...form, blue_athlete_id: v })}
-                placeholder="Επιλέξτε αθλητή Blue..."
-                filterByCoach={false}
-              />
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <UserSearchCombobox
+                    value={form.blue_athlete_id || ""}
+                    onValueChange={(v) => setForm({ ...form, blue_athlete_id: v })}
+                    placeholder="Επιλέξτε αθλητή Blue..."
+                    filterByCoach={false}
+                  />
+                </div>
+                {form.blue_athlete_id && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="rounded-none shrink-0"
+                    onClick={() => setForm({ ...form, blue_athlete_id: null })}
+                    title="Αφαίρεση αθλητή"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
           <DialogFooter>
