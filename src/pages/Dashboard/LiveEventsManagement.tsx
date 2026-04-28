@@ -450,6 +450,10 @@ const LiveEventsManagement: React.FC = () => {
                   <Input type="date" className="rounded-none h-8 col-span-1" value={ringForm.day1_date} onChange={(e) => setRingForm({ ...ringForm, day1_date: e.target.value })} />
                   <Input className="rounded-none h-8 col-span-2" value={ringForm.embed_url_day1} onChange={(e) => setRingForm({ ...ringForm, embed_url_day1: e.target.value })} placeholder="Embed URL" />
                 </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input className="rounded-none h-8" value={ringForm.day1_start} onChange={(e) => setRingForm({ ...ringForm, day1_start: e.target.value })} placeholder="Από (ωω:λλ:δδ)" />
+                  <Input className="rounded-none h-8" value={ringForm.day1_end} onChange={(e) => setRingForm({ ...ringForm, day1_end: e.target.value })} placeholder="Έως (ωω:λλ:δδ)" />
+                </div>
               </div>
 
               <div className="border border-border p-2 space-y-2">
@@ -457,6 +461,10 @@ const LiveEventsManagement: React.FC = () => {
                 <div className="grid grid-cols-3 gap-2">
                   <Input type="date" className="rounded-none h-8 col-span-1" value={ringForm.day2_date} onChange={(e) => setRingForm({ ...ringForm, day2_date: e.target.value })} />
                   <Input className="rounded-none h-8 col-span-2" value={ringForm.embed_url_day2} onChange={(e) => setRingForm({ ...ringForm, embed_url_day2: e.target.value })} placeholder="Embed URL" />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input className="rounded-none h-8" value={ringForm.day2_start} onChange={(e) => setRingForm({ ...ringForm, day2_start: e.target.value })} placeholder="Από (ωω:λλ:δδ)" />
+                  <Input className="rounded-none h-8" value={ringForm.day2_end} onChange={(e) => setRingForm({ ...ringForm, day2_end: e.target.value })} placeholder="Έως (ωω:λλ:δδ)" />
                 </div>
               </div>
 
