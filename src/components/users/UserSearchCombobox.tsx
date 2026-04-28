@@ -154,7 +154,7 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[300px] p-0 rounded-none">
-        <Command className="rounded-none">
+        <Command className="rounded-none" shouldFilter={false}>
           <CommandInput
             placeholder="Αναζήτηση με όνομα ή email..."
             value={searchQuery}
