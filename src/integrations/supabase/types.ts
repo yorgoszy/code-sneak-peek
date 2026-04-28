@@ -6377,6 +6377,57 @@ export type Database = {
         }
         Relationships: []
       }
+      match_videos: {
+        Row: {
+          age_category: string | null
+          blue_athlete_id: string | null
+          competition_name: string | null
+          created_at: string
+          created_by: string | null
+          end_seconds: number | null
+          id: string
+          match_date: string | null
+          red_athlete_id: string | null
+          start_seconds: number | null
+          title: string
+          updated_at: string
+          weight_category: string | null
+          youtube_url: string
+        }
+        Insert: {
+          age_category?: string | null
+          blue_athlete_id?: string | null
+          competition_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          end_seconds?: number | null
+          id?: string
+          match_date?: string | null
+          red_athlete_id?: string | null
+          start_seconds?: number | null
+          title: string
+          updated_at?: string
+          weight_category?: string | null
+          youtube_url: string
+        }
+        Update: {
+          age_category?: string | null
+          blue_athlete_id?: string | null
+          competition_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          end_seconds?: number | null
+          id?: string
+          match_date?: string | null
+          red_athlete_id?: string | null
+          start_seconds?: number | null
+          title?: string
+          updated_at?: string
+          weight_category?: string | null
+          youtube_url?: string
+        }
+        Relationships: []
+      }
       memberships: {
         Row: {
           created_at: string | null
