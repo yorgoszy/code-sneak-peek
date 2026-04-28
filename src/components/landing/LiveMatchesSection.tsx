@@ -148,13 +148,18 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
                       <Radio className="w-4 h-4" />
                     </div>
                     <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-                      <iframe
-                        src={normalizeEmbedUrl(pickActiveEmbed(r))}
-                        className="absolute inset-0 w-full h-full"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        title={`${event.title} - ${ringLabel} ${r.ring_name}`}
-                      />
+                      {(() => {
+                        const active = pickActiveEmbed(r);
+                        return (
+                          <iframe
+                            src={normalizeEmbedUrl(active.url, active.start, active.end)}
+                            className="absolute inset-0 w-full h-full"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            title={`${event.title} - ${ringLabel} ${r.ring_name}`}
+                          />
+                        );
+                      })()}
                     </div>
                   </div>
                 ))}
