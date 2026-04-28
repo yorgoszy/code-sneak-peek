@@ -388,6 +388,23 @@ const MatchVideoGalleryManagement: React.FC = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!analyzeVideo} onOpenChange={(o) => !o && setAnalyzeVideo(null)}>
+        <DialogContent className="max-w-[98vw] w-[98vw] h-[95vh] max-h-[95vh] overflow-y-auto rounded-none p-4">
+          <DialogHeader>
+            <DialogTitle className="text-base">
+              Ανάλυση Βίντεο: {analyzeVideo?.title}
+            </DialogTitle>
+          </DialogHeader>
+          {analyzeVideo && (
+            <VideoEditorTab
+              key={analyzeVideo.id}
+              initialYoutubeUrl={analyzeVideo.youtube_url}
+              initialUserId={analyzeVideo.red_athlete_id || undefined}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   );
 };
