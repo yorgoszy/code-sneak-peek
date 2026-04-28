@@ -397,30 +397,25 @@ const MatchVideoGalleryManagement: React.FC = () => {
             </DialogTitle>
           </DialogHeader>
           {analyzeVideo && (
-            <div className="flex-1 min-h-0 overflow-hidden">
-              <div
-                className="origin-top-left"
-                style={{
-                  transform: 'scale(0.8)',
-                  width: '125%',
-                  height: '125%',
-                  overflow: 'auto',
-                }}
-              >
-                <VideoEditorTab
-                  key={analyzeVideo.id}
-                  initialYoutubeUrl={analyzeVideo.youtube_url}
-                  initialUserId={analyzeVideo.red_athlete_id || undefined}
-                  initialOpponentName={
-                    analyzeVideo.blue_athlete_id
-                      ? (athleteNames[analyzeVideo.blue_athlete_id] || undefined)
-                      : undefined
-                  }
-                  initialStartSeconds={analyzeVideo.start_seconds}
-                  initialEndSeconds={analyzeVideo.end_seconds}
-                  initialMatchTitle={analyzeVideo.title}
-                />
-              </div>
+            <div className="flex-1 min-h-0 overflow-y-auto compact-video-editor">
+              <style>{`
+                .compact-video-editor .aspect-video { aspect-ratio: auto !important; height: 50vh !important; }
+                .compact-video-editor [id^="yt-player-"] { height: 50vh !important; }
+                .compact-video-editor video { max-height: 50vh !important; }
+              `}</style>
+              <VideoEditorTab
+                key={analyzeVideo.id}
+                initialYoutubeUrl={analyzeVideo.youtube_url}
+                initialUserId={analyzeVideo.red_athlete_id || undefined}
+                initialOpponentName={
+                  analyzeVideo.blue_athlete_id
+                    ? (athleteNames[analyzeVideo.blue_athlete_id] || undefined)
+                    : undefined
+                }
+                initialStartSeconds={analyzeVideo.start_seconds}
+                initialEndSeconds={analyzeVideo.end_seconds}
+                initialMatchTitle={analyzeVideo.title}
+              />
             </div>
           )}
         </DialogContent>
