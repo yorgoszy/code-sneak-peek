@@ -18,7 +18,8 @@ import {
   Utensils,
   Shuffle,
   Radio,
-  ShieldAlert
+  ShieldAlert,
+  Film
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
