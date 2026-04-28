@@ -63,6 +63,8 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const [selectedUserCache, setSelectedUserCache] = useState<User | null>(null);
+
   useEffect(() => {
     const fetchUsers = async () => {
       setIsLoading(true);
@@ -76,7 +78,13 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
           query = query.eq('coach_id', coachId);
         }
 
-        const { data, error } = await query.limit(100);
+        // If user is searching, use server-side ilike on name OR email (handles huge datasets)
+        if (searchQuery && searchQuery.trim().length > 0) {
+          const q = searchQuery.trim().replace(/[%,]/g, ' ');
+          query = query.or(`name.ilike.%${q}%,email.ilike.%${q}%`);
+        }
+
+        const { data, error } = await query.limit(500);
         if (error) throw error;
         setUsers(data || []);
       } catch (error) {
@@ -87,16 +95,33 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
     };
 
     fetchUsers();
-  }, [coachId]);
+  }, [coachId, searchQuery]);
 
-  const selectedUser = users.find((u) => u.id === value);
+  // Ensure the selected user stays visible even if not in current page
+  useEffect(() => {
+    if (!value) { setSelectedUserCache(null); return; }
+    const found = users.find(u => u.id === value);
+    if (found) { setSelectedUserCache(found); return; }
+    if (selectedUserCache?.id === value) return;
+    (async () => {
+      const { data } = await supabase
+        .from('app_users')
+        .select('id, name, email, avatar_url, photo_url')
+        .eq('id', value)
+        .maybeSingle();
+      if (data) setSelectedUserCache(data as User);
+    })();
+  }, [value, users]);
 
+  const selectedUser = users.find((u) => u.id === value) || selectedUserCache;
+
+  // Client-side accent-insensitive filter on top of server results (Greek/English/no tones)
   const filteredUsers = users.filter((user) => {
     if (!searchQuery) return true;
     const normalized = normalizeText(searchQuery);
     return (
-      normalizeText(user.name).includes(normalized) ||
-      normalizeText(user.email).includes(normalized)
+      normalizeText(user.name || '').includes(normalized) ||
+      normalizeText(user.email || '').includes(normalized)
     );
   });
 
@@ -129,7 +154,7 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[300px] p-0 rounded-none">
-        <Command className="rounded-none">
+        <Command className="rounded-none" shouldFilter={false}>
           <CommandInput
             placeholder="Αναζήτηση με όνομα ή email..."
             value={searchQuery}

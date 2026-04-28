@@ -92,6 +92,56 @@ const MatchVideoGalleryManagement: React.FC = () => {
 
   useEffect(() => { load(); }, []);
 
+  // Auto-detect ηλικιακή κατηγορία based on red athlete's birth_date + gender
+  const autoDetectAgeCategory = async (athleteId: string) => {
+    if (!athleteId) return;
+    const { data: u } = await supabase
+      .from("app_users")
+      .select("birth_date, gender")
+      .eq("id", athleteId)
+      .maybeSingle();
+    if (!u?.birth_date) return;
+    const dob = new Date(u.birth_date as string);
+    if (isNaN(dob.getTime())) return;
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+
+    const genderRaw = (u.gender || "").toString().toLowerCase();
+    const gender = genderRaw.startsWith("f") || genderRaw.includes("γυν") || genderRaw.includes("θηλ")
+      ? "female"
+      : (genderRaw.startsWith("m") || genderRaw.includes("αν") || genderRaw.includes("αρ")) ? "male" : null;
+
+    let q = supabase
+      .from("federation_category_templates")
+      .select("name, min_age, max_age, gender")
+      .lte("min_age", age);
+    const { data: cats } = await q;
+    if (!cats || cats.length === 0) return;
+
+    const matches = cats.filter((c: any) => {
+      const okMin = c.min_age == null || age >= c.min_age;
+      const okMax = c.max_age == null || age <= c.max_age;
+      const okGender = !c.gender || c.gender === "all" || !gender || c.gender === gender;
+      return okMin && okMax && okGender;
+    });
+    if (matches.length === 0) return;
+
+    // Prefer the most specific (smallest age range) and gender-matching
+    matches.sort((a: any, b: any) => {
+      const aGen = a.gender === gender ? 0 : 1;
+      const bGen = b.gender === gender ? 0 : 1;
+      if (aGen !== bGen) return aGen - bGen;
+      const aRange = (a.max_age ?? 99) - (a.min_age ?? 0);
+      const bRange = (b.max_age ?? 99) - (b.min_age ?? 0);
+      return aRange - bRange;
+    });
+    // Extract just the age portion (strip weight like " -45kg")
+    const cleanName = (matches[0].name || "").replace(/\s*[-+]?\s*\d+\s*kg.*/i, "").trim();
+    setForm((f) => ({ ...f, age_category: cleanName || f.age_category }));
+  };
+
   const openNew = () => { setForm(emptyForm); setDialogOpen(true); };
 
   const openEdit = (v: MatchVideo) => {
@@ -192,33 +242,30 @@ const MatchVideoGalleryManagement: React.FC = () => {
               </Button>
             </div>
 
-            <div className="grid gap-3">
+            <div className="grid gap-1.5">
               {videos.length === 0 && (
-                <Card className="rounded-none"><CardContent className="p-6 text-center text-muted-foreground">Δεν υπάρχουν βίντεο.</CardContent></Card>
+                <Card className="rounded-none"><CardContent className="p-4 text-center text-muted-foreground text-sm">Δεν υπάρχουν βίντεο.</CardContent></Card>
               )}
               {videos.map((v) => (
                 <Card key={v.id} className="rounded-none">
-                  <CardContent className="p-3 flex items-center justify-between gap-3 flex-wrap">
-                    <div className="min-w-0 flex-1">
-                      <div className="font-semibold truncate">{v.title}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {v.competition_name && <>{v.competition_name} · </>}
-                        {v.match_date && <>{v.match_date} · </>}
-                        {v.age_category && <>{v.age_category} </>}
-                        {v.weight_category && <>· {v.weight_category}</>}
-                      </div>
-                      <div className="text-xs mt-1">
-                        <span className="text-red-600 font-semibold">RED: {v.red_athlete_id ? (athleteNames[v.red_athlete_id] || "—") : "—"}</span>
-                        {"  vs  "}
-                        <span className="text-blue-600 font-semibold">BLUE: {v.blue_athlete_id ? (athleteNames[v.blue_athlete_id] || "—") : "—"}</span>
-                      </div>
+                  <CardContent className="px-2 py-1.5 flex items-center justify-between gap-2">
+                    <div className="min-w-0 flex-1 flex items-center gap-2 text-xs">
+                      <span className="font-semibold truncate max-w-[180px]">{v.title}</span>
+                      <span className="text-muted-foreground truncate">
+                        {[v.match_date, v.competition_name, v.age_category, v.weight_category].filter(Boolean).join(" · ")}
+                      </span>
+                      <span className="ml-auto whitespace-nowrap">
+                        <span className="text-red-600 font-semibold">{v.red_athlete_id ? (athleteNames[v.red_athlete_id] || "—") : "—"}</span>
+                        <span className="mx-1 text-muted-foreground">vs</span>
+                        <span className="text-blue-600 font-semibold">{v.blue_athlete_id ? (athleteNames[v.blue_athlete_id] || "—") : "—"}</span>
+                      </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" variant="outline" onClick={() => openEdit(v)} className="rounded-none">
-                        <Pencil className="h-4 w-4" />
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button size="icon" variant="ghost" onClick={() => openEdit(v)} className="rounded-none h-7 w-7">
+                        <Pencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => setDeleteId(v.id)} className="rounded-none">
-                        <Trash2 className="h-4 w-4" />
+                      <Button size="icon" variant="ghost" onClick={() => setDeleteId(v.id)} className="rounded-none h-7 w-7">
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   </CardContent>
@@ -275,7 +322,10 @@ const MatchVideoGalleryManagement: React.FC = () => {
               <Label className="text-red-600">Αθλητής Red corner</Label>
               <UserSearchCombobox
                 value={form.red_athlete_id || ""}
-                onValueChange={(v) => setForm({ ...form, red_athlete_id: v })}
+                onValueChange={(v) => {
+                  setForm({ ...form, red_athlete_id: v });
+                  if (v) autoDetectAgeCategory(v);
+                }}
                 placeholder="Επιλέξτε αθλητή Red..."
                 filterByCoach={false}
               />
