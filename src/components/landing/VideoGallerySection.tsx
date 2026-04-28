@@ -180,7 +180,7 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
                               {red && (
                                 <>
                                   <Avatar className="w-8 h-8 border-2 border-red-500">
-                                    <AvatarImage src={red.avatar_url || undefined} />
+                                    <AvatarImage src={getAvatar(red)} />
                                     <AvatarFallback className="text-xs bg-red-50 text-red-700">
                                       {initials(red)}
                                     </AvatarFallback>
