@@ -24,6 +24,7 @@ import { UserProfileHistory } from "./UserProfileHistory";
 import { SchoolNotes } from "@/pages/SchoolNotes";
 import { UserProfileNutrition } from "./UserProfileNutrition";
 import { UserProfileSafety } from "./UserProfileSafety";
+import { UserProfileMatchVideos } from "./UserProfileMatchVideos";
 import CoachBracketsPage from "@/pages/Dashboard/CoachBracketsPage";
 import CoachLivePage from "@/pages/Dashboard/CoachLivePage";
 import RankingPage from "@/pages/Dashboard/RankingPage";
@@ -275,6 +276,14 @@ export const UserProfileContent = ({
           <div className="space-y-4">
             <BackButton />
             <UserProfileSafety userProfile={userProfile} />
+          </div>
+        );
+      case "match-videos":
+        return (
+          <div className="space-y-4">
+            <BackButton />
+            <h2 className="text-xl font-semibold">Βίντεο Αγώνων</h2>
+            <UserProfileMatchVideos userId={userProfile?.id} />
           </div>
         );
       case "coach-brackets":
