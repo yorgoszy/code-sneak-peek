@@ -2116,7 +2116,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                 )}
 
                 {/* Rounds Timeline - Enlarged */}
-                <div className="relative h-10 bg-blue-50 rounded-none border border-blue-200">
+                <div className={compactMode ? "relative h-7 bg-blue-50 rounded-none border border-blue-200" : "relative h-10 bg-blue-50 rounded-none border border-blue-200"}>
                   {roundMarkers.map((round) => {
                     const isOpen = round.endTime === null;
                     // For open rounds, use the max of globalCurrentTime and startTime to prevent backwards jumping
@@ -2194,7 +2194,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                 </div>
                 
                 {/* Action Flags Timeline */}
-                <div className="relative h-8 bg-gray-100 rounded-none border border-gray-200 mt-1">
+                <div className={compactMode ? "relative h-6 bg-gray-100 rounded-none border border-gray-200 mt-0.5" : "relative h-8 bg-gray-100 rounded-none border border-gray-200 mt-1"}>
                   {/* Action flag markers */}
                   {actionFlags.map((flag) => {
                     const isOpen = flag.endTime === null;
@@ -2290,8 +2290,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                   
                   // Calculate max combo size to determine row count
                   const maxCombo = Math.max(1, ...Object.values(groupedBySecond).map(g => g.length));
-                  const rowHeight = 18; // bigger click area
-                  const totalHeight = Math.max(40, maxCombo * rowHeight + 8);
+                  const rowHeight = compactMode ? 14 : 18; // bigger click area
+                  const totalHeight = compactMode ? Math.max(24, maxCombo * rowHeight + 4) : Math.max(40, maxCombo * rowHeight + 8);
                   
                   return (
                     <div className="relative bg-gray-50 rounded-none border border-gray-200 mt-1" style={{ height: `${totalHeight}px` }}>
@@ -2346,13 +2346,13 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                                 left: `${(marker.time / (totalDuration > 0 ? totalDuration : duration)) * 100}%`,
                                 top: `${topOffset}px`,
                                 transform: 'translateX(-50%)',
-                                minWidth: '18px',
-                                height: '16px'
+                            minWidth: compactMode ? '14px' : '18px',
+                            height: compactMode ? '12px' : '16px'
                               }}
                               onClick={() => toggleStrikeState(marker.id)}
                               title={`${marker.strikeTypeName} - ${marker.owner === 'athlete' ? 'ΕΓΩ' : 'ΑΝΤ'}${isCombo ? ` (Combo ${indexInCombo + 1}/${markers.length})` : ''}`}
                             >
-                              <div className={`px-1 py-0.5 rounded text-[9px] font-bold ${dotColor} ${isCombo ? 'ring-2 ring-white shadow-md' : 'ring-1 ring-gray-200'} ${marker.owner === 'athlete' ? 'text-black' : 'text-white'}`}>
+                              <div className={`${compactMode ? 'px-0.5 py-0 text-[8px]' : 'px-1 py-0.5 text-[9px]'} rounded font-bold ${dotColor} ${isCombo ? 'ring-2 ring-white shadow-md' : 'ring-1 ring-gray-200'} ${marker.owner === 'athlete' ? 'text-black' : 'text-white'}`}>
                                 {abbreviation}
                               </div>
                             </div>
@@ -2364,7 +2364,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                 })()}
 
                 {/* Trim markers on timeline */}
-                <div className="relative h-2 bg-gray-200 rounded-none mt-1">
+                <div className={compactMode ? "relative h-1.5 bg-gray-200 rounded-none mt-0.5" : "relative h-2 bg-gray-200 rounded-none mt-1"}>
                   {/* Playback progress */}
                   <div 
                     className="absolute h-full bg-[#00ffba] rounded-none"
