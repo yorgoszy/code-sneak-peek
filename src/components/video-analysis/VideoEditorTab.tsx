@@ -99,6 +99,7 @@ interface StrikeMarker {
   strikeSide: string | null;
   time: number;
   owner: 'athlete' | 'opponent'; // Determined by which flag it's inside
+  actionType: 'attack' | 'defense'; // athlete=attack, opponent=defense
   roundNumber: number | null; // Which round this strike is in
   timeInRound: number | null; // Time (in seconds) within the round
   hitTarget: boolean; // Did the strike hit the target? (ορθότητα)
