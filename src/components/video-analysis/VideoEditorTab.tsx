@@ -108,9 +108,21 @@ interface VideoEditorTabProps {
   onFightSaved?: () => void;
   initialYoutubeUrl?: string;
   initialUserId?: string;
+  initialOpponentName?: string;
+  initialStartSeconds?: number | null;
+  initialEndSeconds?: number | null;
+  initialMatchTitle?: string;
 }
 
-export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({ onFightSaved, initialYoutubeUrl, initialUserId }) => {
+export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
+  onFightSaved,
+  initialYoutubeUrl,
+  initialUserId,
+  initialOpponentName,
+  initialStartSeconds,
+  initialEndSeconds,
+  initialMatchTitle,
+}) => {
   // Role check & coach ID - use useEffectiveCoachId hook
   const { userProfile } = useRoleCheck();
   const coachId = userProfile?.id || null;
