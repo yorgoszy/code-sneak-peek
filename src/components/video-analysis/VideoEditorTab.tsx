@@ -112,6 +112,7 @@ interface VideoEditorTabProps {
   initialStartSeconds?: number | null;
   initialEndSeconds?: number | null;
   initialMatchTitle?: string;
+  compactMode?: boolean;
 }
 
 export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
@@ -122,6 +123,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
   initialStartSeconds,
   initialEndSeconds,
   initialMatchTitle,
+  compactMode = false,
 }) => {
   // Role check & coach ID - use useEffectiveCoachId hook
   const { userProfile } = useRoleCheck();
