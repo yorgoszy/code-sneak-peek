@@ -52,7 +52,31 @@ interface LiveRing {
   embed_url_day2: string | null;
   day1_date: string | null;
   day2_date: string | null;
+  day1_start_seconds: number | null;
+  day1_end_seconds: number | null;
+  day2_start_seconds: number | null;
+  day2_end_seconds: number | null;
 }
+
+// Parse "HH:MM:SS", "MM:SS", or plain seconds into total seconds
+const parseTimeToSeconds = (input: string): number | null => {
+  if (!input || !input.trim()) return null;
+  const s = input.trim();
+  if (/^\d+$/.test(s)) return parseInt(s, 10);
+  const parts = s.split(":").map((p) => parseInt(p, 10));
+  if (parts.some((n) => isNaN(n))) return null;
+  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  if (parts.length === 2) return parts[0] * 60 + parts[1];
+  return null;
+};
+
+const secondsToTime = (sec: number | null | undefined): string => {
+  if (sec == null) return "";
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+};
 
 const todayStr = () => {
   const d = new Date();
@@ -92,6 +116,10 @@ const LiveEventsManagement: React.FC = () => {
     embed_url_day2: "",
     day1_date: "",
     day2_date: "",
+    day1_start: "",
+    day1_end: "",
+    day2_start: "",
+    day2_end: "",
   });
 
   const [deleteEventId, setDeleteEventId] = useState<string | null>(null);
@@ -163,6 +191,10 @@ const LiveEventsManagement: React.FC = () => {
       embed_url_day2: "",
       day1_date: "",
       day2_date: "",
+      day1_start: "",
+      day1_end: "",
+      day2_start: "",
+      day2_end: "",
     });
     setRingDialog(true);
   };
@@ -178,6 +210,10 @@ const LiveEventsManagement: React.FC = () => {
       embed_url_day2: r.embed_url_day2 || "",
       day1_date: r.day1_date || "",
       day2_date: r.day2_date || "",
+      day1_start: secondsToTime(r.day1_start_seconds),
+      day1_end: secondsToTime(r.day1_end_seconds),
+      day2_start: secondsToTime(r.day2_start_seconds),
+      day2_end: secondsToTime(r.day2_end_seconds),
     });
     setRingDialog(true);
   };
@@ -199,6 +235,10 @@ const LiveEventsManagement: React.FC = () => {
       embed_url_day2: ringForm.embed_url_day2 || null,
       day1_date: ringForm.day1_date || null,
       day2_date: ringForm.day2_date || null,
+      day1_start_seconds: parseTimeToSeconds(ringForm.day1_start),
+      day1_end_seconds: parseTimeToSeconds(ringForm.day1_end),
+      day2_start_seconds: parseTimeToSeconds(ringForm.day2_start),
+      day2_end_seconds: parseTimeToSeconds(ringForm.day2_end),
     };
     if (editingRing) {
       const { error } = await supabase.from("live_event_rings").update(payload).eq("id", editingRing.id);
@@ -410,6 +450,10 @@ const LiveEventsManagement: React.FC = () => {
                   <Input type="date" className="rounded-none h-8 col-span-1" value={ringForm.day1_date} onChange={(e) => setRingForm({ ...ringForm, day1_date: e.target.value })} />
                   <Input className="rounded-none h-8 col-span-2" value={ringForm.embed_url_day1} onChange={(e) => setRingForm({ ...ringForm, embed_url_day1: e.target.value })} placeholder="Embed URL" />
                 </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input className="rounded-none h-8" value={ringForm.day1_start} onChange={(e) => setRingForm({ ...ringForm, day1_start: e.target.value })} placeholder="Από (ωω:λλ:δδ)" />
+                  <Input className="rounded-none h-8" value={ringForm.day1_end} onChange={(e) => setRingForm({ ...ringForm, day1_end: e.target.value })} placeholder="Έως (ωω:λλ:δδ)" />
+                </div>
               </div>
 
               <div className="border border-border p-2 space-y-2">
@@ -417,6 +461,10 @@ const LiveEventsManagement: React.FC = () => {
                 <div className="grid grid-cols-3 gap-2">
                   <Input type="date" className="rounded-none h-8 col-span-1" value={ringForm.day2_date} onChange={(e) => setRingForm({ ...ringForm, day2_date: e.target.value })} />
                   <Input className="rounded-none h-8 col-span-2" value={ringForm.embed_url_day2} onChange={(e) => setRingForm({ ...ringForm, embed_url_day2: e.target.value })} placeholder="Embed URL" />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input className="rounded-none h-8" value={ringForm.day2_start} onChange={(e) => setRingForm({ ...ringForm, day2_start: e.target.value })} placeholder="Από (ωω:λλ:δδ)" />
+                  <Input className="rounded-none h-8" value={ringForm.day2_end} onChange={(e) => setRingForm({ ...ringForm, day2_end: e.target.value })} placeholder="Έως (ωω:λλ:δδ)" />
                 </div>
               </div>
 

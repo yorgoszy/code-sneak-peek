@@ -3,21 +3,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { Radio } from "lucide-react";
 import { parseYouTubeId } from "@/utils/youtubeIframeApi";
 
-const normalizeEmbedUrl = (url: string): string => {
+const normalizeEmbedUrl = (url: string, startSec?: number | null, endSec?: number | null): string => {
   if (!url) return url;
-  // Already an embed URL
-  // YouTube live params: autoplay, muted (required for autoplay), playsinline, loop
-  const ytParams = "autoplay=1&mute=1&playsinline=1&controls=1&rel=0&modestbranding=1";
+  const ytParamsBase = "autoplay=1&mute=1&playsinline=1&controls=1&rel=0&modestbranding=1";
+  const extra: string[] = [];
+  if (typeof startSec === "number" && startSec > 0) extra.push(`start=${startSec}`);
+  if (typeof endSec === "number" && endSec > 0) extra.push(`end=${endSec}`);
+  const extraStr = extra.join("&");
+
   if (url.includes("/embed/")) {
-    // Ensure autoplay/mute params are present
     const hasParams = url.includes("?");
-    if (url.includes("autoplay=1")) return url;
-    return `${url}${hasParams ? "&" : "?"}${ytParams}`;
+    const sep = hasParams ? "&" : "?";
+    const needsAutoplay = !url.includes("autoplay=1");
+    let result = url;
+    if (needsAutoplay) result = `${result}${sep}${ytParamsBase}`;
+    if (extraStr) result = `${result}${result.includes("?") ? "&" : "?"}${extraStr}`;
+    return result;
   }
-  // Try YouTube parsing
   const ytId = parseYouTubeId(url);
-  if (ytId) return `https://www.youtube.com/embed/${ytId}?${ytParams}`;
-  // Twitch channel
+  if (ytId) {
+    const params = extraStr ? `${ytParamsBase}&${extraStr}` : ytParamsBase;
+    return `https://www.youtube.com/embed/${ytId}?${params}`;
+  }
   const twitchMatch = url.match(/twitch\.tv\/([a-zA-Z0-9_]+)/);
   if (twitchMatch) {
     const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
@@ -42,6 +49,10 @@ interface LiveRing {
   embed_url_day2: string | null;
   day1_date: string | null;
   day2_date: string | null;
+  day1_start_seconds: number | null;
+  day1_end_seconds: number | null;
+  day2_start_seconds: number | null;
+  day2_end_seconds: number | null;
 }
 
 const todayStr = () => {
@@ -49,11 +60,17 @@ const todayStr = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 
-const pickActiveEmbed = (r: LiveRing): string => {
+const pickActiveEmbed = (r: LiveRing): { url: string; start: number | null; end: number | null } => {
   const today = todayStr();
-  if (r.day1_date && r.embed_url_day1 && r.day1_date === today) return r.embed_url_day1;
-  if (r.day2_date && r.embed_url_day2 && r.day2_date === today) return r.embed_url_day2;
-  return r.embed_url_day1 || r.embed_url_day2 || r.embed_url || "";
+  if (r.day1_date && r.embed_url_day1 && r.day1_date === today) {
+    return { url: r.embed_url_day1, start: r.day1_start_seconds, end: r.day1_end_seconds };
+  }
+  if (r.day2_date && r.embed_url_day2 && r.day2_date === today) {
+    return { url: r.embed_url_day2, start: r.day2_start_seconds, end: r.day2_end_seconds };
+  }
+  if (r.embed_url_day1) return { url: r.embed_url_day1, start: r.day1_start_seconds, end: r.day1_end_seconds };
+  if (r.embed_url_day2) return { url: r.embed_url_day2, start: r.day2_start_seconds, end: r.day2_end_seconds };
+  return { url: r.embed_url || "", start: null, end: null };
 };
 
 interface Props {
@@ -131,13 +148,18 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
                       <Radio className="w-4 h-4" />
                     </div>
                     <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-                      <iframe
-                        src={normalizeEmbedUrl(pickActiveEmbed(r))}
-                        className="absolute inset-0 w-full h-full"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        title={`${event.title} - ${ringLabel} ${r.ring_name}`}
-                      />
+                      {(() => {
+                        const active = pickActiveEmbed(r);
+                        return (
+                          <iframe
+                            src={normalizeEmbedUrl(active.url, active.start, active.end)}
+                            className="absolute inset-0 w-full h-full"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            title={`${event.title} - ${ringLabel} ${r.ring_name}`}
+                          />
+                        );
+                      })()}
                     </div>
                   </div>
                 ))}

@@ -6182,7 +6182,11 @@ export type Database = {
         Row: {
           created_at: string
           day1_date: string | null
+          day1_end_seconds: number | null
+          day1_start_seconds: number | null
           day2_date: string | null
+          day2_end_seconds: number | null
+          day2_start_seconds: number | null
           display_order: number
           embed_url: string
           embed_url_day1: string | null
@@ -6195,7 +6199,11 @@ export type Database = {
         Insert: {
           created_at?: string
           day1_date?: string | null
+          day1_end_seconds?: number | null
+          day1_start_seconds?: number | null
           day2_date?: string | null
+          day2_end_seconds?: number | null
+          day2_start_seconds?: number | null
           display_order?: number
           embed_url: string
           embed_url_day1?: string | null
@@ -6208,7 +6216,11 @@ export type Database = {
         Update: {
           created_at?: string
           day1_date?: string | null
+          day1_end_seconds?: number | null
+          day1_start_seconds?: number | null
           day2_date?: string | null
+          day2_end_seconds?: number | null
+          day2_start_seconds?: number | null
           display_order?: number
           embed_url?: string
           embed_url_day1?: string | null

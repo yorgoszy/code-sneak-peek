@@ -1,0 +1,5 @@
+ALTER TABLE public.live_event_rings
+ADD COLUMN IF NOT EXISTS day1_start_seconds INTEGER,
+ADD COLUMN IF NOT EXISTS day1_end_seconds INTEGER,
+ADD COLUMN IF NOT EXISTS day2_start_seconds INTEGER,
+ADD COLUMN IF NOT EXISTS day2_end_seconds INTEGER;
