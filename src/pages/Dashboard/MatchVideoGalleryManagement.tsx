@@ -401,6 +401,14 @@ const MatchVideoGalleryManagement: React.FC = () => {
               key={analyzeVideo.id}
               initialYoutubeUrl={analyzeVideo.youtube_url}
               initialUserId={analyzeVideo.red_athlete_id || undefined}
+              initialOpponentName={
+                analyzeVideo.blue_athlete_id
+                  ? (athleteNames[analyzeVideo.blue_athlete_id] || undefined)
+                  : undefined
+              }
+              initialStartSeconds={analyzeVideo.start_seconds}
+              initialEndSeconds={analyzeVideo.end_seconds}
+              initialMatchTitle={analyzeVideo.title}
             />
           )}
         </DialogContent>
