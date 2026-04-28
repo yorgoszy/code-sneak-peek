@@ -1895,8 +1895,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
           </div>
           
           {/* AI Analysis Panel */}
-          {showAIPanel && !compactMode && (
-            <div className="mt-3">
+          {showAIPanel && (
+            <div className={compactMode ? "mt-2" : "mt-3"}>
               <AutoAnalysisPanel
                 videoElement={getActiveVideoEl()}
                 onStrikesDetected={handleAIStrikesDetected}
