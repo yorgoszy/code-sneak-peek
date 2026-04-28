@@ -207,10 +207,16 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
   const [isLoadingYouTube, setIsLoadingYouTube] = useState(false);
   const initialLoadedRef = useRef(false);
 
-  // Auto-load initial YouTube URL & user
+  const trimInitedRef = useRef(false);
+
+  // Auto-load initial YouTube URL & user metadata
   useEffect(() => {
     if (initialUserId) setSelectedUserId(initialUserId);
   }, [initialUserId]);
+
+  useEffect(() => {
+    if (initialOpponentName) setOpponentName(initialOpponentName);
+  }, [initialOpponentName]);
 
   useEffect(() => {
     if (initialYoutubeUrl && !initialLoadedRef.current && videos.length === 0) {
@@ -221,7 +227,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
           id: `youtube-${Date.now()}`,
           file: null,
           url: initialYoutubeUrl,
-          name: `YouTube: ${id}`,
+          name: initialMatchTitle || `YouTube: ${id}`,
           duration: 0,
           startOffset: 0,
           mimeType: 'video/youtube',
@@ -231,7 +237,22 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
         setActiveVideoIndex(0);
       }
     }
-  }, [initialYoutubeUrl, videos.length]);
+  }, [initialYoutubeUrl, videos.length, initialMatchTitle]);
+
+  // Apply initial trim once duration is known
+  useEffect(() => {
+    if (trimInitedRef.current) return;
+    if (videos.length === 0) return;
+    const dur = videos[0]?.duration || 0;
+    if (dur <= 0) return;
+    const hasStart = typeof initialStartSeconds === 'number' && initialStartSeconds > 0;
+    const hasEnd = typeof initialEndSeconds === 'number' && initialEndSeconds > 0;
+    if (hasStart || hasEnd) {
+      trimInitedRef.current = true;
+      if (hasStart) setTrimStart(Math.max(0, Math.min(initialStartSeconds!, dur)));
+      if (hasEnd) setTrimEnd(Math.max(0, Math.min(initialEndSeconds!, dur)));
+    }
+  }, [videos, initialStartSeconds, initialEndSeconds]);
   
   // Refs
   const videoElsRef = useRef<(HTMLVideoElement | null)[]>([]);
