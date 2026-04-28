@@ -112,6 +112,7 @@ interface VideoEditorTabProps {
   initialStartSeconds?: number | null;
   initialEndSeconds?: number | null;
   initialMatchTitle?: string;
+  compactMode?: boolean;
 }
 
 export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
@@ -122,6 +123,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
   initialStartSeconds,
   initialEndSeconds,
   initialMatchTitle,
+  compactMode = false,
 }) => {
   // Role check & coach ID - use useEffectiveCoachId hook
   const { userProfile } = useRoleCheck();
@@ -1696,7 +1698,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className={compactMode ? "h-full min-h-0 flex flex-col gap-2 overflow-hidden" : "space-y-4"}>
       {/* Hidden file input for adding more videos */}
       <input
         ref={fileInputRef}
@@ -1791,16 +1793,16 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
       )}
 
       {/* Video Player */}
-      <Card className="rounded-none">
-        <CardContent className="p-4">
-          <div className="relative bg-black rounded-none overflow-hidden" style={{ minHeight: '300px' }}>
+      <Card className={compactMode ? "rounded-none flex-1 min-h-0 overflow-hidden" : "rounded-none"}>
+        <CardContent className={compactMode ? "p-2 h-full min-h-0 flex flex-col overflow-hidden" : "p-4"}>
+          <div className="relative bg-black rounded-none overflow-hidden" style={{ minHeight: compactMode ? '0' : '300px', height: compactMode ? 'clamp(220px, 38vh, 360px)' : undefined }}>
             {videos.map((v, idx) => {
               // YouTube video
               if (v.isYouTube && v.youtubeId) {
                 return (
                   <div
                     key={v.id}
-                    className={`w-full aspect-video ${idx === activeVideoIndex ? 'block' : 'hidden'}`}
+                    className={`w-full ${compactMode ? 'h-full' : 'aspect-video'} ${idx === activeVideoIndex ? 'block' : 'hidden'}`}
                   >
                     {/* YouTube IFrame API will replace this div with an iframe */}
                     <div
@@ -1819,7 +1821,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                     videoElsRef.current[idx] = el;
                   }}
                   src={v.url}
-                  className={`w-full max-h-[60vh] object-contain ${idx === activeVideoIndex ? 'block' : 'hidden'}`}
+                  className={`w-full object-contain ${compactMode ? 'h-full' : 'max-h-[60vh]'} ${idx === activeVideoIndex ? 'block' : 'hidden'}`}
                   onLoadedMetadata={() => {
                     if (idx === activeVideoIndex) handleLoadedMetadata();
                   }}
@@ -1868,7 +1870,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
           </div>
           
           {/* AI Auto Analysis Toggle */}
-          <div className="mt-4 flex items-center gap-2">
+          <div className={compactMode ? "mt-2 flex items-center gap-2" : "mt-4 flex items-center gap-2"}>
             <Button
               variant={showAIPanel ? "default" : "outline"}
               size="sm"
@@ -1878,7 +1880,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
               <Sparkles className="w-4 h-4 mr-1" />
               AI Ανάλυση
             </Button>
-            {showAIPanel && (
+            {showAIPanel && !compactMode && (
               <span className="text-xs text-gray-500">
                 Αυτόματη ανίχνευση χτυπημάτων με AI
               </span>
@@ -1886,7 +1888,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
           </div>
           
           {/* AI Analysis Panel */}
-          {showAIPanel && (
+          {showAIPanel && !compactMode && (
             <div className="mt-3">
               <AutoAnalysisPanel
                 videoElement={getActiveVideoEl()}
@@ -1897,7 +1899,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
           )}
           
           {/* Strike Buttons - Above Timeline */}
-          <div className="mt-4 p-2 bg-gray-50 border border-gray-200 rounded-none">
+          <div className={compactMode ? "mt-2 p-1 bg-gray-50 border border-gray-200 rounded-none shrink-0" : "mt-4 p-2 bg-gray-50 border border-gray-200 rounded-none"}>
             <div className="flex items-center gap-2 flex-wrap">
               <div className="flex items-center gap-1 mr-2">
                 <Target className="w-3 h-3 text-gray-600" />
@@ -1931,7 +1933,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                       key={strike.id}
                       size="sm"
                       variant="outline"
-                      className="rounded-none h-6 text-[10px] px-2 hover:bg-[#cb8954] hover:text-white hover:border-[#cb8954]"
+                      className={compactMode ? "rounded-none h-5 text-[9px] px-1.5 hover:bg-[#cb8954] hover:text-white hover:border-[#cb8954]" : "rounded-none h-6 text-[10px] px-2 hover:bg-[#cb8954] hover:text-white hover:border-[#cb8954]"}
                       onClick={() => addStrikeMarker(strike)}
                     >
                       {strike.name}
@@ -1942,11 +1944,11 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
           </div>
 
           {/* Timeline with Zoom */}
-          <div className="mt-2 space-y-2">
+          <div className={compactMode ? "mt-1 space-y-1 shrink-0" : "mt-2 space-y-2"}>
             {/* Controls Row: Rounds + Σήμανση + Zoom + Volume + Speed */}
-            <div className="flex items-center bg-gray-50 border border-gray-200 p-1.5 rounded-none flex-wrap gap-3">
+              <div className={compactMode ? "flex items-center bg-gray-50 border border-gray-200 p-1 rounded-none flex-wrap gap-1.5" : "flex items-center bg-gray-50 border border-gray-200 p-1.5 rounded-none flex-wrap gap-3"}>
               {/* Round Controls */}
-              <div className="flex items-center gap-1.5 pr-3 border-r border-gray-300">
+                <div className={compactMode ? "flex items-center gap-1 pr-1.5 border-r border-gray-300" : "flex items-center gap-1.5 pr-3 border-r border-gray-300"}>
                 <CircleDot className="w-4 h-4 text-blue-600" />
                 {roundMarkers.length > 0 && (
                   <Badge variant="outline" className="rounded-none bg-blue-100 text-blue-700 text-xs px-1">
@@ -1975,7 +1977,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
               </div>
               
               {/* Action Flags Controls */}
-              <div className="flex items-center gap-1.5 pr-3 border-r border-gray-300">
+                <div className={compactMode ? "flex items-center gap-1 pr-1.5 border-r border-gray-300" : "flex items-center gap-1.5 pr-3 border-r border-gray-300"}>
                 <Flag className="w-4 h-4 text-gray-600" />
                 {activeFlag?.type === 'attack' ? (
                   <Button size="sm" className="rounded-none bg-[#00ffba] text-black animate-pulse h-6 text-xs px-2" onClick={closeActiveFlag}>
@@ -2007,7 +2009,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
               </div>
               
               {/* Zoom */}
-              <div className="flex items-center gap-1.5 pr-3 border-r border-gray-300">
+                <div className={compactMode ? "hidden" : "flex items-center gap-1.5 pr-3 border-r border-gray-300"}>
                 <ZoomIn className="w-4 h-4 text-gray-500" />
                 <span className="text-xs text-gray-600">{timelineZoom.toFixed(1)}x</span>
                 <Button variant="outline" size="sm" className="h-6 w-6 p-0 rounded-none" onClick={() => setTimelineZoom(Math.max(1, timelineZoom - 0.5))} disabled={timelineZoom <= 1}>
@@ -2020,7 +2022,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
               </div>
               
               {/* Volume */}
-              <div className="flex items-center gap-1.5 pr-3 border-r border-gray-300">
+                <div className={compactMode ? "hidden" : "flex items-center gap-1.5 pr-3 border-r border-gray-300"}>
                 <Button variant="ghost" size="sm" className="h-6 w-6 p-0 rounded-none" onClick={toggleMute}>
                   {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                 </Button>
@@ -2030,7 +2032,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
               </div>
               
               {/* Speed */}
-              <div className="flex items-center gap-1">
+                <div className={compactMode ? "flex items-center gap-0.5" : "flex items-center gap-1"}>
                 {[0.5, 1, 1.5, 2].map(rate => (
                   <Button
                     key={rate}
@@ -2114,7 +2116,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                 )}
 
                 {/* Rounds Timeline - Enlarged */}
-                <div className="relative h-10 bg-blue-50 rounded-none border border-blue-200">
+                <div className={compactMode ? "relative h-7 bg-blue-50 rounded-none border border-blue-200" : "relative h-10 bg-blue-50 rounded-none border border-blue-200"}>
                   {roundMarkers.map((round) => {
                     const isOpen = round.endTime === null;
                     // For open rounds, use the max of globalCurrentTime and startTime to prevent backwards jumping
@@ -2192,7 +2194,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                 </div>
                 
                 {/* Action Flags Timeline */}
-                <div className="relative h-8 bg-gray-100 rounded-none border border-gray-200 mt-1">
+                <div className={compactMode ? "relative h-6 bg-gray-100 rounded-none border border-gray-200 mt-0.5" : "relative h-8 bg-gray-100 rounded-none border border-gray-200 mt-1"}>
                   {/* Action flag markers */}
                   {actionFlags.map((flag) => {
                     const isOpen = flag.endTime === null;
@@ -2288,8 +2290,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                   
                   // Calculate max combo size to determine row count
                   const maxCombo = Math.max(1, ...Object.values(groupedBySecond).map(g => g.length));
-                  const rowHeight = 18; // bigger click area
-                  const totalHeight = Math.max(40, maxCombo * rowHeight + 8);
+                  const rowHeight = compactMode ? 14 : 18; // bigger click area
+                  const totalHeight = compactMode ? Math.max(24, maxCombo * rowHeight + 4) : Math.max(40, maxCombo * rowHeight + 8);
                   
                   return (
                     <div className="relative bg-gray-50 rounded-none border border-gray-200 mt-1" style={{ height: `${totalHeight}px` }}>
@@ -2344,13 +2346,13 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                                 left: `${(marker.time / (totalDuration > 0 ? totalDuration : duration)) * 100}%`,
                                 top: `${topOffset}px`,
                                 transform: 'translateX(-50%)',
-                                minWidth: '18px',
-                                height: '16px'
+                            minWidth: compactMode ? '14px' : '18px',
+                            height: compactMode ? '12px' : '16px'
                               }}
                               onClick={() => toggleStrikeState(marker.id)}
                               title={`${marker.strikeTypeName} - ${marker.owner === 'athlete' ? 'ΕΓΩ' : 'ΑΝΤ'}${isCombo ? ` (Combo ${indexInCombo + 1}/${markers.length})` : ''}`}
                             >
-                              <div className={`px-1 py-0.5 rounded text-[9px] font-bold ${dotColor} ${isCombo ? 'ring-2 ring-white shadow-md' : 'ring-1 ring-gray-200'} ${marker.owner === 'athlete' ? 'text-black' : 'text-white'}`}>
+                              <div className={`${compactMode ? 'px-0.5 py-0 text-[8px]' : 'px-1 py-0.5 text-[9px]'} rounded font-bold ${dotColor} ${isCombo ? 'ring-2 ring-white shadow-md' : 'ring-1 ring-gray-200'} ${marker.owner === 'athlete' ? 'text-black' : 'text-white'}`}>
                                 {abbreviation}
                               </div>
                             </div>
@@ -2362,7 +2364,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                 })()}
 
                 {/* Trim markers on timeline */}
-                <div className="relative h-2 bg-gray-200 rounded-none mt-1">
+                <div className={compactMode ? "relative h-1.5 bg-gray-200 rounded-none mt-0.5" : "relative h-2 bg-gray-200 rounded-none mt-1"}>
                   {/* Playback progress */}
                   <div 
                     className="absolute h-full bg-[#00ffba] rounded-none"
@@ -2424,13 +2426,13 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
             />
             
             {/* Time display */}
-            <div className="flex justify-between text-xs text-gray-500">
+            <div className={compactMode ? "flex justify-between text-[10px] text-gray-500 leading-none" : "flex justify-between text-xs text-gray-500"}>
               <span>{formatTime(globalCurrentTime)}</span>
               <span>{formatTime(totalDuration > 0 ? totalDuration : duration)}</span>
             </div>
             
             {/* Strike History - Below time bar */}
-            {strikeMarkers.length > 0 && (
+            {strikeMarkers.length > 0 && !compactMode && (
               <div className="mt-2 max-h-32 overflow-y-auto border border-gray-200 rounded-none bg-gray-50">
                 <div className="p-2 space-y-1">
                   {[...strikeMarkers].reverse().map((marker, index) => {
@@ -2506,7 +2508,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
           </div>
           
           {/* Playback Controls */}
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+          <div className={compactMode ? "mt-1 flex flex-wrap items-center justify-center gap-1" : "mt-4 flex flex-wrap items-center justify-center gap-2"}>
             <Button variant="outline" size="sm" className="rounded-none" onClick={frameBack}>
               <ChevronLeft className="w-4 h-4" />
             </Button>
@@ -2560,7 +2562,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
       )}
 
       {/* Clips List */}
-      {clips.length > 0 && (
+      {clips.length > 0 && !compactMode && (
         <Card className="rounded-none">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center justify-between text-lg">
@@ -2626,7 +2628,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
       )}
 
       {/* Action Flags Stats & List */}
-      {actionFlags.length > 0 && (
+      {actionFlags.length > 0 && !compactMode && (
         <Card className="rounded-none">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center justify-between text-lg">
@@ -2750,7 +2752,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
       )}
 
       {/* Save & New Video Buttons */}
-      <div className="flex justify-center gap-2 flex-wrap">
+      <div className={compactMode ? "shrink-0 flex justify-center gap-1 flex-wrap" : "flex justify-center gap-2 flex-wrap"}>
         <Button
           variant="outline"
           size="sm"

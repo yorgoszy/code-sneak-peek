@@ -390,19 +390,14 @@ const MatchVideoGalleryManagement: React.FC = () => {
       </AlertDialog>
 
       <Dialog open={!!analyzeVideo} onOpenChange={(o) => !o && setAnalyzeVideo(null)}>
-        <DialogContent className="max-w-[95vw] w-[95vw] h-[92vh] max-h-[92vh] overflow-hidden rounded-none p-3 flex flex-col">
-          <DialogHeader className="shrink-0">
-            <DialogTitle className="text-base">
+        <DialogContent className="max-w-[96vw] w-[96vw] h-[94vh] max-h-[94vh] overflow-hidden rounded-none p-2 flex flex-col gap-2">
+          <DialogHeader className="shrink-0 py-0">
+            <DialogTitle className="text-sm leading-tight">
               Ανάλυση Βίντεο: {analyzeVideo?.title}
             </DialogTitle>
           </DialogHeader>
           {analyzeVideo && (
-            <div className="flex-1 min-h-0 overflow-y-auto compact-video-editor">
-              <style>{`
-                .compact-video-editor .aspect-video { aspect-ratio: auto !important; height: 50vh !important; }
-                .compact-video-editor [id^="yt-player-"] { height: 50vh !important; }
-                .compact-video-editor video { max-height: 50vh !important; }
-              `}</style>
+            <div className="flex-1 min-h-0 overflow-hidden compact-video-editor">
               <VideoEditorTab
                 key={analyzeVideo.id}
                 initialYoutubeUrl={analyzeVideo.youtube_url}
@@ -415,6 +410,7 @@ const MatchVideoGalleryManagement: React.FC = () => {
                 initialStartSeconds={analyzeVideo.start_seconds}
                 initialEndSeconds={analyzeVideo.end_seconds}
                 initialMatchTitle={analyzeVideo.title}
+                compactMode
               />
             </div>
           )}
