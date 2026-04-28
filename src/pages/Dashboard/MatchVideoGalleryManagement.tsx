@@ -70,6 +70,7 @@ const MatchVideoGalleryManagement: React.FC = () => {
   const [form, setForm] = useState(emptyForm);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [athleteNames, setAthleteNames] = useState<Record<string, string>>({});
+  const [analyzeVideo, setAnalyzeVideo] = useState<MatchVideo | null>(null);
 
   const renderSidebar = () => <Sidebar isCollapsed={false} setIsCollapsed={() => {}} />;
 
