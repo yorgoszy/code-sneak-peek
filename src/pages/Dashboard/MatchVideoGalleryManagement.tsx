@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Plus, Trash2, Pencil, Video, Copy } from "lucide-react";
+import { Menu, Plus, Trash2, Pencil, Video, Copy, Scissors } from "lucide-react";
+import { VideoEditorTab } from "@/components/video-analysis/VideoEditorTab";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,6 +70,7 @@ const MatchVideoGalleryManagement: React.FC = () => {
   const [form, setForm] = useState(emptyForm);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [athleteNames, setAthleteNames] = useState<Record<string, string>>({});
+  const [analyzeVideo, setAnalyzeVideo] = useState<MatchVideo | null>(null);
 
   const renderSidebar = () => <Sidebar isCollapsed={false} setIsCollapsed={() => {}} />;
 
@@ -282,6 +284,9 @@ const MatchVideoGalleryManagement: React.FC = () => {
                       </span>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
+                      <Button size="icon" variant="ghost" onClick={() => setAnalyzeVideo(v)} className="rounded-none h-7 w-7" title="Ανάλυση Βίντεο">
+                        <Scissors className="h-3.5 w-3.5" />
+                      </Button>
                       <Button size="icon" variant="ghost" onClick={() => duplicate(v)} className="rounded-none h-7 w-7" title="Αντιγραφή">
                         <Copy className="h-3.5 w-3.5" />
                       </Button>
@@ -383,6 +388,23 @@ const MatchVideoGalleryManagement: React.FC = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!analyzeVideo} onOpenChange={(o) => !o && setAnalyzeVideo(null)}>
+        <DialogContent className="max-w-[98vw] w-[98vw] h-[95vh] max-h-[95vh] overflow-y-auto rounded-none p-4">
+          <DialogHeader>
+            <DialogTitle className="text-base">
+              Ανάλυση Βίντεο: {analyzeVideo?.title}
+            </DialogTitle>
+          </DialogHeader>
+          {analyzeVideo && (
+            <VideoEditorTab
+              key={analyzeVideo.id}
+              initialYoutubeUrl={analyzeVideo.youtube_url}
+              initialUserId={analyzeVideo.red_athlete_id || undefined}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   );
 };
