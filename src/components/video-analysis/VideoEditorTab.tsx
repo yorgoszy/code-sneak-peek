@@ -1250,6 +1250,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
       strikeSide: strikeType.side,
       time: globalCurrentTime,
       owner,
+      actionType: owner === 'athlete' ? 'attack' : 'defense',
       roundNumber: roundInfo.roundNumber,
       timeInRound: roundInfo.timeInRound,
       hitTarget: false, // Default to false, user can toggle with click
