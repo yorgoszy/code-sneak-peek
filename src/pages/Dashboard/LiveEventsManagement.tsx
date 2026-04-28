@@ -52,7 +52,31 @@ interface LiveRing {
   embed_url_day2: string | null;
   day1_date: string | null;
   day2_date: string | null;
+  day1_start_seconds: number | null;
+  day1_end_seconds: number | null;
+  day2_start_seconds: number | null;
+  day2_end_seconds: number | null;
 }
+
+// Parse "HH:MM:SS", "MM:SS", or plain seconds into total seconds
+const parseTimeToSeconds = (input: string): number | null => {
+  if (!input || !input.trim()) return null;
+  const s = input.trim();
+  if (/^\d+$/.test(s)) return parseInt(s, 10);
+  const parts = s.split(":").map((p) => parseInt(p, 10));
+  if (parts.some((n) => isNaN(n))) return null;
+  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  if (parts.length === 2) return parts[0] * 60 + parts[1];
+  return null;
+};
+
+const secondsToTime = (sec: number | null | undefined): string => {
+  if (sec == null) return "";
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+};
 
 const todayStr = () => {
   const d = new Date();
