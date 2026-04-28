@@ -284,6 +284,9 @@ const MatchVideoGalleryManagement: React.FC = () => {
                       </span>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
+                      <Button size="icon" variant="ghost" onClick={() => setAnalyzeVideo(v)} className="rounded-none h-7 w-7" title="Ανάλυση Βίντεο">
+                        <Scissors className="h-3.5 w-3.5" />
+                      </Button>
                       <Button size="icon" variant="ghost" onClick={() => duplicate(v)} className="rounded-none h-7 w-7" title="Αντιγραφή">
                         <Copy className="h-3.5 w-3.5" />
                       </Button>
