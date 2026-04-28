@@ -144,8 +144,6 @@ const Index = () => {
 
       <LiveMatchesSection translations={{ ...correctedTranslations, language }} />
 
-      <VideoGallerySection translations={{ ...correctedTranslations, language }} />
-
       <ProgramsSection 
         programs={programs}
         translations={correctedTranslations}
@@ -166,6 +164,8 @@ const Index = () => {
       <LiveProgramSection
         translations={correctedTranslations}
       />
+
+      <VideoGallerySection translations={{ ...correctedTranslations, language }} />
 
       <BlogSection 
         translations={correctedTranslations}
