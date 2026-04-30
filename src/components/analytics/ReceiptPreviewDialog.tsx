@@ -85,7 +85,7 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
             <div className="flex items-center gap-1 sm:gap-2">
               <Button
                 onClick={downloadPDF}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2"
+                className="bg-black hover:bg-black/90 text-white rounded-none text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2"
                 size="sm"
                 title="Κατέβασμα PDF"
               >
