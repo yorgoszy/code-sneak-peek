@@ -104,80 +104,72 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
           </div>
         </DialogHeader>
 
-        <div id="receipt-content" className="bg-white p-2 sm:p-3 mx-auto max-w-4xl border border-gray-200 text-xs">
-          {/* Header with logo and business details */}
-          <div className="flex items-start justify-between border-b border-[#00ffba] pb-1 sm:pb-2 mb-2 sm:mb-3">
+        <div id="receipt-content" className="bg-white p-2 mx-auto max-w-4xl border border-black text-xs">
+          {/* Header with business details */}
+          <div className="flex items-start justify-between border-b border-black pb-1 mb-2">
             <div className="flex-1">
-              <div className="text-xs text-gray-700 space-y-0.5 text-left">
-                <p><strong>HYPERKIDS</strong></p>
-                <p><strong>ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ</strong></p>
-                <p className="text-xs sm:text-xs">Διεύθυνση: ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46, ΘΕΣΣΑΛΟΝΙΚΗ 54627</p>
-                <p className="text-xs sm:text-xs">Email: info@hyperkids.gr | Web: www.hyperkids.gr</p>
-                <p className="text-xs sm:text-xs">Τηλ: 2310 529104</p>
+              <div className="text-[11px] text-black space-y-0 text-left leading-tight">
+                <p><strong>HYPERKIDS</strong> — <strong>ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ</strong></p>
+                <p>ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46, ΘΕΣΣΑΛΟΝΙΚΗ 54627 · Τηλ: 2310 529104</p>
+                <p>info@hyperkids.gr · www.hyperkids.gr</p>
               </div>
             </div>
           </div>
 
           {/* Receipt Title */}
-          <h2 className="text-sm sm:text-lg text-[#00ffba] text-center mb-1 sm:mb-2 font-semibold">ΑΠΟΔΕΙΞΗ ΣΥΝΔΡΟΜΗΣ</h2>
+          <h2 className="text-sm text-black text-center mb-1 font-bold tracking-wide">ΑΠΟΔΕΙΞΗ ΣΥΝΔΡΟΜΗΣ</h2>
 
           {/* Receipt Info */}
-          <div className="space-y-0.5 sm:space-y-1 mb-2 sm:mb-3">
-            <div className="flex flex-col sm:flex-row sm:justify-between py-0.5 sm:py-1 border-b border-gray-200">
-              <div className="mb-1 sm:mb-0">
-                <span className="font-semibold text-gray-900 text-xs">Αριθμός Απόδειξης: </span>
-                <span className="text-gray-600 text-xs">{receipt.receiptNumber}</span>
+          <div className="mb-2">
+            <div className="flex justify-between py-0.5 border-b border-gray-300">
+              <div>
+                <span className="font-semibold text-black text-xs">Αρ. Απόδειξης: </span>
+                <span className="text-black text-xs">{receipt.receiptNumber}</span>
               </div>
               <div>
-                <span className="font-semibold text-gray-900 text-xs">Έκδοση: </span>
-                <span className="text-gray-600 text-xs">{format(new Date(receipt.date), 'dd/MM/yyyy')}</span>
+                <span className="font-semibold text-black text-xs">Έκδοση: </span>
+                <span className="text-black text-xs">{format(new Date(receipt.date), 'dd/MM/yyyy')}</span>
               </div>
             </div>
-            <div className="flex justify-between py-0.5 sm:py-1 border-b border-gray-200">
-              <span className="font-semibold text-gray-900 text-xs">Πελάτης:</span>
-              <span className="text-gray-600 text-xs">{receipt.customerName}</span>
+            <div className="flex justify-between py-0.5 border-b border-gray-300">
+              <span className="font-semibold text-black text-xs">Πελάτης:</span>
+              <span className="text-black text-xs">{receipt.customerName}</span>
             </div>
             {receipt.customerVat && (
-              <div className="flex justify-between py-0.5 sm:py-1 border-b border-gray-200">
-                <span className="font-semibold text-gray-900 text-xs">ΑΦΜ:</span>
-                <span className="text-gray-600 text-xs">{receipt.customerVat}</span>
+              <div className="flex justify-between py-0.5 border-b border-gray-300">
+                <span className="font-semibold text-black text-xs">ΑΦΜ:</span>
+                <span className="text-black text-xs">{receipt.customerVat}</span>
               </div>
             )}
             {(receipt.startDate || receipt.endDate) && (
-              <div className="flex flex-col sm:flex-row sm:justify-between py-0.5 sm:py-1 border-b border-gray-200">
+              <div className="flex justify-between py-0.5 border-b border-gray-300">
                 {receipt.startDate && (
-                  <div className="mb-1 sm:mb-0">
-                    <span className="font-semibold text-gray-900 text-xs">Έναρξης: </span>
-                    <span className="text-gray-600 text-xs">{format(new Date(receipt.startDate), 'dd/MM/yyyy')}</span>
+                  <div>
+                    <span className="font-semibold text-black text-xs">Έναρξης: </span>
+                    <span className="text-black text-xs">{format(new Date(receipt.startDate), 'dd/MM/yyyy')}</span>
                   </div>
                 )}
                 {receipt.endDate && (
                   <div>
-                    <span className="font-semibold text-gray-900 text-xs">Λήξης: </span>
-                    <span className="text-gray-600 text-xs">{format(new Date(receipt.endDate), 'dd/MM/yyyy')}</span>
+                    <span className="font-semibold text-black text-xs">Λήξης: </span>
+                    <span className="text-black text-xs">{format(new Date(receipt.endDate), 'dd/MM/yyyy')}</span>
                   </div>
                 )}
-              </div>
-            )}
-            {receipt.invoiceMark && (
-              <div className="flex justify-between py-0.5 sm:py-1 border-b border-gray-200">
-                <span className="font-semibold text-gray-900 text-xs">ΜΑΡΚ:</span>
-                <span className="text-gray-600 text-xs">{receipt.invoiceMark}</span>
               </div>
             )}
           </div>
 
           {/* Items */}
-          <div className="mb-2 sm:mb-3">
-            <h3 className="font-semibold text-gray-900 mb-1 text-xs">Στοιχεία Συνδρομής</h3>
+          <div className="mb-2">
+            <h3 className="font-semibold text-black mb-0.5 text-xs">Στοιχεία Συνδρομής</h3>
             {receipt.items?.map((item, index) => (
-              <div key={item.id || index} className="border border-gray-200 p-1 sm:p-2 mb-0.5 sm:mb-1">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-0.5 sm:mb-1">
-                  <span className="font-medium text-gray-900 text-xs mb-1 sm:mb-0">{item.description || '-'}</span>
-                  <span className="text-gray-600 text-xs">Ποσότητα: {item.quantity ?? 1}</span>
+              <div key={item.id || index} className="border border-gray-400 p-1 mb-0.5">
+                <div className="flex justify-between items-start">
+                  <span className="font-medium text-black text-xs">{item.description || '-'}</span>
+                  <span className="text-black text-xs">Ποσ: {item.quantity ?? 1}</span>
                 </div>
-                <div className="flex justify-between text-xs text-gray-600">
-                  <span>Τιμή μονάδας: €{(item.unitPrice ?? 0).toFixed(2)}</span>
+                <div className="flex justify-between text-xs text-black">
+                  <span>Τιμή: €{(item.unitPrice ?? 0).toFixed(2)}</span>
                   <span>ΦΠΑ: {item.vatRate ?? 0}%</span>
                 </div>
               </div>
@@ -185,56 +177,52 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
           </div>
 
           {/* Totals */}
-          <div className="bg-gray-50 p-1 sm:p-2 border-l-4 border-[#00ffba]">
-            <div className="space-y-0.5 sm:space-y-1">
-              <div className="flex justify-between py-0.5 sm:py-1">
-                <span className="font-semibold text-gray-900 text-xs">Αξία Συνδρομής:</span>
-                <span className="text-gray-600 text-xs">€{(receipt.subtotal ?? 0).toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between py-0.5 sm:py-1">
-                <span className="font-semibold text-gray-900 text-xs">ΦΠΑ (13%):</span>
-                <span className="text-gray-600 text-xs">€{(receipt.vat ?? 0).toFixed(2)}</span>
-              </div>
-              <div className="border-t border-[#00ffba] pt-0.5 sm:pt-1 mt-1 sm:mt-2">
-                <div className="flex justify-between">
-                  <span className="text-sm sm:text-lg font-bold text-[#00ffba]">Σύνολο:</span>
-                  <span className="text-sm sm:text-lg font-bold text-[#00ffba]">€{(receipt.total ?? 0).toFixed(2)}</span>
-                </div>
-              </div>
+          <div className="border border-black p-1.5">
+            <div className="flex justify-between py-0.5">
+              <span className="font-semibold text-black text-xs">Αξία Συνδρομής:</span>
+              <span className="text-black text-xs">€{(receipt.subtotal ?? 0).toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between py-0.5">
+              <span className="font-semibold text-black text-xs">ΦΠΑ (13%):</span>
+              <span className="text-black text-xs">€{(receipt.vat ?? 0).toFixed(2)}</span>
+            </div>
+            <div className="border-t border-black pt-0.5 mt-0.5 flex justify-between">
+              <span className="text-sm font-bold text-black">Σύνολο:</span>
+              <span className="text-sm font-bold text-black">€{(receipt.total ?? 0).toFixed(2)}</span>
             </div>
           </div>
 
-          {/* MyData QR Code - ΥΠΟΧΡΕΩΤΙΚΟ για αποδείξεις που έχουν σταλεί στο MyData */}
+          {/* MyData QR Code */}
           {receipt.qrUrl && receipt.myDataStatus === 'sent' && (
-            <div className="mt-3 sm:mt-4 pt-2 sm:pt-3 border-t border-gray-300">
+            <div className="mt-2 pt-1 border-t border-black">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <p className="text-xs font-semibold text-gray-900 mb-1">MyData ΑΑΔΕ</p>
-                  <p className="text-xs text-gray-600">ΜΑΡΚ: {receipt.invoiceMark}</p>
+                  <p className="text-xs font-semibold text-black mb-0.5">MyData ΑΑΔΕ</p>
+                  <p className="text-xs text-black">ΜΑΡΚ: {receipt.invoiceMark}</p>
                   {receipt.invoiceUid && (
-                    <p className="text-xs text-gray-500">UID: {receipt.invoiceUid}</p>
+                    <p className="text-xs text-black">UID: {receipt.invoiceUid}</p>
                   )}
                 </div>
                 <div className="flex flex-col items-center">
                   <QRCodeSVG 
                     value={receipt.qrUrl} 
-                    size={64} 
+                    size={56} 
                     level="M"
-                    className="border border-gray-200 p-1"
+                    className="border border-black p-0.5"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Σάρωση για επαλήθευση</p>
+                  <p className="text-[10px] text-black mt-0.5">Σάρωση επαλήθευσης</p>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Logo στο κέντρο κάτω */}
-          <div className="flex justify-center items-center mt-2 sm:mt-3 pt-1 sm:pt-2 border-t border-gray-200">
-            <div className="w-1/2 h-6 sm:h-10">
+          {/* Logo */}
+          <div className="flex justify-center items-center mt-2 pt-1 border-t border-black">
+            <div className="w-1/3 h-6">
               <img 
                 src="/lovable-uploads/dce6f194-3bc2-4d61-9253-4f976bf25f5f.png" 
                 alt="HYPERKIDS Logo" 
-                className="w-full h-full object-contain filter grayscale brightness-90 opacity-40"
+                className="w-full h-full object-contain filter grayscale brightness-0 opacity-60"
               />
             </div>
           </div>
