@@ -444,7 +444,7 @@ export const SubscriptionManagement: React.FC = () => {
         invoiceDetails: [{
           lineNumber: 1,
           netValue: netPrice,
-          vatCategory: 3, // ΦΠΑ 13%
+          vatCategory: 2, // ΦΠΑ 13% (myDATA AADE: 1=24%, 2=13%, 3=6%)
           vatAmount: vatAmount
         }],
         invoiceSummary: {
