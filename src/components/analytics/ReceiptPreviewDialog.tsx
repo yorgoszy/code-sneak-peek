@@ -106,7 +106,7 @@ export const ReceiptPreviewDialog: React.FC<ReceiptPreviewDialogProps> = ({
 
         <div id="receipt-content" className="bg-white p-3 mx-auto max-w-4xl text-xs text-black">
           {/* Header */}
-          <div className="text-center pb-2 mb-2 border-b border-black">
+          <div className="text-left pb-2 mb-2 border-b border-black">
             <p className="text-base font-bold tracking-wide">HYPERKIDS</p>
             <p className="text-[11px] font-semibold">ΥΠΗΡΕΣΙΕΣ ΓΥΜΝΑΣΤΗΡΙΟΥ</p>
             <p className="text-[10px] mt-0.5">ΑΝΔΡΕΟΥ ΓΕΩΡΓΙΟΥ 46, ΘΕΣΣΑΛΟΝΙΚΗ 54627 · Τηλ: 2310 529104</p>
