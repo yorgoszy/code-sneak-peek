@@ -199,14 +199,6 @@ export const AdminVideoAnalysisOverview = () => {
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
     {
-      title: 'Άμυνες',
-      value: `${stats?.successfulDefenses || 0}/${stats?.totalHitsReceived || 0}`,
-      subtitle: 'αμυν./δέχτ.',
-      icon: Shield,
-      color: 'text-foreground',
-      bgColor: 'bg-gray-100 dark:bg-gray-800',
-    },
-    {
       title: 'Χρόνος',
       value: stats?.actionTimeFormatted || '0:00',
       subtitle: null, // Will use custom rendering
@@ -281,7 +273,6 @@ export const AdminVideoAnalysisOverview = () => {
       value: renderRedBlue(stats?.successfulDefenses || 0, stats?.opponentSuccessfulDefenses || 0),
       subtitle: `${stats?.totalHitsReceived || 0} / ${stats?.opponentTotalHitsReceived || 0} δέχτ.`,
       icon: Shield,
-      imageIcon: defenseIcon,
       color: 'text-foreground',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
