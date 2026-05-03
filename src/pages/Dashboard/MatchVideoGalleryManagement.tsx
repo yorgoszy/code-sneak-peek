@@ -288,9 +288,9 @@ const MatchVideoGalleryManagement: React.FC = () => {
                         {[v.match_date, v.competition_name, v.age_category, v.weight_category].filter(Boolean).join(" · ")}
                       </span>
                       <span className="ml-auto whitespace-nowrap">
-                        <span className="text-red-600 font-semibold">{v.red_athlete_id ? (athleteNames[v.red_athlete_id] || "—") : "—"}</span>
+                        <span className="text-red-600 font-semibold">{v.red_athlete_id ? (athleteNames[v.red_athlete_id] || "—") : (v.red_athlete_name || "—")}</span>
                         <span className="mx-1 text-muted-foreground">vs</span>
-                        <span className="text-blue-600 font-semibold">{v.blue_athlete_id ? (athleteNames[v.blue_athlete_id] || "—") : "—"}</span>
+                        <span className="text-blue-600 font-semibold">{v.blue_athlete_id ? (athleteNames[v.blue_athlete_id] || "—") : (v.blue_athlete_name || "—")}</span>
                       </span>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
