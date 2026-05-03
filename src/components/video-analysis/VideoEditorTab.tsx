@@ -2262,7 +2262,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                   />
                 </div>
                 
-                {/* Strike Markers on Timeline - Side-by-side horizontal placement */}
+                {/* Strike Markers on Timeline - Greedy side-by-side placement to avoid overlap */}
                 {(() => {
                   const timelineDuration = totalDuration > 0 ? totalDuration : duration;
                   const chipWidth = compactMode ? 16 : 20; // px
@@ -2271,75 +2271,76 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                   const totalHeight = laneHeight * 2 + 4;
 
                   const getStrikeAbbreviation = (name: string): string => {
-                    const lowerName = name.toLowerCase();
+                    const lowerName = (name || '').toLowerCase();
                     if (lowerName.includes('punch') || lowerName.includes('box') || lowerName.includes('μπουνιά') || lowerName.includes('γροθιά')) return 'B';
                     if (lowerName.includes('knee') || lowerName.includes('γόνατο') || lowerName.includes('γονατο')) return 'KN';
                     if (lowerName.includes('kick') || lowerName.includes('λάκτισμα') || lowerName.includes('κλωτσιά') || lowerName.includes('κλωτσια')) return 'K';
                     if (lowerName.includes('elbow') || lowerName.includes('αγκώνας') || lowerName.includes('αγκωνας')) return 'EL';
                     if (lowerName.includes('clinch') || lowerName.includes('plam') || lowerName.includes('πλαμ')) return 'CL';
-                    if (/^\d+$/.test(name.trim())) return name.trim();
-                    return name.substring(0, 2).toUpperCase();
+                    if (/^\d+$/.test((name || '').trim())) return (name || '').trim();
+                    return (name || '').substring(0, 2).toUpperCase();
                   };
 
-                  // Sort markers per owner by time, then assign side-by-side horizontal offset
-                  // when they would overlap at the same position.
+                  // Sort by time and stable, then greedy stack: if natural position would overlap
+                  // the previous marker (same lane), push to the right just past the previous end.
                   const sorted = [...strikeMarkers].sort((a, b) => a.time - b.time);
-                  const lastEndPxByOwner: { athlete: number; opponent: number } = { athlete: -Infinity, opponent: -Infinity };
-                  // We need pixel width of the timeline; use percentage-based approach with a CSS var fallback.
-                  // Since we can't measure here without ref, group by integer second per owner and offset in px.
-                  const groupKey = (m: typeof sorted[number]) => `${m.owner}-${Math.floor(m.time * 2)}`; // 0.5s buckets
-                  const buckets: Record<string, typeof sorted> = {};
-                  sorted.forEach(m => {
-                    const k = groupKey(m);
-                    if (!buckets[k]) buckets[k] = [];
-                    buckets[k].push(m);
+                  const containerWidthPx = strikeLanePxWidth || 1;
+
+                  const lastEndPxByOwner: Record<'athlete' | 'opponent', number> = { athlete: -Infinity, opponent: -Infinity };
+                  const placed = sorted.map((m) => {
+                    const naturalPx = (m.time / timelineDuration) * containerWidthPx;
+                    const owner = m.owner as 'athlete' | 'opponent';
+                    const startPx = Math.max(naturalPx, lastEndPxByOwner[owner] + 1);
+                    lastEndPxByOwner[owner] = startPx + chipWidth;
+                    return { m, startPx };
                   });
 
                   return (
-                    <div className="relative bg-gray-50 rounded-none border border-gray-200 mt-1" style={{ height: `${totalHeight}px` }}>
+                    <div
+                      ref={strikeLaneRef}
+                      className="relative bg-gray-50 rounded-none border border-gray-200 mt-1 overflow-hidden"
+                      style={{ height: `${totalHeight}px` }}
+                    >
                       {/* Lane divider */}
                       <div className="absolute left-0 right-0 border-t border-gray-200" style={{ top: `${laneHeight + 2}px` }} />
                       {/* Timebar */}
-                      <div 
+                      <div
                         className="absolute w-0.5 h-full bg-black z-20"
                         style={{ left: `${(globalCurrentTime / timelineDuration) * 100}%` }}
                       />
 
-                      {Object.values(buckets).flatMap(group => 
-                        group.map((marker, idxInBucket) => {
-                          let dotColor = '';
-                          if (marker.owner === 'athlete') {
-                            dotColor = marker.hitTarget ? 'bg-[#00ffba]' : 'bg-gray-300';
-                          } else {
-                            if (marker.blocked) dotColor = 'bg-blue-500';
-                            else if (marker.hitTarget) dotColor = 'bg-red-500';
-                            else dotColor = 'bg-gray-300';
-                          }
+                      {placed.map(({ m: marker, startPx }) => {
+                        let dotColor = '';
+                        if (marker.owner === 'athlete') {
+                          dotColor = marker.hitTarget ? 'bg-[#00ffba]' : 'bg-gray-300';
+                        } else {
+                          if (marker.blocked) dotColor = 'bg-blue-500';
+                          else if (marker.hitTarget) dotColor = 'bg-red-500';
+                          else dotColor = 'bg-gray-300';
+                        }
 
-                          const abbreviation = getStrikeAbbreviation(marker.strikeTypeName || '');
-                          const laneTop = marker.owner === 'athlete' ? 2 : laneHeight + 4;
-                          const leftPct = (marker.time / timelineDuration) * 100;
+                        const abbreviation = getStrikeAbbreviation(marker.strikeTypeName || '');
+                        const laneTop = marker.owner === 'athlete' ? 2 : laneHeight + 4;
 
-                          return (
-                            <div
-                              key={marker.id}
-                              className="absolute cursor-pointer hover:scale-110 transition-all z-10 flex items-center justify-center"
-                              style={{ 
-                                left: `calc(${leftPct}% + ${idxInBucket * chipWidth}px)`,
-                                top: `${laneTop}px`,
-                                minWidth: `${chipWidth}px`,
-                                height: `${rowHeight}px`
-                              }}
-                              onClick={() => toggleStrikeState(marker.id)}
-                              title={`${marker.strikeTypeName} - ${marker.owner === 'athlete' ? 'ΕΓΩ' : 'ΑΝΤ'}`}
-                            >
-                              <div className={`${compactMode ? 'px-0.5 py-0 text-[8px]' : 'px-1 py-0.5 text-[9px]'} rounded font-bold ${dotColor} ring-1 ring-gray-200 ${marker.owner === 'athlete' ? 'text-black' : 'text-white'}`}>
-                                {abbreviation}
-                              </div>
+                        return (
+                          <div
+                            key={marker.id}
+                            className="absolute cursor-pointer hover:scale-110 transition-all z-10 flex items-center justify-center"
+                            style={{
+                              left: `${startPx}px`,
+                              top: `${laneTop}px`,
+                              minWidth: `${chipWidth}px`,
+                              height: `${rowHeight}px`
+                            }}
+                            onClick={() => toggleStrikeState(marker.id)}
+                            title={`${marker.strikeTypeName} - ${marker.owner === 'athlete' ? 'ΕΓΩ' : 'ΑΝΤ'} - ${formatTime(marker.time)}`}
+                          >
+                            <div className={`${compactMode ? 'px-0.5 py-0 text-[8px]' : 'px-1 py-0.5 text-[9px]'} rounded font-bold ${dotColor} ring-1 ring-gray-200 ${marker.owner === 'athlete' ? 'text-black' : 'text-white'}`}>
+                              {abbreviation}
                             </div>
-                          );
-                        })
-                      )}
+                          </div>
+                        );
+                      })}
                     </div>
                   );
                 })()}
