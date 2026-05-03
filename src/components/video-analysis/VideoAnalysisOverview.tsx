@@ -9,6 +9,7 @@ import boxIcon from '@/assets/box-icon.png';
 import kneeIcon from '@/assets/knee-icon.png';
 import kickIcon from '@/assets/kick-icon.png';
 import clinchIcon from '@/assets/clinch-icon.png';
+import defenseIcon from '@/assets/defense-icon.png';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { useFightStats } from '@/hooks/useFightStats';
 import { FightTimelineChart } from './FightTimelineChart';
@@ -220,11 +221,19 @@ export const VideoAnalysisOverview = () => {
 
   const fightStyleInfo = getFightStyleInfo();
 
+  const renderRedBlue = (red: number, blue: number) => (
+    <span className="inline-flex items-baseline gap-0.5">
+      <span className="text-red-500">{red}</span>
+      <span className="text-gray-400">/</span>
+      <span className="text-blue-500">{blue}</span>
+    </span>
+  );
+
   const statCards2 = [
     {
       title: 'Box',
-      value: stats?.punchesTotal || 0,
-      subtitle: `${stats?.punchesLanded || 0} επιτυχ.`,
+      value: renderRedBlue(stats?.punchesTotal || 0, stats?.opponentPunchesTotal || 0),
+      subtitle: `${stats?.punchesLanded || 0} / ${stats?.opponentPunchesLanded || 0} επιτυχ.`,
       icon: Target,
       imageIcon: boxIcon,
       color: 'text-foreground',
@@ -232,8 +241,8 @@ export const VideoAnalysisOverview = () => {
     },
     {
       title: 'Kicks',
-      value: stats?.kicksTotal || 0,
-      subtitle: `${stats?.kicksLanded || 0} επιτυχ.`,
+      value: renderRedBlue(stats?.kicksTotal || 0, stats?.opponentKicksTotal || 0),
+      subtitle: `${stats?.kicksLanded || 0} / ${stats?.opponentKicksLanded || 0} επιτυχ.`,
       icon: Activity,
       imageIcon: kickIcon,
       color: 'text-foreground',
@@ -241,8 +250,8 @@ export const VideoAnalysisOverview = () => {
     },
     {
       title: 'Knees',
-      value: stats?.kneesTotal || 0,
-      subtitle: `${stats?.kneesLanded || 0} επιτυχ.`,
+      value: renderRedBlue(stats?.kneesTotal || 0, stats?.opponentKneesTotal || 0),
+      subtitle: `${stats?.kneesLanded || 0} / ${stats?.opponentKneesLanded || 0} επιτυχ.`,
       icon: Activity,
       imageIcon: kneeIcon,
       color: 'text-foreground',
@@ -250,19 +259,27 @@ export const VideoAnalysisOverview = () => {
     },
     {
       title: 'Elbows',
-      value: stats?.elbowsTotal || 0,
-      subtitle: `${stats?.elbowsLanded || 0} επιτυχ.`,
+      value: renderRedBlue(stats?.elbowsTotal || 0, stats?.opponentElbowsTotal || 0),
+      subtitle: `${stats?.elbowsLanded || 0} / ${stats?.opponentElbowsLanded || 0} επιτυχ.`,
       icon: Activity,
       imageIcon: elbowIcon,
       color: 'text-foreground',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
     {
-      title: 'Clinch',
-      value: stats?.clinchTimeFormatted || '0:00',
-      subtitle: `${stats?.clinchTotal || 0} φορές`,
-      icon: Users,
-      imageIcon: clinchIcon,
+      title: 'Άμυνα',
+      value: renderRedBlue(stats?.successfulDefenses || 0, stats?.opponentSuccessfulDefenses || 0),
+      subtitle: `${stats?.totalHitsReceived || 0} / ${stats?.opponentTotalHitsReceived || 0} δέχτ.`,
+      icon: Shield,
+      imageIcon: defenseIcon,
+      color: 'text-foreground',
+      bgColor: 'bg-gray-100 dark:bg-gray-800',
+    },
+    {
+      title: 'Επίθεση',
+      value: renderRedBlue(stats?.landedStrikes || 0, stats?.opponentLandedStrikes || 0),
+      subtitle: `${stats?.totalStrikes || 0} / ${stats?.opponentTotalStrikes || 0} σύνολο`,
+      icon: Swords,
       color: 'text-foreground',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
