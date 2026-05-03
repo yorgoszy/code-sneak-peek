@@ -56,12 +56,12 @@ export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ roundsDa
                   <AreaChart data={round.data} margin={{ top: 2, right: 2, left: -30, bottom: 0 }}>
                     <defs>
                       <linearGradient id={`colorStrikes-${round.roundNumber}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4}/>
-                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                      </linearGradient>
-                      <linearGradient id={`colorAttacks-${round.roundNumber}`} x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#ef4444" stopOpacity={0.4}/>
                         <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id={`colorAttacks-${round.roundNumber}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="2 2" stroke="#e5e5e5" vertical={false} />
@@ -94,16 +94,16 @@ export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ roundsDa
                     <Area 
                       type="monotone"
                       dataKey="strikes" 
-                      name="Χτυπ." 
-                      stroke="#3b82f6" 
+                      name="Κόκκινος" 
+                      stroke="#ef4444" 
                       strokeWidth={1.5}
                       fill={`url(#colorStrikes-${round.roundNumber})`}
                     />
                     <Area 
                       type="monotone"
                       dataKey="attacks" 
-                      name="Δέχτ." 
-                      stroke="#ef4444" 
+                      name="Μπλε" 
+                      stroke="#3b82f6" 
                       strokeWidth={1.5}
                       fill={`url(#colorAttacks-${round.roundNumber})`}
                     />
