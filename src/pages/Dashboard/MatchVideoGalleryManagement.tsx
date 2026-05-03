@@ -163,6 +163,8 @@ const MatchVideoGalleryManagement: React.FC = () => {
       end_str: secondsToTime(v.end_seconds),
       red_athlete_id: v.red_athlete_id,
       blue_athlete_id: v.blue_athlete_id,
+      red_athlete_name: v.red_athlete_name || "",
+      blue_athlete_name: v.blue_athlete_name || "",
     });
     setDialogOpen(true);
   };
