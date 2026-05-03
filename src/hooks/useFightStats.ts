@@ -76,6 +76,17 @@ export interface FightStats {
   opponentTotalStrikes: number;
   opponentLandedStrikes: number;
   opponentAccuracy: number;
+  opponentPunchesTotal: number;
+  opponentPunchesLanded: number;
+  opponentKicksTotal: number;
+  opponentKicksLanded: number;
+  opponentKneesTotal: number;
+  opponentKneesLanded: number;
+  opponentElbowsTotal: number;
+  opponentElbowsLanded: number;
+  // Opponent defense (= athlete strikes that didn't land)
+  opponentSuccessfulDefenses: number;
+  opponentTotalHitsReceived: number;
   
   // Timeline data for chart - per round
   roundsTimelineData: RoundTimelineData[];
