@@ -39,8 +39,8 @@ export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ roundsDa
         <div className="flex items-center justify-between mb-1">
           <span className="text-xs font-medium text-gray-600">Ανά 30"</span>
           <div className="flex items-center gap-3 text-[10px]">
-            <span className="flex items-center gap-1"><span className="w-2 h-2 bg-blue-500"></span>Χτυπ.</span>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 bg-red-500"></span>Δέχτ.</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 bg-red-500"></span>Κόκκινος</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 bg-blue-500"></span>Μπλε</span>
           </div>
         </div>
         
