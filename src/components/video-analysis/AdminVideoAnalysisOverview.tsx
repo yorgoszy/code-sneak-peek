@@ -432,7 +432,9 @@ export const AdminVideoAnalysisOverview = () => {
                 <div className="flex items-center gap-2">
                   {getResultBadge(selectedFight.result)}
                   <span className="text-sm font-medium">
-                    vs {selectedFight.opponent_name || 'Άγνωστος'}
+                    <span className="text-red-500">{selectedFight.user_name || '-'}</span>
+                    <span className="text-gray-400 mx-1">vs</span>
+                    <span className="text-blue-500">{selectedFight.opponent_name || 'Άγνωστος'}</span>
                   </span>
                   <span className="text-xs text-gray-500">
                     {format(new Date(selectedFight.fight_date), 'dd/MM/yy', { locale: el })}
@@ -516,7 +518,7 @@ export const AdminVideoAnalysisOverview = () => {
                             
                             <div className="space-y-1 flex-1 min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-sm font-medium truncate">{fight.user_name || 'Χρήστης'}</span>
+                                <span className="text-sm font-medium truncate text-red-500">{fight.user_name || 'Χρήστης'}</span>
                                 {getResultBadge(fight.result)}
                                 <Badge variant="outline" className="rounded-none text-xs">
                                   {getFightTypeLabel(fight.fight_type)}
@@ -525,7 +527,7 @@ export const AdminVideoAnalysisOverview = () => {
                               
                               <div className="flex items-center gap-3 text-xs text-gray-600 flex-wrap">
                                 {fight.opponent_name && (
-                                  <span>vs {fight.opponent_name}</span>
+                                  <span><span className="text-gray-500">vs </span><span className="text-blue-500 font-medium">{fight.opponent_name}</span></span>
                                 )}
                                 <div className="flex items-center gap-1">
                                   <Calendar className="w-3 h-3" />
