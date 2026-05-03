@@ -6381,6 +6381,7 @@ export type Database = {
         Row: {
           age_category: string | null
           blue_athlete_id: string | null
+          blue_athlete_name: string | null
           competition_name: string | null
           created_at: string
           created_by: string | null
@@ -6388,6 +6389,7 @@ export type Database = {
           id: string
           match_date: string | null
           red_athlete_id: string | null
+          red_athlete_name: string | null
           start_seconds: number | null
           title: string
           updated_at: string
@@ -6397,6 +6399,7 @@ export type Database = {
         Insert: {
           age_category?: string | null
           blue_athlete_id?: string | null
+          blue_athlete_name?: string | null
           competition_name?: string | null
           created_at?: string
           created_by?: string | null
@@ -6404,6 +6407,7 @@ export type Database = {
           id?: string
           match_date?: string | null
           red_athlete_id?: string | null
+          red_athlete_name?: string | null
           start_seconds?: number | null
           title: string
           updated_at?: string
@@ -6413,6 +6417,7 @@ export type Database = {
         Update: {
           age_category?: string | null
           blue_athlete_id?: string | null
+          blue_athlete_name?: string | null
           competition_name?: string | null
           created_at?: string
           created_by?: string | null
@@ -6420,6 +6425,7 @@ export type Database = {
           id?: string
           match_date?: string | null
           red_athlete_id?: string | null
+          red_athlete_name?: string | null
           start_seconds?: number | null
           title?: string
           updated_at?: string

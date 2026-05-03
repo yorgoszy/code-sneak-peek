@@ -47,6 +47,8 @@ interface MatchVideo {
   end_seconds: number | null;
   red_athlete_id: string | null;
   blue_athlete_id: string | null;
+  red_athlete_name: string | null;
+  blue_athlete_name: string | null;
 }
 
 const emptyForm = {
@@ -61,6 +63,8 @@ const emptyForm = {
   end_str: "",
   red_athlete_id: null as string | null,
   blue_athlete_id: null as string | null,
+  red_athlete_name: "",
+  blue_athlete_name: "",
 };
 
 const MatchVideoGalleryManagement: React.FC = () => {
@@ -159,6 +163,8 @@ const MatchVideoGalleryManagement: React.FC = () => {
       end_str: secondsToTime(v.end_seconds),
       red_athlete_id: v.red_athlete_id,
       blue_athlete_id: v.blue_athlete_id,
+      red_athlete_name: v.red_athlete_name || "",
+      blue_athlete_name: v.blue_athlete_name || "",
     });
     setDialogOpen(true);
   };
@@ -179,6 +185,8 @@ const MatchVideoGalleryManagement: React.FC = () => {
       end_seconds: parseTimeToSeconds(form.end_str),
       red_athlete_id: form.red_athlete_id,
       blue_athlete_id: form.blue_athlete_id,
+      red_athlete_name: form.red_athlete_name.trim() || null,
+      blue_athlete_name: form.blue_athlete_name.trim() || null,
     };
     if (form.id) {
       const { error } = await supabase.from("match_videos" as any).update(payload).eq("id", form.id);
@@ -217,6 +225,8 @@ const MatchVideoGalleryManagement: React.FC = () => {
       end_seconds: v.end_seconds,
       red_athlete_id: v.red_athlete_id,
       blue_athlete_id: v.blue_athlete_id,
+      red_athlete_name: v.red_athlete_name,
+      blue_athlete_name: v.blue_athlete_name,
       created_by: user?.id,
     };
     const { error } = await supabase.from("match_videos" as any).insert(payload);
@@ -278,9 +288,9 @@ const MatchVideoGalleryManagement: React.FC = () => {
                         {[v.match_date, v.competition_name, v.age_category, v.weight_category].filter(Boolean).join(" · ")}
                       </span>
                       <span className="ml-auto whitespace-nowrap">
-                        <span className="text-red-600 font-semibold">{v.red_athlete_id ? (athleteNames[v.red_athlete_id] || "—") : "—"}</span>
+                        <span className="text-red-600 font-semibold">{v.red_athlete_id ? (athleteNames[v.red_athlete_id] || "—") : (v.red_athlete_name || "—")}</span>
                         <span className="mx-1 text-muted-foreground">vs</span>
-                        <span className="text-blue-600 font-semibold">{v.blue_athlete_id ? (athleteNames[v.blue_athlete_id] || "—") : "—"}</span>
+                        <span className="text-blue-600 font-semibold">{v.blue_athlete_id ? (athleteNames[v.blue_athlete_id] || "—") : (v.blue_athlete_name || "—")}</span>
                       </span>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
@@ -374,6 +384,14 @@ const MatchVideoGalleryManagement: React.FC = () => {
                   </Button>
                 )}
               </div>
+              {!form.red_athlete_id && (
+                <Input
+                  className="rounded-none mt-2"
+                  value={form.red_athlete_name}
+                  onChange={(e) => setForm({ ...form, red_athlete_name: e.target.value })}
+                  placeholder="ή γράψε όνομα αθλητή Red (χωρίς εγγραφή)"
+                />
+              )}
             </div>
             <div>
               <Label className="text-blue-600">Αθλητής Blue corner</Label>
@@ -399,6 +417,14 @@ const MatchVideoGalleryManagement: React.FC = () => {
                   </Button>
                 )}
               </div>
+              {!form.blue_athlete_id && (
+                <Input
+                  className="rounded-none mt-2"
+                  value={form.blue_athlete_name}
+                  onChange={(e) => setForm({ ...form, blue_athlete_name: e.target.value })}
+                  placeholder="ή γράψε όνομα αθλητή Blue (χωρίς εγγραφή)"
+                />
+              )}
             </div>
           </div>
           <DialogFooter>
@@ -437,7 +463,7 @@ const MatchVideoGalleryManagement: React.FC = () => {
                 initialOpponentName={
                   analyzeVideo.blue_athlete_id
                     ? (athleteNames[analyzeVideo.blue_athlete_id] || undefined)
-                    : undefined
+                    : (analyzeVideo.blue_athlete_name || undefined)
                 }
                 initialStartSeconds={analyzeVideo.start_seconds}
                 initialEndSeconds={analyzeVideo.end_seconds}
