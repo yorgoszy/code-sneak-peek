@@ -34,6 +34,8 @@ export interface FightStats {
   // Correctness
   correctStrikes: number;
   correctnessRate: number;
+  opponentCorrectStrikes: number;
+  opponentCorrectnessRate: number;
   
   // Hits received
   totalHitsReceived: number;
@@ -109,6 +111,8 @@ export const defaultFightStats: FightStats = {
   attackDefenseRatio: 1,
   correctStrikes: 0,
   correctnessRate: 0,
+  opponentCorrectStrikes: 0,
+  opponentCorrectnessRate: 0,
   totalHitsReceived: 0,
   avgHitsReceivedPerRound: 0,
   punchesTotal: 0,
