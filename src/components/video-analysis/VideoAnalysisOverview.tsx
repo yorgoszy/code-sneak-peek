@@ -428,7 +428,9 @@ export const VideoAnalysisOverview = () => {
             <div className="flex items-center gap-2">
               {getResultBadge(selectedFight.result)}
               <span className="text-sm font-medium">
-                vs {selectedFight.opponent_name || 'Άγνωστος'}
+                <span className="text-red-500">{selectedFight.user_name || '-'}</span>
+                <span className="text-gray-400 mx-1">vs</span>
+                <span className="text-blue-500">{selectedFight.opponent_name || 'Άγνωστος'}</span>
               </span>
               <span className="text-xs text-gray-500">
                 {format(new Date(selectedFight.fight_date), 'dd/MM/yy', { locale: el })}
@@ -503,9 +505,9 @@ export const VideoAnalysisOverview = () => {
                       {/* Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-sm font-medium truncate">{fight.user_name || 'Άγνωστος'}</span>
+                          <span className="text-sm font-medium truncate text-red-500">{fight.user_name || 'Άγνωστος'}</span>
                           <span className="text-xs text-gray-400">vs</span>
-                          <span className="text-sm font-medium truncate">{fight.opponent_name || '-'}</span>
+                          <span className="text-sm font-medium truncate text-blue-500">{fight.opponent_name || '-'}</span>
                           {getResultBadge(fight.result)}
                         </div>
                         <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
