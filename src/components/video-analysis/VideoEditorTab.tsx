@@ -1588,7 +1588,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
             round_id: roundId,
             timestamp_in_round: strike.timeInRound ? Math.round(strike.timeInRound) : 0,
             strike_type: strikeType,
-            side: strike.strikeSide || 'right',
+            side: (strike.strikeSide === 'left' || strike.strikeSide === 'right') ? strike.strikeSide : 'right',
             landed: strike.hitTarget,
             is_opponent: strike.owner === 'opponent',
             is_correct: strike.hitTarget
