@@ -417,6 +417,16 @@ export const useFightStats = (fightId: string | null) => {
           opponentTotalStrikes,
           opponentLandedStrikes,
           opponentAccuracy,
+          opponentPunchesTotal,
+          opponentPunchesLanded,
+          opponentKicksTotal,
+          opponentKicksLanded,
+          opponentKneesTotal,
+          opponentKneesLanded,
+          opponentElbowsTotal,
+          opponentElbowsLanded,
+          opponentSuccessfulDefenses,
+          opponentTotalHitsReceived,
           roundsTimelineData,
         });
       } catch (error) {
