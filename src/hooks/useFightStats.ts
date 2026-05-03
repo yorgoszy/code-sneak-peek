@@ -139,6 +139,16 @@ export const defaultFightStats: FightStats = {
   opponentTotalStrikes: 0,
   opponentLandedStrikes: 0,
   opponentAccuracy: 0,
+  opponentPunchesTotal: 0,
+  opponentPunchesLanded: 0,
+  opponentKicksTotal: 0,
+  opponentKicksLanded: 0,
+  opponentKneesTotal: 0,
+  opponentKneesLanded: 0,
+  opponentElbowsTotal: 0,
+  opponentElbowsLanded: 0,
+  opponentSuccessfulDefenses: 0,
+  opponentTotalHitsReceived: 0,
   roundsTimelineData: [],
 };
 
