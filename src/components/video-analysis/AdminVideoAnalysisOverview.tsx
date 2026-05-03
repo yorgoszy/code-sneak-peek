@@ -352,7 +352,7 @@ export const AdminVideoAnalysisOverview = () => {
             </div>
 
             {/* Row 2 */}
-            <div className="grid grid-cols-5 md:grid-cols-5 gap-0.5 md:gap-2">
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-0.5 md:gap-2">
               {statCards2.map((card, index) => (
                 <Card key={index} className={`rounded-none transition-all ${selectedFightId ? 'ring-1 ring-[#00ffba]/10' : 'opacity-50'}`}>
                   <CardContent className="p-1 md:p-2">
