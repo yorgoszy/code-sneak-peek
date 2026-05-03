@@ -185,6 +185,8 @@ const MatchVideoGalleryManagement: React.FC = () => {
       end_seconds: parseTimeToSeconds(form.end_str),
       red_athlete_id: form.red_athlete_id,
       blue_athlete_id: form.blue_athlete_id,
+      red_athlete_name: form.red_athlete_name.trim() || null,
+      blue_athlete_name: form.blue_athlete_name.trim() || null,
     };
     if (form.id) {
       const { error } = await supabase.from("match_videos" as any).update(payload).eq("id", form.id);
