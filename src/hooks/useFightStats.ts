@@ -76,6 +76,17 @@ export interface FightStats {
   opponentTotalStrikes: number;
   opponentLandedStrikes: number;
   opponentAccuracy: number;
+  opponentPunchesTotal: number;
+  opponentPunchesLanded: number;
+  opponentKicksTotal: number;
+  opponentKicksLanded: number;
+  opponentKneesTotal: number;
+  opponentKneesLanded: number;
+  opponentElbowsTotal: number;
+  opponentElbowsLanded: number;
+  // Opponent defense (= athlete strikes that didn't land)
+  opponentSuccessfulDefenses: number;
+  opponentTotalHitsReceived: number;
   
   // Timeline data for chart - per round
   roundsTimelineData: RoundTimelineData[];
@@ -128,6 +139,16 @@ export const defaultFightStats: FightStats = {
   opponentTotalStrikes: 0,
   opponentLandedStrikes: 0,
   opponentAccuracy: 0,
+  opponentPunchesTotal: 0,
+  opponentPunchesLanded: 0,
+  opponentKicksTotal: 0,
+  opponentKicksLanded: 0,
+  opponentKneesTotal: 0,
+  opponentKneesLanded: 0,
+  opponentElbowsTotal: 0,
+  opponentElbowsLanded: 0,
+  opponentSuccessfulDefenses: 0,
+  opponentTotalHitsReceived: 0,
   roundsTimelineData: [],
 };
 
@@ -243,6 +264,19 @@ export const useFightStats = (fightId: string | null) => {
         const rightSideStrikes = athleteStrikes.filter(s => s.side === 'right').length;
         const leftSidePercentage = totalStrikes > 0 ? Math.round((leftSideStrikes / totalStrikes) * 100) : 0;
         const rightSidePercentage = totalStrikes > 0 ? Math.round((rightSideStrikes / totalStrikes) * 100) : 0;
+
+        // Opponent strike breakdown by type
+        const opponentPunchesTotal = opponentStrikesData.filter(s => s.strike_type === 'punch').length;
+        const opponentPunchesLanded = opponentStrikesData.filter(s => s.strike_type === 'punch' && s.landed).length;
+        const opponentKicksTotal = opponentStrikesData.filter(s => s.strike_type === 'kick').length;
+        const opponentKicksLanded = opponentStrikesData.filter(s => s.strike_type === 'kick' && s.landed).length;
+        const opponentKneesTotal = opponentStrikesData.filter(s => s.strike_type === 'knee').length;
+        const opponentKneesLanded = opponentStrikesData.filter(s => s.strike_type === 'knee' && s.landed).length;
+        const opponentElbowsTotal = opponentStrikesData.filter(s => s.strike_type === 'elbow').length;
+        const opponentElbowsLanded = opponentStrikesData.filter(s => s.strike_type === 'elbow' && s.landed).length;
+        // Opponent defenses = athlete strikes that didn't land
+        const opponentSuccessfulDefenses = athleteStrikes.filter(s => !s.landed).length;
+        const opponentTotalHitsReceived = landedStrikes;
 
         // Defense breakdown (athlete only)
         const blocksTotal = athleteDefenses.filter(d => d.defense_type === 'block').length;
@@ -383,6 +417,16 @@ export const useFightStats = (fightId: string | null) => {
           opponentTotalStrikes,
           opponentLandedStrikes,
           opponentAccuracy,
+          opponentPunchesTotal,
+          opponentPunchesLanded,
+          opponentKicksTotal,
+          opponentKicksLanded,
+          opponentKneesTotal,
+          opponentKneesLanded,
+          opponentElbowsTotal,
+          opponentElbowsLanded,
+          opponentSuccessfulDefenses,
+          opponentTotalHitsReceived,
           roundsTimelineData,
         });
       } catch (error) {

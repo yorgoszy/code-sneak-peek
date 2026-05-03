@@ -224,12 +224,20 @@ export const AdminVideoAnalysisOverview = () => {
 
   const fightStyleInfo = getFightStyleInfo();
 
-  // Second row of stats (without Στυλ - that's rendered separately)
+  // Second row of stats - Red vs Blue per category
+  const renderRedBlue = (red: number, blue: number, redLanded?: number, blueLanded?: number) => (
+    <span className="inline-flex items-baseline gap-0.5">
+      <span className="text-red-500">{red}</span>
+      <span className="text-gray-400">/</span>
+      <span className="text-blue-500">{blue}</span>
+    </span>
+  );
+
   const statCards2 = [
     {
       title: 'Box',
-      value: stats?.punchesTotal || 0,
-      subtitle: `${stats?.punchesLanded || 0} επιτυχ.`,
+      value: renderRedBlue(stats?.punchesTotal || 0, stats?.opponentPunchesTotal || 0),
+      subtitle: `${stats?.punchesLanded || 0} / ${stats?.opponentPunchesLanded || 0} επιτυχ.`,
       icon: Target,
       imageIcon: boxIcon,
       color: 'text-foreground',
@@ -237,8 +245,8 @@ export const AdminVideoAnalysisOverview = () => {
     },
     {
       title: 'Kicks',
-      value: stats?.kicksTotal || 0,
-      subtitle: `${stats?.kicksLanded || 0} επιτυχ.`,
+      value: renderRedBlue(stats?.kicksTotal || 0, stats?.opponentKicksTotal || 0),
+      subtitle: `${stats?.kicksLanded || 0} / ${stats?.opponentKicksLanded || 0} επιτυχ.`,
       icon: Activity,
       imageIcon: kickIcon,
       color: 'text-foreground',
@@ -246,8 +254,8 @@ export const AdminVideoAnalysisOverview = () => {
     },
     {
       title: 'Knees',
-      value: stats?.kneesTotal || 0,
-      subtitle: `${stats?.kneesLanded || 0} επιτυχ.`,
+      value: renderRedBlue(stats?.kneesTotal || 0, stats?.opponentKneesTotal || 0),
+      subtitle: `${stats?.kneesLanded || 0} / ${stats?.opponentKneesLanded || 0} επιτυχ.`,
       icon: Activity,
       imageIcon: kneeIcon,
       color: 'text-foreground',
@@ -255,19 +263,27 @@ export const AdminVideoAnalysisOverview = () => {
     },
     {
       title: 'Elbows',
-      value: stats?.elbowsTotal || 0,
-      subtitle: `${stats?.elbowsLanded || 0} επιτυχ.`,
+      value: renderRedBlue(stats?.elbowsTotal || 0, stats?.opponentElbowsTotal || 0),
+      subtitle: `${stats?.elbowsLanded || 0} / ${stats?.opponentElbowsLanded || 0} επιτυχ.`,
       icon: Activity,
       imageIcon: elbowIcon,
       color: 'text-foreground',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
     {
-      title: 'Clinch',
-      value: stats?.clinchTimeFormatted || '0:00',
-      subtitle: `${stats?.clinchTotal || 0} φορές`,
-      icon: Users,
-      imageIcon: clinchIcon,
+      title: 'Άμυνα',
+      value: renderRedBlue(stats?.successfulDefenses || 0, stats?.opponentSuccessfulDefenses || 0),
+      subtitle: `${stats?.totalHitsReceived || 0} / ${stats?.opponentTotalHitsReceived || 0} δέχτ.`,
+      icon: Shield,
+      imageIcon: defenseIcon,
+      color: 'text-foreground',
+      bgColor: 'bg-gray-100 dark:bg-gray-800',
+    },
+    {
+      title: 'Επίθεση',
+      value: renderRedBlue(stats?.landedStrikes || 0, stats?.opponentLandedStrikes || 0),
+      subtitle: `${stats?.totalStrikes || 0} / ${stats?.opponentTotalStrikes || 0} σύνολο`,
+      icon: Swords,
       color: 'text-foreground',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
     },
@@ -336,7 +352,7 @@ export const AdminVideoAnalysisOverview = () => {
             </div>
 
             {/* Row 2 */}
-            <div className="grid grid-cols-5 md:grid-cols-5 gap-0.5 md:gap-2">
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-0.5 md:gap-2">
               {statCards2.map((card, index) => (
                 <Card key={index} className={`rounded-none transition-all ${selectedFightId ? 'ring-1 ring-[#00ffba]/10' : 'opacity-50'}`}>
                   <CardContent className="p-1 md:p-2">
