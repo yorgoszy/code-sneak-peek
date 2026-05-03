@@ -201,6 +201,17 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
   const [timelineZoom, setTimelineZoom] = useState(1); // 1 = normal, up to 10x zoom
   const timelineScrollRef = useRef<HTMLDivElement>(null);
   const timelineContainerRef = useRef<HTMLDivElement>(null);
+  const strikeLaneRef = useRef<HTMLDivElement>(null);
+  const [strikeLanePxWidth, setStrikeLanePxWidth] = useState(0);
+  useEffect(() => {
+    const el = strikeLaneRef.current;
+    if (!el) return;
+    const update = () => setStrikeLanePxWidth(el.getBoundingClientRect().width);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [timelineZoom, totalDuration, duration, compactMode]);
   
   // Drag state for round markers
   const [draggingRound, setDraggingRound] = useState<{ id: string; edge: 'start' | 'end' } | null>(null);
