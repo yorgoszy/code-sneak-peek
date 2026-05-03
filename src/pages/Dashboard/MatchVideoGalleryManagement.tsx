@@ -384,6 +384,14 @@ const MatchVideoGalleryManagement: React.FC = () => {
                   </Button>
                 )}
               </div>
+              {!form.red_athlete_id && (
+                <Input
+                  className="rounded-none mt-2"
+                  value={form.red_athlete_name}
+                  onChange={(e) => setForm({ ...form, red_athlete_name: e.target.value })}
+                  placeholder="ή γράψε όνομα αθλητή Red (χωρίς εγγραφή)"
+                />
+              )}
             </div>
             <div>
               <Label className="text-blue-600">Αθλητής Blue corner</Label>
