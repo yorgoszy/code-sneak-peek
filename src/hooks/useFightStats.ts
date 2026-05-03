@@ -265,6 +265,19 @@ export const useFightStats = (fightId: string | null) => {
         const leftSidePercentage = totalStrikes > 0 ? Math.round((leftSideStrikes / totalStrikes) * 100) : 0;
         const rightSidePercentage = totalStrikes > 0 ? Math.round((rightSideStrikes / totalStrikes) * 100) : 0;
 
+        // Opponent strike breakdown by type
+        const opponentPunchesTotal = opponentStrikesData.filter(s => s.strike_type === 'punch').length;
+        const opponentPunchesLanded = opponentStrikesData.filter(s => s.strike_type === 'punch' && s.landed).length;
+        const opponentKicksTotal = opponentStrikesData.filter(s => s.strike_type === 'kick').length;
+        const opponentKicksLanded = opponentStrikesData.filter(s => s.strike_type === 'kick' && s.landed).length;
+        const opponentKneesTotal = opponentStrikesData.filter(s => s.strike_type === 'knee').length;
+        const opponentKneesLanded = opponentStrikesData.filter(s => s.strike_type === 'knee' && s.landed).length;
+        const opponentElbowsTotal = opponentStrikesData.filter(s => s.strike_type === 'elbow').length;
+        const opponentElbowsLanded = opponentStrikesData.filter(s => s.strike_type === 'elbow' && s.landed).length;
+        // Opponent defenses = athlete strikes that didn't land
+        const opponentSuccessfulDefenses = athleteStrikes.filter(s => !s.landed).length;
+        const opponentTotalHitsReceived = landedStrikes;
+
         // Defense breakdown (athlete only)
         const blocksTotal = athleteDefenses.filter(d => d.defense_type === 'block').length;
         const blocksSuccess = athleteDefenses.filter(d => d.defense_type === 'block' && d.successful).length;
