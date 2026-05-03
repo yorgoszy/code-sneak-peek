@@ -47,6 +47,8 @@ interface MatchVideo {
   end_seconds: number | null;
   red_athlete_id: string | null;
   blue_athlete_id: string | null;
+  red_athlete_name: string | null;
+  blue_athlete_name: string | null;
 }
 
 const emptyForm = {
@@ -61,6 +63,8 @@ const emptyForm = {
   end_str: "",
   red_athlete_id: null as string | null,
   blue_athlete_id: null as string | null,
+  red_athlete_name: "",
+  blue_athlete_name: "",
 };
 
 const MatchVideoGalleryManagement: React.FC = () => {
