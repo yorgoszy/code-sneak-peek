@@ -2412,20 +2412,20 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
               <span>{formatTime(totalDuration > 0 ? totalDuration : duration)}</span>
             </div>
             
-            {/* Strike History - Below time bar */}
-            {strikeMarkers.length > 0 && !compactMode && (
-              <div className="mt-2 max-h-32 overflow-y-auto border border-gray-200 rounded-none bg-gray-50">
-                <div className="p-2 space-y-1">
-                  {[...strikeMarkers].reverse().map((marker, index) => {
-                    const roundText = marker.roundNumber 
-                      ? `R${marker.roundNumber}` 
-                      : '';
-                    
-                    // Status and styling based on owner and state
+            {/* Strike History - Horizontal timeline (oldest left, newest right) */}
+            {strikeMarkers.length > 0 && (
+              <div className="mt-2 border border-gray-200 rounded-none bg-gray-50">
+                <div className="flex gap-1 p-2 overflow-x-auto" ref={(el) => {
+                  // Auto-scroll to the right when a new strike is added
+                  if (el) el.scrollLeft = el.scrollWidth;
+                }}>
+                  {[...strikeMarkers].sort((a, b) => a.time - b.time).map((marker) => {
+                    const roundText = marker.roundNumber ? `R${marker.roundNumber}` : '';
+
                     let statusText = '';
                     let statusColor = '';
                     let bgColor = '';
-                    
+
                     if (marker.owner === 'athlete') {
                       statusText = marker.hitTarget ? 'Ορθό' : 'Λάθος';
                       statusColor = marker.hitTarget ? 'text-[#00ffba]' : 'text-gray-400';
@@ -2445,41 +2445,38 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                         bgColor = 'bg-gray-100 border-gray-200';
                       }
                     }
-                    
+
                     return (
                       <div
                         key={marker.id}
                         onClick={() => toggleStrikeState(marker.id)}
-                        className={`flex items-center justify-between p-2 border rounded-none cursor-pointer hover:opacity-80 transition-all ${bgColor}`}
+                        className={`shrink-0 flex flex-col items-center gap-0.5 px-1.5 py-1 border rounded-none cursor-pointer hover:opacity-80 transition-all ${bgColor}`}
+                        title={`${marker.strikeTypeName} · ${formatTime(marker.time)} ${roundText}`}
                       >
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-mono text-gray-500 w-8">{formatTime(marker.time)}</span>
-                          <span className={`text-xs font-medium px-1.5 py-0.5 rounded-none ${
-                            marker.owner === 'athlete' 
-                              ? 'bg-[#00ffba]/20 text-[#00997a]' 
+                        <div className="flex items-center gap-1">
+                          <span className={`text-[9px] font-medium px-1 ${
+                            marker.owner === 'athlete'
+                              ? 'bg-[#00ffba]/20 text-[#00997a]'
                               : 'bg-[#cb8954]/20 text-[#a06b3d]'
                           }`}>
                             {marker.owner === 'athlete' ? 'ΕΓΩ' : 'ΑΝΤ'}
-                          </span>
-                          <span className="text-xs font-medium">{marker.strikeTypeName}</span>
-                          {roundText && (
-                            <span className="text-[10px] text-gray-400">{roundText}</span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`text-xs font-semibold ${statusColor}`}>
-                            {statusText}
                           </span>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               setStrikeMarkers(prev => prev.filter(m => m.id !== marker.id));
                             }}
-                            className="text-gray-400 hover:text-red-500 text-xs"
+                            className="text-gray-400 hover:text-red-500 text-[10px] leading-none"
                           >
                             ×
                           </button>
                         </div>
+                        <span className="text-[10px] font-medium whitespace-nowrap">{marker.strikeTypeName}</span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-[9px] font-mono text-gray-500">{formatTime(marker.time)}</span>
+                          {roundText && <span className="text-[9px] text-gray-400">{roundText}</span>}
+                        </div>
+                        <span className={`text-[9px] font-semibold ${statusColor}`}>{statusText}</span>
                       </div>
                     );
                   })}
