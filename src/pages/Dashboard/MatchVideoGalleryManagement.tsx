@@ -225,6 +225,8 @@ const MatchVideoGalleryManagement: React.FC = () => {
       end_seconds: v.end_seconds,
       red_athlete_id: v.red_athlete_id,
       blue_athlete_id: v.blue_athlete_id,
+      red_athlete_name: v.red_athlete_name,
+      blue_athlete_name: v.blue_athlete_name,
       created_by: user?.id,
     };
     const { error } = await supabase.from("match_videos" as any).insert(payload);
