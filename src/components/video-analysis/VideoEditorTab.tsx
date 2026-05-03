@@ -1267,8 +1267,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
   };
 
   // Toggle strike states based on owner
-  // For athlete strikes: toggle hitTarget (correct/incorrect technique)
-  // For opponent strikes: cycle through states (miss -> hit -> blocked -> miss)
+  // Both athlete and opponent strikes: simple toggle for hitTarget (ορθότητα)
   const toggleStrikeState = (id: string) => {
     setStrikeMarkers(prev => prev.map(m => {
       if (m.id !== id) return m;
