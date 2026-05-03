@@ -2697,14 +2697,14 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
             <UserSearchCombobox
               value={selectedUserId}
               onValueChange={setSelectedUserId}
-              placeholder="Χρήστης..."
+              placeholder="Αθλητής μας * (υποχρ.)"
               coachId={coachId || undefined}
             />
           </div>
           <Input
             value={opponentName}
             onChange={(e) => setOpponentName(e.target.value)}
-            placeholder="Όνομα αντιπάλου..."
+            placeholder="Αντίπαλος (προαιρετικό)"
             className="w-40 h-9 rounded-none text-sm"
           />
           <Button
