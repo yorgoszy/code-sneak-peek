@@ -396,6 +396,8 @@ export const useFightStats = (fightId: string | null) => {
           attackDefenseRatio,
           correctStrikes,
           correctnessRate,
+          opponentCorrectStrikes,
+          opponentCorrectnessRate,
           totalHitsReceived,
           avgHitsReceivedPerRound,
           punchesTotal,
