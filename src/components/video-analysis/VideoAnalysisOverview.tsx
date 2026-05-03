@@ -169,8 +169,14 @@ export const VideoAnalysisOverview = () => {
   const statCards = [
     {
       title: 'Χτυπήματα',
-      value: stats?.totalStrikes || 0,
-      subtitle: `${stats?.landedStrikes || 0} επιτυχ.`,
+      value: (
+        <span className="inline-flex items-baseline gap-1">
+          <span className="text-red-500">{stats?.totalStrikes || 0}</span>
+          <span className="text-gray-400">/</span>
+          <span className="text-blue-500">{stats?.opponentTotalStrikes || 0}</span>
+        </span>
+      ),
+      subtitle: `${stats?.landedStrikes || 0} / ${stats?.opponentLandedStrikes || 0} επιτυχ.`,
       icon: Target,
       color: 'text-foreground',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
