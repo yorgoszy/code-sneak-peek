@@ -219,6 +219,8 @@ export const useFightStats = (fightId: string | null) => {
         const accuracy = totalStrikes > 0 ? Math.round((landedStrikes / totalStrikes) * 100) : 0;
         const correctStrikes = athleteStrikes.filter(s => s.is_correct).length;
         const correctnessRate = totalStrikes > 0 ? Math.round((correctStrikes / totalStrikes) * 100) : 0;
+        const opponentCorrectStrikes = opponentStrikesData.filter(s => s.is_correct).length;
+        const opponentCorrectnessRate = opponentTotalStrikes > 0 ? Math.round((opponentCorrectStrikes / opponentTotalStrikes) * 100) : 0;
 
         // Opponent stats
         const opponentTotalStrikes = opponentStrikesData.length;
