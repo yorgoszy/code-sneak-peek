@@ -463,7 +463,7 @@ const MatchVideoGalleryManagement: React.FC = () => {
                 initialOpponentName={
                   analyzeVideo.blue_athlete_id
                     ? (athleteNames[analyzeVideo.blue_athlete_id] || undefined)
-                    : undefined
+                    : (analyzeVideo.blue_athlete_name || undefined)
                 }
                 initialStartSeconds={analyzeVideo.start_seconds}
                 initialEndSeconds={analyzeVideo.end_seconds}
