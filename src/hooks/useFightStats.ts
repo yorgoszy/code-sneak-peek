@@ -34,6 +34,8 @@ export interface FightStats {
   // Correctness
   correctStrikes: number;
   correctnessRate: number;
+  opponentCorrectStrikes: number;
+  opponentCorrectnessRate: number;
   
   // Hits received
   totalHitsReceived: number;
@@ -109,6 +111,8 @@ export const defaultFightStats: FightStats = {
   attackDefenseRatio: 1,
   correctStrikes: 0,
   correctnessRate: 0,
+  opponentCorrectStrikes: 0,
+  opponentCorrectnessRate: 0,
   totalHitsReceived: 0,
   avgHitsReceivedPerRound: 0,
   punchesTotal: 0,
@@ -224,6 +228,8 @@ export const useFightStats = (fightId: string | null) => {
         const opponentTotalStrikes = opponentStrikesData.length;
         const opponentLandedStrikes = opponentStrikesData.filter(s => s.landed).length;
         const opponentAccuracy = opponentTotalStrikes > 0 ? Math.round((opponentLandedStrikes / opponentTotalStrikes) * 100) : 0;
+        const opponentCorrectStrikes = opponentStrikesData.filter(s => s.is_correct).length;
+        const opponentCorrectnessRate = opponentTotalStrikes > 0 ? Math.round((opponentCorrectStrikes / opponentTotalStrikes) * 100) : 0;
 
         // Hits received
         const totalHitsReceived = rounds?.reduce((sum, r) => sum + (r.hits_received || 0), 0) || 0;
@@ -297,21 +303,24 @@ export const useFightStats = (fightId: string | null) => {
         if (attackDefenseRatio > 1.5) fightStyle = 'aggressive';
         else if (attackDefenseRatio < 0.67) fightStyle = 'defensive';
 
-        // Action time (sum of round durations) - keep in seconds
-        const actionTimeSeconds = rounds?.reduce((sum, r) => sum + (r.duration_seconds || 0), 0) || 0;
+        // Active time = unique seconds where strikes happened (2s window per strike)
+        // Real fighting time, not total round duration
+        const ACTIVE_WINDOW = 2;
+        const activeSecondsAthlete = new Set<string>();
+        const activeSecondsOpponent = new Set<string>();
+        for (const s of athleteStrikes) {
+          const base = Math.floor(s.timestamp_in_round || 0);
+          for (let i = 0; i < ACTIVE_WINDOW; i++) activeSecondsAthlete.add(`${s.round_id}-${base + i}`);
+        }
+        for (const s of opponentStrikesData) {
+          const base = Math.floor(s.timestamp_in_round || 0);
+          for (let i = 0; i < ACTIVE_WINDOW; i++) activeSecondsOpponent.add(`${s.round_id}-${base + i}`);
+        }
+        const allActive = new Set<string>([...activeSecondsAthlete, ...activeSecondsOpponent]);
+        const actionTimeSeconds = allActive.size;
+        const attackTimeSeconds = activeSecondsAthlete.size;
+        const defenseTimeSeconds = activeSecondsOpponent.size;
         const actionTimeFormatted = formatTime(actionTimeSeconds);
-
-        // Attack time and Defense time calculation
-        // Estimate based on strikes vs defenses ratio
-        // Attack time = proportional to athlete strikes
-        // Defense time = proportional to opponent strikes (when athlete is defending)
-        const totalActions = totalStrikes + opponentTotalStrikes;
-        const attackTimeSeconds = totalActions > 0 
-          ? Math.round((totalStrikes / totalActions) * actionTimeSeconds) 
-          : 0;
-        const defenseTimeSeconds = totalActions > 0 
-          ? Math.round((opponentTotalStrikes / totalActions) * actionTimeSeconds) 
-          : 0;
         const attackTimeFormatted = formatTime(attackTimeSeconds);
         const defenseTimeFormatted = formatTime(defenseTimeSeconds);
 
@@ -387,6 +396,8 @@ export const useFightStats = (fightId: string | null) => {
           attackDefenseRatio,
           correctStrikes,
           correctnessRate,
+          opponentCorrectStrikes,
+          opponentCorrectnessRate,
           totalHitsReceived,
           avgHitsReceivedPerRound,
           punchesTotal,

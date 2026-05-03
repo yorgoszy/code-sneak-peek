@@ -184,8 +184,14 @@ export const VideoAnalysisOverview = () => {
     },
     {
       title: 'Ορθότητα',
-      value: `${stats?.correctnessRate || 0}%`,
-      subtitle: `${stats?.correctStrikes || 0} σωστά`,
+      value: (
+        <span className="inline-flex items-baseline gap-1">
+          <span className="text-red-500">{stats?.correctnessRate || 0}%</span>
+          <span className="text-gray-400">/</span>
+          <span className="text-blue-500">{stats?.opponentCorrectnessRate || 0}%</span>
+        </span>
+      ),
+      subtitle: `${stats?.correctStrikes || 0} / ${stats?.opponentCorrectStrikes || 0} σωστά`,
       icon: CheckCircle,
       color: 'text-foreground',
       bgColor: 'bg-gray-100 dark:bg-gray-800',
