@@ -18,6 +18,7 @@ import { StrikeTypesDialog } from './StrikeTypesDialog';
 import { VideoEditorTab } from './VideoEditorTab';
 import { FightViewDialog } from './FightViewDialog';
 import { FightEditDialog } from './FightEditDialog';
+import { MatchFightCard } from './MatchFightCard';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
