@@ -534,22 +534,24 @@ export const AdminVideoAnalysisOverview = () => {
                                 const isBlue = (fight as any).our_corner === 'blue';
                                 const userName = fight.user_name || 'Χρήστης';
                                 const oppName = fight.opponent_name || '-';
-                                // Red = top, Blue = bottom (always)
                                 const topName = isBlue ? oppName : userName;
                                 const bottomName = isBlue ? userName : oppName;
                                 const topIsOurs = !isBlue;
                                 const bottomIsOurs = isBlue;
                                 return (
                                   <>
+                                    {/* Line 1: Names */}
                                     <div className="flex items-center gap-2 flex-wrap">
                                       <span className={`truncate text-red-500 ${topIsOurs ? 'text-base font-bold' : 'text-xs font-medium'}`}>{topName}</span>
+                                      <span className="text-xs text-gray-400">vs</span>
+                                      <span className={`truncate text-blue-500 ${bottomIsOurs ? 'text-base font-bold' : 'text-xs font-medium'}`}>{bottomName}</span>
+                                    </div>
+                                    {/* Line 2: Result + meta */}
+                                    <div className="flex items-center gap-2 text-xs text-gray-600 flex-wrap">
                                       {getResultBadge(fight.result)}
                                       <Badge variant="outline" className="rounded-none text-xs">
                                         {getFightTypeLabel(fight.fight_type)}
                                       </Badge>
-                                    </div>
-                                    <div className="flex items-center gap-3 text-xs text-gray-600 flex-wrap">
-                                      <span><span className="text-gray-500">vs </span><span className={`text-blue-500 ${bottomIsOurs ? 'text-base font-bold' : 'text-xs font-medium'}`}>{bottomName}</span></span>
                                       <div className="flex items-center gap-1">
                                         <Calendar className="w-3 h-3" />
                                         <span>{format(new Date(fight.fight_date), 'dd MMM yyyy', { locale: el })}</span>

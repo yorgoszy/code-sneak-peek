@@ -517,6 +517,7 @@ export const VideoAnalysisOverview = () => {
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
+                        {/* Line 1: Names only */}
                         <div className="flex items-center gap-1.5 flex-wrap">
                           {(() => {
                             const isBlue = (fight as any).our_corner === 'blue';
@@ -530,9 +531,10 @@ export const VideoAnalysisOverview = () => {
                               </>
                             );
                           })()}
-                          {getResultBadge(fight.result)}
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
+                        {/* Line 2: Result + meta */}
+                        <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5 flex-wrap">
+                          {getResultBadge(fight.result)}
                           <div className="flex items-center gap-0.5">
                             <Calendar className="w-3 h-3" />
                             {format(new Date(fight.fight_date), 'dd/MM/yy', { locale: el })}
