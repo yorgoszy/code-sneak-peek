@@ -2862,7 +2862,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
               value={selectedUserId}
               onValueChange={setSelectedUserId}
               placeholder={`Αθλητής μας * (${ourCorner === 'red' ? 'κόκκινη' : 'μπλε'})`}
-              coachId={coachId || undefined}
+              coachId={isAdminUser ? undefined : (coachId || undefined)}
+              adminOwned={isAdminUser}
             />
           </div>
           <Input
