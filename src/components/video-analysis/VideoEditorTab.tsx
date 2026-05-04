@@ -2824,18 +2824,36 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
           </Button>
         )}
         <div className="flex items-center gap-2">
+          <div className="flex items-center border border-input h-9">
+            <button
+              type="button"
+              onClick={() => setOurCorner('red')}
+              className={`h-full px-2 text-xs font-semibold transition-colors ${ourCorner === 'red' ? 'bg-red-600 text-white' : 'bg-background text-red-600 hover:bg-red-50'}`}
+              title="Ο αθλητής μας στην κόκκινη γωνία"
+            >
+              Κόκκινη
+            </button>
+            <button
+              type="button"
+              onClick={() => setOurCorner('blue')}
+              className={`h-full px-2 text-xs font-semibold transition-colors ${ourCorner === 'blue' ? 'bg-blue-600 text-white' : 'bg-background text-blue-600 hover:bg-blue-50'}`}
+              title="Ο αθλητής μας στην μπλε γωνία"
+            >
+              Μπλε
+            </button>
+          </div>
           <div className="w-44">
             <UserSearchCombobox
               value={selectedUserId}
               onValueChange={setSelectedUserId}
-              placeholder="Αθλητής μας * (υποχρ.)"
+              placeholder={`Αθλητής μας * (${ourCorner === 'red' ? 'κόκκινη' : 'μπλε'})`}
               coachId={coachId || undefined}
             />
           </div>
           <Input
             value={opponentName}
             onChange={(e) => setOpponentName(e.target.value)}
-            placeholder="Αντίπαλος (προαιρετικό)"
+            placeholder={`Αντίπαλος (${ourCorner === 'red' ? 'μπλε' : 'κόκκινη'})`}
             className="w-40 h-9 rounded-none text-sm"
           />
           <Button
