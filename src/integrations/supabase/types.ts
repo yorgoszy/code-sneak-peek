@@ -6620,6 +6620,7 @@ export type Database = {
           fight_type: string
           id: string
           location: string | null
+          match_video_id: string | null
           notes: string | null
           opponent_name: string
           result: string | null
@@ -6638,6 +6639,7 @@ export type Database = {
           fight_type: string
           id?: string
           location?: string | null
+          match_video_id?: string | null
           notes?: string | null
           opponent_name: string
           result?: string | null
@@ -6656,6 +6658,7 @@ export type Database = {
           fight_type?: string
           id?: string
           location?: string | null
+          match_video_id?: string | null
           notes?: string | null
           opponent_name?: string
           result?: string | null
