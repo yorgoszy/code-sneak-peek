@@ -31,7 +31,7 @@ interface UserSearchComboboxProps {
   onValueChange: (value: string | null) => void;
   placeholder?: string;
   coachId?: string;
-  /** When true, fetches only users where coach_id IS NULL (admin's own athletes) */
+  /** When true, fetches ALL users with no coach filter (admin sees everyone) */
   adminOwned?: boolean;
   filterByCoach?: boolean;
   disabled?: boolean;
