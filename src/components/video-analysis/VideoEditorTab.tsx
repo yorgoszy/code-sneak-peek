@@ -116,6 +116,7 @@ interface VideoEditorTabProps {
   initialMatchTitle?: string;
   compactMode?: boolean;
   matchVideoId?: string;
+  initialOurCorner?: 'red' | 'blue';
 }
 
 export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
@@ -128,6 +129,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
   initialMatchTitle,
   compactMode = false,
   matchVideoId,
+  initialOurCorner,
 }) => {
   // Role check & coach ID - align with VideoAnalysisOverview / StrikeTypesDialog
   // so that strike types in the editor always match the ones from the management dialog.
