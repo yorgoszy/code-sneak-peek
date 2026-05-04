@@ -91,6 +91,14 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
     }
 
     const opponentName = formData.opponent_name.trim() || 'Αντίπαλος';
+    const safeFightType = ['training', 'sparring', 'competition'].includes(formData.fight_type)
+      ? formData.fight_type
+      : 'competition';
+    const safeResult = ['win', 'loss', 'draw', 'no_contest'].includes(formData.result)
+      ? formData.result
+      : formData.result
+        ? 'no_contest'
+        : null;
 
     setSaving(true);
     try {
@@ -101,8 +109,8 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
           our_corner: formData.our_corner,
           opponent_name: opponentName,
           fight_date: formData.fight_date,
-          result: formData.result || null,
-          fight_type: formData.fight_type || null,
+          result: safeResult,
+          fight_type: safeFightType,
           total_rounds: formData.total_rounds ? parseInt(formData.total_rounds) : null,
           round_duration_seconds: formData.round_duration_seconds ? parseInt(formData.round_duration_seconds) : null,
           location: formData.location || null,
@@ -229,11 +237,6 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
                   <SelectItem value="win">Νίκη</SelectItem>
                   <SelectItem value="loss">Ήττα</SelectItem>
                   <SelectItem value="draw">Ισοπαλία</SelectItem>
-                  <SelectItem value="win_ko">Νίκη με KO</SelectItem>
-                  <SelectItem value="loss_ko">Ήττα με KO</SelectItem>
-                  <SelectItem value="win_tko">Νίκη με TKO</SelectItem>
-                  <SelectItem value="loss_tko">Ήττα με TKO</SelectItem>
-                  <SelectItem value="disqualified">Αποκλεισμός</SelectItem>
                   <SelectItem value="no_contest">Άκυρος</SelectItem>
                 </SelectContent>
               </Select>
@@ -251,8 +254,8 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
                   <SelectValue placeholder="Επιλέξτε..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="amateur">Ερασιτεχνικός</SelectItem>
-                  <SelectItem value="professional">Επαγγελματικός</SelectItem>
+                  <SelectItem value="competition">Αγώνας</SelectItem>
+                  <SelectItem value="training">Προπόνηση</SelectItem>
                   <SelectItem value="sparring">Sparring</SelectItem>
                 </SelectContent>
               </Select>
