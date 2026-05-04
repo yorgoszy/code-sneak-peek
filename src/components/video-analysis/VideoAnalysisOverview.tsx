@@ -18,6 +18,7 @@ import { StrikeTypesDialog } from './StrikeTypesDialog';
 import { VideoEditorTab } from './VideoEditorTab';
 import { FightViewDialog } from './FightViewDialog';
 import { FightEditDialog } from './FightEditDialog';
+import { MatchFightCard } from './MatchFightCard';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { el } from 'date-fns/locale';
@@ -496,63 +497,28 @@ export const VideoAnalysisOverview = () => {
             </Card>
           ) : (
             <div className="space-y-2">
-              {fights.map((fight) => (
-                <Card 
-                  key={fight.id} 
-                  className={`rounded-none cursor-pointer transition-all hover:shadow-md ${
-                    selectedFightId === fight.id ? 'ring-2 ring-[#00ffba] bg-[#00ffba]/5' : ''
-                  }`}
-                  onClick={() => setSelectedFightId(fight.id === selectedFightId ? null : fight.id)}
-                >
-                  <CardContent className="p-2 md:p-3">
-                    <div className="flex items-center gap-2 md:gap-3">
-                      {/* Avatar */}
-                      <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
-                        {fight.user_avatar ? (
-                          <img src={fight.user_avatar} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <User className="w-4 h-4 text-gray-400" />
-                        )}
-                      </div>
-
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        {/* Line 1: Names only */}
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          {(() => {
-                            const isBlue = (fight as any).our_corner === 'blue';
-                            const userName = fight.user_name || 'Άγνωστος';
-                            const oppName = fight.opponent_name || '-';
-                            return (
-                              <>
-                                <span className={`truncate ${isBlue ? 'text-red-500 text-xs font-medium' : 'text-red-500 text-base font-bold border border-current px-1.5 py-0.5'}`}>{isBlue ? oppName : userName}</span>
-                                <span className="text-xs text-gray-400">vs</span>
-                                <span className={`truncate ${isBlue ? 'text-blue-500 text-base font-bold border border-current px-1.5 py-0.5' : 'text-blue-500 text-xs font-medium'}`}>{isBlue ? userName : oppName}</span>
-                              </>
-                            );
-                          })()}
-                        </div>
-                        {/* Line 2: Result + meta */}
-                        <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5 flex-wrap">
-                          {getResultBadge(fight.result)}
-                          <div className="flex items-center gap-0.5">
-                            <Calendar className="w-3 h-3" />
-                            {format(new Date(fight.fight_date), 'dd/MM/yy', { locale: el })}
-                          </div>
-                          {fight.location && (
-                            <div className="flex items-center gap-0.5">
-                              <MapPin className="w-3 h-3" />
-                              <span className="truncate max-w-[80px]">{fight.location}</span>
-                            </div>
-                          )}
-                          <Badge variant="outline" className="rounded-none text-[10px] px-1 py-0">
-                            {getFightTypeLabel(fight.fight_type)}
-                          </Badge>
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex items-center gap-1">
+              {fights.map((fight) => {
+                const isBlue = (fight as any).our_corner === 'blue';
+                const userName = fight.user_name || 'Άγνωστος';
+                const oppName = fight.opponent_name || '-';
+                return (
+                  <MatchFightCard
+                    key={fight.id}
+                    selected={selectedFightId === fight.id}
+                    onClick={() => setSelectedFightId(fight.id === selectedFightId ? null : fight.id)}
+                    data={{
+                      id: fight.id,
+                      ourCorner: isBlue ? 'blue' : 'red',
+                      ourAvatarUrl: fight.user_avatar,
+                      redName: isBlue ? oppName : userName,
+                      blueName: isBlue ? userName : oppName,
+                      date: fight.fight_date,
+                      location: fight.location,
+                      metaLabels: [getFightTypeLabel(fight.fight_type)],
+                      resultBadge: getResultBadge(fight.result),
+                    }}
+                    actions={
+                      <>
                         <Button
                           size="sm"
                           variant="ghost"
@@ -589,11 +555,11 @@ export const VideoAnalysisOverview = () => {
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      </>
+                    }
+                  />
+                );
+              })}
             </div>
           )}
         </TabsContent>
