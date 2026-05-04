@@ -103,11 +103,14 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
     const safeFightType = ['training', 'sparring', 'competition'].includes(formData.fight_type)
       ? formData.fight_type
       : 'competition';
-    const safeResult = ['win', 'loss', 'draw', 'no_contest'].includes(formData.result)
-      ? formData.result
-      : formData.result
-        ? 'no_contest'
-        : null;
+    let safeResult: string | null = null;
+    if (['win', 'loss', 'draw', 'no_contest'].includes(formData.result)) {
+      safeResult = formData.result;
+      if (formData.is_ko && formData.result === 'win') safeResult = 'win_ko';
+      if (formData.is_ko && formData.result === 'loss') safeResult = 'loss_ko';
+    } else if (formData.result) {
+      safeResult = 'no_contest';
+    }
 
     setSaving(true);
     try {
