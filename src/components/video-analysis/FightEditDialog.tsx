@@ -90,6 +90,8 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
       return;
     }
 
+    const opponentName = formData.opponent_name.trim() || 'Αντίπαλος';
+
     setSaving(true);
     try {
       const { error } = await supabase
@@ -97,7 +99,7 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
         .update({
           user_id: formData.user_id,
           our_corner: formData.our_corner,
-          opponent_name: formData.opponent_name || null,
+          opponent_name: opponentName,
           fight_date: formData.fight_date,
           result: formData.result || null,
           fight_type: formData.fight_type || null,
@@ -108,7 +110,7 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
           notes: formData.notes || null,
           video_url: formData.video_url || null,
           updated_at: new Date().toISOString(),
-        } as any)
+        })
         .eq('id', fight.id);
 
       if (error) throw error;
