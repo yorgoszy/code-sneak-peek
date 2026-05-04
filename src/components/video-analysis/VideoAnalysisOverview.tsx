@@ -439,9 +439,9 @@ export const VideoAnalysisOverview = () => {
                 const oppName = selectedFight.opponent_name || 'Άγνωστος';
                 return (
                   <span className="font-medium">
-                    <span className={`${isBlue ? 'text-red-500 text-xs' : 'text-red-500 text-base font-bold'}`}>{isBlue ? oppName : userName}</span>
+                    <span className={`${isBlue ? 'text-red-500 text-xs' : 'text-red-500 text-base font-bold underline underline-offset-2'}`}>{isBlue ? oppName : userName}</span>
                     <span className="text-gray-400 mx-1 text-sm">vs</span>
-                    <span className={`${isBlue ? 'text-blue-500 text-base font-bold' : 'text-blue-500 text-xs'}`}>{isBlue ? userName : oppName}</span>
+                    <span className={`${isBlue ? 'text-blue-500 text-base font-bold underline underline-offset-2' : 'text-blue-500 text-xs'}`}>{isBlue ? userName : oppName}</span>
                   </span>
                 );
               })()}
@@ -525,9 +525,9 @@ export const VideoAnalysisOverview = () => {
                             const oppName = fight.opponent_name || '-';
                             return (
                               <>
-                                <span className={`truncate ${isBlue ? 'text-red-500 text-xs font-medium' : 'text-red-500 text-base font-bold'}`}>{isBlue ? oppName : userName}</span>
+                                <span className={`truncate ${isBlue ? 'text-red-500 text-xs font-medium' : 'text-red-500 text-base font-bold underline underline-offset-2'}`}>{isBlue ? oppName : userName}</span>
                                 <span className="text-xs text-gray-400">vs</span>
-                                <span className={`truncate ${isBlue ? 'text-blue-500 text-base font-bold' : 'text-blue-500 text-xs font-medium'}`}>{isBlue ? userName : oppName}</span>
+                                <span className={`truncate ${isBlue ? 'text-blue-500 text-base font-bold underline underline-offset-2' : 'text-blue-500 text-xs font-medium'}`}>{isBlue ? userName : oppName}</span>
                               </>
                             );
                           })()}

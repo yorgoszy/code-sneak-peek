@@ -443,9 +443,9 @@ export const AdminVideoAnalysisOverview = () => {
                     const oppName = selectedFight.opponent_name || 'Άγνωστος';
                     return (
                       <span className="font-medium">
-                        <span className={`${isBlue ? 'text-red-500 text-xs' : 'text-red-500 text-base font-bold'}`}>{isBlue ? oppName : userName}</span>
+                        <span className={`${isBlue ? 'text-red-500 text-xs' : 'text-red-500 text-base font-bold underline underline-offset-2'}`}>{isBlue ? oppName : userName}</span>
                         <span className="text-gray-400 mx-1 text-sm">vs</span>
-                        <span className={`${isBlue ? 'text-blue-500 text-base font-bold' : 'text-blue-500 text-xs'}`}>{isBlue ? userName : oppName}</span>
+                        <span className={`${isBlue ? 'text-blue-500 text-base font-bold underline underline-offset-2' : 'text-blue-500 text-xs'}`}>{isBlue ? userName : oppName}</span>
                       </span>
                     );
                   })()}
@@ -542,9 +542,9 @@ export const AdminVideoAnalysisOverview = () => {
                                   <>
                                     {/* Line 1: Names */}
                                     <div className="flex items-center gap-2 flex-wrap">
-                                      <span className={`truncate text-red-500 ${topIsOurs ? 'text-base font-bold' : 'text-xs font-medium'}`}>{topName}</span>
+                                      <span className={`truncate text-red-500 ${topIsOurs ? 'text-base font-bold underline underline-offset-2' : 'text-xs font-medium'}`}>{topName}</span>
                                       <span className="text-xs text-gray-400">vs</span>
-                                      <span className={`truncate text-blue-500 ${bottomIsOurs ? 'text-base font-bold' : 'text-xs font-medium'}`}>{bottomName}</span>
+                                      <span className={`truncate text-blue-500 ${bottomIsOurs ? 'text-base font-bold underline underline-offset-2' : 'text-xs font-medium'}`}>{bottomName}</span>
                                     </div>
                                     {/* Line 2: Result + meta */}
                                     <div className="flex items-center gap-2 text-xs text-gray-600 flex-wrap">
