@@ -237,6 +237,88 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
     if (initialOpponentName) setOpponentName(initialOpponentName);
   }, [initialOpponentName]);
 
+  // Load existing analysis (fight + rounds + strikes) for this match video, if any
+  const loadedExistingRef = useRef(false);
+  useEffect(() => {
+    if (!matchVideoId || loadedExistingRef.current) return;
+    loadedExistingRef.current = true;
+
+    (async () => {
+      try {
+        const { data: fight } = await supabase
+          .from('muaythai_fights')
+          .select('id, user_id, opponent_name')
+          .eq('match_video_id', matchVideoId)
+          .maybeSingle();
+
+        if (!fight) return;
+
+        // Sync user/opponent from saved fight
+        if (fight.user_id) setSelectedUserId(fight.user_id);
+        if (fight.opponent_name) setOpponentName(fight.opponent_name);
+
+        const { data: rounds } = await supabase
+          .from('muaythai_rounds')
+          .select('id, round_number, duration_seconds')
+          .eq('fight_id', fight.id)
+          .order('round_number');
+
+        if (!rounds || rounds.length === 0) return;
+
+        // Reconstruct round markers on a sequential timeline
+        let cursor = 0;
+        const roundIdToNumber = new Map<string, number>();
+        const restoredRounds: RoundMarker[] = rounds.map((r: any) => {
+          const start = cursor;
+          const end = cursor + (r.duration_seconds || 0);
+          cursor = end;
+          roundIdToNumber.set(r.id, r.round_number);
+          return {
+            id: `r-${r.id}`,
+            roundNumber: r.round_number,
+            startTime: start,
+            endTime: end,
+          };
+        });
+        setRoundMarkers(restoredRounds);
+
+        const roundIds = rounds.map((r: any) => r.id);
+        const { data: strikes } = await supabase
+          .from('muaythai_strikes')
+          .select('id, round_id, timestamp_in_round, strike_type, side, landed, is_opponent, is_correct')
+          .in('round_id', roundIds);
+
+        if (!strikes) return;
+
+        const restoredStrikes: StrikeMarker[] = strikes.map((s: any) => {
+          const rNum = roundIdToNumber.get(s.round_id) || 1;
+          const round = restoredRounds.find(rm => rm.roundNumber === rNum);
+          const absTime = (round?.startTime || 0) + (s.timestamp_in_round || 0);
+          return {
+            id: `s-${s.id}`,
+            strikeTypeId: '',
+            strikeTypeName: s.strike_type,
+            strikeCategory: s.strike_type,
+            strikeSide: s.side,
+            time: absTime,
+            owner: s.is_opponent ? 'opponent' : 'athlete',
+            actionType: s.is_opponent ? 'defense' : 'attack',
+            roundNumber: rNum,
+            timeInRound: s.timestamp_in_round || 0,
+            hitTarget: !!(s.landed ?? s.is_correct),
+            blocked: false,
+          };
+        });
+        setStrikeMarkers(restoredStrikes);
+
+        toast.info('Φορτώθηκε υπάρχουσα ανάλυση για αυτόν τον αγώνα');
+      } catch (err) {
+        console.error('Error loading existing analysis:', err);
+      }
+    })();
+  }, [matchVideoId]);
+
+
   useEffect(() => {
     if (initialYoutubeUrl && !initialLoadedRef.current && videos.length === 0) {
       initialLoadedRef.current = true;
