@@ -67,12 +67,20 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
 
   useEffect(() => {
     if (fight) {
+      const rawResult = fight.result || '';
+      const isKo = ['win_ko', 'loss_ko', 'win_tko', 'loss_tko'].includes(rawResult);
+      const baseResult = rawResult === 'win_ko' || rawResult === 'win_tko'
+        ? 'win'
+        : rawResult === 'loss_ko' || rawResult === 'loss_tko'
+          ? 'loss'
+          : rawResult;
       setFormData({
         user_id: fight.user_id || '',
         our_corner: (fight.our_corner === 'blue' ? 'blue' : 'red'),
         opponent_name: fight.opponent_name || '',
         fight_date: fight.fight_date || '',
-        result: fight.result || '',
+        result: baseResult,
+        is_ko: isKo,
         fight_type: fight.fight_type || '',
         total_rounds: fight.total_rounds?.toString() || '',
         round_duration_seconds: fight.round_duration_seconds?.toString() || '',
