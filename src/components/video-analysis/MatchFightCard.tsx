@@ -69,7 +69,7 @@ export const MatchFightCard: React.FC<MatchFightCardProps> = ({
             <div className="flex items-center gap-1.5 flex-wrap">
               <span
                 className={`truncate text-red-500 ${
-                  isRedOurs
+                  redHighlighted
                     ? 'text-base font-bold border border-current px-1.5 py-0.5'
                     : 'text-xs font-medium'
                 }`}
@@ -79,7 +79,7 @@ export const MatchFightCard: React.FC<MatchFightCardProps> = ({
               <span className="text-xs text-gray-400">vs</span>
               <span
                 className={`truncate text-blue-500 ${
-                  isBlueOurs
+                  blueHighlighted
                     ? 'text-base font-bold border border-current px-1.5 py-0.5'
                     : 'text-xs font-medium'
                 }`}
