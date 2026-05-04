@@ -57,6 +57,7 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
   onValueChange,
   placeholder = 'Αναζήτηση χρήστη...',
   coachId,
+  adminOwned = false,
   filterByCoach = true,
   disabled = false,
 }) => {
@@ -78,6 +79,8 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
 
         if (coachId) {
           query = query.eq('coach_id', coachId);
+        } else if (adminOwned) {
+          query = query.is('coach_id', null);
         }
 
         // If user is searching, use server-side ilike on name OR email (handles huge datasets)
@@ -97,7 +100,7 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
     };
 
     fetchUsers();
-  }, [coachId, searchQuery]);
+  }, [coachId, adminOwned, searchQuery]);
 
   // Ensure the selected user stays visible even if not in current page
   useEffect(() => {
