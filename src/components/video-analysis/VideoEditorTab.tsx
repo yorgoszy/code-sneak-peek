@@ -240,6 +240,10 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
     if (initialOpponentName) setOpponentName(initialOpponentName);
   }, [initialOpponentName]);
 
+  useEffect(() => {
+    if (initialOurCorner) setOurCorner(initialOurCorner);
+  }, [initialOurCorner]);
+
   // Load existing analysis (fight + rounds + strikes) for this match video, if any
   const loadedExistingRef = useRef(false);
   useEffect(() => {
