@@ -204,6 +204,11 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
                   <SelectItem value="win">Νίκη</SelectItem>
                   <SelectItem value="loss">Ήττα</SelectItem>
                   <SelectItem value="draw">Ισοπαλία</SelectItem>
+                  <SelectItem value="win_ko">Νίκη με KO</SelectItem>
+                  <SelectItem value="loss_ko">Ήττα με KO</SelectItem>
+                  <SelectItem value="win_tko">Νίκη με TKO</SelectItem>
+                  <SelectItem value="loss_tko">Ήττα με TKO</SelectItem>
+                  <SelectItem value="disqualified">Αποκλεισμός</SelectItem>
                   <SelectItem value="no_contest">Άκυρος</SelectItem>
                 </SelectContent>
               </Select>
