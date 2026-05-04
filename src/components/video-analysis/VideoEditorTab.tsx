@@ -250,15 +250,18 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
       try {
         const { data: fight } = await supabase
           .from('muaythai_fights')
-          .select('id, user_id, opponent_name')
+          .select('id, user_id, opponent_name, our_corner')
           .eq('match_video_id', matchVideoId)
           .maybeSingle();
 
         if (!fight) return;
 
-        // Sync user/opponent from saved fight
+        // Sync user/opponent/corner from saved fight
         if (fight.user_id) setSelectedUserId(fight.user_id);
         if (fight.opponent_name) setOpponentName(fight.opponent_name);
+        if ((fight as any).our_corner === 'red' || (fight as any).our_corner === 'blue') {
+          setOurCorner((fight as any).our_corner);
+        }
 
         const { data: rounds } = await supabase
           .from('muaythai_rounds')
