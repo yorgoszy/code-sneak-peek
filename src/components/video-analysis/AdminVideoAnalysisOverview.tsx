@@ -439,13 +439,13 @@ export const AdminVideoAnalysisOverview = () => {
                   {getResultBadge(selectedFight.result)}
                   {(() => {
                     const isBlue = (selectedFight as any).our_corner === 'blue';
-                    const redName = isBlue ? (selectedFight.opponent_name || 'Άγνωστος') : (selectedFight.user_name || '-');
-                    const blueName = isBlue ? (selectedFight.user_name || '-') : (selectedFight.opponent_name || 'Άγνωστος');
+                    const userName = selectedFight.user_name || '-';
+                    const oppName = selectedFight.opponent_name || 'Άγνωστος';
                     return (
-                      <span className="text-sm font-medium">
-                        <span className="text-red-500">{redName}</span>
-                        <span className="text-gray-400 mx-1">vs</span>
-                        <span className="text-blue-500">{blueName}</span>
+                      <span className="font-medium">
+                        <span className={`${isBlue ? 'text-red-500 text-sm' : 'text-red-500 text-base font-bold'}`}>{isBlue ? oppName : userName}</span>
+                        <span className="text-gray-400 mx-1 text-sm">vs</span>
+                        <span className={`${isBlue ? 'text-blue-500 text-base font-bold' : 'text-blue-500 text-sm'}`}>{isBlue ? userName : oppName}</span>
                       </span>
                     );
                   })()}
