@@ -433,11 +433,18 @@ export const VideoAnalysisOverview = () => {
           <>
             <div className="flex items-center gap-2">
               {getResultBadge(selectedFight.result)}
-              <span className="text-sm font-medium">
-                <span className={(selectedFight as any).our_corner === 'blue' ? 'text-blue-500' : 'text-red-500'}>{selectedFight.user_name || '-'}</span>
-                <span className="text-gray-400 mx-1">vs</span>
-                <span className={(selectedFight as any).our_corner === 'blue' ? 'text-red-500' : 'text-blue-500'}>{selectedFight.opponent_name || 'Άγνωστος'}</span>
-              </span>
+              {(() => {
+                const isBlue = (selectedFight as any).our_corner === 'blue';
+                const redName = isBlue ? (selectedFight.opponent_name || 'Άγνωστος') : (selectedFight.user_name || '-');
+                const blueName = isBlue ? (selectedFight.user_name || '-') : (selectedFight.opponent_name || 'Άγνωστος');
+                return (
+                  <span className="text-sm font-medium">
+                    <span className="text-red-500">{redName}</span>
+                    <span className="text-gray-400 mx-1">vs</span>
+                    <span className="text-blue-500">{blueName}</span>
+                  </span>
+                );
+              })()}
               <span className="text-xs text-gray-500">
                 {format(new Date(selectedFight.fight_date), 'dd/MM/yy', { locale: el })}
               </span>
@@ -511,9 +518,18 @@ export const VideoAnalysisOverview = () => {
                       {/* Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className={`text-sm font-medium truncate ${(fight as any).our_corner === 'blue' ? 'text-blue-500' : 'text-red-500'}`}>{fight.user_name || 'Άγνωστος'}</span>
-                          <span className="text-xs text-gray-400">vs</span>
-                          <span className={`text-sm font-medium truncate ${(fight as any).our_corner === 'blue' ? 'text-red-500' : 'text-blue-500'}`}>{fight.opponent_name || '-'}</span>
+                          {(() => {
+                            const isBlue = (fight as any).our_corner === 'blue';
+                            const redName = isBlue ? (fight.opponent_name || '-') : (fight.user_name || 'Άγνωστος');
+                            const blueName = isBlue ? (fight.user_name || 'Άγνωστος') : (fight.opponent_name || '-');
+                            return (
+                              <>
+                                <span className="text-sm font-medium truncate text-red-500">{redName}</span>
+                                <span className="text-xs text-gray-400">vs</span>
+                                <span className="text-sm font-medium truncate text-blue-500">{blueName}</span>
+                              </>
+                            );
+                          })()}
                           {getResultBadge(fight.result)}
                         </div>
                         <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
