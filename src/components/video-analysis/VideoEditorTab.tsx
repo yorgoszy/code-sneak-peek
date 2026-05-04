@@ -46,6 +46,7 @@ import { toast } from 'sonner';
 import { useVideoExport } from '@/hooks/useVideoExport';
 import { useStrikeTypes, StrikeType, categoryLabels, sideLabels } from '@/hooks/useStrikeTypes';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
+// (admin detection used below to control combobox filter scope)
 import { useSafeCoachContext } from '@/contexts/CoachContext';
 import { supabase } from '@/integrations/supabase/client';
 import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
