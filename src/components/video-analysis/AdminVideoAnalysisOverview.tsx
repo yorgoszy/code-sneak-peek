@@ -443,9 +443,9 @@ export const AdminVideoAnalysisOverview = () => {
                     const oppName = selectedFight.opponent_name || 'Άγνωστος';
                     return (
                       <span className="font-medium">
-                        <span className={`${isBlue ? 'text-red-500 text-sm' : 'text-red-500 text-base font-bold'}`}>{isBlue ? oppName : userName}</span>
+                        <span className={`${isBlue ? 'text-red-500 text-xs' : 'text-red-500 text-base font-bold'}`}>{isBlue ? oppName : userName}</span>
                         <span className="text-gray-400 mx-1 text-sm">vs</span>
-                        <span className={`${isBlue ? 'text-blue-500 text-base font-bold' : 'text-blue-500 text-sm'}`}>{isBlue ? userName : oppName}</span>
+                        <span className={`${isBlue ? 'text-blue-500 text-base font-bold' : 'text-blue-500 text-xs'}`}>{isBlue ? userName : oppName}</span>
                       </span>
                     );
                   })()}
@@ -542,14 +542,14 @@ export const AdminVideoAnalysisOverview = () => {
                                 return (
                                   <>
                                     <div className="flex items-center gap-2 flex-wrap">
-                                      <span className={`truncate text-red-500 ${topIsOurs ? 'text-base font-bold' : 'text-sm font-medium'}`}>{topName}</span>
+                                      <span className={`truncate text-red-500 ${topIsOurs ? 'text-base font-bold' : 'text-xs font-medium'}`}>{topName}</span>
                                       {getResultBadge(fight.result)}
                                       <Badge variant="outline" className="rounded-none text-xs">
                                         {getFightTypeLabel(fight.fight_type)}
                                       </Badge>
                                     </div>
                                     <div className="flex items-center gap-3 text-xs text-gray-600 flex-wrap">
-                                      <span><span className="text-gray-500">vs </span><span className={`text-blue-500 ${bottomIsOurs ? 'text-base font-bold' : 'font-medium'}`}>{bottomName}</span></span>
+                                      <span><span className="text-gray-500">vs </span><span className={`text-blue-500 ${bottomIsOurs ? 'text-base font-bold' : 'text-xs font-medium'}`}>{bottomName}</span></span>
                                       <div className="flex items-center gap-1">
                                         <Calendar className="w-3 h-3" />
                                         <span>{format(new Date(fight.fight_date), 'dd MMM yyyy', { locale: el })}</span>
