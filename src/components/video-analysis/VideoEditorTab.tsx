@@ -140,6 +140,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
   // User selection and opponent name for saving fights
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [opponentName, setOpponentName] = useState<string>('');
+  const [ourCorner, setOurCorner] = useState<'red' | 'blue'>(initialOurCorner || 'red');
   
   // Strike types hook
   const { strikeTypes, loading: strikeTypesLoading } = useStrikeTypes(coachId);
