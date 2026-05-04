@@ -75,6 +75,7 @@ const MatchVideoGalleryManagement: React.FC = () => {
   const [form, setForm] = useState(emptyForm);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [athleteNames, setAthleteNames] = useState<Record<string, string>>({});
+  const [athleteAvatars, setAthleteAvatars] = useState<Record<string, string | null>>({});
   const [analyzeVideo, setAnalyzeVideo] = useState<MatchVideo | null>(null);
 
   const renderSidebar = () => <Sidebar isCollapsed={false} setIsCollapsed={() => {}} />;
@@ -90,10 +91,15 @@ const MatchVideoGalleryManagement: React.FC = () => {
 
     const ids = Array.from(new Set(list.flatMap(v => [v.red_athlete_id, v.blue_athlete_id]).filter(Boolean))) as string[];
     if (ids.length) {
-      const { data: users } = await supabase.from("app_users").select("id,name").in("id", ids);
-      const map: Record<string, string> = {};
-      (users || []).forEach((u: any) => { map[u.id] = u.name; });
-      setAthleteNames(map);
+      const { data: users } = await supabase.from("app_users").select("id,name,photo_url,avatar_url").in("id", ids);
+      const nameMap: Record<string, string> = {};
+      const avatarMap: Record<string, string | null> = {};
+      (users || []).forEach((u: any) => {
+        nameMap[u.id] = u.name;
+        avatarMap[u.id] = u.photo_url || u.avatar_url || null;
+      });
+      setAthleteNames(nameMap);
+      setAthleteAvatars(avatarMap);
     }
   };
 
