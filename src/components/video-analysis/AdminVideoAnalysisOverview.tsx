@@ -438,9 +438,9 @@ export const AdminVideoAnalysisOverview = () => {
                 <div className="flex items-center gap-2">
                   {getResultBadge(selectedFight.result)}
                   <span className="text-sm font-medium">
-                    <span className="text-red-500">{selectedFight.user_name || '-'}</span>
+                    <span className={(selectedFight as any).our_corner === 'blue' ? 'text-blue-500' : 'text-red-500'}>{selectedFight.user_name || '-'}</span>
                     <span className="text-gray-400 mx-1">vs</span>
-                    <span className="text-blue-500">{selectedFight.opponent_name || 'Άγνωστος'}</span>
+                    <span className={(selectedFight as any).our_corner === 'blue' ? 'text-red-500' : 'text-blue-500'}>{selectedFight.opponent_name || 'Άγνωστος'}</span>
                   </span>
                   <span className="text-xs text-gray-500">
                     {format(new Date(selectedFight.fight_date), 'dd/MM/yy', { locale: el })}
