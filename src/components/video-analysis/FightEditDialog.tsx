@@ -8,9 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
+import { useRoleCheck } from '@/hooks/useRoleCheck';
+import { useSafeCoachContext } from '@/contexts/CoachContext';
 
 interface Fight {
   id: string;
+  user_id?: string | null;
   opponent_name: string | null;
   fight_date: string;
   result: string | null;
@@ -21,6 +25,7 @@ interface Fight {
   weight_class: string | null;
   notes: string | null;
   video_url: string | null;
+  our_corner?: 'red' | 'blue' | null;
 }
 
 interface FightEditDialogProps {
@@ -30,13 +35,19 @@ interface FightEditDialogProps {
   onSave: () => void;
 }
 
-export const FightEditDialog: React.FC<FightEditDialogProps> = ({ 
-  isOpen, 
-  onClose, 
-  fight, 
-  onSave 
+export const FightEditDialog: React.FC<FightEditDialogProps> = ({
+  isOpen,
+  onClose,
+  fight,
+  onSave,
 }) => {
+  const { userProfile } = useRoleCheck();
+  const coachContext = useSafeCoachContext();
+  const coachId = coachContext?.coachId || userProfile?.id || null;
+
   const [formData, setFormData] = useState({
+    user_id: '',
+    our_corner: 'red' as 'red' | 'blue',
     opponent_name: '',
     fight_date: '',
     result: '',
@@ -46,7 +57,7 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
     location: '',
     weight_class: '',
     notes: '',
-    video_url: ''
+    video_url: '',
   });
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
@@ -54,6 +65,8 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
   useEffect(() => {
     if (fight) {
       setFormData({
+        user_id: fight.user_id || '',
+        our_corner: (fight.our_corner === 'blue' ? 'blue' : 'red'),
         opponent_name: fight.opponent_name || '',
         fight_date: fight.fight_date || '',
         result: fight.result || '',
@@ -63,19 +76,25 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
         location: fight.location || '',
         weight_class: fight.weight_class || '',
         notes: fight.notes || '',
-        video_url: fight.video_url || ''
+        video_url: fight.video_url || '',
       });
     }
   }, [fight]);
 
   const handleSave = async () => {
     if (!fight) return;
+    if (!formData.user_id) {
+      toast({ title: 'Σφάλμα', description: 'Απαιτείται ο αθλητής μας', variant: 'destructive' });
+      return;
+    }
 
     setSaving(true);
     try {
       const { error } = await supabase
         .from('muaythai_fights')
         .update({
+          user_id: formData.user_id,
+          our_corner: formData.our_corner,
           opponent_name: formData.opponent_name || null,
           fight_date: formData.fight_date,
           result: formData.result || null,
@@ -86,32 +105,27 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
           weight_class: formData.weight_class || null,
           notes: formData.notes || null,
           video_url: formData.video_url || null,
-          updated_at: new Date().toISOString()
-        })
+          updated_at: new Date().toISOString(),
+        } as any)
         .eq('id', fight.id);
 
       if (error) throw error;
 
-      toast({
-        title: "Επιτυχία",
-        description: "Ο αγώνας ενημερώθηκε"
-      });
-
+      toast({ title: 'Επιτυχία', description: 'Ο αγώνας ενημερώθηκε' });
       onSave();
       onClose();
     } catch (error) {
       console.error('Error updating fight:', error);
-      toast({
-        title: "Σφάλμα",
-        description: "Αποτυχία ενημέρωσης αγώνα",
-        variant: "destructive"
-      });
+      toast({ title: 'Σφάλμα', description: 'Αποτυχία ενημέρωσης αγώνα', variant: 'destructive' });
     } finally {
       setSaving(false);
     }
   };
 
   if (!fight) return null;
+
+  const ourCornerColor = formData.our_corner === 'red' ? 'red' : 'blue';
+  const oppCornerColor = formData.our_corner === 'red' ? 'blue' : 'red';
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -121,16 +135,52 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Αντίπαλος</Label>
-              <Input
-                value={formData.opponent_name}
-                onChange={(e) => setFormData({ ...formData, opponent_name: e.target.value })}
-                placeholder="Όνομα αντιπάλου"
-                className="rounded-none"
-              />
+          {/* Corner toggle */}
+          <div>
+            <Label>Γωνία αθλητή μας</Label>
+            <div className="flex items-center border border-input h-9 mt-1 w-fit">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, our_corner: 'red' })}
+                className={`h-full px-3 text-xs font-semibold transition-colors ${formData.our_corner === 'red' ? 'bg-red-600 text-white' : 'bg-background text-red-600 hover:bg-red-50'}`}
+              >
+                Κόκκινη
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, our_corner: 'blue' })}
+                className={`h-full px-3 text-xs font-semibold transition-colors ${formData.our_corner === 'blue' ? 'bg-blue-600 text-white' : 'bg-background text-blue-600 hover:bg-blue-50'}`}
+              >
+                Μπλε
+              </button>
             </div>
+          </div>
+
+          <div>
+            <Label className={ourCornerColor === 'red' ? 'text-red-600' : 'text-blue-600'}>
+              Αθλητής μας ({ourCornerColor === 'red' ? 'κόκκινη' : 'μπλε'} γωνία) *
+            </Label>
+            <UserSearchCombobox
+              value={formData.user_id}
+              onValueChange={(v) => setFormData({ ...formData, user_id: v })}
+              placeholder="Επιλέξτε αθλητή..."
+              coachId={coachId || undefined}
+            />
+          </div>
+
+          <div>
+            <Label className={oppCornerColor === 'red' ? 'text-red-600' : 'text-blue-600'}>
+              Αντίπαλος ({oppCornerColor === 'red' ? 'κόκκινη' : 'μπλε'} γωνία)
+            </Label>
+            <Input
+              value={formData.opponent_name}
+              onChange={(e) => setFormData({ ...formData, opponent_name: e.target.value })}
+              placeholder="Όνομα αντιπάλου"
+              className="rounded-none"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Ημερομηνία *</Label>
               <Input
@@ -140,9 +190,6 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
                 className="rounded-none"
               />
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Αποτέλεσμα</Label>
               <Select
@@ -160,6 +207,9 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Τύπος Αγώνα</Label>
               <Select
@@ -175,6 +225,15 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
                   <SelectItem value="sparring">Sparring</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div>
+              <Label>Κατηγορία Βάρους</Label>
+              <Input
+                value={formData.weight_class}
+                onChange={(e) => setFormData({ ...formData, weight_class: e.target.value })}
+                placeholder="π.χ. 67kg"
+                className="rounded-none"
+              />
             </div>
           </div>
 
@@ -201,25 +260,14 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Τοποθεσία</Label>
-              <Input
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                placeholder="Πόλη / Χώρα"
-                className="rounded-none"
-              />
-            </div>
-            <div>
-              <Label>Κατηγορία Βάρους</Label>
-              <Input
-                value={formData.weight_class}
-                onChange={(e) => setFormData({ ...formData, weight_class: e.target.value })}
-                placeholder="π.χ. 67kg"
-                className="rounded-none"
-              />
-            </div>
+          <div>
+            <Label>Τοποθεσία</Label>
+            <Input
+              value={formData.location}
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              placeholder="Πόλη / Χώρα"
+              className="rounded-none"
+            />
           </div>
 
           <div>
@@ -248,9 +296,9 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
           <Button variant="outline" onClick={onClose} className="rounded-none">
             Ακύρωση
           </Button>
-          <Button 
-            onClick={handleSave} 
-            disabled={saving || !formData.fight_date}
+          <Button
+            onClick={handleSave}
+            disabled={saving || !formData.fight_date || !formData.user_id}
             className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
           >
             {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
