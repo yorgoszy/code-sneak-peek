@@ -70,7 +70,7 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
               {result.label}
             </Badge>
             {result.isKo && (
-              <Badge variant="outline" className="rounded-none">
+              <Badge className="bg-yellow-400 hover:bg-yellow-500 text-black rounded-none">
                 KO
               </Badge>
             )}

@@ -149,12 +149,12 @@ export const VideoAnalysisOverview = () => {
         return <Badge className="bg-green-500 hover:bg-green-600 rounded-none text-xs">Νίκη</Badge>;
       case 'win_ko':
       case 'win_tko':
-        return <><Badge className="bg-green-500 hover:bg-green-600 rounded-none text-xs">Νίκη</Badge><Badge variant="outline" className="rounded-none text-xs">KO</Badge></>;
+        return <><Badge className="bg-green-500 hover:bg-green-600 rounded-none text-xs">Νίκη</Badge><Badge className="bg-yellow-400 hover:bg-yellow-500 text-black rounded-none text-xs">KO</Badge></>;
       case 'loss':
         return <Badge className="bg-red-500 hover:bg-red-600 rounded-none text-xs">Ήττα</Badge>;
       case 'loss_ko':
       case 'loss_tko':
-        return <><Badge className="bg-red-500 hover:bg-red-600 rounded-none text-xs">Ήττα</Badge><Badge variant="outline" className="rounded-none text-xs">KO</Badge></>;
+        return <><Badge className="bg-red-500 hover:bg-red-600 rounded-none text-xs">Ήττα</Badge><Badge className="bg-yellow-400 hover:bg-yellow-500 text-black rounded-none text-xs">KO</Badge></>;
       case 'draw':
         return <Badge className="bg-yellow-500 hover:bg-yellow-600 rounded-none text-xs">Ισοπαλία</Badge>;
       case 'no_contest':
@@ -434,9 +434,9 @@ export const VideoAnalysisOverview = () => {
             <div className="flex items-center gap-2">
               {getResultBadge(selectedFight.result)}
               <span className="text-sm font-medium">
-                <span className="text-red-500">{selectedFight.user_name || '-'}</span>
+                <span className={(selectedFight as any).our_corner === 'blue' ? 'text-blue-500' : 'text-red-500'}>{selectedFight.user_name || '-'}</span>
                 <span className="text-gray-400 mx-1">vs</span>
-                <span className="text-blue-500">{selectedFight.opponent_name || 'Άγνωστος'}</span>
+                <span className={(selectedFight as any).our_corner === 'blue' ? 'text-red-500' : 'text-blue-500'}>{selectedFight.opponent_name || 'Άγνωστος'}</span>
               </span>
               <span className="text-xs text-gray-500">
                 {format(new Date(selectedFight.fight_date), 'dd/MM/yy', { locale: el })}
@@ -511,9 +511,9 @@ export const VideoAnalysisOverview = () => {
                       {/* Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-sm font-medium truncate text-red-500">{fight.user_name || 'Άγνωστος'}</span>
+                          <span className={`text-sm font-medium truncate ${(fight as any).our_corner === 'blue' ? 'text-blue-500' : 'text-red-500'}`}>{fight.user_name || 'Άγνωστος'}</span>
                           <span className="text-xs text-gray-400">vs</span>
-                          <span className="text-sm font-medium truncate text-blue-500">{fight.opponent_name || '-'}</span>
+                          <span className={`text-sm font-medium truncate ${(fight as any).our_corner === 'blue' ? 'text-red-500' : 'text-blue-500'}`}>{fight.opponent_name || '-'}</span>
                           {getResultBadge(fight.result)}
                         </div>
                         <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
