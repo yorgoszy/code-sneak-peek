@@ -443,9 +443,9 @@ export const AdminVideoAnalysisOverview = () => {
                     const oppName = selectedFight.opponent_name || 'Άγνωστος';
                     return (
                       <span className="font-medium">
-                        <span className={`${isBlue ? 'text-red-500 text-sm' : 'text-red-500 text-base font-bold'}`}>{isBlue ? oppName : userName}</span>
+                        <span className={`${isBlue ? 'text-red-500 text-xs' : 'text-red-500 text-base font-bold'}`}>{isBlue ? oppName : userName}</span>
                         <span className="text-gray-400 mx-1 text-sm">vs</span>
-                        <span className={`${isBlue ? 'text-blue-500 text-base font-bold' : 'text-blue-500 text-sm'}`}>{isBlue ? userName : oppName}</span>
+                        <span className={`${isBlue ? 'text-blue-500 text-base font-bold' : 'text-blue-500 text-xs'}`}>{isBlue ? userName : oppName}</span>
                       </span>
                     );
                   })()}
