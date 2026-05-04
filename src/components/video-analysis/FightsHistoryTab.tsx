@@ -112,8 +112,14 @@ export const FightsHistoryTab: React.FC<FightsHistoryTabProps> = ({ userId, onRe
     switch (result) {
       case 'win':
         return <Badge className="bg-green-500 hover:bg-green-600 rounded-none">Νίκη</Badge>;
+      case 'win_ko':
+      case 'win_tko':
+        return <Badge className="bg-green-500 hover:bg-green-600 rounded-none">Νίκη KO</Badge>;
       case 'loss':
         return <Badge className="bg-red-500 hover:bg-red-600 rounded-none">Ήττα</Badge>;
+      case 'loss_ko':
+      case 'loss_tko':
+        return <Badge className="bg-red-500 hover:bg-red-600 rounded-none">Ήττα KO</Badge>;
       case 'draw':
         return <Badge className="bg-yellow-500 hover:bg-yellow-600 rounded-none">Ισοπαλία</Badge>;
       case 'no_contest':
