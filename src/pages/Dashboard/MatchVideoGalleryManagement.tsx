@@ -458,6 +458,7 @@ const MatchVideoGalleryManagement: React.FC = () => {
             <div className="flex-1 min-h-0 overflow-hidden compact-video-editor">
               <VideoEditorTab
                 key={analyzeVideo.id}
+                matchVideoId={analyzeVideo.id}
                 initialYoutubeUrl={analyzeVideo.youtube_url}
                 initialUserId={analyzeVideo.red_athlete_id || undefined}
                 initialOpponentName={
