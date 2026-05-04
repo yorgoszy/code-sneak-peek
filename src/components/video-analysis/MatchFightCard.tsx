@@ -8,7 +8,7 @@ import { el } from 'date-fns/locale';
 
 export interface MatchFightCardData {
   id: string;
-  /** Whichever side is "ours" — controls which name gets the highlighted box */
+  /** Whichever side is "ours" — controls which name gets the highlighted box. Use null to highlight BOTH equally (gallery mode). */
   ourCorner?: 'red' | 'blue' | null;
   /** Avatar of the highlighted (our) athlete */
   ourAvatarUrl?: string | null;
@@ -38,8 +38,11 @@ export const MatchFightCard: React.FC<MatchFightCardProps> = ({
   actions,
   className = '',
 }) => {
+  const galleryMode = data.ourCorner === null;
   const isBlueOurs = data.ourCorner === 'blue';
-  const isRedOurs = data.ourCorner === 'red' || (!data.ourCorner && !isBlueOurs);
+  const isRedOurs = data.ourCorner === 'red';
+  const redHighlighted = galleryMode || isRedOurs;
+  const blueHighlighted = galleryMode || isBlueOurs;
   const meta = (data.metaLabels || []).filter(Boolean) as string[];
 
   return (
@@ -66,7 +69,7 @@ export const MatchFightCard: React.FC<MatchFightCardProps> = ({
             <div className="flex items-center gap-1.5 flex-wrap">
               <span
                 className={`truncate text-red-500 ${
-                  isRedOurs
+                  redHighlighted
                     ? 'text-base font-bold border border-current px-1.5 py-0.5'
                     : 'text-xs font-medium'
                 }`}
@@ -76,7 +79,7 @@ export const MatchFightCard: React.FC<MatchFightCardProps> = ({
               <span className="text-xs text-gray-400">vs</span>
               <span
                 className={`truncate text-blue-500 ${
-                  isBlueOurs
+                  blueHighlighted
                     ? 'text-base font-bold border border-current px-1.5 py-0.5'
                     : 'text-xs font-medium'
                 }`}
