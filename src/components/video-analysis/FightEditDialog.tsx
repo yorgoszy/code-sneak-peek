@@ -110,7 +110,7 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
           notes: formData.notes || null,
           video_url: formData.video_url || null,
           updated_at: new Date().toISOString(),
-        } as any)
+        })
         .eq('id', fight.id);
 
       if (error) throw error;
