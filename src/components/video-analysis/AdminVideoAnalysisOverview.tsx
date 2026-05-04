@@ -549,17 +549,16 @@ export const AdminVideoAnalysisOverview = () => {
                                         <Calendar className="w-3 h-3" />
                                         <span>{format(new Date(fight.fight_date), 'dd MMM yyyy', { locale: el })}</span>
                                       </div>
-                                <div className="flex items-center gap-1">
-                                  <Calendar className="w-3 h-3" />
-                                  <span>{format(new Date(fight.fight_date), 'dd MMM yyyy', { locale: el })}</span>
-                                </div>
-                                {fight.location && (
-                                  <div className="flex items-center gap-1">
-                                    <MapPin className="w-3 h-3" />
-                                    <span>{fight.location}</span>
-                                  </div>
-                                )}
-                              </div>
+                                      {fight.location && (
+                                        <div className="flex items-center gap-1">
+                                          <MapPin className="w-3 h-3" />
+                                          <span>{fight.location}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </>
+                                );
+                              })()}
                             </div>
                           </div>
 
