@@ -166,6 +166,7 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
               onValueChange={(v) => setFormData({ ...formData, user_id: v })}
               placeholder="Επιλέξτε αθλητή..."
               coachId={coachId || undefined}
+              adminOwned={isAdmin()}
             />
           </div>
 
