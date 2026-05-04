@@ -41,9 +41,10 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
   fight,
   onSave,
 }) => {
-  const { userProfile } = useRoleCheck();
+  const { userProfile, isAdmin } = useRoleCheck();
   const coachContext = useSafeCoachContext();
-  const coachId = coachContext?.coachId || userProfile?.id || null;
+  // Admins manage athletes that have coach_id IS NULL → don't filter by coachId for admins
+  const coachId = isAdmin() ? null : (coachContext?.coachId || userProfile?.id || null);
 
   const [formData, setFormData] = useState({
     user_id: '',
