@@ -53,6 +53,7 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
     opponent_name: '',
     fight_date: '',
     result: '',
+    is_ko: false,
     fight_type: '',
     total_rounds: '',
     round_duration_seconds: '',
