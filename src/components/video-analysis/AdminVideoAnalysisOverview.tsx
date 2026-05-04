@@ -530,18 +530,25 @@ export const AdminVideoAnalysisOverview = () => {
                             </div>
                             
                             <div className="space-y-1 flex-1 min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className={`text-sm font-medium truncate ${(fight as any).our_corner === 'blue' ? 'text-blue-500' : 'text-red-500'}`}>{fight.user_name || 'Χρήστης'}</span>
-                                {getResultBadge(fight.result)}
-                                <Badge variant="outline" className="rounded-none text-xs">
-                                  {getFightTypeLabel(fight.fight_type)}
-                                </Badge>
-                              </div>
-                              
-                              <div className="flex items-center gap-3 text-xs text-gray-600 flex-wrap">
-                                {fight.opponent_name && (
-                                  <span><span className="text-gray-500">vs </span><span className={`font-medium ${(fight as any).our_corner === 'blue' ? 'text-red-500' : 'text-blue-500'}`}>{fight.opponent_name}</span></span>
-                                )}
+                              {(() => {
+                                const isBlue = (fight as any).our_corner === 'blue';
+                                const redName = isBlue ? (fight.opponent_name || '-') : (fight.user_name || 'Χρήστης');
+                                const blueName = isBlue ? (fight.user_name || 'Χρήστης') : (fight.opponent_name || '-');
+                                return (
+                                  <>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <span className="text-sm font-medium truncate text-red-500">{redName}</span>
+                                      {getResultBadge(fight.result)}
+                                      <Badge variant="outline" className="rounded-none text-xs">
+                                        {getFightTypeLabel(fight.fight_type)}
+                                      </Badge>
+                                    </div>
+                                    <div className="flex items-center gap-3 text-xs text-gray-600 flex-wrap">
+                                      <span><span className="text-gray-500">vs </span><span className="font-medium text-blue-500">{blueName}</span></span>
+                                      <div className="flex items-center gap-1">
+                                        <Calendar className="w-3 h-3" />
+                                        <span>{format(new Date(fight.fight_date), 'dd MMM yyyy', { locale: el })}</span>
+                                      </div>
                                 <div className="flex items-center gap-1">
                                   <Calendar className="w-3 h-3" />
                                   <span>{format(new Date(fight.fight_date), 'dd MMM yyyy', { locale: el })}</span>
