@@ -53,6 +53,7 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
     opponent_name: '',
     fight_date: '',
     result: '',
+    is_ko: false,
     fight_type: '',
     total_rounds: '',
     round_duration_seconds: '',
@@ -66,12 +67,20 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
 
   useEffect(() => {
     if (fight) {
+      const rawResult = fight.result || '';
+      const isKo = ['win_ko', 'loss_ko', 'win_tko', 'loss_tko'].includes(rawResult);
+      const baseResult = rawResult === 'win_ko' || rawResult === 'win_tko'
+        ? 'win'
+        : rawResult === 'loss_ko' || rawResult === 'loss_tko'
+          ? 'loss'
+          : rawResult;
       setFormData({
         user_id: fight.user_id || '',
         our_corner: (fight.our_corner === 'blue' ? 'blue' : 'red'),
         opponent_name: fight.opponent_name || '',
         fight_date: fight.fight_date || '',
-        result: fight.result || '',
+        result: baseResult,
+        is_ko: isKo,
         fight_type: fight.fight_type || '',
         total_rounds: fight.total_rounds?.toString() || '',
         round_duration_seconds: fight.round_duration_seconds?.toString() || '',
@@ -94,11 +103,14 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
     const safeFightType = ['training', 'sparring', 'competition'].includes(formData.fight_type)
       ? formData.fight_type
       : 'competition';
-    const safeResult = ['win', 'loss', 'draw', 'no_contest'].includes(formData.result)
-      ? formData.result
-      : formData.result
-        ? 'no_contest'
-        : null;
+    let safeResult: string | null = null;
+    if (['win', 'loss', 'draw', 'no_contest'].includes(formData.result)) {
+      safeResult = formData.result;
+      if (formData.is_ko && formData.result === 'win') safeResult = 'win_ko';
+      if (formData.is_ko && formData.result === 'loss') safeResult = 'loss_ko';
+    } else if (formData.result) {
+      safeResult = 'no_contest';
+    }
 
     setSaving(true);
     try {
@@ -240,6 +252,17 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
                   <SelectItem value="no_contest">Άκυρος</SelectItem>
                 </SelectContent>
               </Select>
+              {(formData.result === 'win' || formData.result === 'loss') && (
+                <label className="flex items-center gap-2 mt-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={formData.is_ko}
+                    onChange={(e) => setFormData({ ...formData, is_ko: e.target.checked })}
+                    className="w-4 h-4 accent-black"
+                  />
+                  <span className="text-sm">KO / Νοκ άουτ</span>
+                </label>
+              )}
             </div>
           </div>
 
