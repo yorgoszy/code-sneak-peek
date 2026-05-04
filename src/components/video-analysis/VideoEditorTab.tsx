@@ -1577,25 +1577,83 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
         avgRoundDuration = Math.round(totalDuration / completedRounds.length);
       }
 
-      // Create fight record
-      const { data: fightData, error: fightError } = await supabase
-        .from('muaythai_fights')
-        .insert({
-          user_id: selectedUserId,
-          coach_id: coachId,
-          fight_date: new Date().toISOString().split('T')[0],
-          fight_type: 'sparring',
-          opponent_name: opponentName || 'Αντίπαλος',
-          total_rounds: roundMarkers.length || 1,
-          round_duration_seconds: avgRoundDuration,
-          notes: `Video: ${videoFile?.name || 'Unknown'}`
-        })
-        .select()
-        .single();
+      // Resync from match_videos (gallery is the source of truth) and UPSERT by match_video_id
+      let effectiveUserId = selectedUserId;
+      let effectiveOpponentName = opponentName;
 
-      if (fightError) throw fightError;
+      if (matchVideoId) {
+        const { data: mv } = await supabase
+          .from('match_videos' as any)
+          .select('red_athlete_id, blue_athlete_id, blue_athlete_name')
+          .eq('id', matchVideoId)
+          .maybeSingle();
+        if (mv) {
+          const mvAny = mv as any;
+          if (mvAny.red_athlete_id) effectiveUserId = mvAny.red_athlete_id;
+          if (mvAny.blue_athlete_id) {
+            const { data: bu } = await supabase
+              .from('app_users')
+              .select('name')
+              .eq('id', mvAny.blue_athlete_id)
+              .maybeSingle();
+            if (bu?.name) effectiveOpponentName = bu.name;
+          } else if (mvAny.blue_athlete_name) {
+            effectiveOpponentName = mvAny.blue_athlete_name;
+          }
+        }
+      }
 
-      const fightId = fightData.id;
+      // Find existing fight for this match video (so we can replace it)
+      let existingFightId: string | null = null;
+      if (matchVideoId) {
+        const { data: existing } = await supabase
+          .from('muaythai_fights')
+          .select('id')
+          .eq('match_video_id', matchVideoId)
+          .maybeSingle();
+        if (existing) existingFightId = existing.id;
+      }
+
+      const fightPayload: any = {
+        user_id: effectiveUserId,
+        coach_id: coachId,
+        fight_date: new Date().toISOString().split('T')[0],
+        fight_type: 'sparring',
+        opponent_name: effectiveOpponentName || 'Αντίπαλος',
+        total_rounds: roundMarkers.length || 1,
+        round_duration_seconds: avgRoundDuration,
+        notes: `Video: ${videoFile?.name || initialMatchTitle || 'Unknown'}`,
+        match_video_id: matchVideoId || null,
+      };
+
+      let fightId: string;
+      if (existingFightId) {
+        // Wipe previous rounds (cascade deletes strikes via FK if set; otherwise we delete strikes explicitly)
+        const { data: oldRounds } = await supabase
+          .from('muaythai_rounds')
+          .select('id')
+          .eq('fight_id', existingFightId);
+        const oldRoundIds = (oldRounds || []).map((r: any) => r.id);
+        if (oldRoundIds.length > 0) {
+          await supabase.from('muaythai_strikes').delete().in('round_id', oldRoundIds);
+          await supabase.from('muaythai_rounds').delete().in('id', oldRoundIds);
+        }
+        const { error: updErr } = await supabase
+          .from('muaythai_fights')
+          .update(fightPayload)
+          .eq('id', existingFightId);
+        if (updErr) throw updErr;
+        fightId = existingFightId;
+      } else {
+        const { data: fightData, error: fightError } = await supabase
+          .from('muaythai_fights')
+          .insert(fightPayload)
+          .select()
+          .single();
+        if (fightError) throw fightError;
+        fightId = fightData.id;
+      }
+
 
       // Create round records from roundMarkers
       const roundsToInsert = roundMarkers.map(round => {
