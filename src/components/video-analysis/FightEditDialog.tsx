@@ -252,6 +252,17 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
                   <SelectItem value="no_contest">Άκυρος</SelectItem>
                 </SelectContent>
               </Select>
+              {(formData.result === 'win' || formData.result === 'loss') && (
+                <label className="flex items-center gap-2 mt-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={formData.is_ko}
+                    onChange={(e) => setFormData({ ...formData, is_ko: e.target.checked })}
+                    className="w-4 h-4 accent-black"
+                  />
+                  <span className="text-sm">KO / Νοκ άουτ</span>
+                </label>
+              )}
             </div>
           </div>
 
