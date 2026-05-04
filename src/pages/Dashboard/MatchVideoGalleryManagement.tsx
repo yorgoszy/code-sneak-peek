@@ -454,25 +454,37 @@ const MatchVideoGalleryManagement: React.FC = () => {
               Ανάλυση Βίντεο: {analyzeVideo?.title}
             </DialogTitle>
           </DialogHeader>
-          {analyzeVideo && (
-            <div className="flex-1 min-h-0 overflow-hidden compact-video-editor">
-              <VideoEditorTab
-                key={analyzeVideo.id}
-                matchVideoId={analyzeVideo.id}
-                initialYoutubeUrl={analyzeVideo.youtube_url}
-                initialUserId={analyzeVideo.red_athlete_id || undefined}
-                initialOpponentName={
-                  analyzeVideo.blue_athlete_id
-                    ? (athleteNames[analyzeVideo.blue_athlete_id] || undefined)
-                    : (analyzeVideo.blue_athlete_name || undefined)
-                }
-                initialStartSeconds={analyzeVideo.start_seconds}
-                initialEndSeconds={analyzeVideo.end_seconds}
-                initialMatchTitle={analyzeVideo.title}
-                compactMode
-              />
-            </div>
-          )}
+          {analyzeVideo && (() => {
+            // Decide default "our corner": prefer the side that has an internal athlete id.
+            const defaultCorner: 'red' | 'blue' =
+              analyzeVideo.red_athlete_id
+                ? 'red'
+                : analyzeVideo.blue_athlete_id
+                  ? 'blue'
+                  : 'red';
+            const ourId = defaultCorner === 'red' ? analyzeVideo.red_athlete_id : analyzeVideo.blue_athlete_id;
+            const oppId = defaultCorner === 'red' ? analyzeVideo.blue_athlete_id : analyzeVideo.red_athlete_id;
+            const oppFreeName = defaultCorner === 'red' ? analyzeVideo.blue_athlete_name : analyzeVideo.red_athlete_name;
+            const opponentName = oppId
+              ? (athleteNames[oppId] || undefined)
+              : (oppFreeName || undefined);
+            return (
+              <div className="flex-1 min-h-0 overflow-hidden compact-video-editor">
+                <VideoEditorTab
+                  key={analyzeVideo.id}
+                  matchVideoId={analyzeVideo.id}
+                  initialYoutubeUrl={analyzeVideo.youtube_url}
+                  initialUserId={ourId || undefined}
+                  initialOpponentName={opponentName}
+                  initialOurCorner={defaultCorner}
+                  initialStartSeconds={analyzeVideo.start_seconds}
+                  initialEndSeconds={analyzeVideo.end_seconds}
+                  initialMatchTitle={analyzeVideo.title}
+                  compactMode
+                />
+              </div>
+            );
+          })()}
         </DialogContent>
       </Dialog>
     </SidebarProvider>
