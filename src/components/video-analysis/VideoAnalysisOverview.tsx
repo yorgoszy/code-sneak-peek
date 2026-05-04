@@ -435,13 +435,13 @@ export const VideoAnalysisOverview = () => {
               {getResultBadge(selectedFight.result)}
               {(() => {
                 const isBlue = (selectedFight as any).our_corner === 'blue';
-                const redName = isBlue ? (selectedFight.opponent_name || 'Άγνωστος') : (selectedFight.user_name || '-');
-                const blueName = isBlue ? (selectedFight.user_name || '-') : (selectedFight.opponent_name || 'Άγνωστος');
+                const userName = selectedFight.user_name || '-';
+                const oppName = selectedFight.opponent_name || 'Άγνωστος';
                 return (
-                  <span className="text-sm font-medium">
-                    <span className="text-red-500">{redName}</span>
-                    <span className="text-gray-400 mx-1">vs</span>
-                    <span className="text-blue-500">{blueName}</span>
+                  <span className="font-medium">
+                    <span className={`${isBlue ? 'text-red-500 text-sm' : 'text-red-500 text-base font-bold'}`}>{isBlue ? oppName : userName}</span>
+                    <span className="text-gray-400 mx-1 text-sm">vs</span>
+                    <span className={`${isBlue ? 'text-blue-500 text-base font-bold' : 'text-blue-500 text-sm'}`}>{isBlue ? userName : oppName}</span>
                   </span>
                 );
               })()}
@@ -520,13 +520,13 @@ export const VideoAnalysisOverview = () => {
                         <div className="flex items-center gap-1.5 flex-wrap">
                           {(() => {
                             const isBlue = (fight as any).our_corner === 'blue';
-                            const redName = isBlue ? (fight.opponent_name || '-') : (fight.user_name || 'Άγνωστος');
-                            const blueName = isBlue ? (fight.user_name || 'Άγνωστος') : (fight.opponent_name || '-');
+                            const userName = fight.user_name || 'Άγνωστος';
+                            const oppName = fight.opponent_name || '-';
                             return (
                               <>
-                                <span className="text-sm font-medium truncate text-red-500">{redName}</span>
+                                <span className={`truncate ${isBlue ? 'text-red-500 text-sm font-medium' : 'text-red-500 text-base font-bold'}`}>{isBlue ? oppName : userName}</span>
                                 <span className="text-xs text-gray-400">vs</span>
-                                <span className="text-sm font-medium truncate text-blue-500">{blueName}</span>
+                                <span className={`truncate ${isBlue ? 'text-blue-500 text-base font-bold' : 'text-blue-500 text-sm font-medium'}`}>{isBlue ? userName : oppName}</span>
                               </>
                             );
                           })()}

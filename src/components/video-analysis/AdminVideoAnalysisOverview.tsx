@@ -439,13 +439,13 @@ export const AdminVideoAnalysisOverview = () => {
                   {getResultBadge(selectedFight.result)}
                   {(() => {
                     const isBlue = (selectedFight as any).our_corner === 'blue';
-                    const redName = isBlue ? (selectedFight.opponent_name || 'Άγνωστος') : (selectedFight.user_name || '-');
-                    const blueName = isBlue ? (selectedFight.user_name || '-') : (selectedFight.opponent_name || 'Άγνωστος');
+                    const userName = selectedFight.user_name || '-';
+                    const oppName = selectedFight.opponent_name || 'Άγνωστος';
                     return (
-                      <span className="text-sm font-medium">
-                        <span className="text-red-500">{redName}</span>
-                        <span className="text-gray-400 mx-1">vs</span>
-                        <span className="text-blue-500">{blueName}</span>
+                      <span className="font-medium">
+                        <span className={`${isBlue ? 'text-red-500 text-sm' : 'text-red-500 text-base font-bold'}`}>{isBlue ? oppName : userName}</span>
+                        <span className="text-gray-400 mx-1 text-sm">vs</span>
+                        <span className={`${isBlue ? 'text-blue-500 text-base font-bold' : 'text-blue-500 text-sm'}`}>{isBlue ? userName : oppName}</span>
                       </span>
                     );
                   })()}
@@ -532,19 +532,21 @@ export const AdminVideoAnalysisOverview = () => {
                             <div className="space-y-1 flex-1 min-w-0">
                               {(() => {
                                 const isBlue = (fight as any).our_corner === 'blue';
-                                const redName = isBlue ? (fight.opponent_name || '-') : (fight.user_name || 'Χρήστης');
-                                const blueName = isBlue ? (fight.user_name || 'Χρήστης') : (fight.opponent_name || '-');
+                                const userName = fight.user_name || 'Χρήστης';
+                                const oppName = fight.opponent_name || '-';
+                                const userColor = isBlue ? 'text-blue-500' : 'text-red-500';
+                                const oppColor = isBlue ? 'text-red-500' : 'text-blue-500';
                                 return (
                                   <>
                                     <div className="flex items-center gap-2 flex-wrap">
-                                      <span className="text-sm font-medium truncate text-red-500">{redName}</span>
+                                      <span className={`text-base font-bold truncate ${userColor}`}>{userName}</span>
                                       {getResultBadge(fight.result)}
                                       <Badge variant="outline" className="rounded-none text-xs">
                                         {getFightTypeLabel(fight.fight_type)}
                                       </Badge>
                                     </div>
                                     <div className="flex items-center gap-3 text-xs text-gray-600 flex-wrap">
-                                      <span><span className="text-gray-500">vs </span><span className="font-medium text-blue-500">{blueName}</span></span>
+                                      <span><span className="text-gray-500">vs </span><span className={`font-medium ${oppColor}`}>{oppName}</span></span>
                                       <div className="flex items-center gap-1">
                                         <Calendar className="w-3 h-3" />
                                         <span>{format(new Date(fight.fight_date), 'dd MMM yyyy', { locale: el })}</span>
