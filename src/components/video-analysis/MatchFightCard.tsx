@@ -8,7 +8,7 @@ import { el } from 'date-fns/locale';
 
 export interface MatchFightCardData {
   id: string;
-  /** Whichever side is "ours" — controls which name gets the highlighted box */
+  /** Whichever side is "ours" — controls which name gets the highlighted box. Use null to highlight BOTH equally (gallery mode). */
   ourCorner?: 'red' | 'blue' | null;
   /** Avatar of the highlighted (our) athlete */
   ourAvatarUrl?: string | null;
