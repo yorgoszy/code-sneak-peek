@@ -38,8 +38,11 @@ export const MatchFightCard: React.FC<MatchFightCardProps> = ({
   actions,
   className = '',
 }) => {
+  const galleryMode = data.ourCorner === null;
   const isBlueOurs = data.ourCorner === 'blue';
-  const isRedOurs = data.ourCorner === 'red' || (!data.ourCorner && !isBlueOurs);
+  const isRedOurs = data.ourCorner === 'red';
+  const redHighlighted = galleryMode || isRedOurs;
+  const blueHighlighted = galleryMode || isBlueOurs;
   const meta = (data.metaLabels || []).filter(Boolean) as string[];
 
   return (
