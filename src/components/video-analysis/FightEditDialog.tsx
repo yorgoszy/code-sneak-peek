@@ -160,29 +160,50 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
             </div>
           </div>
 
+          {/* Κόκκινη γωνία - ΠΑΝΤΑ ΠΡΩΤΗ */}
           <div>
-            <Label className={ourCornerColor === 'red' ? 'text-red-600' : 'text-blue-600'}>
-              Αθλητής μας ({ourCornerColor === 'red' ? 'κόκκινη' : 'μπλε'} γωνία) *
+            <Label className="text-red-600">
+              Κόκκινη γωνία {formData.our_corner === 'red' ? '(αθλητής μας) *' : '(αντίπαλος)'}
             </Label>
-            <UserSearchCombobox
-              value={formData.user_id}
-              onValueChange={(v) => setFormData({ ...formData, user_id: v })}
-              placeholder="Επιλέξτε αθλητή..."
-              coachId={coachId || undefined}
-              adminOwned={isAdmin()}
-            />
+            {formData.our_corner === 'red' ? (
+              <UserSearchCombobox
+                value={formData.user_id}
+                onValueChange={(v) => setFormData({ ...formData, user_id: v })}
+                placeholder="Επιλέξτε αθλητή..."
+                coachId={coachId || undefined}
+                adminOwned={isAdmin()}
+              />
+            ) : (
+              <Input
+                value={formData.opponent_name}
+                onChange={(e) => setFormData({ ...formData, opponent_name: e.target.value })}
+                placeholder="Όνομα αντιπάλου"
+                className="rounded-none"
+              />
+            )}
           </div>
 
+          {/* Μπλε γωνία - ΠΑΝΤΑ ΔΕΥΤΕΡΗ */}
           <div>
-            <Label className={oppCornerColor === 'red' ? 'text-red-600' : 'text-blue-600'}>
-              Αντίπαλος ({oppCornerColor === 'red' ? 'κόκκινη' : 'μπλε'} γωνία)
+            <Label className="text-blue-600">
+              Μπλε γωνία {formData.our_corner === 'blue' ? '(αθλητής μας) *' : '(αντίπαλος)'}
             </Label>
-            <Input
-              value={formData.opponent_name}
-              onChange={(e) => setFormData({ ...formData, opponent_name: e.target.value })}
-              placeholder="Όνομα αντιπάλου"
-              className="rounded-none"
-            />
+            {formData.our_corner === 'blue' ? (
+              <UserSearchCombobox
+                value={formData.user_id}
+                onValueChange={(v) => setFormData({ ...formData, user_id: v })}
+                placeholder="Επιλέξτε αθλητή..."
+                coachId={coachId || undefined}
+                adminOwned={isAdmin()}
+              />
+            ) : (
+              <Input
+                value={formData.opponent_name}
+                onChange={(e) => setFormData({ ...formData, opponent_name: e.target.value })}
+                placeholder="Όνομα αντιπάλου"
+                className="rounded-none"
+              />
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
