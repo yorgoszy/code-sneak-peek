@@ -149,12 +149,12 @@ export const VideoAnalysisOverview = () => {
         return <Badge className="bg-green-500 hover:bg-green-600 rounded-none text-xs">Νίκη</Badge>;
       case 'win_ko':
       case 'win_tko':
-        return <><Badge className="bg-green-500 hover:bg-green-600 rounded-none text-xs">Νίκη</Badge><Badge variant="outline" className="rounded-none text-xs">KO</Badge></>;
+        return <><Badge className="bg-green-500 hover:bg-green-600 rounded-none text-xs">Νίκη</Badge><Badge className="bg-yellow-400 hover:bg-yellow-500 text-black rounded-none text-xs">KO</Badge></>;
       case 'loss':
         return <Badge className="bg-red-500 hover:bg-red-600 rounded-none text-xs">Ήττα</Badge>;
       case 'loss_ko':
       case 'loss_tko':
-        return <><Badge className="bg-red-500 hover:bg-red-600 rounded-none text-xs">Ήττα</Badge><Badge variant="outline" className="rounded-none text-xs">KO</Badge></>;
+        return <><Badge className="bg-red-500 hover:bg-red-600 rounded-none text-xs">Ήττα</Badge><Badge className="bg-yellow-400 hover:bg-yellow-500 text-black rounded-none text-xs">KO</Badge></>;
       case 'draw':
         return <Badge className="bg-yellow-500 hover:bg-yellow-600 rounded-none text-xs">Ισοπαλία</Badge>;
       case 'no_contest':
