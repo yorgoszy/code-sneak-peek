@@ -520,13 +520,13 @@ export const VideoAnalysisOverview = () => {
                         <div className="flex items-center gap-1.5 flex-wrap">
                           {(() => {
                             const isBlue = (fight as any).our_corner === 'blue';
-                            const redName = isBlue ? (fight.opponent_name || '-') : (fight.user_name || 'Άγνωστος');
-                            const blueName = isBlue ? (fight.user_name || 'Άγνωστος') : (fight.opponent_name || '-');
+                            const userName = fight.user_name || 'Άγνωστος';
+                            const oppName = fight.opponent_name || '-';
                             return (
                               <>
-                                <span className="text-sm font-medium truncate text-red-500">{redName}</span>
+                                <span className={`truncate ${isBlue ? 'text-red-500 text-sm font-medium' : 'text-red-500 text-base font-bold'}`}>{isBlue ? oppName : userName}</span>
                                 <span className="text-xs text-gray-400">vs</span>
-                                <span className="text-sm font-medium truncate text-blue-500">{blueName}</span>
+                                <span className={`truncate ${isBlue ? 'text-blue-500 text-base font-bold' : 'text-blue-500 text-sm font-medium'}`}>{isBlue ? userName : oppName}</span>
                               </>
                             );
                           })()}
