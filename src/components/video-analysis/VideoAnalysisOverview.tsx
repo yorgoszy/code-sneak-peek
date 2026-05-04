@@ -518,9 +518,18 @@ export const VideoAnalysisOverview = () => {
                       {/* Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className={`text-sm font-medium truncate ${(fight as any).our_corner === 'blue' ? 'text-blue-500' : 'text-red-500'}`}>{fight.user_name || 'Άγνωστος'}</span>
-                          <span className="text-xs text-gray-400">vs</span>
-                          <span className={`text-sm font-medium truncate ${(fight as any).our_corner === 'blue' ? 'text-red-500' : 'text-blue-500'}`}>{fight.opponent_name || '-'}</span>
+                          {(() => {
+                            const isBlue = (fight as any).our_corner === 'blue';
+                            const redName = isBlue ? (fight.opponent_name || '-') : (fight.user_name || 'Άγνωστος');
+                            const blueName = isBlue ? (fight.user_name || 'Άγνωστος') : (fight.opponent_name || '-');
+                            return (
+                              <>
+                                <span className="text-sm font-medium truncate text-red-500">{redName}</span>
+                                <span className="text-xs text-gray-400">vs</span>
+                                <span className="text-sm font-medium truncate text-blue-500">{blueName}</span>
+                              </>
+                            );
+                          })()}
                           {getResultBadge(fight.result)}
                         </div>
                         <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
