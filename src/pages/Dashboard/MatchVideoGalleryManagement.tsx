@@ -286,37 +286,43 @@ const MatchVideoGalleryManagement: React.FC = () => {
               {videos.length === 0 && (
                 <Card className="rounded-none"><CardContent className="p-4 text-center text-muted-foreground text-sm">Δεν υπάρχουν βίντεο.</CardContent></Card>
               )}
-              {videos.map((v) => (
-                <Card key={v.id} className="rounded-none">
-                  <CardContent className="px-2 py-1.5 flex items-center justify-between gap-2">
-                    <div className="min-w-0 flex-1 flex items-center gap-2 text-xs">
-                      <span className="font-semibold truncate max-w-[180px]">{v.title}</span>
-                      <span className="text-muted-foreground truncate">
-                        {[v.match_date, v.competition_name, v.age_category, v.weight_category].filter(Boolean).join(" · ")}
-                      </span>
-                      <span className="ml-auto whitespace-nowrap">
-                        <span className="text-red-600 font-semibold">{v.red_athlete_id ? (athleteNames[v.red_athlete_id] || "—") : (v.red_athlete_name || "—")}</span>
-                        <span className="mx-1 text-muted-foreground">vs</span>
-                        <span className="text-blue-600 font-semibold">{v.blue_athlete_id ? (athleteNames[v.blue_athlete_id] || "—") : (v.blue_athlete_name || "—")}</span>
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <Button size="icon" variant="ghost" onClick={() => setAnalyzeVideo(v)} className="rounded-none h-7 w-7" title="Ανάλυση Βίντεο">
-                        <Scissors className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button size="icon" variant="ghost" onClick={() => duplicate(v)} className="rounded-none h-7 w-7" title="Αντιγραφή">
-                        <Copy className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button size="icon" variant="ghost" onClick={() => openEdit(v)} className="rounded-none h-7 w-7">
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button size="icon" variant="ghost" onClick={() => setDeleteId(v.id)} className="rounded-none h-7 w-7">
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              {videos.map((v) => {
+                const redName = v.red_athlete_id ? (athleteNames[v.red_athlete_id] || "—") : (v.red_athlete_name || "—");
+                const blueName = v.blue_athlete_id ? (athleteNames[v.blue_athlete_id] || "—") : (v.blue_athlete_name || "—");
+                // Highlight red corner by default (Athlete 1 = Red rule); show red avatar when available
+                const ourAvatar = v.red_athlete_id ? athleteAvatars[v.red_athlete_id] : null;
+                return (
+                  <MatchFightCard
+                    key={v.id}
+                    data={{
+                      id: v.id,
+                      ourCorner: 'red',
+                      ourAvatarUrl: ourAvatar,
+                      redName,
+                      blueName,
+                      date: v.match_date,
+                      location: v.competition_name,
+                      metaLabels: [v.age_category, v.weight_category],
+                    }}
+                    actions={
+                      <>
+                        <Button size="icon" variant="ghost" onClick={() => setAnalyzeVideo(v)} className="rounded-none h-7 w-7" title="Ανάλυση Βίντεο">
+                          <Scissors className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button size="icon" variant="ghost" onClick={() => duplicate(v)} className="rounded-none h-7 w-7" title="Αντιγραφή">
+                          <Copy className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button size="icon" variant="ghost" onClick={() => openEdit(v)} className="rounded-none h-7 w-7">
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button size="icon" variant="ghost" onClick={() => setDeleteId(v.id)} className="rounded-none h-7 w-7">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </>
+                    }
+                  />
+                );
+              })}
             </div>
           </main>
         </div>
