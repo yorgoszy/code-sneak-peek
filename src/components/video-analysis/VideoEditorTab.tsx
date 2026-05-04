@@ -118,6 +118,11 @@ interface VideoEditorTabProps {
   compactMode?: boolean;
   matchVideoId?: string;
   initialOurCorner?: 'red' | 'blue';
+  // Extra metadata coming from match_videos (gallery) so saved fight matches the card
+  initialFightDate?: string | null;
+  initialWeightClass?: string | null;
+  initialLocation?: string | null;
+  initialVideoUrl?: string | null;
 }
 
 export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
@@ -131,12 +136,18 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
   compactMode = false,
   matchVideoId,
   initialOurCorner,
+  initialFightDate,
+  initialWeightClass,
+  initialLocation,
+  initialVideoUrl,
 }) => {
   // Role check & coach ID - align with VideoAnalysisOverview / StrikeTypesDialog
   // so that strike types in the editor always match the ones from the management dialog.
-  const { userProfile } = useRoleCheck();
+  const { userProfile, isAdmin } = useRoleCheck();
   const coachContext = useSafeCoachContext();
+  // For admins we don't filter by coach (admin sees ALL users)
   const coachId = coachContext?.coachId || userProfile?.id || null;
+  const isAdminUser = isAdmin();
   
   // User selection and opponent name for saving fights
   const [selectedUserId, setSelectedUserId] = useState<string>('');
