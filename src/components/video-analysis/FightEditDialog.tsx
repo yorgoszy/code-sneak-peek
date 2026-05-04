@@ -41,9 +41,10 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
   fight,
   onSave,
 }) => {
-  const { userProfile } = useRoleCheck();
+  const { userProfile, isAdmin } = useRoleCheck();
   const coachContext = useSafeCoachContext();
-  const coachId = coachContext?.coachId || userProfile?.id || null;
+  // Admins manage athletes that have coach_id IS NULL → don't filter by coachId for admins
+  const coachId = isAdmin() ? null : (coachContext?.coachId || userProfile?.id || null);
 
   const [formData, setFormData] = useState({
     user_id: '',
@@ -165,6 +166,7 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
               onValueChange={(v) => setFormData({ ...formData, user_id: v })}
               placeholder="Επιλέξτε αθλητή..."
               coachId={coachId || undefined}
+              adminOwned={isAdmin()}
             />
           </div>
 
@@ -203,6 +205,11 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
                   <SelectItem value="win">Νίκη</SelectItem>
                   <SelectItem value="loss">Ήττα</SelectItem>
                   <SelectItem value="draw">Ισοπαλία</SelectItem>
+                  <SelectItem value="win_ko">Νίκη με KO</SelectItem>
+                  <SelectItem value="loss_ko">Ήττα με KO</SelectItem>
+                  <SelectItem value="win_tko">Νίκη με TKO</SelectItem>
+                  <SelectItem value="loss_tko">Ήττα με TKO</SelectItem>
+                  <SelectItem value="disqualified">Αποκλεισμός</SelectItem>
                   <SelectItem value="no_contest">Άκυρος</SelectItem>
                 </SelectContent>
               </Select>
