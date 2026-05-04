@@ -1587,31 +1587,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
         avgRoundDuration = Math.round(totalDuration / completedRounds.length);
       }
 
-      // Resync from match_videos (gallery is the source of truth) and UPSERT by match_video_id
-      let effectiveUserId = selectedUserId;
-      let effectiveOpponentName = opponentName;
-
-      if (matchVideoId) {
-        const { data: mv } = await supabase
-          .from('match_videos' as any)
-          .select('red_athlete_id, blue_athlete_id, blue_athlete_name')
-          .eq('id', matchVideoId)
-          .maybeSingle();
-        if (mv) {
-          const mvAny = mv as any;
-          if (mvAny.red_athlete_id) effectiveUserId = mvAny.red_athlete_id;
-          if (mvAny.blue_athlete_id) {
-            const { data: bu } = await supabase
-              .from('app_users')
-              .select('name')
-              .eq('id', mvAny.blue_athlete_id)
-              .maybeSingle();
-            if (bu?.name) effectiveOpponentName = bu.name;
-          } else if (mvAny.blue_athlete_name) {
-            effectiveOpponentName = mvAny.blue_athlete_name;
-          }
-        }
-      }
+      // Use the user's selections as source of truth (red/blue corner is flexible)
+      const effectiveUserId = selectedUserId;
+      const effectiveOpponentName = opponentName;
 
       // Find existing fight for this match video (so we can replace it)
       let existingFightId: string | null = null;
@@ -1634,6 +1612,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
         round_duration_seconds: avgRoundDuration,
         notes: `Video: ${videoFile?.name || initialMatchTitle || 'Unknown'}`,
         match_video_id: matchVideoId || null,
+        our_corner: ourCorner,
       };
 
       let fightId: string;
