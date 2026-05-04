@@ -480,6 +480,10 @@ const MatchVideoGalleryManagement: React.FC = () => {
                   initialStartSeconds={analyzeVideo.start_seconds}
                   initialEndSeconds={analyzeVideo.end_seconds}
                   initialMatchTitle={analyzeVideo.title}
+                  initialFightDate={analyzeVideo.match_date || null}
+                  initialWeightClass={analyzeVideo.weight_category || null}
+                  initialLocation={analyzeVideo.competition_name || null}
+                  initialVideoUrl={analyzeVideo.youtube_url || null}
                   compactMode
                 />
               </div>

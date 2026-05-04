@@ -31,7 +31,7 @@ interface UserSearchComboboxProps {
   onValueChange: (value: string | null) => void;
   placeholder?: string;
   coachId?: string;
-  /** When true, fetches only users where coach_id IS NULL (admin's own athletes) */
+  /** When true, fetches ALL users with no coach filter (admin sees everyone) */
   adminOwned?: boolean;
   filterByCoach?: boolean;
   disabled?: boolean;
@@ -77,10 +77,10 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
           .select('id, name, email, avatar_url, photo_url')
           .order('name');
 
-        if (coachId) {
+        if (adminOwned) {
+          // Admin sees ALL users - no coach filter
+        } else if (coachId) {
           query = query.eq('coach_id', coachId);
-        } else if (adminOwned) {
-          query = query.is('coach_id', null);
         }
 
         // If user is searching, use server-side ilike on name OR email (handles huge datasets)

@@ -46,6 +46,7 @@ import { toast } from 'sonner';
 import { useVideoExport } from '@/hooks/useVideoExport';
 import { useStrikeTypes, StrikeType, categoryLabels, sideLabels } from '@/hooks/useStrikeTypes';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
+// (admin detection used below to control combobox filter scope)
 import { useSafeCoachContext } from '@/contexts/CoachContext';
 import { supabase } from '@/integrations/supabase/client';
 import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
@@ -117,6 +118,11 @@ interface VideoEditorTabProps {
   compactMode?: boolean;
   matchVideoId?: string;
   initialOurCorner?: 'red' | 'blue';
+  // Extra metadata coming from match_videos (gallery) so saved fight matches the card
+  initialFightDate?: string | null;
+  initialWeightClass?: string | null;
+  initialLocation?: string | null;
+  initialVideoUrl?: string | null;
 }
 
 export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
@@ -130,12 +136,18 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
   compactMode = false,
   matchVideoId,
   initialOurCorner,
+  initialFightDate,
+  initialWeightClass,
+  initialLocation,
+  initialVideoUrl,
 }) => {
   // Role check & coach ID - align with VideoAnalysisOverview / StrikeTypesDialog
   // so that strike types in the editor always match the ones from the management dialog.
-  const { userProfile } = useRoleCheck();
+  const { userProfile, isAdmin } = useRoleCheck();
   const coachContext = useSafeCoachContext();
+  // For admins we don't filter by coach (admin sees ALL users)
   const coachId = coachContext?.coachId || userProfile?.id || null;
+  const isAdminUser = isAdmin();
   
   // User selection and opponent name for saving fights
   const [selectedUserId, setSelectedUserId] = useState<string>('');
@@ -1605,11 +1617,14 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
       const fightPayload: any = {
         user_id: effectiveUserId,
         coach_id: coachId,
-        fight_date: new Date().toISOString().split('T')[0],
+        fight_date: initialFightDate || new Date().toISOString().split('T')[0],
         fight_type: 'sparring',
         opponent_name: effectiveOpponentName || 'Αντίπαλος',
         total_rounds: roundMarkers.length || 1,
         round_duration_seconds: avgRoundDuration,
+        weight_class: initialWeightClass || null,
+        location: initialLocation || null,
+        video_url: initialVideoUrl || initialYoutubeUrl || null,
         notes: `Video: ${videoFile?.name || initialMatchTitle || 'Unknown'}`,
         match_video_id: matchVideoId || null,
         our_corner: ourCorner,
@@ -2847,7 +2862,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
               value={selectedUserId}
               onValueChange={setSelectedUserId}
               placeholder={`Αθλητής μας * (${ourCorner === 'red' ? 'κόκκινη' : 'μπλε'})`}
-              coachId={coachId || undefined}
+              coachId={isAdminUser ? undefined : (coachId || undefined)}
+              adminOwned={isAdminUser}
             />
           </div>
           <Input
