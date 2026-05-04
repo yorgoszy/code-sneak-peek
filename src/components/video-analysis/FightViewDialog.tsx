@@ -30,15 +30,15 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
 
   const getResultLabel = (result: string | null) => {
     switch (result) {
-      case 'win': return { label: 'Νίκη', color: 'bg-green-500' };
+      case 'win': return { label: 'Νίκη', color: 'bg-green-500', isKo: false };
       case 'win_ko':
-      case 'win_tko': return { label: 'Νίκη KO', color: 'bg-green-500' };
-      case 'loss': return { label: 'Ήττα', color: 'bg-red-500' };
+      case 'win_tko': return { label: 'Νίκη', color: 'bg-green-500', isKo: true };
+      case 'loss': return { label: 'Ήττα', color: 'bg-red-500', isKo: false };
       case 'loss_ko':
-      case 'loss_tko': return { label: 'Ήττα KO', color: 'bg-red-500' };
-      case 'draw': return { label: 'Ισοπαλία', color: 'bg-yellow-500' };
-      case 'no_contest': return { label: 'Άκυρος', color: 'bg-gray-500' };
-      default: return { label: '-', color: 'bg-gray-300' };
+      case 'loss_tko': return { label: 'Ήττα', color: 'bg-red-500', isKo: true };
+      case 'draw': return { label: 'Ισοπαλία', color: 'bg-yellow-500', isKo: false };
+      case 'no_contest': return { label: 'Άκυρος', color: 'bg-gray-500', isKo: false };
+      default: return { label: '-', color: 'bg-gray-300', isKo: false };
     }
   };
 
@@ -69,6 +69,11 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
             <Badge className={`${result.color} rounded-none text-white`}>
               {result.label}
             </Badge>
+            {result.isKo && (
+              <Badge variant="outline" className="rounded-none">
+                KO
+              </Badge>
+            )}
             <Badge variant="outline" className="rounded-none">
               {getFightTypeLabel(fight.fight_type)}
             </Badge>
