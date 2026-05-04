@@ -31,7 +31,11 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
   const getResultLabel = (result: string | null) => {
     switch (result) {
       case 'win': return { label: 'Νίκη', color: 'bg-green-500' };
+      case 'win_ko':
+      case 'win_tko': return { label: 'Νίκη KO', color: 'bg-green-500' };
       case 'loss': return { label: 'Ήττα', color: 'bg-red-500' };
+      case 'loss_ko':
+      case 'loss_tko': return { label: 'Ήττα KO', color: 'bg-red-500' };
       case 'draw': return { label: 'Ισοπαλία', color: 'bg-yellow-500' };
       case 'no_contest': return { label: 'Άκυρος', color: 'bg-gray-500' };
       default: return { label: '-', color: 'bg-gray-300' };
