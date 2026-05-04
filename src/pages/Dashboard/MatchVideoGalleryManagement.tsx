@@ -296,7 +296,7 @@ const MatchVideoGalleryManagement: React.FC = () => {
                     key={v.id}
                     data={{
                       id: v.id,
-                      ourCorner: 'red',
+                      ourCorner: null,
                       ourAvatarUrl: ourAvatar,
                       redName,
                       blueName,
