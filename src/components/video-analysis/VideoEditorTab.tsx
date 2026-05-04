@@ -116,6 +116,7 @@ interface VideoEditorTabProps {
   initialMatchTitle?: string;
   compactMode?: boolean;
   matchVideoId?: string;
+  initialOurCorner?: 'red' | 'blue';
 }
 
 export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
@@ -128,6 +129,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
   initialMatchTitle,
   compactMode = false,
   matchVideoId,
+  initialOurCorner,
 }) => {
   // Role check & coach ID - align with VideoAnalysisOverview / StrikeTypesDialog
   // so that strike types in the editor always match the ones from the management dialog.
@@ -138,6 +140,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
   // User selection and opponent name for saving fights
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [opponentName, setOpponentName] = useState<string>('');
+  const [ourCorner, setOurCorner] = useState<'red' | 'blue'>(initialOurCorner || 'red');
   
   // Strike types hook
   const { strikeTypes, loading: strikeTypesLoading } = useStrikeTypes(coachId);
@@ -237,6 +240,10 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
     if (initialOpponentName) setOpponentName(initialOpponentName);
   }, [initialOpponentName]);
 
+  useEffect(() => {
+    if (initialOurCorner) setOurCorner(initialOurCorner);
+  }, [initialOurCorner]);
+
   // Load existing analysis (fight + rounds + strikes) for this match video, if any
   const loadedExistingRef = useRef(false);
   useEffect(() => {
@@ -247,15 +254,18 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
       try {
         const { data: fight } = await supabase
           .from('muaythai_fights')
-          .select('id, user_id, opponent_name')
+          .select('id, user_id, opponent_name, our_corner')
           .eq('match_video_id', matchVideoId)
           .maybeSingle();
 
         if (!fight) return;
 
-        // Sync user/opponent from saved fight
+        // Sync user/opponent/corner from saved fight
         if (fight.user_id) setSelectedUserId(fight.user_id);
         if (fight.opponent_name) setOpponentName(fight.opponent_name);
+        if ((fight as any).our_corner === 'red' || (fight as any).our_corner === 'blue') {
+          setOurCorner((fight as any).our_corner);
+        }
 
         const { data: rounds } = await supabase
           .from('muaythai_rounds')
@@ -1577,31 +1587,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
         avgRoundDuration = Math.round(totalDuration / completedRounds.length);
       }
 
-      // Resync from match_videos (gallery is the source of truth) and UPSERT by match_video_id
-      let effectiveUserId = selectedUserId;
-      let effectiveOpponentName = opponentName;
-
-      if (matchVideoId) {
-        const { data: mv } = await supabase
-          .from('match_videos' as any)
-          .select('red_athlete_id, blue_athlete_id, blue_athlete_name')
-          .eq('id', matchVideoId)
-          .maybeSingle();
-        if (mv) {
-          const mvAny = mv as any;
-          if (mvAny.red_athlete_id) effectiveUserId = mvAny.red_athlete_id;
-          if (mvAny.blue_athlete_id) {
-            const { data: bu } = await supabase
-              .from('app_users')
-              .select('name')
-              .eq('id', mvAny.blue_athlete_id)
-              .maybeSingle();
-            if (bu?.name) effectiveOpponentName = bu.name;
-          } else if (mvAny.blue_athlete_name) {
-            effectiveOpponentName = mvAny.blue_athlete_name;
-          }
-        }
-      }
+      // Use the user's selections as source of truth (red/blue corner is flexible)
+      const effectiveUserId = selectedUserId;
+      const effectiveOpponentName = opponentName;
 
       // Find existing fight for this match video (so we can replace it)
       let existingFightId: string | null = null;
@@ -1624,6 +1612,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
         round_duration_seconds: avgRoundDuration,
         notes: `Video: ${videoFile?.name || initialMatchTitle || 'Unknown'}`,
         match_video_id: matchVideoId || null,
+        our_corner: ourCorner,
       };
 
       let fightId: string;
@@ -2835,18 +2824,36 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
           </Button>
         )}
         <div className="flex items-center gap-2">
+          <div className="flex items-center border border-input h-9">
+            <button
+              type="button"
+              onClick={() => setOurCorner('red')}
+              className={`h-full px-2 text-xs font-semibold transition-colors ${ourCorner === 'red' ? 'bg-red-600 text-white' : 'bg-background text-red-600 hover:bg-red-50'}`}
+              title="Ο αθλητής μας στην κόκκινη γωνία"
+            >
+              Κόκκινη
+            </button>
+            <button
+              type="button"
+              onClick={() => setOurCorner('blue')}
+              className={`h-full px-2 text-xs font-semibold transition-colors ${ourCorner === 'blue' ? 'bg-blue-600 text-white' : 'bg-background text-blue-600 hover:bg-blue-50'}`}
+              title="Ο αθλητής μας στην μπλε γωνία"
+            >
+              Μπλε
+            </button>
+          </div>
           <div className="w-44">
             <UserSearchCombobox
               value={selectedUserId}
               onValueChange={setSelectedUserId}
-              placeholder="Αθλητής μας * (υποχρ.)"
+              placeholder={`Αθλητής μας * (${ourCorner === 'red' ? 'κόκκινη' : 'μπλε'})`}
               coachId={coachId || undefined}
             />
           </div>
           <Input
             value={opponentName}
             onChange={(e) => setOpponentName(e.target.value)}
-            placeholder="Αντίπαλος (προαιρετικό)"
+            placeholder={`Αντίπαλος (${ourCorner === 'red' ? 'μπλε' : 'κόκκινη'})`}
             className="w-40 h-9 rounded-none text-sm"
           />
           <Button

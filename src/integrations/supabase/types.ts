@@ -6623,6 +6623,7 @@ export type Database = {
           match_video_id: string | null
           notes: string | null
           opponent_name: string
+          our_corner: string
           result: string | null
           round_duration_seconds: number
           total_rounds: number
@@ -6642,6 +6643,7 @@ export type Database = {
           match_video_id?: string | null
           notes?: string | null
           opponent_name: string
+          our_corner?: string
           result?: string | null
           round_duration_seconds?: number
           total_rounds?: number
@@ -6661,6 +6663,7 @@ export type Database = {
           match_video_id?: string | null
           notes?: string | null
           opponent_name?: string
+          our_corner?: string
           result?: string | null
           round_duration_seconds?: number
           total_rounds?: number
