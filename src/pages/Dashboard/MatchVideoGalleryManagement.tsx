@@ -289,14 +289,13 @@ const MatchVideoGalleryManagement: React.FC = () => {
               {videos.map((v) => {
                 const redName = v.red_athlete_id ? (athleteNames[v.red_athlete_id] || "—") : (v.red_athlete_name || "—");
                 const blueName = v.blue_athlete_id ? (athleteNames[v.blue_athlete_id] || "—") : (v.blue_athlete_name || "—");
-                // Highlight red corner by default (Athlete 1 = Red rule); show red avatar when available
                 const ourAvatar = v.red_athlete_id ? athleteAvatars[v.red_athlete_id] : null;
                 return (
                   <MatchFightCard
                     key={v.id}
                     data={{
                       id: v.id,
-                      ourCorner: null,
+                      ourCorner: 'red',
                       ourAvatarUrl: ourAvatar,
                       redName,
                       blueName,
