@@ -1,36 +1,30 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Radio, Calendar, Trophy, ArrowLeft } from "lucide-react";
-import { parseYouTubeId } from "@/utils/youtubeIframeApi";
+import { Calendar, Trophy, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
-const buildEmbedUrl = (url: string, startSec?: number | null, endSec?: number | null): string => {
-  if (!url) return url;
-  const base = "autoplay=0&mute=0&playsinline=1&controls=1&rel=0&modestbranding=1";
-  const extra: string[] = [];
-  if (typeof startSec === "number" && startSec > 0) extra.push(`start=${startSec}`);
-  if (typeof endSec === "number" && endSec > 0) extra.push(`end=${endSec}`);
-  const ytId = parseYouTubeId(url);
-  if (ytId) {
-    const params = extra.length ? `${base}&${extra.join("&")}` : base;
-    return `https://www.youtube.com/embed/${ytId}?${params}`;
-  }
-  return url;
+const parseYouTubeId = (url: string): string | null => {
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([\w-]{11})/);
+  return match ? match[1] : null;
 };
 
-interface MatchVideo {
+const buildEmbedUrl = (url: string): string => {
+  const id = parseYouTubeId(url);
+  if (!id) return url;
+  return `https://www.youtube.com/embed/${id}?autoplay=0&mute=0&playsinline=1&controls=1&rel=0&modestbranding=1`;
+};
+
+interface Fight {
   id: string;
-  title: string;
+  user_id: string;
+  opponent_name: string | null;
+  fight_date: string;
   competition_name: string | null;
-  match_date: string | null;
-  age_category: string | null;
-  weight_category: string | null;
-  youtube_url: string;
-  start_seconds: number | null;
-  end_seconds: number | null;
-  red_athlete_id: string | null;
-  blue_athlete_id: string | null;
+  location: string | null;
+  weight_class: string | null;
+  video_url: string;
+  our_corner: string | null;
 }
 
 interface AthleteInfo {
@@ -41,7 +35,7 @@ interface AthleteInfo {
 }
 
 const VideoGallery: React.FC = () => {
-  const [videos, setVideos] = useState<MatchVideo[]>([]);
+  const [fights, setFights] = useState<Fight[]>([]);
   const [athletes, setAthletes] = useState<Record<string, AthleteInfo>>({});
   const [selectedAthleteId, setSelectedAthleteId] = useState<string | "all">("all");
   const [loading, setLoading] = useState(true);
@@ -49,13 +43,15 @@ const VideoGallery: React.FC = () => {
   useEffect(() => {
     const load = async () => {
       const { data } = await supabase
-        .from("match_videos" as any)
-        .select("*")
-        .order("match_date", { ascending: false, nullsFirst: false });
-      const list = (data || []) as unknown as MatchVideo[];
-      setVideos(list);
+        .from("muaythai_fights")
+        .select("id,user_id,opponent_name,fight_date,competition_name,location,weight_class,video_url,our_corner")
+        .not("video_url", "is", null)
+        .eq("is_public", true)
+        .order("fight_date", { ascending: false });
+      const list = ((data as any[]) || []).filter(f => !!f.video_url) as Fight[];
+      setFights(list);
 
-      const ids = Array.from(new Set(list.flatMap(v => [v.red_athlete_id, v.blue_athlete_id]).filter(Boolean))) as string[];
+      const ids = Array.from(new Set(list.map(f => f.user_id).filter(Boolean)));
       if (ids.length) {
         const { data: us } = await supabase
           .from("app_users")
@@ -70,18 +66,15 @@ const VideoGallery: React.FC = () => {
     load();
   }, []);
 
-  // Group videos by athlete (each video appears under both red & blue athlete)
   const grouped = useMemo(() => {
-    const m: Record<string, MatchVideo[]> = {};
-    videos.forEach(v => {
-      [v.red_athlete_id, v.blue_athlete_id].forEach((aid) => {
-        if (!aid) return;
-        if (!m[aid]) m[aid] = [];
-        m[aid].push(v);
-      });
+    const m: Record<string, Fight[]> = {};
+    fights.forEach(f => {
+      if (!f.user_id) return;
+      if (!m[f.user_id]) m[f.user_id] = [];
+      m[f.user_id].push(f);
     });
     return m;
-  }, [videos]);
+  }, [fights]);
 
   const athleteList = useMemo(() => {
     return Object.keys(grouped)
@@ -110,7 +103,6 @@ const VideoGallery: React.FC = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {/* Athlete filter */}
         {athleteList.length > 0 && (
           <div className="mb-8 flex flex-wrap gap-2">
             <Button
@@ -160,23 +152,22 @@ const VideoGallery: React.FC = () => {
               </div>
 
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {list.map(v => {
-                  const isRed = v.red_athlete_id === athlete.id;
-                  const opponent = isRed ? v.blue_athlete_id : v.red_athlete_id;
-                  const opponentName = opponent ? (athletes[opponent]?.name || "—") : "—";
+                {list.map(f => {
+                  const isRed = (f.our_corner || "red") === "red";
                   return (
-                    <article key={v.id} className="bg-gray-900 border border-white/10">
+                    <article key={f.id} className="bg-gray-900 border border-white/10">
                       <div className="px-3 py-2 bg-white text-black flex items-center justify-between">
-                        <span className="font-semibold text-sm truncate">{v.title}</span>
-                        <Radio className="w-4 h-4 shrink-0" />
+                        <span className="font-semibold text-sm truncate">
+                          {athlete.name} vs {f.opponent_name || "—"}
+                        </span>
                       </div>
                       <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
                         <iframe
-                          src={buildEmbedUrl(v.youtube_url, v.start_seconds, v.end_seconds)}
+                          src={buildEmbedUrl(f.video_url)}
                           className="absolute inset-0 w-full h-full"
                           allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                           allowFullScreen
-                          title={v.title}
+                          title={`${athlete.name} vs ${f.opponent_name || ""}`}
                           loading="lazy"
                         />
                       </div>
@@ -186,19 +177,17 @@ const VideoGallery: React.FC = () => {
                             {isRed ? "RED" : "BLUE"}
                           </span>
                           <span>vs</span>
-                          <span className={isRed ? "text-blue-500" : "text-red-500"}>{opponentName}</span>
+                          <span className={isRed ? "text-blue-500" : "text-red-500"}>{f.opponent_name || "—"}</span>
                         </div>
-                        {(v.competition_name || v.match_date) && (
+                        {(f.competition_name || f.fight_date) && (
                           <div className="flex items-center gap-1 text-xs text-white/60">
                             <Calendar className="w-3 h-3" />
-                            {v.match_date && <span>{v.match_date}</span>}
-                            {v.competition_name && <span>· {v.competition_name}</span>}
+                            {f.fight_date && <span>{new Date(f.fight_date).toLocaleDateString("el-GR")}</span>}
+                            {f.competition_name && <span>· {f.competition_name}</span>}
                           </div>
                         )}
-                        {(v.age_category || v.weight_category) && (
-                          <div className="text-xs text-white/60">
-                            {v.age_category}{v.weight_category ? ` · ${v.weight_category}` : ""}
-                          </div>
+                        {f.weight_class && (
+                          <div className="text-xs text-white/60">{f.weight_class}</div>
                         )}
                       </div>
                     </article>

@@ -124,7 +124,6 @@ const FederationWeighInPage = React.lazy(() => import("@/pages/Dashboard/WeighIn
 import FederationBrackets from "@/pages/Dashboard/FederationBrackets";
 const FederationFightCard = React.lazy(() => import("@/pages/Dashboard/FederationFightCard"));
 const LiveEventsManagement = React.lazy(() => import("@/pages/Dashboard/LiveEventsManagement"));
-const MatchVideoGalleryManagement = React.lazy(() => import("@/pages/Dashboard/MatchVideoGalleryManagement"));
 const VideoGallery = React.lazy(() => import("@/pages/VideoGallery"));
 
 const LiveRingAnalysis = React.lazy(() => import("@/pages/Dashboard/LiveRingAnalysis"));
@@ -278,7 +277,7 @@ function App() {
                         <Route path="/dashboard/federation-brackets" element={<ProtectedRoute><></></ProtectedRoute>} />
                         <Route path="/dashboard/federation-live" element={<ProtectedRoute><></></ProtectedRoute>} />
                         <Route path="/dashboard/live-events" element={<ProtectedRoute><LiveEventsManagement /></ProtectedRoute>} />
-                        <Route path="/dashboard/match-video-gallery" element={<ProtectedRoute requireAdmin><MatchVideoGalleryManagement /></ProtectedRoute>} />
+                        
                         <Route path="/dashboard/federation-fight-card" element={<ProtectedRoute><FederationFightCard /></ProtectedRoute>} />
                         <Route path="/dashboard/federation-live/ring/:ringId/analysis/:corner" element={<ProtectedRoute><LiveRingAnalysis /></ProtectedRoute>} />
                         <Route path="/dashboard/federation-live/ring/:ringId/ai-lab" element={<ProtectedRoute><MultiCameraAnalysis /></ProtectedRoute>} />

@@ -24,6 +24,7 @@ import { UserProfileHistory } from "./UserProfileHistory";
 import { SchoolNotes } from "@/pages/SchoolNotes";
 import { UserProfileNutrition } from "./UserProfileNutrition";
 import { UserProfileSafety } from "./UserProfileSafety";
+import { UserProfileFights } from "./UserProfileFights";
 
 import CoachBracketsPage from "@/pages/Dashboard/CoachBracketsPage";
 import CoachLivePage from "@/pages/Dashboard/CoachLivePage";
@@ -276,6 +277,13 @@ export const UserProfileContent = ({
           <div className="space-y-4">
             <BackButton />
             <UserProfileSafety userProfile={userProfile} />
+          </div>
+        );
+      case "fights":
+        return (
+          <div className="space-y-4">
+            <BackButton />
+            <UserProfileFights userId={userProfile?.id} />
           </div>
         );
       case "coach-brackets":
