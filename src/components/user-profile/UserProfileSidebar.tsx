@@ -18,7 +18,8 @@ import {
   Utensils,
   Shuffle,
   Radio,
-  ShieldAlert
+  ShieldAlert,
+  Swords
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
@@ -312,6 +313,15 @@ export const UserProfileSidebar = forwardRef<
       badge: null,
       visible: true,
       disabled: false
+    },
+    {
+      icon: Swords,
+      label: 'Αγώνες',
+      key: "fights",
+      badge: null,
+      // Athletes & parents see their fights menu
+      visible: (userProfile?.role === 'athlete' || userProfile?.role === 'parent' || isAdmin),
+      disabled: !hasSubscription
     },
     {
       icon: ShieldAlert,
