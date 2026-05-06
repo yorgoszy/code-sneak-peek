@@ -6615,10 +6615,12 @@ export type Database = {
       muaythai_fights: {
         Row: {
           coach_id: string | null
+          competition_name: string | null
           created_at: string
           fight_date: string
           fight_type: string
           id: string
+          is_public: boolean
           location: string | null
           match_video_id: string | null
           notes: string | null
@@ -6635,10 +6637,12 @@ export type Database = {
         }
         Insert: {
           coach_id?: string | null
+          competition_name?: string | null
           created_at?: string
           fight_date: string
           fight_type: string
           id?: string
+          is_public?: boolean
           location?: string | null
           match_video_id?: string | null
           notes?: string | null
@@ -6655,10 +6659,12 @@ export type Database = {
         }
         Update: {
           coach_id?: string | null
+          competition_name?: string | null
           created_at?: string
           fight_date?: string
           fight_type?: string
           id?: string
+          is_public?: boolean
           location?: string | null
           match_video_id?: string | null
           notes?: string | null
