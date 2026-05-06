@@ -615,12 +615,6 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null
     },
     {
-      icon: Video,
-      label: "Video Gallery",
-      path: "/dashboard/match-video-gallery",
-      badge: null
-    },
-    {
       icon: Shuffle,
       label: "Κλήρωση",
       path: "/dashboard/federation-brackets",
