@@ -116,7 +116,7 @@ const VideoGallery: React.FC = () => {
               <Button
                 key={a.id}
                 variant={selectedAthleteId === a.id ? "default" : "outline"}
-                className="rounded-none flex items-center gap-2"
+                className="rounded-none flex items-center gap-2 bg-blue-900 hover:bg-blue-800 text-white border-blue-900"
                 onClick={() => setSelectedAthleteId(a.id)}
               >
                 <img
