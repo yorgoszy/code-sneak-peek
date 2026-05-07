@@ -116,29 +116,28 @@ export const UserProfileFights: React.FC<Props> = ({ userId }) => {
       <h2 className="text-xl font-semibold">Αγώνες</h2>
 
       {/* Fights list */}
-      <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-1.5 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {fights.map(f => (
           <button
             key={f.id}
             onClick={() => setSelectedFightId(f.id)}
-            className={`text-left border rounded-none p-3 transition-all ${
+            className={`text-left border rounded-none p-2 transition-all ${
               selectedFightId === f.id
                 ? 'border-black bg-gray-50 ring-1 ring-black'
                 : 'border-gray-200 hover:border-gray-400'
             }`}
           >
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-semibold truncate">vs {f.opponent_name || '—'}</span>
+            <div className="flex items-center justify-between mb-0.5 gap-1">
+              <span className="text-xs font-semibold truncate">vs {f.opponent_name || '—'}</span>
               {getResultBadge(f.result)}
             </div>
-            <div className="text-xs text-gray-600 flex items-center gap-1">
+            <div className="text-[10px] text-gray-600 flex items-center gap-1">
               <Calendar className="w-3 h-3" />
               {format(new Date(f.fight_date), 'dd/MM/yyyy')}
-              {f.competition_name && <> · <Trophy className="w-3 h-3" /> {f.competition_name}</>}
             </div>
-            {f.location && (
-              <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                <MapPin className="w-3 h-3" /> {f.location}
+            {f.competition_name && (
+              <div className="text-[10px] text-gray-500 flex items-center gap-1 mt-0.5 truncate">
+                <Trophy className="w-3 h-3 shrink-0" /> <span className="truncate">{f.competition_name}</span>
               </div>
             )}
           </button>
