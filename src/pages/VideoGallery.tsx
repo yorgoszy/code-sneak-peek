@@ -156,7 +156,7 @@ const VideoGallery: React.FC = () => {
                   const isRed = (f.our_corner || "red") === "red";
                   return (
                     <article key={f.id} className="bg-gray-900 border border-white/10">
-                      <div className="px-3 py-2 bg-white text-black flex items-center justify-between">
+                      <div className="px-3 py-2 bg-primary text-primary-foreground flex items-center justify-between">
                         <span className="font-semibold text-sm truncate">
                           {athlete.name} vs {f.opponent_name || "—"}
                         </span>
