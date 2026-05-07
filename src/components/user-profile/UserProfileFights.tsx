@@ -149,7 +149,7 @@ export const UserProfileFights: React.FC<Props> = ({ userId }) => {
       {selectedFight && (
         <div className="space-y-4">
           {selectedFight.video_url && (
-            <div className="bg-black border border-black">
+            <div className="bg-black border border-black max-w-2xl mx-auto w-full">
               <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
                 <iframe
                   src={buildEmbedUrl(selectedFight.video_url)}
