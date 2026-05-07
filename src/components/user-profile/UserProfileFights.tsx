@@ -38,13 +38,17 @@ const buildEmbedUrl = (url: string) => {
 const getResultBadge = (result: string | null) => {
   switch (result) {
     case 'win':
-    case 'win_ko':
-    case 'win_tko':
       return <Badge className="bg-green-500 hover:bg-green-600 rounded-none text-xs">Νίκη</Badge>;
+    case 'win_ko':
+      return <Badge className="bg-green-500 hover:bg-green-600 rounded-none text-xs">Νίκη με ΚΟ</Badge>;
+    case 'win_tko':
+      return <Badge className="bg-green-500 hover:bg-green-600 rounded-none text-xs">Νίκη με TKO</Badge>;
     case 'loss':
-    case 'loss_ko':
-    case 'loss_tko':
       return <Badge className="bg-red-500 hover:bg-red-600 rounded-none text-xs">Ήττα</Badge>;
+    case 'loss_ko':
+      return <Badge className="bg-red-500 hover:bg-red-600 rounded-none text-xs">Ήττα με ΚΟ</Badge>;
+    case 'loss_tko':
+      return <Badge className="bg-red-500 hover:bg-red-600 rounded-none text-xs">Ήττα με TKO</Badge>;
     case 'draw':
       return <Badge className="bg-yellow-500 hover:bg-yellow-600 rounded-none text-xs">Ισοπαλία</Badge>;
     default:
