@@ -1669,6 +1669,7 @@ export type Database = {
       }
       children: {
         Row: {
+          athlete_app_user_id: string | null
           birth_date: string
           created_at: string
           id: string
@@ -1677,6 +1678,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          athlete_app_user_id?: string | null
           birth_date: string
           created_at?: string
           id?: string
@@ -1685,6 +1687,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          athlete_app_user_id?: string | null
           birth_date?: string
           created_at?: string
           id?: string
@@ -1693,6 +1696,20 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "children_athlete_app_user_id_fkey"
+            columns: ["athlete_app_user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "children_athlete_app_user_id_fkey"
+            columns: ["athlete_app_user_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "children_parent_id_fkey"
             columns: ["parent_id"]
