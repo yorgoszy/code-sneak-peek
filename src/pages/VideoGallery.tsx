@@ -154,11 +154,13 @@ const VideoGallery: React.FC = () => {
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {list.map(f => {
                   const isRed = (f.our_corner || "red") === "red";
+                  const redName = isRed ? athlete.name : (f.opponent_name || "—");
+                  const blueName = isRed ? (f.opponent_name || "—") : athlete.name;
                   return (
                     <article key={f.id} className="bg-gray-900 border border-white/10">
-                      <div className="px-3 py-2 bg-blue-600 text-white flex items-center justify-between">
+                      <div className="px-3 py-2 bg-blue-900 text-white flex items-center justify-between">
                         <span className="font-semibold text-sm truncate">
-                          {athlete.name} vs {f.opponent_name || "—"}
+                          {redName} vs {blueName}
                         </span>
                       </div>
                       <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
@@ -167,17 +169,15 @@ const VideoGallery: React.FC = () => {
                           className="absolute inset-0 w-full h-full"
                           allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                           allowFullScreen
-                          title={`${athlete.name} vs ${f.opponent_name || ""}`}
+                          title={`${redName} vs ${blueName}`}
                           loading="lazy"
                         />
                       </div>
                       <div className="p-3 text-sm space-y-1">
                         <div className="flex items-center gap-2 text-white/80">
-                          <span className={isRed ? "text-red-500 font-semibold" : "text-blue-500 font-semibold"}>
-                            {isRed ? "RED" : "BLUE"}
-                          </span>
+                          <span className="text-red-500 font-semibold">{redName}</span>
                           <span>vs</span>
-                          <span className={isRed ? "text-blue-500" : "text-red-500"}>{f.opponent_name || "—"}</span>
+                          <span className="text-blue-500 font-semibold">{blueName}</span>
                         </div>
                         {(f.competition_name || f.fight_date) && (
                           <div className="flex items-center gap-1 text-xs text-white/60">
