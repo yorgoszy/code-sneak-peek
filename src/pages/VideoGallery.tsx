@@ -107,7 +107,7 @@ const VideoGallery: React.FC = () => {
           <div className="mb-8 flex flex-wrap gap-2">
             <Button
               variant={selectedAthleteId === "all" ? "default" : "outline"}
-              className="rounded-none"
+              className="rounded-none bg-blue-900 hover:bg-blue-800 text-white border-blue-900"
               onClick={() => setSelectedAthleteId("all")}
             >
               Όλοι ({athleteList.length})
