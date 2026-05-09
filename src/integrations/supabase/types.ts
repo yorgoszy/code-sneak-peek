@@ -7640,6 +7640,42 @@ export type Database = {
           },
         ]
       }
+      plan_strong_drafts: {
+        Row: {
+          coach_id: string | null
+          created_at: string
+          created_by: string | null
+          data: Json
+          id: string
+          name: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          coach_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          data?: Json
+          id?: string
+          name?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          coach_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          data?: Json
+          id?: string
+          name?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
