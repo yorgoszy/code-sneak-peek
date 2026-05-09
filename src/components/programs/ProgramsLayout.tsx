@@ -60,7 +60,12 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
         <h1 className={`${isMobile ? 'text-xl' : 'text-2xl lg:text-3xl'} font-bold`}>
           {isMobile ? (isTemplateMode ? 'Templates' : 'Προγράμματα') : (isTemplateMode ? 'Templates Προγραμμάτων' : 'Προγράμματα Προπόνησης')}
         </h1>
-        <ProgramBuilderTrigger onClick={onOpenBuilder} />
+        <div className="flex items-center gap-2">
+          <a href="/plan-strong" className="inline-flex items-center px-3 h-9 text-sm bg-foreground text-background hover:opacity-90 rounded-none">
+            Plan Strong
+          </a>
+          <ProgramBuilderTrigger onClick={onOpenBuilder} />
+        </div>
       </div>
 
       {/* Μόνο η λίστα προγραμμάτων - αφαιρέθηκε η προβολή λεπτομερειών */}

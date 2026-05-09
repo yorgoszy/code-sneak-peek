@@ -181,7 +181,12 @@ const CoachProgramsContent = () => {
         <h1 className={`${isMobile ? 'text-xl' : 'text-2xl lg:text-3xl'} font-bold`}>
           {isMobile ? 'Προγράμματα' : 'Προγράμματα Προπόνησης'}
         </h1>
-        <ProgramBuilderTrigger onClick={handleOpenBuilder} />
+        <div className="flex items-center gap-2">
+          <a href="/plan-strong" className="inline-flex items-center px-3 h-9 text-sm bg-foreground text-background hover:opacity-90 rounded-none">
+            Plan Strong
+          </a>
+          <ProgramBuilderTrigger onClick={handleOpenBuilder} />
+        </div>
       </div>
 
       <div className="w-full">
