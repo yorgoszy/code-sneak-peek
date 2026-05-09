@@ -33,6 +33,7 @@ import Tests from "@/pages/Tests";
 import Results from "@/pages/Results";
 import UserProfile from "@/pages/UserProfile";
 import ProgramBuilder from "@/pages/ProgramBuilder";
+import PlanStrongPage from "@/pages/PlanStrong/PlanStrongPage";
 import ProgramTemplates from "@/pages/ProgramTemplates";
 import NotFound from "@/pages/NotFound";
 import Subscriptions from "@/pages/Subscriptions";
@@ -264,6 +265,8 @@ function App() {
                       <Route path="/dashboard/annual-planning" element={<ProtectedRoute><AnnualPlanningWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/phase-config" element={<ProtectedRoute requireAdmin><PhaseConfigWithSidebar /></ProtectedRoute>} />
                       <Route path="/program-builder" element={<ProtectedRoute requireAdmin><ProgramBuilder /></ProtectedRoute>} />
+                      <Route path="/plan-strong" element={<ProtectedRoute><PlanStrongPage /></ProtectedRoute>} />
+                      <Route path="/plan-strong/:id" element={<ProtectedRoute><PlanStrongPage /></ProtectedRoute>} />
 
                       {/* Federation routes - wrapped in persistent layout to keep live streams alive */}
                       <Route element={<FederationPersistentLayout />}>
