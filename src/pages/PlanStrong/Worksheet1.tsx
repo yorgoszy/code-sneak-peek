@@ -1,12 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
   computeSide, ZONE_LABELS, ZONE_PCT_LABELS, PlanStrongSideInput,
 } from './planStrongCalc';
+import { useExercises } from '@/hooks/useExercises';
+import { useExercise1RM } from '@/hooks/useExercise1RM';
+import { SimpleExerciseSelectionDialog } from '@/components/programs/builder/SimpleExerciseSelectionDialog';
 
 interface Props {
   side: PlanStrongSideInput;
   onChange: (s: PlanStrongSideInput) => void;
+  userId?: string;
 }
 
 const cell = "border border-border px-2 py-1 text-xs";
@@ -23,7 +28,7 @@ const parsePct = (raw: string): number => {
   return n / 100;
 };
 
-export const Worksheet1Side: React.FC<Props> = ({ side, onChange }) => {
+export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
   const out = computeSide(side);
   const set = (patch: Partial<PlanStrongSideInput>) => onChange({ ...side, ...patch });
   const setZone = (i: number, raw: string) => {
@@ -32,6 +37,37 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange }) => {
   const setWeek = (key: 'mainPct' | 'v91Pct' | 'v81Pct', i: number, raw: string) => {
     const arr = [...side[key]]; arr[i] = parsePct(raw); set({ [key]: arr } as any);
   };
+
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const { exercises } = useExercises();
+  const { oneRM: fetched1RM } = useExercise1RM({
+    userId: userId || null,
+    exerciseId: side.exerciseId || null,
+  });
+  const lastApplied1RM = useRef<{ key: string; val: number } | null>(null);
+  useEffect(() => {
+    if (fetched1RM != null && side.exerciseId && userId) {
+      const key = `${userId}:${side.exerciseId}`;
+      if (lastApplied1RM.current?.key !== key || lastApplied1RM.current?.val !== fetched1RM) {
+        lastApplied1RM.current = { key, val: fetched1RM };
+        onChange({ ...side, oneRM: fetched1RM });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetched1RM, side.exerciseId, userId]);
+
+  const handleSelectExercise = (exId: string) => {
+    const ex = exercises.find(e => e.id === exId);
+    if (ex) onChange({ ...side, exerciseId: ex.id, lift: ex.name });
+    setPickerOpen(false);
+  };
+
+  return (
+    <div className="border border-border">
+      <div className="bg-foreground text-background px-3 py-2 text-sm font-bold flex justify-between">
+        <span>PLAN STRONG™ — PS {side.ps}</span>
+        <span>WORKSHEET #1</span>
+      </div>
 
   return (
     <div className="border border-border">
@@ -50,8 +86,11 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange }) => {
           <tbody>
             <tr>
               <td className={cell}>
-                <Input className={inp} value={side.lift} placeholder="BP / SQ / DL"
-                  onChange={e => set({ lift: e.target.value })} />
+                <Button type="button" variant="outline" size="sm"
+                  className="h-7 w-full justify-start rounded-none text-xs px-2"
+                  onClick={() => setPickerOpen(true)}>
+                  {side.lift || 'Επιλογή άσκησης...'}
+                </Button>
               </td>
               <td className={cell}>
                 <select className={inp + " w-full"} value={side.prepComp}
