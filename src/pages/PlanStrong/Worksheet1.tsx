@@ -71,9 +71,11 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange }) => {
               </td>
               <td className={cell}>
                 <select className={inp + " w-full"} value={side.ps}
-                  onChange={e => set({ ps: (+e.target.value) as 50 | 70 })}>
-                  <option value={50}>50</option>
-                  <option value={70}>70</option>
+                  onChange={e => set({ ps: e.target.value as any })}>
+                  <option value="50">50</option>
+                  <option value="70">70</option>
+                  <option value="BTS3">BTS3</option>
+                  <option value="BTS6">BTS6</option>
                 </select>
               </td>
               <td className={cell}>

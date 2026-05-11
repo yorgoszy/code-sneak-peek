@@ -63,7 +63,7 @@ export function defaultSide(): PlanStrongSideInput {
     prepComp: 'PREP',
     oneRM: '',
     unit: 'KG',
-    ps: 50,
+    ps: '50',
     monthlyNL: '',
     zonePct: Array(12).fill(0),
     mainPct: [0, 0, 0, 0],
