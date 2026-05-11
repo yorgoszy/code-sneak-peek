@@ -2,6 +2,7 @@
 
 export interface PlanStrongSideInput {
   lift: string;
+  exerciseId?: string;
   prepComp: string;        // PREP / COMP
   oneRM: number | '';
   unit: 'KG' | 'LB';
@@ -60,6 +61,7 @@ export function computeSide(s: PlanStrongSideInput): PlanStrongSideOutput {
 export function defaultSide(): PlanStrongSideInput {
   return {
     lift: '',
+    exerciseId: undefined,
     prepComp: 'PREP',
     oneRM: '',
     unit: 'KG',
