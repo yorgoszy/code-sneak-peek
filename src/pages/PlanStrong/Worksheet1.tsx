@@ -43,7 +43,7 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange }) => {
         <table className="border-collapse w-full">
           <thead>
             <tr>
-              {['LIFT','PREP/COMP','1RM','KG/LB','PS 50/70','NL'].map(h =>
+              {['LIFT','PREP/COMP','1RM','KG/LB','PS/BTS','NL'].map(h =>
                 <th key={h} className={headCell}>{h}</th>)}
             </tr>
           </thead>
