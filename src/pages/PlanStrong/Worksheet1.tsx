@@ -68,13 +68,6 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
         <span>PLAN STRONG™ — PS {side.ps}</span>
         <span>WORKSHEET #1</span>
       </div>
-
-  return (
-    <div className="border border-border">
-      <div className="bg-foreground text-background px-3 py-2 text-sm font-bold flex justify-between">
-        <span>PLAN STRONG™ — PS {side.ps}</span>
-        <span>WORKSHEET #1</span>
-      </div>
       <div className="p-2 text-xs space-y-2 overflow-x-auto">
         <table className="border-collapse w-full">
           <thead>
