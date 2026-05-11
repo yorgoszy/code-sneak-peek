@@ -1,35 +1,45 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
-import { computeSide, ZONE_LABELS, ZONE_COEF, PlanStrongSideInput } from './planStrongCalc';
+import {
+  computeSide, ZONE_LABELS, ZONE_PCT_LABELS, PlanStrongSideInput,
+} from './planStrongCalc';
 
 interface Props {
   side: PlanStrongSideInput;
   onChange: (s: PlanStrongSideInput) => void;
-  title: string;
 }
 
 const cell = "border border-border px-2 py-1 text-xs";
 const headCell = cell + " bg-muted font-semibold";
-const inp = "h-7 px-1 text-xs rounded-none border-0 bg-transparent focus-visible:ring-1";
+const inp = "h-7 px-1 text-xs rounded-none border-0 bg-transparent focus-visible:ring-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
 
-export const Worksheet1Side: React.FC<Props> = ({ side, onChange, title }) => {
+const toNum = (v: string): number | '' => v === '' ? '' : +v;
+const pctDisplay = (frac: number) => frac ? `${Math.round(frac * 100)}%` : '';
+const parsePct = (raw: string): number => {
+  const cleaned = raw.replace('%', '').trim();
+  if (cleaned === '') return 0;
+  const n = parseFloat(cleaned);
+  if (isNaN(n)) return 0;
+  return n / 100;
+};
+
+export const Worksheet1Side: React.FC<Props> = ({ side, onChange }) => {
   const out = computeSide(side);
   const set = (patch: Partial<PlanStrongSideInput>) => onChange({ ...side, ...patch });
-  const setZone = (i: number, v: number) => {
-    const arr = [...side.zonePct]; arr[i] = v; set({ zonePct: arr });
+  const setZone = (i: number, raw: string) => {
+    const arr = [...side.zonePct]; arr[i] = parsePct(raw); set({ zonePct: arr });
   };
-  const setWeek = (key: 'mainPct' | 'v91Pct' | 'v81Pct', i: number, v: number) => {
-    const arr = [...side[key]]; arr[i] = v; set({ [key]: arr } as any);
+  const setWeek = (key: 'mainPct' | 'v91Pct' | 'v81Pct', i: number, raw: string) => {
+    const arr = [...side[key]]; arr[i] = parsePct(raw); set({ [key]: arr } as any);
   };
 
   return (
     <div className="border border-border">
       <div className="bg-foreground text-background px-3 py-2 text-sm font-bold flex justify-between">
-        <span>PLAN STRONG™ — {title}</span>
+        <span>PLAN STRONG™ — PS {side.ps}</span>
         <span>WORKSHEET #1</span>
       </div>
       <div className="p-2 text-xs space-y-2 overflow-x-auto">
-        {/* Header row */}
         <table className="border-collapse w-full">
           <thead>
             <tr>
@@ -39,25 +49,41 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, title }) => {
           </thead>
           <tbody>
             <tr>
-              <td className={cell}><Input className={inp} value={side.lift} onChange={e => set({ lift: e.target.value })} /></td>
               <td className={cell}>
-                <select className={inp + " w-full"} value={side.prepComp} onChange={e => set({ prepComp: e.target.value })}>
+                <Input className={inp} value={side.lift} placeholder="BP / SQ / DL"
+                  onChange={e => set({ lift: e.target.value })} />
+              </td>
+              <td className={cell}>
+                <select className={inp + " w-full"} value={side.prepComp}
+                  onChange={e => set({ prepComp: e.target.value })}>
                   <option>PREP</option><option>COMP</option>
                 </select>
               </td>
-              <td className={cell}><Input className={inp} type="number" value={side.oneRM} onChange={e => set({ oneRM: +e.target.value })} /></td>
               <td className={cell}>
-                <select className={inp + " w-full"} value={side.unit} onChange={e => set({ unit: e.target.value as any })}>
+                <Input className={inp} type="number" value={side.oneRM}
+                  onChange={e => set({ oneRM: toNum(e.target.value) })} />
+              </td>
+              <td className={cell}>
+                <select className={inp + " w-full"} value={side.unit}
+                  onChange={e => set({ unit: e.target.value as any })}>
                   <option>KG</option><option>LB</option>
                 </select>
               </td>
-              <td className={cell}><Input className={inp} type="number" value={side.ps} onChange={e => set({ ps: +e.target.value })} /></td>
-              <td className={cell}><Input className={inp} type="number" value={side.monthlyNL} onChange={e => set({ monthlyNL: +e.target.value })} /></td>
+              <td className={cell}>
+                <select className={inp + " w-full"} value={side.ps}
+                  onChange={e => set({ ps: (+e.target.value) as 50 | 70 })}>
+                  <option value={50}>50</option>
+                  <option value={70}>70</option>
+                </select>
+              </td>
+              <td className={cell}>
+                <Input className={inp} type="number" value={side.monthlyNL}
+                  onChange={e => set({ monthlyNL: toNum(e.target.value) })} />
+              </td>
             </tr>
           </tbody>
         </table>
 
-        {/* Zone table */}
         <table className="border-collapse w-full">
           <thead>
             <tr>
@@ -72,14 +98,14 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, title }) => {
             </tr>
             <tr>
               <td className={headCell}>%1RM</td>
-              {ZONE_COEF.map((c, i) => <td key={i} className={cell + " text-muted-foreground"}>{c || '-'}</td>)}
+              {ZONE_PCT_LABELS.map((c, i) => <td key={i} className={cell + " text-muted-foreground"}>{c}</td>)}
             </tr>
             <tr>
               <td className={headCell}>% NL</td>
               {side.zonePct.map((p, i) => (
-                <td key={i} className={cell}>
-                  <Input className={inp} type="number" step="0.01" value={p}
-                    onChange={e => setZone(i, +e.target.value)} />
+                <td key={i} className={cell + " p-0"}>
+                  <Input className={inp} value={pctDisplay(p)} placeholder="0%"
+                    onChange={e => setZone(i, e.target.value)} />
                 </td>
               ))}
             </tr>
@@ -95,12 +121,11 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, title }) => {
           &nbsp;|&nbsp; <strong>Total NL:</strong> {out.totalNL}
         </div>
 
-        {/* Variants */}
         {[
           { label: 'MAIN VARIANT (91-100% INTENSITY ZONE)', key: 'mainPct' as const, nl: out.mainNlPerWeek },
           { label: 'VARIANT (91-100% INTENSITY ZONE)', key: 'v91Pct' as const, nl: out.v91NlPerWeek },
           { label: 'VARIANT (81-90% INTENSITY ZONE)', key: 'v81Pct' as const,
-            nl: side.v81Pct.map(p => +(side.monthlyNL * p).toFixed(2)) },
+            nl: side.v81Pct.map(p => +((Number(side.monthlyNL) || 0) * p).toFixed(2)) },
         ].map(v => (
           <table key={v.key} className="border-collapse w-full">
             <thead>
@@ -120,13 +145,13 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, title }) => {
               <tr>
                 <td className={headCell}>%</td>
                 {side[v.key].map((p, i) => (
-                  <td key={i} className={cell}>
-                    <Input className={inp} type="number" step="0.01" value={p}
-                      onChange={e => setWeek(v.key, i, +e.target.value)} />
+                  <td key={i} className={cell + " p-0"}>
+                    <Input className={inp} value={pctDisplay(p)} placeholder="0%"
+                      onChange={e => setWeek(v.key, i, e.target.value)} />
                   </td>
                 ))}
                 <td className={cell + " bg-muted/30"}>
-                  {side[v.key].reduce((a, b) => a + b, 0).toFixed(2)}
+                  {Math.round(side[v.key].reduce((a, b) => a + b, 0) * 100)}%
                 </td>
               </tr>
               <tr>
@@ -138,7 +163,6 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, title }) => {
           </table>
         ))}
 
-        {/* Weekly HARI */}
         <table className="border-collapse w-full">
           <thead>
             <tr>
