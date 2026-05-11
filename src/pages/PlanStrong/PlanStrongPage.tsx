@@ -99,17 +99,12 @@ export default function PlanStrongPage() {
         </TabsList>
 
         <TabsContent value="ws1" className="space-y-3">
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-            <Worksheet1Side title="PS 50" side={data.left} onChange={s => setData({ ...data, left: s })} />
-            <Worksheet1Side title="PS 70" side={data.right} onChange={s => setData({ ...data, right: s })} />
-          </div>
+          <Worksheet1Side side={data.side} onChange={s => setData({ ...data, side: s })} />
         </TabsContent>
 
         <TabsContent value="ws2" className="space-y-3">
-          <Worksheet2 title="PS 50" weeks={data.sessionsLeft}
-            onChange={w => setData({ ...data, sessionsLeft: w })} />
-          <Worksheet2 title="PS 70" weeks={data.sessionsRight}
-            onChange={w => setData({ ...data, sessionsRight: w })} />
+          <Worksheet2 title={`PS ${data.side.ps}`} weeks={data.sessions}
+            onChange={w => setData({ ...data, sessions: w })} />
         </TabsContent>
 
         <TabsContent value="ws3">
