@@ -33,7 +33,14 @@ export default function PlanStrongPage() {
       if (row) {
         setName(row.name);
         setUserId(row.user_id);
-        setData({ ...defaultPlanStrongData(), ...(row.data as any) });
+        const def = defaultPlanStrongData();
+        const loaded = (row.data as any) || {};
+        setData({
+          ...def,
+          ...loaded,
+          side: loaded.side ?? loaded.left ?? def.side,
+          sessions: loaded.sessions ?? loaded.sessionsLeft ?? def.sessions,
+        });
       }
     })();
   }, [editId]);
