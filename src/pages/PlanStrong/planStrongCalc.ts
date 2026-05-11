@@ -5,7 +5,7 @@ export interface PlanStrongSideInput {
   prepComp: string;        // PREP / COMP
   oneRM: number | '';
   unit: 'KG' | 'LB';
-  ps: 50 | 70;             // dropdown 50 or 70
+  ps: '50' | '70' | 'BTS3' | 'BTS6';   // dropdown
   monthlyNL: number | '';
   zonePct: number[];       // length 12 (fractions, e.g. 0.58)
   mainPct: number[];       // length 4
@@ -63,7 +63,7 @@ export function defaultSide(): PlanStrongSideInput {
     prepComp: 'PREP',
     oneRM: '',
     unit: 'KG',
-    ps: 50,
+    ps: '50',
     monthlyNL: '',
     zonePct: Array(12).fill(0),
     mainPct: [0, 0, 0, 0],
