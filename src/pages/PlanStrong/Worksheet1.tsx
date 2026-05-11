@@ -215,6 +215,13 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
           </tbody>
         </table>
       </div>
+
+      <SimpleExerciseSelectionDialog
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        exercises={exercises as any}
+        onSelectExercise={handleSelectExercise}
+      />
     </div>
   );
 };
