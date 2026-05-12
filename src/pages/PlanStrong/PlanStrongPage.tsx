@@ -20,6 +20,7 @@ export default function PlanStrongPage() {
   const [params] = useSearchParams();
   const editId = params.get('id');
   const { user } = useAuth();
+  const { isAdmin } = useRoleCheck();
   const [name, setName] = useState('Plan Strong Draft');
   const [userId, setUserId] = useState<string>('');
   const [data, setData] = useState<PlanStrongData>(defaultPlanStrongData());
