@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { ArrowLeft, Save, Send } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
 import { Worksheet1Side } from './Worksheet1';
 import { Worksheet2 } from './Worksheet2';
@@ -19,6 +20,7 @@ export default function PlanStrongPage() {
   const [params] = useSearchParams();
   const editId = params.get('id');
   const { user } = useAuth();
+  const { isAdmin } = useRoleCheck();
   const [name, setName] = useState('Plan Strong Draft');
   const [userId, setUserId] = useState<string>('');
   const [data, setData] = useState<PlanStrongData>(defaultPlanStrongData());
@@ -94,6 +96,7 @@ export default function PlanStrongPage() {
             onValueChange={(v) => setUserId(v || '')}
             placeholder="Επιλέξτε χρήστη..."
             coachId={user?.id}
+            adminOwned={isAdmin?.()}
           />
         </div>
       </div>
