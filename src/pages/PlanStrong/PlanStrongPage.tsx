@@ -96,6 +96,7 @@ export default function PlanStrongPage() {
             onValueChange={(v) => setUserId(v || '')}
             placeholder="Επιλέξτε χρήστη..."
             coachId={user?.id}
+            adminOwned={isAdmin?.()}
           />
         </div>
       </div>
