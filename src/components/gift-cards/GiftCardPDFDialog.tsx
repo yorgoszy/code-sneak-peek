@@ -22,12 +22,15 @@ interface GiftCardPDFDialogProps {
   onClose: () => void;
 }
 
+const ICON_BLACK_URL = "https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/icon-black.png";
+
 export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
   giftCard,
   isOpen,
   onClose
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
+  const backRef = useRef<HTMLDivElement>(null);
   const [subscriptionName, setSubscriptionName] = useState<string | null>(null);
 
   useEffect(() => {
@@ -44,25 +47,25 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
   }, [giftCard.card_type, giftCard.subscription_type_id]);
 
   const handleDownloadPDF = async () => {
-    if (!cardRef.current) return;
-    
+    if (!cardRef.current || !backRef.current) return;
+
     try {
-      const canvas = await html2canvas(cardRef.current, {
-        scale: 2,
-        backgroundColor: null,
-        useCORS: true,
-      });
-      
-      const imgData = canvas.toDataURL('image/png');
+      const [frontCanvas, backCanvas] = await Promise.all([
+        html2canvas(cardRef.current, { scale: 2, backgroundColor: null, useCORS: true }),
+        html2canvas(backRef.current, { scale: 2, backgroundColor: null, useCORS: true }),
+      ]);
+
       const pdf = new jsPDF('l', 'mm', [90, 50]);
-      pdf.addImage(imgData, 'PNG', 0, 0, 90, 50);
+      pdf.addImage(frontCanvas.toDataURL('image/png'), 'PNG', 0, 0, 90, 50);
+      pdf.addPage([90, 50], 'l');
+      pdf.addImage(backCanvas.toDataURL('image/png'), 'PNG', 0, 0, 90, 50);
       pdf.save(`gift-card-${giftCard.code}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
     }
   };
 
-  const expiryDate = giftCard.expires_at 
+  const expiryDate = giftCard.expires_at
     ? new Date(giftCard.expires_at).toLocaleDateString('el-GR')
     : '';
 
@@ -76,12 +79,11 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           </DialogTitle>
         </DialogHeader>
 
-        {/* Gift Card Visual - matches landing page */}
+        {/* Front side */}
         <div
           ref={cardRef}
           className="relative w-full aspect-[9/5] bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 px-8 py-6 flex flex-col justify-between overflow-hidden shadow-2xl"
         >
-          {/* Top: logo */}
           <div className="flex items-start justify-between relative z-10">
             <img
               src="https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/hyperkids-logo-white.png"
@@ -100,14 +102,12 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
             </div>
           </div>
 
-          {/* Middle: code (XXXX-XXXX-XXXX) */}
           <div className="flex items-center justify-center relative z-10">
             <p className="text-white text-2xl md:text-3xl font-mono tracking-[0.4em] text-center">
               {giftCard.code}
             </p>
           </div>
 
-          {/* Bottom row: GIFT CARD label + tagline + QR */}
           <div className="flex items-end justify-between relative z-10">
             <div>
               <p className="text-white text-xs font-bold tracking-widest">GIFT CARD</p>
@@ -130,7 +130,26 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           </div>
         </div>
 
-        {/* Actions */}
+        {/* Back side */}
+        <div
+          ref={backRef}
+          className="relative w-full aspect-[9/5] px-8 py-6 flex items-end justify-between overflow-hidden shadow-2xl"
+          style={{ backgroundColor: '#b7b4ac' }}
+        >
+          <img
+            src={ICON_BLACK_URL}
+            alt="Hyperkids"
+            crossOrigin="anonymous"
+            className="h-12 w-12 object-contain"
+          />
+          <div className="text-right text-black text-[10px] leading-snug">
+            <p className="font-bold tracking-widest text-xs mb-1">HYPERKIDS</p>
+            <p>Αν. Γεωργίου 46, Θεσσαλονίκη 54627</p>
+            <p>Τηλ: +30 2310 529104</p>
+            <p>info@hyperkids.gr</p>
+          </div>
+        </div>
+
         <div className="flex gap-2 justify-end">
           <Button variant="outline" onClick={onClose} className="rounded-none">
             Κλείσιμο
