@@ -125,7 +125,7 @@ export const GiftCardPreviewFront = React.forwardRef<HTMLDivElement, GiftCardPre
       </div>
 
       <div className="flex items-center justify-center relative z-10">
-        <p className="text-white text-2xl md:text-3xl font-mono tracking-[0.4em] text-center">
+        <p className="text-white text-sm font-mono tracking-[0.3em] text-center">
           {giftCard.code}
         </p>
       </div>
