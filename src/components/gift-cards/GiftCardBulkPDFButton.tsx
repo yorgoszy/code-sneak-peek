@@ -1,12 +1,17 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { FileDown, Loader2 } from "lucide-react";
-import { QRCodeSVG } from 'qrcode.react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { hyperkidsLogoBlack } from "@/assets/hyperkidsLogoBlack";
+import {
+  createAmountImage,
+  createTrustMarkImage,
+  GiftCardPreviewBack,
+  GiftCardPreviewFront,
+  type PreviewImageAsset,
+} from './GiftCardPreviewCards';
 
 interface GiftCard {
   id: string;
@@ -26,6 +31,8 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
   const [generating, setGenerating] = useState(false);
   const [renderList, setRenderList] = useState<GiftCard[]>([]);
   const [subscriptionNames, setSubscriptionNames] = useState<Record<string, string>>({});
+  const [renderAssets, setRenderAssets] = useState<Record<string, { amountImage: PreviewImageAsset | null }>>({});
+  const [trustMarkImage, setTrustMarkImage] = useState<PreviewImageAsset | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Preload subscription names whenever we are about to render
