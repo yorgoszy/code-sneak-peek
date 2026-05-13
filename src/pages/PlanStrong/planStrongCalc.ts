@@ -17,14 +17,15 @@ export interface PlanStrongSideInput {
 
 export const ZONE_LABELS = [
   '50-60%1RM','61-70%1RM','71-80%1RM','81-90%1RM','91-94%1RM','>=95%1RM',
-  '105%','110%','115%','120%','130%','140%'
 ];
 
 // Display strings for the %1RM row (no decimals)
-export const ZONE_PCT_LABELS = ['55%','65%','75%','85%','93%','100%','105%','110%','115%','120%','130%','140%'];
+export const ZONE_PCT_LABELS = ['55%','65%','75%','85%','93%','100%'];
 
 // Intensity coefficients for HARI calc
-export const ZONE_COEF = [0.55, 0.65, 0.75, 0.85, 0.93, 1, 1.05, 1.10, 1.15, 1.20, 1.30, 1.40];
+export const ZONE_COEF = [0.55, 0.65, 0.75, 0.85, 0.93, 1];
+
+export const ZONE_COUNT = 6;
 
 export interface PlanStrongSideOutput {
   zoneKg: number[];
