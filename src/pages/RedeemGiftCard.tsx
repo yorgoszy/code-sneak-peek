@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -14,7 +14,7 @@ const RedeemGiftCard: React.FC = () => {
   const [params] = useSearchParams();
   const code = (params.get('code') || '').toUpperCase().trim();
   const navigate = useNavigate();
-  const { user, loading: authLoading, isAdmin, userProfile } = useAuth();
+  const { user, loading: authLoading, isAdmin, userProfile } = useAuthContext();
 
   const [loading, setLoading] = useState(true);
   const [card, setCard] = useState<any>(null);
