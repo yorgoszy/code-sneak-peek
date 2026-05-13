@@ -142,7 +142,7 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
         {/* Back side */}
         <div
           ref={backRef}
-          className="relative w-full aspect-[9/5] px-8 py-6 flex items-end justify-between overflow-hidden shadow-2xl"
+          className="relative w-full aspect-[9/5] px-5 py-4 flex items-end justify-between overflow-hidden shadow-2xl"
           style={{
             backgroundColor: '#d4d1c9',
             backgroundImage: `
@@ -155,8 +155,8 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           }}
         >
           <div
-            className="absolute right-6 text-black text-3xl leading-none"
-            style={{ fontFamily: "'UnifrakturMaguntia', cursive", top: '21px' }}
+            className="absolute right-5 text-black text-2xl leading-none"
+            style={{ fontFamily: "'UnifrakturMaguntia', cursive", top: '14px' }}
           >
             trust the process
           </div>
@@ -164,16 +164,16 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           <img
             src={hyperkidsLogoBlack}
             alt="Hyperkids"
-            className="absolute left-6 h-8 object-contain"
-            style={{ top: '21px' }}
+            className="absolute left-5 h-7 object-contain"
+            style={{ top: '14px' }}
           />
 
           <img
             src="https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/icon-black.png"
             alt="Icon"
             crossOrigin="anonymous"
-            className="absolute left-6 h-10 object-contain"
-            style={{ bottom: '21px' }}
+            className="absolute left-5 h-8 object-contain"
+            style={{ bottom: '14px' }}
           />
 
           <div className="ml-auto text-right text-black text-[10px] leading-snug">
