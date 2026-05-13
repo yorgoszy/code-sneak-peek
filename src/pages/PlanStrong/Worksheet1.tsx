@@ -227,30 +227,57 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
           &nbsp;|&nbsp; <strong>Total NL:</strong> {out.totalNL}
         </div>
 
-        <table className="border-collapse w-full">
-          <thead>
-            <tr>
-              <th className={headCell + " text-left"} colSpan={visibleIdx.length + 2}>MONTHLY NL PER INTENSITY ZONE</th>
-            </tr>
-            <tr>
-              <th className={headCell}></th>
-              {visibleIdx.map(i => <th key={i} className={headCell}>{ZONE_LABELS[i]}</th>)}
-              <th className={headCell}>TOTAL NL</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className={headCell}>NL</td>
-              {visibleIdx.map(i => <td key={i} className={cell + " bg-muted/30"}>{out.monthlyNlPerZone[i] || '-'}</td>)}
-              <td className={cell + " bg-muted/30 font-semibold"}>
-                {Math.round(visibleIdx.reduce((a, i) => a + (out.monthlyNlPerZone[i] || 0), 0))}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        {(() => {
+          const arr = side.mainPct && side.mainPct.length === 4 ? side.mainPct : [0, 0, 0, 0];
+          const monthly = Number(side.monthlyNL) || 0;
+          const nl = arr.map(p => 2 * Math.round((monthly * p) / 2));
+          return (
+          <table className="border-collapse w-full table-fixed">
+            <colgroup>
+              <col style={{ width: '80px' }} />
+              <col /><col /><col /><col />
+              <col style={{ width: '90px' }} />
+            </colgroup>
+            <thead>
+              <tr>
+                <th className={headCell + " text-left"} colSpan={6}>MAIN VARIANT</th>
+              </tr>
+              <tr>
+                <th className={headCell}></th>
+                <th className={headCell}>WEEK 1</th>
+                <th className={headCell}>WEEK 2</th>
+                <th className={headCell}>WEEK 3</th>
+                <th className={headCell}>WEEK 4</th>
+                <th className={headCell}>TOTAL NL</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className={headCell}>%</td>
+                {arr.map((p, i) => (
+                  <td key={i} className={cell + " p-0"}>
+                    <PctInput className={inp} value={p} placeholder="0%"
+                      onCommit={frac => {
+                        const next = [...arr]; next[i] = frac;
+                        set({ mainPct: next });
+                      }} />
+                  </td>
+                ))}
+                <td className={cell + " bg-muted/30"}>
+                  {Math.round(arr.reduce((a, b) => a + b, 0) * 100)}%
+                </td>
+              </tr>
+              <tr>
+                <td className={headCell}>NL</td>
+                {nl.map((n, i) => <td key={i} className={cell + " bg-muted/30"}>{n || '-'}</td>)}
+                <td className={cell + " bg-muted/30"}>{nl.reduce((a, b) => a + b, 0)}</td>
+              </tr>
+            </tbody>
+          </table>
+          );
+        })()}
 
         {([
-          { label: 'MAIN VARIANT (91-100% INTENSITY ZONE)', key: 'mainPct' as const },
           { label: 'VARIANT (91-100% INTENSITY ZONE)', key: 'v91Pct' as const },
           { label: 'VARIANT (81-90% INTENSITY ZONE)', key: 'v81Pct' as const },
           { label: 'VARIANT (71-80% INTENSITY ZONE)', key: 'v71Pct' as const },
