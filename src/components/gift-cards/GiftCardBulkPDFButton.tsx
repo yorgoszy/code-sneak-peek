@@ -63,6 +63,22 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
       return;
     }
     setGenerating(true);
+    const subscriptionIds = Array.from(
+      new Set(
+        giftCards
+          .filter(g => g.card_type === 'subscription' && g.subscription_type_id)
+          .map(g => g.subscription_type_id as string)
+      )
+    );
+    if (subscriptionIds.length > 0) {
+      const { data } = await supabase
+        .from('subscription_types')
+        .select('id, name')
+        .in('id', subscriptionIds);
+      const map: Record<string, string> = {};
+      (data || []).forEach((row: any) => { map[row.id] = row.name; });
+      setSubscriptionNames(map);
+    }
     const [trustImage, amountImages] = await Promise.all([
       createTrustMarkImage(),
       Promise.all(giftCards.map(async gc => [gc.id, await createAmountImage(gc.amount)] as const)),
@@ -154,7 +170,7 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
             position: 'fixed',
             left: '-10000px',
             top: 0,
-            width: '900px',
+            width: '480px',
             zIndex: -1,
           }}
         >
