@@ -164,12 +164,14 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
             <tr>
               <th className={headCell}></th>
               {ZONE_LABELS.map(l => <th key={l} className={headCell}>{l}</th>)}
+              <th className={headCell}>TOTAL</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td className={headCell}>KG</td>
               {out.zoneKg.map((k, i) => <td key={i} className={cell + " bg-muted/30"}>{k || '-'}</td>)}
+              <td className={cell + " bg-muted/30"}>-</td>
             </tr>
             <tr>
               <td className={headCell}>%1RM</td>
@@ -181,6 +183,7 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
                     }} />
                 </td>
               ))}
+              <td className={cell + " bg-muted/30"}>-</td>
             </tr>
             <tr>
               <td className={headCell}>% NL</td>
@@ -192,10 +195,23 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
                     }} />
                 </td>
               ))}
+              {(() => {
+                const sum = currentZonePct.reduce((a, b) => a + b, 0);
+                const pct = Math.round(sum * 100);
+                const remaining = 100 - pct;
+                return (
+                  <td className={cell + " bg-muted/30 font-semibold"}>
+                    {pct}% {remaining !== 0 && <span className="text-muted-foreground">({remaining > 0 ? `-${remaining}%` : `+${-remaining}%`})</span>}
+                  </td>
+                );
+              })()}
             </tr>
             <tr>
               <td className={headCell}>NL</td>
               {out.monthlyNlPerZone.map((n, i) => <td key={i} className={cell + " bg-muted/30"}>{n || '-'}</td>)}
+              <td className={cell + " bg-muted/30 font-semibold"}>
+                {out.monthlyNlPerZone.reduce((a, b) => a + b, 0).toFixed(2)}
+              </td>
             </tr>
           </tbody>
         </table>
