@@ -268,7 +268,7 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           <img
             src={hyperkidsLogoBlack}
             alt="Hyperkids"
-            className="absolute h-7 object-contain"
+            className="absolute h-8 object-contain"
             style={{ top: '25px', left: '25px' }}
           />
 
