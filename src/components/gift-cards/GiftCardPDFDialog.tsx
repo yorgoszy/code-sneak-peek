@@ -10,6 +10,39 @@ import { hyperkidsLogoBlack } from "@/assets/hyperkidsLogoBlack";
 import { hyperkidsLogoWhite } from "@/assets/hyperkidsLogoWhite";
 import { iconBlack } from "@/assets/iconBlack";
 
+const TRUST_MARK_TEXT = 'trust the process';
+
+const createTrustMarkImage = async () => {
+  const font = '24px UnifrakturMaguntia';
+  if (document.fonts) {
+    await document.fonts.load(font);
+    await document.fonts.ready;
+  }
+
+  const scale = 4;
+  const measureCanvas = document.createElement('canvas');
+  const measureCtx = measureCanvas.getContext('2d');
+  if (!measureCtx) return null;
+
+  measureCtx.font = font;
+  const metrics = measureCtx.measureText(TRUST_MARK_TEXT);
+  const width = Math.ceil(metrics.width + 2);
+  const height = 28;
+  const canvas = document.createElement('canvas');
+  canvas.width = width * scale;
+  canvas.height = height * scale;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+  ctx.scale(scale, scale);
+  ctx.font = font;
+  ctx.fillStyle = '#000000';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(TRUST_MARK_TEXT, 1, height / 2);
+
+  return { src: canvas.toDataURL('image/png'), width, height };
+};
+
 interface GiftCardPDFDialogProps {
   giftCard: {
     code: string;
@@ -34,6 +67,7 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
   const cardRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
   const [subscriptionName, setSubscriptionName] = useState<string | null>(null);
+  const [trustMarkImage, setTrustMarkImage] = useState<{ src: string; width: number; height: number } | null>(null);
 
   useEffect(() => {
     if (giftCard.card_type === 'subscription' && giftCard.subscription_type_id) {
@@ -48,12 +82,33 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
     }
   }, [giftCard.card_type, giftCard.subscription_type_id]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    let cancelled = false;
+    createTrustMarkImage().then(image => {
+      if (!cancelled) setTrustMarkImage(image);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen]);
+
   const handleDownloadPDF = async () => {
     const frontEl = cardRef.current;
     const backEl = backRef.current;
     if (!frontEl || !backEl) return;
 
     try {
+      if (!trustMarkImage) {
+        const image = await createTrustMarkImage();
+        setTrustMarkImage(image);
+        await new Promise(requestAnimationFrame);
+      }
+      if (document.fonts) {
+        await document.fonts.load('24px UnifrakturMaguntia');
+        await document.fonts.ready;
+      }
+
       const imgs = [
         ...Array.from(frontEl.querySelectorAll('img')),
         ...Array.from(backEl.querySelectorAll('img')),
@@ -71,14 +126,14 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
       await new Promise(r => setTimeout(r, 150));
 
       const [frontCanvas, backCanvas] = await Promise.all([
-        html2canvas(frontEl, { scale: 3, backgroundColor: null, useCORS: true, logging: false }),
-        html2canvas(backEl, { scale: 3, backgroundColor: null, useCORS: true, logging: false }),
+        html2canvas(frontEl, { scale: 3, backgroundColor: 'transparent', useCORS: true, logging: false }),
+        html2canvas(backEl, { scale: 3, backgroundColor: 'transparent', useCORS: true, logging: false }),
       ]);
 
       const pdf = new jsPDF('l', 'mm', [90, 50]);
-      pdf.addImage(frontCanvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 90, 50);
+      pdf.addImage(frontCanvas.toDataURL('image/png'), 'PNG', 0, 0, 90, 50);
       pdf.addPage([90, 50], 'l');
-      pdf.addImage(backCanvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 90, 50);
+      pdf.addImage(backCanvas.toDataURL('image/png'), 'PNG', 0, 0, 90, 50);
       pdf.save(`gift-card-${giftCard.code}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
@@ -171,12 +226,14 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
             `,
           }}
         >
-          <div
-            className="absolute right-5 text-black text-2xl leading-none"
-            style={{ fontFamily: "'UnifrakturMaguntia', cursive", top: '14px' }}
-          >
-            trust the process
-          </div>
+          {trustMarkImage && (
+            <img
+              src={trustMarkImage.src}
+              alt={TRUST_MARK_TEXT}
+              className="absolute right-5 object-contain"
+              style={{ top: '14px', width: `${trustMarkImage.width}px`, height: `${trustMarkImage.height}px` }}
+            />
+          )}
 
           <img
             src={hyperkidsLogoBlack}
