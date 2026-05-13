@@ -104,11 +104,6 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
             />
             <div className="text-right">
               <p className="text-white text-2xl font-bold leading-none">€{giftCard.amount || 0}</p>
-              <p className="text-[10px] mt-1" style={{ color: '#d4d1c9' }}>
-                {giftCard.card_type === 'subscription'
-                  ? `Συνδρομή${subscriptionName ? ` · ${subscriptionName}` : ''}`
-                  : 'Δωροκάρτα'}
-              </p>
             </div>
           </div>
 
@@ -123,6 +118,9 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
               <p className="text-white text-xs font-bold tracking-widest">GIFT CARD</p>
               {giftCard.sender_name && (
                 <p className="text-[10px] mt-2" style={{ color: '#d4d1c9' }}>Από: {giftCard.sender_name}</p>
+              )}
+              {giftCard.card_type === 'subscription' && subscriptionName && (
+                <p className="text-[10px] mt-1" style={{ color: '#d4d1c9' }}>Συνδρομή · {subscriptionName}</p>
               )}
               {expiryDate && (
                 <p className="text-[10px]" style={{ color: '#d4d1c9' }}>Ισχύει έως: {expiryDate}</p>
