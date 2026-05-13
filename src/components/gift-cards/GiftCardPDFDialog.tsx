@@ -6,7 +6,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { supabase } from "@/integrations/supabase/client";
-import hyperkidsLogoBlack from "@/assets/hyperkids-logo-black.png";
+import hyperkidsLogoBlack from "@/assets/hyperkids-logo-black.png?inline";
 
 interface GiftCardPDFDialogProps {
   giftCard: {
