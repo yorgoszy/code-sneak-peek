@@ -141,7 +141,7 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
             src={TTP_WHITE_URL}
             alt="Trust the process"
             crossOrigin="anonymous"
-            className="absolute top-4 right-6 h-[7.5rem] object-contain"
+            className="absolute top-4 right-6 h-[10rem] object-contain"
           />
 
           <img
