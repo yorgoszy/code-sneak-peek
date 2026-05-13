@@ -83,5 +83,3 @@ verify_jwt = false
 verify_jwt = false
 
 
-[functions.upload-icon-black]
-verify_jwt = false
