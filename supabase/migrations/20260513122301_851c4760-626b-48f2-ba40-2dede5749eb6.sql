@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Temp anon upload branding" ON storage.objects;
