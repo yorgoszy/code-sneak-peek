@@ -113,21 +113,21 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
       const cardEls = container.querySelectorAll<HTMLDivElement>('[data-bulk-card]');
       if (cardEls.length === 0) throw new Error('no cards rendered');
 
-      const pdf = new jsPDF('l', 'mm', [90, 50]);
+      const pdf = new jsPDF({ orientation: 'l', unit: 'mm', format: [90, 50], compress: true });
 
       for (let i = 0; i < cardEls.length; i++) {
         const el = cardEls[i];
         toast.loading(`Δημιουργία PDF... ${Math.floor(i / 2) + 1}/${giftCards.length}`, { id: toastId });
 
         const canvas = await html2canvas(el, {
-          scale: 3,
-          backgroundColor: 'transparent',
+          scale: 2,
+          backgroundColor: '#ffffff',
           useCORS: true,
           logging: false,
         });
-        const imgData = canvas.toDataURL('image/png');
+        const imgData = canvas.toDataURL('image/jpeg', 0.82);
         if (i > 0) pdf.addPage([90, 50], 'l');
-        pdf.addImage(imgData, 'PNG', 0, 0, 90, 50);
+        pdf.addImage(imgData, 'JPEG', 0, 0, 90, 50, undefined, 'FAST');
 
         // Yield to keep UI responsive
         await new Promise(r => setTimeout(r, 0));
