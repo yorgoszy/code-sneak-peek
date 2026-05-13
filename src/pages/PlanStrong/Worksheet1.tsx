@@ -328,7 +328,7 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
               <tr>
                 <td className={headCell}>NL</td>
                 {nl.map((n, i) => <td key={i} className={cell + " bg-muted/30"}>{n || '-'}</td>)}
-                <td className={cell + " bg-muted/30"}>{nl.reduce((a, b) => a + b, 0)}</td>
+                <td className={cell + " bg-muted/30"}>{nl.reduce((a, b) => a + b, 0)} / {targetNl}</td>
               </tr>
             </tbody>
           </table>
