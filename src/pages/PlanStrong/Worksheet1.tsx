@@ -216,7 +216,7 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
               <td className={headCell}>NL</td>
               {visibleIdx.map(i => <td key={i} className={cell + " bg-muted/30"}>{out.monthlyNlPerZone[i] || '-'}</td>)}
               <td className={cell + " bg-muted/30 font-semibold"}>
-                {visibleIdx.reduce((a, i) => a + (out.monthlyNlPerZone[i] || 0), 0).toFixed(2)}
+                {Math.round(visibleIdx.reduce((a, i) => a + (out.monthlyNlPerZone[i] || 0), 0))}
               </td>
             </tr>
           </tbody>
@@ -243,7 +243,7 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
               <td className={headCell}>NL</td>
               {visibleIdx.map(i => <td key={i} className={cell + " bg-muted/30"}>{out.monthlyNlPerZone[i] || '-'}</td>)}
               <td className={cell + " bg-muted/30 font-semibold"}>
-                {visibleIdx.reduce((a, i) => a + (out.monthlyNlPerZone[i] || 0), 0).toFixed(2)}
+                {Math.round(visibleIdx.reduce((a, i) => a + (out.monthlyNlPerZone[i] || 0), 0))}
               </td>
             </tr>
           </tbody>
@@ -260,7 +260,7 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
           const arr = (side as any)[v.key] && (side as any)[v.key].length === 4
             ? (side as any)[v.key] as number[]
             : [0, 0, 0, 0];
-          const nl = arr.map(p => +((Number(side.monthlyNL) || 0) * p).toFixed(2));
+          const nl = arr.map(p => Math.round((Number(side.monthlyNL) || 0) * p));
           return (
           <table key={v.key} className="border-collapse w-full table-fixed">
             <colgroup>
@@ -300,7 +300,7 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
               <tr>
                 <td className={headCell}>NL</td>
                 {nl.map((n, i) => <td key={i} className={cell + " bg-muted/30"}>{n || '-'}</td>)}
-                <td className={cell + " bg-muted/30"}>{nl.reduce((a, b) => a + b, 0).toFixed(2)}</td>
+                <td className={cell + " bg-muted/30"}>{nl.reduce((a, b) => a + b, 0)}</td>
               </tr>
             </tbody>
           </table>
