@@ -201,7 +201,7 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
         </table>
 
         <div className="text-xs">
-          <strong>ARI/HARI:</strong> {out.ari.toFixed(4)}
+          <strong>ARI/HARI:</strong> {(out.ari * 100).toFixed(2)}
           &nbsp;|&nbsp; <strong>Total NL:</strong> {out.totalNL}
         </div>
 
