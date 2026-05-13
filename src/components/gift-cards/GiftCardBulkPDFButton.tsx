@@ -157,10 +157,11 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
                 {/* Front */}
                 <div
                   data-bulk-card
-                  className="relative border border-gray-800 px-8 py-6 flex flex-col justify-between overflow-hidden"
+                  className="relative border border-gray-800 flex flex-col justify-between overflow-hidden"
                   style={{
-                    width: '900px',
-                    height: '500px',
+                    width: '540px',
+                    height: '300px',
+                    padding: '24px 32px',
                     backgroundColor: '#000',
                     backgroundImage: `
                       radial-gradient(ellipse at 20% 10%, rgba(180, 180, 180, 0.35) 0%, transparent 55%),
@@ -173,14 +174,13 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
                 >
                   <div className="flex items-start justify-between relative z-10">
                     <img
-                      src="https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/hyperkids-logo-white.png"
+                      src={hyperkidsLogoWhite}
                       alt="HYPERKIDS"
-                      style={{ height: '64px', objectFit: 'contain' }}
-                      crossOrigin="anonymous"
+                      style={{ height: '38px', objectFit: 'contain' }}
                     />
                     <div className="text-right">
-                      <p className="text-white font-bold leading-none" style={{ fontSize: '40px' }}>€{gc.amount || 0}</p>
-                      <p style={{ fontSize: '16px', marginTop: '6px', color: '#d4d1c9' }}>
+                      <p className="text-white font-bold leading-none" style={{ fontSize: '24px' }}>€{gc.amount || 0}</p>
+                      <p style={{ fontSize: '10px', marginTop: '4px', color: '#d4d1c9' }}>
                         {gc.card_type === 'subscription'
                           ? `Συνδρομή${subName ? ` · ${subName}` : ''}`
                           : 'Δωροκάρτα'}
@@ -189,25 +189,25 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
                   </div>
 
                   <div className="flex items-center justify-center relative z-10">
-                    <p className="text-white font-mono text-center" style={{ fontSize: '52px', letterSpacing: '0.4em' }}>
+                    <p className="text-white font-mono text-center" style={{ fontSize: '32px', letterSpacing: '0.4em' }}>
                       {gc.code}
                     </p>
                   </div>
 
                   <div className="flex items-end justify-between relative z-10">
                     <div>
-                      <p className="text-white font-bold tracking-widest" style={{ fontSize: '18px' }}>GIFT CARD</p>
+                      <p className="text-white font-bold tracking-widest" style={{ fontSize: '11px' }}>GIFT CARD</p>
                       {gc.sender_name && (
-                        <p style={{ fontSize: '16px', marginTop: '8px', color: '#d4d1c9' }}>Από: {gc.sender_name}</p>
+                        <p style={{ fontSize: '10px', marginTop: '5px', color: '#d4d1c9' }}>Από: {gc.sender_name}</p>
                       )}
                       {expiryDate && (
-                        <p style={{ fontSize: '16px', color: '#d4d1c9' }}>Ισχύει έως: {expiryDate}</p>
+                        <p style={{ fontSize: '10px', color: '#d4d1c9' }}>Ισχύει έως: {expiryDate}</p>
                       )}
                     </div>
-                    <div className="bg-white" style={{ padding: '8px' }}>
+                    <div className="bg-white" style={{ padding: '5px' }}>
                       <QRCodeSVG
                         value={`https://hyperkids.lovable.app/redeem?code=${gc.code}`}
-                        size={110}
+                        size={66}
                         level="M"
                       />
                     </div>
