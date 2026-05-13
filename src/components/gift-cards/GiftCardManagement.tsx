@@ -335,7 +335,8 @@ export const GiftCardManagement: React.FC = () => {
               </Button>
             </div>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       {/* Search */}
