@@ -33,6 +33,8 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
+  const offFrontRef = useRef<HTMLDivElement>(null);
+  const offBackRef = useRef<HTMLDivElement>(null);
   const [subscriptionName, setSubscriptionName] = useState<string | null>(null);
 
   useEffect(() => {
