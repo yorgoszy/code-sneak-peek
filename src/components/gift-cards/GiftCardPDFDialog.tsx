@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useMemo } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Download, Gift } from "lucide-react";
@@ -11,13 +11,6 @@ import { hyperkidsLogoWhite } from "@/assets/hyperkidsLogoWhite";
 import { iconBlack } from "@/assets/iconBlack";
 
 const TRUST_MARK_TEXT = 'trust the process';
-
-const CARD_WIDTH = 900;
-const CARD_HEIGHT = 500;
-const CARD_PADDING_X = 40;
-const CARD_PADDING_Y = 32;
-
-const px = (value: number) => `${value}px`;
 
 const createTrustMarkImage = async () => {
   const font = '24px UnifrakturMaguntia';
@@ -46,6 +39,33 @@ const createTrustMarkImage = async () => {
   ctx.fillStyle = '#000000';
   ctx.textBaseline = 'middle';
   ctx.fillText(TRUST_MARK_TEXT, 1, height / 2);
+
+  return { src: canvas.toDataURL('image/png'), width, height };
+};
+
+const createAmountImage = async (amount: number | null) => {
+  const text = `€${amount || 0}`;
+  const font = 'bold 24px "Robert Pro", "Roobert Pro", Arial, sans-serif';
+  if (document.fonts) {
+    await document.fonts.load(font);
+    await document.fonts.ready;
+  }
+
+  const scale = 4;
+  const width = 50;
+  const height = 32;
+  const canvas = document.createElement('canvas');
+  canvas.width = width * scale;
+  canvas.height = height * scale;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+  ctx.scale(scale, scale);
+  ctx.font = font;
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, width, height / 2);
 
   return { src: canvas.toDataURL('image/png'), width, height };
 };
