@@ -7,6 +7,8 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { supabase } from "@/integrations/supabase/client";
 import { hyperkidsLogoBlack } from "@/assets/hyperkidsLogoBlack";
+import { hyperkidsLogoWhite } from "@/assets/hyperkidsLogoWhite";
+import { iconBlack } from "@/assets/iconBlack";
 
 interface GiftCardPDFDialogProps {
   giftCard: {
@@ -96,10 +98,9 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
         >
           <div className="flex items-start justify-between relative z-10">
             <img
-              src="https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/hyperkids-logo-white.png"
+              src={hyperkidsLogoWhite}
               alt="HYPERKIDS"
               className="h-8 object-contain"
-              crossOrigin="anonymous"
             />
             <div className="text-right">
               <p className="text-white text-2xl font-bold leading-none">€{giftCard.amount || 0}</p>
@@ -169,9 +170,8 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           />
 
           <img
-            src="https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/icon-black.png"
+            src={iconBlack}
             alt="Icon"
-            crossOrigin="anonymous"
             className="absolute left-5 h-8 object-contain"
             style={{ bottom: '14px' }}
           />
