@@ -6,6 +6,7 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import hyperkidsLogoBlack from "@/assets/hyperkids-logo-black.png";
 
 interface GiftCard {
   id: string;
@@ -236,10 +237,9 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
                   </div>
 
                   <img
-                    src="https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/hyperkids-logo-white.png"
+                    src={hyperkidsLogoBlack}
                     alt="Hyperkids"
-                    crossOrigin="anonymous"
-                    className="absolute invert"
+                    className="absolute"
                     style={{ height: '64px', objectFit: 'contain', top: '40px', left: '40px' }}
                   />
 
