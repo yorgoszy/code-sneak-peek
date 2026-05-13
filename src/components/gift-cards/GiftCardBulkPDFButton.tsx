@@ -56,33 +56,58 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
     }
     setGenerating(true);
     setRenderList(giftCards);
-
-    // Wait for DOM to render and images/fonts to load
-    await new Promise(r => setTimeout(r, 800));
+    const toastId = toast.loading(`Προετοιμασία ${giftCards.length} gift cards...`);
 
     try {
+      // Wait for React to mount the offscreen tree
+      await new Promise(r => setTimeout(r, 300));
+
       const container = containerRef.current;
       if (!container) throw new Error('container missing');
+
+      // Wait for ALL images to be fully decoded
+      const imgs = Array.from(container.querySelectorAll('img'));
+      await Promise.all(
+        imgs.map(img =>
+          img.complete && img.naturalWidth > 0
+            ? Promise.resolve()
+            : new Promise<void>(resolve => {
+                img.onload = () => resolve();
+                img.onerror = () => resolve();
+              })
+        )
+      );
+      // Extra paint settle
+      await new Promise(r => setTimeout(r, 200));
 
       const cardEls = container.querySelectorAll<HTMLDivElement>('[data-bulk-card]');
       if (cardEls.length === 0) throw new Error('no cards rendered');
 
       const pdf = new jsPDF('l', 'mm', [90, 50]);
-      let first = true;
 
       for (let i = 0; i < cardEls.length; i++) {
         const el = cardEls[i];
-        const canvas = await html2canvas(el, { scale: 2, backgroundColor: null, useCORS: true });
-        if (!first) pdf.addPage([90, 50], 'l');
-        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 90, 50);
-        first = false;
+        toast.loading(`Δημιουργία PDF... ${Math.floor(i / 2) + 1}/${giftCards.length}`, { id: toastId });
+
+        const canvas = await html2canvas(el, {
+          scale: 1.5,
+          backgroundColor: null,
+          useCORS: true,
+          logging: false,
+        });
+        const imgData = canvas.toDataURL('image/jpeg', 0.85);
+        if (i > 0) pdf.addPage([90, 50], 'l');
+        pdf.addImage(imgData, 'JPEG', 0, 0, 90, 50);
+
+        // Yield to keep UI responsive
+        await new Promise(r => setTimeout(r, 0));
       }
 
       pdf.save(`gift-cards-${new Date().toISOString().slice(0, 10)}.pdf`);
-      toast.success(`Δημιουργήθηκε PDF με ${giftCards.length} gift cards`);
+      toast.success(`Δημιουργήθηκε PDF με ${giftCards.length} gift cards`, { id: toastId });
     } catch (err) {
       console.error('Bulk PDF error:', err);
-      toast.error('Σφάλμα δημιουργίας PDF');
+      toast.error('Σφάλμα δημιουργίας PDF', { id: toastId });
     } finally {
       setRenderList([]);
       setGenerating(false);
