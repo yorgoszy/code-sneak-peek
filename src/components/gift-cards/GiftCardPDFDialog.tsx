@@ -117,7 +117,7 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
             <div>
               <p className="text-white text-xs font-bold tracking-widest">GIFT CARD</p>
               {giftCard.sender_name && (
-                <p className="text-[10px] mt-2" style={{ color: '#d4d1c9' }}>Από: {giftCard.sender_name}</p>
+                <p className="text-[10px] mt-0.5" style={{ color: '#d4d1c9' }}>Από: {giftCard.sender_name}</p>
               )}
               {giftCard.card_type === 'subscription' && subscriptionName && (
                 <p className="text-[10px] mt-1" style={{ color: '#d4d1c9' }}>Συνδρομή · {subscriptionName}</p>
