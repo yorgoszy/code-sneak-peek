@@ -141,17 +141,17 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
             src={TTP_WHITE_URL}
             alt="Trust the process"
             crossOrigin="anonymous"
-            className="absolute top-2 right-2 h-[14rem] object-contain invert"
+            className="absolute top-1 right-6 h-[14rem] object-contain invert"
           />
 
           <img
-            src={ICON_BLACK_URL}
+            src="https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/hyperkids-logo-white.png"
             alt="Hyperkids"
             crossOrigin="anonymous"
-            className="h-12 w-12 object-contain"
+            className="absolute top-4 left-6 h-8 object-contain invert"
           />
-          <div className="text-right text-black text-[10px] leading-snug">
-            <p className="font-bold tracking-widest text-xs mb-1">HYPERKIDS</p>
+
+          <div className="ml-auto text-right text-black text-[10px] leading-snug">
             <p>Αν. Γεωργίου 46, Θεσσαλονίκη 54627</p>
             <p>Τηλ: +30 2310 529104</p>
             <p>info@hyperkids.gr</p>
