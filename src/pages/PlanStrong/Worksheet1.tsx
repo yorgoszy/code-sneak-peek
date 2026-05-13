@@ -225,8 +225,11 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
                 <td className={headCell}>%</td>
                 {side[v.key].map((p, i) => (
                   <td key={i} className={cell + " p-0"}>
-                    <Input className={inp} value={pctDisplay(p)} placeholder="0%"
-                      onChange={e => setWeek(v.key, i, e.target.value)} />
+                    <PctInput className={inp} value={p} placeholder="0%"
+                      onCommit={frac => {
+                        const arr = [...side[v.key]]; arr[i] = frac;
+                        set({ [v.key]: arr } as any);
+                      }} />
                   </td>
                 ))}
                 <td className={cell + " bg-muted/30"}>
