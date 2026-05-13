@@ -70,6 +70,7 @@ export function defaultSide(): PlanStrongSideInput {
     ps: '50',
     monthlyNL: '',
     zonePct: Array(12).fill(0),
+    zoneCoef: [...ZONE_COEF],
     mainPct: [0, 0, 0, 0],
     v91Pct: [0, 0, 0, 0],
     v81Pct: [0, 0, 0, 0],
