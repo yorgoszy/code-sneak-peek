@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Download, Gift } from "lucide-react";
@@ -11,6 +11,13 @@ import { hyperkidsLogoWhite } from "@/assets/hyperkidsLogoWhite";
 import { iconBlack } from "@/assets/iconBlack";
 
 const TRUST_MARK_TEXT = 'trust the process';
+
+const CARD_WIDTH = 900;
+const CARD_HEIGHT = 500;
+const CARD_PADDING_X = 40;
+const CARD_PADDING_Y = 32;
+
+const px = (value: number) => `${value}px`;
 
 const createTrustMarkImage = async () => {
   const font = '24px UnifrakturMaguntia';
@@ -93,46 +100,26 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
     };
   }, [isOpen]);
 
-  const handleDownloadPDF = async () => {
-    const frontEl = cardRef.current;
-    const backEl = backRef.current;
-    if (!frontEl || !backEl) return;
+  const frontCanvas = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = CARD_WIDTH;
+    canvas.height = CARD_HEIGHT;
+    return canvas;
+  }, []);
 
-    try {
-      if (document.fonts) {
-        await document.fonts.load('24px UnifrakturMaguntia');
-        await document.fonts.ready;
-      }
+  const backCanvas = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = CARD_WIDTH;
+    canvas.height = CARD_HEIGHT;
+    return canvas;
+  }, []);
 
-      const imgs = [
-        ...Array.from(frontEl.querySelectorAll('img')),
-        ...Array.from(backEl.querySelectorAll('img')),
-      ];
-      await Promise.all(
-        imgs.map(img =>
-          img.complete && img.naturalWidth > 0
-            ? Promise.resolve()
-            : new Promise<void>(resolve => {
-                img.onload = () => resolve();
-                img.onerror = () => resolve();
-              })
-        )
-      );
-      await new Promise(r => setTimeout(r, 150));
-
-      const [frontCanvas, backCanvas] = await Promise.all([
-        html2canvas(frontEl, { scale: 3, backgroundColor: 'transparent', useCORS: true, logging: false }),
-        html2canvas(backEl, { scale: 3, backgroundColor: 'transparent', useCORS: true, logging: false }),
-      ]);
-
-      const pdf = new jsPDF('l', 'mm', [90, 50]);
-      pdf.addImage(frontCanvas.toDataURL('image/png'), 'PNG', 0, 0, 90, 50);
-      pdf.addPage([90, 50], 'l');
-      pdf.addImage(backCanvas.toDataURL('image/png'), 'PNG', 0, 0, 90, 50);
-      pdf.save(`gift-card-${giftCard.code}.pdf`);
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-    }
+  const handleDownloadPDF = () => {
+    const pdf = new jsPDF('l', 'mm', [90, 50]);
+    pdf.addImage(frontCanvas.toDataURL('image/png'), 'PNG', 0, 0, 90, 50);
+    pdf.addPage([90, 50], 'l');
+    pdf.addImage(backCanvas.toDataURL('image/png'), 'PNG', 0, 0, 90, 50);
+    pdf.save(`gift-card-${giftCard.code}.pdf`);
   };
 
   const expiryDate = giftCard.expires_at
