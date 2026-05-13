@@ -47,6 +47,7 @@ export const GiftCardManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCard, setSelectedCard] = useState<GiftCard | null>(null);
   const [pdfCard, setPdfCard] = useState<GiftCard | null>(null);
+  const [editCard, setEditCard] = useState<GiftCard | null>(null);
 
   // Form state
   const [cardType, setCardType] = useState<'amount' | 'subscription'>('amount');
