@@ -177,7 +177,7 @@ export default function PlanStrongPage() {
         </TabsList>
 
         <TabsContent value="ws1" className="space-y-3">
-          <Worksheet1Side side={data.side} userId={userId} onChange={s => setData({ ...data, side: s })} />
+          <Worksheet1Side side={data.side} userId={userIds[0] || userId} onChange={s => setData({ ...data, side: s })} />
         </TabsContent>
 
         <TabsContent value="ws2" className="space-y-3">
