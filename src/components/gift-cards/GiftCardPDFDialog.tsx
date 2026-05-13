@@ -33,8 +33,6 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
-  const offFrontRef = useRef<HTMLDivElement>(null);
-  const offBackRef = useRef<HTMLDivElement>(null);
   const [subscriptionName, setSubscriptionName] = useState<string | null>(null);
 
   useEffect(() => {
@@ -51,12 +49,11 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
   }, [giftCard.card_type, giftCard.subscription_type_id]);
 
   const handleDownloadPDF = async () => {
-    const frontEl = offFrontRef.current || cardRef.current;
-    const backEl = offBackRef.current || backRef.current;
+    const frontEl = cardRef.current;
+    const backEl = backRef.current;
     if (!frontEl || !backEl) return;
 
     try {
-      // Wait for images to load in offscreen tree
       const imgs = [
         ...Array.from(frontEl.querySelectorAll('img')),
         ...Array.from(backEl.querySelectorAll('img')),
@@ -74,14 +71,14 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
       await new Promise(r => setTimeout(r, 150));
 
       const [frontCanvas, backCanvas] = await Promise.all([
-        html2canvas(frontEl, { scale: 1.5, backgroundColor: null, useCORS: true, logging: false }),
-        html2canvas(backEl, { scale: 1.5, backgroundColor: null, useCORS: true, logging: false }),
+        html2canvas(frontEl, { scale: 3, backgroundColor: null, useCORS: true, logging: false }),
+        html2canvas(backEl, { scale: 3, backgroundColor: null, useCORS: true, logging: false }),
       ]);
 
       const pdf = new jsPDF('l', 'mm', [90, 50]);
-      pdf.addImage(frontCanvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 90, 50);
+      pdf.addImage(frontCanvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 90, 50);
       pdf.addPage([90, 50], 'l');
-      pdf.addImage(backCanvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 90, 50);
+      pdf.addImage(backCanvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 90, 50);
       pdf.save(`gift-card-${giftCard.code}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
