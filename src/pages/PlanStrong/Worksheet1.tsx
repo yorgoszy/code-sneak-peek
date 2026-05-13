@@ -221,6 +221,28 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
           &nbsp;|&nbsp; <strong>Total NL:</strong> {out.totalNL}
         </div>
 
+        <table className="border-collapse w-full">
+          <thead>
+            <tr>
+              <th className={headCell + " text-left"} colSpan={8}>MONTHLY NL PER INTENSITY ZONE</th>
+            </tr>
+            <tr>
+              <th className={headCell}></th>
+              {ZONE_LABELS.map(l => <th key={l} className={headCell}>{l}</th>)}
+              <th className={headCell}>TOTAL NL</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td className={headCell}>NL</td>
+              {out.monthlyNlPerZone.map((n, i) => <td key={i} className={cell + " bg-muted/30"}>{n || '-'}</td>)}
+              <td className={cell + " bg-muted/30 font-semibold"}>
+                {out.monthlyNlPerZone.reduce((a, b) => a + b, 0).toFixed(2)}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
         {([
           { label: 'MAIN VARIANT (91-100% INTENSITY ZONE)', key: 'mainPct' as const },
           { label: 'VARIANT (91-100% INTENSITY ZONE)', key: 'v91Pct' as const },
