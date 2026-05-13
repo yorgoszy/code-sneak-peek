@@ -28,6 +28,20 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
   onClose
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
+  const [subscriptionName, setSubscriptionName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (giftCard.card_type === 'subscription' && giftCard.subscription_type_id) {
+      supabase
+        .from('subscription_types')
+        .select('name')
+        .eq('id', giftCard.subscription_type_id)
+        .maybeSingle()
+        .then(({ data }) => setSubscriptionName(data?.name || null));
+    } else {
+      setSubscriptionName(null);
+    }
+  }, [giftCard.card_type, giftCard.subscription_type_id]);
 
   const handleDownloadPDF = async () => {
     if (!cardRef.current) return;
