@@ -85,11 +85,11 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           style={{
             backgroundColor: '#000',
             backgroundImage: `
-              radial-gradient(ellipse at 20% 10%, rgba(120, 80, 200, 0.45) 0%, transparent 55%),
-              radial-gradient(ellipse at 85% 25%, rgba(0, 180, 220, 0.4) 0%, transparent 55%),
-              radial-gradient(ellipse at 70% 90%, rgba(220, 60, 140, 0.4) 0%, transparent 55%),
-              radial-gradient(ellipse at 10% 80%, rgba(40, 200, 160, 0.35) 0%, transparent 55%),
-              linear-gradient(135deg, #0a0a0f 0%, #1a1024 40%, #050510 100%)
+              radial-gradient(ellipse at 20% 10%, rgba(180, 180, 180, 0.35) 0%, transparent 55%),
+              radial-gradient(ellipse at 85% 25%, rgba(120, 120, 120, 0.3) 0%, transparent 55%),
+              radial-gradient(ellipse at 70% 90%, rgba(200, 200, 200, 0.25) 0%, transparent 55%),
+              radial-gradient(ellipse at 10% 80%, rgba(90, 90, 90, 0.3) 0%, transparent 55%),
+              linear-gradient(135deg, #0a0a0a 0%, #1f1f1f 40%, #050505 100%)
             `,
           }}
         >
