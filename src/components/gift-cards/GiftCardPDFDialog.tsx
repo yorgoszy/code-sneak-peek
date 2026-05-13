@@ -71,10 +71,10 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl rounded-none">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Gift className="h-5 w-5" />
+      <DialogContent className="max-w-lg rounded-none p-4">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="flex items-center gap-2 text-base">
+            <Gift className="h-4 w-4" />
             Gift Card Preview
           </DialogTitle>
         </DialogHeader>
@@ -82,7 +82,7 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
         {/* Front side */}
         <div
           ref={cardRef}
-          className="relative w-full aspect-[9/5] border border-gray-800 px-8 py-6 flex flex-col justify-between overflow-hidden shadow-2xl"
+          className="relative w-full aspect-[9/5] border border-gray-800 px-5 py-4 flex flex-col justify-between overflow-hidden shadow-2xl"
           style={{
             backgroundColor: '#000',
             backgroundImage: `
