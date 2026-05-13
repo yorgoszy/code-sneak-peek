@@ -120,12 +120,12 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
         toast.loading(`Δημιουργία PDF... ${Math.floor(i / 2) + 1}/${giftCards.length}`, { id: toastId });
 
         const canvas = await html2canvas(el, {
-          scale: 2,
+          scale: 1,
           backgroundColor: '#ffffff',
           useCORS: true,
           logging: false,
         });
-        const imgData = canvas.toDataURL('image/jpeg', 0.82);
+        const imgData = canvas.toDataURL('image/jpeg', 0.55);
         if (i > 0) pdf.addPage([90, 50], 'l');
         pdf.addImage(imgData, 'JPEG', 0, 0, 90, 50, undefined, 'FAST');
 
@@ -170,7 +170,7 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
             position: 'fixed',
             left: '-10000px',
             top: 0,
-            width: '480px',
+            width: '320px',
             zIndex: -1,
           }}
         >
