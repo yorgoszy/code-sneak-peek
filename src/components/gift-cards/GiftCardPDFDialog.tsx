@@ -136,8 +136,8 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           style={{ backgroundColor: '#b7b4ac' }}
         >
           <div
-            className="absolute top-4 right-6 text-black text-3xl leading-none"
-            style={{ fontFamily: "'UnifrakturMaguntia', cursive" }}
+            className="absolute right-6 text-black text-3xl leading-none"
+            style={{ fontFamily: "'UnifrakturMaguntia', cursive", top: '21px' }}
           >
             trust the process
           </div>
@@ -146,7 +146,15 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
             src="https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/hyperkids-logo-white.png"
             alt="Hyperkids"
             crossOrigin="anonymous"
-            className="absolute top-4 left-6 h-8 object-contain invert"
+            className="absolute left-6 h-8 object-contain invert"
+            style={{ top: '21px' }}
+          />
+
+          <img
+            src="https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/icon-black.png"
+            alt="Icon"
+            crossOrigin="anonymous"
+            className="absolute bottom-4 left-6 h-10 object-contain"
           />
 
           <div className="ml-auto text-right text-black text-[10px] leading-snug">
