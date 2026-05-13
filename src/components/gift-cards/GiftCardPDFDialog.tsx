@@ -181,8 +181,8 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
         <div
           ref={cardRef}
           className="relative w-full aspect-[9/5] border border-gray-800 flex flex-col justify-between overflow-hidden shadow-2xl"
-          style={{ padding: '25px' } as any}
           style={{
+            padding: '25px',
             backgroundColor: '#000',
             backgroundImage: `
               radial-gradient(ellipse at 20% 10%, rgba(180, 180, 180, 0.35) 0%, transparent 55%),
