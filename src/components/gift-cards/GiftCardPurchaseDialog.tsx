@@ -109,26 +109,21 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
   };
 
   const handlePurchase = async () => {
-    if (totalItems === 0 || !recipientEmail) return;
+    if (totalItems === 0) return;
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(recipientEmail)) {
-      toast.error('Παρακαλώ εισάγετε ένα έγκυρο email');
+    if (recipientEmail && !emailRegex.test(recipientEmail)) {
+      toast.error('Μη έγκυρο email παραλήπτη');
+      return;
+    }
+    if (buyerEmail && !emailRegex.test(buyerEmail)) {
+      toast.error('Μη έγκυρο email αποστολέα');
       return;
     }
 
     setPurchasing(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast.error('Πρέπει να συνδεθείτε πρώτα');
-        onClose();
-        window.location.href = '/auth?redirect=gift-card';
-        return;
-      }
-
       const items = getCartItems().map(item => ({
         subscription_type_id: item.type.id,
         subscription_type_name: item.type.name,
@@ -139,8 +134,10 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
       const { data, error } = await supabase.functions.invoke('create-gift-card-checkout', {
         body: {
           items,
-          recipient_email: recipientEmail,
-          // Backward compatibility for single item
+          recipient_email: recipientEmail || undefined,
+          buyer_email: buyerEmail || undefined,
+          sender_name: senderName || undefined,
+          recipient_name: recipientName || undefined,
           subscription_type_id: items[0]?.subscription_type_id,
           subscription_type_name: items[0]?.subscription_type_name,
           amount: totalPrice
