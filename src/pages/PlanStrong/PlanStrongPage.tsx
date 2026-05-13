@@ -25,6 +25,9 @@ export default function PlanStrongPage() {
   const { isAdmin } = useRoleCheck();
   const [name, setName] = useState('Plan Strong Draft');
   const [userId, setUserId] = useState<string>('');
+  const [userIds, setUserIds] = useState<string[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<Array<{ id: string; name: string; email: string; avatar_url: string | null; photo_url: string | null }>>([]);
+  const [pickerValue, setPickerValue] = useState<string>('');
   const [data, setData] = useState<PlanStrongData>(defaultPlanStrongData());
   const [saving, setSaving] = useState(false);
   const [draftId, setDraftId] = useState<string | null>(editId);
@@ -37,6 +40,7 @@ export default function PlanStrongPage() {
       if (row) {
         setName(row.name);
         setUserId(row.user_id);
+        setUserIds([row.user_id]);
         const def = defaultPlanStrongData();
         const loaded = (row.data as any) || {};
         setData({
@@ -49,22 +53,56 @@ export default function PlanStrongPage() {
     })();
   }, [editId]);
 
+  // Fetch profile data for chip display
+  useEffect(() => {
+    (async () => {
+      if (userIds.length === 0) { setSelectedUsers([]); return; }
+      const { data } = await supabase
+        .from('app_users')
+        .select('id, name, email, avatar_url, photo_url')
+        .in('id', userIds);
+      setSelectedUsers(data || []);
+    })();
+  }, [userIds]);
+
+  const addUser = (uid: string | null) => {
+    if (!uid) return;
+    setUserIds(prev => prev.includes(uid) ? prev : [...prev, uid]);
+    setPickerValue('');
+  };
+  const removeUser = (uid: string) => {
+    setUserIds(prev => prev.filter(id => id !== uid));
+  };
+
   const save = async (status: 'draft' | 'assigned') => {
-    if (!userId) { toast.error('Επίλεξε χρήστη'); return; }
+    if (userIds.length === 0) { toast.error('Επίλεξε τουλάχιστον έναν χρήστη'); return; }
     setSaving(true);
-    const payload = {
-      name, user_id: userId, status,
+    if (draftId) {
+      // Edit mode — single record update
+      const payload = {
+        name, user_id: userIds[0], status,
+        coach_id: user?.id, created_by: user?.id,
+        data: data as any,
+      };
+      const { error } = await supabase.from('plan_strong_drafts').update(payload).eq('id', draftId);
+      setSaving(false);
+      if (error) { toast.error(error.message); return; }
+      toast.success(status === 'draft' ? 'Αποθηκεύτηκε' : 'Ανατέθηκε');
+      return;
+    }
+    // New — one row per user
+    const rows = userIds.map(uid => ({
+      name, user_id: uid, status,
       coach_id: user?.id, created_by: user?.id,
       data: data as any,
-    };
-    const q = draftId
-      ? supabase.from('plan_strong_drafts').update(payload).eq('id', draftId).select().single()
-      : supabase.from('plan_strong_drafts').insert(payload).select().single();
-    const { data: row, error } = await q;
+    }));
+    const { data: inserted, error } = await supabase.from('plan_strong_drafts').insert(rows).select();
     setSaving(false);
     if (error) { toast.error(error.message); return; }
-    setDraftId(row.id);
-    toast.success(status === 'draft' ? 'Αποθηκεύτηκε ως πρόχειρο' : 'Ανατέθηκε στον χρήστη');
+    if (inserted && inserted.length === 1) setDraftId(inserted[0].id);
+    toast.success(status === 'draft'
+      ? `Αποθηκεύτηκαν ${rows.length} πρόχειρα`
+      : `Ανατέθηκε σε ${rows.length} χρήστες`);
   };
 
   return (
