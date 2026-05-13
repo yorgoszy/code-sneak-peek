@@ -92,7 +92,6 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           <div className="flex items-end justify-between relative z-10">
             <div>
               <p className="text-white text-xs font-bold tracking-widest">GIFT CARD</p>
-              <p className="text-gray-400 text-[11px] mt-1">Χάρισε αθλητισμό</p>
               {giftCard.sender_name && (
                 <p className="text-gray-500 text-[10px] mt-2">Από: {giftCard.sender_name}</p>
               )}
