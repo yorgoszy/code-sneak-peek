@@ -136,7 +136,12 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
             </tr>
             <tr>
               <td className={headCell}>%1RM</td>
-              {ZONE_PCT_LABELS.map((c, i) => <td key={i} className={cell + " text-muted-foreground"}>{c}</td>)}
+              {currentCoef.map((c, i) => (
+                <td key={i} className={cell + " p-0"}>
+                  <Input className={inp} value={c ? `${Math.round(c * 100)}%` : ''} placeholder="0%"
+                    onChange={e => setCoef(i, e.target.value)} />
+                </td>
+              ))}
             </tr>
             <tr>
               <td className={headCell}>% NL</td>
