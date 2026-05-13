@@ -243,7 +243,7 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
               <td className={headCell}>NL</td>
               {visibleIdx.map(i => <td key={i} className={cell + " bg-muted/30"}>{out.monthlyNlPerZone[i] || '-'}</td>)}
               <td className={cell + " bg-muted/30 font-semibold"}>
-                {visibleIdx.reduce((a, i) => a + (out.monthlyNlPerZone[i] || 0), 0).toFixed(2)}
+                {Math.round(visibleIdx.reduce((a, i) => a + (out.monthlyNlPerZone[i] || 0), 0))}
               </td>
             </tr>
           </tbody>
