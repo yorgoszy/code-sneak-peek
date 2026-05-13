@@ -7,6 +7,8 @@ import jsPDF from 'jspdf';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { hyperkidsLogoBlack } from "@/assets/hyperkidsLogoBlack";
+import { hyperkidsLogoWhite } from "@/assets/hyperkidsLogoWhite";
+import { iconBlack } from "@/assets/iconBlack";
 
 interface GiftCard {
   id: string;
@@ -88,20 +90,20 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
 
       for (let i = 0; i < cardEls.length; i++) {
         const el = cardEls[i];
-        toast.loading(`Δημιουργία PDF... ${Math.floor(i / 2) + 1}/${giftCards.length}`, { id: toastId });
+        if (i % 4 === 0) {
+          toast.loading(`Δημιουργία PDF... ${Math.floor(i / 2) + 1}/${giftCards.length}`, { id: toastId });
+          await new Promise(r => setTimeout(r, 0));
+        }
 
         const canvas = await html2canvas(el, {
-          scale: 1.5,
+          scale: 1,
           backgroundColor: null,
           useCORS: true,
           logging: false,
         });
-        const imgData = canvas.toDataURL('image/jpeg', 0.85);
+        const imgData = canvas.toDataURL('image/jpeg', 0.8);
         if (i > 0) pdf.addPage([90, 50], 'l');
         pdf.addImage(imgData, 'JPEG', 0, 0, 90, 50);
-
-        // Yield to keep UI responsive
-        await new Promise(r => setTimeout(r, 0));
       }
 
       pdf.save(`gift-cards-${new Date().toISOString().slice(0, 10)}.pdf`);
@@ -139,7 +141,7 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
             position: 'fixed',
             left: '-10000px',
             top: 0,
-            width: '900px',
+            width: '540px',
             zIndex: -1,
           }}
         >
@@ -155,10 +157,11 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
                 {/* Front */}
                 <div
                   data-bulk-card
-                  className="relative border border-gray-800 px-8 py-6 flex flex-col justify-between overflow-hidden"
+                  className="relative border border-gray-800 flex flex-col justify-between overflow-hidden"
                   style={{
-                    width: '900px',
-                    height: '500px',
+                    width: '540px',
+                    height: '300px',
+                    padding: '24px 32px',
                     backgroundColor: '#000',
                     backgroundImage: `
                       radial-gradient(ellipse at 20% 10%, rgba(180, 180, 180, 0.35) 0%, transparent 55%),
@@ -171,14 +174,13 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
                 >
                   <div className="flex items-start justify-between relative z-10">
                     <img
-                      src="https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/hyperkids-logo-white.png"
+                      src={hyperkidsLogoWhite}
                       alt="HYPERKIDS"
-                      style={{ height: '64px', objectFit: 'contain' }}
-                      crossOrigin="anonymous"
+                      style={{ height: '38px', objectFit: 'contain' }}
                     />
                     <div className="text-right">
-                      <p className="text-white font-bold leading-none" style={{ fontSize: '40px' }}>€{gc.amount || 0}</p>
-                      <p style={{ fontSize: '16px', marginTop: '6px', color: '#d4d1c9' }}>
+                      <p className="text-white font-bold leading-none" style={{ fontSize: '24px' }}>€{gc.amount || 0}</p>
+                      <p style={{ fontSize: '10px', marginTop: '4px', color: '#d4d1c9' }}>
                         {gc.card_type === 'subscription'
                           ? `Συνδρομή${subName ? ` · ${subName}` : ''}`
                           : 'Δωροκάρτα'}
@@ -187,25 +189,25 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
                   </div>
 
                   <div className="flex items-center justify-center relative z-10">
-                    <p className="text-white font-mono text-center" style={{ fontSize: '52px', letterSpacing: '0.4em' }}>
+                    <p className="text-white font-mono text-center" style={{ fontSize: '32px', letterSpacing: '0.4em' }}>
                       {gc.code}
                     </p>
                   </div>
 
                   <div className="flex items-end justify-between relative z-10">
                     <div>
-                      <p className="text-white font-bold tracking-widest" style={{ fontSize: '18px' }}>GIFT CARD</p>
+                      <p className="text-white font-bold tracking-widest" style={{ fontSize: '11px' }}>GIFT CARD</p>
                       {gc.sender_name && (
-                        <p style={{ fontSize: '16px', marginTop: '8px', color: '#d4d1c9' }}>Από: {gc.sender_name}</p>
+                        <p style={{ fontSize: '10px', marginTop: '5px', color: '#d4d1c9' }}>Από: {gc.sender_name}</p>
                       )}
                       {expiryDate && (
-                        <p style={{ fontSize: '16px', color: '#d4d1c9' }}>Ισχύει έως: {expiryDate}</p>
+                        <p style={{ fontSize: '10px', color: '#d4d1c9' }}>Ισχύει έως: {expiryDate}</p>
                       )}
                     </div>
-                    <div className="bg-white" style={{ padding: '8px' }}>
+                    <div className="bg-white" style={{ padding: '5px' }}>
                       <QRCodeSVG
                         value={`https://hyperkids.lovable.app/redeem?code=${gc.code}`}
-                        size={110}
+                        size={66}
                         level="M"
                       />
                     </div>
@@ -215,10 +217,11 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
                 {/* Back */}
                 <div
                   data-bulk-card
-                  className="relative px-8 py-6 overflow-hidden"
+                  className="relative overflow-hidden"
                   style={{
-                    width: '900px',
-                    height: '500px',
+                    width: '540px',
+                    height: '300px',
+                    padding: '24px 32px',
                     backgroundColor: '#d4d1c9',
                     backgroundImage: `
                       radial-gradient(ellipse at 20% 10%, rgba(60, 60, 60, 0.25) 0%, transparent 55%),
@@ -231,7 +234,7 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
                 >
                   <div
                     className="absolute text-black leading-none"
-                    style={{ fontFamily: "'UnifrakturMaguntia', cursive", fontSize: '56px', top: '40px', right: '40px' }}
+                    style={{ fontFamily: "'UnifrakturMaguntia', cursive", fontSize: '34px', top: '24px', right: '24px' }}
                   >
                     trust the process
                   </div>
@@ -240,18 +243,17 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
                     src={hyperkidsLogoBlack}
                     alt="Hyperkids"
                     className="absolute"
-                    style={{ height: '64px', objectFit: 'contain', top: '40px', left: '40px' }}
+                    style={{ height: '38px', objectFit: 'contain', top: '24px', left: '32px' }}
                   />
 
                   <img
-                    src="https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/icon-black.png"
+                    src={iconBlack}
                     alt="Icon"
-                    crossOrigin="anonymous"
                     className="absolute"
-                    style={{ height: '80px', objectFit: 'contain', bottom: '40px', left: '40px' }}
+                    style={{ height: '48px', objectFit: 'contain', bottom: '24px', left: '32px' }}
                   />
 
-                  <div className="absolute text-right text-black leading-snug" style={{ fontSize: '16px', bottom: '40px', right: '40px' }}>
+                  <div className="absolute text-right text-black leading-snug" style={{ fontSize: '10px', bottom: '24px', right: '24px' }}>
                     <p>Αν. Γεωργίου 46, Θεσσαλονίκη 54627</p>
                     <p>Τηλ: +30 2310 529104</p>
                     <p>info@hyperkids.gr</p>
