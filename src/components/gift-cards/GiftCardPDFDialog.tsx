@@ -38,8 +38,8 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
       });
       
       const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('l', 'mm', [210, 100]);
-      pdf.addImage(imgData, 'PNG', 0, 0, 210, 100);
+      const pdf = new jsPDF('l', 'mm', [90, 50]);
+      pdf.addImage(imgData, 'PNG', 0, 0, 90, 50);
       pdf.save(`gift-card-${giftCard.code}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
