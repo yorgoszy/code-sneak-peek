@@ -184,11 +184,11 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
             </tr>
             <tr>
               <td className={headCell}>% NL</td>
-              {side.zonePct.map((p, i) => (
+              {currentZonePct.map((p, i) => (
                 <td key={i} className={cell + " p-0"}>
                   <PctInput className={inp} value={p} placeholder="0%"
                     onCommit={frac => {
-                      const arr = [...side.zonePct]; arr[i] = frac; set({ zonePct: arr });
+                      const arr = [...currentZonePct]; arr[i] = frac; set({ zonePct: arr });
                     }} />
                 </td>
               ))}
