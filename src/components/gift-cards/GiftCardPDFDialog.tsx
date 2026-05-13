@@ -283,6 +283,12 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
             <p>Αν. Γεωργίου 46, Θεσσαλονίκη 54627</p>
             <p>Τηλ: +30 2310 529104</p>
             <p>info@hyperkids.gr</p>
+            <div className="flex items-center justify-end gap-1 mt-0.5">
+              <Instagram className="h-3 w-3" strokeWidth={2} />
+              <Music2 className="h-3 w-3" strokeWidth={2} />
+              <Globe className="h-3 w-3" strokeWidth={2} />
+              <span className="ml-1">hyperkids.gr</span>
+            </div>
           </div>
         </div>
 
