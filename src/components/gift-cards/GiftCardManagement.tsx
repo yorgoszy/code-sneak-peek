@@ -402,6 +402,9 @@ export const GiftCardManagement: React.FC = () => {
                       <Button variant="ghost" size="sm" onClick={() => setPdfCard(gc)} title="PDF">
                         <Eye className="h-4 w-4" />
                       </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setEditCard(gc)} title="Επεξεργασία">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                       {gc.status === 'active' && (
                         <Button variant="ghost" size="sm" onClick={() => handleCancel(gc.id)} title="Ακύρωση">
                           <Ban className="h-4 w-4 text-red-500" />
