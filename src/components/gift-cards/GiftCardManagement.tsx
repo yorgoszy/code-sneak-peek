@@ -8,11 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Gift, Plus, Copy, Eye, Ban, Search } from "lucide-react";
+import { Gift, Plus, Copy, Eye, Ban, Search, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { GiftCardPDFDialog } from './GiftCardPDFDialog';
+import { GiftCardEditDialog } from './GiftCardEditDialog';
 
 interface GiftCard {
   id: string;
@@ -46,6 +47,7 @@ export const GiftCardManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCard, setSelectedCard] = useState<GiftCard | null>(null);
   const [pdfCard, setPdfCard] = useState<GiftCard | null>(null);
+  const [editCard, setEditCard] = useState<GiftCard | null>(null);
 
   // Form state
   const [cardType, setCardType] = useState<'amount' | 'subscription'>('amount');
@@ -400,6 +402,9 @@ export const GiftCardManagement: React.FC = () => {
                       <Button variant="ghost" size="sm" onClick={() => setPdfCard(gc)} title="PDF">
                         <Eye className="h-4 w-4" />
                       </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setEditCard(gc)} title="Επεξεργασία">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                       {gc.status === 'active' && (
                         <Button variant="ghost" size="sm" onClick={() => handleCancel(gc.id)} title="Ακύρωση">
                           <Ban className="h-4 w-4 text-red-500" />
@@ -429,6 +434,15 @@ export const GiftCardManagement: React.FC = () => {
           onClose={() => setPdfCard(null)}
         />
       )}
+
+      {/* Edit Dialog */}
+      <GiftCardEditDialog
+        giftCard={editCard}
+        isOpen={!!editCard}
+        onClose={() => setEditCard(null)}
+        onSaved={fetchGiftCards}
+        subscriptionTypes={subscriptionTypes}
+      />
     </div>
   );
 };
