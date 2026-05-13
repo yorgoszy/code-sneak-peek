@@ -60,66 +60,56 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           </DialogTitle>
         </DialogHeader>
 
-        {/* Gift Card Visual */}
+        {/* Gift Card Visual - matches landing page */}
         <div
           ref={cardRef}
-          className="relative w-full aspect-[21/10] bg-gradient-to-br from-black via-gray-900 to-black p-8 flex flex-col justify-between overflow-hidden"
+          className="relative w-full aspect-[21/10] bg-black p-8 flex flex-col justify-between overflow-hidden"
         >
-          {/* Decorative elements */}
-          <div className="absolute top-0 right-0 w-40 h-40 bg-[#00ffba] opacity-10 rounded-full -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#cb8954] opacity-10 rounded-full translate-y-1/2 -translate-x-1/2" />
-
-          {/* Top section */}
+          {/* Top: logo */}
           <div className="flex items-start justify-between relative z-10">
-            <div>
-              <h2 className="text-[#00ffba] text-2xl font-bold tracking-wider">GIFT CARD</h2>
-              <p className="text-gray-400 text-xs mt-1">HYPERKIDS ATHLETICS</p>
-            </div>
+            <img
+              src="/hyperkids-logo-transparent.png"
+              alt="HYPERKIDS"
+              className="h-8 object-contain"
+              crossOrigin="anonymous"
+            />
             <div className="text-right">
-              <p className="text-white text-3xl font-bold">
-                €{giftCard.amount || 0}
-              </p>
-              <p className="text-gray-400 text-xs">
+              <p className="text-white text-2xl font-bold leading-none">€{giftCard.amount || 0}</p>
+              <p className="text-gray-400 text-[10px] mt-1">
                 {giftCard.card_type === 'subscription' ? 'Συνδρομή' : 'Δωροκάρτα'}
               </p>
             </div>
           </div>
 
-          {/* Middle - code & QR */}
-          <div className="flex items-center justify-between relative z-10">
-            <div>
-              <p className="text-gray-500 text-xs mb-1">ΚΩΔΙΚΟΣ</p>
-              <p className="text-white text-xl font-mono tracking-widest">{giftCard.code}</p>
-              {giftCard.recipient_name && (
-                <p className="text-[#cb8954] text-sm mt-2">
-                  Προς: {giftCard.recipient_name}
-                </p>
-              )}
-              {giftCard.message && (
-                <p className="text-gray-400 text-xs mt-1 max-w-[250px] italic">
-                  "{giftCard.message}"
-                </p>
-              )}
-            </div>
-            <div className="bg-white p-2 rounded-sm">
-              <QRCodeSVG
-                value={`https://hyperkids.lovable.app/redeem?code=${giftCard.code}`}
-                size={64}
-                level="M"
-              />
-            </div>
+          {/* Middle: code (XXXX-XXXX-XXXX) */}
+          <div className="flex items-center justify-center relative z-10">
+            <p className="text-white text-2xl md:text-3xl font-mono tracking-[0.4em] text-center">
+              {giftCard.code}
+            </p>
           </div>
 
-          {/* Bottom */}
+          {/* Bottom row: GIFT CARD label + tagline + QR */}
           <div className="flex items-end justify-between relative z-10">
             <div>
+              <p className="text-white text-xs font-bold tracking-widest">GIFT CARD</p>
+              <p className="text-gray-400 text-[11px] mt-1">Χάρισε αθλητισμό</p>
               {giftCard.sender_name && (
-                <p className="text-gray-500 text-xs">Από: {giftCard.sender_name}</p>
+                <p className="text-gray-500 text-[10px] mt-2">Από: {giftCard.sender_name}</p>
+              )}
+              {expiryDate && (
+                <p className="text-gray-500 text-[10px]">Ισχύει έως: {expiryDate}</p>
               )}
             </div>
-            {expiryDate && (
-              <p className="text-gray-500 text-xs">Ισχύει έως: {expiryDate}</p>
-            )}
+            <div className="flex flex-col items-end gap-1">
+              <div className="bg-white p-1.5">
+                <QRCodeSVG
+                  value={`https://hyperkids.lovable.app/redeem?code=${giftCard.code}`}
+                  size={56}
+                  level="M"
+                />
+              </div>
+              <p className="text-gray-500 text-[10px] italic" style={{ fontFamily: 'serif' }}>trust the process</p>
+            </div>
           </div>
         </div>
 
