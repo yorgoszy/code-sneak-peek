@@ -51,18 +51,37 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
   }, [giftCard.card_type, giftCard.subscription_type_id]);
 
   const handleDownloadPDF = async () => {
-    if (!cardRef.current || !backRef.current) return;
+    const frontEl = offFrontRef.current || cardRef.current;
+    const backEl = offBackRef.current || backRef.current;
+    if (!frontEl || !backEl) return;
 
     try {
+      // Wait for images to load in offscreen tree
+      const imgs = [
+        ...Array.from(frontEl.querySelectorAll('img')),
+        ...Array.from(backEl.querySelectorAll('img')),
+      ];
+      await Promise.all(
+        imgs.map(img =>
+          img.complete && img.naturalWidth > 0
+            ? Promise.resolve()
+            : new Promise<void>(resolve => {
+                img.onload = () => resolve();
+                img.onerror = () => resolve();
+              })
+        )
+      );
+      await new Promise(r => setTimeout(r, 150));
+
       const [frontCanvas, backCanvas] = await Promise.all([
-        html2canvas(cardRef.current, { scale: 2, backgroundColor: null, useCORS: true }),
-        html2canvas(backRef.current, { scale: 2, backgroundColor: null, useCORS: true }),
+        html2canvas(frontEl, { scale: 1.5, backgroundColor: null, useCORS: true, logging: false }),
+        html2canvas(backEl, { scale: 1.5, backgroundColor: null, useCORS: true, logging: false }),
       ]);
 
       const pdf = new jsPDF('l', 'mm', [90, 50]);
-      pdf.addImage(frontCanvas.toDataURL('image/png'), 'PNG', 0, 0, 90, 50);
+      pdf.addImage(frontCanvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 90, 50);
       pdf.addPage([90, 50], 'l');
-      pdf.addImage(backCanvas.toDataURL('image/png'), 'PNG', 0, 0, 90, 50);
+      pdf.addImage(backCanvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 90, 50);
       pdf.save(`gift-card-${giftCard.code}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
