@@ -262,7 +262,12 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
           </table>
         );})}
 
-        <table className="border-collapse w-full">
+        <table className="border-collapse w-full table-fixed">
+          <colgroup>
+            <col style={{ width: '80px' }} />
+            <col /><col /><col /><col />
+            <col style={{ width: '90px' }} />
+          </colgroup>
           <thead>
             <tr>
               <th className={headCell}></th>
