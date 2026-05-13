@@ -179,7 +179,33 @@ export default function PlanStrongPage() {
         </TabsList>
 
         <TabsContent value="ws1" className="space-y-3">
-          <Worksheet1Side side={data.side} userId={userIds[0] || userId} onChange={s => setData({ ...data, side: s })} />
+          {selectedUsers.length > 1 && (
+            <div className="flex items-center gap-2 flex-wrap border border-border p-2">
+              <span className="text-xs text-muted-foreground mr-1">Προβολή 1RM για:</span>
+              {selectedUsers.map(u => {
+                const active = previewUserId === u.id;
+                return (
+                  <button
+                    key={u.id}
+                    type="button"
+                    onClick={() => setPreviewUserId(u.id)}
+                    className={`flex items-center gap-2 px-2 py-1 border ${active ? 'border-foreground bg-foreground text-background' : 'border-border'} rounded-none`}
+                  >
+                    <Avatar className="h-5 w-5">
+                      {(u.photo_url || u.avatar_url) ? (
+                        <AvatarImage src={u.photo_url || u.avatar_url || ''} alt={u.name} />
+                      ) : null}
+                      <AvatarFallback className="text-[10px] bg-muted text-foreground">
+                        {u.name?.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-xs">{u.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          <Worksheet1Side side={data.side} userId={previewUserId || userIds[0] || userId} onChange={s => setData({ ...data, side: s })} />
         </TabsContent>
 
         <TabsContent value="ws2" className="space-y-3">
