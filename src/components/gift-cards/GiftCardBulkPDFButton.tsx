@@ -6,7 +6,7 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import hyperkidsLogoBlack from "@/assets/hyperkids-logo-black.png";
+import { hyperkidsLogoBlack } from "@/assets/hyperkidsLogoBlack";
 
 interface GiftCard {
   id: string;
