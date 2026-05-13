@@ -68,7 +68,7 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           {/* Top: logo */}
           <div className="flex items-start justify-between relative z-10">
             <img
-              src="/hyperkids-logo-transparent.png"
+              src="https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/hyperkids-logo-white.png"
               alt="HYPERKIDS"
               className="h-8 object-contain"
               crossOrigin="anonymous"
