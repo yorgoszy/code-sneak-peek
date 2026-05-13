@@ -107,7 +107,6 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
                   level="M"
                 />
               </div>
-              <p className="text-gray-500 text-[10px] italic" style={{ fontFamily: 'serif' }}>trust the process</p>
             </div>
           </div>
         </div>
