@@ -28,6 +28,38 @@ const parsePct = (raw: string): number => {
   return n / 100;
 };
 
+// Editable percent input — keeps a local string while focused so backspace works,
+// commits parsed fraction on blur / Enter.
+const PctInput: React.FC<{
+  value: number;
+  onCommit: (frac: number) => void;
+  className?: string;
+  placeholder?: string;
+}> = ({ value, onCommit, className, placeholder }) => {
+  const [focused, setFocused] = useState(false);
+  const [local, setLocal] = useState<string>('');
+  const display = focused ? local : pctDisplay(value);
+  return (
+    <Input
+      className={className}
+      value={display}
+      placeholder={placeholder}
+      onFocus={() => {
+        setLocal(value ? String(Math.round(value * 100)) : '');
+        setFocused(true);
+      }}
+      onChange={e => setLocal(e.target.value.replace('%', ''))}
+      onBlur={() => {
+        setFocused(false);
+        onCommit(parsePct(local));
+      }}
+      onKeyDown={e => {
+        if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+      }}
+    />
+  );
+};
+
 export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
   const out = computeSide(side);
   const set = (patch: Partial<PlanStrongSideInput>) => onChange({ ...side, ...patch });
