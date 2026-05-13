@@ -243,8 +243,9 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
         {/* Back side */}
         <div
           ref={backRef}
-          className="relative w-full aspect-[9/5] px-5 py-4 flex items-end justify-between overflow-hidden shadow-2xl"
+          className="relative w-full aspect-[9/5] flex items-end justify-between overflow-hidden shadow-2xl"
           style={{
+            padding: '25px',
             backgroundColor: '#d4d1c9',
             backgroundImage: `
               radial-gradient(ellipse at 20% 10%, rgba(60, 60, 60, 0.25) 0%, transparent 55%),
@@ -259,23 +260,23 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
             <img
               src={trustMarkImage.src}
               alt={TRUST_MARK_TEXT}
-              className="absolute right-5 object-contain"
-              style={{ top: '14px', width: `${trustMarkImage.width}px`, height: `${trustMarkImage.height}px` }}
+              className="absolute object-contain"
+              style={{ top: '25px', right: '25px', width: `${trustMarkImage.width}px`, height: `${trustMarkImage.height}px` }}
             />
           )}
 
           <img
             src={hyperkidsLogoBlack}
             alt="Hyperkids"
-            className="absolute left-5 h-7 object-contain"
-            style={{ top: '14px' }}
+            className="absolute h-7 object-contain"
+            style={{ top: '25px', left: '25px' }}
           />
 
           <img
             src={iconBlack}
             alt="Icon"
-            className="absolute left-5 h-8 object-contain"
-            style={{ bottom: '14px' }}
+            className="absolute h-8 object-contain"
+            style={{ bottom: '25px', left: '25px' }}
           />
 
           <div className="ml-auto text-right text-black text-[10px] leading-snug">
