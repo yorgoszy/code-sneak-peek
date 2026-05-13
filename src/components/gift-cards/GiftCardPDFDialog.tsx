@@ -33,6 +33,8 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
+  const offFrontRef = useRef<HTMLDivElement>(null);
+  const offBackRef = useRef<HTMLDivElement>(null);
   const [subscriptionName, setSubscriptionName] = useState<string | null>(null);
 
   useEffect(() => {
@@ -49,18 +51,37 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
   }, [giftCard.card_type, giftCard.subscription_type_id]);
 
   const handleDownloadPDF = async () => {
-    if (!cardRef.current || !backRef.current) return;
+    const frontEl = offFrontRef.current || cardRef.current;
+    const backEl = offBackRef.current || backRef.current;
+    if (!frontEl || !backEl) return;
 
     try {
+      // Wait for images to load in offscreen tree
+      const imgs = [
+        ...Array.from(frontEl.querySelectorAll('img')),
+        ...Array.from(backEl.querySelectorAll('img')),
+      ];
+      await Promise.all(
+        imgs.map(img =>
+          img.complete && img.naturalWidth > 0
+            ? Promise.resolve()
+            : new Promise<void>(resolve => {
+                img.onload = () => resolve();
+                img.onerror = () => resolve();
+              })
+        )
+      );
+      await new Promise(r => setTimeout(r, 150));
+
       const [frontCanvas, backCanvas] = await Promise.all([
-        html2canvas(cardRef.current, { scale: 2, backgroundColor: null, useCORS: true }),
-        html2canvas(backRef.current, { scale: 2, backgroundColor: null, useCORS: true }),
+        html2canvas(frontEl, { scale: 1.5, backgroundColor: null, useCORS: true, logging: false }),
+        html2canvas(backEl, { scale: 1.5, backgroundColor: null, useCORS: true, logging: false }),
       ]);
 
       const pdf = new jsPDF('l', 'mm', [90, 50]);
-      pdf.addImage(frontCanvas.toDataURL('image/png'), 'PNG', 0, 0, 90, 50);
+      pdf.addImage(frontCanvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 90, 50);
       pdf.addPage([90, 50], 'l');
-      pdf.addImage(backCanvas.toDataURL('image/png'), 'PNG', 0, 0, 90, 50);
+      pdf.addImage(backCanvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 90, 50);
       pdf.save(`gift-card-${giftCard.code}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
@@ -191,6 +212,69 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           </Button>
         </div>
       </DialogContent>
+
+      {/* Offscreen render at exact 9:5 pixel size for PDF capture (mirrors preview) */}
+      {isOpen && (
+        <div style={{ position: 'fixed', left: '-10000px', top: 0, zIndex: -1 }}>
+          <div
+            ref={offFrontRef}
+            className="relative border border-gray-800 flex flex-col justify-between overflow-hidden"
+            style={{
+              width: '900px', height: '500px', padding: '36px 45px',
+              backgroundColor: '#000',
+              backgroundImage: `radial-gradient(ellipse at 20% 10%, rgba(180,180,180,0.35) 0%, transparent 55%),radial-gradient(ellipse at 85% 25%, rgba(120,120,120,0.3) 0%, transparent 55%),radial-gradient(ellipse at 70% 90%, rgba(200,200,200,0.25) 0%, transparent 55%),radial-gradient(ellipse at 10% 80%, rgba(90,90,90,0.3) 0%, transparent 55%),linear-gradient(135deg, #0a0a0a 0%, #1f1f1f 40%, #050505 100%)`,
+            }}
+          >
+            <div className="flex items-start justify-between relative z-10">
+              <img src={hyperkidsLogoWhite} alt="HYPERKIDS" style={{ height: '64px', objectFit: 'contain' }} />
+              <div className="text-right">
+                <p className="text-white font-bold leading-none" style={{ fontSize: '44px' }}>€{giftCard.amount || 0}</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-center relative z-10">
+              <p className="text-white font-mono text-center" style={{ fontSize: '54px', letterSpacing: '0.4em' }}>{giftCard.code}</p>
+            </div>
+            <div className="flex items-end justify-between relative z-10">
+              <div>
+                <p className="text-white font-bold tracking-widest" style={{ fontSize: '20px' }}>GIFT CARD</p>
+                {giftCard.sender_name && (
+                  <p style={{ fontSize: '16px', marginTop: '3px', color: '#d4d1c9' }}>Από: {giftCard.sender_name}</p>
+                )}
+                {giftCard.card_type === 'subscription' && subscriptionName && (
+                  <p style={{ fontSize: '16px', color: '#d4d1c9' }}>Συνδρομή · {subscriptionName}</p>
+                )}
+                {expiryDate && (
+                  <p style={{ fontSize: '16px', color: '#d4d1c9' }}>Ισχύει έως: {expiryDate}</p>
+                )}
+              </div>
+              <div className="bg-white" style={{ padding: '8px' }}>
+                <QRCodeSVG value={`https://hyperkids.lovable.app/redeem?code=${giftCard.code}`} size={110} level="M" />
+              </div>
+            </div>
+          </div>
+
+          <div
+            ref={offBackRef}
+            className="relative overflow-hidden"
+            style={{
+              width: '900px', height: '500px', padding: '36px 45px',
+              backgroundColor: '#d4d1c9',
+              backgroundImage: `radial-gradient(ellipse at 20% 10%, rgba(60,60,60,0.25) 0%, transparent 55%),radial-gradient(ellipse at 85% 25%, rgba(60,60,60,0.18) 0%, transparent 55%),radial-gradient(ellipse at 70% 90%, rgba(60,60,60,0.22) 0%, transparent 55%),radial-gradient(ellipse at 10% 80%, rgba(60,60,60,0.15) 0%, transparent 55%),linear-gradient(135deg, #e0ddd5 0%, #c8c5bd 50%, #b0ada5 100%)`,
+            }}
+          >
+            <div className="absolute text-black leading-none" style={{ fontFamily: "'UnifrakturMaguntia', cursive", fontSize: '52px', top: '36px', right: '45px' }}>
+              trust the process
+            </div>
+            <img src={hyperkidsLogoBlack} alt="Hyperkids" className="absolute" style={{ height: '60px', objectFit: 'contain', top: '36px', left: '45px' }} />
+            <img src={iconBlack} alt="Icon" className="absolute" style={{ height: '70px', objectFit: 'contain', bottom: '36px', left: '45px' }} />
+            <div className="absolute text-right text-black leading-snug" style={{ fontSize: '16px', bottom: '36px', right: '45px' }}>
+              <p>Αν. Γεωργίου 46, Θεσσαλονίκη 54627</p>
+              <p>Τηλ: +30 2310 529104</p>
+              <p>info@hyperkids.gr</p>
+            </div>
+          </div>
+        </div>
+      )}
     </Dialog>
   );
 };
