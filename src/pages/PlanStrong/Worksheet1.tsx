@@ -28,6 +28,38 @@ const parsePct = (raw: string): number => {
   return n / 100;
 };
 
+// Editable percent input — keeps a local string while focused so backspace works,
+// commits parsed fraction on blur / Enter.
+const PctInput: React.FC<{
+  value: number;
+  onCommit: (frac: number) => void;
+  className?: string;
+  placeholder?: string;
+}> = ({ value, onCommit, className, placeholder }) => {
+  const [focused, setFocused] = useState(false);
+  const [local, setLocal] = useState<string>('');
+  const display = focused ? local : pctDisplay(value);
+  return (
+    <Input
+      className={className}
+      value={display}
+      placeholder={placeholder}
+      onFocus={() => {
+        setLocal(value ? String(Math.round(value * 100)) : '');
+        setFocused(true);
+      }}
+      onChange={e => setLocal(e.target.value.replace('%', ''))}
+      onBlur={() => {
+        setFocused(false);
+        onCommit(parsePct(local));
+      }}
+      onKeyDown={e => {
+        if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+      }}
+    />
+  );
+};
+
 export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
   const out = computeSide(side);
   const set = (patch: Partial<PlanStrongSideInput>) => onChange({ ...side, ...patch });
@@ -138,8 +170,10 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
               <td className={headCell}>%1RM</td>
               {currentCoef.map((c, i) => (
                 <td key={i} className={cell + " p-0"}>
-                  <Input className={inp} value={c ? `${Math.round(c * 100)}%` : ''} placeholder="0%"
-                    onChange={e => setCoef(i, e.target.value)} />
+                  <PctInput className={inp} value={c} placeholder="0%"
+                    onCommit={frac => {
+                      const arr = [...currentCoef]; arr[i] = frac; set({ zoneCoef: arr });
+                    }} />
                 </td>
               ))}
             </tr>
@@ -147,8 +181,10 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
               <td className={headCell}>% NL</td>
               {side.zonePct.map((p, i) => (
                 <td key={i} className={cell + " p-0"}>
-                  <Input className={inp} value={pctDisplay(p)} placeholder="0%"
-                    onChange={e => setZone(i, e.target.value)} />
+                  <PctInput className={inp} value={p} placeholder="0%"
+                    onCommit={frac => {
+                      const arr = [...side.zonePct]; arr[i] = frac; set({ zonePct: arr });
+                    }} />
                 </td>
               ))}
             </tr>
@@ -189,8 +225,11 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
                 <td className={headCell}>%</td>
                 {side[v.key].map((p, i) => (
                   <td key={i} className={cell + " p-0"}>
-                    <Input className={inp} value={pctDisplay(p)} placeholder="0%"
-                      onChange={e => setWeek(v.key, i, e.target.value)} />
+                    <PctInput className={inp} value={p} placeholder="0%"
+                      onCommit={frac => {
+                        const arr = [...side[v.key]]; arr[i] = frac;
+                        set({ [v.key]: arr } as any);
+                      }} />
                   </td>
                 ))}
                 <td className={cell + " bg-muted/30"}>
