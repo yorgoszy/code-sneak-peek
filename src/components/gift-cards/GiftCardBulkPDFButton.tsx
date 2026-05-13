@@ -141,7 +141,7 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
             position: 'fixed',
             left: '-10000px',
             top: 0,
-            width: '900px',
+            width: '540px',
             zIndex: -1,
           }}
         >
