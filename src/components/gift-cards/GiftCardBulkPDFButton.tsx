@@ -217,10 +217,11 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
                 {/* Back */}
                 <div
                   data-bulk-card
-                  className="relative px-8 py-6 overflow-hidden"
+                  className="relative overflow-hidden"
                   style={{
-                    width: '900px',
-                    height: '500px',
+                    width: '540px',
+                    height: '300px',
+                    padding: '24px 32px',
                     backgroundColor: '#d4d1c9',
                     backgroundImage: `
                       radial-gradient(ellipse at 20% 10%, rgba(60, 60, 60, 0.25) 0%, transparent 55%),
@@ -233,7 +234,7 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
                 >
                   <div
                     className="absolute text-black leading-none"
-                    style={{ fontFamily: "'UnifrakturMaguntia', cursive", fontSize: '56px', top: '40px', right: '40px' }}
+                    style={{ fontFamily: "'UnifrakturMaguntia', cursive", fontSize: '34px', top: '24px', right: '24px' }}
                   >
                     trust the process
                   </div>
@@ -242,18 +243,17 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
                     src={hyperkidsLogoBlack}
                     alt="Hyperkids"
                     className="absolute"
-                    style={{ height: '64px', objectFit: 'contain', top: '40px', left: '40px' }}
+                    style={{ height: '38px', objectFit: 'contain', top: '24px', left: '32px' }}
                   />
 
                   <img
-                    src="https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/icon-black.png"
+                    src={iconBlack}
                     alt="Icon"
-                    crossOrigin="anonymous"
                     className="absolute"
-                    style={{ height: '80px', objectFit: 'contain', bottom: '40px', left: '40px' }}
+                    style={{ height: '48px', objectFit: 'contain', bottom: '24px', left: '32px' }}
                   />
 
-                  <div className="absolute text-right text-black leading-snug" style={{ fontSize: '16px', bottom: '40px', right: '40px' }}>
+                  <div className="absolute text-right text-black leading-snug" style={{ fontSize: '10px', bottom: '24px', right: '24px' }}>
                     <p>Αν. Γεωργίου 46, Θεσσαλονίκη 54627</p>
                     <p>Τηλ: +30 2310 529104</p>
                     <p>info@hyperkids.gr</p>
