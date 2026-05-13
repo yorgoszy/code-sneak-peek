@@ -66,11 +66,6 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
       const container = containerRef.current;
       if (!container) throw new Error('container missing');
 
-      // Wait for custom fonts (UnifrakturMaguntia) before rasterizing
-      if ((document as any).fonts?.ready) {
-        await (document as any).fonts.ready;
-      }
-
       // Wait for ALL images to be fully decoded
       const imgs = Array.from(container.querySelectorAll('img'));
       await Promise.all(
@@ -84,7 +79,7 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
         )
       );
       // Extra paint settle
-      await new Promise(r => setTimeout(r, 250));
+      await new Promise(r => setTimeout(r, 200));
 
       const cardEls = container.querySelectorAll<HTMLDivElement>('[data-bulk-card]');
       if (cardEls.length === 0) throw new Error('no cards rendered');
@@ -183,6 +178,11 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
                     />
                     <div className="text-right">
                       <p className="text-white font-bold leading-none" style={{ fontSize: '40px' }}>€{gc.amount || 0}</p>
+                      <p style={{ fontSize: '16px', marginTop: '6px', color: '#d4d1c9' }}>
+                        {gc.card_type === 'subscription'
+                          ? `Συνδρομή${subName ? ` · ${subName}` : ''}`
+                          : 'Δωροκάρτα'}
+                      </p>
                     </div>
                   </div>
 
@@ -196,10 +196,7 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
                     <div>
                       <p className="text-white font-bold tracking-widest" style={{ fontSize: '18px' }}>GIFT CARD</p>
                       {gc.sender_name && (
-                        <p style={{ fontSize: '16px', marginTop: '6px', color: '#d4d1c9' }}>Από: {gc.sender_name}</p>
-                      )}
-                      {gc.card_type === 'subscription' && subName && (
-                        <p style={{ fontSize: '16px', marginTop: '3px', color: '#d4d1c9' }}>Συνδρομή · {subName}</p>
+                        <p style={{ fontSize: '16px', marginTop: '8px', color: '#d4d1c9' }}>Από: {gc.sender_name}</p>
                       )}
                       {expiryDate && (
                         <p style={{ fontSize: '16px', color: '#d4d1c9' }}>Ισχύει έως: {expiryDate}</p>
