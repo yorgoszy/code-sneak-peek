@@ -1,16 +1,18 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Download, Gift } from "lucide-react";
 import { QRCodeSVG } from 'qrcode.react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { supabase } from "@/integrations/supabase/client";
 
 interface GiftCardPDFDialogProps {
   giftCard: {
     code: string;
     card_type: string;
     amount: number | null;
+    subscription_type_id?: string | null;
     recipient_name: string | null;
     sender_name: string | null;
     message: string | null;
@@ -26,6 +28,20 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
   onClose
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
+  const [subscriptionName, setSubscriptionName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (giftCard.card_type === 'subscription' && giftCard.subscription_type_id) {
+      supabase
+        .from('subscription_types')
+        .select('name')
+        .eq('id', giftCard.subscription_type_id)
+        .maybeSingle()
+        .then(({ data }) => setSubscriptionName(data?.name || null));
+    } else {
+      setSubscriptionName(null);
+    }
+  }, [giftCard.card_type, giftCard.subscription_type_id]);
 
   const handleDownloadPDF = async () => {
     if (!cardRef.current) return;
@@ -63,7 +79,7 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
         {/* Gift Card Visual - matches landing page */}
         <div
           ref={cardRef}
-          className="relative w-full aspect-[9/5] bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 p-4 flex flex-col justify-between overflow-hidden shadow-2xl"
+          className="relative w-full aspect-[9/5] bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 px-8 py-6 flex flex-col justify-between overflow-hidden shadow-2xl"
         >
           {/* Top: logo */}
           <div className="flex items-start justify-between relative z-10">
@@ -78,6 +94,9 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
               <p className="text-gray-400 text-[10px] mt-1">
                 {giftCard.card_type === 'subscription' ? 'Συνδρομή' : 'Δωροκάρτα'}
               </p>
+              {giftCard.card_type === 'subscription' && subscriptionName && (
+                <p className="text-gray-300 text-[10px] mt-0.5">{subscriptionName}</p>
+              )}
             </div>
           </div>
 
