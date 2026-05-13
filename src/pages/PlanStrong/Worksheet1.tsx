@@ -200,12 +200,19 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
           &nbsp;|&nbsp; <strong>Total NL:</strong> {out.totalNL}
         </div>
 
-        {[
-          { label: 'MAIN VARIANT (91-100% INTENSITY ZONE)', key: 'mainPct' as const, nl: out.mainNlPerWeek },
-          { label: 'VARIANT (91-100% INTENSITY ZONE)', key: 'v91Pct' as const, nl: out.v91NlPerWeek },
-          { label: 'VARIANT (81-90% INTENSITY ZONE)', key: 'v81Pct' as const,
-            nl: side.v81Pct.map(p => +((Number(side.monthlyNL) || 0) * p).toFixed(2)) },
-        ].map(v => (
+        {([
+          { label: 'MAIN VARIANT (91-100% INTENSITY ZONE)', key: 'mainPct' as const },
+          { label: 'VARIANT (91-100% INTENSITY ZONE)', key: 'v91Pct' as const },
+          { label: 'VARIANT (81-90% INTENSITY ZONE)', key: 'v81Pct' as const },
+          { label: 'VARIANT (71-80% INTENSITY ZONE)', key: 'v71Pct' as const },
+          { label: 'VARIANT (61-70% INTENSITY ZONE)', key: 'v61Pct' as const },
+          { label: 'VARIANT (50-60% INTENSITY ZONE)', key: 'v50Pct' as const },
+        ]).map(v => {
+          const arr = (side as any)[v.key] && (side as any)[v.key].length === 4
+            ? (side as any)[v.key] as number[]
+            : [0, 0, 0, 0];
+          const nl = arr.map(p => +((Number(side.monthlyNL) || 0) * p).toFixed(2));
+          return (
           <table key={v.key} className="border-collapse w-full">
             <thead>
               <tr>
@@ -223,27 +230,27 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
             <tbody>
               <tr>
                 <td className={headCell}>%</td>
-                {side[v.key].map((p, i) => (
+                {arr.map((p, i) => (
                   <td key={i} className={cell + " p-0"}>
                     <PctInput className={inp} value={p} placeholder="0%"
                       onCommit={frac => {
-                        const arr = [...side[v.key]]; arr[i] = frac;
-                        set({ [v.key]: arr } as any);
+                        const next = [...arr]; next[i] = frac;
+                        set({ [v.key]: next } as any);
                       }} />
                   </td>
                 ))}
                 <td className={cell + " bg-muted/30"}>
-                  {Math.round(side[v.key].reduce((a, b) => a + b, 0) * 100)}%
+                  {Math.round(arr.reduce((a, b) => a + b, 0) * 100)}%
                 </td>
               </tr>
               <tr>
                 <td className={headCell}>NL</td>
-                {v.nl.map((n, i) => <td key={i} className={cell + " bg-muted/30"}>{n || '-'}</td>)}
-                <td className={cell + " bg-muted/30"}>{v.nl.reduce((a, b) => a + b, 0).toFixed(2)}</td>
+                {nl.map((n, i) => <td key={i} className={cell + " bg-muted/30"}>{n || '-'}</td>)}
+                <td className={cell + " bg-muted/30"}>{nl.reduce((a, b) => a + b, 0).toFixed(2)}</td>
               </tr>
             </tbody>
           </table>
-        ))}
+        );})}
 
         <table className="border-collapse w-full">
           <thead>
