@@ -71,10 +71,10 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl rounded-none">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Gift className="h-5 w-5" />
+      <DialogContent className="max-w-lg rounded-none p-4">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="flex items-center gap-2 text-base">
+            <Gift className="h-4 w-4" />
             Gift Card Preview
           </DialogTitle>
         </DialogHeader>
@@ -82,7 +82,7 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
         {/* Front side */}
         <div
           ref={cardRef}
-          className="relative w-full aspect-[9/5] border border-gray-800 px-8 py-6 flex flex-col justify-between overflow-hidden shadow-2xl"
+          className="relative w-full aspect-[9/5] border border-gray-800 px-5 py-4 flex flex-col justify-between overflow-hidden shadow-2xl"
           style={{
             backgroundColor: '#000',
             backgroundImage: `
@@ -142,7 +142,7 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
         {/* Back side */}
         <div
           ref={backRef}
-          className="relative w-full aspect-[9/5] px-8 py-6 flex items-end justify-between overflow-hidden shadow-2xl"
+          className="relative w-full aspect-[9/5] px-5 py-4 flex items-end justify-between overflow-hidden shadow-2xl"
           style={{
             backgroundColor: '#d4d1c9',
             backgroundImage: `
@@ -155,8 +155,8 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           }}
         >
           <div
-            className="absolute right-6 text-black text-3xl leading-none"
-            style={{ fontFamily: "'UnifrakturMaguntia', cursive", top: '21px' }}
+            className="absolute right-5 text-black text-2xl leading-none"
+            style={{ fontFamily: "'UnifrakturMaguntia', cursive", top: '14px' }}
           >
             trust the process
           </div>
@@ -164,16 +164,16 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           <img
             src={hyperkidsLogoBlack}
             alt="Hyperkids"
-            className="absolute left-6 h-8 object-contain"
-            style={{ top: '21px' }}
+            className="absolute left-5 h-7 object-contain"
+            style={{ top: '14px' }}
           />
 
           <img
             src="https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/icon-black.png"
             alt="Icon"
             crossOrigin="anonymous"
-            className="absolute left-6 h-10 object-contain"
-            style={{ bottom: '21px' }}
+            className="absolute left-5 h-8 object-contain"
+            style={{ bottom: '14px' }}
           />
 
           <div className="ml-auto text-right text-black text-[10px] leading-snug">
