@@ -63,6 +63,7 @@ const PublicReportAbuseThankYou = React.lazy(() => import("@/pages/PublicReportA
 import FederationAbuseReports from "@/pages/Dashboard/FederationAbuseReports";
 import ProfileEdit from "@/pages/ProfileEdit";
 import InstallPWA from "@/pages/InstallPWA";
+import RedeemGiftCard from "@/pages/RedeemGiftCard";
 import CalendarWidget from "@/pages/CalendarWidget";
 import InstallCalendarWidget from "@/pages/InstallCalendarWidget";
 import SubscriptionsWidget from "@/pages/SubscriptionsWidget";
@@ -168,6 +169,7 @@ function App() {
                       <Route path="/online-coaching" element={<OnlineCoaching />} />
                       <Route path="/payment-success" element={<PaymentSuccess />} />
                       <Route path="/install" element={<InstallPWA />} />
+                      <Route path="/redeem" element={<RedeemGiftCard />} />
                       <Route path="/report-abuse" element={<PublicReportAbuse />} />
                       <Route path="/report-abuse/thank-you" element={<PublicReportAbuseThankYou />} />
                       <Route path="/video-gallery" element={<VideoGallery />} />
