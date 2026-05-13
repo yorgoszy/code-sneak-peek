@@ -37,6 +37,10 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
   const setWeek = (key: 'mainPct' | 'v91Pct' | 'v81Pct', i: number, raw: string) => {
     const arr = [...side[key]]; arr[i] = parsePct(raw); set({ [key]: arr } as any);
   };
+  const currentCoef = (side.zoneCoef && side.zoneCoef.length === 12) ? side.zoneCoef : ZONE_COEF;
+  const setCoef = (i: number, raw: string) => {
+    const arr = [...currentCoef]; arr[i] = parsePct(raw); set({ zoneCoef: arr });
+  };
 
   const [pickerOpen, setPickerOpen] = useState(false);
   const { exercises } = useExercises();
