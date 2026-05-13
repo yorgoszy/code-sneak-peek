@@ -66,6 +66,11 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
       const container = containerRef.current;
       if (!container) throw new Error('container missing');
 
+      // Wait for custom fonts (UnifrakturMaguntia) before rasterizing
+      if ((document as any).fonts?.ready) {
+        await (document as any).fonts.ready;
+      }
+
       // Wait for ALL images to be fully decoded
       const imgs = Array.from(container.querySelectorAll('img'));
       await Promise.all(
@@ -79,7 +84,7 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
         )
       );
       // Extra paint settle
-      await new Promise(r => setTimeout(r, 200));
+      await new Promise(r => setTimeout(r, 250));
 
       const cardEls = container.querySelectorAll<HTMLDivElement>('[data-bulk-card]');
       if (cardEls.length === 0) throw new Error('no cards rendered');
