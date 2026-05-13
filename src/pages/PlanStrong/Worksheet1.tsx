@@ -230,7 +230,7 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
         {(() => {
           const arr = side.mainPct && side.mainPct.length === 4 ? side.mainPct : [0, 0, 0, 0];
           const monthly = Number(side.monthlyNL) || 0;
-          const nl = arr.map(p => 2 * Math.round((monthly * p) / 2));
+          const nl = arr.map(p => Math.round(monthly * p));
           return (
           <table className="border-collapse w-full table-fixed">
             <colgroup>
