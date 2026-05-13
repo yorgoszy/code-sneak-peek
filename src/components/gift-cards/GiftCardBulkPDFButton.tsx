@@ -7,6 +7,8 @@ import jsPDF from 'jspdf';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { hyperkidsLogoBlack } from "@/assets/hyperkidsLogoBlack";
+import { hyperkidsLogoWhite } from "@/assets/hyperkidsLogoWhite";
+import { iconBlack } from "@/assets/iconBlack";
 
 interface GiftCard {
   id: string;
