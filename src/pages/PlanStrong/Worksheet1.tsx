@@ -288,7 +288,7 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
             ? (side as any)[v.key] as number[]
             : [0, 0, 0, 0];
           const targetNl = v.zones.reduce((a, z) => a + (out.monthlyNlPerZone[z] || 0), 0);
-          const nl = arr.map(p => 2 * Math.round((targetNl * p) / 2));
+          const nl = arr.map(p => Math.round(targetNl * p));
           return (
           <table key={v.key} className="border-collapse w-full table-fixed">
             <colgroup>
