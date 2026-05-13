@@ -278,7 +278,6 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
         })()}
 
         {([
-          { label: 'MAIN VARIANT (91-100% INTENSITY ZONE)', key: 'mainPct' as const },
           { label: 'VARIANT (91-100% INTENSITY ZONE)', key: 'v91Pct' as const },
           { label: 'VARIANT (81-90% INTENSITY ZONE)', key: 'v81Pct' as const },
           { label: 'VARIANT (71-80% INTENSITY ZONE)', key: 'v71Pct' as const },
