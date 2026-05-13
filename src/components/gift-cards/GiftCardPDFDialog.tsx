@@ -23,6 +23,7 @@ interface GiftCardPDFDialogProps {
 }
 
 const ICON_BLACK_URL = "https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/icon-black.png";
+const TTP_WHITE_URL = "https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/trust-the-process-white.png";
 
 export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
   giftCard,
@@ -136,6 +137,13 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           className="relative w-full aspect-[9/5] px-8 py-6 flex items-end justify-between overflow-hidden shadow-2xl"
           style={{ backgroundColor: '#b7b4ac' }}
         >
+          <img
+            src={TTP_WHITE_URL}
+            alt="Trust the process"
+            crossOrigin="anonymous"
+            className="absolute top-4 right-6 h-10 object-contain"
+          />
+
           <img
             src={ICON_BLACK_URL}
             alt="Hyperkids"
