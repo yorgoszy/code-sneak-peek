@@ -8,11 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Gift, Plus, Copy, Eye, Ban, Search } from "lucide-react";
+import { Gift, Plus, Copy, Eye, Ban, Search, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { GiftCardPDFDialog } from './GiftCardPDFDialog';
+import { GiftCardEditDialog } from './GiftCardEditDialog';
 
 interface GiftCard {
   id: string;
