@@ -69,7 +69,12 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
   const setWeek = (key: 'mainPct' | 'v91Pct' | 'v81Pct', i: number, raw: string) => {
     const arr = [...side[key]]; arr[i] = parsePct(raw); set({ [key]: arr } as any);
   };
-  const currentCoef = (side.zoneCoef && side.zoneCoef.length === 12) ? side.zoneCoef : ZONE_COEF;
+  const currentCoef = (side.zoneCoef && side.zoneCoef.length >= 6)
+    ? side.zoneCoef.slice(0, 6)
+    : ZONE_COEF;
+  const currentZonePct = (side.zonePct && side.zonePct.length >= 6)
+    ? side.zonePct.slice(0, 6)
+    : Array(6).fill(0);
   const setCoef = (i: number, raw: string) => {
     const arr = [...currentCoef]; arr[i] = parsePct(raw); set({ zoneCoef: arr });
   };
