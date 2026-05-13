@@ -102,7 +102,7 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
             />
             <div className="text-right">
               <p className="text-white text-2xl font-bold leading-none">€{giftCard.amount || 0}</p>
-              <p className="text-gray-400 text-[10px] mt-1">
+              <p className="text-[10px] mt-1" style={{ color: '#b7b4ac' }}>
                 {giftCard.card_type === 'subscription'
                   ? `Συνδρομή${subscriptionName ? ` · ${subscriptionName}` : ''}`
                   : 'Δωροκάρτα'}
@@ -120,10 +120,10 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
             <div>
               <p className="text-white text-xs font-bold tracking-widest">GIFT CARD</p>
               {giftCard.sender_name && (
-                <p className="text-gray-500 text-[10px] mt-2">Από: {giftCard.sender_name}</p>
+                <p className="text-[10px] mt-2" style={{ color: '#b7b4ac' }}>Από: {giftCard.sender_name}</p>
               )}
               {expiryDate && (
-                <p className="text-gray-500 text-[10px]">Ισχύει έως: {expiryDate}</p>
+                <p className="text-[10px]" style={{ color: '#b7b4ac' }}>Ισχύει έως: {expiryDate}</p>
               )}
             </div>
             <div className="flex flex-col items-end gap-1">
@@ -143,13 +143,13 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           ref={backRef}
           className="relative w-full aspect-[9/5] px-8 py-6 flex items-end justify-between overflow-hidden shadow-2xl"
           style={{
-            backgroundColor: '#b7b4ac',
+            backgroundColor: '#d4d1c9',
             backgroundImage: `
-              radial-gradient(ellipse at 20% 10%, rgba(0, 0, 0, 0.35) 0%, transparent 55%),
-              radial-gradient(ellipse at 85% 25%, rgba(0, 0, 0, 0.25) 0%, transparent 55%),
-              radial-gradient(ellipse at 70% 90%, rgba(0, 0, 0, 0.3) 0%, transparent 55%),
-              radial-gradient(ellipse at 10% 80%, rgba(0, 0, 0, 0.2) 0%, transparent 55%),
-              linear-gradient(135deg, #c5c2ba 0%, #a8a59d 50%, #8f8c84 100%)
+              radial-gradient(ellipse at 20% 10%, rgba(60, 60, 60, 0.25) 0%, transparent 55%),
+              radial-gradient(ellipse at 85% 25%, rgba(60, 60, 60, 0.18) 0%, transparent 55%),
+              radial-gradient(ellipse at 70% 90%, rgba(60, 60, 60, 0.22) 0%, transparent 55%),
+              radial-gradient(ellipse at 10% 80%, rgba(60, 60, 60, 0.15) 0%, transparent 55%),
+              linear-gradient(135deg, #e0ddd5 0%, #c8c5bd 50%, #b0ada5 100%)
             `,
           }}
         >
