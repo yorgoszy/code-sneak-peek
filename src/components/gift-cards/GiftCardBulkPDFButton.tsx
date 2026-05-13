@@ -90,20 +90,20 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
 
       for (let i = 0; i < cardEls.length; i++) {
         const el = cardEls[i];
-        toast.loading(`Δημιουργία PDF... ${Math.floor(i / 2) + 1}/${giftCards.length}`, { id: toastId });
+        if (i % 4 === 0) {
+          toast.loading(`Δημιουργία PDF... ${Math.floor(i / 2) + 1}/${giftCards.length}`, { id: toastId });
+          await new Promise(r => setTimeout(r, 0));
+        }
 
         const canvas = await html2canvas(el, {
-          scale: 1.5,
+          scale: 1,
           backgroundColor: null,
           useCORS: true,
           logging: false,
         });
-        const imgData = canvas.toDataURL('image/jpeg', 0.85);
+        const imgData = canvas.toDataURL('image/jpeg', 0.8);
         if (i > 0) pdf.addPage([90, 50], 'l');
         pdf.addImage(imgData, 'JPEG', 0, 0, 90, 50);
-
-        // Yield to keep UI responsive
-        await new Promise(r => setTimeout(r, 0));
       }
 
       pdf.save(`gift-cards-${new Date().toISOString().slice(0, 10)}.pdf`);
