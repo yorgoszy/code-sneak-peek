@@ -79,7 +79,7 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
         {/* Gift Card Visual - matches landing page */}
         <div
           ref={cardRef}
-          className="relative w-full aspect-[9/5] bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 p-4 flex flex-col justify-between overflow-hidden shadow-2xl"
+          className="relative w-full aspect-[9/5] bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 px-8 py-6 flex flex-col justify-between overflow-hidden shadow-2xl"
         >
           {/* Top: logo */}
           <div className="flex items-start justify-between relative z-10">
@@ -94,6 +94,9 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
               <p className="text-gray-400 text-[10px] mt-1">
                 {giftCard.card_type === 'subscription' ? 'Συνδρομή' : 'Δωροκάρτα'}
               </p>
+              {giftCard.card_type === 'subscription' && subscriptionName && (
+                <p className="text-gray-300 text-[10px] mt-0.5">{subscriptionName}</p>
+              )}
             </div>
           </div>
 
