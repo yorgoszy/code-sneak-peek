@@ -159,25 +159,31 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
           </tbody>
         </table>
 
+        {(() => {
+          const hiddenZones = side.ps === '70' ? [0, 1] : [];
+          const visibleIdx = ZONE_LABELS.map((_, i) => i).filter(i => !hiddenZones.includes(i));
+          const hiddenVariants = side.ps === '70' ? ['v50Pct', 'v61Pct'] : [];
+          return (
+        <>
         <table className="border-collapse w-full">
           <thead>
             <tr>
               <th className={headCell}></th>
-              {ZONE_LABELS.map(l => <th key={l} className={headCell}>{l}</th>)}
+              {visibleIdx.map(i => <th key={i} className={headCell}>{ZONE_LABELS[i]}</th>)}
               <th className={headCell}>TOTAL</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td className={headCell}>KG</td>
-              {out.zoneKg.map((k, i) => <td key={i} className={cell + " bg-muted/30"}>{k || '-'}</td>)}
+              {visibleIdx.map(i => <td key={i} className={cell + " bg-muted/30"}>{out.zoneKg[i] || '-'}</td>)}
               <td className={cell + " bg-muted/30"}>-</td>
             </tr>
             <tr>
               <td className={headCell}>%1RM</td>
-              {currentCoef.map((c, i) => (
+              {visibleIdx.map(i => (
                 <td key={i} className={cell + " p-0"}>
-                  <PctInput className={inp} value={c} placeholder="0%"
+                  <PctInput className={inp} value={currentCoef[i]} placeholder="0%"
                     onCommit={frac => {
                       const arr = [...currentCoef]; arr[i] = frac; set({ zoneCoef: arr });
                     }} />
@@ -187,16 +193,16 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
             </tr>
             <tr>
               <td className={headCell}>% NL</td>
-              {currentZonePct.map((p, i) => (
+              {visibleIdx.map(i => (
                 <td key={i} className={cell + " p-0"}>
-                  <PctInput className={inp} value={p} placeholder="0%"
+                  <PctInput className={inp} value={currentZonePct[i]} placeholder="0%"
                     onCommit={frac => {
                       const arr = [...currentZonePct]; arr[i] = frac; set({ zonePct: arr });
                     }} />
                 </td>
               ))}
               {(() => {
-                const sum = currentZonePct.reduce((a, b) => a + b, 0);
+                const sum = visibleIdx.reduce((a, i) => a + (currentZonePct[i] || 0), 0);
                 const pct = Math.round(sum * 100);
                 const remaining = 100 - pct;
                 return (
@@ -208,9 +214,9 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
             </tr>
             <tr>
               <td className={headCell}>NL</td>
-              {out.monthlyNlPerZone.map((n, i) => <td key={i} className={cell + " bg-muted/30"}>{n || '-'}</td>)}
+              {visibleIdx.map(i => <td key={i} className={cell + " bg-muted/30"}>{out.monthlyNlPerZone[i] || '-'}</td>)}
               <td className={cell + " bg-muted/30 font-semibold"}>
-                {out.monthlyNlPerZone.reduce((a, b) => a + b, 0).toFixed(2)}
+                {visibleIdx.reduce((a, i) => a + (out.monthlyNlPerZone[i] || 0), 0).toFixed(2)}
               </td>
             </tr>
           </tbody>
@@ -224,20 +230,20 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
         <table className="border-collapse w-full">
           <thead>
             <tr>
-              <th className={headCell + " text-left"} colSpan={8}>MONTHLY NL PER INTENSITY ZONE</th>
+              <th className={headCell + " text-left"} colSpan={visibleIdx.length + 2}>MONTHLY NL PER INTENSITY ZONE</th>
             </tr>
             <tr>
               <th className={headCell}></th>
-              {ZONE_LABELS.map(l => <th key={l} className={headCell}>{l}</th>)}
+              {visibleIdx.map(i => <th key={i} className={headCell}>{ZONE_LABELS[i]}</th>)}
               <th className={headCell}>TOTAL NL</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td className={headCell}>NL</td>
-              {out.monthlyNlPerZone.map((n, i) => <td key={i} className={cell + " bg-muted/30"}>{n || '-'}</td>)}
+              {visibleIdx.map(i => <td key={i} className={cell + " bg-muted/30"}>{out.monthlyNlPerZone[i] || '-'}</td>)}
               <td className={cell + " bg-muted/30 font-semibold"}>
-                {out.monthlyNlPerZone.reduce((a, b) => a + b, 0).toFixed(2)}
+                {visibleIdx.reduce((a, i) => a + (out.monthlyNlPerZone[i] || 0), 0).toFixed(2)}
               </td>
             </tr>
           </tbody>
@@ -250,7 +256,7 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
           { label: 'VARIANT (71-80% INTENSITY ZONE)', key: 'v71Pct' as const },
           { label: 'VARIANT (61-70% INTENSITY ZONE)', key: 'v61Pct' as const },
           { label: 'VARIANT (50-60% INTENSITY ZONE)', key: 'v50Pct' as const },
-        ]).map(v => {
+        ]).filter(v => !hiddenVariants.includes(v.key)).map(v => {
           const arr = (side as any)[v.key] && (side as any)[v.key].length === 4
             ? (side as any)[v.key] as number[]
             : [0, 0, 0, 0];
@@ -324,6 +330,8 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
             </tr>
           </tbody>
         </table>
+        </>
+        );})()}
       </div>
 
       <SimpleExerciseSelectionDialog
