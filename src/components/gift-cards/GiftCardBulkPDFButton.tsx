@@ -1,12 +1,17 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { FileDown, Loader2 } from "lucide-react";
-import { QRCodeSVG } from 'qrcode.react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { hyperkidsLogoBlack } from "@/assets/hyperkidsLogoBlack";
+import {
+  createAmountImage,
+  createTrustMarkImage,
+  GiftCardPreviewBack,
+  GiftCardPreviewFront,
+  type PreviewImageAsset,
+} from './GiftCardPreviewCards';
 
 interface GiftCard {
   id: string;
@@ -26,6 +31,8 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
   const [generating, setGenerating] = useState(false);
   const [renderList, setRenderList] = useState<GiftCard[]>([]);
   const [subscriptionNames, setSubscriptionNames] = useState<Record<string, string>>({});
+  const [renderAssets, setRenderAssets] = useState<Record<string, { amountImage: PreviewImageAsset | null }>>({});
+  const [trustMarkImage, setTrustMarkImage] = useState<PreviewImageAsset | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Preload subscription names whenever we are about to render
@@ -56,6 +63,28 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
       return;
     }
     setGenerating(true);
+    const subscriptionIds = Array.from(
+      new Set(
+        giftCards
+          .filter(g => g.card_type === 'subscription' && g.subscription_type_id)
+          .map(g => g.subscription_type_id as string)
+      )
+    );
+    if (subscriptionIds.length > 0) {
+      const { data } = await supabase
+        .from('subscription_types')
+        .select('id, name')
+        .in('id', subscriptionIds);
+      const map: Record<string, string> = {};
+      (data || []).forEach((row: any) => { map[row.id] = row.name; });
+      setSubscriptionNames(map);
+    }
+    const [trustImage, amountImages] = await Promise.all([
+      createTrustMarkImage(),
+      Promise.all(giftCards.map(async gc => [gc.id, await createAmountImage(gc.amount)] as const)),
+    ]);
+    setTrustMarkImage(trustImage);
+    setRenderAssets(Object.fromEntries(amountImages.map(([id, amountImage]) => [id, { amountImage }])));
     setRenderList(giftCards);
     const toastId = toast.loading(`Προετοιμασία ${giftCards.length} gift cards...`);
 
@@ -91,14 +120,14 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
         toast.loading(`Δημιουργία PDF... ${Math.floor(i / 2) + 1}/${giftCards.length}`, { id: toastId });
 
         const canvas = await html2canvas(el, {
-          scale: 1.5,
-          backgroundColor: null,
+          scale: 3,
+          backgroundColor: 'transparent',
           useCORS: true,
           logging: false,
         });
-        const imgData = canvas.toDataURL('image/jpeg', 0.85);
+        const imgData = canvas.toDataURL('image/png');
         if (i > 0) pdf.addPage([90, 50], 'l');
-        pdf.addImage(imgData, 'JPEG', 0, 0, 90, 50);
+        pdf.addImage(imgData, 'PNG', 0, 0, 90, 50);
 
         // Yield to keep UI responsive
         await new Promise(r => setTimeout(r, 0));
@@ -111,6 +140,8 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
       toast.error('Σφάλμα δημιουργίας PDF', { id: toastId });
     } finally {
       setRenderList([]);
+      setRenderAssets({});
+      setTrustMarkImage(null);
       setGenerating(false);
     }
   };
@@ -139,124 +170,23 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
             position: 'fixed',
             left: '-10000px',
             top: 0,
-            width: '900px',
+            width: '480px',
             zIndex: -1,
           }}
         >
           {renderList.map(gc => {
-            const expiryDate = gc.expires_at
-              ? new Date(gc.expires_at).toLocaleDateString('el-GR')
-              : '';
             const subName = gc.subscription_type_id
               ? subscriptionNames[gc.subscription_type_id]
               : null;
             return (
               <React.Fragment key={gc.id}>
-                {/* Front */}
-                <div
-                  data-bulk-card
-                  className="relative border border-gray-800 px-8 py-6 flex flex-col justify-between overflow-hidden"
-                  style={{
-                    width: '900px',
-                    height: '500px',
-                    backgroundColor: '#000',
-                    backgroundImage: `
-                      radial-gradient(ellipse at 20% 10%, rgba(180, 180, 180, 0.35) 0%, transparent 55%),
-                      radial-gradient(ellipse at 85% 25%, rgba(120, 120, 120, 0.3) 0%, transparent 55%),
-                      radial-gradient(ellipse at 70% 90%, rgba(200, 200, 200, 0.25) 0%, transparent 55%),
-                      radial-gradient(ellipse at 10% 80%, rgba(90, 90, 90, 0.3) 0%, transparent 55%),
-                      linear-gradient(135deg, #0a0a0a 0%, #1f1f1f 40%, #050505 100%)
-                    `,
-                  }}
-                >
-                  <div className="flex items-start justify-between relative z-10">
-                    <img
-                      src="https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/hyperkids-logo-white.png"
-                      alt="HYPERKIDS"
-                      style={{ height: '64px', objectFit: 'contain' }}
-                      crossOrigin="anonymous"
-                    />
-                    <div className="text-right">
-                      <p className="text-white font-bold leading-none" style={{ fontSize: '40px' }}>€{gc.amount || 0}</p>
-                      <p style={{ fontSize: '16px', marginTop: '6px', color: '#d4d1c9' }}>
-                        {gc.card_type === 'subscription'
-                          ? `Συνδρομή${subName ? ` · ${subName}` : ''}`
-                          : 'Δωροκάρτα'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-center relative z-10">
-                    <p className="text-white font-mono text-center" style={{ fontSize: '52px', letterSpacing: '0.4em' }}>
-                      {gc.code}
-                    </p>
-                  </div>
-
-                  <div className="flex items-end justify-between relative z-10">
-                    <div>
-                      <p className="text-white font-bold tracking-widest" style={{ fontSize: '18px' }}>GIFT CARD</p>
-                      {gc.sender_name && (
-                        <p style={{ fontSize: '16px', marginTop: '8px', color: '#d4d1c9' }}>Από: {gc.sender_name}</p>
-                      )}
-                      {expiryDate && (
-                        <p style={{ fontSize: '16px', color: '#d4d1c9' }}>Ισχύει έως: {expiryDate}</p>
-                      )}
-                    </div>
-                    <div className="bg-white" style={{ padding: '8px' }}>
-                      <QRCodeSVG
-                        value={`https://hyperkids.lovable.app/redeem?code=${gc.code}`}
-                        size={110}
-                        level="M"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Back */}
-                <div
-                  data-bulk-card
-                  className="relative px-8 py-6 overflow-hidden"
-                  style={{
-                    width: '900px',
-                    height: '500px',
-                    backgroundColor: '#d4d1c9',
-                    backgroundImage: `
-                      radial-gradient(ellipse at 20% 10%, rgba(60, 60, 60, 0.25) 0%, transparent 55%),
-                      radial-gradient(ellipse at 85% 25%, rgba(60, 60, 60, 0.18) 0%, transparent 55%),
-                      radial-gradient(ellipse at 70% 90%, rgba(60, 60, 60, 0.22) 0%, transparent 55%),
-                      radial-gradient(ellipse at 10% 80%, rgba(60, 60, 60, 0.15) 0%, transparent 55%),
-                      linear-gradient(135deg, #e0ddd5 0%, #c8c5bd 50%, #b0ada5 100%)
-                    `,
-                  }}
-                >
-                  <div
-                    className="absolute text-black leading-none"
-                    style={{ fontFamily: "'UnifrakturMaguntia', cursive", fontSize: '56px', top: '40px', right: '40px' }}
-                  >
-                    trust the process
-                  </div>
-
-                  <img
-                    src={hyperkidsLogoBlack}
-                    alt="Hyperkids"
-                    className="absolute"
-                    style={{ height: '64px', objectFit: 'contain', top: '40px', left: '40px' }}
-                  />
-
-                  <img
-                    src="https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/icon-black.png"
-                    alt="Icon"
-                    crossOrigin="anonymous"
-                    className="absolute"
-                    style={{ height: '80px', objectFit: 'contain', bottom: '40px', left: '40px' }}
-                  />
-
-                  <div className="absolute text-right text-black leading-snug" style={{ fontSize: '16px', bottom: '40px', right: '40px' }}>
-                    <p>Αν. Γεωργίου 46, Θεσσαλονίκη 54627</p>
-                    <p>Τηλ: +30 2310 529104</p>
-                    <p>info@hyperkids.gr</p>
-                  </div>
-                </div>
+                <GiftCardPreviewFront
+                  giftCard={gc}
+                  subscriptionName={subName}
+                  amountImage={renderAssets[gc.id]?.amountImage ?? null}
+                  capture
+                />
+                <GiftCardPreviewBack trustMarkImage={trustMarkImage} capture />
               </React.Fragment>
             );
           })}
