@@ -28,6 +28,7 @@ export default function PlanStrongPage() {
   const [userIds, setUserIds] = useState<string[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<Array<{ id: string; name: string; email: string; avatar_url: string | null; photo_url: string | null }>>([]);
   const [pickerValue, setPickerValue] = useState<string>('');
+  const [previewUserId, setPreviewUserId] = useState<string>('');
   const [data, setData] = useState<PlanStrongData>(defaultPlanStrongData());
   const [saving, setSaving] = useState(false);
   const [draftId, setDraftId] = useState<string | null>(editId);
