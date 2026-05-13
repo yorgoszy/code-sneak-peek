@@ -1,16 +1,18 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Download, Gift } from "lucide-react";
 import { QRCodeSVG } from 'qrcode.react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { supabase } from "@/integrations/supabase/client";
 
 interface GiftCardPDFDialogProps {
   giftCard: {
     code: string;
     card_type: string;
     amount: number | null;
+    subscription_type_id?: string | null;
     recipient_name: string | null;
     sender_name: string | null;
     message: string | null;
