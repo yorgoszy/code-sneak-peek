@@ -37,6 +37,9 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
   const [step, setStep] = useState<'select' | 'email'>('select');
   const [cart, setCart] = useState<Record<string, number>>({});
   const [recipientEmail, setRecipientEmail] = useState('');
+  const [buyerEmail, setBuyerEmail] = useState('');
+  const [senderName, setSenderName] = useState('');
+  const [recipientName, setRecipientName] = useState('');
 
   useEffect(() => {
     if (isOpen) {
@@ -44,6 +47,9 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
       setStep('select');
       setCart({});
       setRecipientEmail('');
+      setBuyerEmail('');
+      setSenderName('');
+      setRecipientName('');
     }
   }, [isOpen]);
 
