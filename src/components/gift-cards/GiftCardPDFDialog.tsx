@@ -170,8 +170,8 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
               alt="HYPERKIDS"
               className="h-8 object-contain"
             />
-            <div className="text-right">
-              <p className="text-white text-2xl font-bold leading-none">€{giftCard.amount || 0}</p>
+            <div className="h-8 flex items-center">
+              <p className="text-white text-2xl font-bold" style={{ lineHeight: '1', margin: 0 }}>€{giftCard.amount || 0}</p>
             </div>
           </div>
 
