@@ -6,11 +6,13 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, Send } from 'lucide-react';
+import { ArrowLeft, Save, Send, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Worksheet1Side } from './Worksheet1';
 import { Worksheet2 } from './Worksheet2';
 import { defaultPlanStrongData, PlanStrongData } from './planStrongCalc';
@@ -23,6 +25,9 @@ export default function PlanStrongPage() {
   const { isAdmin } = useRoleCheck();
   const [name, setName] = useState('Plan Strong Draft');
   const [userId, setUserId] = useState<string>('');
+  const [userIds, setUserIds] = useState<string[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<Array<{ id: string; name: string; email: string; avatar_url: string | null; photo_url: string | null }>>([]);
+  const [pickerValue, setPickerValue] = useState<string>('');
   const [data, setData] = useState<PlanStrongData>(defaultPlanStrongData());
   const [saving, setSaving] = useState(false);
   const [draftId, setDraftId] = useState<string | null>(editId);
@@ -35,6 +40,7 @@ export default function PlanStrongPage() {
       if (row) {
         setName(row.name);
         setUserId(row.user_id);
+        setUserIds([row.user_id]);
         const def = defaultPlanStrongData();
         const loaded = (row.data as any) || {};
         setData({
@@ -47,22 +53,56 @@ export default function PlanStrongPage() {
     })();
   }, [editId]);
 
+  // Fetch profile data for chip display
+  useEffect(() => {
+    (async () => {
+      if (userIds.length === 0) { setSelectedUsers([]); return; }
+      const { data } = await supabase
+        .from('app_users')
+        .select('id, name, email, avatar_url, photo_url')
+        .in('id', userIds);
+      setSelectedUsers(data || []);
+    })();
+  }, [userIds]);
+
+  const addUser = (uid: string | null) => {
+    if (!uid) return;
+    setUserIds(prev => prev.includes(uid) ? prev : [...prev, uid]);
+    setPickerValue('');
+  };
+  const removeUser = (uid: string) => {
+    setUserIds(prev => prev.filter(id => id !== uid));
+  };
+
   const save = async (status: 'draft' | 'assigned') => {
-    if (!userId) { toast.error('Επίλεξε χρήστη'); return; }
+    if (userIds.length === 0) { toast.error('Επίλεξε τουλάχιστον έναν χρήστη'); return; }
     setSaving(true);
-    const payload = {
-      name, user_id: userId, status,
+    if (draftId) {
+      // Edit mode — single record update
+      const payload = {
+        name, user_id: userIds[0], status,
+        coach_id: user?.id, created_by: user?.id,
+        data: data as any,
+      };
+      const { error } = await supabase.from('plan_strong_drafts').update(payload).eq('id', draftId);
+      setSaving(false);
+      if (error) { toast.error(error.message); return; }
+      toast.success(status === 'draft' ? 'Αποθηκεύτηκε' : 'Ανατέθηκε');
+      return;
+    }
+    // New — one row per user
+    const rows = userIds.map(uid => ({
+      name, user_id: uid, status,
       coach_id: user?.id, created_by: user?.id,
       data: data as any,
-    };
-    const q = draftId
-      ? supabase.from('plan_strong_drafts').update(payload).eq('id', draftId).select().single()
-      : supabase.from('plan_strong_drafts').insert(payload).select().single();
-    const { data: row, error } = await q;
+    }));
+    const { data: inserted, error } = await supabase.from('plan_strong_drafts').insert(rows).select();
     setSaving(false);
     if (error) { toast.error(error.message); return; }
-    setDraftId(row.id);
-    toast.success(status === 'draft' ? 'Αποθηκεύτηκε ως πρόχειρο' : 'Ανατέθηκε στον χρήστη');
+    if (inserted && inserted.length === 1) setDraftId(inserted[0].id);
+    toast.success(status === 'draft'
+      ? `Αποθηκεύτηκαν ${rows.length} πρόχειρα`
+      : `Ανατέθηκε σε ${rows.length} χρήστες`);
   };
 
   return (
@@ -90,14 +130,42 @@ export default function PlanStrongPage() {
           <Input className="rounded-none" value={name} onChange={e => setName(e.target.value)} />
         </div>
         <div>
-          <Label className="text-xs">Χρήστης</Label>
+          <Label className="text-xs">Χρήστες</Label>
           <UserSearchCombobox
-            value={userId}
-            onValueChange={(v) => setUserId(v || '')}
-            placeholder="Επιλέξτε χρήστη..."
+            value={pickerValue}
+            onValueChange={addUser}
+            placeholder={draftId ? "Επεξεργασία υπάρχοντος (1 χρήστης)" : "Προσθήκη χρήστη..."}
             coachId={user?.id}
             adminOwned={isAdmin?.()}
+            disabled={!!draftId}
           />
+          {selectedUsers.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {selectedUsers.map(u => (
+                <Badge key={u.id} variant="outline" className="rounded-none gap-2 py-1 pr-1 pl-1">
+                  <Avatar className="h-5 w-5">
+                    {(u.photo_url || u.avatar_url) ? (
+                      <AvatarImage src={u.photo_url || u.avatar_url || ''} alt={u.name} />
+                    ) : null}
+                    <AvatarFallback className="text-[10px] bg-muted">
+                      {u.name?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-xs">{u.name}</span>
+                  {!draftId && (
+                    <button
+                      type="button"
+                      onClick={() => removeUser(u.id)}
+                      className="ml-1 hover:text-destructive"
+                      title="Αφαίρεση"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -109,7 +177,7 @@ export default function PlanStrongPage() {
         </TabsList>
 
         <TabsContent value="ws1" className="space-y-3">
-          <Worksheet1Side side={data.side} userId={userId} onChange={s => setData({ ...data, side: s })} />
+          <Worksheet1Side side={data.side} userId={userIds[0] || userId} onChange={s => setData({ ...data, side: s })} />
         </TabsContent>
 
         <TabsContent value="ws2" className="space-y-3">
