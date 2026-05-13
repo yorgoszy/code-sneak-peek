@@ -154,7 +154,8 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
             src="https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/icon-black.png"
             alt="Icon"
             crossOrigin="anonymous"
-            className="absolute bottom-4 left-6 h-10 object-contain"
+            className="absolute left-6 h-10 object-contain"
+            style={{ bottom: '21px' }}
           />
 
           <div className="ml-auto text-right text-black text-[10px] leading-snug">
