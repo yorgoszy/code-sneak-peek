@@ -180,7 +180,8 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
         {/* Front side */}
         <div
           ref={cardRef}
-          className="relative w-full aspect-[9/5] border border-gray-800 px-5 py-4 flex flex-col justify-between overflow-hidden shadow-2xl"
+          className="relative w-full aspect-[9/5] border border-gray-800 flex flex-col justify-between overflow-hidden shadow-2xl"
+          style={{ padding: '25px' } as any}
           style={{
             backgroundColor: '#000',
             backgroundImage: `
