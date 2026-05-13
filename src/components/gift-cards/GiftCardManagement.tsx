@@ -434,6 +434,15 @@ export const GiftCardManagement: React.FC = () => {
           onClose={() => setPdfCard(null)}
         />
       )}
+
+      {/* Edit Dialog */}
+      <GiftCardEditDialog
+        giftCard={editCard}
+        isOpen={!!editCard}
+        onClose={() => setEditCard(null)}
+        onSaved={fetchGiftCards}
+        subscriptionTypes={subscriptionTypes}
+      />
     </div>
   );
 };
