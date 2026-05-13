@@ -99,11 +99,6 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
     if (!frontEl || !backEl) return;
 
     try {
-      if (!trustMarkImage) {
-        const image = await createTrustMarkImage();
-        setTrustMarkImage(image);
-        await new Promise(requestAnimationFrame);
-      }
       if (document.fonts) {
         await document.fonts.load('24px UnifrakturMaguntia');
         await document.fonts.ready;
@@ -260,7 +255,7 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           <Button variant="outline" onClick={onClose} className="rounded-none">
             Κλείσιμο
           </Button>
-          <Button onClick={handleDownloadPDF} className="bg-black text-white hover:bg-gray-800 rounded-none">
+          <Button onClick={handleDownloadPDF} disabled={!trustMarkImage} className="bg-black text-white hover:bg-gray-800 rounded-none">
             <Download className="h-4 w-4 mr-2" />
             Λήψη PDF
           </Button>
