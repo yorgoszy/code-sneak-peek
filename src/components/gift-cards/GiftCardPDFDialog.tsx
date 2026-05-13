@@ -138,6 +138,13 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           style={{ backgroundColor: '#b7b4ac' }}
         >
           <img
+            src={TTP_WHITE_URL}
+            alt="Trust the process"
+            crossOrigin="anonymous"
+            className="absolute top-4 right-6 h-10 object-contain"
+          />
+
+          <img
             src={ICON_BLACK_URL}
             alt="Hyperkids"
             crossOrigin="anonymous"
