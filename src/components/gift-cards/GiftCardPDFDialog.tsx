@@ -162,10 +162,9 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           </div>
 
           <img
-            src="https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/hyperkids-logo-white.png"
+            src={hyperkidsLogoBlack}
             alt="Hyperkids"
-            crossOrigin="anonymous"
-            className="absolute left-6 h-8 object-contain invert"
+            className="absolute left-6 h-8 object-contain"
             style={{ top: '21px' }}
           />
 
