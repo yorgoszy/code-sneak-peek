@@ -1,74 +1,17 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download, Gift, Instagram, Music2, Globe } from "lucide-react";
-import { QRCodeSVG } from 'qrcode.react';
+import { Download, Gift } from "lucide-react";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { supabase } from "@/integrations/supabase/client";
-import { hyperkidsLogoBlack } from "@/assets/hyperkidsLogoBlack";
-import { hyperkidsLogoWhite } from "@/assets/hyperkidsLogoWhite";
-import { iconBlack } from "@/assets/iconBlack";
-
-const TRUST_MARK_TEXT = 'trust the process';
-
-const createTrustMarkImage = async () => {
-  const font = '24px UnifrakturMaguntia';
-  if (document.fonts) {
-    await document.fonts.load(font);
-    await document.fonts.ready;
-  }
-
-  const scale = 4;
-  const measureCanvas = document.createElement('canvas');
-  const measureCtx = measureCanvas.getContext('2d');
-  if (!measureCtx) return null;
-
-  measureCtx.font = font;
-  const metrics = measureCtx.measureText(TRUST_MARK_TEXT);
-  const width = Math.ceil(metrics.width + 2);
-  const height = 28;
-  const canvas = document.createElement('canvas');
-  canvas.width = width * scale;
-  canvas.height = height * scale;
-
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return null;
-  ctx.scale(scale, scale);
-  ctx.font = font;
-  ctx.fillStyle = '#000000';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(TRUST_MARK_TEXT, 1, height / 2);
-
-  return { src: canvas.toDataURL('image/png'), width, height };
-};
-
-const createAmountImage = async (amount: number | null) => {
-  const text = `€${amount || 0}`;
-  const font = 'bold 24px "Robert Pro", "Roobert Pro", Arial, sans-serif';
-  if (document.fonts) {
-    await document.fonts.load(font);
-    await document.fonts.ready;
-  }
-
-  const scale = 4;
-  const width = 50;
-  const height = 32;
-  const canvas = document.createElement('canvas');
-  canvas.width = width * scale;
-  canvas.height = height * scale;
-
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return null;
-  ctx.scale(scale, scale);
-  ctx.font = font;
-  ctx.fillStyle = '#ffffff';
-  ctx.textAlign = 'right';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(text, width, height / 2);
-
-  return { src: canvas.toDataURL('image/png'), width, height };
-};
+import {
+  createAmountImage,
+  createTrustMarkImage,
+  GiftCardPreviewBack,
+  GiftCardPreviewFront,
+  type PreviewImageAsset,
+} from './GiftCardPreviewCards';
 
 interface GiftCardPDFDialogProps {
   giftCard: {
@@ -94,8 +37,8 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
   const cardRef = useRef<HTMLDivElement>(null);
   const backRef = useRef<HTMLDivElement>(null);
   const [subscriptionName, setSubscriptionName] = useState<string | null>(null);
-  const [trustMarkImage, setTrustMarkImage] = useState<{ src: string; width: number; height: number } | null>(null);
-  const [amountImage, setAmountImage] = useState<{ src: string; width: number; height: number } | null>(null);
+  const [trustMarkImage, setTrustMarkImage] = useState<PreviewImageAsset | null>(null);
+  const [amountImage, setAmountImage] = useState<PreviewImageAsset | null>(null);
 
   useEffect(() => {
     if (giftCard.card_type === 'subscription' && giftCard.subscription_type_id) {
