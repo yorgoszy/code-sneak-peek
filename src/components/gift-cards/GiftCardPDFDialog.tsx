@@ -154,7 +154,7 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           }}
         >
           <div
-            className="absolute right-5 text-black text-2xl leading-none"
+            className="absolute right-5 text-black text-3xl leading-none"
             style={{ fontFamily: "'UnifrakturMaguntia', cursive", top: '14px' }}
           >
             trust the process
