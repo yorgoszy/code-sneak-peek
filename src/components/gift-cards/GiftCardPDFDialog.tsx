@@ -102,7 +102,7 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
               alt="HYPERKIDS"
               className="h-8 object-contain"
             />
-            <div className="text-right">
+            <div className="text-right" style={{ marginTop: '5px' }}>
               <p className="text-white text-2xl font-bold leading-none">€{giftCard.amount || 0}</p>
             </div>
           </div>
@@ -155,7 +155,7 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
         >
           <div
             className="absolute right-5 text-black text-2xl leading-none"
-            style={{ fontFamily: "'UnifrakturMaguntia', cursive", top: '14px' }}
+            style={{ fontFamily: "'UnifrakturMaguntia', cursive", top: '19px' }}
           >
             trust the process
           </div>
