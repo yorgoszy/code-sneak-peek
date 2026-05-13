@@ -40,17 +40,18 @@ export interface PlanStrongSideOutput {
 export function computeSide(s: PlanStrongSideInput): PlanStrongSideOutput {
   const oneRM = Number(s.oneRM) || 0;
   const monthlyNL = Number(s.monthlyNL) || 0;
-  const coef = (s.zoneCoef && s.zoneCoef.length === 12) ? s.zoneCoef : ZONE_COEF;
+  const coef = (s.zoneCoef && s.zoneCoef.length === ZONE_COUNT) ? s.zoneCoef : ZONE_COEF;
+  const zonePct = (s.zonePct && s.zonePct.length >= ZONE_COUNT) ? s.zonePct.slice(0, ZONE_COUNT) : Array(ZONE_COUNT).fill(0);
   const zoneKg = coef.map(c => +(oneRM * c).toFixed(2));
-  const ari = coef.reduce((a, c, i) => a + c * (s.zonePct[i] || 0), 0);
-  const monthlyNlPerZone = s.zonePct.map(p => +(monthlyNL * p).toFixed(2));
+  const ari = coef.reduce((a, c, i) => a + c * (zonePct[i] || 0), 0);
+  const monthlyNlPerZone = zonePct.map(p => +(monthlyNL * p).toFixed(2));
   const mainNlPerWeek = s.mainPct.map(p => +(monthlyNL * p).toFixed(2));
   const v91NlPerWeek = s.v91Pct.map(p => +(monthlyNL * p).toFixed(2));
   const weeklyHari = s.mainPct.map((wpct) => {
     const weekNl = monthlyNL * wpct;
     if (!weekNl) return 0;
     const intensity = coef.reduce(
-      (a, c, i) => a + c * (s.zonePct[i] * weekNl) / weekNl,
+      (a, c, i) => a + c * (zonePct[i] * weekNl) / weekNl,
       0
     );
     return +(intensity * 100).toFixed(2);
