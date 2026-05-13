@@ -143,13 +143,13 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           ref={backRef}
           className="relative w-full aspect-[9/5] px-8 py-6 flex items-end justify-between overflow-hidden shadow-2xl"
           style={{
-            backgroundColor: '#b7b4ac',
+            backgroundColor: '#d4d1c9',
             backgroundImage: `
-              radial-gradient(ellipse at 20% 10%, rgba(0, 0, 0, 0.35) 0%, transparent 55%),
-              radial-gradient(ellipse at 85% 25%, rgba(0, 0, 0, 0.25) 0%, transparent 55%),
-              radial-gradient(ellipse at 70% 90%, rgba(0, 0, 0, 0.3) 0%, transparent 55%),
-              radial-gradient(ellipse at 10% 80%, rgba(0, 0, 0, 0.2) 0%, transparent 55%),
-              linear-gradient(135deg, #c5c2ba 0%, #a8a59d 50%, #8f8c84 100%)
+              radial-gradient(ellipse at 20% 10%, rgba(60, 60, 60, 0.25) 0%, transparent 55%),
+              radial-gradient(ellipse at 85% 25%, rgba(60, 60, 60, 0.18) 0%, transparent 55%),
+              radial-gradient(ellipse at 70% 90%, rgba(60, 60, 60, 0.22) 0%, transparent 55%),
+              radial-gradient(ellipse at 10% 80%, rgba(60, 60, 60, 0.15) 0%, transparent 55%),
+              linear-gradient(135deg, #e0ddd5 0%, #c8c5bd 50%, #b0ada5 100%)
             `,
           }}
         >
