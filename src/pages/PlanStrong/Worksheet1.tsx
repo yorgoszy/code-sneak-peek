@@ -170,8 +170,10 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
               <td className={headCell}>%1RM</td>
               {currentCoef.map((c, i) => (
                 <td key={i} className={cell + " p-0"}>
-                  <Input className={inp} value={c ? `${Math.round(c * 100)}%` : ''} placeholder="0%"
-                    onChange={e => setCoef(i, e.target.value)} />
+                  <PctInput className={inp} value={c} placeholder="0%"
+                    onCommit={frac => {
+                      const arr = [...currentCoef]; arr[i] = frac; set({ zoneCoef: arr });
+                    }} />
                 </td>
               ))}
             </tr>
@@ -179,8 +181,10 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
               <td className={headCell}>% NL</td>
               {side.zonePct.map((p, i) => (
                 <td key={i} className={cell + " p-0"}>
-                  <Input className={inp} value={pctDisplay(p)} placeholder="0%"
-                    onChange={e => setZone(i, e.target.value)} />
+                  <PctInput className={inp} value={p} placeholder="0%"
+                    onCommit={frac => {
+                      const arr = [...side.zonePct]; arr[i] = frac; set({ zonePct: arr });
+                    }} />
                 </td>
               ))}
             </tr>
