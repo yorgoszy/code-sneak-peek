@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { flushSync } from 'react-dom';
 import { Button } from "@/components/ui/button";
 import { FileDown, Loader2 } from "lucide-react";
 import html2canvas from 'html2canvas';
@@ -90,7 +91,7 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
       setSubscriptionNames(map);
     }
     const trustImage = await createTrustMarkImage();
-    setTrustMarkImage(trustImage);
+    flushSync(() => setTrustMarkImage(trustImage));
     const toastId = toast.loading(`Προετοιμασία ${giftCards.length} gift cards...`);
 
     try {
@@ -102,8 +103,10 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
         toast.loading(`Δημιουργία PDF... ${giftCardIndex + 1}/${giftCards.length}`, { id: toastId });
 
         const amountImage = await createAmountImage(giftCard.amount);
-        setRenderAssets({ [giftCard.id]: { amountImage } });
-        setRenderList([giftCard]);
+        flushSync(() => {
+          setRenderAssets({ [giftCard.id]: { amountImage } });
+          setRenderList([giftCard]);
+        });
 
         await waitForPaint();
 
@@ -140,8 +143,10 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
           pageIndex++;
         }
 
-        setRenderList([]);
-        setRenderAssets({});
+        flushSync(() => {
+          setRenderList([]);
+          setRenderAssets({});
+        });
         await new Promise(r => setTimeout(r, 10));
       }
 
