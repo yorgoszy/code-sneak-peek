@@ -81,7 +81,17 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
         {/* Front side */}
         <div
           ref={cardRef}
-          className="relative w-full aspect-[9/5] bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 px-8 py-6 flex flex-col justify-between overflow-hidden shadow-2xl"
+          className="relative w-full aspect-[9/5] border border-gray-800 px-8 py-6 flex flex-col justify-between overflow-hidden shadow-2xl"
+          style={{
+            backgroundColor: '#000',
+            backgroundImage: `
+              radial-gradient(ellipse at 20% 10%, rgba(120, 80, 200, 0.45) 0%, transparent 55%),
+              radial-gradient(ellipse at 85% 25%, rgba(0, 180, 220, 0.4) 0%, transparent 55%),
+              radial-gradient(ellipse at 70% 90%, rgba(220, 60, 140, 0.4) 0%, transparent 55%),
+              radial-gradient(ellipse at 10% 80%, rgba(40, 200, 160, 0.35) 0%, transparent 55%),
+              linear-gradient(135deg, #0a0a0f 0%, #1a1024 40%, #050510 100%)
+            `,
+          }}
         >
           <div className="flex items-start justify-between relative z-10">
             <img
