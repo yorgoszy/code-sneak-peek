@@ -137,12 +137,12 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           className="relative w-full aspect-[9/5] px-8 py-6 flex items-end justify-between overflow-hidden shadow-2xl"
           style={{ backgroundColor: '#b7b4ac' }}
         >
-          <img
-            src={TTP_WHITE_URL}
-            alt="Trust the process"
-            crossOrigin="anonymous"
-            className="absolute top-4 right-6 h-[14rem] object-contain invert"
-          />
+          <div
+            className="absolute top-4 right-6 text-black text-3xl leading-none"
+            style={{ fontFamily: "'UnifrakturMaguntia', cursive" }}
+          >
+            trust the process
+          </div>
 
           <img
             src="https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/hyperkids-logo-white.png"
