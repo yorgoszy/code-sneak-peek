@@ -47,9 +47,10 @@ export function computeSide(s: PlanStrongSideInput): PlanStrongSideOutput {
   const zonePct = (s.zonePct && s.zonePct.length >= ZONE_COUNT) ? s.zonePct.slice(0, ZONE_COUNT) : Array(ZONE_COUNT).fill(0);
   const zoneKg = coef.map(c => +(oneRM * c).toFixed(2));
   const ari = coef.reduce((a, c, i) => a + c * (zonePct[i] || 0), 0);
-  const monthlyNlPerZone = zonePct.map(p => Math.round(monthlyNL * p));
-  const mainNlPerWeek = s.mainPct.map(p => Math.round(monthlyNL * p));
-  const v91NlPerWeek = s.v91Pct.map(p => Math.round(monthlyNL * p));
+  const roundEven = (n: number) => 2 * Math.round(n / 2);
+  const monthlyNlPerZone = zonePct.map(p => roundEven(monthlyNL * p));
+  const mainNlPerWeek = s.mainPct.map(p => roundEven(monthlyNL * p));
+  const v91NlPerWeek = s.v91Pct.map(p => roundEven(monthlyNL * p));
   const weeklyHari = s.mainPct.map((wpct) => {
     const weekNl = monthlyNL * wpct;
     if (!weekNl) return 0;
