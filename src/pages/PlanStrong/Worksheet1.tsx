@@ -330,6 +330,8 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
             </tr>
           </tbody>
         </table>
+        </>
+        );})()}
       </div>
 
       <SimpleExerciseSelectionDialog
