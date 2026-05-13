@@ -63,6 +63,12 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
       return;
     }
     setGenerating(true);
+    const [trustImage, amountImages] = await Promise.all([
+      createTrustMarkImage(),
+      Promise.all(giftCards.map(async gc => [gc.id, await createAmountImage(gc.amount)] as const)),
+    ]);
+    setTrustMarkImage(trustImage);
+    setRenderAssets(Object.fromEntries(amountImages.map(([id, amountImage]) => [id, { amountImage }])));
     setRenderList(giftCards);
     const toastId = toast.loading(`Προετοιμασία ${giftCards.length} gift cards...`);
 
@@ -98,14 +104,14 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
         toast.loading(`Δημιουργία PDF... ${Math.floor(i / 2) + 1}/${giftCards.length}`, { id: toastId });
 
         const canvas = await html2canvas(el, {
-          scale: 1.5,
-          backgroundColor: null,
+          scale: 3,
+          backgroundColor: 'transparent',
           useCORS: true,
           logging: false,
         });
-        const imgData = canvas.toDataURL('image/jpeg', 0.85);
+        const imgData = canvas.toDataURL('image/png');
         if (i > 0) pdf.addPage([90, 50], 'l');
-        pdf.addImage(imgData, 'JPEG', 0, 0, 90, 50);
+        pdf.addImage(imgData, 'PNG', 0, 0, 90, 50);
 
         // Yield to keep UI responsive
         await new Promise(r => setTimeout(r, 0));
@@ -118,6 +124,8 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
       toast.error('Σφάλμα δημιουργίας PDF', { id: toastId });
     } finally {
       setRenderList([]);
+      setRenderAssets({});
+      setTrustMarkImage(null);
       setGenerating(false);
     }
   };
