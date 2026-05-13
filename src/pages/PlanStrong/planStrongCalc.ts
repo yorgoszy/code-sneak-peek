@@ -9,6 +9,7 @@ export interface PlanStrongSideInput {
   ps: '50' | '70' | 'BTS3' | 'BTS6';   // dropdown
   monthlyNL: number | '';
   zonePct: number[];       // length 12 (fractions, e.g. 0.58)
+  zoneCoef?: number[];     // length 12 — editable %1RM row (fractions). Falls back to ZONE_COEF.
   mainPct: number[];       // length 4
   v91Pct: number[];        // length 4
   v81Pct: number[];        // length 4
@@ -38,15 +39,16 @@ export interface PlanStrongSideOutput {
 export function computeSide(s: PlanStrongSideInput): PlanStrongSideOutput {
   const oneRM = Number(s.oneRM) || 0;
   const monthlyNL = Number(s.monthlyNL) || 0;
-  const zoneKg = ZONE_COEF.map(c => +(oneRM * c).toFixed(2));
-  const ari = ZONE_COEF.reduce((a, c, i) => a + c * (s.zonePct[i] || 0), 0);
+  const coef = (s.zoneCoef && s.zoneCoef.length === 12) ? s.zoneCoef : ZONE_COEF;
+  const zoneKg = coef.map(c => +(oneRM * c).toFixed(2));
+  const ari = coef.reduce((a, c, i) => a + c * (s.zonePct[i] || 0), 0);
   const monthlyNlPerZone = s.zonePct.map(p => +(monthlyNL * p).toFixed(2));
   const mainNlPerWeek = s.mainPct.map(p => +(monthlyNL * p).toFixed(2));
   const v91NlPerWeek = s.v91Pct.map(p => +(monthlyNL * p).toFixed(2));
   const weeklyHari = s.mainPct.map((wpct) => {
     const weekNl = monthlyNL * wpct;
     if (!weekNl) return 0;
-    const intensity = ZONE_COEF.reduce(
+    const intensity = coef.reduce(
       (a, c, i) => a + c * (s.zonePct[i] * weekNl) / weekNl,
       0
     );
@@ -68,6 +70,7 @@ export function defaultSide(): PlanStrongSideInput {
     ps: '50',
     monthlyNL: '',
     zonePct: Array(12).fill(0),
+    zoneCoef: [...ZONE_COEF],
     mainPct: [0, 0, 0, 0],
     v91Pct: [0, 0, 0, 0],
     v81Pct: [0, 0, 0, 0],

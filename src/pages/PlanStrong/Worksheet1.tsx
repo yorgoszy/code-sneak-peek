@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
-  computeSide, ZONE_LABELS, ZONE_PCT_LABELS, PlanStrongSideInput,
+  computeSide, ZONE_LABELS, ZONE_PCT_LABELS, ZONE_COEF, PlanStrongSideInput,
 } from './planStrongCalc';
 import { useExercises } from '@/hooks/useExercises';
 import { useExercise1RM } from '@/hooks/useExercise1RM';
@@ -36,6 +36,10 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
   };
   const setWeek = (key: 'mainPct' | 'v91Pct' | 'v81Pct', i: number, raw: string) => {
     const arr = [...side[key]]; arr[i] = parsePct(raw); set({ [key]: arr } as any);
+  };
+  const currentCoef = (side.zoneCoef && side.zoneCoef.length === 12) ? side.zoneCoef : ZONE_COEF;
+  const setCoef = (i: number, raw: string) => {
+    const arr = [...currentCoef]; arr[i] = parsePct(raw); set({ zoneCoef: arr });
   };
 
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -132,7 +136,12 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
             </tr>
             <tr>
               <td className={headCell}>%1RM</td>
-              {ZONE_PCT_LABELS.map((c, i) => <td key={i} className={cell + " text-muted-foreground"}>{c}</td>)}
+              {currentCoef.map((c, i) => (
+                <td key={i} className={cell + " p-0"}>
+                  <Input className={inp} value={c ? `${Math.round(c * 100)}%` : ''} placeholder="0%"
+                    onChange={e => setCoef(i, e.target.value)} />
+                </td>
+              ))}
             </tr>
             <tr>
               <td className={headCell}>% NL</td>
