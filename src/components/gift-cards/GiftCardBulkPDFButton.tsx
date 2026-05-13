@@ -183,11 +183,6 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
                     />
                     <div className="text-right">
                       <p className="text-white font-bold leading-none" style={{ fontSize: '40px' }}>€{gc.amount || 0}</p>
-                      <p style={{ fontSize: '16px', marginTop: '6px', color: '#d4d1c9' }}>
-                        {gc.card_type === 'subscription'
-                          ? `Συνδρομή${subName ? ` · ${subName}` : ''}`
-                          : 'Δωροκάρτα'}
-                      </p>
                     </div>
                   </div>
 
@@ -201,7 +196,10 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
                     <div>
                       <p className="text-white font-bold tracking-widest" style={{ fontSize: '18px' }}>GIFT CARD</p>
                       {gc.sender_name && (
-                        <p style={{ fontSize: '16px', marginTop: '8px', color: '#d4d1c9' }}>Από: {gc.sender_name}</p>
+                        <p style={{ fontSize: '16px', marginTop: '6px', color: '#d4d1c9' }}>Από: {gc.sender_name}</p>
+                      )}
+                      {gc.card_type === 'subscription' && subName && (
+                        <p style={{ fontSize: '16px', marginTop: '3px', color: '#d4d1c9' }}>Συνδρομή · {subName}</p>
                       )}
                       {expiryDate && (
                         <p style={{ fontSize: '16px', color: '#d4d1c9' }}>Ισχύει έως: {expiryDate}</p>
