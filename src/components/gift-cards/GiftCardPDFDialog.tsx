@@ -52,6 +52,12 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
     if (!cardRef.current || !backRef.current) return;
 
     try {
+      // Wait for custom fonts (UnifrakturMaguntia) to be ready before rasterizing
+      if ((document as any).fonts?.ready) {
+        await (document as any).fonts.ready;
+      }
+      await new Promise(r => setTimeout(r, 150));
+
       const [frontCanvas, backCanvas] = await Promise.all([
         html2canvas(cardRef.current, { scale: 2, backgroundColor: null, useCORS: true }),
         html2canvas(backRef.current, { scale: 2, backgroundColor: null, useCORS: true }),
