@@ -23,6 +23,7 @@ interface GiftCardPDFDialogProps {
 }
 
 const ICON_BLACK_URL = "https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/icon-black.png";
+const TTP_WHITE_URL = "https://dicwdviufetibnafzipa.supabase.co/storage/v1/object/public/branding/trust-the-process-white.png";
 
 export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
   giftCard,
