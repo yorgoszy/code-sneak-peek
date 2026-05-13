@@ -63,6 +63,7 @@ export default function PlanStrongPage() {
         .select('id, name, email, avatar_url, photo_url')
         .in('id', userIds);
       setSelectedUsers(data || []);
+      setPreviewUserId(prev => (prev && userIds.includes(prev)) ? prev : (userIds[0] || ''));
     })();
   }, [userIds]);
 
