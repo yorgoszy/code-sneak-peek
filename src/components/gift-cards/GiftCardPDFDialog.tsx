@@ -198,9 +198,14 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
               alt="HYPERKIDS"
               className="h-8 object-contain"
             />
-            <div className="h-8 flex items-center">
-              <p className="text-white text-2xl font-bold" style={{ lineHeight: '1', margin: 0 }}>€{giftCard.amount || 0}</p>
-            </div>
+            {amountImage && (
+              <img
+                src={amountImage.src}
+                alt={`€${giftCard.amount || 0}`}
+                className="h-8 object-contain"
+                style={{ width: `${amountImage.width}px`, height: `${amountImage.height}px` }}
+              />
+            )}
           </div>
 
           <div className="flex items-center justify-center relative z-10">
@@ -283,7 +288,7 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           <Button variant="outline" onClick={onClose} className="rounded-none">
             Κλείσιμο
           </Button>
-          <Button onClick={handleDownloadPDF} disabled={!trustMarkImage} className="bg-black text-white hover:bg-gray-800 rounded-none">
+          <Button onClick={handleDownloadPDF} disabled={!trustMarkImage || !amountImage} className="bg-black text-white hover:bg-gray-800 rounded-none">
             <Download className="h-4 w-4 mr-2" />
             Λήψη PDF
           </Button>
