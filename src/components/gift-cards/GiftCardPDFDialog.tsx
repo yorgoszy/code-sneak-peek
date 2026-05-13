@@ -7,6 +7,8 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { supabase } from "@/integrations/supabase/client";
 import { hyperkidsLogoBlack } from "@/assets/hyperkidsLogoBlack";
+import { hyperkidsLogoWhite } from "@/assets/hyperkidsLogoWhite";
+import { iconBlack } from "@/assets/iconBlack";
 
 interface GiftCardPDFDialogProps {
   giftCard: {
