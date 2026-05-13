@@ -278,16 +278,17 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
         })()}
 
         {([
-          { label: 'VARIANT (91-100% INTENSITY ZONE)', key: 'v91Pct' as const },
-          { label: 'VARIANT (81-90% INTENSITY ZONE)', key: 'v81Pct' as const },
-          { label: 'VARIANT (71-80% INTENSITY ZONE)', key: 'v71Pct' as const },
-          { label: 'VARIANT (61-70% INTENSITY ZONE)', key: 'v61Pct' as const },
-          { label: 'VARIANT (50-60% INTENSITY ZONE)', key: 'v50Pct' as const },
+          { label: 'VARIANT (91-100% INTENSITY ZONE)', key: 'v91Pct' as const, zones: [4, 5] },
+          { label: 'VARIANT (81-90% INTENSITY ZONE)', key: 'v81Pct' as const, zones: [3] },
+          { label: 'VARIANT (71-80% INTENSITY ZONE)', key: 'v71Pct' as const, zones: [2] },
+          { label: 'VARIANT (61-70% INTENSITY ZONE)', key: 'v61Pct' as const, zones: [1] },
+          { label: 'VARIANT (50-60% INTENSITY ZONE)', key: 'v50Pct' as const, zones: [0] },
         ]).filter(v => !hiddenVariants.includes(v.key)).map(v => {
           const arr = (side as any)[v.key] && (side as any)[v.key].length === 4
             ? (side as any)[v.key] as number[]
             : [0, 0, 0, 0];
-          const nl = arr.map(p => 2 * Math.round(((Number(side.monthlyNL) || 0) * p) / 2));
+          const targetNl = v.zones.reduce((a, z) => a + (out.monthlyNlPerZone[z] || 0), 0);
+          const nl = arr.map(p => 2 * Math.round((targetNl * p) / 2));
           return (
           <table key={v.key} className="border-collapse w-full table-fixed">
             <colgroup>
@@ -327,7 +328,7 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
               <tr>
                 <td className={headCell}>NL</td>
                 {nl.map((n, i) => <td key={i} className={cell + " bg-muted/30"}>{n || '-'}</td>)}
-                <td className={cell + " bg-muted/30"}>{nl.reduce((a, b) => a + b, 0)}</td>
+                <td className={cell + " bg-muted/30"}>{nl.reduce((a, b) => a + b, 0)} / {targetNl}</td>
               </tr>
             </tbody>
           </table>
