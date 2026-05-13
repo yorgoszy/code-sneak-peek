@@ -8,11 +8,14 @@ export interface PlanStrongSideInput {
   unit: 'KG' | 'LB';
   ps: '50' | '70' | 'BTS3' | 'BTS6';   // dropdown
   monthlyNL: number | '';
-  zonePct: number[];       // length 12 (fractions, e.g. 0.58)
-  zoneCoef?: number[];     // length 12 — editable %1RM row (fractions). Falls back to ZONE_COEF.
+  zonePct: number[];       // length 6 (fractions, e.g. 0.58)
+  zoneCoef?: number[];     // length 6 — editable %1RM row (fractions). Falls back to ZONE_COEF.
   mainPct: number[];       // length 4
   v91Pct: number[];        // length 4
   v81Pct: number[];        // length 4
+  v71Pct?: number[];       // length 4 — VARIANT (71-80%)
+  v61Pct?: number[];       // length 4 — VARIANT (61-70%)
+  v50Pct?: number[];       // length 4 — VARIANT (50-60%)
 }
 
 export const ZONE_LABELS = [
