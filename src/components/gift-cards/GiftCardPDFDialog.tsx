@@ -63,7 +63,7 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
         {/* Gift Card Visual - matches landing page */}
         <div
           ref={cardRef}
-          className="relative w-full aspect-[9/5] bg-black p-4 flex flex-col justify-between overflow-hidden"
+          className="relative w-full aspect-[9/5] bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 p-4 flex flex-col justify-between overflow-hidden shadow-2xl"
         >
           {/* Top: logo */}
           <div className="flex items-start justify-between relative z-10">
