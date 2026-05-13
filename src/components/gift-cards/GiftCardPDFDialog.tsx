@@ -275,7 +275,7 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           <img
             src={iconBlack}
             alt="Icon"
-            className="absolute h-8 object-contain"
+            className="absolute h-12 object-contain"
             style={{ bottom: '25px', left: '25px' }}
           />
 
