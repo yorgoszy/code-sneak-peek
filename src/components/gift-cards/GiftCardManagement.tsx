@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { GiftCardPDFDialog } from './GiftCardPDFDialog';
 import { GiftCardEditDialog } from './GiftCardEditDialog';
+import { GiftCardBulkPDFButton } from './GiftCardBulkPDFButton';
 
 interface GiftCard {
   id: string;
@@ -226,13 +227,15 @@ export const GiftCardManagement: React.FC = () => {
             Διαχείριση δωροκαρτών
           </p>
         </div>
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-black text-white hover:bg-gray-800 rounded-none">
-              <Plus className="h-4 w-4 mr-2" />
-              Νέο Gift Card
-            </Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-2">
+          <GiftCardBulkPDFButton giftCards={filtered} />
+          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-black text-white hover:bg-gray-800 rounded-none">
+                <Plus className="h-4 w-4 mr-2" />
+                Νέο Gift Card
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-lg rounded-none">
             <DialogHeader>
               <DialogTitle>Δημιουργία Gift Card</DialogTitle>
@@ -332,7 +335,8 @@ export const GiftCardManagement: React.FC = () => {
               </Button>
             </div>
           </DialogContent>
-        </Dialog>
+          </Dialog>
+        </div>
       </div>
 
       {/* Search */}
