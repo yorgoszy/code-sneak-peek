@@ -265,12 +265,14 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
               <th className={headCell}>WEEK 2</th>
               <th className={headCell}>WEEK 3</th>
               <th className={headCell}>WEEK 4</th>
+              <th className={headCell}></th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td className={headCell}>WEEKLY HARI</td>
               {out.weeklyHari.map((h, i) => <td key={i} className={cell + " bg-muted/30"}>{h.toFixed(2)}</td>)}
+              <td className={cell + " bg-muted/30"}></td>
             </tr>
           </tbody>
         </table>
