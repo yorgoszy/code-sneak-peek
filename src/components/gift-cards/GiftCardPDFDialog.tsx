@@ -43,6 +43,33 @@ const createTrustMarkImage = async () => {
   return { src: canvas.toDataURL('image/png'), width, height };
 };
 
+const createAmountImage = async (amount: number | null) => {
+  const text = `€${amount || 0}`;
+  const font = 'bold 24px "Robert Pro", "Roobert Pro", Arial, sans-serif';
+  if (document.fonts) {
+    await document.fonts.load(font);
+    await document.fonts.ready;
+  }
+
+  const scale = 4;
+  const width = 50;
+  const height = 32;
+  const canvas = document.createElement('canvas');
+  canvas.width = width * scale;
+  canvas.height = height * scale;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+  ctx.scale(scale, scale);
+  ctx.font = font;
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, width, height / 2);
+
+  return { src: canvas.toDataURL('image/png'), width, height };
+};
+
 interface GiftCardPDFDialogProps {
   giftCard: {
     code: string;
@@ -68,6 +95,7 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
   const backRef = useRef<HTMLDivElement>(null);
   const [subscriptionName, setSubscriptionName] = useState<string | null>(null);
   const [trustMarkImage, setTrustMarkImage] = useState<{ src: string; width: number; height: number } | null>(null);
+  const [amountImage, setAmountImage] = useState<{ src: string; width: number; height: number } | null>(null);
 
   useEffect(() => {
     if (giftCard.card_type === 'subscription' && giftCard.subscription_type_id) {
@@ -85,13 +113,19 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
   useEffect(() => {
     if (!isOpen) return;
     let cancelled = false;
-    createTrustMarkImage().then(image => {
-      if (!cancelled) setTrustMarkImage(image);
+    Promise.all([
+      createTrustMarkImage(),
+      createAmountImage(giftCard.amount),
+    ]).then(([trustImage, amountImg]) => {
+      if (!cancelled) {
+        setTrustMarkImage(trustImage);
+        setAmountImage(amountImg);
+      }
     });
     return () => {
       cancelled = true;
     };
-  }, [isOpen]);
+  }, [isOpen, giftCard.amount]);
 
   const handleDownloadPDF = async () => {
     const frontEl = cardRef.current;
@@ -99,11 +133,6 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
     if (!frontEl || !backEl) return;
 
     try {
-      if (document.fonts) {
-        await document.fonts.load('24px UnifrakturMaguntia');
-        await document.fonts.ready;
-      }
-
       const imgs = [
         ...Array.from(frontEl.querySelectorAll('img')),
         ...Array.from(backEl.querySelectorAll('img')),
@@ -118,7 +147,6 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
               })
         )
       );
-      await new Promise(r => setTimeout(r, 150));
 
       const [frontCanvas, backCanvas] = await Promise.all([
         html2canvas(frontEl, { scale: 3, backgroundColor: 'transparent', useCORS: true, logging: false }),
@@ -170,9 +198,14 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
               alt="HYPERKIDS"
               className="h-8 object-contain"
             />
-            <div className="h-8 flex items-center">
-              <p className="text-white text-2xl font-bold" style={{ lineHeight: '1', margin: 0 }}>€{giftCard.amount || 0}</p>
-            </div>
+            {amountImage && (
+              <img
+                src={amountImage.src}
+                alt={`€${giftCard.amount || 0}`}
+                className="h-8 object-contain"
+                style={{ width: `${amountImage.width}px`, height: `${amountImage.height}px` }}
+              />
+            )}
           </div>
 
           <div className="flex items-center justify-center relative z-10">
@@ -255,7 +288,7 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
           <Button variant="outline" onClick={onClose} className="rounded-none">
             Κλείσιμο
           </Button>
-          <Button onClick={handleDownloadPDF} disabled={!trustMarkImage} className="bg-black text-white hover:bg-gray-800 rounded-none">
+          <Button onClick={handleDownloadPDF} disabled={!trustMarkImage || !amountImage} className="bg-black text-white hover:bg-gray-800 rounded-none">
             <Download className="h-4 w-4 mr-2" />
             Λήψη PDF
           </Button>
