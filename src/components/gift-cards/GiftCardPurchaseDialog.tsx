@@ -289,24 +289,59 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="recipient-email" className="font-['Roobert_Pro',sans-serif]">
-                Email παραλήπτη
-              </Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <p className="text-xs text-gray-500 font-['Roobert_Pro',sans-serif]">
+              Όλα τα παρακάτω πεδία είναι <strong>προαιρετικά</strong>. Μπορείς να προχωρήσεις απευθείας στην πληρωμή και να κατεβάσεις την κάρτα σε PDF μετά.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="sender-name" className="text-xs font-['Roobert_Pro',sans-serif]">Όνομα αποστολέα</Label>
                 <Input
-                  id="recipient-email"
-                  type="email"
-                  placeholder="example@email.com"
-                  value={recipientEmail}
-                  onChange={(e) => setRecipientEmail(e.target.value)}
-                  className="pl-10 rounded-none font-['Roobert_Pro',sans-serif]"
+                  id="sender-name"
+                  placeholder="π.χ. Γιώργος"
+                  value={senderName}
+                  onChange={(e) => setSenderName(e.target.value)}
+                  className="rounded-none font-['Roobert_Pro',sans-serif]"
                 />
               </div>
-              <p className="text-xs text-gray-400 font-['Roobert_Pro',sans-serif]">
-                Οι δωροκάρτες θα αποσταλούν σε αυτό το email
-              </p>
+              <div className="space-y-1">
+                <Label htmlFor="recipient-name" className="text-xs font-['Roobert_Pro',sans-serif]">Όνομα παραλήπτη</Label>
+                <Input
+                  id="recipient-name"
+                  placeholder="π.χ. Μαρία"
+                  value={recipientName}
+                  onChange={(e) => setRecipientName(e.target.value)}
+                  className="rounded-none font-['Roobert_Pro',sans-serif]"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="buyer-email" className="text-xs font-['Roobert_Pro',sans-serif]">Email αποστολέα</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="buyer-email"
+                    type="email"
+                    placeholder="esu@email.com"
+                    value={buyerEmail}
+                    onChange={(e) => setBuyerEmail(e.target.value)}
+                    className="pl-10 rounded-none font-['Roobert_Pro',sans-serif]"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="recipient-email" className="text-xs font-['Roobert_Pro',sans-serif]">Email παραλήπτη</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="recipient-email"
+                    type="email"
+                    placeholder="paralhpths@email.com"
+                    value={recipientEmail}
+                    onChange={(e) => setRecipientEmail(e.target.value)}
+                    className="pl-10 rounded-none font-['Roobert_Pro',sans-serif]"
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="flex gap-2 justify-end pt-2">
@@ -320,7 +355,7 @@ export const GiftCardPurchaseDialog: React.FC<GiftCardPurchaseDialogProps> = ({
               </Button>
               <Button
                 onClick={handlePurchase}
-                disabled={!recipientEmail || purchasing}
+                disabled={purchasing}
                 className="bg-black text-white hover:bg-gray-800 rounded-none font-['Roobert_Pro',sans-serif]"
               >
                 {purchasing ? (
