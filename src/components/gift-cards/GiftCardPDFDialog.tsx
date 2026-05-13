@@ -95,6 +95,7 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
   const backRef = useRef<HTMLDivElement>(null);
   const [subscriptionName, setSubscriptionName] = useState<string | null>(null);
   const [trustMarkImage, setTrustMarkImage] = useState<{ src: string; width: number; height: number } | null>(null);
+  const [amountImage, setAmountImage] = useState<{ src: string; width: number; height: number } | null>(null);
 
   useEffect(() => {
     if (giftCard.card_type === 'subscription' && giftCard.subscription_type_id) {
@@ -112,34 +113,54 @@ export const GiftCardPDFDialog: React.FC<GiftCardPDFDialogProps> = ({
   useEffect(() => {
     if (!isOpen) return;
     let cancelled = false;
-    createTrustMarkImage().then(image => {
-      if (!cancelled) setTrustMarkImage(image);
+    Promise.all([
+      createTrustMarkImage(),
+      createAmountImage(giftCard.amount),
+    ]).then(([trustImage, amountImg]) => {
+      if (!cancelled) {
+        setTrustMarkImage(trustImage);
+        setAmountImage(amountImg);
+      }
     });
     return () => {
       cancelled = true;
     };
-  }, [isOpen]);
+  }, [isOpen, giftCard.amount]);
 
-  const frontCanvas = useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = CARD_WIDTH;
-    canvas.height = CARD_HEIGHT;
-    return canvas;
-  }, []);
+  const handleDownloadPDF = async () => {
+    const frontEl = cardRef.current;
+    const backEl = backRef.current;
+    if (!frontEl || !backEl) return;
 
-  const backCanvas = useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = CARD_WIDTH;
-    canvas.height = CARD_HEIGHT;
-    return canvas;
-  }, []);
+    try {
+      const imgs = [
+        ...Array.from(frontEl.querySelectorAll('img')),
+        ...Array.from(backEl.querySelectorAll('img')),
+      ];
+      await Promise.all(
+        imgs.map(img =>
+          img.complete && img.naturalWidth > 0
+            ? Promise.resolve()
+            : new Promise<void>(resolve => {
+                img.onload = () => resolve();
+                img.onerror = () => resolve();
+              })
+        )
+      );
 
-  const handleDownloadPDF = () => {
-    const pdf = new jsPDF('l', 'mm', [90, 50]);
-    pdf.addImage(frontCanvas.toDataURL('image/png'), 'PNG', 0, 0, 90, 50);
-    pdf.addPage([90, 50], 'l');
-    pdf.addImage(backCanvas.toDataURL('image/png'), 'PNG', 0, 0, 90, 50);
-    pdf.save(`gift-card-${giftCard.code}.pdf`);
+      const [frontCanvas, backCanvas] = await Promise.all([
+        html2canvas(frontEl, { scale: 3, backgroundColor: 'transparent', useCORS: true, logging: false }),
+        html2canvas(backEl, { scale: 3, backgroundColor: 'transparent', useCORS: true, logging: false }),
+      ]);
+
+      const pdf = new jsPDF('l', 'mm', [90, 50]);
+      pdf.addImage(frontCanvas.toDataURL('image/png'), 'PNG', 0, 0, 90, 50);
+      pdf.addPage([90, 50], 'l');
+      pdf.addImage(backCanvas.toDataURL('image/png'), 'PNG', 0, 0, 90, 50);
+      pdf.save(`gift-card-${giftCard.code}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    }
   };
 
   const expiryDate = giftCard.expires_at
