@@ -21,7 +21,7 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
       : 'Το τέλειο δώρο για κάθε αθλητή. Αγόρασε ένα Gift Card και χάρισε αθλητισμό, υγεία και πρόοδο.',
     feature1: isEn ? 'Available as subscription' : 'Διαθέσιμο σε συνδρομή',
     feature2: isEn ? 'Printable PDF card with QR code' : 'Εκτυπώσιμη κάρτα PDF με QR code',
-    feature3: isEn ? 'Redeem online or at the gym' : 'Εξαργύρωση online ή στο γυμναστήριο',
+    feature3: isEn ? 'Redeem at the gym' : 'Εξαργύρωση στο γυμναστήριο',
     cta: isEn ? 'Buy Gift Card' : 'Αγόρασε Gift Card',
   };
 
