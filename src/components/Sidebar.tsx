@@ -738,6 +738,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     },
     { type: 'separator' },
     {
+      icon: Activity,
+      label: "AMS Settings",
+      path: "/dashboard/ams-settings",
+      badge: null
+    },
+    {
       icon: Download,
       label: "Download PWA Apps",
       path: null,
