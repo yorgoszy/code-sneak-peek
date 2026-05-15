@@ -36,7 +36,8 @@ import {
   ShieldAlert,
   Radio,
   Shuffle,
-  ClipboardList
+  ClipboardList,
+  Activity,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -737,6 +738,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       external: true
     },
     { type: 'separator' },
+    {
+      icon: Activity,
+      label: "AMS Settings",
+      path: "/dashboard/ams-settings",
+      badge: null
+    },
     {
       icon: Download,
       label: "Download PWA Apps",
