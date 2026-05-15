@@ -4521,6 +4521,33 @@ export type Database = {
           },
         ]
       }
+      feature_flags: {
+        Row: {
+          created_at: string
+          description: string | null
+          enabled: boolean
+          flag_key: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          flag_key: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          flag_key?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       federation_category_templates: {
         Row: {
           category_type: string
@@ -7491,6 +7518,78 @@ export type Database = {
           {
             foreignKeyName: "payments_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      performance_bands: {
+        Row: {
+          age_group: string | null
+          coach_id: string | null
+          created_at: string
+          green_max: number | null
+          green_min: number | null
+          id: string
+          metric_key: string
+          notes: string | null
+          position_or_group: string | null
+          red_max: number | null
+          red_min: number | null
+          source: string | null
+          sport: string | null
+          updated_at: string
+          yellow_max: number | null
+          yellow_min: number | null
+        }
+        Insert: {
+          age_group?: string | null
+          coach_id?: string | null
+          created_at?: string
+          green_max?: number | null
+          green_min?: number | null
+          id?: string
+          metric_key: string
+          notes?: string | null
+          position_or_group?: string | null
+          red_max?: number | null
+          red_min?: number | null
+          source?: string | null
+          sport?: string | null
+          updated_at?: string
+          yellow_max?: number | null
+          yellow_min?: number | null
+        }
+        Update: {
+          age_group?: string | null
+          coach_id?: string | null
+          created_at?: string
+          green_max?: number | null
+          green_min?: number | null
+          id?: string
+          metric_key?: string
+          notes?: string | null
+          position_or_group?: string | null
+          red_max?: number | null
+          red_min?: number | null
+          source?: string | null
+          sport?: string | null
+          updated_at?: string
+          yellow_max?: number | null
+          yellow_min?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "performance_bands_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "performance_bands_coach_id_fkey"
+            columns: ["coach_id"]
             isOneToOne: false
             referencedRelation: "public_competition_athletes"
             referencedColumns: ["id"]
@@ -11007,6 +11106,10 @@ export type Database = {
       check_and_update_expired_subscriptions: {
         Args: never
         Returns: undefined
+      }
+      classify_band: {
+        Args: { band_id: string; metric_value: number }
+        Returns: string
       }
       cleanup_expired_ai_chat_files: { Args: never; Returns: undefined }
       cleanup_expired_waiting_list: { Args: never; Returns: undefined }
