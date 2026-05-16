@@ -11090,6 +11090,31 @@ export type Database = {
         }
         Relationships: []
       }
+      vw_daily_training_load: {
+        Row: {
+          daily_duration_min: number | null
+          daily_session_count: number | null
+          daily_volume_kg: number | null
+          load_date: string | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_stats_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_stats_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       admin_delete_athlete: { Args: { athlete_id: string }; Returns: undefined }
@@ -11113,6 +11138,16 @@ export type Database = {
       }
       cleanup_expired_ai_chat_files: { Args: never; Returns: undefined }
       cleanup_expired_waiting_list: { Args: never; Returns: undefined }
+      compute_acwr: {
+        Args: { p_end_date?: string; p_load_metric?: string; p_user_id: string }
+        Returns: {
+          acute_7d: number
+          acwr: number
+          chronic_28d: number
+          daily_load: number
+          load_date: string
+        }[]
+      }
       create_exercise_tables: { Args: never; Returns: undefined }
       current_app_user_id: { Args: never; Returns: string }
       exec_sql: { Args: { query: string }; Returns: Json }
