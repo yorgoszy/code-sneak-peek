@@ -76,6 +76,7 @@ import KnowledgeManagementWithSidebar from "@/pages/KnowledgeManagementWithSideb
 import { NutritionWithSidebar } from "@/pages/Dashboard/NutritionWithSidebar";
 import { AnnualPlanningWithSidebar } from "@/pages/Dashboard/AnnualPlanningWithSidebar";
 import AmsSettingsPage from "@/pages/Dashboard/AmsSettingsPage";
+import LoadMonitoringPage from "@/pages/Dashboard/LoadMonitoringPage";
 import { PhaseConfigWithSidebar } from "@/pages/Dashboard/PhaseConfigWithSidebar";
 import { SprintTimingLanding } from "@/pages/SprintTimingLanding";
 import { SprintTimingMaster } from "@/pages/SprintTimingMaster";
@@ -268,6 +269,7 @@ function App() {
                       <Route path="/dashboard/annual-planning" element={<ProtectedRoute><AnnualPlanningWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/phase-config" element={<ProtectedRoute requireAdmin><PhaseConfigWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/ams-settings" element={<ProtectedRoute><AmsSettingsPage /></ProtectedRoute>} />
+                      <Route path="/dashboard/load-monitoring" element={<ProtectedRoute><LoadMonitoringPage /></ProtectedRoute>} />
                       <Route path="/program-builder" element={<ProtectedRoute requireAdmin><ProgramBuilder /></ProtectedRoute>} />
                       <Route path="/plan-strong" element={<ProtectedRoute><PlanStrongPage /></ProtectedRoute>} />
                       <Route path="/plan-strong/:id" element={<ProtectedRoute><PlanStrongPage /></ProtectedRoute>} />
