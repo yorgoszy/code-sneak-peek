@@ -1,9 +1,10 @@
 
 import React, { useEffect } from 'react';
+import { toast } from 'sonner';
 import { Dialog } from "@/components/ui/dialog";
 import { User, Exercise, Program } from './types';
 import { ProgramBuilderDialogContent } from './builder/ProgramBuilderDialogContent';
-import { useProgramBuilderState } from './builder/hooks/useProgramBuilderState';
+import { useProgramBuilderState, hasProgramDraft, clearProgramDraft } from './builder/hooks/useProgramBuilderState';
 import { useProgramBuilderActions } from './builder/hooks/useProgramBuilderActions';
 import { useProgramBuilderDialogLogic } from './builder/hooks/useProgramBuilderDialogLogic';
 
