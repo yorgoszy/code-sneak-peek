@@ -265,6 +265,7 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
     };
     
     setProgram(loadedProgram);
+    setTimeout(() => { isLoadingRef.current = false; }, 50);
   }, [exercises]);
 
   const getTotalTrainingDays = useCallback(() => {
@@ -279,6 +280,8 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
     resetProgram,
     generateId,
     loadProgramFromData,
-    getTotalTrainingDays
+    getTotalTrainingDays,
+    restoreDraft,
+    discardDraft
   };
 };
