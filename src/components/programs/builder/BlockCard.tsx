@@ -137,10 +137,13 @@ export const BlockCard: React.FC<BlockCardProps> = React.memo(({
   // For warm-up blocks in multi-athlete mode, display the exercises belonging
   // to the currently active preview user (selectedUserId).
   const isWarmUp = block.training_type === 'warm up';
-  const perUserExercises = isWarmUp && selectedUserId
+  const hasPerUserWarmUps = isWarmUp && !!block.program_exercises_by_user;
+  const perUserExercises = hasPerUserWarmUps && selectedUserId
     ? block.program_exercises_by_user?.[selectedUserId]
     : undefined;
-  const displayedExercises = perUserExercises ?? block.program_exercises;
+  const displayedExercises = hasPerUserWarmUps
+    ? (perUserExercises || [])
+    : block.program_exercises;
 
   const exercisesCount = displayedExercises.length;
 

@@ -112,8 +112,8 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
 }) => {
   console.log('🔄 ProgramBuilder render - user_ids:', program.user_ids);
   
-  // Προτεραιότητα: user_id -> πρώτος από user_ids
-  const selectedUserId = program.user_id || (program.user_ids && program.user_ids.length > 0 ? program.user_ids[0] : undefined);
+  // Προτεραιότητα: ενεργό tab χρήστη -> user_id -> πρώτος από user_ids
+  const selectedUserId = activePreviewUserId || program.user_id || (program.user_ids && program.user_ids.length > 0 ? program.user_ids[0] : undefined);
   console.log('🎯 ProgramBuilder - selectedUserId:', selectedUserId);
   
   const canAssign = program.user_ids && program.user_ids.length > 0 && 
