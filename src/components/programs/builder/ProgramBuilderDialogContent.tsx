@@ -140,6 +140,12 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   // The userId used for cache provider and FMS
   const selectedUserId = activePreviewUserId || defaultUserId;
 
+  // Sync active preview user to module ref so action hooks (warm-up per-user edits) can read it
+  useEffect(() => {
+    setActivePreviewUser(selectedUserId);
+    return () => setActivePreviewUser(null);
+  }, [selectedUserId]);
+
   return (
     <DialogContent className="w-screen h-screen max-w-none max-h-none m-0 p-0 rounded-none [&>button]:hidden">
       <UserExerciseDataCacheProvider userId={selectedUserId}>
