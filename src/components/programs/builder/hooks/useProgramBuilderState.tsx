@@ -197,21 +197,6 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
 
   const loadProgramFromData = useCallback((programData: any) => {
     isLoadingRef.current = true;
-    setProgram({
-      name: '',
-      description: '',
-      user_id: '',
-      user_ids: [],
-      selected_group_id: '',
-      is_multiple_assignment: true,
-      is_sellable: false,
-      price: undefined,
-      training_dates: [],
-      weeks: []
-    });
-  }, []);
-
-  const loadProgramFromData = useCallback((programData: any) => {
     // ΚΡΙΤΙΚΟ: Χρησιμοποιούμε program_weeks (από DB) ή weeks (αν υπάρχει ήδη στο format του builder)
     const sourceWeeks = programData.program_weeks || programData.weeks || [];
     
