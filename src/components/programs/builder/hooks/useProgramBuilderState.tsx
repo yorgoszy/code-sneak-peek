@@ -58,6 +58,8 @@ export interface Block {
   workout_duration?: string;
   block_sets?: number;
   program_exercises: ProgramExercise[];
+  /** For multi-athlete warm-up blocks: per-user exercise lists derived from each user's functional test */
+  program_exercises_by_user?: Record<string, ProgramExercise[]>;
 }
 
 export interface ProgramExercise {
