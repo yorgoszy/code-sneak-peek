@@ -103,19 +103,29 @@ export const useExerciseActions = (
                       tempo: '',
                       rest: '',
                       notes: '',
-                      exercise_order: (block.program_exercises?.length || 0) + 1,
+                      exercise_order: 0,
                       exercises: {
                         id: exerciseId,
                         name: findExerciseName(exerciseId),
                         description: ''
                       }
                     };
-                    
+
                     console.log('➕ Adding main exercise to block:', block.name);
-                    
+
+                    if (isPerUserWarmUp(block)) {
+                      return updateBlockForActiveUser(block, (list) => [
+                        ...list,
+                        { ...newExercise, exercise_order: list.length + 1 }
+                      ]);
+                    }
+
                     return {
                       ...block,
-                      program_exercises: [...(block.program_exercises || []), newExercise]
+                      program_exercises: [
+                        ...(block.program_exercises || []),
+                        { ...newExercise, exercise_order: (block.program_exercises?.length || 0) + 1 }
+                      ]
                     };
                   }
                   return block;
