@@ -5,6 +5,7 @@ import type { ProgramStructure } from './useProgramBuilderState';
 import { assignmentService } from '../services/assignmentService';
 import { recalculateWeeksForUser } from '../services/perUserRecalculation';
 import { applyUserWarmUps } from '../services/applyUserWarmUps';
+import { clearProgramDraft } from './useProgramBuilderState';
 
 interface UseProgramBuilderDialogLogicProps {
   users: User[];
@@ -86,7 +87,7 @@ export const useProgramBuilderDialogLogic = ({
       }
       
       toast.success('Το πρόγραμμα αποθηκεύτηκε επιτυχώς!');
-      
+      clearProgramDraft();
       // Don't close dialog, keep it open for assignments
     } catch (error) {
       console.error('❌ Error saving program:', error);
@@ -176,6 +177,7 @@ export const useProgramBuilderDialogLogic = ({
       }
 
       toast.success(`Το πρόγραμμα ανατέθηκε επιτυχώς σε ${program.user_ids.length} χρήστες!`);
+      clearProgramDraft();
       handleClose();
 
       // Redirect to active programs
