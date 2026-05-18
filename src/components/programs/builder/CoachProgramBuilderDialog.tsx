@@ -83,9 +83,9 @@ export const CoachProgramBuilderDialog: React.FC<CoachProgramBuilderDialogProps>
 
   const handleMultipleAthleteChange = (userIds: string[]) => {
     console.log('🔄 CoachProgramBuilderDialog - handleMultipleAthleteChange called with:', userIds);
-    // Prefetch warm-up exercises for first user
+    // Prefetch warm-up exercises for ALL selected users
     if (userIds.length > 0) {
-      prefetchAthleteWarmUpExercises(userIds[0]);
+      userIds.forEach(uid => prefetchAthleteWarmUpExercises(uid));
     }
     updateProgram({ 
       user_ids: userIds,
