@@ -4,6 +4,7 @@ import type { User, Exercise } from '../../types';
 import type { ProgramStructure } from './useProgramBuilderState';
 import { assignmentService } from '../services/assignmentService';
 import { recalculateWeeksForUser } from '../services/perUserRecalculation';
+import { applyUserWarmUps } from '../services/applyUserWarmUps';
 
 interface UseProgramBuilderDialogLogicProps {
   users: User[];
