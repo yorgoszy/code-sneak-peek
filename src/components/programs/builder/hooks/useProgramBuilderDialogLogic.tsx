@@ -177,6 +177,7 @@ export const useProgramBuilderDialogLogic = ({
       }
 
       toast.success(`Το πρόγραμμα ανατέθηκε επιτυχώς σε ${program.user_ids.length} χρήστες!`);
+      clearProgramDraft();
       handleClose();
 
       // Redirect to active programs
