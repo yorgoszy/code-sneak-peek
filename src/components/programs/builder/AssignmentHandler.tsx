@@ -166,7 +166,8 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
         
         // 🔄 Recalculate kg/m/s for this specific user
         console.log(`🔄 Recalculating kg/m/s for user ${program.user_id}...`);
-        const userWeeks = await recalculateWeeksForUser(program.weeks, program.user_id!);
+        const personalizedWeeks = applyUserWarmUps(program.weeks, program.user_id!);
+        const userWeeks = await recalculateWeeksForUser(personalizedWeeks, program.user_id!);
         
         const assignmentData = {
           program: {
