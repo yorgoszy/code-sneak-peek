@@ -1078,6 +1078,13 @@ export const SubscriptionManagement: React.FC = () => {
           .from('user_subscriptions')
           .update({ is_paid: isPaid })
           .eq('id', newSubscriptionId);
+
+        // Διαγραφή παλιάς συνδρομής μετά την επιτυχή ανανέωση
+        const { error: deleteError } = await supabase
+          .from('user_subscriptions')
+          .delete()
+          .eq('id', subscriptionId);
+        if (deleteError) console.error('Error deleting old subscription:', deleteError);
       }
 
       // Δημιουργία απόδειξης πάντα
