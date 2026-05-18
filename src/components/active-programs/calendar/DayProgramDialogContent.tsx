@@ -9,6 +9,7 @@ import { DayProgramStatusIndicator } from './DayProgramStatusIndicator';
 import { DayProgramMainContent } from './DayProgramMainContent';
 import { RpeScoreDialog } from './RpeScoreDialog';
 import { supabase } from "@/integrations/supabase/client";
+import { UserExerciseDataCacheProvider } from '@/hooks/useUserExerciseDataCache';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface DayProgramDialogContentProps {
@@ -169,16 +170,18 @@ export const DayProgramDialogContent: React.FC<DayProgramDialogContentProps> = (
       <div className="space-y-2 md:space-y-4">
         <DayProgramStatusIndicator statusLoading={statusLoading} />
 
-        <DayProgramMainContent
-          program={program}
-          dayProgram={dayProgram}
-          workoutInProgress={effectiveInProgress}
-          dynamicStatus={dynamicStatus}
-          selectedDate={selectedDate}
-          exerciseCompletion={exerciseCompletion}
-          onSetClick={handleSetClick}
-          onVideoClick={handleVideoClick}
-        />
+        <UserExerciseDataCacheProvider userId={program.user_id || program.app_users?.id || null}>
+          <DayProgramMainContent
+            program={program}
+            dayProgram={dayProgram}
+            workoutInProgress={effectiveInProgress}
+            dynamicStatus={dynamicStatus}
+            selectedDate={selectedDate}
+            exerciseCompletion={exerciseCompletion}
+            onSetClick={handleSetClick}
+            onVideoClick={handleVideoClick}
+          />
+        </UserExerciseDataCacheProvider>
       </div>
 
       <ExerciseVideoDialog
