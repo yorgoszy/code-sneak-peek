@@ -77,12 +77,11 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
     }));
   };
 
-  // Format workout info for badge
+  // Format workout info for badge (excluding sets — sets shown separately in green)
   const getBlockInfoText = (block: any) => {
     const parts = [];
     if (block.workout_format) parts.push(block.workout_format);
     if (block.workout_duration) parts.push(block.workout_duration);
-    if (block.block_sets) parts.push(`${block.block_sets} sets`);
     return parts.join(' · ');
   };
 
