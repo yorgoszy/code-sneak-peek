@@ -119,7 +119,8 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
           
           // 🔄 Recalculate kg/m/s based on this user's personal 1RM data
           console.log(`🔄 Recalculating kg/m/s for user ${userId}...`);
-          const userWeeks = await recalculateWeeksForUser(program.weeks, userId);
+          const personalizedWeeks = applyUserWarmUps(program.weeks, userId);
+          const userWeeks = await recalculateWeeksForUser(personalizedWeeks, userId);
           
           // Κάθε χρήστης χρειάζεται δικό του program copy
           // ώστε τα kg/velocity να αποθηκεύονται ανεξάρτητα
