@@ -134,7 +134,15 @@ export const BlockCard: React.FC<BlockCardProps> = React.memo(({
     setEditingName(newName);
   };
 
-  const exercisesCount = block.program_exercises.length;
+  // For warm-up blocks in multi-athlete mode, display the exercises belonging
+  // to the currently active preview user (selectedUserId).
+  const isWarmUp = block.training_type === 'warm up';
+  const perUserExercises = isWarmUp && selectedUserId
+    ? block.program_exercises_by_user?.[selectedUserId]
+    : undefined;
+  const displayedExercises = perUserExercises ?? block.program_exercises;
+
+  const exercisesCount = displayedExercises.length;
 
   return (
     <>
@@ -166,7 +174,7 @@ export const BlockCard: React.FC<BlockCardProps> = React.memo(({
           />
           
           <BlockCardContent
-            exercises={block.program_exercises}
+            exercises={displayedExercises}
             availableExercises={exercises}
             selectedUserId={selectedUserId}
             onUpdateExercise={onUpdateExercise}
