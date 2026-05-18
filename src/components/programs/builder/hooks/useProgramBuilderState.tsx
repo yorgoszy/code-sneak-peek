@@ -141,6 +141,21 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
     weeks: []
   });
 
+  const isLoadingRef = useRef(false);
+
+  // Auto-save draft to localStorage (debounced) — only for NEW programs (no id)
+  useEffect(() => {
+    if (isLoadingRef.current) return;
+    if (program.id) return; // editing existing — don't overwrite draft
+    if (!hasMeaningfulContent(program)) return;
+    const t = setTimeout(() => {
+      try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(program));
+      } catch {}
+    }, 800);
+    return () => clearTimeout(t);
+  }, [program]);
+
   const generateId = useCallback(() => {
     return Math.random().toString(36).substr(2, 9);
   }, []);
@@ -153,6 +168,35 @@ export const useProgramBuilderState = (exercises: Exercise[]) => {
   }, []);
 
   const resetProgram = useCallback(() => {
+    setProgram({
+      name: '',
+      description: '',
+      user_id: '',
+      user_ids: [],
+      selected_group_id: '',
+      is_multiple_assignment: true,
+      is_sellable: false,
+      price: undefined,
+      training_dates: [],
+      weeks: []
+    });
+  }, []);
+
+  const restoreDraft = useCallback(() => {
+    const draft = readProgramDraft();
+    if (!draft) return false;
+    isLoadingRef.current = true;
+    setProgram(draft);
+    setTimeout(() => { isLoadingRef.current = false; }, 50);
+    return true;
+  }, []);
+
+  const discardDraft = useCallback(() => {
+    clearProgramDraft();
+  }, []);
+
+  const loadProgramFromData = useCallback((programData: any) => {
+    isLoadingRef.current = true;
     setProgram({
       name: '',
       description: '',
