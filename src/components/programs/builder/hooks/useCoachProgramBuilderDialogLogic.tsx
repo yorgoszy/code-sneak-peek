@@ -5,6 +5,7 @@ import type { User, Exercise } from '../../types';
 import type { ProgramStructure } from './useProgramBuilderState';
 import { coachAssignmentService } from '../services/coachAssignmentService';
 import { recalculateWeeksForUser } from '../services/perUserRecalculation';
+import { applyUserWarmUps } from '../services/applyUserWarmUps';
 
 interface UseCoachProgramBuilderDialogLogicProps {
   users: User[]; // Αυτοί είναι coach_users
@@ -158,7 +159,8 @@ export const useCoachProgramBuilderDialogLogic = ({
         
         // 🔄 Recalculate kg/m/s based on this user's personal 1RM data
         console.log(`🔄 [Coach] Recalculating kg/m/s for user ${coachUserId}...`);
-        const userWeeks = await recalculateWeeksForUser(program.weeks || [], coachUserId);
+        const personalizedWeeks = applyUserWarmUps(program.weeks || [], coachUserId);
+        const userWeeks = await recalculateWeeksForUser(personalizedWeeks, coachUserId);
 
         let programIdForUser = baseProgramId;
 

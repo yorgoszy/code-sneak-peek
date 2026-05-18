@@ -46,6 +46,7 @@ export interface Block {
   workout_duration?: string;
   block_sets?: number;
   program_exercises: ProgramExercise[];
+  program_exercises_by_user?: Record<string, ProgramExercise[]>;
 }
 
 export type EffortType = 'none' | 'DE' | 'ME';

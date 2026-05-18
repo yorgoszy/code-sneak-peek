@@ -146,7 +146,7 @@ export const AIControlledProgramBuilderDialog: React.FC = () => {
         }}
         onMultipleAthleteChange={(user_ids) => {
           if (user_ids.length > 0) {
-            prefetchAthleteWarmUpExercises(user_ids[0]);
+            user_ids.forEach(uid => prefetchAthleteWarmUpExercises(uid));
           }
           updateProgram({ user_ids });
         }}

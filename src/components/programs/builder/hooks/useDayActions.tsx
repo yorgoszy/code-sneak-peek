@@ -248,78 +248,79 @@ export const useDayActions = (
   // Update day effort (upper/lower) - cycles: none -> DE -> ME -> none
   // Also updates warm-up exercises based on selected body parts
   const updateDayEffort = async (weekId: string, dayId: string, bodyPart: 'upper' | 'lower', effort: EffortType) => {
-    // Get selected user ID for warm up exercises
-    const selectedUserId = program.user_id || (program.user_ids && program.user_ids.length > 0 ? program.user_ids[0] : '');
-    
+    // Collect ALL selected user IDs (multi mode) or single user
+    const allUserIds: string[] = program.is_multiple_assignment && program.user_ids?.length
+      ? [...program.user_ids]
+      : (program.user_id ? [program.user_id] : []);
+
     // Get current day to calculate new effort values
     const currentWeek = program.weeks?.find(w => w.id === weekId);
     const currentDay = currentWeek?.program_days?.find(d => d.id === dayId);
-    
-    // Calculate the new effort values
+
     const newUpperEffort = bodyPart === 'upper' ? effort : (currentDay?.upper_effort || 'none');
     const newLowerEffort = bodyPart === 'lower' ? effort : (currentDay?.lower_effort || 'none');
-    
-    // Determine which body regions to include based on active efforts
+
     const includeUpper = newUpperEffort !== 'none';
     const includeLower = newLowerEffort !== 'none';
-    
-    // Get warm-up exercises - try cache first, then fetch if needed
-    let warmUpExercises: ProgramExercise[] = [];
-    if (selectedUserId && (includeUpper || includeLower)) {
-      // Try cache first (instant)
-      let allExercises = getCachedWarmUpExercises(selectedUserId);
-      
-      // If no cache, fetch and wait
-      if (!allExercises) {
-        console.log('⏳ No cache - fetching warm-up exercises...');
-        allExercises = await fetchAthleteWarmUpExercises(selectedUserId);
-      } else {
-        console.log('🚀 Using cached warm-up exercises');
-      }
-      
-      // Filter exercises based on active body parts
-      const filteredExercises = allExercises.filter(ex => {
-        if (includeUpper && ex.body_region === 'upper') return true;
-        if (includeLower && ex.body_region === 'lower') return true;
-        return false;
-      });
-      
-      warmUpExercises = filteredExercises.map((warmUp, index) => ({
-        id: generateId(),
-        exercise_id: warmUp.exercise_id,
-        exercise_order: index + 1,
-        sets: 1,
-        reps: warmUp.exercise_type === 'stretching' ? '30' : '10',
-        reps_mode: warmUp.exercise_type === 'stretching' ? 'time' as const : 'reps' as const,
-        kg: '',
-        kg_mode: 'kg' as const,
-        tempo: '',
-        rest: '',
-        notes: `${warmUp.muscle_name} - ${warmUp.exercise_type === 'stretching' ? 'Διάταση' : 'Ενδυνάμωση'}`,
-        exercises: exercises?.find(ex => ex.id === warmUp.exercise_id)
+
+    // Build per-user warm-up exercise map
+    const byUser: Record<string, ProgramExercise[]> = {};
+
+    if (allUserIds.length > 0 && (includeUpper || includeLower)) {
+      await Promise.all(allUserIds.map(async (uid) => {
+        let allExercises = getCachedWarmUpExercises(uid);
+        if (!allExercises) {
+          allExercises = await fetchAthleteWarmUpExercises(uid);
+        }
+        const filtered = allExercises.filter(ex => {
+          if (includeUpper && ex.body_region === 'upper') return true;
+          if (includeLower && ex.body_region === 'lower') return true;
+          return false;
+        });
+        byUser[uid] = filtered.map((warmUp, index) => ({
+          id: generateId(),
+          exercise_id: warmUp.exercise_id,
+          exercise_order: index + 1,
+          sets: 1,
+          reps: warmUp.exercise_type === 'stretching' ? '30' : '10',
+          reps_mode: warmUp.exercise_type === 'stretching' ? 'time' as const : 'reps' as const,
+          kg: '',
+          kg_mode: 'kg' as const,
+          tempo: '',
+          rest: '',
+          notes: `${warmUp.muscle_name} - ${warmUp.exercise_type === 'stretching' ? 'Διάταση' : 'Ενδυνάμωση'}`,
+          exercises: exercises?.find(ex => ex.id === warmUp.exercise_id)
+        }));
       }));
-      
-      console.log('🏋️ Warm-up exercises:', warmUpExercises.length, 'Upper:', includeUpper, 'Lower:', includeLower);
     }
-    
+
+    // Default program_exercises (first user) - kept for legacy/single mode compatibility
+    const defaultExercises: ProgramExercise[] = allUserIds.length > 0 && byUser[allUserIds[0]]
+      ? byUser[allUserIds[0]]
+      : [];
+
+    console.log('🏋️ Per-user warm-up exercises:', Object.fromEntries(
+      Object.entries(byUser).map(([k, v]) => [k, v.length])
+    ));
+
     const updatedWeeks = (program.weeks || []).map(week => {
       if (week.id === weekId) {
         return {
           ...week,
           program_days: (week.program_days || []).map(day => {
             if (day.id !== dayId) return day;
-            
-            // Update warm-up block with filtered exercises
+
             const updatedBlocks = day.program_blocks.map(block => {
               if (block.training_type === 'warm up') {
                 return {
                   ...block,
-                  program_exercises: warmUpExercises
+                  program_exercises: defaultExercises,
+                  program_exercises_by_user: byUser
                 };
               }
               return block;
             });
-            
+
             return {
               ...day,
               upper_effort: newUpperEffort,
@@ -331,9 +332,9 @@ export const useDayActions = (
       }
       return week;
     });
-    
+
     updateProgram({ weeks: updatedWeeks });
-    
+
     if (effort !== 'none') {
       const bodyLabel = bodyPart === 'upper' ? 'Άνω Κορμός' : 'Κάτω Κορμός';
       toast.success(`${bodyLabel}: ${effort}`);

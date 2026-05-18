@@ -6,6 +6,7 @@ import { programService } from './services/programService';
 import { assignmentService } from './services/assignmentService';
 import { workoutCompletionService } from './services/workoutCompletionService';
 import { recalculateWeeksForUser } from './services/perUserRecalculation';
+import { applyUserWarmUps } from './services/applyUserWarmUps';
 
 interface AssignmentHandlerProps {
   program: ProgramStructure;
@@ -99,7 +100,8 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
           
           // 🔄 Recalculate kg/m/s based on this user's personal 1RM data
           console.log(`🔄 Recalculating kg/m/s for user ${userId}...`);
-          const userWeeks = await recalculateWeeksForUser(program.weeks, userId);
+          const personalizedWeeks = applyUserWarmUps(program.weeks, userId);
+          const userWeeks = await recalculateWeeksForUser(personalizedWeeks, userId);
           
           // Κάθε χρήστης χρειάζεται δικό του program copy
           // ώστε τα kg/velocity να αποθηκεύονται ανεξάρτητα
@@ -145,7 +147,8 @@ export const useAssignmentHandler = ({ program, getTotalTrainingDays }: Assignme
         
         // 🔄 Recalculate kg/m/s for this specific user
         console.log(`🔄 Recalculating kg/m/s for user ${program.user_id}...`);
-        const userWeeks = await recalculateWeeksForUser(program.weeks, program.user_id!);
+        const personalizedWeeks = applyUserWarmUps(program.weeks, program.user_id!);
+        const userWeeks = await recalculateWeeksForUser(personalizedWeeks, program.user_id!);
         
         const assignmentData = {
           program: {
