@@ -77,12 +77,11 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
     }));
   };
 
-  // Format workout info for badge
+  // Format workout info for badge (excluding sets — sets shown separately in green)
   const getBlockInfoText = (block: any) => {
     const parts = [];
     if (block.workout_format) parts.push(block.workout_format);
     if (block.workout_duration) parts.push(block.workout_duration);
-    if (block.block_sets) parts.push(`${block.block_sets} sets`);
     return parts.join(' · ');
   };
 
@@ -114,6 +113,11 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
                     {blockInfoText && (
                       <Badge variant="secondary" className="rounded-none text-xs bg-white/20 text-white border-0">
                         {blockInfoText}
+                      </Badge>
+                    )}
+                    {block.block_sets && (
+                      <Badge className="rounded-none text-xs bg-[#00ffba] text-black border-0 hover:bg-[#00ffba]">
+                        x{block.block_sets}
                       </Badge>
                     )}
                   </div>
