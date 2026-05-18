@@ -87,7 +87,7 @@ export const useProgramBuilderDialogLogic = ({
       }
       
       toast.success('Το πρόγραμμα αποθηκεύτηκε επιτυχώς!');
-      
+      clearProgramDraft();
       // Don't close dialog, keep it open for assignments
     } catch (error) {
       console.error('❌ Error saving program:', error);
