@@ -229,7 +229,7 @@ export const ViewOnlyExerciseRow: React.FC<ViewOnlyExerciseRowProps> = ({
           exerciseId={exercise.exercise_id || exercise.exercises?.id || exercise.id}
           exerciseName={exercise.exercises?.name || 'Exercise'}
           userId={targetUserId}
-          loadKg={Number(exercise.kg || 0) || 0}
+          loadKg={Number(calculatedValues.kg || 0) || 0}
           setNumber={1}
           totalReps={Number(exercise.reps) || 1}
         />
