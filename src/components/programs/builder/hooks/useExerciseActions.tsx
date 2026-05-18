@@ -138,46 +138,49 @@ export const useExerciseActions = (
                 if (warmUpRelationships.length > 0) {
                   updatedBlocks = updatedBlocks.map(block => {
                     if (block.training_type === 'warm up') {
-                      const existingExerciseIds = new Set(
-                        (block.program_exercises || []).map(ex => ex.exercise_id)
-                      );
-
                       const sortedRelationships = [...warmUpRelationships].sort((a, b) => {
                         const orderA = WARM_UP_ORDER.indexOf(a.relationship_type);
                         const orderB = WARM_UP_ORDER.indexOf(b.relationship_type);
                         return (orderA === -1 ? 999 : orderA) - (orderB === -1 ? 999 : orderB);
                       });
 
-                      const newRelationships = sortedRelationships.filter(
-                        rel => !existingExerciseIds.has(rel.related_exercise_id)
-                      );
+                      const buildNew = (existingList: any[]) => {
+                        const existingIds = new Set(existingList.map((ex: any) => ex.exercise_id));
+                        const newRels = sortedRelationships.filter(rel => !existingIds.has(rel.related_exercise_id));
+                        return newRels.map((rel, index) => ({
+                          id: generateId(),
+                          exercise_id: rel.related_exercise_id,
+                          sets: 1,
+                          reps: '',
+                          reps_mode: 'reps' as const,
+                          kg: '',
+                          kg_mode: 'kg' as const,
+                          percentage_1rm: 0,
+                          velocity_ms: 0,
+                          tempo: '',
+                          rest: '',
+                          notes: '',
+                          exercise_order: existingList.length + index + 1,
+                          exercises: {
+                            id: rel.related_exercise_id,
+                            name: findExerciseName(rel.related_exercise_id),
+                            description: ''
+                          }
+                        }));
+                      };
 
-                      if (newRelationships.length === 0) return block;
+                      if (isPerUserWarmUp(block)) {
+                        return updateBlockForActiveUser(block, (list) => {
+                          const additions = buildNew(list);
+                          return additions.length ? [...list, ...additions] : list;
+                        });
+                      }
 
-                      const newWarmUpExercises = newRelationships.map((rel, index) => ({
-                        id: generateId(),
-                        exercise_id: rel.related_exercise_id,
-                        sets: 1,
-                        reps: '',
-                        reps_mode: 'reps' as const,
-                        kg: '',
-                        kg_mode: 'kg' as const,
-                        percentage_1rm: 0,
-                        velocity_ms: 0,
-                        tempo: '',
-                        rest: '',
-                        notes: '',
-                        exercise_order: (block.program_exercises?.length || 0) + index + 1,
-                        exercises: {
-                          id: rel.related_exercise_id,
-                          name: findExerciseName(rel.related_exercise_id),
-                          description: ''
-                        }
-                      }));
-                      
+                      const additions = buildNew(block.program_exercises || []);
+                      if (additions.length === 0) return block;
                       return {
                         ...block,
-                        program_exercises: [...(block.program_exercises || []), ...newWarmUpExercises]
+                        program_exercises: [...(block.program_exercises || []), ...additions]
                       };
                     }
                     return block;
