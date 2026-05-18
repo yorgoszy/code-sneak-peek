@@ -11,6 +11,7 @@ import { ExerciseInteractionHandler } from './ExerciseInteractionHandler';
 import { ProgramBlocks } from './ProgramBlocks';
 import { RpeScoreDialog } from './RpeScoreDialog';
 import { useMinimizedBubbles } from '@/contexts/MinimizedBubblesContext';
+import { UserExerciseDataCacheProvider } from '@/hooks/useUserExerciseDataCache';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface DayProgramDialogProps {
@@ -364,36 +365,38 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
                     </div>
                   </div>
                 ) : (
-                  <ExerciseInteractionHandler
-                    workoutInProgress={workoutInProgress}
-                    onVideoClick={handleVideoClick}
-                    onSetClick={handleSetClick}
-                  >
-                    <ProgramBlocks
-                      blocks={dayProgram.program_blocks}
+                  <UserExerciseDataCacheProvider userId={program.user_id || program.app_users?.id || null}>
+                    <ExerciseInteractionHandler
                       workoutInProgress={workoutInProgress}
-                      getRemainingText={exerciseCompletion.getRemainingText}
-                      isExerciseComplete={exerciseCompletion.isExerciseComplete}
-                      getCompletedSets={exerciseCompletion.getCompletedSets}
-                      onExerciseClick={handleExerciseClick}
-                      onSetClick={handleSetClick}
                       onVideoClick={handleVideoClick}
-                      getNotes={exerciseCompletion.getNotes}
-                      updateNotes={exerciseCompletion.updateNotes}
-                      clearNotes={exerciseCompletion.clearNotes}
-                      updateKg={exerciseCompletion.updateKg}
-                      clearKg={exerciseCompletion.clearKg}
-                      updateVelocity={exerciseCompletion.updateVelocity}
-                      clearVelocity={exerciseCompletion.clearVelocity}
-                      updateReps={exerciseCompletion.updateReps}
-                      clearReps={exerciseCompletion.clearReps}
-                      getKg={exerciseCompletion.getKg}
-                      getReps={exerciseCompletion.getReps}
-                      getVelocity={exerciseCompletion.getVelocity}
-                      selectedDate={selectedDate}
-                      program={program}
-                    />
-                  </ExerciseInteractionHandler>
+                      onSetClick={handleSetClick}
+                    >
+                      <ProgramBlocks
+                        blocks={dayProgram.program_blocks}
+                        workoutInProgress={workoutInProgress}
+                        getRemainingText={exerciseCompletion.getRemainingText}
+                        isExerciseComplete={exerciseCompletion.isExerciseComplete}
+                        getCompletedSets={exerciseCompletion.getCompletedSets}
+                        onExerciseClick={handleExerciseClick}
+                        onSetClick={handleSetClick}
+                        onVideoClick={handleVideoClick}
+                        getNotes={exerciseCompletion.getNotes}
+                        updateNotes={exerciseCompletion.updateNotes}
+                        clearNotes={exerciseCompletion.clearNotes}
+                        updateKg={exerciseCompletion.updateKg}
+                        clearKg={exerciseCompletion.clearKg}
+                        updateVelocity={exerciseCompletion.updateVelocity}
+                        clearVelocity={exerciseCompletion.clearVelocity}
+                        updateReps={exerciseCompletion.updateReps}
+                        clearReps={exerciseCompletion.clearReps}
+                        getKg={exerciseCompletion.getKg}
+                        getReps={exerciseCompletion.getReps}
+                        getVelocity={exerciseCompletion.getVelocity}
+                        selectedDate={selectedDate}
+                        program={program}
+                      />
+                    </ExerciseInteractionHandler>
+                  </UserExerciseDataCacheProvider>
                 )}
               </div>
             ) : (
