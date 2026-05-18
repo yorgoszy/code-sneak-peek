@@ -6,26 +6,7 @@ import { programService } from './services/programService';
 import { assignmentService } from './services/assignmentService';
 import { workoutCompletionService } from './services/workoutCompletionService';
 import { recalculateWeeksForUser } from './services/perUserRecalculation';
-
-/**
- * For multi-athlete warm-up blocks, swap program_exercises with the user-specific
- * list (program_exercises_by_user[userId]) before saving the program for that user.
- */
-const applyUserWarmUps = (weeks: any[], userId: string): any[] => {
-  return (weeks || []).map(week => ({
-    ...week,
-    program_days: (week.program_days || []).map((day: any) => ({
-      ...day,
-      program_blocks: (day.program_blocks || []).map((block: any) => {
-        const { program_exercises_by_user, ...rest } = block;
-        if (block.training_type === 'warm up' && program_exercises_by_user && program_exercises_by_user[userId]) {
-          return { ...rest, program_exercises: program_exercises_by_user[userId] };
-        }
-        return rest;
-      })
-    }))
-  }));
-};
+import { applyUserWarmUps } from './services/applyUserWarmUps';
 
 interface AssignmentHandlerProps {
   program: ProgramStructure;
