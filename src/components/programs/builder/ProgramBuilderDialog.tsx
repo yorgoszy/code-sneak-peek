@@ -107,10 +107,10 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   const handleMultipleAthleteChange = async (userIds: string[]) => {
     console.log('🔄 ProgramBuilderDialog - handleMultipleAthleteChange called with:', userIds);
     
-    // Prefetch warm-up exercises for first user
+    // Prefetch warm-up exercises for ALL selected users so per-user warm-ups load instantly
     if (userIds.length > 0) {
       const { prefetchAthleteWarmUpExercises } = await import('./hooks/useAthleteWarmUpExercises');
-      prefetchAthleteWarmUpExercises(userIds[0]);
+      userIds.forEach(uid => prefetchAthleteWarmUpExercises(uid));
     }
     
     // 🔄 Καθαρισμός kg για ασκήσεις με percentage_1rm ώστε να επαναυπολογιστούν
