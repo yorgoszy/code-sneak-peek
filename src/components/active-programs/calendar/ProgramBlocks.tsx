@@ -115,6 +115,11 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
                         {blockInfoText}
                       </Badge>
                     )}
+                    {block.block_sets && (
+                      <Badge className="rounded-none text-xs bg-[#00ffba] text-black border-0 hover:bg-[#00ffba]">
+                        x{block.block_sets}
+                      </Badge>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-white/70 text-xs">
