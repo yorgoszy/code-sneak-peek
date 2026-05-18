@@ -34,7 +34,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
   isOpen,
   coachId
 }) => {
-  const { program, updateProgram, resetProgram, generateId, loadProgramFromData, getTotalTrainingDays } = useProgramBuilderState(exercises);
+  const { program, updateProgram, resetProgram, generateId, loadProgramFromData, getTotalTrainingDays, restoreDraft, discardDraft } = useProgramBuilderState(exercises);
   const actions = useProgramBuilderActions(program, updateProgram, generateId, exercises, onCreateProgram);
   
   const {
