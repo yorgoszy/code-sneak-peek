@@ -257,6 +257,11 @@ export const useExerciseActions = (
                 ...day,
                 program_blocks: (day.program_blocks || []).map(block => {
                   if (block.id === blockId) {
+                    if (isPerUserWarmUp(block)) {
+                      return updateBlockForActiveUser(block, (list) =>
+                        list.filter((ex) => ex.id !== exerciseId)
+                      );
+                    }
                     return {
                       ...block,
                       program_exercises: (block.program_exercises || []).filter(exercise => exercise.id !== exerciseId)
@@ -287,6 +292,13 @@ export const useExerciseActions = (
                   ...day,
                   program_blocks: (day.program_blocks || []).map(block => {
                     if (block.id === blockId) {
+                      if (isPerUserWarmUp(block)) {
+                        return updateBlockForActiveUser(block, (list) =>
+                          list.map((exercise) =>
+                            exercise.id === exerciseId ? { ...exercise, [field]: value } : exercise
+                          )
+                        );
+                      }
                       return {
                         ...block,
                         program_exercises: (block.program_exercises || []).map(exercise =>
@@ -319,6 +331,18 @@ export const useExerciseActions = (
                 ...day,
                 program_blocks: (day.program_blocks || []).map(block => {
                   if (block.id === blockId) {
+                    if (isPerUserWarmUp(block)) {
+                      return updateBlockForActiveUser(block, (list) => {
+                        const target = list.find((ex) => ex.id === exerciseId);
+                        if (!target) return list;
+                        const dup = {
+                          ...JSON.parse(JSON.stringify(target)),
+                          id: generateId(),
+                          exercise_order: list.length + 1
+                        };
+                        return [...list, dup];
+                      });
+                    }
                     const exerciseToDuplicate = block.program_exercises?.find(exercise => exercise.id === exerciseId);
                     if (!exerciseToDuplicate) return block;
 
