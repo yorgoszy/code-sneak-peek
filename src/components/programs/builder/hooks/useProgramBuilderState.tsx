@@ -1,6 +1,39 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import type { User, Exercise } from '../../types';
+
+const DRAFT_KEY = 'programBuilderDraft.v1';
+
+const hasMeaningfulContent = (p: ProgramStructure) => {
+  return Boolean(
+    (p.name && p.name.trim()) ||
+    (p.description && p.description.trim()) ||
+    (p.weeks && p.weeks.length > 0)
+  );
+};
+
+export const readProgramDraft = (): ProgramStructure | null => {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed?.training_dates) {
+      parsed.training_dates = parsed.training_dates.map((d: string) => new Date(d));
+    }
+    return parsed as ProgramStructure;
+  } catch {
+    return null;
+  }
+};
+
+export const clearProgramDraft = () => {
+  try { localStorage.removeItem(DRAFT_KEY); } catch {}
+};
+
+export const hasProgramDraft = (): boolean => {
+  const d = readProgramDraft();
+  return !!d && hasMeaningfulContent(d);
+};
 
 export interface Week {
   id: string;
