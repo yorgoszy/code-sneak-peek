@@ -9,6 +9,7 @@ import type { ProgramStructure } from './hooks/useProgramBuilderState';
 import { FmsExerciseStatusProvider } from '@/contexts/FmsExerciseStatusContext';
 import { UserExerciseDataCacheProvider } from '@/hooks/useUserExerciseDataCache';
 import { useBatchAutoFill } from './hooks/useBatchAutoFill';
+import { setActivePreviewUser } from './hooks/activePreviewUserRef';
 
 interface ProgramBuilderDialogContentProps {
   program: ProgramStructure;
