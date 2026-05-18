@@ -62,6 +62,26 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
       } else {
         console.log('Resetting program for new creation');
         resetProgram();
+        // Auto-save draft recovery: if a draft exists, prompt to restore
+        if (hasProgramDraft()) {
+          toast('Βρέθηκε αποθηκευμένο πρόχειρο προγράμματος', {
+            description: 'Θέλεις να το επαναφέρεις;',
+            duration: 15000,
+            action: {
+              label: 'Επαναφορά',
+              onClick: () => {
+                restoreDraft();
+                toast.success('Το πρόχειρο επαναφέρθηκε');
+              },
+            },
+            cancel: {
+              label: 'Διαγραφή',
+              onClick: () => {
+                discardDraft();
+              },
+            },
+          });
+        }
       }
     }
   }, [editingProgram, isOpen]);
