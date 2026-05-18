@@ -5,6 +5,7 @@ import type { User, Exercise } from '../../types';
 import type { ProgramStructure } from './useProgramBuilderState';
 import { coachAssignmentService } from '../services/coachAssignmentService';
 import { recalculateWeeksForUser } from '../services/perUserRecalculation';
+import { applyUserWarmUps } from '../services/applyUserWarmUps';
 
 interface UseCoachProgramBuilderDialogLogicProps {
   users: User[]; // Αυτοί είναι coach_users
