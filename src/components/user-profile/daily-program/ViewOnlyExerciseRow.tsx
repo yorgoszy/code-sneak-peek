@@ -1,10 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Play, Check, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { VelocityCameraDialog } from '@/components/active-programs/calendar/VelocityCameraDialog';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useUserExerciseDataCacheContext } from '@/hooks/useUserExerciseDataCache';
 
 interface Exercise {
   id: string;
@@ -48,6 +49,7 @@ export const ViewOnlyExerciseRow: React.FC<ViewOnlyExerciseRowProps> = ({
   program,
 }) => {
   const { user } = useAuthContext();
+  const { getOneRM, getVelocityForPercentage } = useUserExerciseDataCacheContext();
   const [cameraOpen, setCameraOpen] = useState(false);
   const videoUrl = exercise.exercises?.video_url;
   const hasValidVideo = videoUrl && isValidVideoUrl(videoUrl);
@@ -86,6 +88,41 @@ export const ViewOnlyExerciseRow: React.FC<ViewOnlyExerciseRowProps> = ({
   };
 
   const targetUserId = program?.user_id || program?.app_users?.id || user?.id || '';
+  const exerciseId = exercise.exercise_id || exercise.exercises?.id;
+  const calculatedValues = useMemo(() => {
+    const percentage = parseFloat(String(exercise.percentage_1rm || '').replace(',', '.'));
+    const shouldCalculateKg = (exercise.kg_mode || 'kg') === 'kg' && exerciseId && Number.isFinite(percentage) && percentage > 0;
+
+    if (!shouldCalculateKg) {
+      return {
+        kg: exercise.kg,
+        velocity: exercise.velocity_ms
+      };
+    }
+
+    const oneRM = getOneRM(exerciseId);
+    if (!oneRM) {
+      return {
+        kg: exercise.kg,
+        velocity: exercise.velocity_ms
+      };
+    }
+
+    const calculatedWeight = (oneRM * percentage) / 100;
+    let roundedWeight = Math.round(calculatedWeight);
+    if (roundedWeight % 2 !== 0) {
+      const lowerEven = roundedWeight - 1;
+      const upperEven = roundedWeight + 1;
+      roundedWeight = Math.abs(calculatedWeight - lowerEven) < Math.abs(calculatedWeight - upperEven) ? lowerEven : upperEven;
+    }
+
+    const predictedVelocity = getVelocityForPercentage(exerciseId, percentage, oneRM);
+
+    return {
+      kg: roundedWeight.toString(),
+      velocity: predictedVelocity !== null ? predictedVelocity.toFixed(2) : exercise.velocity_ms
+    };
+  }, [exercise.percentage_1rm, exercise.kg_mode, exercise.kg, exercise.velocity_ms, exerciseId, getOneRM, getVelocityForPercentage]);
 
   return (
     <div 
@@ -169,11 +206,11 @@ export const ViewOnlyExerciseRow: React.FC<ViewOnlyExerciseRowProps> = ({
         </div>
         <div className="flex flex-col items-center" style={{ width: '60px' }}>
           <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>{getKgLabel()}</label>
-          <div className="text-center w-full flex items-center justify-center" style={inputStyle}>{exercise.kg || '-'}</div>
+          <div className="text-center w-full flex items-center justify-center" style={inputStyle}>{calculatedValues.kg || '-'}</div>
         </div>
         <div className="flex flex-col items-center" style={{ width: '60px' }}>
           <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>m/s</label>
-          <div className="text-center w-full flex items-center justify-center" style={inputStyle}>{exercise.velocity_ms || '-'}</div>
+          <div className="text-center w-full flex items-center justify-center" style={inputStyle}>{calculatedValues.velocity || '-'}</div>
         </div>
         <div className="flex flex-col items-center" style={{ width: '60px' }}>
           <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Tempo</label>
