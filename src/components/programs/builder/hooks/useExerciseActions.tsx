@@ -1,11 +1,41 @@
 
 import { ProgramStructure } from './useProgramBuilderState';
 import { supabase } from '@/integrations/supabase/client';
+import { getActivePreviewUser } from './activePreviewUserRef';
 
 // Σειρά προτεραιότητας για τα warm up exercises
 const WARM_UP_ORDER = ['mobility', 'stability', 'activation', 'neural act'];
 // Recovery relationship type
 const RECOVERY_TYPE = 'recovery';
+
+// Helper: επιστρέφει true αν το block είναι warm-up με per-user data
+const isPerUserWarmUp = (block: any) =>
+  block?.training_type === 'warm up' && !!block?.program_exercises_by_user;
+
+// Helper: ενημερώνει την per-user warm-up λίστα για τον ενεργό χρήστη
+const updateBlockForActiveUser = (
+  block: any,
+  mutator: (list: any[]) => any[]
+) => {
+  const userId = getActivePreviewUser();
+  const byUser = { ...(block.program_exercises_by_user || {}) };
+  if (!userId) {
+    // fallback: ενημέρωσε όλους τους χρήστες
+    Object.keys(byUser).forEach((uid) => {
+      byUser[uid] = mutator(byUser[uid] || []);
+    });
+  } else {
+    byUser[userId] = mutator(byUser[userId] || []);
+  }
+  // sync default program_exercises με την λίστα του ενεργού (ή του πρώτου) χρήστη
+  const firstKey = userId && byUser[userId] ? userId : Object.keys(byUser)[0];
+  const defaultList = firstKey ? byUser[firstKey] : block.program_exercises;
+  return {
+    ...block,
+    program_exercises_by_user: byUser,
+    program_exercises: defaultList,
+  };
+};
 
 export const useExerciseActions = (
   program: ProgramStructure,
