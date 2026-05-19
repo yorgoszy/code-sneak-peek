@@ -287,6 +287,13 @@ export const UserProfileContent = ({
             <UserProfileFights userId={userProfile?.id} />
           </div>
         );
+      case "cycle":
+        return (
+          <div className="space-y-4">
+            <BackButton />
+            <CyclePage userId={userProfile?.id} ownerName={userProfile?.name} />
+          </div>
+        );
       case "coach-brackets":
         return (
           <div className="space-y-4">
