@@ -25,6 +25,7 @@ import { SchoolNotes } from "@/pages/SchoolNotes";
 import { UserProfileNutrition } from "./UserProfileNutrition";
 import { UserProfileSafety } from "./UserProfileSafety";
 import { UserProfileFights } from "./UserProfileFights";
+import { CyclePage } from "@/components/cycle/CyclePage";
 
 import CoachBracketsPage from "@/pages/Dashboard/CoachBracketsPage";
 import CoachLivePage from "@/pages/Dashboard/CoachLivePage";
