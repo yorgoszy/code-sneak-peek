@@ -38,6 +38,7 @@ import {
   Shuffle,
   ClipboardList,
   Activity,
+  Droplet,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -566,6 +567,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       path: "/dashboard/nutrition",
       badge: null
     },
+    ...(userProfile?.gender === 'female' ? [{
+      icon: Droplet,
+      label: "Κύκλος Περιόδου",
+      path: "/dashboard/cycle",
+      badge: null
+    }] : []),
     { type: 'separator' },
     {
       icon: Calendar,

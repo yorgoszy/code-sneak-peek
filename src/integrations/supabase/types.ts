@@ -6511,6 +6511,54 @@ export type Database = {
         }
         Relationships: []
       }
+      menstrual_cycles: {
+        Row: {
+          created_at: string
+          cycle_length: number
+          id: string
+          notes: string | null
+          period_length: number
+          start_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          cycle_length?: number
+          id?: string
+          notes?: string | null
+          period_length?: number
+          start_date: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          cycle_length?: number
+          id?: string
+          notes?: string | null
+          period_length?: number
+          start_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menstrual_cycles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menstrual_cycles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       muaythai_calculated_stats: {
         Row: {
           created_at: string

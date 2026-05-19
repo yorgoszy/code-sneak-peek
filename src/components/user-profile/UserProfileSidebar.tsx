@@ -19,7 +19,9 @@ import {
   Shuffle,
   Radio,
   ShieldAlert,
-  Swords
+  Swords,
+  Droplet
+
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
@@ -340,6 +342,14 @@ export const UserProfileSidebar = forwardRef<
       badge: null,
       visible: isParentUser,
       disabled: !hasSubscription
+    },
+    {
+      icon: Droplet,
+      label: "Κύκλος Περιόδου",
+      key: "cycle",
+      badge: null,
+      visible: userProfile?.gender === 'female',
+      disabled: false,
     },
   ].filter(item => item.visible);
 

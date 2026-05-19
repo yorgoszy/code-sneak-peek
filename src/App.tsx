@@ -74,6 +74,7 @@ import RidAiCoachPage from "@/pages/RidAiCoachPage";
 import { AdminAIKnowledgeWithSidebar } from "@/pages/Dashboard/AdminAIKnowledgeWithSidebar";
 import KnowledgeManagementWithSidebar from "@/pages/KnowledgeManagementWithSidebar";
 import { NutritionWithSidebar } from "@/pages/Dashboard/NutritionWithSidebar";
+import CycleWithSidebar from "@/pages/Dashboard/CycleWithSidebar";
 import { AnnualPlanningWithSidebar } from "@/pages/Dashboard/AnnualPlanningWithSidebar";
 import AmsSettingsPage from "@/pages/Dashboard/AmsSettingsPage";
 import LoadMonitoringPage from "@/pages/Dashboard/LoadMonitoringPage";
@@ -266,6 +267,7 @@ function App() {
                       <Route path="/dashboard/knowledge" element={<ProtectedRoute><KnowledgeManagementWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/goals-awards" element={<ProtectedRoute requireAdmin><AdminGoalsAwardsPage /></ProtectedRoute>} />
                       <Route path="/dashboard/nutrition" element={<ProtectedRoute><NutritionWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/cycle" element={<ProtectedRoute><CycleWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/annual-planning" element={<ProtectedRoute><AnnualPlanningWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/phase-config" element={<ProtectedRoute requireAdmin><PhaseConfigWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/ams-settings" element={<ProtectedRoute><AmsSettingsPage /></ProtectedRoute>} />

@@ -15,6 +15,7 @@ import {
   Layers,
   CalendarDays,
   Utensils,
+  Droplet,
   LogOut,
   Dumbbell,
   ShoppingBag,
@@ -217,6 +218,13 @@ export const CoachSidebar = ({
       badge: null,
       requiresSubscription: true,
     },
+    ...(userProfile?.gender === 'female' ? [{
+      icon: Droplet,
+      label: "Κύκλος Περιόδου",
+      path: "/dashboard/cycle",
+      badge: null,
+      requiresSubscription: false,
+    }] : []),
     { type: "separator" },
     {
       icon: TrendingUp,

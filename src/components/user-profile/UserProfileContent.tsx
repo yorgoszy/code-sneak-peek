@@ -25,6 +25,7 @@ import { SchoolNotes } from "@/pages/SchoolNotes";
 import { UserProfileNutrition } from "./UserProfileNutrition";
 import { UserProfileSafety } from "./UserProfileSafety";
 import { UserProfileFights } from "./UserProfileFights";
+import { CyclePage } from "@/components/cycle/CyclePage";
 
 import CoachBracketsPage from "@/pages/Dashboard/CoachBracketsPage";
 import CoachLivePage from "@/pages/Dashboard/CoachLivePage";
@@ -284,6 +285,13 @@ export const UserProfileContent = ({
           <div className="space-y-4">
             <BackButton />
             <UserProfileFights userId={userProfile?.id} />
+          </div>
+        );
+      case "cycle":
+        return (
+          <div className="space-y-4">
+            <BackButton />
+            <CyclePage userId={userProfile?.id} ownerName={userProfile?.name} />
           </div>
         );
       case "coach-brackets":
