@@ -566,6 +566,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       path: "/dashboard/nutrition",
       badge: null
     },
+    ...(userProfile?.gender === 'female' ? [{
+      icon: Droplet,
+      label: "Κύκλος Περιόδου",
+      path: "/dashboard/cycle",
+      badge: null
+    }] : []),
     { type: 'separator' },
     {
       icon: Calendar,
