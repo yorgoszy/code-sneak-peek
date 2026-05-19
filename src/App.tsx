@@ -74,6 +74,7 @@ import RidAiCoachPage from "@/pages/RidAiCoachPage";
 import { AdminAIKnowledgeWithSidebar } from "@/pages/Dashboard/AdminAIKnowledgeWithSidebar";
 import KnowledgeManagementWithSidebar from "@/pages/KnowledgeManagementWithSidebar";
 import { NutritionWithSidebar } from "@/pages/Dashboard/NutritionWithSidebar";
+import CycleWithSidebar from "@/pages/Dashboard/CycleWithSidebar";
 import { AnnualPlanningWithSidebar } from "@/pages/Dashboard/AnnualPlanningWithSidebar";
 import AmsSettingsPage from "@/pages/Dashboard/AmsSettingsPage";
 import LoadMonitoringPage from "@/pages/Dashboard/LoadMonitoringPage";
