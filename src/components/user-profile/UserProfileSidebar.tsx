@@ -343,6 +343,14 @@ export const UserProfileSidebar = forwardRef<
       visible: isParentUser,
       disabled: !hasSubscription
     },
+    {
+      icon: Droplet,
+      label: "Κύκλος Περιόδου",
+      key: "cycle",
+      badge: null,
+      visible: userProfile?.gender === 'female',
+      disabled: false,
+    },
   ].filter(item => item.visible);
 
   const handleAIChatClick = () => {
