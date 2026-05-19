@@ -15,6 +15,7 @@ import {
   Layers,
   CalendarDays,
   Utensils,
+  Droplet,
   LogOut,
   Dumbbell,
   ShoppingBag,
