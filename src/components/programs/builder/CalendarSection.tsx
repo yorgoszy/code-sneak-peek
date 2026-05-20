@@ -82,6 +82,11 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
     getDayInfoForDate
   } = useCalendarLogic(program, computedTotalDays, onTrainingDatesChange);
 
+  // Cycle phase overlay for female athlete (single assignment only)
+  const singleUserId = !program.is_multiple_assignment ? program.user_id : '';
+  const { isFemale, getPhase } = useUserCyclePhase(singleUserId || null);
+
+
   if (totalDays === 0) {
     return null;
   }
