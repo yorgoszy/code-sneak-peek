@@ -6,6 +6,15 @@ import { Trash2, Move, X } from "lucide-react";
 import { parseISO } from "date-fns";
 import { el } from "date-fns/locale";
 import { formatDateForStorage } from '@/utils/dateUtils';
+import type { PhaseInfo, CyclePhase } from '@/utils/cyclePhase';
+
+const phaseBg: Record<CyclePhase, string> = {
+  menstrual: '#fecaca',
+  follicular: '#bbf7d0',
+  ovulation: '#fde68a',
+  luteal: '#e9d5ff',
+};
+
 
 interface CalendarDisplayProps {
   selectedDatesAsStrings: string[];
@@ -19,7 +28,9 @@ interface CalendarDisplayProps {
   isDateSelected: (date: Date) => boolean;
   isDateDisabled: (date: Date) => boolean;
   getDayInfoForDate: (date: Date) => { is_test_day: boolean; test_types: string[]; is_competition_day: boolean } | null;
+  getCyclePhase?: (date: Date) => PhaseInfo | null;
 }
+
 
 export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
   selectedDatesAsStrings,
@@ -32,7 +43,9 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
   onRemoveDate,
   isDateSelected,
   isDateDisabled,
-  getDayInfoForDate
+  getDayInfoForDate,
+  getCyclePhase
+
 }) => {
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
 
@@ -104,7 +117,11 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
             competitionDay: (date) => {
               const dayInfo = getDayInfoForDate(date);
               return dayInfo?.is_competition_day || false;
-            }
+            },
+            cycleMenstrual: (date) => getCyclePhase?.(date)?.phase === 'menstrual',
+            cycleFollicular: (date) => getCyclePhase?.(date)?.phase === 'follicular',
+            cycleOvulation: (date) => getCyclePhase?.(date)?.phase === 'ovulation',
+            cycleLuteal: (date) => getCyclePhase?.(date)?.phase === 'luteal',
           }}
           modifiersStyles={{
             selected: {
@@ -125,9 +142,14 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
             competitionDay: {
               backgroundColor: '#9333ea',
               color: '#ffffff'
-            }
+            },
+            cycleMenstrual: { boxShadow: `inset 0 -4px 0 0 ${phaseBg.menstrual}` },
+            cycleFollicular: { boxShadow: `inset 0 -4px 0 0 ${phaseBg.follicular}` },
+            cycleOvulation: { boxShadow: `inset 0 -4px 0 0 ${phaseBg.ovulation}` },
+            cycleLuteal: { boxShadow: `inset 0 -4px 0 0 ${phaseBg.luteal}` },
           }}
         />
+
       </div>
       {!movingDateStr && selectedDatesAsStrings.length > 0 && (
         <p className="text-[10px] text-muted-foreground text-center mt-1">

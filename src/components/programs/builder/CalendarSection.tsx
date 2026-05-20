@@ -11,6 +11,10 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { createDateForDisplay } from '@/utils/dateUtils';
 import { Calendar } from 'lucide-react';
+import { useUserCyclePhase } from '@/hooks/useUserCyclePhase';
+import { phaseSoftColor } from '@/utils/cyclePhase';
+
+
 
 interface CalendarSectionProps {
   program: ProgramStructure;
@@ -77,6 +81,11 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
     isDateDisabled,
     getDayInfoForDate
   } = useCalendarLogic(program, computedTotalDays, onTrainingDatesChange);
+
+  // Cycle phase overlay for female athlete (single assignment only)
+  const singleUserId = !program.is_multiple_assignment ? program.user_id : '';
+  const { isFemale, getPhase } = useUserCyclePhase(singleUserId || null);
+
 
   if (totalDays === 0) {
     return null;
@@ -184,7 +193,17 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
               isDateSelected={isDateSelected}
               isDateDisabled={isDateDisabled}
               getDayInfoForDate={getDayInfoForDate}
+              getCyclePhase={isFemale ? getPhase : undefined}
             />
+            {isFemale && (
+              <div className="mt-2 flex flex-wrap gap-2 text-[10px]">
+                <span className={`px-2 py-0.5 border ${phaseSoftColor.menstrual}`}>Περίοδος — χαλαρή</span>
+                <span className={`px-2 py-0.5 border ${phaseSoftColor.follicular}`}>Follicular — δυνατή</span>
+                <span className={`px-2 py-0.5 border ${phaseSoftColor.ovulation}`}>Ωορρηξία — κορυφή</span>
+                <span className={`px-2 py-0.5 border ${phaseSoftColor.luteal}`}>Luteal — μέτρια</span>
+              </div>
+            )}
+
           </div>
 
           <div className="w-full lg:w-64 space-y-3">
