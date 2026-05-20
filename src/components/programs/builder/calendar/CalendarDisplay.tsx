@@ -43,7 +43,9 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
   onRemoveDate,
   isDateSelected,
   isDateDisabled,
-  getDayInfoForDate
+  getDayInfoForDate,
+  getCyclePhase
+
 }) => {
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
 
