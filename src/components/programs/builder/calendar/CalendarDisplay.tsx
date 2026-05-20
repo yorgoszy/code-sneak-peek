@@ -6,6 +6,15 @@ import { Trash2, Move, X } from "lucide-react";
 import { parseISO } from "date-fns";
 import { el } from "date-fns/locale";
 import { formatDateForStorage } from '@/utils/dateUtils';
+import type { PhaseInfo, CyclePhase } from '@/utils/cyclePhase';
+
+const phaseBg: Record<CyclePhase, string> = {
+  menstrual: '#fecaca',
+  follicular: '#bbf7d0',
+  ovulation: '#fde68a',
+  luteal: '#e9d5ff',
+};
+
 
 interface CalendarDisplayProps {
   selectedDatesAsStrings: string[];
