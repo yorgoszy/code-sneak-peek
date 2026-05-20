@@ -117,7 +117,11 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
             competitionDay: (date) => {
               const dayInfo = getDayInfoForDate(date);
               return dayInfo?.is_competition_day || false;
-            }
+            },
+            cycleMenstrual: (date) => getCyclePhase?.(date)?.phase === 'menstrual',
+            cycleFollicular: (date) => getCyclePhase?.(date)?.phase === 'follicular',
+            cycleOvulation: (date) => getCyclePhase?.(date)?.phase === 'ovulation',
+            cycleLuteal: (date) => getCyclePhase?.(date)?.phase === 'luteal',
           }}
           modifiersStyles={{
             selected: {
@@ -138,9 +142,14 @@ export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
             competitionDay: {
               backgroundColor: '#9333ea',
               color: '#ffffff'
-            }
+            },
+            cycleMenstrual: { boxShadow: `inset 0 -4px 0 0 ${phaseBg.menstrual}` },
+            cycleFollicular: { boxShadow: `inset 0 -4px 0 0 ${phaseBg.follicular}` },
+            cycleOvulation: { boxShadow: `inset 0 -4px 0 0 ${phaseBg.ovulation}` },
+            cycleLuteal: { boxShadow: `inset 0 -4px 0 0 ${phaseBg.luteal}` },
           }}
         />
+
       </div>
       {!movingDateStr && selectedDatesAsStrings.length > 0 && (
         <p className="text-[10px] text-muted-foreground text-center mt-1">
