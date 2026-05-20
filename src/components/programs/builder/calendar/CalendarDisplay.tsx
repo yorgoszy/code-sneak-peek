@@ -28,7 +28,9 @@ interface CalendarDisplayProps {
   isDateSelected: (date: Date) => boolean;
   isDateDisabled: (date: Date) => boolean;
   getDayInfoForDate: (date: Date) => { is_test_day: boolean; test_types: string[]; is_competition_day: boolean } | null;
+  getCyclePhase?: (date: Date) => PhaseInfo | null;
 }
+
 
 export const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
   selectedDatesAsStrings,
