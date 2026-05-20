@@ -11,6 +11,10 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { createDateForDisplay } from '@/utils/dateUtils';
 import { Calendar } from 'lucide-react';
+import { useUserCyclePhase } from '@/hooks/useUserCyclePhase';
+import { phaseSoftColor } from '@/utils/cyclePhase';
+
+
 
 interface CalendarSectionProps {
   program: ProgramStructure;
