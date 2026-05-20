@@ -193,7 +193,17 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
               isDateSelected={isDateSelected}
               isDateDisabled={isDateDisabled}
               getDayInfoForDate={getDayInfoForDate}
+              getCyclePhase={isFemale ? getPhase : undefined}
             />
+            {isFemale && (
+              <div className="mt-2 flex flex-wrap gap-2 text-[10px]">
+                <span className={`px-2 py-0.5 border ${phaseSoftColor.menstrual}`}>Περίοδος — χαλαρή</span>
+                <span className={`px-2 py-0.5 border ${phaseSoftColor.follicular}`}>Follicular — δυνατή</span>
+                <span className={`px-2 py-0.5 border ${phaseSoftColor.ovulation}`}>Ωορρηξία — κορυφή</span>
+                <span className={`px-2 py-0.5 border ${phaseSoftColor.luteal}`}>Luteal — μέτρια</span>
+              </div>
+            )}
+
           </div>
 
           <div className="w-full lg:w-64 space-y-3">
