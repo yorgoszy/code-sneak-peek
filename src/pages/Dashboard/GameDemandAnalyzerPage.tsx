@@ -444,7 +444,18 @@ const GameDemandAnalyzerContent: React.FC = () => {
           </TabsContent>
 
           {/* LIST */}
-          <TabsContent value="list" className="mt-4">
+          <TabsContent value="list" className="mt-4 space-y-4">
+            {sessions.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {sessions.map((s) => (
+                  <GameSessionCard
+                    key={s.id}
+                    session={s as any}
+                    onClick={() => setSelectedSessionId(s.id)}
+                  />
+                ))}
+              </div>
+            )}
             <Card className="rounded-none">
               <CardContent className="p-0">
                 {isLoading ? (
