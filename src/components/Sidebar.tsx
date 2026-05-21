@@ -758,10 +758,11 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null
     },
     {
-      icon: Activity,
+      icon: Gauge,
       label: "Game Demand Analyzer",
       path: "/dashboard/game-demand-analyzer",
-      badge: null
+      badge: null,
+      featureFlag: 'ams_game_demand_analyzer'
     },
     {
       icon: Download,
