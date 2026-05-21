@@ -110,6 +110,7 @@ const GameDemandAnalyzerContent: React.FC = () => {
   const coachFilter = isAdmin() ? null : effectiveCoachId ?? null;
 
   const [selected, setSelected] = useState<string[]>([]);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const athleteId = selected[0];
 
   // Form
