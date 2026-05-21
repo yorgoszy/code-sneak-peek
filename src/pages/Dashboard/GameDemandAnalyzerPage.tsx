@@ -30,6 +30,13 @@ import { useEffectiveCoachId } from "@/hooks/useEffectiveCoachId";
 import { AthleteFilter } from "@/components/ams/AthleteFilter";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useFeatureFlag } from "@/hooks/ams/useFeatureFlag";
+import { DisabledModuleNotice } from "@/components/ams/DisabledModuleNotice";
+import { GameSessionCard } from "@/components/ams/GameSessionCard";
+import { RsbTimelineChart } from "@/components/ams/RsbTimelineChart";
+import { HsrPhaseCurveChart } from "@/components/ams/HsrPhaseCurveChart";
+import { DemandComparisonChart } from "@/components/ams/DemandComparisonChart";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -103,6 +110,7 @@ const GameDemandAnalyzerContent: React.FC = () => {
   const coachFilter = isAdmin() ? null : effectiveCoachId ?? null;
 
   const [selected, setSelected] = useState<string[]>([]);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const athleteId = selected[0];
 
   // Form
@@ -271,6 +279,12 @@ const GameDemandAnalyzerContent: React.FC = () => {
             <TabsTrigger value="list" className="rounded-none">
               Sessions ({sessions.length})
             </TabsTrigger>
+            <TabsTrigger value="detail" className="rounded-none">
+              Session detail
+            </TabsTrigger>
+            <TabsTrigger value="hsr_curve" className="rounded-none">
+              HSR phase curve
+            </TabsTrigger>
             <TabsTrigger value="analysis" className="rounded-none">
               Worst-case analysis
             </TabsTrigger>
@@ -430,7 +444,18 @@ const GameDemandAnalyzerContent: React.FC = () => {
           </TabsContent>
 
           {/* LIST */}
-          <TabsContent value="list" className="mt-4">
+          <TabsContent value="list" className="mt-4 space-y-4">
+            {sessions.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {sessions.map((s) => (
+                  <GameSessionCard
+                    key={s.id}
+                    session={s as any}
+                    onClick={() => setSelectedSessionId(s.id)}
+                  />
+                ))}
+              </div>
+            )}
             <Card className="rounded-none">
               <CardContent className="p-0">
                 {isLoading ? (
@@ -492,6 +517,28 @@ const GameDemandAnalyzerContent: React.FC = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* SESSION DETAIL */}
+          <TabsContent value="detail" className="mt-4 space-y-4">
+            {!selectedSessionId ? (
+              <div className="border border-dashed border-border p-12 text-center text-sm text-muted-foreground">
+                Select a session from the Sessions tab to view RSB timeline and demand comparison.
+              </div>
+            ) : (
+              <>
+                <RsbTimelineChart sessionId={selectedSessionId} />
+                {(() => {
+                  const sess = sessions.find((s) => s.id === selectedSessionId);
+                  return sess ? <DemandComparisonChart session={sess as any} /> : null;
+                })()}
+              </>
+            )}
+          </TabsContent>
+
+          {/* HSR PHASE CURVE */}
+          <TabsContent value="hsr_curve" className="mt-4">
+            {athleteId && <HsrPhaseCurveChart athleteId={athleteId} />}
           </TabsContent>
 
           {/* ANALYSIS */}
@@ -635,10 +682,27 @@ const GameDemandAnalyzerPage: React.FC = () => {
           </Button>
         </div>
 
-        <GameDemandAnalyzerContent />
+        <FeatureFlagGate />
       </div>
     </div>
   );
+};
+
+const FeatureFlagGate: React.FC = () => {
+  const { enabled, loading } = useFeatureFlag("ams_game_demand_analyzer");
+  if (loading) {
+    return (
+      <div className="p-6 space-y-3">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-4 w-96" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+  if (!enabled) {
+    return <DisabledModuleNotice flag="ams_game_demand_analyzer" />;
+  }
+  return <GameDemandAnalyzerContent />;
 };
 
 export default GameDemandAnalyzerPage;

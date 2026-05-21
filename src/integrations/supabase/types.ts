@@ -8976,6 +8976,61 @@ export type Database = {
         }
         Relationships: []
       }
+      sprint_efforts: {
+        Row: {
+          athlete_id: string
+          created_at: string
+          game_session_id: string
+          id: string
+          max_speed_kmh: number | null
+          sprint_distance_m: number | null
+          sprint_duration_sec: number
+          sprint_start_seconds: number
+        }
+        Insert: {
+          athlete_id: string
+          created_at?: string
+          game_session_id: string
+          id?: string
+          max_speed_kmh?: number | null
+          sprint_distance_m?: number | null
+          sprint_duration_sec: number
+          sprint_start_seconds: number
+        }
+        Update: {
+          athlete_id?: string
+          created_at?: string
+          game_session_id?: string
+          id?: string
+          max_speed_kmh?: number | null
+          sprint_distance_m?: number | null
+          sprint_duration_sec?: number
+          sprint_start_seconds?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sprint_efforts_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sprint_efforts_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sprint_efforts_game_session_id_fkey"
+            columns: ["game_session_id"]
+            isOneToOne: false
+            referencedRelation: "game_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sprint_timing_results: {
         Row: {
           created_at: string
@@ -11302,6 +11357,17 @@ export type Database = {
       }
       create_exercise_tables: { Args: never; Returns: undefined }
       current_app_user_id: { Args: never; Returns: string }
+      detect_rsbs: {
+        Args: { p_session_id: string }
+        Returns: {
+          first_sprint_start_sec: number
+          mean_recovery_sec: number
+          rsb_index: number
+          sprint_count: number
+          total_duration_sec: number
+          work_rest_ratio: number
+        }[]
+      }
       exec_sql: { Args: { query: string }; Returns: Json }
       federation_assign_athlete: {
         Args: { _club_id: string; _user_id: string }
