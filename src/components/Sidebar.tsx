@@ -758,6 +758,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null
     },
     {
+      icon: Activity,
+      label: "Game Demand Analyzer",
+      path: "/dashboard/game-demand-analyzer",
+      badge: null
+    },
+    {
       icon: Download,
       label: "Download PWA Apps",
       path: null,
