@@ -1,5 +1,6 @@
 import React from 'react';
 import { format, isSameMonth, isToday } from "date-fns";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface ProgramData {
   date: string;
