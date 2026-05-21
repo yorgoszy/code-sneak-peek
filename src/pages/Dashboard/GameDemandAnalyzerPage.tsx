@@ -30,6 +30,13 @@ import { useEffectiveCoachId } from "@/hooks/useEffectiveCoachId";
 import { AthleteFilter } from "@/components/ams/AthleteFilter";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useFeatureFlag } from "@/hooks/ams/useFeatureFlag";
+import { DisabledModuleNotice } from "@/components/ams/DisabledModuleNotice";
+import { GameSessionCard } from "@/components/ams/GameSessionCard";
+import { RsbTimelineChart } from "@/components/ams/RsbTimelineChart";
+import { HsrPhaseCurveChart } from "@/components/ams/HsrPhaseCurveChart";
+import { DemandComparisonChart } from "@/components/ams/DemandComparisonChart";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
