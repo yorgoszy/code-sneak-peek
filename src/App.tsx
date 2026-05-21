@@ -78,6 +78,7 @@ import CycleWithSidebar from "@/pages/Dashboard/CycleWithSidebar";
 import { AnnualPlanningWithSidebar } from "@/pages/Dashboard/AnnualPlanningWithSidebar";
 import AmsSettingsPage from "@/pages/Dashboard/AmsSettingsPage";
 import LoadMonitoringPage from "@/pages/Dashboard/LoadMonitoringPage";
+import GameDemandAnalyzerPage from "@/pages/Dashboard/GameDemandAnalyzerPage";
 import { PhaseConfigWithSidebar } from "@/pages/Dashboard/PhaseConfigWithSidebar";
 import { SprintTimingLanding } from "@/pages/SprintTimingLanding";
 import { SprintTimingMaster } from "@/pages/SprintTimingMaster";
