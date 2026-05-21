@@ -273,6 +273,7 @@ function App() {
                       <Route path="/dashboard/phase-config" element={<ProtectedRoute requireAdmin><PhaseConfigWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/ams-settings" element={<ProtectedRoute><AmsSettingsPage /></ProtectedRoute>} />
                       <Route path="/dashboard/load-monitoring" element={<ProtectedRoute><LoadMonitoringPage /></ProtectedRoute>} />
+                      <Route path="/dashboard/game-demand-analyzer" element={<ProtectedRoute><GameDemandAnalyzerPage /></ProtectedRoute>} />
                       <Route path="/program-builder" element={<ProtectedRoute requireAdmin><ProgramBuilder /></ProtectedRoute>} />
                       <Route path="/plan-strong" element={<ProtectedRoute><PlanStrongPage /></ProtectedRoute>} />
                       <Route path="/plan-strong/:id" element={<ProtectedRoute><PlanStrongPage /></ProtectedRoute>} />
