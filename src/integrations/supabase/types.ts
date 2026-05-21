@@ -5529,6 +5529,110 @@ export type Database = {
           },
         ]
       }
+      game_sessions: {
+        Row: {
+          acc_count: number | null
+          athlete_id: string
+          coach_id: string | null
+          created_at: string
+          dec_count: number | null
+          duration_min: number
+          hmld_m: number | null
+          hsr_distance_m: number | null
+          hsr_per_min: number | null
+          id: string
+          imported_from: string | null
+          max_speed_kmh: number | null
+          notes: string | null
+          position_or_group: string | null
+          relative_distance_m_per_min: number | null
+          session_date: string
+          session_type: string
+          sport: string | null
+          sprint_count: number | null
+          sprint_distance_m: number | null
+          total_distance_m: number | null
+          updated_at: string
+        }
+        Insert: {
+          acc_count?: number | null
+          athlete_id: string
+          coach_id?: string | null
+          created_at?: string
+          dec_count?: number | null
+          duration_min: number
+          hmld_m?: number | null
+          hsr_distance_m?: number | null
+          hsr_per_min?: number | null
+          id?: string
+          imported_from?: string | null
+          max_speed_kmh?: number | null
+          notes?: string | null
+          position_or_group?: string | null
+          relative_distance_m_per_min?: number | null
+          session_date: string
+          session_type: string
+          sport?: string | null
+          sprint_count?: number | null
+          sprint_distance_m?: number | null
+          total_distance_m?: number | null
+          updated_at?: string
+        }
+        Update: {
+          acc_count?: number | null
+          athlete_id?: string
+          coach_id?: string | null
+          created_at?: string
+          dec_count?: number | null
+          duration_min?: number
+          hmld_m?: number | null
+          hsr_distance_m?: number | null
+          hsr_per_min?: number | null
+          id?: string
+          imported_from?: string | null
+          max_speed_kmh?: number | null
+          notes?: string | null
+          position_or_group?: string | null
+          relative_distance_m_per_min?: number | null
+          session_date?: string
+          session_type?: string
+          sport?: string | null
+          sprint_count?: number | null
+          sprint_distance_m?: number | null
+          total_distance_m?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_sessions_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_sessions_athlete_id_fkey"
+            columns: ["athlete_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_sessions_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_sessions_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gift_cards: {
         Row: {
           amount: number | null
