@@ -247,6 +247,13 @@ export const CoachSidebar = ({
       badge: null,
       requiresSubscription: true,
     },
+    {
+      icon: BarChart3,
+      label: "Game Demand Analyzer",
+      path: "/dashboard/game-demand-analyzer",
+      badge: null,
+      requiresSubscription: true,
+    },
     { type: "separator" },
     // App submenu placeholder
     { type: "app-menu" },
