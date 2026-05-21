@@ -682,7 +682,27 @@ const GameDemandAnalyzerPage: React.FC = () => {
           </Button>
         </div>
 
-        <GameDemandAnalyzerContent />
+        <FeatureFlagGate />
+      </div>
+    </div>
+  );
+};
+
+const FeatureFlagGate: React.FC = () => {
+  const { enabled, loading } = useFeatureFlag("ams_game_demand_analyzer");
+  if (loading) {
+    return (
+      <div className="p-6 space-y-3">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-4 w-96" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+  if (!enabled) {
+    return <DisabledModuleNotice flag="ams_game_demand_analyzer" />;
+  }
+  return <GameDemandAnalyzerContent />
       </div>
     </div>
   );
