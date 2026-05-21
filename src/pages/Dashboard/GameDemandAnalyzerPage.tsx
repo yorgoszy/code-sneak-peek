@@ -519,6 +519,28 @@ const GameDemandAnalyzerContent: React.FC = () => {
             </Card>
           </TabsContent>
 
+          {/* SESSION DETAIL */}
+          <TabsContent value="detail" className="mt-4 space-y-4">
+            {!selectedSessionId ? (
+              <div className="border border-dashed border-border p-12 text-center text-sm text-muted-foreground">
+                Select a session from the Sessions tab to view RSB timeline and demand comparison.
+              </div>
+            ) : (
+              <>
+                <RsbTimelineChart sessionId={selectedSessionId} />
+                {(() => {
+                  const sess = sessions.find((s) => s.id === selectedSessionId);
+                  return sess ? <DemandComparisonChart session={sess as any} /> : null;
+                })()}
+              </>
+            )}
+          </TabsContent>
+
+          {/* HSR PHASE CURVE */}
+          <TabsContent value="hsr_curve" className="mt-4">
+            {athleteId && <HsrPhaseCurveChart athleteId={athleteId} />}
+          </TabsContent>
+
           {/* ANALYSIS */}
           <TabsContent value="analysis" className="mt-4">
             {!analytics ? (
