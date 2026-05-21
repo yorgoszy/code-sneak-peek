@@ -702,10 +702,7 @@ const FeatureFlagGate: React.FC = () => {
   if (!enabled) {
     return <DisabledModuleNotice flag="ams_game_demand_analyzer" />;
   }
-  return <GameDemandAnalyzerContent />
-      </div>
-    </div>
-  );
+  return <GameDemandAnalyzerContent />;
 };
 
 export default GameDemandAnalyzerPage;
