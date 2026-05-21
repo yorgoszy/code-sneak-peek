@@ -279,6 +279,12 @@ const GameDemandAnalyzerContent: React.FC = () => {
             <TabsTrigger value="list" className="rounded-none">
               Sessions ({sessions.length})
             </TabsTrigger>
+            <TabsTrigger value="detail" className="rounded-none">
+              Session detail
+            </TabsTrigger>
+            <TabsTrigger value="hsr_curve" className="rounded-none">
+              HSR phase curve
+            </TabsTrigger>
             <TabsTrigger value="analysis" className="rounded-none">
               Worst-case analysis
             </TabsTrigger>
