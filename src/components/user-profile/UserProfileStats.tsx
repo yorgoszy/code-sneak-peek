@@ -942,7 +942,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           </button>
 
           {/* Κύκλος Περιόδου - μόνο για γυναίκες */}
-          {userProfile?.gender === 'female' || user?.gender === 'female' ? (
+          {user?.gender === 'female' ? (
             <button
               onClick={() => {
                 if (setActiveTab) {
