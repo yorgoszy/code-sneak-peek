@@ -60,12 +60,14 @@ const CycleWithSidebar: React.FC = () => {
           <h1 className="text-lg font-semibold">Κύκλος Περιόδου</h1>
         </div>
 
-        <main className="p-4 lg:p-6">
-          <div className="hidden lg:block mb-4">
-            <h1 className="text-2xl font-bold">Κύκλος Περιόδου</h1>
-            <p className="text-sm text-muted-foreground">
-              Παρακολούθηση κύκλου και αυτόματη ένδειξη φάσης προπόνησης
-            </p>
+        <main className="p-3 lg:p-4">
+          <div className="hidden lg:flex items-center justify-between mb-2">
+            <div>
+              <h1 className="text-lg font-bold">Κύκλος Περιόδου</h1>
+              <p className="text-xs text-muted-foreground">
+                Παρακολούθηση κύκλου και αυτόματη ένδειξη φάσης προπόνησης
+              </p>
+            </div>
           </div>
           <CyclePage userId={userProfile.id} ownerName={userProfile.name} />
         </main>
