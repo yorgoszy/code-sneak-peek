@@ -1,0 +1,1 @@
+UPDATE public.programs SET created_by = NULL, coach_id = NULL WHERE id = 'a5df92c7-b603-4bb0-a9dd-70db2634bda8';
