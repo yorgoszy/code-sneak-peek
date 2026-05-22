@@ -181,10 +181,10 @@ export const CyclePage: React.FC<CyclePageProps> = ({
 
       {/* Predictions */}
       {todayPhase && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-1">
           <KeyCard
             icon={<Droplet className="h-3 w-3" />}
-            title="Επόμενη περίοδος"
+            title="Επόμ. περίοδος"
             value={format(todayPhase.nextStart, "dd MMM", { locale: el })}
             sub={`σε ${todayPhase.daysUntilNextPeriod} ημ.`}
             tint="border-red-300"
