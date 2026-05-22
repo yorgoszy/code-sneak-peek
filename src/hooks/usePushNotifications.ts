@@ -91,41 +91,72 @@ export function usePushNotifications() {
   }, [appUserId]);
 
   const subscribe = useCallback(async () => {
-    if (!isSupported || !appUserId) return false;
+    if (!isSupported) {
+      console.error('[push] not supported in this browser');
+      return false;
+    }
+    if (!appUserId) {
+      console.error('[push] no app_users.id available — user not loaded yet');
+      return false;
+    }
     setLoading(true);
     try {
-      const perm = await Notification.requestPermission();
+      let perm = Notification.permission;
+      if (perm === 'default') {
+        perm = await Notification.requestPermission();
+      }
       setPermission(perm);
-      if (perm !== 'granted') return false;
+      if (perm !== 'granted') {
+        console.error('[push] permission not granted:', perm);
+        return false;
+      }
 
       const reg = await navigator.serviceWorker.ready;
       let sub = await reg.pushManager.getSubscription();
       if (!sub) {
         const vapid = await getVapidPublicKey();
+        if (!vapid) throw new Error('VAPID public key empty');
         sub = await reg.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(vapid) as BufferSource,
         });
       }
       const json = sub.toJSON();
-      await supabase.from('push_subscriptions').upsert({
+      const p256dh = (json.keys as any)?.p256dh ?? bufToBase64(sub.getKey('p256dh'));
+      const auth = (json.keys as any)?.auth ?? bufToBase64(sub.getKey('auth'));
+
+      // Avoid relying on a specific composite unique index — do select-then-update/insert.
+      const { data: existing, error: selErr } = await supabase
+        .from('push_subscriptions')
+        .select('id')
+        .eq('user_id', appUserId)
+        .eq('endpoint', sub.endpoint)
+        .maybeSingle();
+      if (selErr) console.warn('[push] select existing failed', selErr);
+
+      const payload = {
         user_id: appUserId,
         platform: 'web',
         endpoint: sub.endpoint,
-        p256dh_key: (json.keys as any)?.p256dh ?? bufToBase64(sub.getKey('p256dh')),
-        auth_key: (json.keys as any)?.auth ?? bufToBase64(sub.getKey('auth')),
-        device_info: {
-          user_agent: navigator.userAgent,
-          platform: navigator.platform,
-        },
+        p256dh_key: p256dh,
+        auth_key: auth,
+        device_info: { user_agent: navigator.userAgent, platform: navigator.platform },
         is_active: true,
         last_used_at: new Date().toISOString(),
-      }, { onConflict: 'user_id,platform,endpoint,device_token' });
+      };
+
+      if (existing?.id) {
+        const { error } = await supabase.from('push_subscriptions').update(payload).eq('id', existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('push_subscriptions').insert(payload);
+        if (error) throw error;
+      }
 
       setIsSubscribed(true);
       return true;
-    } catch (e) {
-      console.error('subscribe error', e);
+    } catch (e: any) {
+      console.error('[push] subscribe error:', e?.message ?? e, e);
       return false;
     } finally {
       setLoading(false);
