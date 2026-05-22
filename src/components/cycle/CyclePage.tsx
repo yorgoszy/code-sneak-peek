@@ -225,17 +225,17 @@ export const CyclePage: React.FC<CyclePageProps> = ({
 
       {/* Calendar */}
       <Card className="rounded-none">
-        <CardHeader className="p-3 pb-2">
+        <CardHeader className="p-2 pb-1">
           <div className="flex items-center justify-between gap-2">
-            <CardTitle className="text-sm flex items-center gap-1.5 min-w-0">
-              <CalendarIcon className="h-3.5 w-3.5 flex-shrink-0" />
+            <CardTitle className="text-xs flex items-center gap-1.5 min-w-1">
+              <CalendarIcon className="h-3 w-3 flex-shrink-0" />
               <span className="capitalize truncate">{format(month, "LLLL yyyy", { locale: el })}</span>
             </CardTitle>
             <div className="flex items-center gap-1 flex-shrink-0">
               <Button
                 variant="outline"
                 size="icon"
-                className="rounded-none h-7 w-7"
+                className="rounded-none h-6 w-6 text-xs"
                 onClick={() => setMonth(subMonths(month, 1))}
               >
                 ‹
@@ -243,7 +243,7 @@ export const CyclePage: React.FC<CyclePageProps> = ({
               <Button
                 variant="outline"
                 size="sm"
-                className="rounded-none h-7 px-2 text-xs"
+                className="rounded-none h-6 px-1.5 text-[10px]"
                 onClick={() => setMonth(new Date())}
               >
                 Σήμερα
@@ -251,30 +251,30 @@ export const CyclePage: React.FC<CyclePageProps> = ({
               <Button
                 variant="outline"
                 size="icon"
-                className="rounded-none h-7 w-7"
+                className="rounded-none h-6 w-6 text-xs"
                 onClick={() => setMonth(addMonths(month, 1))}
               >
                 ›
               </Button>
               {!readOnly && (
-                <Button size="icon" className="rounded-none h-7 w-7 sm:hidden" onClick={() => setLogOpen(true)} title="Καταγραφή">
-                  <Plus className="h-4 w-4" />
+                <Button size="icon" className="rounded-none h-6 w-6 sm:hidden" onClick={() => setLogOpen(true)} title="Καταγραφή">
+                  <Plus className="h-3 w-3" />
                 </Button>
               )}
               {!readOnly && (
-                <Button size="sm" className="rounded-none h-7 px-2 text-xs hidden sm:inline-flex" onClick={() => setLogOpen(true)}>
-                  <Plus className="h-3.5 w-3.5 mr-1" />
+                <Button size="sm" className="rounded-none h-6 px-1.5 text-[10px] hidden sm:inline-flex" onClick={() => setLogOpen(true)}>
+                  <Plus className="h-3 w-3 mr-0.5" />
                   Καταγραφή
                 </Button>
               )}
             </div>
           </div>
           {ownerName && (
-            <div className="text-[11px] text-muted-foreground mt-1">{ownerName}</div>
+            <div className="text-[10px] text-muted-foreground mt-0.5">{ownerName}</div>
           )}
         </CardHeader>
-        <CardContent className="p-2 sm:p-3 pt-0">
-          <div className="grid grid-cols-7 text-[10px] font-medium text-muted-foreground mb-1">
+        <CardContent className="p-2 pt-0">
+          <div className="grid grid-cols-7 text-[10px] font-medium text-muted-foreground mb-0.5">
             {["Δε", "Τρ", "Τε", "Πε", "Πα", "Σά", "Κυ"].map((d) => (
               <div key={d} className="text-center">
                 {d}
