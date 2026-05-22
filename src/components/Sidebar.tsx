@@ -766,6 +766,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       featureFlag: 'ams_game_demand_analyzer'
     },
     {
+      icon: BellRing,
+      label: "Ειδοποιήσεις",
+      path: "/dashboard/notification-preferences",
+      badge: null
+    },
+    {
       icon: Download,
       label: "Download PWA Apps",
       path: null,
