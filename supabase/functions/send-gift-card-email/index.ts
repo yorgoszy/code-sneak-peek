@@ -97,6 +97,7 @@ serve(async (req) => {
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(
       `https://hyperkids.lovable.app/redeem?code=${gc.code}`
     )}`;
+    const logoWhiteUrl = "https://hyperkids.lovable.app/email-assets/hyperkids-logo-white.png";
 
     const html = `<!DOCTYPE html>
 <html lang="el"><head>
@@ -108,21 +109,25 @@ serve(async (req) => {
   table{border-collapse:collapse;}
   img{border:0;display:block;max-width:100%;height:auto;}
   .gc-wrap{width:540px;max-width:100%;}
-  .gc-card{height:269px;}
+  .gc-card{width:480px;height:267px;}
   @media only screen and (max-width:600px){
     .gc-wrap{width:100% !important;}
     .gc-outer{padding:12px 6px !important;}
     .gc-pad{padding:16px 16px 4px 16px !important;}
     .gc-pad-x{padding:0 10px 16px 10px !important;}
-    .gc-card{height:auto !important;}
-    .gc-card-tl{padding:14px 14px 6px 14px !important;}
-    .gc-card-code{padding:10px 10px !important;}
-    .gc-card-bl{padding:6px 14px 14px 14px !important;font-size:10px !important;}
-    .gc-card-br{padding:6px 14px 14px 14px !important;}
-    .gc-amount{font-size:20px !important;}
-    .gc-code{font-size:14px !important;letter-spacing:3px !important;}
-    .gc-brand{font-size:14px !important;letter-spacing:1px !important;}
-    .gc-qr{width:64px !important;height:64px !important;}
+    .gc-card{width:100% !important;height:auto !important;}
+    .gc-spacer-top{height:76px !important;line-height:76px !important;}
+    .gc-spacer-mid{height:58px !important;line-height:58px !important;}
+    .gc-card-tl{padding:16px 16px 0 16px !important;}
+    .gc-card-tr{padding:16px 16px 0 16px !important;}
+    .gc-card-code{padding:0 16px !important;}
+    .gc-card-bl{padding:0 16px 16px 16px !important;font-size:9px !important;}
+    .gc-card-br{padding:0 16px 16px 16px !important;}
+    .gc-logo{width:106px !important;height:auto !important;}
+    .gc-amount{font-size:21px !important;line-height:32px !important;}
+    .gc-code{font-size:13px !important;letter-spacing:4px !important;}
+    .gc-title{font-size:10px !important;letter-spacing:2px !important;}
+    .gc-qr{width:56px !important;height:56px !important;}
     .gc-footer{font-size:10px !important;padding:14px 12px !important;line-height:1.5 !important;}
   }
 </style>
