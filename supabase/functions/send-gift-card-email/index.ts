@@ -127,7 +127,7 @@ serve(async (req) => {
     .gc-amount{font-size:21px !important;line-height:32px !important;}
     .gc-code{font-size:13px !important;letter-spacing:4px !important;}
     .gc-title{font-size:10px !important;letter-spacing:2px !important;}
-    .gc-qr{width:56px !important;height:56px !important;}
+    .gc-qr{width:37px !important;height:37px !important;padding:4px !important;}
     .gc-footer{font-size:10px !important;padding:14px 12px !important;line-height:1.5 !important;}
   }
   @media only screen and (max-width:360px){
@@ -140,7 +140,7 @@ serve(async (req) => {
     .gc-card-bl{padding:0 15px 15px 15px !important;font-size:8px !important;}
     .gc-card-br{padding:0 15px 15px 15px !important;}
     .gc-logo{width:96px !important;}
-    .gc-qr{width:50px !important;height:50px !important;}
+    .gc-qr{width:34px !important;height:34px !important;padding:4px !important;}
   }
 </style>
 </head>
