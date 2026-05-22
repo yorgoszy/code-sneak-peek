@@ -134,37 +134,37 @@ export const CyclePage: React.FC<CyclePageProps> = ({
   );
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {/* Today phase banner */}
       {todayPhase ? (
         <Card className={`rounded-none border ${phaseSoftColor[todayPhase.phase]}`}>
-          <CardContent className="p-3 flex items-start gap-2">
-            <div className="text-2xl leading-none">{todayPhase.emoji}</div>
+          <CardContent className="p-2 flex items-start gap-2">
+            <div className="text-xl leading-none">{todayPhase.emoji}</div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1 flex-wrap">
-                <span className="font-semibold text-sm">{todayPhase.label}</span>
-                <Badge variant="outline" className="rounded-none text-[10px] px-1.5 py-0">
+                <span className="font-semibold text-xs">{todayPhase.label}</span>
+                <Badge variant="outline" className="rounded-none text-[10px] px-1 py-0">
                   Ημ. {todayPhase.dayOfCycle}/{todayPhase.cycleLength}
                 </Badge>
                 <Badge
                   variant="outline"
-                  className={`rounded-none text-[10px] px-1.5 py-0 ${intensityBadge[todayPhase.intensity]}`}
+                  className={`rounded-none text-[10px] px-1 py-0 ${intensityBadge[todayPhase.intensity]}`}
                 >
                   {intensityLabel[todayPhase.intensity]}
                 </Badge>
                 {todayPhase.isFertile && (
-                  <Badge variant="outline" className="rounded-none text-[10px] px-1.5 py-0 bg-pink-100 border-pink-300 text-pink-900">
-                    <Heart className="h-2.5 w-2.5 mr-0.5" /> Γόνιμη
+                  <Badge variant="outline" className="rounded-none text-[10px] px-1 py-0 bg-pink-100 border-pink-300 text-pink-900">
+                    <Heart className="h-2 w-2 mr-0.5" /> Γόνιμη
                   </Badge>
                 )}
                 {todayPhase.isOvulation && (
-                  <Badge variant="outline" className="rounded-none text-[10px] px-1.5 py-0 bg-amber-100 border-amber-300 text-amber-900">
-                    <Sparkles className="h-2.5 w-2.5 mr-0.5" /> Ωορρηξία
+                  <Badge variant="outline" className="rounded-none text-[10px] px-1 py-0 bg-amber-100 border-amber-300 text-amber-900">
+                    <Sparkles className="h-2 w-2 mr-0.5" /> Ωορρηξία
                   </Badge>
                 )}
               </div>
-              <p className="text-xs mt-1.5 leading-snug">{todayPhase.recommendation}</p>
-              <div className="text-[11px] mt-1 flex items-start gap-1 text-muted-foreground leading-snug">
+              <p className="text-[11px] mt-1 leading-snug">{todayPhase.recommendation}</p>
+              <div className="text-[11px] mt-0.5 flex items-start gap-1 text-muted-foreground leading-snug">
                 <Dumbbell className="h-3 w-3 mt-0.5 flex-shrink-0" />
                 <span>{todayPhase.trainingAdvice}</span>
               </div>
@@ -173,7 +173,7 @@ export const CyclePage: React.FC<CyclePageProps> = ({
         </Card>
       ) : (
         <Card className="rounded-none border-dashed">
-          <CardContent className="p-3 text-xs text-muted-foreground">
+          <CardContent className="p-2 text-[11px] text-muted-foreground">
             Δεν υπάρχει καταγραφή ακόμα. {!readOnly && "Πάτησε «Καταγραφή» για να ξεκινήσεις."}
           </CardContent>
         </Card>
