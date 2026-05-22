@@ -99,51 +99,73 @@ serve(async (req) => {
     )}`;
 
     const html = `<!DOCTYPE html>
-<html lang="el"><head><meta charset="UTF-8"><title>Δωροκάρτα HYPERKIDS</title></head>
+<html lang="el"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Δωροκάρτα HYPERKIDS</title>
+<style>
+  body{margin:0;padding:0;}
+  table{border-collapse:collapse;}
+  img{border:0;display:block;max-width:100%;height:auto;}
+  .gc-wrap{width:540px;max-width:100%;}
+  @media only screen and (max-width:600px){
+    .gc-wrap{width:100% !important;}
+    .gc-pad{padding:18px !important;}
+    .gc-pad-x{padding-left:14px !important;padding-right:14px !important;padding-bottom:18px !important;}
+    .gc-amount{font-size:22px !important;}
+    .gc-code{font-size:15px !important;letter-spacing:4px !important;}
+    .gc-brand{font-size:15px !important;letter-spacing:1px !important;}
+    .gc-stack{display:block !important;width:100% !important;box-sizing:border-box !important;text-align:left !important;padding:6px 16px !important;}
+    .gc-stack-right{text-align:center !important;}
+    .gc-qr{width:80px !important;height:80px !important;margin:0 auto !important;}
+    .gc-footer{font-size:10px !important;padding:14px 12px !important;line-height:1.5 !important;}
+  }
+</style>
+</head>
 <body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;color:#111;">
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f5f5;padding:30px 10px;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f5f5;padding:20px 8px;">
     <tr><td align="center">
-      <table width="540" cellpadding="0" cellspacing="0" border="0" style="max-width:540px;background:#ffffff;border:1px solid #000;">
-        <tr><td style="padding:28px 28px 8px 28px;">
+      <table class="gc-wrap" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border:1px solid #000;">
+        <tr><td class="gc-pad" style="padding:28px 28px 8px 28px;">
           <p style="margin:0 0 14px 0;font-size:14px;color:#333;">Γεια σου ${esc(gc.recipient_name || "")},</p>
           <p style="margin:0 0 18px 0;font-size:14px;color:#333;line-height:1.5;">
             Έχεις λάβει μια δωροκάρτα HYPERKIDS${gc.sender_name ? ` από <b>${esc(gc.sender_name)}</b>` : ""}.
           </p>
           ${gc.message ? `<p style="margin:0 0 18px 0;font-size:14px;color:#111;font-style:italic;border-left:3px solid #000;padding:8px 12px;background:#fafafa;">${esc(gc.message)}</p>` : ""}
         </td></tr>
-        <tr><td style="padding:0 28px 28px 28px;">
+        <tr><td class="gc-pad-x" style="padding:0 28px 28px 28px;">
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0a0a0a;background-image:linear-gradient(135deg,#0a0a0a 0%,#1f1f1f 40%,#050505 100%);border:1px solid #000;">
             <tr>
-              <td style="padding:24px 24px 12px 24px;" valign="top">
-                <span style="color:#ffffff;font-size:18px;font-weight:bold;letter-spacing:2px;">HYPERKIDS</span>
+              <td class="gc-stack" style="padding:20px 24px 8px 24px;" valign="top">
+                <span class="gc-brand" style="color:#ffffff;font-size:18px;font-weight:bold;letter-spacing:2px;">HYPERKIDS</span>
               </td>
-              <td style="padding:24px 24px 12px 24px;text-align:right;" valign="top">
-                <span style="color:#ffffff;font-size:26px;font-weight:bold;">€${gc.amount || 0}</span>
+              <td class="gc-stack gc-stack-right" style="padding:20px 24px 8px 24px;text-align:right;" valign="top">
+                <span class="gc-amount" style="color:#ffffff;font-size:26px;font-weight:bold;">€${gc.amount || 0}</span>
               </td>
             </tr>
-            <tr><td colspan="2" align="center" style="padding:18px 24px;">
-              <span style="color:#ffffff;font-family:'Courier New',monospace;letter-spacing:6px;font-size:18px;">${esc(gc.code)}</span>
+            <tr><td colspan="2" align="center" style="padding:14px 16px;">
+              <span class="gc-code" style="color:#ffffff;font-family:'Courier New',monospace;letter-spacing:6px;font-size:18px;word-break:break-all;">${esc(gc.code)}</span>
             </td></tr>
             <tr>
-              <td style="padding:12px 24px 24px 24px;color:#d4d1c9;font-size:11px;line-height:1.6;" valign="bottom">
+              <td class="gc-stack" style="padding:8px 24px 20px 24px;color:#d4d1c9;font-size:11px;line-height:1.6;" valign="bottom">
                 <div style="color:#ffffff;font-weight:bold;letter-spacing:2px;font-size:12px;margin-bottom:6px;">GIFT CARD</div>
                 ${gc.sender_name ? `<div>Από: ${esc(gc.sender_name)}</div>` : ""}
                 ${subName ? `<div>Συνδρομή · ${esc(subName)}</div>` : ""}
                 ${expiry ? `<div>Ισχύει έως: ${esc(expiry)}</div>` : ""}
               </td>
-              <td style="padding:12px 24px 24px 24px;text-align:right;" valign="bottom">
-                <img src="${qrUrl}" alt="QR" width="90" height="90" style="background:#fff;padding:6px;display:inline-block;">
+              <td class="gc-stack gc-stack-right" style="padding:8px 24px 20px 24px;text-align:right;" valign="bottom">
+                <img src="${qrUrl}" alt="QR" class="gc-qr" width="90" height="90" style="background:#fff;padding:6px;display:inline-block;">
               </td>
             </tr>
           </table>
         </td></tr>
-        <tr><td style="padding:0 28px 28px 28px;font-size:13px;color:#333;line-height:1.6;">
-          <p style="margin:0 0 8px 0;"><b>Κωδικός:</b> <span style="font-family:'Courier New',monospace;">${esc(gc.code)}</span></p>
+        <tr><td class="gc-pad-x" style="padding:0 28px 28px 28px;font-size:13px;color:#333;line-height:1.6;">
+          <p style="margin:0 0 8px 0;"><b>Κωδικός:</b> <span style="font-family:'Courier New',monospace;word-break:break-all;">${esc(gc.code)}</span></p>
           <p style="margin:0 0 8px 0;"><b>Αξία:</b> €${gc.amount || 0}${subName ? ` · ${esc(subName)}` : ""}</p>
           ${expiry ? `<p style="margin:0 0 14px 0;"><b>Ισχύει έως:</b> ${esc(expiry)}</p>` : ""}
           <p style="margin:14px 0 0 0;font-size:12px;color:#666;">Για εξαργύρωση επικοινώνησε με το HYPERKIDS ή σκάναρε τον QR.</p>
         </td></tr>
-        <tr><td style="padding:18px 28px;background:#000;color:#fff;font-size:11px;text-align:center;">
+        <tr><td class="gc-footer" style="padding:18px 28px;background:#000;color:#fff;font-size:11px;text-align:center;">
           HYPERKIDS · Αν. Γεωργίου 46, Θεσσαλονίκη · +30 2310 529104 · info@hyperkids.gr
         </td></tr>
       </table>
