@@ -2,8 +2,15 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
 
-// Public VAPID key - safe to expose (used to subscribe browsers to push)
-const VAPID_PUBLIC_KEY = 'BPxXKxBz_PLACEHOLDER_REPLACE_WITH_REAL_PUBLIC_KEY';
+// VAPID public key fetched at runtime from edge function (server-side secret).
+let cachedVapidKey: string | null = null;
+async function getVapidPublicKey(): Promise<string> {
+  if (cachedVapidKey) return cachedVapidKey;
+  const { data, error } = await supabase.functions.invoke('get-vapid-public-key');
+  if (error || !data?.publicKey) throw new Error('VAPID public key unavailable');
+  cachedVapidKey = data.publicKey as string;
+  return cachedVapidKey;
+}
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
