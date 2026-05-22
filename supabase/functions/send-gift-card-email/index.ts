@@ -143,28 +143,30 @@ serve(async (req) => {
           </p>
           ${gc.message ? `<p style="margin:0 0 18px 0;font-size:14px;color:#111;font-style:italic;border-left:3px solid #000;padding:8px 12px;background:#fafafa;">${esc(gc.message)}</p>` : ""}
         </td></tr>
-        <tr><td class="gc-pad-x" style="padding:0 28px 28px 28px;">
-          <table width="100%" height="269" cellpadding="0" cellspacing="0" border="0" class="gc-card" style="height:269px;background:#0a0a0a;background-image:linear-gradient(135deg,#0a0a0a 0%,#1f1f1f 40%,#050505 100%);border:1px solid #000;">
+        <tr><td class="gc-pad-x" align="center" style="padding:0 28px 28px 28px;">
+          <table width="480" height="267" cellpadding="0" cellspacing="0" border="0" class="gc-card" style="width:480px;height:267px;background:#0a0a0a;background-image:radial-gradient(ellipse at 20% 10%,rgba(180,180,180,0.35) 0%,transparent 55%),radial-gradient(ellipse at 85% 25%,rgba(120,120,120,0.3) 0%,transparent 55%),radial-gradient(ellipse at 70% 90%,rgba(200,200,200,0.25) 0%,transparent 55%),radial-gradient(ellipse at 10% 80%,rgba(90,90,90,0.3) 0%,transparent 55%),linear-gradient(135deg,#0a0a0a 0%,#1f1f1f 40%,#050505 100%);border:1px solid #1f1f1f;box-shadow:0 24px 48px rgba(0,0,0,0.35);">
             <tr>
-              <td class="gc-card-tl" style="padding:24px 24px 12px 24px;" valign="top" width="50%">
-                <span class="gc-brand" style="color:#ffffff;font-size:18px;font-weight:bold;letter-spacing:2px;">HYPERKIDS</span>
+              <td class="gc-card-tl" style="padding:25px 25px 0 25px;" valign="top" width="50%">
+                <img src="${logoWhiteUrl}" alt="HYPERKIDS" class="gc-logo" width="141" style="width:141px;height:auto;display:block;">
               </td>
-              <td class="gc-card-tr" style="padding:24px 24px 12px 24px;text-align:right;" valign="top" width="50%">
-                <span class="gc-amount" style="color:#ffffff;font-size:26px;font-weight:bold;">€${gc.amount || 0}</span>
+              <td class="gc-card-tr" style="padding:25px 25px 0 25px;text-align:right;" valign="top" width="50%">
+                <span class="gc-amount" style="color:#ffffff;font-size:24px;line-height:32px;font-weight:700;font-family:Arial,Helvetica,sans-serif;">€${gc.amount || 0}</span>
               </td>
             </tr>
-            <tr><td colspan="2" align="center" class="gc-card-code" style="padding:18px 24px;">
-              <span class="gc-code" style="color:#ffffff;font-family:'Courier New',monospace;letter-spacing:6px;font-size:18px;">${esc(gc.code)}</span>
+            <tr><td colspan="2" class="gc-spacer-top" height="82" style="height:82px;line-height:82px;font-size:1px;">&nbsp;</td></tr>
+            <tr><td colspan="2" align="center" class="gc-card-code" style="padding:0 25px;">
+              <span class="gc-code" style="color:#ffffff;font-family:'Courier New',monospace;letter-spacing:6px;font-size:14px;line-height:20px;">${esc(gc.code)}</span>
             </td></tr>
+            <tr><td colspan="2" class="gc-spacer-mid" height="47" style="height:47px;line-height:47px;font-size:1px;">&nbsp;</td></tr>
             <tr>
-              <td class="gc-card-bl" style="padding:12px 24px 24px 24px;color:#d4d1c9;font-size:11px;line-height:1.6;" valign="bottom" width="65%">
-                <div style="color:#ffffff;font-weight:bold;letter-spacing:2px;font-size:12px;margin-bottom:6px;">GIFT CARD</div>
+              <td class="gc-card-bl" style="padding:0 25px 25px 25px;color:#d4d1c9;font-size:10px;line-height:1.25;" valign="bottom" width="65%">
+                <div class="gc-title" style="color:#ffffff;font-weight:700;letter-spacing:2px;font-size:12px;margin-bottom:4px;">GIFT CARD</div>
                 ${gc.sender_name ? `<div>Από: ${esc(gc.sender_name)}</div>` : ""}
                 ${subName ? `<div>Συνδρομή · ${esc(subName)}</div>` : ""}
                 ${expiry ? `<div>Ισχύει έως: ${esc(expiry)}</div>` : ""}
               </td>
-              <td class="gc-card-br" style="padding:12px 24px 24px 24px;text-align:right;" valign="bottom" width="35%">
-                <img src="${qrUrl}" alt="QR" class="gc-qr" width="90" height="90" style="background:#fff;padding:6px;display:inline-block;">
+              <td class="gc-card-br" style="padding:0 25px 25px 25px;text-align:right;" valign="bottom" width="35%">
+                <img src="${qrUrl}" alt="QR" class="gc-qr" width="56" height="56" style="width:56px;height:56px;background:#fff;padding:6px;display:inline-block;">
               </td>
             </tr>
           </table>
