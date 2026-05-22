@@ -281,7 +281,7 @@ export const CyclePage: React.FC<CyclePageProps> = ({
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
+          <div className="grid grid-cols-7 gap-0.5">
             {days.map((d) => {
               const phase = getPhaseForDate(cycles, d);
               const isToday = isSameDay(d, today);
@@ -296,7 +296,7 @@ export const CyclePage: React.FC<CyclePageProps> = ({
                   <PopoverTrigger asChild>
                     <button
                       onClick={() => setSelectedDay(d)}
-                      className={`aspect-square border rounded-none p-0.5 text-[11px] flex flex-col items-center justify-between transition-colors hover:opacity-80 ${tint} ${fertileRing} ${
+                      className={`h-8 lg:h-9 border rounded-none p-0.5 text-[10px] flex flex-col items-center justify-between transition-colors hover:opacity-80 ${tint} ${fertileRing} ${
                         inMonth ? "" : "opacity-40"
                       } ${isToday ? "border-black border-2" : "border-border"}`}
                     >
@@ -317,37 +317,37 @@ export const CyclePage: React.FC<CyclePageProps> = ({
                     </button>
                   </PopoverTrigger>
                   {phase && (
-                    <PopoverContent className="rounded-none w-72 p-3" align="center">
-                      <div className="text-sm font-semibold flex items-center gap-2">
+                    <PopoverContent className="rounded-none w-64 p-2" align="center">
+                      <div className="text-xs font-semibold flex items-center gap-1.5">
                         <span>{phase.emoji}</span>
                         <span>{format(d, "EEEE dd MMM yyyy", { locale: el })}</span>
                       </div>
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        <Badge variant="outline" className={`rounded-none ${phaseSoftColor[phase.phase]}`}>
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        <Badge variant="outline" className={`rounded-none text-[10px] px-1 py-1 ${phaseSoftColor[phase.phase]}`}>
                           {phase.label}
                         </Badge>
-                        <Badge variant="outline" className="rounded-none">
+                        <Badge variant="outline" className="rounded-none text-[10px] px-1 py-1">
                           Ημ. {phase.dayOfCycle}
                         </Badge>
                         <Badge
                           variant="outline"
-                          className={`rounded-none ${intensityBadge[phase.intensity]}`}
+                          className={`rounded-none text-[10px] px-1 py-1 ${intensityBadge[phase.intensity]}`}
                         >
                           {intensityLabel[phase.intensity]}
                         </Badge>
                         {phase.isFertile && (
-                          <Badge variant="outline" className="rounded-none bg-pink-100 border-pink-300 text-pink-900">
+                          <Badge variant="outline" className="rounded-none text-[10px] px-1 py-1 bg-pink-100 border-pink-300 text-pink-900">
                             Γόνιμη
                           </Badge>
                         )}
                         {phase.isOvulation && (
-                          <Badge variant="outline" className="rounded-none bg-amber-100 border-amber-300 text-amber-900">
+                          <Badge variant="outline" className="rounded-none text-[10px] px-1 py-1 bg-amber-100 border-amber-300 text-amber-900">
                             Ωορρηξία
                           </Badge>
                         )}
                       </div>
-                      <p className="text-xs mt-2 text-muted-foreground">{phase.recommendation}</p>
-                      <div className="text-xs mt-2 flex items-start gap-1.5">
+                      <p className="text-[11px] mt-1.5 text-muted-foreground">{phase.recommendation}</p>
+                      <div className="text-[11px] mt-1.5 flex items-start gap-1">
                         <Dumbbell className="h-3 w-3 mt-0.5 flex-shrink-0" />
                         <span>{phase.trainingAdvice}</span>
                       </div>
