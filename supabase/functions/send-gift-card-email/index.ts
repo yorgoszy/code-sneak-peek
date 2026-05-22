@@ -166,8 +166,8 @@ serve(async (req) => {
               </td>
             </tr>
             <tr><td colspan="2" class="gc-spacer-top" height="66" style="height:66px;line-height:66px;font-size:1px;">&nbsp;</td></tr>
-            <tr><td colspan="2" align="center" class="gc-card-code" style="padding:0 25px;">
-              <span class="gc-code" style="color:#ffffff;font-family:'Courier New',monospace;letter-spacing:6px;font-size:14px;line-height:20px;">${esc(gc.code)}</span>
+            <tr><td colspan="2" align="center" class="gc-card-code" style="padding:0 25px;text-align:center;">
+              <span class="gc-code" style="color:#ffffff;font-family:'Courier New',monospace;letter-spacing:6px;font-size:14px;line-height:20px;padding-left:6px;display:inline-block;">${esc(gc.code)}</span>
             </td></tr>
             <tr><td colspan="2" class="gc-spacer-mid" height="43" style="height:43px;line-height:43px;font-size:1px;">&nbsp;</td></tr>
             <tr>
