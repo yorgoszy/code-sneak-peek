@@ -101,9 +101,10 @@ export function usePushNotifications() {
       const reg = await navigator.serviceWorker.ready;
       let sub = await reg.pushManager.getSubscription();
       if (!sub) {
+        const vapid = await getVapidPublicKey();
         sub = await reg.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource,
+          applicationServerKey: urlBase64ToUint8Array(vapid) as BufferSource,
         });
       }
       const json = sub.toJSON();
