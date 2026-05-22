@@ -97,6 +97,7 @@ serve(async (req) => {
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(
       `https://hyperkids.lovable.app/redeem?code=${gc.code}`
     )}`;
+    const logoWhiteUrl = "https://hyperkids.lovable.app/assets/header-logo-DYvUU8tG.png";
 
     const html = `<!DOCTYPE html>
 <html lang="el"><head>
@@ -108,22 +109,38 @@ serve(async (req) => {
   table{border-collapse:collapse;}
   img{border:0;display:block;max-width:100%;height:auto;}
   .gc-wrap{width:540px;max-width:100%;}
-  .gc-card{height:269px;}
+  .gc-card{width:480px;height:267px;}
   @media only screen and (max-width:600px){
     .gc-wrap{width:100% !important;}
     .gc-outer{padding:12px 6px !important;}
     .gc-pad{padding:16px 16px 4px 16px !important;}
     .gc-pad-x{padding:0 10px 16px 10px !important;}
-    .gc-card{height:auto !important;}
-    .gc-card-tl{padding:14px 14px 6px 14px !important;}
-    .gc-card-code{padding:10px 10px !important;}
-    .gc-card-bl{padding:6px 14px 14px 14px !important;font-size:10px !important;}
-    .gc-card-br{padding:6px 14px 14px 14px !important;}
-    .gc-amount{font-size:20px !important;}
-    .gc-code{font-size:14px !important;letter-spacing:3px !important;}
-    .gc-brand{font-size:14px !important;letter-spacing:1px !important;}
-    .gc-qr{width:64px !important;height:64px !important;}
+    .gc-card{width:320px !important;height:178px !important;}
+    .gc-spacer-top{height:31px !important;line-height:31px !important;}
+    .gc-spacer-mid{height:7px !important;line-height:7px !important;}
+    .gc-card-tl{padding:16px 16px 0 16px !important;}
+    .gc-card-tr{padding:16px 16px 0 16px !important;}
+    .gc-card-code{padding:0 16px !important;}
+    .gc-card-bl{padding:0 16px 16px 16px !important;font-size:9px !important;}
+    .gc-card-br{padding:0 16px 16px 16px !important;}
+    .gc-logo{width:106px !important;height:auto !important;}
+    .gc-amount{font-size:21px !important;line-height:32px !important;}
+    .gc-code{font-size:13px !important;letter-spacing:4px !important;}
+    .gc-title{font-size:10px !important;letter-spacing:2px !important;}
+    .gc-qr{width:56px !important;height:56px !important;}
     .gc-footer{font-size:10px !important;padding:14px 12px !important;line-height:1.5 !important;}
+  }
+  @media only screen and (max-width:360px){
+    .gc-card{width:288px !important;height:160px !important;}
+    .gc-spacer-top{height:24px !important;line-height:24px !important;}
+    .gc-spacer-mid{height:4px !important;line-height:4px !important;}
+    .gc-card-tl{padding:15px 15px 0 15px !important;}
+    .gc-card-tr{padding:15px 15px 0 15px !important;}
+    .gc-card-code{padding:0 15px !important;}
+    .gc-card-bl{padding:0 15px 15px 15px !important;font-size:8px !important;}
+    .gc-card-br{padding:0 15px 15px 15px !important;}
+    .gc-logo{width:96px !important;}
+    .gc-qr{width:50px !important;height:50px !important;}
   }
 </style>
 </head>
@@ -138,28 +155,30 @@ serve(async (req) => {
           </p>
           ${gc.message ? `<p style="margin:0 0 18px 0;font-size:14px;color:#111;font-style:italic;border-left:3px solid #000;padding:8px 12px;background:#fafafa;">${esc(gc.message)}</p>` : ""}
         </td></tr>
-        <tr><td class="gc-pad-x" style="padding:0 28px 28px 28px;">
-          <table width="100%" height="269" cellpadding="0" cellspacing="0" border="0" class="gc-card" style="height:269px;background:#0a0a0a;background-image:linear-gradient(135deg,#0a0a0a 0%,#1f1f1f 40%,#050505 100%);border:1px solid #000;">
+        <tr><td class="gc-pad-x" align="center" style="padding:0 28px 28px 28px;">
+          <table width="480" height="267" cellpadding="0" cellspacing="0" border="0" class="gc-card" style="width:480px;height:267px;background:#0a0a0a;background-image:radial-gradient(ellipse at 20% 10%,rgba(180,180,180,0.35) 0%,transparent 55%),radial-gradient(ellipse at 85% 25%,rgba(120,120,120,0.3) 0%,transparent 55%),radial-gradient(ellipse at 70% 90%,rgba(200,200,200,0.25) 0%,transparent 55%),radial-gradient(ellipse at 10% 80%,rgba(90,90,90,0.3) 0%,transparent 55%),linear-gradient(135deg,#0a0a0a 0%,#1f1f1f 40%,#050505 100%);border:1px solid #1f1f1f;box-shadow:0 24px 48px rgba(0,0,0,0.35);">
             <tr>
-              <td class="gc-card-tl" style="padding:24px 24px 12px 24px;" valign="top" width="50%">
-                <span class="gc-brand" style="color:#ffffff;font-size:18px;font-weight:bold;letter-spacing:2px;">HYPERKIDS</span>
+              <td class="gc-card-tl" style="padding:25px 25px 0 25px;" valign="top" width="50%">
+                <img src="${logoWhiteUrl}" alt="HYPERKIDS" class="gc-logo" width="141" style="width:141px;height:auto;display:block;">
               </td>
-              <td class="gc-card-tr" style="padding:24px 24px 12px 24px;text-align:right;" valign="top" width="50%">
-                <span class="gc-amount" style="color:#ffffff;font-size:26px;font-weight:bold;">€${gc.amount || 0}</span>
+              <td class="gc-card-tr" style="padding:25px 25px 0 25px;text-align:right;" valign="top" width="50%">
+                <span class="gc-amount" style="color:#ffffff;font-size:24px;line-height:32px;font-weight:700;font-family:Arial,Helvetica,sans-serif;">€${gc.amount || 0}</span>
               </td>
             </tr>
-            <tr><td colspan="2" align="center" class="gc-card-code" style="padding:18px 24px;">
-              <span class="gc-code" style="color:#ffffff;font-family:'Courier New',monospace;letter-spacing:6px;font-size:18px;">${esc(gc.code)}</span>
+            <tr><td colspan="2" class="gc-spacer-top" height="66" style="height:66px;line-height:66px;font-size:1px;">&nbsp;</td></tr>
+            <tr><td colspan="2" align="center" class="gc-card-code" style="padding:0 25px;">
+              <span class="gc-code" style="color:#ffffff;font-family:'Courier New',monospace;letter-spacing:6px;font-size:14px;line-height:20px;">${esc(gc.code)}</span>
             </td></tr>
+            <tr><td colspan="2" class="gc-spacer-mid" height="43" style="height:43px;line-height:43px;font-size:1px;">&nbsp;</td></tr>
             <tr>
-              <td class="gc-card-bl" style="padding:12px 24px 24px 24px;color:#d4d1c9;font-size:11px;line-height:1.6;" valign="bottom" width="65%">
-                <div style="color:#ffffff;font-weight:bold;letter-spacing:2px;font-size:12px;margin-bottom:6px;">GIFT CARD</div>
+              <td class="gc-card-bl" style="padding:0 25px 25px 25px;color:#d4d1c9;font-size:10px;line-height:1.25;" valign="bottom" width="65%">
+                <div class="gc-title" style="color:#ffffff;font-weight:700;letter-spacing:2px;font-size:12px;margin-bottom:4px;">GIFT CARD</div>
                 ${gc.sender_name ? `<div>Από: ${esc(gc.sender_name)}</div>` : ""}
                 ${subName ? `<div>Συνδρομή · ${esc(subName)}</div>` : ""}
                 ${expiry ? `<div>Ισχύει έως: ${esc(expiry)}</div>` : ""}
               </td>
-              <td class="gc-card-br" style="padding:12px 24px 24px 24px;text-align:right;" valign="bottom" width="35%">
-                <img src="${qrUrl}" alt="QR" class="gc-qr" width="90" height="90" style="background:#fff;padding:6px;display:inline-block;">
+              <td class="gc-card-br" style="padding:0 25px 25px 25px;text-align:right;" valign="bottom" width="35%">
+                <img src="${qrUrl}" alt="QR" class="gc-qr" width="56" height="56" style="width:56px;height:56px;background:#fff;padding:6px;display:inline-block;">
               </td>
             </tr>
           </table>
