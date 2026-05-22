@@ -22,12 +22,26 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Calendar as CalendarIcon, Droplet, Plus, Trash2 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Calendar as CalendarIcon,
+  Droplet,
+  Plus,
+  Trash2,
+  Heart,
+  Dumbbell,
+  Sparkles,
+  CalendarClock,
+} from "lucide-react";
 import { useMenstrualCycles } from "@/hooks/useMenstrualCycles";
 import {
   getPhaseForDate,
+  getCycleAverages,
   phaseColor,
   phaseSoftColor,
+  phaseBgTint,
+  intensityLabel,
+  intensityBadge,
 } from "@/utils/cyclePhase";
 import {
   format,
@@ -63,11 +77,17 @@ export const CyclePage: React.FC<CyclePageProps> = ({
   const [cycleLen, setCycleLen] = useState(28);
   const [notes, setNotes] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
   const today = useMemo(() => new Date(), []);
   const todayPhase = useMemo(() => getPhaseForDate(cycles, today), [cycles, today]);
+  const averages = useMemo(() => getCycleAverages(cycles), [cycles]);
+  const selectedPhase = useMemo(
+    () => (selectedDay ? getPhaseForDate(cycles, selectedDay) : null),
+    [cycles, selectedDay]
+  );
 
-  // Build month grid
+  // Month grid
   const monthStart = startOfMonth(month);
   const monthEnd = endOfMonth(month);
   const gridStart = startOfWeek(monthStart, { weekStartsOn: 1 });
@@ -88,26 +108,60 @@ export const CyclePage: React.FC<CyclePageProps> = ({
     }
   };
 
+  const KeyCard: React.FC<{
+    icon: React.ReactNode;
+    title: string;
+    value: string;
+    sub?: string;
+    tint?: string;
+  }> = ({ icon, title, value, sub, tint }) => (
+    <Card className={`rounded-none border-2 ${tint || ""}`}>
+      <CardContent className="p-3">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          {icon}
+          <span>{title}</span>
+        </div>
+        <div className="text-lg font-semibold mt-1 leading-tight">{value}</div>
+        {sub && <div className="text-[11px] text-muted-foreground mt-0.5">{sub}</div>}
+      </CardContent>
+    </Card>
+  );
+
   return (
     <div className="space-y-4">
-      {/* Phase banner */}
+      {/* Today phase banner */}
       {todayPhase ? (
         <Card className={`rounded-none border-2 ${phaseSoftColor[todayPhase.phase]}`}>
           <CardContent className="p-4 flex items-start gap-3">
-            <Droplet className="h-6 w-6 flex-shrink-0 mt-1" />
+            <div className="text-3xl leading-none">{todayPhase.emoji}</div>
             <div className="flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-semibold text-base">
-                  {todayPhase.label}
-                </span>
+                <span className="font-semibold text-base">{todayPhase.label}</span>
                 <Badge variant="outline" className="rounded-none">
-                  Ημέρα {todayPhase.dayOfCycle}
+                  Ημέρα {todayPhase.dayOfCycle} / {todayPhase.cycleLength}
                 </Badge>
-                <Badge variant="outline" className="rounded-none">
-                  Επόμενη: {format(todayPhase.nextStart, "dd/MM/yyyy")}
+                <Badge
+                  variant="outline"
+                  className={`rounded-none ${intensityBadge[todayPhase.intensity]}`}
+                >
+                  Προπόνηση: {intensityLabel[todayPhase.intensity]}
                 </Badge>
+                {todayPhase.isFertile && (
+                  <Badge variant="outline" className="rounded-none bg-pink-100 border-pink-300 text-pink-900">
+                    <Heart className="h-3 w-3 mr-1" /> Γόνιμη ημέρα
+                  </Badge>
+                )}
+                {todayPhase.isOvulation && (
+                  <Badge variant="outline" className="rounded-none bg-amber-100 border-amber-300 text-amber-900">
+                    <Sparkles className="h-3 w-3 mr-1" /> Ωορρηξία σήμερα
+                  </Badge>
+                )}
               </div>
               <p className="text-sm mt-2">{todayPhase.recommendation}</p>
+              <div className="text-xs mt-2 flex items-start gap-1.5 text-muted-foreground">
+                <Dumbbell className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
+                <span>{todayPhase.trainingAdvice}</span>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -119,6 +173,50 @@ export const CyclePage: React.FC<CyclePageProps> = ({
         </Card>
       )}
 
+      {/* Predictions */}
+      {todayPhase && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+          <KeyCard
+            icon={<Droplet className="h-3.5 w-3.5" />}
+            title="Επόμενη περίοδος"
+            value={format(todayPhase.nextStart, "dd MMM", { locale: el })}
+            sub={`σε ${todayPhase.daysUntilNextPeriod} ημέρες`}
+            tint="border-red-300"
+          />
+          <KeyCard
+            icon={<CalendarClock className="h-3.5 w-3.5" />}
+            title="Λήξη τρέχουσας"
+            value={format(todayPhase.periodEnd, "dd MMM", { locale: el })}
+            sub={`διάρκεια ${todayPhase.periodLength} ημ.`}
+            tint="border-red-300"
+          />
+          <KeyCard
+            icon={<Sparkles className="h-3.5 w-3.5" />}
+            title="Ωορρηξία"
+            value={format(todayPhase.ovulationDate, "dd MMM", { locale: el })}
+            sub={
+              todayPhase.daysUntilOvulation === 0
+                ? "σήμερα"
+                : todayPhase.daysUntilOvulation > 0
+                ? `σε ${todayPhase.daysUntilOvulation} ημ.`
+                : `πριν ${Math.abs(todayPhase.daysUntilOvulation)} ημ.`
+            }
+            tint="border-amber-300"
+          />
+          <KeyCard
+            icon={<Heart className="h-3.5 w-3.5" />}
+            title="Γόνιμο παράθυρο"
+            value={`${format(todayPhase.fertileStart, "dd MMM", { locale: el })} – ${format(
+              todayPhase.fertileEnd,
+              "dd MMM",
+              { locale: el }
+            )}`}
+            sub="6 ημέρες υψηλής γονιμότητας"
+            tint="border-pink-300"
+          />
+        </div>
+      )}
+
       {/* Calendar */}
       <Card className="rounded-none">
         <CardHeader className="pb-3">
@@ -126,7 +224,9 @@ export const CyclePage: React.FC<CyclePageProps> = ({
             <CardTitle className="text-base flex items-center gap-2">
               <CalendarIcon className="h-4 w-4" />
               {format(month, "LLLL yyyy", { locale: el })}
-              {ownerName && <span className="text-xs text-muted-foreground">· {ownerName}</span>}
+              {ownerName && (
+                <span className="text-xs text-muted-foreground">· {ownerName}</span>
+              )}
             </CardTitle>
             <div className="flex items-center gap-2">
               <Button
@@ -154,11 +254,7 @@ export const CyclePage: React.FC<CyclePageProps> = ({
                 ›
               </Button>
               {!readOnly && (
-                <Button
-                  size="sm"
-                  className="rounded-none"
-                  onClick={() => setLogOpen(true)}
-                >
+                <Button size="sm" className="rounded-none" onClick={() => setLogOpen(true)}>
                   <Plus className="h-4 w-4 mr-1" />
                   Καταγραφή Περιόδου
                 </Button>
@@ -169,7 +265,9 @@ export const CyclePage: React.FC<CyclePageProps> = ({
         <CardContent>
           <div className="grid grid-cols-7 text-xs font-medium text-muted-foreground mb-2">
             {["Δε", "Τρ", "Τε", "Πε", "Πα", "Σά", "Κυ"].map((d) => (
-              <div key={d} className="text-center">{d}</div>
+              <div key={d} className="text-center">
+                {d}
+              </div>
             ))}
           </div>
           <div className="grid grid-cols-7 gap-1">
@@ -177,21 +275,80 @@ export const CyclePage: React.FC<CyclePageProps> = ({
               const phase = getPhaseForDate(cycles, d);
               const isToday = isSameDay(d, today);
               const inMonth = isSameMonth(d, month);
+              const tint = phase ? phaseBgTint[phase.phase] : "";
+              const fertileRing =
+                phase?.isFertile && !phase.isOvulation
+                  ? "ring-1 ring-pink-400 ring-inset"
+                  : "";
               return (
-                <div
-                  key={d.toISOString()}
-                  className={`aspect-square border rounded-none p-1 text-xs flex flex-col items-center justify-start ${
-                    inMonth ? "" : "opacity-40"
-                  } ${isToday ? "border-black border-2" : "border-border"}`}
-                >
-                  <span className="font-medium">{d.getDate()}</span>
+                <Popover key={d.toISOString()}>
+                  <PopoverTrigger asChild>
+                    <button
+                      onClick={() => setSelectedDay(d)}
+                      className={`aspect-square border rounded-none p-1 text-xs flex flex-col items-center justify-between transition-colors hover:opacity-80 ${tint} ${fertileRing} ${
+                        inMonth ? "" : "opacity-40"
+                      } ${isToday ? "border-black border-2" : "border-border"}`}
+                    >
+                      <span className="font-medium self-start">{d.getDate()}</span>
+                      <div className="flex items-center gap-0.5">
+                        {phase?.isPeriod && (
+                          <span
+                            className="h-2 w-2 rounded-full bg-red-500"
+                            title="Περίοδος"
+                          />
+                        )}
+                        {phase?.isOvulation && (
+                          <span
+                            className="h-2 w-2 rounded-full bg-amber-500"
+                            title="Ωορρηξία"
+                          />
+                        )}
+                        {phase && !phase.isPeriod && !phase.isOvulation && (
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${phaseColor[phase.phase]}`}
+                          />
+                        )}
+                      </div>
+                    </button>
+                  </PopoverTrigger>
                   {phase && (
-                    <span
-                      className={`mt-1 h-2 w-2 rounded-full ${phaseColor[phase.phase]}`}
-                      title={`${phase.label} · ημέρα ${phase.dayOfCycle}`}
-                    />
+                    <PopoverContent className="rounded-none w-72 p-3">
+                      <div className="text-sm font-semibold flex items-center gap-2">
+                        <span>{phase.emoji}</span>
+                        <span>{format(d, "EEEE dd MMM yyyy", { locale: el })}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        <Badge variant="outline" className={`rounded-none ${phaseSoftColor[phase.phase]}`}>
+                          {phase.label}
+                        </Badge>
+                        <Badge variant="outline" className="rounded-none">
+                          Ημ. {phase.dayOfCycle}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className={`rounded-none ${intensityBadge[phase.intensity]}`}
+                        >
+                          {intensityLabel[phase.intensity]}
+                        </Badge>
+                        {phase.isFertile && (
+                          <Badge variant="outline" className="rounded-none bg-pink-100 border-pink-300 text-pink-900">
+                            Γόνιμη
+                          </Badge>
+                        )}
+                        {phase.isOvulation && (
+                          <Badge variant="outline" className="rounded-none bg-amber-100 border-amber-300 text-amber-900">
+                            Ωορρηξία
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-xs mt-2 text-muted-foreground">{phase.recommendation}</p>
+                      <div className="text-xs mt-2 flex items-start gap-1.5">
+                        <Dumbbell className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{phase.trainingAdvice}</span>
+                      </div>
+                    </PopoverContent>
                   )}
-                </div>
+                </Popover>
               );
             })}
           </div>
@@ -199,7 +356,7 @@ export const CyclePage: React.FC<CyclePageProps> = ({
           {/* Legend */}
           <div className="flex items-center gap-4 mt-4 text-xs flex-wrap">
             <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-red-500" /> Περίοδος (χαλαρή)
+              <span className="h-2 w-2 rounded-full bg-red-500" /> Περίοδος
             </span>
             <span className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-emerald-500" /> Follicular (δυνατή)
@@ -210,7 +367,17 @@ export const CyclePage: React.FC<CyclePageProps> = ({
             <span className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-purple-500" /> Luteal (μέτρια)
             </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-3 w-3 border border-pink-400" /> Γόνιμο παράθυρο
+            </span>
           </div>
+
+          {cycles.length > 0 && (
+            <div className="mt-3 text-[11px] text-muted-foreground">
+              Μέσος κύκλος: {averages.avgCycle} ημέρες · Μέση περίοδος: {averages.avgPeriod} ημέρες
+              {cycles.length >= 2 && " (από ιστορικό)"}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -306,7 +473,11 @@ export const CyclePage: React.FC<CyclePageProps> = ({
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" className="rounded-none" onClick={() => setLogOpen(false)}>
+            <Button
+              variant="outline"
+              className="rounded-none"
+              onClick={() => setLogOpen(false)}
+            >
               Ακύρωση
             </Button>
             <Button className="rounded-none" onClick={submitLog}>
