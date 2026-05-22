@@ -97,7 +97,7 @@ serve(async (req) => {
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(
       `https://hyperkids.lovable.app/redeem?code=${gc.code}`
     )}`;
-    const logoWhiteUrl = "https://hyperkids.lovable.app/email-assets/hyperkids-logo-white.png";
+    const logoWhiteUrl = "https://hyperkids.lovable.app/assets/hyperkids-logo.png";
 
     const html = `<!DOCTYPE html>
 <html lang="el"><head>
