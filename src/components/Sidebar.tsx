@@ -39,6 +39,7 @@ import {
   ClipboardList,
   Activity,
   Droplet,
+  BellRing,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -763,6 +764,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       path: "/dashboard/game-demand-analyzer",
       badge: null,
       featureFlag: 'ams_game_demand_analyzer'
+    },
+    {
+      icon: BellRing,
+      label: "Ειδοποιήσεις",
+      path: "/dashboard/notification-preferences",
+      badge: null
     },
     {
       icon: Download,

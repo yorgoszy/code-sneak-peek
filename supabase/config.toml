@@ -86,3 +86,10 @@ verify_jwt = false
 
 [functions.create-gift-card-checkout]
 verify_jwt = false
+
+[functions.get-vapid-public-key]
+verify_jwt = false
+
+[functions.send-push-notification]
+verify_jwt = true
+

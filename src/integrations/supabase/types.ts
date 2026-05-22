@@ -7128,6 +7128,196 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_log: {
+        Row: {
+          body: string | null
+          channel: string
+          deep_link: string | null
+          delivered: boolean | null
+          error_message: string | null
+          id: string
+          notification_type: string
+          opened_at: string | null
+          payload: Json | null
+          sent_at: string
+          subscription_id: string | null
+          title: string | null
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          channel: string
+          deep_link?: string | null
+          delivered?: boolean | null
+          error_message?: string | null
+          id?: string
+          notification_type: string
+          opened_at?: string | null
+          payload?: Json | null
+          sent_at?: string
+          subscription_id?: string | null
+          title?: string | null
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          channel?: string
+          deep_link?: string | null
+          delivered?: boolean | null
+          error_message?: string | null
+          id?: string
+          notification_type?: string
+          opened_at?: string | null
+          payload?: Json | null
+          sent_at?: string
+          subscription_id?: string | null
+          title?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_log_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "push_subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_preferences: {
+        Row: {
+          award_unlocked: boolean | null
+          booking_confirmation: boolean | null
+          booking_reminder_24h: boolean | null
+          coach_message: boolean | null
+          created_at: string
+          email_channel: boolean | null
+          goal_milestone: boolean | null
+          health_card_expiry: boolean | null
+          id: string
+          muaythai_sparring_reminder: boolean | null
+          program_assigned: boolean | null
+          push_channel: boolean | null
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          recovery_alert: boolean | null
+          rpe_reminder: boolean | null
+          test_scheduled: boolean | null
+          timezone: string | null
+          updated_at: string
+          user_id: string
+          workout_reminder: boolean | null
+        }
+        Insert: {
+          award_unlocked?: boolean | null
+          booking_confirmation?: boolean | null
+          booking_reminder_24h?: boolean | null
+          coach_message?: boolean | null
+          created_at?: string
+          email_channel?: boolean | null
+          goal_milestone?: boolean | null
+          health_card_expiry?: boolean | null
+          id?: string
+          muaythai_sparring_reminder?: boolean | null
+          program_assigned?: boolean | null
+          push_channel?: boolean | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          recovery_alert?: boolean | null
+          rpe_reminder?: boolean | null
+          test_scheduled?: boolean | null
+          timezone?: string | null
+          updated_at?: string
+          user_id: string
+          workout_reminder?: boolean | null
+        }
+        Update: {
+          award_unlocked?: boolean | null
+          booking_confirmation?: boolean | null
+          booking_reminder_24h?: boolean | null
+          coach_message?: boolean | null
+          created_at?: string
+          email_channel?: boolean | null
+          goal_milestone?: boolean | null
+          health_card_expiry?: boolean | null
+          id?: string
+          muaythai_sparring_reminder?: boolean | null
+          program_assigned?: boolean | null
+          push_channel?: boolean | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          recovery_alert?: boolean | null
+          rpe_reminder?: boolean | null
+          test_scheduled?: boolean | null
+          timezone?: string | null
+          updated_at?: string
+          user_id?: string
+          workout_reminder?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_templates: {
+        Row: {
+          body_template: string
+          created_at: string | null
+          deep_link_template: string | null
+          icon_url: string | null
+          id: string
+          locale: string
+          notification_type: string
+          title_template: string
+        }
+        Insert: {
+          body_template: string
+          created_at?: string | null
+          deep_link_template?: string | null
+          icon_url?: string | null
+          id?: string
+          locale: string
+          notification_type: string
+          title_template: string
+        }
+        Update: {
+          body_template?: string
+          created_at?: string | null
+          deep_link_template?: string | null
+          icon_url?: string | null
+          id?: string
+          locale?: string
+          notification_type?: string
+          title_template?: string
+        }
+        Relationships: []
+      }
       nutrition_assignments: {
         Row: {
           assigned_by: string | null
@@ -8583,6 +8773,66 @@ export type Database = {
           },
           {
             foreignKeyName: "programs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_subscriptions: {
+        Row: {
+          auth_key: string | null
+          created_at: string
+          device_info: Json | null
+          device_token: string | null
+          endpoint: string | null
+          id: string
+          is_active: boolean
+          last_used_at: string | null
+          p256dh_key: string | null
+          platform: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auth_key?: string | null
+          created_at?: string
+          device_info?: Json | null
+          device_token?: string | null
+          endpoint?: string | null
+          id?: string
+          is_active?: boolean
+          last_used_at?: string | null
+          p256dh_key?: string | null
+          platform: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auth_key?: string | null
+          created_at?: string
+          device_info?: Json | null
+          device_token?: string | null
+          endpoint?: string | null
+          id?: string
+          is_active?: boolean
+          last_used_at?: string | null
+          p256dh_key?: string | null
+          platform?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "public_competition_athletes"

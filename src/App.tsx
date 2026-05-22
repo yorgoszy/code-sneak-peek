@@ -17,6 +17,8 @@ import { RootRedirect } from "@/components/RootRedirect";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
 import Auth from "@/pages/Auth";
 import ResetPassword from "@/pages/ResetPassword";
+import NotificationPreferencesPage from "@/pages/Dashboard/NotificationPreferencesPage";
+import { NotificationPermissionPrompt } from "@/components/notifications/NotificationPermissionPrompt";
 const PrivacyPolicy = React.lazy(() => import("@/pages/PrivacyPolicy"));
 const TermsOfService = React.lazy(() => import("@/pages/TermsOfService"));
 const JudgeScoring = React.lazy(() => import("@/pages/JudgeScoring"));
@@ -157,6 +159,7 @@ function App() {
                   <div className="min-h-screen bg-gray-50">
                     <Toaster />
                     <AIControlledProgramBuilderDialog />
+                    <NotificationPermissionPrompt />
                     <Suspense fallback={<CustomLoadingScreen />}>
                       <Routes>
                       {/* Public routes */}
@@ -165,6 +168,7 @@ function App() {
                       {/* Backwards compatibility (old reset link) */}
                       <Route path="/auth/reset-password" element={<ResetPassword />} />
                       <Route path="/reset-password" element={<ResetPassword />} />
+                      <Route path="/dashboard/notification-preferences" element={<ProtectedRoute><NotificationPreferencesPage /></ProtectedRoute>} />
                       <Route path="/privacy" element={<PrivacyPolicy />} />
                       <Route path="/terms" element={<TermsOfService />} />
                       <Route path="/judge" element={<JudgeScoring />} />
