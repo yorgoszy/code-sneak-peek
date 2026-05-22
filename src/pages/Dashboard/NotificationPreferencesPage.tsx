@@ -192,6 +192,41 @@ export default function NotificationPreferencesPage() {
                 ))}
               </CardContent>
             </Card>
+
+            {/* Test notification */}
+            <Card className="rounded-none">
+              <CardHeader><CardTitle className="text-base">Δοκιμή ειδοποίησης</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-muted-foreground">Στείλε δοκιμαστική ειδοποίηση σε αυτή τη συσκευή</p>
+                <Button
+                  className="rounded-none"
+                  disabled={!isSubscribed || !userProfile?.id}
+                  onClick={async () => {
+                    try {
+                      const { data, error } = await supabase.functions.invoke('send-push-notification', {
+                        body: {
+                          user_id: userProfile!.id,
+                          notification_type: 'workout_reminder',
+                          variables: { program_name: 'Δοκιμαστική προπόνηση', minutes: 5 },
+                          force_send: true,
+                        },
+                      });
+                      if (error) throw error;
+                      if ((data as any)?.failed && !(data as any)?.sent) {
+                        throw new Error('Καμία συσκευή δεν έλαβε το push');
+                      }
+                      toast.success('Test notification στάλθηκε!');
+                    } catch (e: any) {
+                      toast.error(e?.message ?? 'Αποτυχία αποστολής test');
+                    }
+                  }}
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  Στείλε test notification
+                </Button>
+              </CardContent>
+            </Card>
+
           </main>
         </div>
       </div>
