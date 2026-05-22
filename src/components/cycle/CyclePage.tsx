@@ -431,8 +431,6 @@ export const CyclePage: React.FC<CyclePageProps> = ({
           </CollapsibleContent>
         </Card>
       </Collapsible>
-        </CardContent>
-      </Card>
 
       {/* Log dialog */}
       <Dialog open={logOpen} onOpenChange={setLogOpen}>
