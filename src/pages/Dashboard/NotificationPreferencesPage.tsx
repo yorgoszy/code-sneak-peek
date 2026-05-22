@@ -55,7 +55,7 @@ export default function NotificationPreferencesPage() {
     loadDevices();
   };
 
-  const renderSidebar = () => (isAdmin() ? <Sidebar /> : <CoachSidebar isCollapsed={false} setIsCollapsed={() => {}} />);
+  const renderSidebar = () => (isAdmin() ? <Sidebar isCollapsed={false} setIsCollapsed={() => {}} /> : <CoachSidebar isCollapsed={false} setIsCollapsed={() => {}} />);
 
   return (
     <SidebarProvider>
