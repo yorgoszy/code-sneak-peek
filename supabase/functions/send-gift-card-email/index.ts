@@ -108,13 +108,14 @@ serve(async (req) => {
   table{border-collapse:collapse;}
   img{border:0;display:block;max-width:100%;height:auto;}
   .gc-wrap{width:540px;max-width:100%;}
+  .gc-card{height:269px;}
   @media only screen and (max-width:600px){
     .gc-wrap{width:100% !important;}
     .gc-outer{padding:12px 6px !important;}
     .gc-pad{padding:16px 16px 4px 16px !important;}
     .gc-pad-x{padding:0 10px 16px 10px !important;}
+    .gc-card{height:auto !important;}
     .gc-card-tl{padding:14px 14px 6px 14px !important;}
-    .gc-card-tr{padding:14px 14px 6px 14px !important;}
     .gc-card-code{padding:10px 10px !important;}
     .gc-card-bl{padding:6px 14px 14px 14px !important;font-size:10px !important;}
     .gc-card-br{padding:6px 14px 14px 14px !important;}
@@ -138,7 +139,7 @@ serve(async (req) => {
           ${gc.message ? `<p style="margin:0 0 18px 0;font-size:14px;color:#111;font-style:italic;border-left:3px solid #000;padding:8px 12px;background:#fafafa;">${esc(gc.message)}</p>` : ""}
         </td></tr>
         <tr><td class="gc-pad-x" style="padding:0 28px 28px 28px;">
-          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0a0a0a;background-image:linear-gradient(135deg,#0a0a0a 0%,#1f1f1f 40%,#050505 100%);border:1px solid #000;">
+          <table width="100%" height="269" cellpadding="0" cellspacing="0" border="0" class="gc-card" style="height:269px;background:#0a0a0a;background-image:linear-gradient(135deg,#0a0a0a 0%,#1f1f1f 40%,#050505 100%);border:1px solid #000;">
             <tr>
               <td class="gc-card-tl" style="padding:24px 24px 12px 24px;" valign="top" width="50%">
                 <span class="gc-brand" style="color:#ffffff;font-size:18px;font-weight:bold;letter-spacing:2px;">HYPERKIDS</span>
