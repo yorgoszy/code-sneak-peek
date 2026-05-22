@@ -159,6 +159,7 @@ function App() {
                   <div className="min-h-screen bg-gray-50">
                     <Toaster />
                     <AIControlledProgramBuilderDialog />
+                    <NotificationPermissionPrompt />
                     <Suspense fallback={<CustomLoadingScreen />}>
                       <Routes>
                       {/* Public routes */}
