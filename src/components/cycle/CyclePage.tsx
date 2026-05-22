@@ -358,8 +358,8 @@ export const CyclePage: React.FC<CyclePageProps> = ({
             })}
           </div>
 
-          {/* Legend */}
-          <div className="flex items-center gap-x-3 gap-y-1 mt-3 text-[10px] flex-wrap">
+          {/* Legend + Averages inline */}
+          <div className="flex items-center gap-x-2 gap-y-0.5 mt-2 text-[10px] flex-wrap">
             <span className="flex items-center gap-1">
               <span className="h-1.5 w-1.5 rounded-full bg-red-500" /> Περίοδος
             </span>
@@ -373,56 +373,64 @@ export const CyclePage: React.FC<CyclePageProps> = ({
               <span className="h-1.5 w-1.5 rounded-full bg-purple-500" /> Luteal
             </span>
             <span className="flex items-center gap-1">
-              <span className="h-2.5 w-2.5 border border-pink-400" /> Γόνιμο
+              <span className="h-2 w-2 border border-pink-400" /> Γόνιμο
             </span>
+            {cycles.length > 0 && (
+              <span className="text-muted-foreground ml-auto">
+                Μέσος κύκλος: {averages.avgCycle}ημ. · Μέση περίοδος: {averages.avgPeriod}ημ.
+              </span>
+            )}
           </div>
-
-          {cycles.length > 0 && (
-            <div className="mt-2 text-[10px] text-muted-foreground">
-              Μέσος κύκλος: {averages.avgCycle} ημ. · Μέση περίοδος: {averages.avgPeriod} ημ.
-            </div>
-          )}
         </CardContent>
       </Card>
 
-      {/* History */}
-      <Card className="rounded-none">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Ιστορικό</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {cycles.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Δεν υπάρχουν καταγραφές.</p>
-          ) : (
-            <div className="divide-y border">
-              {cycles.map((c) => (
-                <div
-                  key={c.id}
-                  className="flex items-center justify-between p-3 text-sm"
-                >
-                  <div>
-                    <div className="font-medium">
-                      {format(parseISO(c.start_date), "dd/MM/yyyy")}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Περίοδος {c.period_length} ημ. · Κύκλος {c.cycle_length} ημ.
-                      {c.notes ? ` · ${c.notes}` : ""}
-                    </div>
-                  </div>
-                  {!readOnly && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="rounded-none"
-                      onClick={() => setDeleteId(c.id)}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  )}
-                </div>
-              ))}
+      {/* History — Collapsible */}
+      <Collapsible defaultOpen={cycles.length <= 3}>
+        <Card className="rounded-none">
+          <CollapsibleTrigger asChild>
+            <div className="flex items-center justify-between p-2 cursor-pointer hover:bg-muted/50">
+              <span className="text-xs font-semibold">Ιστορικό καταγραφών</span>
+              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
             </div>
-          )}
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="pt-1 pb-2 px-2">
+              {cycles.length === 0 ? (
+                <p className="text-[11px] text-muted-foreground">Δεν υπάρχουν καταγραφές.</p>
+              ) : (
+                <div className="divide-y border max-h-32 overflow-y-auto">
+                  {cycles.map((c) => (
+                    <div
+                      key={c.id}
+                      className="flex items-center justify-between p-2 text-[11px]"
+                    >
+                      <div>
+                        <div className="font-medium">
+                          {format(parseISO(c.start_date), "dd/MM/yyyy")}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground">
+                          Περίοδος {c.period_length}ημ. · Κύκλος {c.cycle_length}ημ.
+                          {c.notes ? ` · ${c.notes}` : ""}
+                        </div>
+                      </div>
+                      {!readOnly && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="rounded-none h-6 w-6"
+                          onClick={() => setDeleteId(c.id)}
+                        >
+                          <Trash2 className="h-3 w-3 text-destructive" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
         </CardContent>
       </Card>
 
