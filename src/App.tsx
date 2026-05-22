@@ -168,6 +168,7 @@ function App() {
                       {/* Backwards compatibility (old reset link) */}
                       <Route path="/auth/reset-password" element={<ResetPassword />} />
                       <Route path="/reset-password" element={<ResetPassword />} />
+                      <Route path="/dashboard/notification-preferences" element={<ProtectedRoute><NotificationPreferencesPage /></ProtectedRoute>} />
                       <Route path="/privacy" element={<PrivacyPolicy />} />
                       <Route path="/terms" element={<TermsOfService />} />
                       <Route path="/judge" element={<JudgeScoring />} />
