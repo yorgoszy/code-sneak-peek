@@ -115,9 +115,9 @@ serve(async (req) => {
     .gc-outer{padding:12px 6px !important;}
     .gc-pad{padding:16px 16px 4px 16px !important;}
     .gc-pad-x{padding:0 10px 16px 10px !important;}
-    .gc-card{width:100% !important;height:auto !important;}
-    .gc-spacer-top{height:76px !important;line-height:76px !important;}
-    .gc-spacer-mid{height:58px !important;line-height:58px !important;}
+    .gc-card{width:320px !important;height:178px !important;}
+    .gc-spacer-top{height:31px !important;line-height:31px !important;}
+    .gc-spacer-mid{height:7px !important;line-height:7px !important;}
     .gc-card-tl{padding:16px 16px 0 16px !important;}
     .gc-card-tr{padding:16px 16px 0 16px !important;}
     .gc-card-code{padding:0 16px !important;}
@@ -129,6 +129,18 @@ serve(async (req) => {
     .gc-title{font-size:10px !important;letter-spacing:2px !important;}
     .gc-qr{width:56px !important;height:56px !important;}
     .gc-footer{font-size:10px !important;padding:14px 12px !important;line-height:1.5 !important;}
+  }
+  @media only screen and (max-width:360px){
+    .gc-card{width:288px !important;height:160px !important;}
+    .gc-spacer-top{height:24px !important;line-height:24px !important;}
+    .gc-spacer-mid{height:4px !important;line-height:4px !important;}
+    .gc-card-tl{padding:15px 15px 0 15px !important;}
+    .gc-card-tr{padding:15px 15px 0 15px !important;}
+    .gc-card-code{padding:0 15px !important;}
+    .gc-card-bl{padding:0 15px 15px 15px !important;font-size:8px !important;}
+    .gc-card-br{padding:0 15px 15px 15px !important;}
+    .gc-logo{width:96px !important;}
+    .gc-qr{width:50px !important;height:50px !important;}
   }
 </style>
 </head>
@@ -153,11 +165,11 @@ serve(async (req) => {
                 <span class="gc-amount" style="color:#ffffff;font-size:24px;line-height:32px;font-weight:700;font-family:Arial,Helvetica,sans-serif;">€${gc.amount || 0}</span>
               </td>
             </tr>
-            <tr><td colspan="2" class="gc-spacer-top" height="82" style="height:82px;line-height:82px;font-size:1px;">&nbsp;</td></tr>
+            <tr><td colspan="2" class="gc-spacer-top" height="66" style="height:66px;line-height:66px;font-size:1px;">&nbsp;</td></tr>
             <tr><td colspan="2" align="center" class="gc-card-code" style="padding:0 25px;">
               <span class="gc-code" style="color:#ffffff;font-family:'Courier New',monospace;letter-spacing:6px;font-size:14px;line-height:20px;">${esc(gc.code)}</span>
             </td></tr>
-            <tr><td colspan="2" class="gc-spacer-mid" height="47" style="height:47px;line-height:47px;font-size:1px;">&nbsp;</td></tr>
+            <tr><td colspan="2" class="gc-spacer-mid" height="43" style="height:43px;line-height:43px;font-size:1px;">&nbsp;</td></tr>
             <tr>
               <td class="gc-card-bl" style="padding:0 25px 25px 25px;color:#d4d1c9;font-size:10px;line-height:1.25;" valign="bottom" width="65%">
                 <div class="gc-title" style="color:#ffffff;font-weight:700;letter-spacing:2px;font-size:12px;margin-bottom:4px;">GIFT CARD</div>
