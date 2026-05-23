@@ -96,7 +96,7 @@ const BlackmagicViewPage: React.FC = () => {
     }
     setConnecting(true);
     try {
-      const c = await connectBlackmagic();
+      const c = await connectBlackmagic(password || undefined);
       conn.current = c;
       setConnectedName(c.name);
       toast.success(`Συνδέθηκε με ${c.name}`);
