@@ -150,7 +150,7 @@ async function writeWebCharacteristic(characteristic: WebBluetoothCharacteristic
   }
 }
 
-export async function connectWeb(): Promise<BmdConnection> {
+export async function connectWeb(password?: string): Promise<BmdConnection> {
   const nav = navigator as BluetoothNavigator;
   if (!nav.bluetooth) throw new Error('Web Bluetooth not supported in this browser');
   const device = await nav.bluetooth.requestDevice({
