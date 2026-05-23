@@ -463,87 +463,104 @@ const BlackmagicViewPage: React.FC = () => {
 
   const renderOverlay = () => (
     <>
-      {/* Top bar: connect status + camera select + fullscreen */}
-      <div className="absolute top-3 left-3 right-3 z-20 flex items-center justify-between gap-2 pointer-events-none">
-        <div className="flex items-center gap-2 pointer-events-auto">
-          {connectedName ? (
-            <Button size="sm" variant="outline" className="rounded-none bg-black/50 border-white/30 text-white hover:bg-black/70" onClick={handleDisconnect}>
-              <BluetoothOff className="h-4 w-4 mr-1" />
-              <span className="text-xs truncate max-w-[140px]">{connectedName}</span>
-            </Button>
-          ) : (
-            <Button size="sm" className="rounded-none" onClick={handleConnect} disabled={connecting || !bleAvailable}>
-              <Bluetooth className="h-4 w-4 mr-1" />
-              <span className="text-xs">{connecting ? '...' : 'BLE'}</span>
-            </Button>
-          )}
-        </div>
-        <div className="flex items-center gap-2 pointer-events-auto">
-          {devices.length > 1 && (
-            <select
-              className="border border-white/30 bg-black/50 text-white px-2 py-1 text-xs rounded-none max-w-[160px]"
-              value={selectedDeviceId || ''}
-              onChange={(e) => handleCameraChange(e.target.value)}
+      {/* Click-catcher to toggle controls (REC area excluded via stopPropagation) */}
+      <div
+        className="absolute inset-0 z-10"
+        onClick={() => {
+          setControlsVisible((v) => !v);
+          setActiveControl(null);
+        }}
+      />
+
+      {/* TOP: connect + camera + fullscreen + all control buttons */}
+      <div
+        className={`absolute top-3 left-3 right-3 z-20 flex flex-col gap-2 pointer-events-none transition-opacity duration-200 ${controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+            {connectedName ? (
+              <Button size="sm" variant="outline" className="rounded-none bg-black/50 border-white/30 text-white hover:bg-black/70" onClick={handleDisconnect}>
+                <BluetoothOff className="h-4 w-4 mr-1" />
+                <span className="text-xs truncate max-w-[140px]">{connectedName}</span>
+              </Button>
+            ) : (
+              <Button size="sm" className="rounded-none" onClick={handleConnect} disabled={connecting || !bleAvailable}>
+                <Bluetooth className="h-4 w-4 mr-1" />
+                <span className="text-xs">{connecting ? '...' : 'BLE'}</span>
+              </Button>
+            )}
+          </div>
+          <div className="flex items-center gap-2 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+            {devices.length > 1 && (
+              <select
+                className="border border-white/30 bg-black/50 text-white px-2 py-1 text-xs rounded-none max-w-[160px]"
+                value={selectedDeviceId || ''}
+                onChange={(e) => handleCameraChange(e.target.value)}
+              >
+                {devices.map((d, i) => (
+                  <option key={d.deviceId} value={d.deviceId} className="text-black">
+                    {d.label || `Cam ${i + 1}`}
+                  </option>
+                ))}
+              </select>
+            )}
+            <Button
+              size="sm"
+              variant="outline"
+              className="rounded-none bg-black/50 border-white/30 text-white hover:bg-black/70"
+              onClick={toggleFullscreen}
             >
-              {devices.map((d, i) => (
-                <option key={d.deviceId} value={d.deviceId} className="text-black">
-                  {d.label || `Cam ${i + 1}`}
-                </option>
-              ))}
-            </select>
-          )}
-          <Button
-            size="sm"
-            variant="outline"
-            className="rounded-none bg-black/50 border-white/30 text-white hover:bg-black/70"
-            onClick={toggleFullscreen}
+              {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
+
+        {/* Control buttons row (top) */}
+        <div className="flex items-center justify-center gap-1 bg-black/40 backdrop-blur p-1.5 pointer-events-auto self-center" onClick={(e) => e.stopPropagation()}>
+          {overlayButton('focus', Focus, 'Focus', focus[0].toFixed(2))}
+          <button
+            type="button"
+            onClick={() => sendOrToast('Autofocus', Commands.autoFocus())}
+            disabled={!connectedName}
+            className="flex flex-col items-center justify-center gap-0.5 px-2 py-1 min-w-[44px] text-white border border-white/30 bg-black/50 hover:bg-black/70 disabled:opacity-40"
           >
-            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-          </Button>
+            <Focus className="h-3.5 w-3.5" />
+            <span className="text-[9px] leading-none uppercase tracking-wide">Auto</span>
+            <span className="text-[9px] leading-none opacity-80">Focus</span>
+          </button>
+          {overlayButton('iris', Aperture, 'Iris', fStop !== null ? `f/${fStop.toFixed(1)}` : iris[0].toFixed(2))}
+          {overlayButton('wb', Thermometer, 'WB', `${wb[0]}K`)}
+          {overlayButton('iso', Gauge, 'ISO', `${iso[0]}`)}
         </div>
       </div>
 
-      {/* Slider popover */}
-      {activeControl && (
-        <div className="absolute left-1/2 -translate-x-1/2 bottom-20 z-20 w-[92%] max-w-xl">
+      {/* Slider popover (appears below top controls when active) */}
+      {activeControl && controlsVisible && (
+        <div className="absolute left-1/2 -translate-x-1/2 top-28 z-20 w-[92%] max-w-xl pointer-events-auto" onClick={(e) => e.stopPropagation()}>
           {renderSliderPanel()}
         </div>
       )}
 
-      {/* Bottom control row */}
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-black/40 backdrop-blur p-1.5">
-        {overlayButton('focus', Focus, 'Focus', focus[0].toFixed(2))}
-        <button
-          type="button"
-          onClick={() => sendOrToast('Autofocus', Commands.autoFocus())}
-          disabled={!connectedName}
-          className="flex flex-col items-center justify-center gap-0.5 px-2 py-1 min-w-[44px] text-white border border-white/30 bg-black/50 hover:bg-black/70 disabled:opacity-40"
-        >
-          <Focus className="h-3.5 w-3.5" />
-          <span className="text-[9px] leading-none uppercase tracking-wide">Auto</span>
-          <span className="text-[9px] leading-none opacity-80">Focus</span>
-        </button>
-        {overlayButton('iris', Aperture, 'Iris', fStop !== null ? `f/${fStop.toFixed(1)}` : iris[0].toFixed(2))}
-        {overlayButton('wb', Thermometer, 'WB', `${wb[0]}K`)}
-        {overlayButton('iso', Gauge, 'ISO', `${iso[0]}`)}
+      {/* BOTTOM: REC only, always visible */}
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-30 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
         <button
           type="button"
           onClick={toggleRecord}
           disabled={!connectedName}
           aria-label={recording ? 'Stop recording' : 'Start recording'}
-          className="flex items-center justify-center w-11 h-11 border-2 border-white/60 bg-black/50 hover:bg-black/70 disabled:opacity-40 ml-1"
+          className="flex items-center justify-center w-14 h-14 border-2 border-white/60 bg-black/50 hover:bg-black/70 disabled:opacity-40"
         >
           {recording ? (
-            <span className="block w-3.5 h-3.5 bg-red-600" />
+            <span className="block w-5 h-5 bg-red-600" />
           ) : (
-            <span className="block w-6 h-6 rounded-full bg-red-600" />
+            <span className="block w-8 h-8 rounded-full bg-red-600" />
           )}
         </button>
       </div>
 
       {/* Portrait rotate hint (mobile/tablet only) */}
       {isSmallScreen && isPortrait && (
-        <div className="absolute inset-0 z-30 bg-black/95 flex flex-col items-center justify-center text-white px-6 text-center">
+        <div className="absolute inset-0 z-40 bg-black/95 flex flex-col items-center justify-center text-white px-6 text-center">
           <Smartphone className="h-16 w-16 mb-4 animate-pulse rotate-90" />
           <p className="text-lg font-semibold mb-1">Γύρισε τη συσκευή σου</p>
           <p className="text-sm opacity-70">Τα χειριστήρια εμφανίζονται οριζόντια</p>
@@ -561,6 +578,7 @@ const BlackmagicViewPage: React.FC = () => {
       )}
     </>
   );
+
 
   // ── IMMERSIVE FULLSCREEN MODE (mobile/tablet always, desktop on fullscreen) ──
   if (immersive) {
