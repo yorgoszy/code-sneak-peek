@@ -345,7 +345,7 @@ const BlackmagicViewPage: React.FC = () => {
             <span>White Balance</span>
             <span className="opacity-70">{wb[0]}K</span>
           </div>
-          <Slider
+          <BlueSlider
             value={wb}
             min={2500}
             max={10000}
