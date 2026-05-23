@@ -18,6 +18,7 @@ import { FEATURE_FLAGS } from "@/config/featureFlags";
 import Auth from "@/pages/Auth";
 import ResetPassword from "@/pages/ResetPassword";
 import NotificationPreferencesPage from "@/pages/Dashboard/NotificationPreferencesPage";
+const BlackmagicViewPage = React.lazy(() => import("@/pages/Dashboard/BlackmagicViewPage"));
 import { NotificationPermissionPrompt } from "@/components/notifications/NotificationPermissionPrompt";
 const PrivacyPolicy = React.lazy(() => import("@/pages/PrivacyPolicy"));
 const TermsOfService = React.lazy(() => import("@/pages/TermsOfService"));
@@ -169,6 +170,7 @@ function App() {
                       <Route path="/auth/reset-password" element={<ResetPassword />} />
                       <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/dashboard/notification-preferences" element={<ProtectedRoute><NotificationPreferencesPage /></ProtectedRoute>} />
+                      <Route path="/dashboard/blackmagic-view" element={<ProtectedRoute requireAdmin><BlackmagicViewPage /></ProtectedRoute>} />
                       <Route path="/privacy" element={<PrivacyPolicy />} />
                       <Route path="/terms" element={<TermsOfService />} />
                       <Route path="/judge" element={<JudgeScoring />} />
