@@ -791,6 +791,43 @@ const BlackmagicViewPage: React.FC = () => {
           </Card>
         </main>
       </div>
+
+      <Dialog open={shareOpen} onOpenChange={(o) => !o && setShareOpen(false)}>
+        <DialogContent className="rounded-none max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Απομακρυσμένη Προβολή</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Σκάναρε το QR με άλλη συσκευή για live view και έλεγχο της κάμερας.
+            </p>
+            {remoteUrl && (
+              <div className="flex flex-col items-center gap-3">
+                <div className="bg-white p-3 rounded-none border border-border">
+                  <QRCodeSVG value={remoteUrl} size={220} />
+                </div>
+                <div className="flex w-full gap-2">
+                  <input
+                    readOnly
+                    value={remoteUrl}
+                    className="flex-1 border border-border bg-background px-2 py-1.5 text-xs rounded-none"
+                  />
+                  <Button variant="outline" size="sm" className="rounded-none" onClick={copyRemoteLink}>
+                    {linkCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  </Button>
+                </div>
+                <div className="flex items-center justify-between w-full text-xs text-muted-foreground">
+                  <span>Θεατές: <strong className="text-foreground">{viewerCount}</strong></span>
+                  <span>Session: {sessionId}</span>
+                </div>
+              </div>
+            )}
+            <Button variant="outline" className="w-full rounded-none" onClick={stopSharing}>
+              Τερματισμός συνεδρίας
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
