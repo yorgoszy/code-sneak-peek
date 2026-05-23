@@ -41,6 +41,7 @@ export interface HostSessionOptions {
 
 export interface HostSession {
   close: () => void;
+  pushState: () => void;
 }
 
 export function startHostSession(opts: HostSessionOptions): HostSession {
