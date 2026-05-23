@@ -292,7 +292,7 @@ const BlackmagicViewPage: React.FC = () => {
   // ── Slider panels (rendered inside overlay popover) ──
   const renderSliderPanel = () => {
     if (!activeControl) return null;
-    const panelBase = 'bg-black/80 backdrop-blur p-4 rounded-none border border-white/20 text-white';
+    const panelBase = 'bg-black/80 backdrop-blur p-4 rounded-none text-white';
     if (activeControl === 'focus') {
       return (
         <div className={panelBase}>
@@ -453,7 +453,7 @@ const BlackmagicViewPage: React.FC = () => {
     <button
       type="button"
       onClick={() => setActiveControl((prev) => (prev === key ? null : key))}
-      className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 min-w-[44px] text-white border border-white/30 ${activeControl === key ? 'bg-white/30' : 'bg-black/50 hover:bg-black/70'}`}
+      className={`flex flex-col items-center justify-center gap-1 px-2 py-1 min-w-[44px] text-white ${activeControl === key ? 'bg-white/30' : 'bg-black/50 hover:bg-black/70'}`}
     >
       <Icon className="h-3.5 w-3.5" />
       <span className="text-[9px] leading-none uppercase tracking-wide">{label}</span>
@@ -474,12 +474,12 @@ const BlackmagicViewPage: React.FC = () => {
 
       {/* TOP: connect + camera + fullscreen + all control buttons */}
       <div
-        className={`absolute top-3 left-3 right-3 z-20 flex flex-col gap-2 pointer-events-none transition-opacity duration-200 ${controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`absolute top-1 left-2 right-2 z-20 flex flex-col gap-1 pointer-events-none transition-opacity duration-200 ${controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       >
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
             {connectedName ? (
-              <Button size="sm" variant="outline" className="rounded-none bg-black/50 border-white/30 text-white hover:bg-black/70" onClick={handleDisconnect}>
+              <Button size="sm" variant="outline" className="rounded-none bg-black/50 text-white hover:bg-black/70 border-1 border-white/10" onClick={handleDisconnect}>
                 <BluetoothOff className="h-4 w-4 mr-1" />
                 <span className="text-xs truncate max-w-[140px]">{connectedName}</span>
               </Button>
@@ -493,7 +493,7 @@ const BlackmagicViewPage: React.FC = () => {
           <div className="flex items-center gap-2 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
             {devices.length > 1 && (
               <select
-                className="border border-white/30 bg-black/50 text-white px-2 py-1 text-xs rounded-none max-w-[160px]"
+                className="bg-black/50 text-white px-2 py-1 text-xs rounded-none max-w-[160px]"
                 value={selectedDeviceId || ''}
                 onChange={(e) => handleCameraChange(e.target.value)}
               >
@@ -507,7 +507,7 @@ const BlackmagicViewPage: React.FC = () => {
             <Button
               size="sm"
               variant="outline"
-              className="rounded-none bg-black/50 border-white/30 text-white hover:bg-black/70"
+              className="rounded-none bg-black/50 text-white hover:bg-black/70"
               onClick={toggleFullscreen}
             >
               {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
@@ -516,13 +516,13 @@ const BlackmagicViewPage: React.FC = () => {
         </div>
 
         {/* Control buttons row (top) */}
-        <div className="flex items-center justify-center gap-1 bg-black/40 backdrop-blur p-1.5 pointer-events-auto self-center" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-center gap-1 bg-black/40 backdrop-blur py-1 px-2 pointer-events-auto self-center" onClick={(e) => e.stopPropagation()}>
           {overlayButton('focus', Focus, 'Focus', focus[0].toFixed(2))}
           <button
             type="button"
             onClick={() => sendOrToast('Autofocus', Commands.autoFocus())}
             disabled={!connectedName}
-            className="flex flex-col items-center justify-center gap-0.5 px-2 py-1 min-w-[44px] text-white border border-white/30 bg-black/50 hover:bg-black/70 disabled:opacity-40"
+            className="flex flex-col items-center justify-center gap-1 px-2 py-1 min-w-[44px] text-white bg-black/50 hover:bg-black/70 disabled:opacity-40"
           >
             <Focus className="h-3.5 w-3.5" />
             <span className="text-[9px] leading-none uppercase tracking-wide">Auto</span>
@@ -536,7 +536,7 @@ const BlackmagicViewPage: React.FC = () => {
 
       {/* Slider popover (appears below top controls when active) */}
       {activeControl && controlsVisible && (
-        <div className="absolute left-1/2 -translate-x-1/2 top-28 z-20 w-[92%] max-w-xl pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute left-1/2 -translate-x-1/2 top-20 z-20 w-[92%] max-w-xl pointer-events-auto" onClick={(e) => e.stopPropagation()}>
           {renderSliderPanel()}
         </div>
       )}
@@ -548,7 +548,7 @@ const BlackmagicViewPage: React.FC = () => {
           onClick={toggleRecord}
           disabled={!connectedName}
           aria-label={recording ? 'Stop recording' : 'Start recording'}
-          className="flex items-center justify-center w-14 h-14 border-2 border-white/60 bg-black/50 hover:bg-black/70 disabled:opacity-40"
+          className="flex items-center justify-center w-14 h-14 bg-black/50 hover:bg-black/70 disabled:opacity-40"
         >
           {recording ? (
             <span className="block w-5 h-5 bg-red-600" />
