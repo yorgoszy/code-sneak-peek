@@ -74,12 +74,11 @@ function buildPacket(
   operation: number,
   data: number[] = []
 ): Uint8Array {
-  const rawCmdLen = 4 + data.length;
-  const totalLen = 4 + rawCmdLen;
-  const padded = Math.ceil(totalLen / 4) * 4;
-  const buf = new Uint8Array(padded);
-  buf[0] = 0x01; // destination: camera 1 over Bluetooth
-  buf[1] = padded - 4;
+  const cmdLen = 4 + data.length;
+  const totalLen = 4 + cmdLen;
+  const buf = new Uint8Array(totalLen);
+  buf[0] = 0xff; // destination broadcast, as used by working Blackmagic BLE libraries
+  buf[1] = cmdLen;
   buf[2] = 0;
   buf[3] = 0;
   buf[4] = category;
