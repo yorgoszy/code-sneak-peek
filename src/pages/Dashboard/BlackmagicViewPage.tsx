@@ -761,6 +761,28 @@ const BlackmagicViewPage: React.FC = () => {
                   ? `Share (${viewerCount})`
                   : 'Share'}
               </Button>
+              <div className="flex items-center gap-1">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={4}
+                  placeholder="Κωδικός"
+                  value={joinCode}
+                  onChange={(e) => setJoinCode(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleJoinSession(); }}
+                  className="border border-border bg-background px-3 py-1.5 text-sm rounded-none w-24 text-center tracking-widest"
+                />
+                <Button
+                  variant="outline"
+                  className="rounded-none"
+                  onClick={handleJoinSession}
+                  disabled={joinCode.length !== 4}
+                  title="Σύνδεση σε υπάρχουσα συνεδρία"
+                >
+                  Join
+                </Button>
+              </div>
               <Button variant="outline" className="rounded-none" onClick={toggleFullscreen}>
                 <Maximize2 className="h-4 w-4 mr-2" />
                 Fullscreen
