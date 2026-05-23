@@ -234,14 +234,19 @@ export async function connectWeb(password?: string): Promise<BmdConnection> {
 
   // 3) Subscribe to Incoming CC to receive parameter updates from camera.
   let updateCb: ((u: BmdUpdate) => void) | null = null;
+  const pending: BmdUpdate[] = [];
+  const emit = (u: BmdUpdate) => {
+    if (updateCb) updateCb(u);
+    else pending.push(u);
+  };
   try {
     const incoming = await service.getCharacteristic(BMD_INCOMING_CC);
     await incoming.startNotifications();
     incoming.addEventListener('characteristicvaluechanged', (ev: Event) => {
       const target = ev.target as WebBluetoothCharacteristic | null;
-      if (!target?.value || !updateCb) return;
+      if (!target?.value) return;
       const bytes = new Uint8Array(target.value.buffer, target.value.byteOffset, target.value.byteLength);
-      parseIncoming(bytes, updateCb);
+      parseIncoming(bytes, emit);
     });
   } catch (e) {
     console.warn('[BMD] incoming CC notifications failed (non-fatal)', e);
@@ -271,7 +276,10 @@ export async function connectWeb(password?: string): Promise<BmdConnection> {
     disconnect: async () => {
       try { device.gatt?.disconnect(); } catch { /* noop */ }
     },
-    onUpdate: (cb) => { updateCb = cb; },
+    onUpdate: (cb) => {
+      updateCb = cb;
+      while (pending.length) cb(pending.shift()!);
+    },
   };
 }
 
@@ -309,15 +317,19 @@ export async function connectNative(): Promise<BmdConnection> {
 
   // 3) Subscribe to Incoming CC and parse parameter updates
   let updateCb: ((u: BmdUpdate) => void) | null = null;
+  const pending: BmdUpdate[] = [];
+  const emit = (u: BmdUpdate) => {
+    if (updateCb) updateCb(u);
+    else pending.push(u);
+  };
   try {
     await BleClient.startNotifications(
       device.deviceId,
       BMD_SERVICE,
       BMD_INCOMING_CC,
       (value) => {
-        if (!updateCb) return;
         const bytes = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
-        parseIncoming(bytes, updateCb);
+        parseIncoming(bytes, emit);
       }
     );
   } catch (e) {
@@ -338,7 +350,10 @@ export async function connectNative(): Promise<BmdConnection> {
     disconnect: async () => {
       try { await BleClient.disconnect(device.deviceId); } catch { /* noop */ }
     },
-    onUpdate: (cb) => { updateCb = cb; },
+    onUpdate: (cb) => {
+      updateCb = cb;
+      while (pending.length) cb(pending.shift()!);
+    },
   };
 }
 
