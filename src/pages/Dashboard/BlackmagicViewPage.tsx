@@ -301,7 +301,7 @@ const BlackmagicViewPage: React.FC = () => {
             <span>Focus</span>
             <span className="opacity-70">{focus[0].toFixed(2)}</span>
           </div>
-          <Slider
+          <BlueSlider
             value={focus}
             min={0}
             max={1}
