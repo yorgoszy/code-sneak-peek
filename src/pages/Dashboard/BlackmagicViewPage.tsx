@@ -404,7 +404,11 @@ const BlackmagicViewPage: React.FC = () => {
                   <span className="text-muted-foreground">{iso[0]}</span>
                 </div>
                 {(() => {
-                  const ISO_STEPS = [100, 200, 400, 800, 1600, 3200, 6400, 12800, 25600];
+                  const ISO_STEPS = [
+                    100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1000, 1250,
+                    1600, 2000, 2500, 3200, 4000, 5000, 6400, 8000, 10000, 12800,
+                    16000, 20000, 25600,
+                  ];
                   const snapIso = (val: number) => {
                     return ISO_STEPS.reduce((prev, curr) =>
                       Math.abs(curr - val) < Math.abs(prev - val) ? curr : prev
