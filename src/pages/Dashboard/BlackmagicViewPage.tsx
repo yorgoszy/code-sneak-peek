@@ -7,7 +7,7 @@ import { Slider } from '@/components/ui/slider';
 import { BlueSlider }  from '@/components/ui/blue-slider';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { QRCodeSVG } from 'qrcode.react';
-import { Menu, Bluetooth, BluetoothOff, Video as VideoIcon, Circle, Square, Focus, Sun, Cloud, CloudSun, Lightbulb, Zap, Home, RefreshCw, Maximize2, Minimize2, Aperture, Thermometer, Gauge, Smartphone, X, Share2, Copy, Check } from 'lucide-react';
+import { Menu, Bluetooth, BluetoothOff, Video as VideoIcon, Circle, Square, Focus, Sun, Cloud, CloudSun, Lightbulb, Zap, Home, RefreshCw, Maximize2, Minimize2, Aperture, Thermometer, Gauge, Share2, Copy, Check } from 'lucide-react';
 import { CameraFeed } from '@/components/federation/CameraFeed';
 import {
   connectBlackmagic,
@@ -666,38 +666,32 @@ const BlackmagicViewPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Portrait rotate hint (mobile/tablet only) */}
-      {isSmallScreen && isPortrait && (
-        <div className="absolute inset-0 z-40 bg-black/95 flex flex-col items-center justify-center text-white px-6 text-center">
-          <Smartphone className="h-16 w-16 mb-4 animate-pulse rotate-90" />
-          <p className="text-lg font-semibold mb-1">Γύρισε τη συσκευή σου</p>
-          <p className="text-sm opacity-70">Τα χειριστήρια εμφανίζονται οριζόντια</p>
-          {!isFullscreen && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="mt-6 rounded-none bg-white/10 border-white/30 text-white"
-              onClick={() => { window.history.back(); }}
-            >
-              <X className="h-4 w-4 mr-1" /> Έξοδος
-            </Button>
-          )}
-        </div>
-      )}
     </>
   );
 
 
   // ── IMMERSIVE FULLSCREEN MODE (mobile/tablet always, desktop on fullscreen) ──
   if (immersive) {
+    const forceLandscape = isSmallScreen && isPortrait;
+
     return (
       <div ref={containerRef} className="fixed inset-0 z-50 bg-black overflow-hidden">
-        <CameraFeed
-          deviceId={selectedDeviceId || undefined}
-          stream={cameraStream}
-          className="absolute inset-0 w-full h-full object-contain"
-        />
-        {renderOverlay()}
+        <div
+          className={forceLandscape ? 'absolute left-1/2 top-1/2 bg-black overflow-hidden' : 'absolute inset-0 bg-black overflow-hidden'}
+          style={forceLandscape ? {
+            width: '100dvh',
+            height: '100dvw',
+            transform: 'translate(-50%, -50%) rotate(90deg)',
+            transformOrigin: 'center',
+          } : undefined}
+        >
+          <CameraFeed
+            deviceId={selectedDeviceId || undefined}
+            stream={cameraStream}
+            className="absolute inset-0 w-full h-full object-contain"
+          />
+          {renderOverlay()}
+        </div>
       </div>
     );
   }
