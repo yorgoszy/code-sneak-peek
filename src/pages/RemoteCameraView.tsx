@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { BlueSlider } from '@/components/ui/blue-slider';
 import {
   Focus, Aperture, Thermometer, Gauge, Maximize2, Minimize2, Loader2, WifiOff,
+  Sun, Cloud, CloudSun, Lightbulb, Zap, Home, RefreshCw,
 } from 'lucide-react';
 import {
   startViewerSession,
@@ -21,6 +22,22 @@ type WebkitFullscreenElement = HTMLElement & {
 };
 
 type StandaloneNavigator = Navigator & { standalone?: boolean };
+
+const ISO_STEPS = [
+  100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1000, 1250,
+  1600, 2000, 2500, 3200, 4000, 5000, 6400, 8000, 10000, 12800,
+  16000, 20000, 25600,
+];
+
+const snapIso = (val: number) =>
+  ISO_STEPS.reduce((prev, curr) => (Math.abs(curr - val) < Math.abs(prev - val) ? curr : prev));
+
+const getNativeIsos = (name?: string | null): number[] => {
+  const n = (name || '').toLowerCase();
+  if (/ursa.*(mini pro)?\s*12k|pyxis\s*12k/.test(n)) return [800, 3200];
+  if (/studio|broadcast/.test(n)) return [400];
+  return [400, 3200];
+};
 
 const RemoteCameraView: React.FC = () => {
   const { sessionId = '' } = useParams();
@@ -157,9 +174,10 @@ const RemoteCameraView: React.FC = () => {
 
   const renderSliderPanel = () => {
     if (!activeControl) return null;
+    const panelBase = 'p-4 rounded-none text-white bg-black/70 backdrop-blur-sm';
     if (activeControl === 'focus') {
       return (
-        <div className="p-4 text-white">
+        <div className={panelBase}>
           <div className="flex items-center justify-between text-xs mb-2">
             <span>Focus</span>
             <span className="opacity-70">{focus.toFixed(2)}</span>
@@ -176,7 +194,7 @@ const RemoteCameraView: React.FC = () => {
     }
     if (activeControl === 'iris') {
       return (
-        <div className="p-4 text-white">
+        <div className={panelBase}>
           <div className="flex items-center justify-between text-xs mb-2">
             <span>Iris</span>
             <span className="opacity-70">{iris.toFixed(2)}</span>
@@ -192,17 +210,8 @@ const RemoteCameraView: React.FC = () => {
       );
     }
     if (activeControl === 'wb') {
-      const wbPresets: { label: string; value: number }[] = [
-        { label: 'Κερί', value: 2500 },
-        { label: 'Σπίτι', value: 3200 },
-        { label: 'Φθόριο', value: 4000 },
-        { label: 'Ημέρα', value: 5600 },
-        { label: 'Flash', value: 6500 },
-        { label: 'Συννεφιά', value: 7500 },
-        { label: 'Σκιά', value: 9000 },
-      ];
       return (
-        <div className="p-4 text-white bg-black/70 backdrop-blur-sm">
+        <div className={panelBase}>
           <div className="flex items-center justify-between text-xs mb-2">
             <span>White Balance</span>
             <span className="opacity-70">{wb}K</span>
@@ -214,51 +223,86 @@ const RemoteCameraView: React.FC = () => {
             step={50}
             onValueChange={(v) => { const k = Math.round(v[0]); setWb(k); send({ type: 'wb', value: k }); }}
           />
-          <div className="flex flex-wrap gap-1 mt-3">
-            {wbPresets.map((p) => (
+          <div className="grid grid-cols-6 gap-1 mt-3">
+            {[
+              { k: 3200, label: 'Tungsten', Icon: Lightbulb },
+              { k: 4000, label: 'Fluor.', Icon: Zap },
+              { k: 4500, label: 'Indoor', Icon: Home },
+              { k: 5600, label: 'Day', Icon: Sun },
+              { k: 6500, label: 'Cloudy', Icon: Cloud },
+              { k: 7500, label: 'Shade', Icon: CloudSun },
+            ].map(({ k, label, Icon }) => (
               <Button
-                key={p.value}
+                key={k}
                 size="sm"
                 variant="outline"
-                className={`rounded-none text-xs h-7 px-2 bg-transparent text-white border-white/20 hover:bg-white/10 ${wb === p.value ? 'bg-white/20 border-white' : ''}`}
-                onClick={() => { setWb(p.value); send({ type: 'wb', value: p.value }); }}
+                title={`${label} · ${k}K`}
+                className={`rounded-none flex flex-col items-center justify-center gap-0.5 h-auto py-1.5 bg-white/10 border-white/30 text-white hover:bg-white/20 ${wb === k ? 'bg-white/20 border-white' : ''}`}
+                onClick={() => { setWb(k); send({ type: 'wb', value: k }); }}
               >
-                {p.label} {p.value}K
+                <Icon className="h-4 w-4" />
+                <span className="text-[10px] leading-none">{k}K</span>
               </Button>
             ))}
           </div>
+          {state?.cameraName && /ursa|studio/i.test(state.cameraName) && (
+            <Button
+              onClick={() => send({ type: 'autowb' })}
+              variant="outline"
+              className="w-full rounded-none mt-2 bg-white/10 border-white/30 text-white hover:bg-white/20"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" /> AWB
+            </Button>
+          )}
         </div>
       );
     }
     if (activeControl === 'iso') {
-      const steps = [100, 200, 400, 800, 1600, 3200, 6400, 12800, 25600];
-      const idx = Math.max(0, steps.indexOf(iso));
+      const currentIdx = Math.max(0, ISO_STEPS.indexOf(snapIso(iso)));
+      const nativeIsoButtons = (() => {
+        const natives = getNativeIsos(state?.cameraName);
+        const buttons: { label: string; value: number }[] = [];
+        natives.forEach((nv) => {
+          const nativeIdx = ISO_STEPS.indexOf(nv);
+          const below = nativeIdx > 0 ? ISO_STEPS[nativeIdx - 1] : null;
+          const above = nativeIdx >= 0 && nativeIdx < ISO_STEPS.length - 1 ? ISO_STEPS[nativeIdx + 1] : null;
+          if (below !== null) buttons.push({ label: `${below}`, value: below });
+          buttons.push({ label: `${nv}★`, value: nv });
+          if (above !== null) buttons.push({ label: `${above}`, value: above });
+        });
+        return buttons;
+      })();
       return (
-        <div className="p-4 text-white bg-black/70 backdrop-blur-sm">
+        <div className={panelBase}>
           <div className="flex items-center justify-between text-xs mb-2">
             <span>ISO</span>
             <span className="opacity-70">{iso}</span>
           </div>
           <BlueSlider
-            value={[idx >= 0 ? idx : 2]}
+            value={[currentIdx]}
             min={0}
-            max={steps.length - 1}
+            max={ISO_STEPS.length - 1}
             step={1}
-            onValueChange={(v) => { const val = steps[v[0]]; setIso(val); send({ type: 'iso', value: val }); }}
+            onValueChange={(v) => { const val = ISO_STEPS[v[0]]; setIso(val); send({ type: 'iso', value: val }); }}
           />
-          <div className="flex flex-wrap gap-1 mt-3">
-            {steps.map((val) => (
-              <Button
-                key={val}
-                size="sm"
-                variant="outline"
-                className={`rounded-none text-xs h-7 px-2 bg-transparent text-white border-white/20 hover:bg-white/10 ${iso === val ? 'bg-white/20 border-white' : ''}`}
-                onClick={() => { setIso(val); send({ type: 'iso', value: val }); }}
-              >
-                {val}
-              </Button>
-            ))}
-          </div>
+          {nativeIsoButtons.length > 0 && (
+            <div
+              className="grid gap-1 mt-3"
+              style={{ gridTemplateColumns: `repeat(${nativeIsoButtons.length}, minmax(0, 1fr))` }}
+            >
+              {nativeIsoButtons.map((b, i) => (
+                <Button
+                  key={`${b.value}-${i}`}
+                  size="sm"
+                  variant="outline"
+                  className={`rounded-none text-xs px-1 bg-white/10 border-white/30 text-white hover:bg-white/20 ${iso === b.value ? 'bg-white/20 border-white' : ''}`}
+                  onClick={() => { setIso(b.value); send({ type: 'iso', value: b.value }); }}
+                >
+                  {b.label}
+                </Button>
+              ))}
+            </div>
+          )}
         </div>
       );
     }
