@@ -375,6 +375,9 @@ const BlackmagicViewPage: React.FC = () => {
                   step={0.01}
                   onValueChange={(v) => {
                     setIris(v);
+                    if (connectedName) throttledSend('iris', 'Iris', () => Commands.iris(v[0]));
+                  }}
+                  onValueCommit={(v) => {
                     if (connectedName) sendOrToast('Iris', Commands.iris(v[0]));
                   }}
                   disabled={!connectedName}
@@ -391,7 +394,11 @@ const BlackmagicViewPage: React.FC = () => {
                   min={2500}
                   max={10000}
                   step={50}
-                  onValueChange={setWb}
+                  onValueChange={(v) => {
+                    const kelvin = Math.round(v[0]);
+                    setWb([kelvin]);
+                    if (connectedName) throttledSend('wb', `WB ${kelvin}K`, () => Commands.whiteBalance(kelvin));
+                  }}
                   onValueCommit={(v) => {
                     const kelvin = Math.round(v[0]);
                     setWb([kelvin]);
