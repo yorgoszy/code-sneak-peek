@@ -14,6 +14,10 @@ import {
   type BmdConnection,
 } from '@/lib/blackmagicBle';
 
+const getErrorMessage = (error: unknown, fallback: string) => (
+  error instanceof Error && error.message ? error.message : fallback
+);
+
 const BlackmagicViewPage: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -93,9 +97,9 @@ const BlackmagicViewPage: React.FC = () => {
       conn.current = c;
       setConnectedName(c.name);
       toast.success(`Συνδέθηκε με ${c.name}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err?.message || 'Αποτυχία σύνδεσης BLE');
+      toast.error(getErrorMessage(err, 'Αποτυχία σύνδεσης BLE'));
     } finally {
       setConnecting(false);
     }
@@ -133,9 +137,9 @@ const BlackmagicViewPage: React.FC = () => {
     }
     try {
       await conn.current.send(packet);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(label, err);
-      toast.error(`${label}: ${err?.message || 'σφάλμα'}`);
+      toast.error(`${label}: ${getErrorMessage(err, 'σφάλμα')}`);
     }
   };
 
