@@ -131,16 +131,19 @@ const BlackmagicViewPage: React.FC = () => {
           setIso([u.value]);
         }
       });
-      // Proactively request current values so sliders sync immediately
-      try {
-        await c.send(Commands.queryIris());
-        await c.send(Commands.queryApertureAv());
-        await c.send(Commands.queryFocus());
-        await c.send(Commands.queryWhiteBalance());
-        await c.send(Commands.queryIso());
-      } catch (e) {
-        console.warn('[BMD] query current values failed', e);
-      }
+      // Proactively request current values so sliders sync immediately.
+      // Fire in parallel and retry once after a short delay to cover
+      // cameras that ignore queries during the initial pairing handshake.
+      const queryAll = () => Promise.allSettled([
+        c.send(Commands.queryIris()),
+        c.send(Commands.queryApertureAv()),
+        c.send(Commands.queryFocus()),
+        c.send(Commands.queryWhiteBalance()),
+        c.send(Commands.queryIso()),
+      ]);
+      queryAll().catch(() => {});
+      setTimeout(() => { queryAll().catch(() => {}); }, 300);
+      setTimeout(() => { queryAll().catch(() => {}); }, 1000);
     } catch (err: unknown) {
       console.error(err);
     } finally {
