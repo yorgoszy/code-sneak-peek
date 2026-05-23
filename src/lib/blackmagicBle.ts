@@ -271,6 +271,7 @@ export async function connectWeb(password?: string): Promise<BmdConnection> {
     disconnect: async () => {
       try { device.gatt?.disconnect(); } catch { /* noop */ }
     },
+    onUpdate: (cb) => { updateCb = cb; },
   };
 }
 
