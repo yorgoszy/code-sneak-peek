@@ -41,6 +41,24 @@ const BlackmagicViewPage: React.FC = () => {
   const [lastError, setLastError] = useState<string>('');
   const [password, setPassword] = useState<string>('');
 
+  // Throttle live BLE sends per control to avoid flooding (~50ms)
+  const throttleRef = useRef<Record<string, { last: number; pending: ReturnType<typeof setTimeout> | null; lastArgs: unknown }>>({});
+  const throttledSend = (key: string, label: string, build: () => Uint8Array, intervalMs = 60) => {
+    const now = Date.now();
+    const slot = throttleRef.current[key] || (throttleRef.current[key] = { last: 0, pending: null, lastArgs: null });
+    const run = () => {
+      slot.last = Date.now();
+      slot.pending = null;
+      sendOrToast(label, build());
+    };
+    if (now - slot.last >= intervalMs) {
+      run();
+    } else {
+      if (slot.pending) clearTimeout(slot.pending);
+      slot.pending = setTimeout(run, intervalMs - (now - slot.last));
+    }
+  };
+
   const platform = detectPlatform();
   const bleAvailable = isBluetoothAvailable();
 
@@ -337,6 +355,9 @@ const BlackmagicViewPage: React.FC = () => {
                   step={0.01}
                   onValueChange={(v) => {
                     setFocus(v);
+                    if (connectedName) throttledSend('focus', 'Focus', () => Commands.focus(v[0]));
+                  }}
+                  onValueCommit={(v) => {
                     if (connectedName) sendOrToast('Focus', Commands.focus(v[0]));
                   }}
                   disabled={!connectedName}
@@ -357,6 +378,9 @@ const BlackmagicViewPage: React.FC = () => {
                   step={0.01}
                   onValueChange={(v) => {
                     setIris(v);
+                    if (connectedName) throttledSend('iris', 'Iris', () => Commands.iris(v[0]));
+                  }}
+                  onValueCommit={(v) => {
                     if (connectedName) sendOrToast('Iris', Commands.iris(v[0]));
                   }}
                   disabled={!connectedName}
@@ -373,7 +397,11 @@ const BlackmagicViewPage: React.FC = () => {
                   min={2500}
                   max={10000}
                   step={50}
-                  onValueChange={setWb}
+                  onValueChange={(v) => {
+                    const kelvin = Math.round(v[0]);
+                    setWb([kelvin]);
+                    if (connectedName) throttledSend('wb', `WB ${kelvin}K`, () => Commands.whiteBalance(kelvin));
+                  }}
                   onValueCommit={(v) => {
                     const kelvin = Math.round(v[0]);
                     setWb([kelvin]);
@@ -421,7 +449,11 @@ const BlackmagicViewPage: React.FC = () => {
                       min={0}
                       max={ISO_STEPS.length - 1}
                       step={1}
-                      onValueChange={(v) => setIso([ISO_STEPS[v[0]]])}
+                      onValueChange={(v) => {
+                        const isoValue = ISO_STEPS[v[0]];
+                        setIso([isoValue]);
+                        if (connectedName) throttledSend('iso', `ISO ${isoValue}`, () => Commands.iso(isoValue), 120);
+                      }}
                       onValueCommit={(v) => {
                         const isoValue = ISO_STEPS[v[0]];
                         setIso([isoValue]);
