@@ -258,14 +258,330 @@ const BlackmagicViewPage: React.FC = () => {
     }
   };
 
+  // ── ISO helpers ──
+  const ISO_STEPS = [
+    100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1000, 1250,
+    1600, 2000, 2500, 3200, 4000, 5000, 6400, 8000, 10000, 12800,
+    16000, 20000, 25600,
+  ];
+  const snapIso = (val: number) =>
+    ISO_STEPS.reduce((prev, curr) => (Math.abs(curr - val) < Math.abs(prev - val) ? curr : prev));
+  const getNativeIsos = (name: string | null): number[] => {
+    const n = (name || '').toLowerCase();
+    if (/ursa.*(mini pro)?\s*12k|pyxis\s*12k/.test(n)) return [800, 3200];
+    if (/studio|broadcast/.test(n)) return [400];
+    return [400, 3200];
+  };
+  const nativeIsoButtons = (() => {
+    const natives = getNativeIsos(connectedName);
+    const buttons: { label: string; value: number }[] = [];
+    natives.forEach((nv) => {
+      const idx = ISO_STEPS.indexOf(nv);
+      const below = idx > 0 ? ISO_STEPS[idx - 1] : null;
+      const above = idx >= 0 && idx < ISO_STEPS.length - 1 ? ISO_STEPS[idx + 1] : null;
+      if (below !== null) buttons.push({ label: `${below}`, value: below });
+      buttons.push({ label: `${nv}★`, value: nv });
+      if (above !== null) buttons.push({ label: `${above}`, value: above });
+    });
+    return buttons;
+  })();
+
+  const immersive = isSmallScreen || isFullscreen;
+
+  // ── Slider panels (rendered inside overlay popover) ──
+  const renderSliderPanel = () => {
+    if (!activeControl) return null;
+    const panelBase = 'bg-black/80 backdrop-blur p-4 rounded-none border border-white/20 text-white';
+    if (activeControl === 'focus') {
+      return (
+        <div className={panelBase}>
+          <div className="flex items-center justify-between text-xs mb-2">
+            <span>Focus</span>
+            <span className="opacity-70">{focus[0].toFixed(2)}</span>
+          </div>
+          <Slider
+            value={focus}
+            min={0}
+            max={1}
+            step={0.01}
+            onValueChange={(v) => {
+              setFocus(v);
+              if (connectedName) throttledSend('focus', 'Focus', () => Commands.focus(v[0]));
+            }}
+            onValueCommit={(v) => { if (connectedName) sendOrToast('Focus', Commands.focus(v[0])); }}
+            disabled={!connectedName}
+          />
+        </div>
+      );
+    }
+    if (activeControl === 'iris') {
+      return (
+        <div className={panelBase}>
+          <div className="flex items-center justify-between text-xs mb-2">
+            <span>Iris</span>
+            <span className="opacity-70">{fStop !== null ? `f/${fStop.toFixed(1)}` : iris[0].toFixed(2)}</span>
+          </div>
+          <Slider
+            value={iris}
+            min={0}
+            max={1}
+            step={0.01}
+            onValueChange={(v) => {
+              setIris(v);
+              if (connectedName) throttledSend('iris', 'Iris', () => Commands.iris(v[0]));
+            }}
+            onValueCommit={(v) => { if (connectedName) sendOrToast('Iris', Commands.iris(v[0])); }}
+            disabled={!connectedName}
+          />
+        </div>
+      );
+    }
+    if (activeControl === 'wb') {
+      return (
+        <div className={panelBase}>
+          <div className="flex items-center justify-between text-xs mb-2">
+            <span>White Balance</span>
+            <span className="opacity-70">{wb[0]}K</span>
+          </div>
+          <Slider
+            value={wb}
+            min={2500}
+            max={10000}
+            step={50}
+            onValueChange={(v) => {
+              const kelvin = Math.round(v[0]);
+              setWb([kelvin]);
+              if (connectedName) throttledSend('wb', `WB ${kelvin}K`, () => Commands.whiteBalance(kelvin));
+            }}
+            onValueCommit={(v) => {
+              const kelvin = Math.round(v[0]);
+              setWb([kelvin]);
+              if (connectedName) sendOrToast(`WB ${kelvin}K`, Commands.whiteBalance(kelvin));
+            }}
+          />
+          <div className="grid grid-cols-6 gap-1 mt-3">
+            {[
+              { k: 3200, label: 'Tungsten', Icon: Lightbulb },
+              { k: 4000, label: 'Fluor.', Icon: Zap },
+              { k: 4500, label: 'Indoor', Icon: Home },
+              { k: 5600, label: 'Day', Icon: Sun },
+              { k: 6500, label: 'Cloudy', Icon: Cloud },
+              { k: 7500, label: 'Shade', Icon: CloudSun },
+            ].map(({ k, label, Icon }) => (
+              <Button
+                key={k}
+                variant="outline"
+                size="sm"
+                title={`${label} · ${k}K`}
+                className="rounded-none flex flex-col items-center justify-center gap-0.5 h-auto py-1.5 bg-white/10 border-white/30 text-white hover:bg-white/20"
+                onClick={() => {
+                  setWb([k]);
+                  if (connectedName) sendOrToast(`WB ${k}K`, Commands.whiteBalance(k));
+                }}
+              >
+                <Icon className="h-4 w-4" />
+                <span className="text-[10px] leading-none">{k}K</span>
+              </Button>
+            ))}
+          </div>
+          {connectedName && /ursa|studio/i.test(connectedName) && (
+            <Button
+              onClick={() => sendOrToast('Auto WB', Commands.autoWhiteBalance())}
+              variant="outline"
+              className="w-full rounded-none mt-2 bg-white/10 border-white/30 text-white hover:bg-white/20"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" /> AWB
+            </Button>
+          )}
+        </div>
+      );
+    }
+    if (activeControl === 'iso') {
+      const currentIdx = Math.max(0, ISO_STEPS.indexOf(snapIso(iso[0])));
+      return (
+        <div className={panelBase}>
+          <div className="flex items-center justify-between text-xs mb-2">
+            <span>ISO</span>
+            <span className="opacity-70">{iso[0]}</span>
+          </div>
+          <Slider
+            value={[currentIdx]}
+            min={0}
+            max={ISO_STEPS.length - 1}
+            step={1}
+            onValueChange={(v) => {
+              const isoValue = ISO_STEPS[v[0]];
+              setIso([isoValue]);
+              if (connectedName) throttledSend('iso', `ISO ${isoValue}`, () => Commands.iso(isoValue), 120);
+            }}
+            onValueCommit={(v) => {
+              const isoValue = ISO_STEPS[v[0]];
+              setIso([isoValue]);
+              if (connectedName) sendOrToast(`ISO ${isoValue}`, Commands.iso(isoValue));
+            }}
+          />
+          {nativeIsoButtons.length > 0 && (
+            <div
+              className="grid gap-1 mt-3"
+              style={{ gridTemplateColumns: `repeat(${nativeIsoButtons.length}, minmax(0, 1fr))` }}
+            >
+              {nativeIsoButtons.map((b, i) => (
+                <Button
+                  key={`${b.value}-${i}`}
+                  variant="outline"
+                  size="sm"
+                  className="rounded-none text-xs px-1 bg-white/10 border-white/30 text-white hover:bg-white/20"
+                  onClick={() => {
+                    setIso([b.value]);
+                    if (connectedName) sendOrToast(`ISO ${b.value}`, Commands.iso(b.value));
+                  }}
+                >
+                  {b.label}
+                </Button>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // ── Overlay (in-video) controls ──
+  const overlayButton = (key: typeof activeControl, Icon: React.ComponentType<{ className?: string }>, label: string, value: string) => (
+    <button
+      type="button"
+      onClick={() => setActiveControl((prev) => (prev === key ? null : key))}
+      className={`flex flex-col items-center justify-center gap-0.5 px-3 py-2 min-w-[64px] text-white border border-white/30 ${activeControl === key ? 'bg-white/30' : 'bg-black/50 hover:bg-black/70'}`}
+    >
+      <Icon className="h-5 w-5" />
+      <span className="text-[10px] leading-none uppercase tracking-wide">{label}</span>
+      <span className="text-[10px] leading-none opacity-80">{value}</span>
+    </button>
+  );
+
+  const renderOverlay = () => (
+    <>
+      {/* Top bar: connect status + camera select + fullscreen */}
+      <div className="absolute top-3 left-3 right-3 z-20 flex items-center justify-between gap-2 pointer-events-none">
+        <div className="flex items-center gap-2 pointer-events-auto">
+          {connectedName ? (
+            <Button size="sm" variant="outline" className="rounded-none bg-black/50 border-white/30 text-white hover:bg-black/70" onClick={handleDisconnect}>
+              <BluetoothOff className="h-4 w-4 mr-1" />
+              <span className="text-xs truncate max-w-[140px]">{connectedName}</span>
+            </Button>
+          ) : (
+            <Button size="sm" className="rounded-none" onClick={handleConnect} disabled={connecting || !bleAvailable}>
+              <Bluetooth className="h-4 w-4 mr-1" />
+              <span className="text-xs">{connecting ? '...' : 'BLE'}</span>
+            </Button>
+          )}
+        </div>
+        <div className="flex items-center gap-2 pointer-events-auto">
+          {devices.length > 1 && (
+            <select
+              className="border border-white/30 bg-black/50 text-white px-2 py-1 text-xs rounded-none max-w-[160px]"
+              value={selectedDeviceId || ''}
+              onChange={(e) => handleCameraChange(e.target.value)}
+            >
+              {devices.map((d, i) => (
+                <option key={d.deviceId} value={d.deviceId} className="text-black">
+                  {d.label || `Cam ${i + 1}`}
+                </option>
+              ))}
+            </select>
+          )}
+          <Button
+            size="sm"
+            variant="outline"
+            className="rounded-none bg-black/50 border-white/30 text-white hover:bg-black/70"
+            onClick={toggleFullscreen}
+          >
+            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          </Button>
+        </div>
+      </div>
+
+      {/* Slider popover */}
+      {activeControl && (
+        <div className="absolute left-1/2 -translate-x-1/2 bottom-24 z-20 w-[92%] max-w-xl">
+          {renderSliderPanel()}
+        </div>
+      )}
+
+      {/* Bottom control row */}
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-black/40 backdrop-blur p-2">
+        {overlayButton('focus', Focus, 'Focus', focus[0].toFixed(2))}
+        <button
+          type="button"
+          onClick={() => sendOrToast('Autofocus', Commands.autoFocus())}
+          disabled={!connectedName}
+          className="flex flex-col items-center justify-center gap-0.5 px-3 py-2 min-w-[64px] text-white border border-white/30 bg-black/50 hover:bg-black/70 disabled:opacity-40"
+        >
+          <Focus className="h-5 w-5" />
+          <span className="text-[10px] leading-none uppercase tracking-wide">Auto</span>
+          <span className="text-[10px] leading-none opacity-80">Focus</span>
+        </button>
+        {overlayButton('iris', Aperture, 'Iris', fStop !== null ? `f/${fStop.toFixed(1)}` : iris[0].toFixed(2))}
+        {overlayButton('wb', Thermometer, 'WB', `${wb[0]}K`)}
+        {overlayButton('iso', Gauge, 'ISO', `${iso[0]}`)}
+        <button
+          type="button"
+          onClick={toggleRecord}
+          disabled={!connectedName}
+          aria-label={recording ? 'Stop recording' : 'Start recording'}
+          className="flex items-center justify-center w-14 h-14 border-2 border-white/60 bg-black/50 hover:bg-black/70 disabled:opacity-40 ml-2"
+        >
+          {recording ? (
+            <span className="block w-5 h-5 bg-red-600" />
+          ) : (
+            <span className="block w-8 h-8 rounded-full bg-red-600" />
+          )}
+        </button>
+      </div>
+
+      {/* Portrait rotate hint (mobile/tablet only) */}
+      {isSmallScreen && isPortrait && (
+        <div className="absolute inset-0 z-30 bg-black/95 flex flex-col items-center justify-center text-white px-6 text-center">
+          <Smartphone className="h-16 w-16 mb-4 animate-pulse rotate-90" />
+          <p className="text-lg font-semibold mb-1">Γύρισε τη συσκευή σου</p>
+          <p className="text-sm opacity-70">Τα χειριστήρια εμφανίζονται οριζόντια</p>
+          {!isFullscreen && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="mt-6 rounded-none bg-white/10 border-white/30 text-white"
+              onClick={() => { window.history.back(); }}
+            >
+              <X className="h-4 w-4 mr-1" /> Έξοδος
+            </Button>
+          )}
+        </div>
+      )}
+    </>
+  );
+
+  // ── IMMERSIVE FULLSCREEN MODE (mobile/tablet always, desktop on fullscreen) ──
+  if (immersive) {
+    return (
+      <div ref={containerRef} className="fixed inset-0 z-50 bg-black overflow-hidden">
+        <CameraFeed
+          deviceId={selectedDeviceId || undefined}
+          stream={cameraStream}
+          className="absolute inset-0 w-full h-full object-contain"
+        />
+        {renderOverlay()}
+      </div>
+    );
+  }
+
+  // ── DESKTOP DASHBOARD MODE ──
   return (
     <div className="min-h-screen flex w-full bg-background">
-      {/* Desktop sidebar */}
       <div className="hidden lg:block">
         <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
       </div>
 
-      {/* Mobile sidebar overlay */}
       {isMobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/50" onClick={() => setIsMobileOpen(false)} />
@@ -276,7 +592,6 @@ const BlackmagicViewPage: React.FC = () => {
       )}
 
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile header */}
         <div className="sticky top-0 z-40 bg-background border-b border-border p-3 lg:hidden">
           <div className="flex items-center gap-3">
             <Button variant="outline" size="sm" onClick={() => setIsMobileOpen(true)} className="rounded-none">
@@ -287,11 +602,11 @@ const BlackmagicViewPage: React.FC = () => {
         </div>
 
         <main className="flex-1 p-4 lg:p-6 overflow-auto space-y-4">
-          <div className="hidden lg:flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div>
               <h1 className="text-2xl font-bold">Blackmagic View</h1>
               <p className="text-sm text-muted-foreground">
-                Έλεγχος κάμερας Blackmagic μέσω Bluetooth + προβολή σήματος ({platform === 'native' ? 'Native BLE' : 'Web Bluetooth'})
+                Έλεγχος Blackmagic μέσω Bluetooth ({platform === 'native' ? 'Native BLE' : 'Web Bluetooth'})
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -300,292 +615,59 @@ const BlackmagicViewPage: React.FC = () => {
                 placeholder="Remote Password (αν υπάρχει)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="border border-border bg-background px-3 py-1.5 text-sm rounded-none w-64"
+                className="border border-border bg-background px-3 py-1.5 text-sm rounded-none w-56"
               />
               {connectedName ? (
                 <Button variant="outline" className="rounded-none" onClick={handleDisconnect}>
                   <BluetoothOff className="h-4 w-4 mr-2" />
-                  Αποσύνδεση ({connectedName})
+                  {connectedName}
                 </Button>
               ) : (
-                <Button className="rounded-none" onClick={handleConnect} disabled={connecting}>
+                <Button className="rounded-none" onClick={handleConnect} disabled={connecting || !bleAvailable}>
                   <Bluetooth className="h-4 w-4 mr-2" />
-                  {connecting ? 'Σύνδεση...' : 'Σύνδεση Blackmagic BLE'}
+                  {connecting ? 'Σύνδεση...' : 'Σύνδεση BLE'}
                 </Button>
               )}
+              <Button variant="outline" className="rounded-none" onClick={toggleFullscreen}>
+                <Maximize2 className="h-4 w-4 mr-2" />
+                Fullscreen
+              </Button>
             </div>
-          </div>
-
-          {/* Mobile connect bar */}
-          <div className="flex lg:hidden flex-col gap-2">
-            <input
-              type="password"
-              placeholder="Remote Password (αν υπάρχει)"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="border border-border bg-background px-3 py-1.5 text-sm rounded-none w-full"
-            />
-            {connectedName ? (
-              <Button variant="outline" className="rounded-none w-full" onClick={handleDisconnect}>
-                <BluetoothOff className="h-4 w-4 mr-2" />
-                Αποσύνδεση ({connectedName})
-              </Button>
-            ) : (
-              <Button className="rounded-none w-full" onClick={handleConnect} disabled={connecting}>
-                <Bluetooth className="h-4 w-4 mr-2" />
-                {connecting ? 'Σύνδεση...' : 'Σύνδεση Blackmagic BLE'}
-              </Button>
-            )}
           </div>
 
           {!bleAvailable && (
             <Card className="rounded-none p-3 border-destructive/40 bg-destructive/5 text-sm">
-              Το Web Bluetooth δεν είναι διαθέσιμο σε iPad Safari/PWA. Για iPad χρησιμοποιήστε την native build
-              (Capacitor): <code>npx cap sync ios &amp;&amp; npx cap run ios</code>. Σε Android/Desktop Chrome δουλεύει απευθείας.
+              Το Web Bluetooth δεν είναι διαθέσιμο σε iPad Safari/PWA. Για iPad χρησιμοποιήστε την native build.
             </Card>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Camera feed */}
-            <Card className="rounded-none p-3 lg:col-span-2 space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <VideoIcon className="h-4 w-4" />
-                  <span className="font-medium">Σήμα Κάμερας</span>
-                </div>
-                <select
-                  className="border border-border bg-background px-2 py-1 text-sm rounded-none"
-                  value={selectedDeviceId || ''}
-                  onChange={(e) => handleCameraChange(e.target.value)}
-                >
-                  {devices.length === 0 && <option value="">— καμία —</option>}
-                  {devices.map((d, i) => (
-                    <option key={d.deviceId} value={d.deviceId}>
-                      {d.label || `Κάμερα ${i + 1}`}
-                    </option>
-                  ))}
-                </select>
+          <Card className="rounded-none p-3 space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <VideoIcon className="h-4 w-4" />
+                <span className="font-medium">Σήμα Κάμερας</span>
               </div>
-              <div className="aspect-video w-full bg-black">
-                <CameraFeed deviceId={selectedDeviceId || undefined} stream={cameraStream} className="w-full h-full" />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Συνδέστε την Blackmagic στο iPad/PC μέσω HDMI→USB capture (π.χ. ATEM Mini, Cam Link) για να εμφανίζεται εδώ.
-              </p>
-            </Card>
-
-            {/* Camera controls */}
-            <Card className="rounded-none p-3 space-y-4">
-              <div className="font-medium flex items-center gap-2">
-                <Focus className="h-4 w-4" />
-                Έλεγχος Κάμερας
-              </div>
-
-              <Button
-                onClick={toggleRecord}
-                disabled={!connectedName}
-                className="w-full rounded-none"
-                variant={recording ? 'destructive' : 'default'}
+              <select
+                className="border border-border bg-background px-2 py-1 text-sm rounded-none"
+                value={selectedDeviceId || ''}
+                onChange={(e) => handleCameraChange(e.target.value)}
               >
-                {recording ? <Square className="h-4 w-4 mr-2" /> : <Circle className="h-4 w-4 mr-2 fill-current" />}
-                {recording ? 'Διακοπή Εγγραφής' : 'Έναρξη Εγγραφής'}
-              </Button>
-
-              <Button
-                onClick={() => sendOrToast('Autofocus', Commands.autoFocus())}
-                disabled={!connectedName}
-                variant="outline"
-                className="w-full rounded-none"
-              >
-                Autofocus
-              </Button>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span>Focus</span>
-                  <span className="text-muted-foreground">{focus[0].toFixed(2)}</span>
-                </div>
-                <Slider
-                  value={focus}
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  onValueChange={(v) => {
-                    setFocus(v);
-                    if (connectedName) throttledSend('focus', 'Focus', () => Commands.focus(v[0]));
-                  }}
-                  onValueCommit={(v) => {
-                    if (connectedName) sendOrToast('Focus', Commands.focus(v[0]));
-                  }}
-                  disabled={!connectedName}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span>Iris</span>
-                  <span className="text-muted-foreground">
-                    {fStop !== null ? `f/${fStop.toFixed(1)}` : iris[0].toFixed(2)}
-                  </span>
-                </div>
-                <Slider
-                  value={iris}
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  onValueChange={(v) => {
-                    setIris(v);
-                    if (connectedName) throttledSend('iris', 'Iris', () => Commands.iris(v[0]));
-                  }}
-                  onValueCommit={(v) => {
-                    if (connectedName) sendOrToast('Iris', Commands.iris(v[0]));
-                  }}
-                  disabled={!connectedName}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span>White Balance</span>
-                  <span className="text-muted-foreground">{wb[0]}K</span>
-                </div>
-                <Slider
-                  value={wb}
-                  min={2500}
-                  max={10000}
-                  step={50}
-                  onValueChange={(v) => {
-                    const kelvin = Math.round(v[0]);
-                    setWb([kelvin]);
-                    if (connectedName) throttledSend('wb', `WB ${kelvin}K`, () => Commands.whiteBalance(kelvin));
-                  }}
-                  onValueCommit={(v) => {
-                    const kelvin = Math.round(v[0]);
-                    setWb([kelvin]);
-                    if (connectedName) sendOrToast(`WB ${kelvin}K`, Commands.whiteBalance(kelvin));
-                  }}
-                />
-                {connectedName && /ursa|studio/i.test(connectedName) && (
-                  <Button
-                    onClick={() => sendOrToast('Auto WB', Commands.autoWhiteBalance())}
-                    variant="outline"
-                    className="w-full rounded-none flex items-center justify-center gap-2 h-auto py-2"
-                    title="Auto White Balance"
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                    <span className="text-xs font-medium">AWB</span>
-                  </Button>
-                )}
-                <div className="grid grid-cols-6 gap-2">
-                  {[
-                    { k: 3200, label: 'Tungsten', Icon: Lightbulb },
-                    { k: 4000, label: 'Fluorescent', Icon: Zap },
-                    { k: 4500, label: 'Indoor', Icon: Home },
-                    { k: 5600, label: 'Daylight', Icon: Sun },
-                    { k: 6500, label: 'Cloudy', Icon: Cloud },
-                    { k: 7500, label: 'Shade', Icon: CloudSun },
-                  ].map(({ k, label, Icon }) => (
-                    <Button
-                      key={k}
-                      variant="outline"
-                      size="sm"
-                      title={`${label} · ${k}K`}
-                      aria-label={`${label} ${k}K`}
-                      className="rounded-none flex flex-col items-center justify-center gap-0.5 h-auto py-1.5"
-                      onClick={() => {
-                        setWb([k]);
-                        if (connectedName) sendOrToast(`WB ${k}K`, Commands.whiteBalance(k));
-                      }}
-                    >
-                      <Icon className="h-4 w-4" />
-                      <span className="text-[10px] leading-none">{k}K</span>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span>ISO</span>
-                  <span className="text-muted-foreground">{iso[0]}</span>
-                </div>
-                {(() => {
-                  const ISO_STEPS = [
-                    100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1000, 1250,
-                    1600, 2000, 2500, 3200, 4000, 5000, 6400, 8000, 10000, 12800,
-                    16000, 20000, 25600,
-                  ];
-                  const snapIso = (val: number) => {
-                    return ISO_STEPS.reduce((prev, curr) =>
-                      Math.abs(curr - val) < Math.abs(prev - val) ? curr : prev
-                    );
-                  };
-                  const currentIdx = Math.max(0, ISO_STEPS.indexOf(snapIso(iso[0])));
-                  return (
-                    <Slider
-                      value={[currentIdx]}
-                      min={0}
-                      max={ISO_STEPS.length - 1}
-                      step={1}
-                      onValueChange={(v) => {
-                        const isoValue = ISO_STEPS[v[0]];
-                        setIso([isoValue]);
-                        if (connectedName) throttledSend('iso', `ISO ${isoValue}`, () => Commands.iso(isoValue), 120);
-                      }}
-                      onValueCommit={(v) => {
-                        const isoValue = ISO_STEPS[v[0]];
-                        setIso([isoValue]);
-                        if (connectedName) sendOrToast(`ISO ${isoValue}`, Commands.iso(isoValue));
-                      }}
-                    />
-                  );
-                })()}
-                {(() => {
-                  const ISO_STEPS = [
-                    100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1000, 1250,
-                    1600, 2000, 2500, 3200, 4000, 5000, 6400, 8000, 10000, 12800,
-                    16000, 20000, 25600,
-                  ];
-                  const getNativeIsos = (name: string | null): number[] => {
-                    const n = (name || '').toLowerCase();
-                    if (/ursa.*(mini pro)?\s*12k|pyxis\s*12k/.test(n)) return [800, 3200];
-                    if (/studio|broadcast/.test(n)) return [400];
-                    // Pocket 4K/6K, Cinema 6K, URSA 4.6K G2, Pyxis 6K, default
-                    return [400, 3200];
-                  };
-                  const natives = getNativeIsos(connectedName);
-                  const buttons: { label: string; value: number }[] = [];
-                  natives.forEach((nv, i) => {
-                    const idx = ISO_STEPS.indexOf(nv);
-                    const below = idx > 0 ? ISO_STEPS[idx - 1] : null;
-                    const above = idx >= 0 && idx < ISO_STEPS.length - 1 ? ISO_STEPS[idx + 1] : null;
-                    if (below !== null) buttons.push({ label: `${below}`, value: below });
-                    buttons.push({ label: `${nv}★`, value: nv });
-                    if (above !== null) buttons.push({ label: `${above}`, value: above });
-                  });
-                  return (
-                    <div className={`grid gap-2`} style={{ gridTemplateColumns: `repeat(${buttons.length}, minmax(0, 1fr))` }}>
-                      {buttons.map((b, i) => (
-                        <Button
-                          key={`${b.value}-${i}`}
-                          variant="outline"
-                          size="sm"
-                          className="rounded-none text-xs px-1"
-                          onClick={() => {
-                            setIso([b.value]);
-                            if (connectedName) sendOrToast(`ISO ${b.value}`, Commands.iso(b.value));
-                          }}
-                        >
-                          {b.label}
-                        </Button>
-                      ))}
-                    </div>
-                  );
-                })()}
-              </div>
-            </Card>
-          </div>
-
+                {devices.length === 0 && <option value="">— καμία —</option>}
+                {devices.map((d, i) => (
+                  <option key={d.deviceId} value={d.deviceId}>
+                    {d.label || `Κάμερα ${i + 1}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="relative w-full bg-black" style={{ aspectRatio: '16 / 9' }}>
+              <CameraFeed deviceId={selectedDeviceId || undefined} stream={cameraStream} className="w-full h-full" />
+              {renderOverlay()}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Πάτα το κουμπί Fullscreen ή κάθε χειριστήριο για να εμφανιστεί το slider.
+            </p>
+          </Card>
         </main>
       </div>
     </div>
@@ -593,3 +675,4 @@ const BlackmagicViewPage: React.FC = () => {
 };
 
 export default BlackmagicViewPage;
+
