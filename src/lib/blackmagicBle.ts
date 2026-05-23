@@ -169,6 +169,17 @@ export async function connectWeb(password?: string): Promise<BmdConnection> {
     console.warn('[BMD] device name write failed (non-fatal)', e);
   }
 
+  // 1b) Optionally write remote password to BMD_DEVICE_NAME (camera expects it on the same characteristic).
+  if (password) {
+    try {
+      const passChar = await service.getCharacteristic(BMD_DEVICE_NAME);
+      await passChar.writeValueWithResponse(new TextEncoder().encode(password));
+      console.log('[BMD] password sent');
+    } catch (e) {
+      console.warn('[BMD] password write failed', e);
+    }
+  }
+
   // 2) Subscribe to Camera Status notifications.
   //    This triggers the PIN pairing dialog on the camera screen.
   //    Do NOT write to this characteristic — it is read/notify only.
