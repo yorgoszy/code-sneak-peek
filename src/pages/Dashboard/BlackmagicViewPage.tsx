@@ -274,6 +274,7 @@ const BlackmagicViewPage: React.FC = () => {
   const stateRef = useRef({ recording, focus: focus[0], iris: iris[0], wb: wb[0], iso: iso[0] });
   useEffect(() => {
     stateRef.current = { recording, focus: focus[0], iris: iris[0], wb: wb[0], iso: iso[0] };
+    hostSessionRef.current?.pushState();
   }, [recording, focus, iris, wb, iso]);
 
   const cameraStreamRef = useRef<MediaStream | null>(null);

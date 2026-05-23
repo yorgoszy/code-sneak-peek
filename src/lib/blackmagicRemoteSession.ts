@@ -41,6 +41,7 @@ export interface HostSessionOptions {
 
 export interface HostSession {
   close: () => void;
+  pushState: () => void;
 }
 
 export function startHostSession(opts: HostSessionOptions): HostSession {
@@ -106,10 +107,11 @@ export function startHostSession(opts: HostSessionOptions): HostSession {
     })
     .subscribe();
 
-  // Push state on every change (poll lightly)
-  const stateTimer = setInterval(sendState, 1000);
+  // Push state on every change (poll lightly as fallback)
+  const stateTimer = setInterval(sendState, 500);
 
   return {
+    pushState: sendState,
     close: () => {
       clearInterval(stateTimer);
       try { dc?.close(); } catch {}
