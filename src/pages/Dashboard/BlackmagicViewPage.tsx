@@ -199,6 +199,15 @@ const BlackmagicViewPage: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center gap-2">
+              {!connectedName && (
+                <input
+                  type="password"
+                  placeholder="Remote password (αν χρειάζεται)"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="border border-border bg-background px-2 py-1 text-sm rounded-none w-56"
+                />
+              )}
               {connectedName ? (
                 <Button variant="outline" className="rounded-none" onClick={handleDisconnect}>
                   <BluetoothOff className="h-4 w-4 mr-2" />
