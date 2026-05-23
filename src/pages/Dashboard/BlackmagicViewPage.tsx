@@ -426,19 +426,28 @@ const BlackmagicViewPage: React.FC = () => {
                     if (connectedName) sendOrToast(`WB ${kelvin}K`, Commands.whiteBalance(kelvin));
                   }}
                 />
-                <div className="grid grid-cols-3 gap-2">
-                  {[3200, 4600, 5600].map((k) => (
+                <div className="grid grid-cols-5 gap-2">
+                  {[
+                    { k: 3200, label: 'Tungsten', Icon: Lightbulb },
+                    { k: 4000, label: 'Fluorescent', Icon: Zap },
+                    { k: 5600, label: 'Daylight', Icon: Sun },
+                    { k: 6500, label: 'Cloudy', Icon: Cloud },
+                    { k: 7500, label: 'Shade', Icon: CloudSun },
+                  ].map(({ k, label, Icon }) => (
                     <Button
                       key={k}
                       variant="outline"
                       size="sm"
-                      className="rounded-none text-xs"
+                      title={`${label} · ${k}K`}
+                      aria-label={`${label} ${k}K`}
+                      className="rounded-none flex flex-col items-center justify-center gap-0.5 h-auto py-1.5"
                       onClick={() => {
                         setWb([k]);
                         if (connectedName) sendOrToast(`WB ${k}K`, Commands.whiteBalance(k));
                       }}
                     >
-                      {k}K
+                      <Icon className="h-4 w-4" />
+                      <span className="text-[10px] leading-none">{k}K</span>
                     </Button>
                   ))}
                 </div>
