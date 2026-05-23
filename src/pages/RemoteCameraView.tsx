@@ -272,9 +272,9 @@ const RemoteCameraView: React.FC = () => {
 
       {/* Top controls */}
       <div
-        className={`absolute top-1 left-2 right-2 z-20 flex items-start justify-end gap-2 pointer-events-none transition-opacity ${controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`absolute top-1 left-2 right-2 z-40 flex items-start justify-end gap-2 pointer-events-none transition-opacity ${controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       >
-        <div className="flex items-center gap-1 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-1 pointer-events-auto" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
           {overlayButton('focus', Focus, 'Focus', focus.toFixed(2))}
           {overlayButton('iris', Aperture, 'Iris', iris.toFixed(2))}
           {overlayButton('wb', Thermometer, 'WB', `${wb}K`)}
@@ -291,7 +291,7 @@ const RemoteCameraView: React.FC = () => {
       </div>
 
       {activeControl && controlsVisible && (
-        <div className="absolute left-1/2 -translate-x-1/2 top-14 z-20 w-[92%] max-w-xl pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute left-1/2 -translate-x-1/2 top-14 z-40 w-[92%] max-w-xl pointer-events-auto touch-none" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
           {renderSliderPanel()}
         </div>
       )}
