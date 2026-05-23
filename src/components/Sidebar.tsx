@@ -538,12 +538,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       path: "/dashboard/booking-sections",
       badge: null
     },
-    ...(userProfile?.role === 'admin' ? [{
+    {
       icon: Bluetooth,
       label: "Blackmagic View",
       path: "/dashboard/blackmagic-view",
       badge: null,
-    }] : []),
+    },
     { type: 'separator' },
     { 
       icon: Calendar, 
