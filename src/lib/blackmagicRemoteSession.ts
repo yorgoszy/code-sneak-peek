@@ -229,5 +229,5 @@ export function startViewerSession(opts: ViewerSessionOptions): ViewerSession {
 }
 
 export function generateSessionId() {
-  return Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4);
+  return String(Math.floor(1000 + Math.random() * 9000));
 }
