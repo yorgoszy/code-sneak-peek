@@ -174,9 +174,10 @@ const RemoteCameraView: React.FC = () => {
 
   const renderSliderPanel = () => {
     if (!activeControl) return null;
+    const panelBase = 'p-4 rounded-none text-white bg-black/70 backdrop-blur-sm';
     if (activeControl === 'focus') {
       return (
-        <div className="p-4 text-white">
+        <div className={panelBase}>
           <div className="flex items-center justify-between text-xs mb-2">
             <span>Focus</span>
             <span className="opacity-70">{focus.toFixed(2)}</span>
@@ -193,7 +194,7 @@ const RemoteCameraView: React.FC = () => {
     }
     if (activeControl === 'iris') {
       return (
-        <div className="p-4 text-white">
+        <div className={panelBase}>
           <div className="flex items-center justify-between text-xs mb-2">
             <span>Iris</span>
             <span className="opacity-70">{iris.toFixed(2)}</span>
@@ -209,17 +210,8 @@ const RemoteCameraView: React.FC = () => {
       );
     }
     if (activeControl === 'wb') {
-      const wbPresets: { label: string; value: number }[] = [
-        { label: 'Κερί', value: 2500 },
-        { label: 'Σπίτι', value: 3200 },
-        { label: 'Φθόριο', value: 4000 },
-        { label: 'Ημέρα', value: 5600 },
-        { label: 'Flash', value: 6500 },
-        { label: 'Συννεφιά', value: 7500 },
-        { label: 'Σκιά', value: 9000 },
-      ];
       return (
-        <div className="p-4 text-white bg-black/70 backdrop-blur-sm">
+        <div className={panelBase}>
           <div className="flex items-center justify-between text-xs mb-2">
             <span>White Balance</span>
             <span className="opacity-70">{wb}K</span>
@@ -231,19 +223,37 @@ const RemoteCameraView: React.FC = () => {
             step={50}
             onValueChange={(v) => { const k = Math.round(v[0]); setWb(k); send({ type: 'wb', value: k }); }}
           />
-          <div className="flex flex-wrap gap-1 mt-3">
-            {wbPresets.map((p) => (
+          <div className="grid grid-cols-6 gap-1 mt-3">
+            {[
+              { k: 3200, label: 'Tungsten', Icon: Lightbulb },
+              { k: 4000, label: 'Fluor.', Icon: Zap },
+              { k: 4500, label: 'Indoor', Icon: Home },
+              { k: 5600, label: 'Day', Icon: Sun },
+              { k: 6500, label: 'Cloudy', Icon: Cloud },
+              { k: 7500, label: 'Shade', Icon: CloudSun },
+            ].map(({ k, label, Icon }) => (
               <Button
-                key={p.value}
+                key={k}
                 size="sm"
                 variant="outline"
-                className={`rounded-none text-xs h-7 px-2 bg-transparent text-white border-white/20 hover:bg-white/10 ${wb === p.value ? 'bg-white/20 border-white' : ''}`}
-                onClick={() => { setWb(p.value); send({ type: 'wb', value: p.value }); }}
+                title={`${label} · ${k}K`}
+                className={`rounded-none flex flex-col items-center justify-center gap-0.5 h-auto py-1.5 bg-white/10 border-white/30 text-white hover:bg-white/20 ${wb === k ? 'bg-white/20 border-white' : ''}`}
+                onClick={() => { setWb(k); send({ type: 'wb', value: k }); }}
               >
-                {p.label} {p.value}K
+                <Icon className="h-4 w-4" />
+                <span className="text-[10px] leading-none">{k}K</span>
               </Button>
             ))}
           </div>
+          {state?.cameraName && /ursa|studio/i.test(state.cameraName) && (
+            <Button
+              onClick={() => send({ type: 'autowb' })}
+              variant="outline"
+              className="w-full rounded-none mt-2 bg-white/10 border-white/30 text-white hover:bg-white/20"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" /> AWB
+            </Button>
+          )}
         </div>
       );
     }
