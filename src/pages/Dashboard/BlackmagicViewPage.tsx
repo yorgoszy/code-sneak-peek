@@ -43,6 +43,7 @@ const BlackmagicViewPage: React.FC = () => {
   // Fullscreen / overlay UI
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [activeControl, setActiveControl] = useState<null | 'focus' | 'iris' | 'wb' | 'iso'>(null);
+  const [controlsVisible, setControlsVisible] = useState(true);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [isPortrait, setIsPortrait] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
