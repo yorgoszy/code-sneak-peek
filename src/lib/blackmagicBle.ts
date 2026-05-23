@@ -115,6 +115,7 @@ export const Commands = {
   recordStop: () => buildPacket(10, 1, 1, 0, [0]),
   // Video: white balance (Kelvin)
   whiteBalance: (kelvin: number) => buildPacket(1, 2, 2, 0, [...int16(kelvin), 0, 0]),
+  autoWhiteBalance: () => buildPacket(1, 3, 1, 0, []),
   // ISO (gain in dB increments)
   iso: (iso: number) => {
     const buf = new Uint8Array(4);

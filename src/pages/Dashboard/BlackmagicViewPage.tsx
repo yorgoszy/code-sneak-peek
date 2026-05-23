@@ -3,7 +3,7 @@ import { Sidebar } from '@/components/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
-import { Menu, Bluetooth, BluetoothOff, Video as VideoIcon, Circle, Square, Focus, Sun, Cloud, CloudSun, Lightbulb, Zap, Home } from 'lucide-react';
+import { Menu, Bluetooth, BluetoothOff, Video as VideoIcon, Circle, Square, Focus, Sun, Cloud, CloudSun, Lightbulb, Zap, Home, RefreshCw } from 'lucide-react';
 import { CameraFeed } from '@/components/federation/CameraFeed';
 import {
   connectBlackmagic,
@@ -426,6 +426,18 @@ const BlackmagicViewPage: React.FC = () => {
                     if (connectedName) sendOrToast(`WB ${kelvin}K`, Commands.whiteBalance(kelvin));
                   }}
                 />
+                <Button
+                  onClick={() => {
+                    if (connectedName) sendOrToast('Auto WB', Commands.autoWhiteBalance());
+                  }}
+                  disabled={!connectedName}
+                  variant="outline"
+                  className="w-full rounded-none flex items-center justify-center gap-2 h-auto py-2"
+                  title="Auto White Balance"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  <span className="text-xs font-medium">AWB</span>
+                </Button>
                 <div className="grid grid-cols-6 gap-2">
                   {[
                     { k: 3200, label: 'Tungsten', Icon: Lightbulb },
