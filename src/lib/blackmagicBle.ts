@@ -78,7 +78,7 @@ function buildPacket(
   const totalLen = 4 + cmdLen;
   const padded = Math.ceil(totalLen / 4) * 4;
   const buf = new Uint8Array(padded);
-  buf[0] = 0x01;
+  buf[0] = 0xff;
   buf[1] = padded - 4;
   buf[2] = 0;
   buf[3] = 0;
