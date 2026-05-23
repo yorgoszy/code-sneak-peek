@@ -174,7 +174,15 @@ const BlackmagicViewPage: React.FC = () => {
     setSelectedDeviceId(deviceId);
     localStorage.setItem('blackmagic_camera_device_id', deviceId);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: deviceId } }, audio: false });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          deviceId: { exact: deviceId },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          frameRate: { ideal: 60, max: 60 },
+        },
+        audio: false,
+      });
       setCameraStream(prev => {
         prev?.getTracks().forEach(t => t.stop());
         return stream;
