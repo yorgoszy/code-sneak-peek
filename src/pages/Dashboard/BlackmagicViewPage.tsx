@@ -323,7 +323,7 @@ const BlackmagicViewPage: React.FC = () => {
             <span>Iris</span>
             <span className="opacity-70">{fStop !== null ? `f/${fStop.toFixed(1)}` : iris[0].toFixed(2)}</span>
           </div>
-          <Slider
+          <BlueSlider
             value={iris}
             min={0}
             max={1}
