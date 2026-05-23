@@ -449,7 +449,11 @@ const BlackmagicViewPage: React.FC = () => {
                       min={0}
                       max={ISO_STEPS.length - 1}
                       step={1}
-                      onValueChange={(v) => setIso([ISO_STEPS[v[0]]])}
+                      onValueChange={(v) => {
+                        const isoValue = ISO_STEPS[v[0]];
+                        setIso([isoValue]);
+                        if (connectedName) throttledSend('iso', `ISO ${isoValue}`, () => Commands.iso(isoValue), 120);
+                      }}
                       onValueCommit={(v) => {
                         const isoValue = ISO_STEPS[v[0]];
                         setIso([isoValue]);
