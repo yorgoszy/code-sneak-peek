@@ -263,6 +263,108 @@ const BlackmagicViewPage: React.FC = () => {
     }
   };
 
+  // ── Remote Share Session (QR) ──
+  const [shareOpen, setShareOpen] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [viewerCount, setViewerCount] = useState(0);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const hostSessionRef = useRef<HostSession | null>(null);
+
+  // Latest values refs so host callbacks always see fresh data
+  const stateRef = useRef({ recording, focus: focus[0], iris: iris[0], wb: wb[0], iso: iso[0] });
+  useEffect(() => {
+    stateRef.current = { recording, focus: focus[0], iris: iris[0], wb: wb[0], iso: iso[0] };
+  }, [recording, focus, iris, wb, iso]);
+
+  const cameraStreamRef = useRef<MediaStream | null>(null);
+  useEffect(() => { cameraStreamRef.current = cameraStream; }, [cameraStream]);
+
+  const handleRemoteCommand = useCallback((cmd: RemoteCommand) => {
+    switch (cmd.type) {
+      case 'record': {
+        if (cmd.value && !recording) {
+          sendOrToast('Start record', Commands.recordStart());
+          setRecording(true);
+        } else if (!cmd.value && recording) {
+          sendOrToast('Stop record', Commands.recordStop());
+          setRecording(false);
+        }
+        break;
+      }
+      case 'autofocus':
+        sendOrToast('Autofocus', Commands.autoFocus());
+        break;
+      case 'autowb':
+        sendOrToast('Auto WB', Commands.autoWhiteBalance());
+        break;
+      case 'focus':
+        setFocus([cmd.value]);
+        if (connectedName) sendOrToast('Focus', Commands.focus(cmd.value));
+        break;
+      case 'iris':
+        setIris([cmd.value]);
+        if (connectedName) sendOrToast('Iris', Commands.iris(cmd.value));
+        break;
+      case 'wb':
+        setWb([cmd.value]);
+        if (connectedName) sendOrToast(`WB ${cmd.value}K`, Commands.whiteBalance(cmd.value));
+        break;
+      case 'iso':
+        setIso([cmd.value]);
+        if (connectedName) sendOrToast(`ISO ${cmd.value}`, Commands.iso(cmd.value));
+        break;
+    }
+  }, [recording, connectedName]);
+
+  const startSharing = () => {
+    let sid = sessionId;
+    if (!sid) {
+      sid = generateSessionId();
+      setSessionId(sid);
+    }
+    if (!hostSessionRef.current) {
+      hostSessionRef.current = startHostSession({
+        sessionId: sid,
+        getStream: () => cameraStreamRef.current,
+        getState: () => ({
+          connected: true,
+          recording: stateRef.current.recording,
+          focus: stateRef.current.focus,
+          iris: stateRef.current.iris,
+          wb: stateRef.current.wb,
+          iso: stateRef.current.iso,
+        }),
+        onCommand: handleRemoteCommand,
+        onViewerChange: setViewerCount,
+      });
+    }
+    setShareOpen(true);
+  };
+
+  const stopSharing = () => {
+    try { hostSessionRef.current?.close(); } catch {}
+    hostSessionRef.current = null;
+    setSessionId(null);
+    setViewerCount(0);
+    setShareOpen(false);
+  };
+
+  useEffect(() => () => { try { hostSessionRef.current?.close(); } catch {} }, []);
+
+  const remoteUrl = sessionId
+    ? `${window.location.origin}/remote-camera/${sessionId}`
+    : '';
+
+  const copyRemoteLink = async () => {
+    if (!remoteUrl) return;
+    try {
+      await navigator.clipboard.writeText(remoteUrl);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 1500);
+    } catch {}
+  };
+
+
   // ── ISO helpers ──
   const ISO_STEPS = [
     100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1000, 1250,
