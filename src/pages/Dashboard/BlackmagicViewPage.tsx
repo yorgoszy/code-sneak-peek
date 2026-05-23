@@ -131,6 +131,16 @@ const BlackmagicViewPage: React.FC = () => {
           setIso([u.value]);
         }
       });
+      // Proactively request current values so sliders sync immediately
+      try {
+        await c.send(Commands.queryIris());
+        await c.send(Commands.queryApertureAv());
+        await c.send(Commands.queryFocus());
+        await c.send(Commands.queryWhiteBalance());
+        await c.send(Commands.queryIso());
+      } catch (e) {
+        console.warn('[BMD] query current values failed', e);
+      }
     } catch (err: unknown) {
       console.error(err);
     } finally {
