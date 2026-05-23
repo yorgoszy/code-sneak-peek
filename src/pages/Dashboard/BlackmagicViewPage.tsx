@@ -124,8 +124,8 @@ const BlackmagicViewPage: React.FC = () => {
         const cams = all.filter(d => d.kind === 'videoinput');
         setDevices(cams);
         const HD = {
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
           frameRate: { ideal: 60, max: 60 },
         } as const;
         const saved = localStorage.getItem('blackmagic_camera_device_id');
@@ -216,8 +216,8 @@ const BlackmagicViewPage: React.FC = () => {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           deviceId: { exact: deviceId },
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
           frameRate: { ideal: 60, max: 60 },
         },
         audio: false,
