@@ -291,7 +291,7 @@ export async function connectWeb(password?: string): Promise<BmdConnection> {
   };
 }
 
-export async function connectNative(): Promise<BmdConnection> {
+export async function connectNative(password?: string): Promise<BmdConnection> {
   await BleClient.initialize({ androidNeverForLocation: true });
   const device: BleDevice = await BleClient.requestDevice({
     services: [BMD_SERVICE],
@@ -309,6 +309,21 @@ export async function connectNative(): Promise<BmdConnection> {
     );
   } catch (e) {
     console.warn('[BMD native] device name write failed', e);
+  }
+
+  // 1b) Optionally write remote password to BMD_DEVICE_NAME.
+  if (password) {
+    try {
+      await BleClient.write(
+        device.deviceId,
+        BMD_SERVICE,
+        BMD_DEVICE_NAME,
+        numbersToDataView(Array.from(new TextEncoder().encode(password)))
+      );
+      console.log('[BMD native] password sent');
+    } catch (e) {
+      console.warn('[BMD native] password write failed', e);
+    }
   }
 
   // 2) Subscribe to Camera Status notifications. Do NOT write to this read/notify characteristic.
@@ -348,7 +363,7 @@ export async function connectNative(): Promise<BmdConnection> {
     name: device.name || 'Blackmagic Camera',
     send: async (packet) => {
       console.log('[BMD native] outgoing', Array.from(packet));
-      await BleClient.writeWithoutResponse(
+      await BleClient.write(
         device.deviceId,
         BMD_SERVICE,
         BMD_OUTGOING_CC,
@@ -366,5 +381,6 @@ export async function connectNative(): Promise<BmdConnection> {
 }
 
 export async function connectBlackmagic(password?: string): Promise<BmdConnection> {
-  return detectPlatform() === 'native' ? connectNative() : connectWeb(password);
+  return detectPlatform() === 'native' ? connectNative(password) : connectWeb(password);
 }
+
