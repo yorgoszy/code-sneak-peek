@@ -129,10 +129,47 @@ export const Commands = {
 
 // ---------- Connection wrapper ----------
 
+export interface BmdUpdate {
+  category: number;
+  parameter: number;
+  dataType: number;
+  /** decoded primary value for well-known parameters */
+  value?: number;
+  /** raw payload bytes */
+  raw: Uint8Array;
+}
+
 export interface BmdConnection {
   name: string;
   send: (packet: Uint8Array) => Promise<void>;
   disconnect: () => Promise<void>;
+  onUpdate?: (cb: (u: BmdUpdate) => void) => void;
+}
+
+// Parse incoming Camera Control packets (same wire format as outgoing).
+// May contain multiple commands back-to-back.
+function parseIncoming(data: Uint8Array, emit: (u: BmdUpdate) => void) {
+  let i = 0;
+  while (i + 8 <= data.length) {
+    const cmdLen = data[i + 1];
+    if (cmdLen < 4) break;
+    const padded = Math.ceil((4 + cmdLen) / 4) * 4;
+    if (i + padded > data.length) break;
+    const category = data[i + 4];
+    const parameter = data[i + 5];
+    const dataType = data[i + 6];
+    const payload = data.slice(i + 8, i + 4 + cmdLen);
+    let value: number | undefined;
+    try {
+      const dv = new DataView(payload.buffer, payload.byteOffset, payload.byteLength);
+      if (dataType === 1 && payload.length >= 1) value = dv.getInt8(0);
+      else if (dataType === 2 && payload.length >= 2) value = dv.getInt16(0, true);
+      else if (dataType === 3 && payload.length >= 4) value = dv.getInt32(0, true);
+      else if (dataType === 128 && payload.length >= 2) value = dv.getInt16(0, true) / 2048;
+    } catch { /* ignore */ }
+    emit({ category, parameter, dataType, value, raw: payload });
+    i += padded;
+  }
 }
 
 const CLIENT_NAME = 'HyperKids';
