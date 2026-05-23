@@ -212,10 +212,10 @@ export async function connectWeb(password?: string): Promise<BmdConnection> {
       const hex = Array.from(packet).map(b => b.toString(16).padStart(2, '0')).join(' ');
       console.log('[BMD web] sending packet:', hex);
       try {
-        if (outgoing.writeValueWithoutResponse) {
-          await outgoing.writeValueWithoutResponse(packet);
-          console.log('[BMD web] writeValueWithoutResponse OK');
-        } else {
+        if (outgoing.writeValueWithResponse) {
+          await outgoing.writeValueWithResponse(packet);
+          console.log('[BMD web] writeValueWithResponse OK');
+        } else if (outgoing.writeValue) {
           await outgoing.writeValue(packet);
           console.log('[BMD web] writeValue OK');
         }
