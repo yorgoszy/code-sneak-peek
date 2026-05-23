@@ -7,7 +7,8 @@ import { Slider } from '@/components/ui/slider';
 import { BlueSlider }  from '@/components/ui/blue-slider';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { QRCodeSVG } from 'qrcode.react';
-import { Menu, Bluetooth, BluetoothOff, Video as VideoIcon, Circle, Square, Focus, Sun, Cloud, CloudSun, Lightbulb, Zap, Home, RefreshCw, Maximize2, Minimize2, Aperture, Thermometer, Gauge, Share2, Copy, Check } from 'lucide-react';
+import jsQR from 'jsqr';
+import { Menu, Bluetooth, BluetoothOff, Video as VideoIcon, Circle, Square, Focus, Sun, Cloud, CloudSun, Lightbulb, Zap, Home, RefreshCw, Maximize2, Minimize2, Aperture, Thermometer, Gauge, Share2, Copy, Check, QrCode } from 'lucide-react';
 import { CameraFeed } from '@/components/federation/CameraFeed';
 import {
   connectBlackmagic,
@@ -61,6 +62,11 @@ const BlackmagicViewPage: React.FC = () => {
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [isPortrait, setIsPortrait] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const qrVideoRef = useRef<HTMLVideoElement>(null);
+  const qrCanvasRef = useRef<HTMLCanvasElement>(null);
+  const qrScanStreamRef = useRef<MediaStream | null>(null);
+  const [qrScanOpen, setQrScanOpen] = useState(false);
+  const [qrScanError, setQrScanError] = useState('');
 
   useEffect(() => {
     const mqSmall = window.matchMedia('(max-width: 1023px)');
@@ -92,6 +98,82 @@ const BlackmagicViewPage: React.FC = () => {
       console.warn('fullscreen error', err);
     }
   };
+
+  const stopQrScanStream = useCallback(() => {
+    qrScanStreamRef.current?.getTracks().forEach((track) => track.stop());
+    qrScanStreamRef.current = null;
+  }, []);
+
+  const closeQrScanner = useCallback(() => {
+    setQrScanOpen(false);
+    stopQrScanStream();
+  }, [stopQrScanStream]);
+
+  const extractSessionCode = (value: string) => {
+    const urlMatch = value.match(/\/remote-camera\/(\d{4})\b/);
+    if (urlMatch) return urlMatch[1];
+    const plainMatch = value.trim().match(/^\d{4}$/) || value.match(/\b(\d{4})\b/);
+    return plainMatch?.[1] || plainMatch?.[0] || null;
+  };
+
+  useEffect(() => {
+    if (!qrScanOpen) return;
+    let cancelled = false;
+    let frame = 0;
+
+    const startScanner = async () => {
+      try {
+        setQrScanError('');
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: false,
+        });
+        if (cancelled) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+        qrScanStreamRef.current = stream;
+        const video = qrVideoRef.current;
+        const canvas = qrCanvasRef.current;
+        if (!video || !canvas) return;
+        video.srcObject = stream;
+        await video.play().catch(() => {});
+
+        const scan = () => {
+          if (cancelled) return;
+          if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && video.videoWidth && video.videoHeight) {
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            if (ctx) {
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+              const result = jsQR(imageData.data, imageData.width, imageData.height);
+              const code = result?.data ? extractSessionCode(result.data) : null;
+              if (code) {
+                setJoinCode(code);
+                closeQrScanner();
+                navigate(`/remote-camera/${code}`);
+                return;
+              }
+            }
+          }
+          frame = requestAnimationFrame(scan);
+        };
+        frame = requestAnimationFrame(scan);
+      } catch (err) {
+        console.error('QR scanner error', err);
+        setQrScanError('Δεν άνοιξε η κάμερα για scan QR.');
+      }
+    };
+
+    startScanner();
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frame);
+      stopQrScanStream();
+    };
+  }, [closeQrScanner, navigate, qrScanOpen, stopQrScanStream]);
 
 
   // Throttle live BLE sends per control to avoid flooding (~50ms)
