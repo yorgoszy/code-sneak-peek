@@ -737,6 +737,18 @@ const BlackmagicViewPage: React.FC = () => {
                   {connecting ? 'Σύνδεση...' : 'Σύνδεση BLE'}
                 </Button>
               )}
+              <Button
+                variant={hostSessionRef.current ? 'default' : 'outline'}
+                className="rounded-none"
+                onClick={hostSessionRef.current ? () => setShareOpen(true) : startSharing}
+                disabled={!cameraStream}
+                title={!cameraStream ? 'Επίλεξε πρώτα κάμερα' : 'Απομακρυσμένη προβολή με QR'}
+              >
+                <Share2 className="h-4 w-4 mr-2" />
+                {hostSessionRef.current
+                  ? `Share (${viewerCount})`
+                  : 'Share'}
+              </Button>
               <Button variant="outline" className="rounded-none" onClick={toggleFullscreen}>
                 <Maximize2 className="h-4 w-4 mr-2" />
                 Fullscreen
