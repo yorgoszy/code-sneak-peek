@@ -426,6 +426,18 @@ const BlackmagicViewPage: React.FC = () => {
                     if (connectedName) sendOrToast(`WB ${kelvin}K`, Commands.whiteBalance(kelvin));
                   }}
                 />
+                <Button
+                  onClick={() => {
+                    if (connectedName) sendOrToast('Auto WB', Commands.autoWhiteBalance());
+                  }}
+                  disabled={!connectedName}
+                  variant="outline"
+                  className="w-full rounded-none flex items-center justify-center gap-2 h-auto py-2"
+                  title="Auto White Balance"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  <span className="text-xs font-medium">AWB</span>
+                </Button>
                 <div className="grid grid-cols-6 gap-2">
                   {[
                     { k: 3200, label: 'Tungsten', Icon: Lightbulb },
