@@ -342,31 +342,74 @@ const BlackmagicViewPage: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
-                {[3200, 4600, 5600].map((k) => (
-                  <Button
-                    key={k}
-                    variant="outline"
-                    className="rounded-none text-xs"
-                    disabled={!connectedName}
-                    onClick={() => sendOrToast(`WB ${k}K`, Commands.whiteBalance(k))}
-                  >
-                    {k}K
-                  </Button>
-                ))}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span>White Balance</span>
+                  <span className="text-muted-foreground">{wb[0]}K</span>
+                </div>
+                <Slider
+                  value={wb}
+                  min={2500}
+                  max={10000}
+                  step={50}
+                  onValueChange={(v) => {
+                    setWb(v);
+                    if (connectedName) sendOrToast(`WB ${v[0]}K`, Commands.whiteBalance(v[0]));
+                  }}
+                  disabled={!connectedName}
+                />
+                <div className="grid grid-cols-3 gap-2">
+                  {[3200, 4600, 5600].map((k) => (
+                    <Button
+                      key={k}
+                      variant="outline"
+                      size="sm"
+                      className="rounded-none text-xs"
+                      disabled={!connectedName}
+                      onClick={() => {
+                        setWb([k]);
+                        sendOrToast(`WB ${k}K`, Commands.whiteBalance(k));
+                      }}
+                    >
+                      {k}K
+                    </Button>
+                  ))}
+                </div>
               </div>
-              <div className="grid grid-cols-3 gap-2">
-                {[400, 800, 1600].map((iso) => (
-                  <Button
-                    key={iso}
-                    variant="outline"
-                    className="rounded-none text-xs"
-                    disabled={!connectedName}
-                    onClick={() => sendOrToast(`ISO ${iso}`, Commands.iso(iso))}
-                  >
-                    ISO {iso}
-                  </Button>
-                ))}
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span>ISO</span>
+                  <span className="text-muted-foreground">{iso[0]}</span>
+                </div>
+                <Slider
+                  value={iso}
+                  min={100}
+                  max={25600}
+                  step={100}
+                  onValueChange={(v) => {
+                    setIso(v);
+                    if (connectedName) sendOrToast(`ISO ${v[0]}`, Commands.iso(v[0]));
+                  }}
+                  disabled={!connectedName}
+                />
+                <div className="grid grid-cols-3 gap-2">
+                  {[400, 800, 1600].map((isoVal) => (
+                    <Button
+                      key={isoVal}
+                      variant="outline"
+                      size="sm"
+                      className="rounded-none text-xs"
+                      disabled={!connectedName}
+                      onClick={() => {
+                        setIso([isoVal]);
+                        sendOrToast(`ISO ${isoVal}`, Commands.iso(isoVal));
+                      }}
+                    >
+                      {isoVal}
+                    </Button>
+                  ))}
+                </div>
               </div>
             </Card>
           </div>
