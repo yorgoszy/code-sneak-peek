@@ -102,6 +102,24 @@ const BlackmagicViewPage: React.FC = () => {
       const c = await connectBlackmagic(password || undefined);
       conn.current = c;
       setConnectedName(c.name);
+      c.onUpdate?.((u) => {
+        // category 0 = Lens
+        if (u.category === 0 && u.parameter === 2 && typeof u.value === 'number') {
+          // Aperture f-stop (AV): f = 2^(av/2)
+          setFStop(Math.pow(2, u.value / 2));
+        } else if (u.category === 0 && u.parameter === 3 && typeof u.value === 'number') {
+          // Aperture normalised 0..1
+          setIris([Math.max(0, Math.min(1, u.value))]);
+        } else if (u.category === 0 && u.parameter === 0 && typeof u.value === 'number') {
+          setFocus([Math.max(0, Math.min(1, u.value))]);
+        }
+        // category 1 = Video
+        else if (u.category === 1 && u.parameter === 2 && typeof u.value === 'number') {
+          setWb([u.value]);
+        } else if (u.category === 1 && u.parameter === 14 && typeof u.value === 'number') {
+          setIso([u.value]);
+        }
+      });
       toast.success(`Συνδέθηκε με ${c.name}`);
     } catch (err: unknown) {
       console.error(err);
