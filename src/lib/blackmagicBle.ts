@@ -232,10 +232,17 @@ export async function connectWeb(password?: string): Promise<BmdConnection> {
     console.warn('[BMD] status notifications failed (non-fatal)', e);
   }
 
-  // 3) Subscribe to Incoming CC to keep the link alive.
+  // 3) Subscribe to Incoming CC to receive parameter updates from camera.
+  let updateCb: ((u: BmdUpdate) => void) | null = null;
   try {
     const incoming = await service.getCharacteristic(BMD_INCOMING_CC);
     await incoming.startNotifications();
+    incoming.addEventListener('characteristicvaluechanged', (ev: Event) => {
+      const target = ev.target as WebBluetoothCharacteristic | null;
+      if (!target?.value || !updateCb) return;
+      const bytes = new Uint8Array(target.value.buffer, target.value.byteOffset, target.value.byteLength);
+      parseIncoming(bytes, updateCb);
+    });
   } catch (e) {
     console.warn('[BMD] incoming CC notifications failed (non-fatal)', e);
   }
