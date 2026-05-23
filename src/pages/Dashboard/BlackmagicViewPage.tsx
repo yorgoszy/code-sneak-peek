@@ -453,7 +453,7 @@ const BlackmagicViewPage: React.FC = () => {
     <button
       type="button"
       onClick={() => setActiveControl((prev) => (prev === key ? null : key))}
-      className={`flex flex-col items-center justify-center gap-1 px-2 py-1 min-w-[44px] text-white ${activeControl === key ? 'bg-white/30' : 'bg-black/50 hover:bg-black/70'}`}
+      className={`flex flex-col items-center justify-center gap-1 px-2 py-1 min-w-[44px] text-white ${activeControl === key ? 'bg-white/20' : 'hover:bg-white/10'}`}
     >
       <Icon className="h-3.5 w-3.5" />
       <span className="text-[9px] leading-none uppercase tracking-wide">{label}</span>
@@ -479,7 +479,7 @@ const BlackmagicViewPage: React.FC = () => {
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
             {connectedName ? (
-              <Button size="sm" variant="outline" className="rounded-none bg-black/50 text-white hover:bg-black/70 border-1 border-white/10" onClick={handleDisconnect}>
+              <Button size="sm" variant="outline" className="rounded-none bg-transparent text-white hover:bg-white/10 border-0" onClick={handleDisconnect}>
                 <BluetoothOff className="h-4 w-4 mr-1" />
                 <span className="text-xs truncate max-w-[140px]">{connectedName}</span>
               </Button>
@@ -493,7 +493,7 @@ const BlackmagicViewPage: React.FC = () => {
           <div className="flex items-center gap-2 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
             {devices.length > 1 && (
               <select
-                className="bg-black/50 text-white px-2 py-1 text-xs rounded-none max-w-[160px]"
+                className="bg-transparent text-white px-2 py-1 text-xs rounded-none max-w-[160px]"
                 value={selectedDeviceId || ''}
                 onChange={(e) => handleCameraChange(e.target.value)}
               >
@@ -507,7 +507,7 @@ const BlackmagicViewPage: React.FC = () => {
             <Button
               size="sm"
               variant="outline"
-              className="rounded-none bg-black/50 text-white hover:bg-black/70"
+              className="rounded-none bg-transparent text-white hover:bg-white/10 border-0"
               onClick={toggleFullscreen}
             >
               {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
@@ -516,13 +516,13 @@ const BlackmagicViewPage: React.FC = () => {
         </div>
 
         {/* Control buttons row (top) */}
-        <div className="flex items-center justify-center gap-1 bg-black/40 backdrop-blur py-1 px-2 pointer-events-auto self-center" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-center gap-1 py-1 px-2 pointer-events-auto self-center" onClick={(e) => e.stopPropagation()}>
           {overlayButton('focus', Focus, 'Focus', focus[0].toFixed(2))}
           <button
             type="button"
             onClick={() => sendOrToast('Autofocus', Commands.autoFocus())}
             disabled={!connectedName}
-            className="flex flex-col items-center justify-center gap-1 px-2 py-1 min-w-[44px] text-white bg-black/50 hover:bg-black/70 disabled:opacity-40"
+            className="flex flex-col items-center justify-center gap-1 px-2 py-1 min-w-[44px] text-white hover:bg-white/10 disabled:opacity-40"
           >
             <Focus className="h-3.5 w-3.5" />
             <span className="text-[9px] leading-none uppercase tracking-wide">Auto</span>
@@ -548,7 +548,7 @@ const BlackmagicViewPage: React.FC = () => {
           onClick={toggleRecord}
           disabled={!connectedName}
           aria-label={recording ? 'Stop recording' : 'Start recording'}
-          className="flex items-center justify-center w-14 h-14 bg-black/50 hover:bg-black/70 disabled:opacity-40"
+          className="flex items-center justify-center w-14 h-14 hover:bg-white/10 disabled:opacity-40"
         >
           {recording ? (
             <span className="block w-5 h-5 bg-red-600" />
