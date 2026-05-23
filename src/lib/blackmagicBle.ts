@@ -204,12 +204,8 @@ export async function connectWeb(): Promise<BmdConnection> {
   return {
     name: device.name || 'Blackmagic Camera',
     send: async (packet) => {
-      // Use writeWithoutResponse — Blackmagic outgoing CC is write-without-response
-      if (outgoing.writeValueWithoutResponse) {
-        await outgoing.writeValueWithoutResponse(packet);
-      } else {
-        await outgoing.writeValue(packet);
-      }
+      console.log('[BMD] outgoing', Array.from(packet));
+      await writeWebCharacteristic(outgoing, packet);
     },
     disconnect: async () => {
       try { device.gatt?.disconnect(); } catch { /* noop */ }
@@ -278,7 +274,8 @@ export async function connectNative(): Promise<BmdConnection> {
   return {
     name: device.name || 'Blackmagic Camera',
     send: async (packet) => {
-      await BleClient.writeWithoutResponse(
+      console.log('[BMD native] outgoing', Array.from(packet));
+      await BleClient.write(
         device.deviceId,
         BMD_SERVICE,
         BMD_OUTGOING_CC,
