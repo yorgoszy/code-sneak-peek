@@ -1,10 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { BlueSlider }  from '@/components/ui/blue-slider';
-import { Menu, Bluetooth, BluetoothOff, Video as VideoIcon, Circle, Square, Focus, Sun, Cloud, CloudSun, Lightbulb, Zap, Home, RefreshCw, Maximize2, Minimize2, Aperture, Thermometer, Gauge, Smartphone, X } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { QRCodeSVG } from 'qrcode.react';
+import { Menu, Bluetooth, BluetoothOff, Video as VideoIcon, Circle, Square, Focus, Sun, Cloud, CloudSun, Lightbulb, Zap, Home, RefreshCw, Maximize2, Minimize2, Aperture, Thermometer, Gauge, Smartphone, X, Share2, Copy, Check } from 'lucide-react';
 import { CameraFeed } from '@/components/federation/CameraFeed';
 import {
   connectBlackmagic,
@@ -13,6 +15,7 @@ import {
   detectPlatform,
   type BmdConnection,
 } from '@/lib/blackmagicBle';
+import { startHostSession, generateSessionId, type HostSession, type RemoteCommand } from '@/lib/blackmagicRemoteSession';
 
 const getErrorMessage = (error: unknown, fallback: string) => (
   error instanceof Error && error.message ? error.message : fallback
