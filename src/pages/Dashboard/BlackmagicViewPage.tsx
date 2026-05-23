@@ -19,7 +19,9 @@ const BlackmagicViewPage: React.FC = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(
+    typeof window !== 'undefined' ? localStorage.getItem('blackmagic_camera_device_id') : null
+  );
 
   const conn = useRef<BmdConnection | null>(null);
   const [connectedName, setConnectedName] = useState<string | null>(null);
@@ -41,7 +43,16 @@ const BlackmagicViewPage: React.FC = () => {
         const all = await navigator.mediaDevices.enumerateDevices();
         const cams = all.filter(d => d.kind === 'videoinput');
         setDevices(cams);
-        if (cams.length && !selectedDeviceId) setSelectedDeviceId(cams[0].deviceId);
+        // Only auto-select if no remembered choice OR the remembered device is gone
+        const saved = localStorage.getItem('blackmagic_camera_device_id');
+        const savedExists = saved && cams.some(c => c.deviceId === saved);
+        if (savedExists) {
+          setSelectedDeviceId(saved!);
+        } else if (cams.length) {
+          // Prefer a camera whose label mentions capture/blackmagic/hdmi/usb if any
+          const preferred = cams.find(c => /capture|blackmagic|hdmi|usb|cam ?link|atem/i.test(c.label));
+          setSelectedDeviceId((preferred || cams[0]).deviceId);
+        }
       } catch (err) {
         console.error('enumerate error', err);
         toast.error('Δεν βρέθηκαν κάμερες ή δεν δόθηκε άδεια');
