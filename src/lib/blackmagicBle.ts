@@ -150,7 +150,7 @@ async function writeWebCharacteristic(characteristic: WebBluetoothCharacteristic
   }
 }
 
-export async function connectWeb(): Promise<BmdConnection> {
+export async function connectWeb(password?: string): Promise<BmdConnection> {
   const nav = navigator as BluetoothNavigator;
   if (!nav.bluetooth) throw new Error('Web Bluetooth not supported in this browser');
   const device = await nav.bluetooth.requestDevice({
@@ -167,6 +167,17 @@ export async function connectWeb(): Promise<BmdConnection> {
     await nameChar.writeValueWithResponse(new TextEncoder().encode('HyperKids'));
   } catch (e) {
     console.warn('[BMD] device name write failed (non-fatal)', e);
+  }
+
+  // 1b) Optionally write remote password to BMD_DEVICE_NAME (camera expects it on the same characteristic).
+  if (password) {
+    try {
+      const passChar = await service.getCharacteristic(BMD_DEVICE_NAME);
+      await passChar.writeValueWithResponse(new TextEncoder().encode(password));
+      console.log('[BMD] password sent');
+    } catch (e) {
+      console.warn('[BMD] password write failed', e);
+    }
   }
 
   // 2) Subscribe to Camera Status notifications.
@@ -280,6 +291,6 @@ export async function connectNative(): Promise<BmdConnection> {
   };
 }
 
-export async function connectBlackmagic(): Promise<BmdConnection> {
-  return detectPlatform() === 'native' ? connectNative() : connectWeb();
+export async function connectBlackmagic(password?: string): Promise<BmdConnection> {
+  return detectPlatform() === 'native' ? connectNative() : connectWeb(password);
 }
