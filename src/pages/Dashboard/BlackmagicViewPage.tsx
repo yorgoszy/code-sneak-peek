@@ -353,6 +353,13 @@ const BlackmagicViewPage: React.FC = () => {
               </div>
             </Card>
           </div>
+
+          <Card className="rounded-none p-3 font-mono text-xs space-y-1 bg-muted/40">
+            <div className="font-semibold text-sm">Debug</div>
+            <div>BLE: <span className={connectedName ? 'text-green-500' : 'text-red-500'}>{connectedName || 'Αποσύνδετο'}</span></div>
+            <div>Packet: <span className="break-all">{lastPacket || '—'}</span></div>
+            <div>Error: <span className="text-red-500">{lastError || '—'}</span></div>
+          </Card>
         </main>
       </div>
     </div>
