@@ -113,13 +113,6 @@ const RemoteCameraView: React.FC = () => {
             step={0.01}
             onValueChange={(v) => { setFocus(v[0]); send({ type: 'focus', value: v[0] }); }}
           />
-          <Button
-            variant="outline"
-            className="w-full rounded-none mt-3 bg-white/10 border-white/30 text-white hover:bg-white/20"
-            onClick={() => send({ type: 'autofocus' })}
-          >
-            Auto Focus
-          </Button>
         </div>
       );
     }
