@@ -41,6 +41,24 @@ const BlackmagicViewPage: React.FC = () => {
   const [lastError, setLastError] = useState<string>('');
   const [password, setPassword] = useState<string>('');
 
+  // Throttle live BLE sends per control to avoid flooding (~50ms)
+  const throttleRef = useRef<Record<string, { last: number; pending: ReturnType<typeof setTimeout> | null; lastArgs: unknown }>>({});
+  const throttledSend = (key: string, label: string, build: () => Uint8Array, intervalMs = 60) => {
+    const now = Date.now();
+    const slot = throttleRef.current[key] || (throttleRef.current[key] = { last: 0, pending: null, lastArgs: null });
+    const run = () => {
+      slot.last = Date.now();
+      slot.pending = null;
+      sendOrToast(label, build());
+    };
+    if (now - slot.last >= intervalMs) {
+      run();
+    } else {
+      if (slot.pending) clearTimeout(slot.pending);
+      slot.pending = setTimeout(run, intervalMs - (now - slot.last));
+    }
+  };
+
   const platform = detectPlatform();
   const bleAvailable = isBluetoothAvailable();
 
