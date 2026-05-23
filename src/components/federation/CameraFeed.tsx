@@ -22,6 +22,7 @@ export const CameraFeed: React.FC<CameraFeedProps> = ({ deviceId, className, str
 
     if (videoRef.current) {
       videoRef.current.srcObject = stream;
+      videoRef.current.play().catch(err => console.warn('Video play failed:', err));
     }
     setError(null);
   }, [stream]);
@@ -50,6 +51,7 @@ export const CameraFeed: React.FC<CameraFeedProps> = ({ deviceId, className, str
         streamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
+          videoRef.current.play().catch(err => console.warn('Video play failed:', err));
         }
         setError(null);
       } catch (err) {
