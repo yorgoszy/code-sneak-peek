@@ -69,33 +69,41 @@ const BlackmagicViewPage: React.FC = () => {
   useEffect(() => {
     const enumerate = async () => {
       try {
-        // Trigger permission once and keep this stream alive so the HDMI/capture preview does not blink.
-        const tmp = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        const all = await navigator.mediaDevices.enumerateDevices();
+        // If we already have permission, skip the slow getUserMedia probe and
+        // enumerate directly — labels will already be available.
+        let all = await navigator.mediaDevices.enumerateDevices();
+        let hasLabels = all.some(d => d.kind === 'videoinput' && d.label);
+        let tmp: MediaStream | null = null;
+        if (!hasLabels) {
+          // First time: ask for permission with minimal constraints to open as fast as possible.
+          tmp = await navigator.mediaDevices.getUserMedia({
+            video: { width: { ideal: 320 }, height: { ideal: 240 }, frameRate: { ideal: 15 } },
+            audio: false,
+          });
+          all = await navigator.mediaDevices.enumerateDevices();
+        }
         const cams = all.filter(d => d.kind === 'videoinput');
         setDevices(cams);
-        // Only auto-select if no remembered choice OR the remembered device is gone
         const saved = localStorage.getItem('blackmagic_camera_device_id');
         const savedExists = saved && cams.some(c => c.deviceId === saved);
         if (savedExists) {
           setSelectedDeviceId(saved!);
           const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: saved! } }, audio: false });
-          tmp.getTracks().forEach(t => t.stop());
+          tmp?.getTracks().forEach(t => t.stop());
           setCameraStream(stream);
         } else if (cams.length) {
-          // Prefer a camera whose label mentions capture/blackmagic/hdmi/usb if any
           const preferred = cams.find(c => /capture|blackmagic|hdmi|usb|cam ?link|atem/i.test(c.label));
           const deviceId = (preferred || cams[0]).deviceId;
           setSelectedDeviceId(deviceId);
           if (preferred) {
             const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: deviceId } }, audio: false });
-            tmp.getTracks().forEach(t => t.stop());
+            tmp?.getTracks().forEach(t => t.stop());
             setCameraStream(stream);
-          } else {
+          } else if (tmp) {
             setCameraStream(tmp);
           }
         } else {
-          tmp.getTracks().forEach(t => t.stop());
+          tmp?.getTracks().forEach(t => t.stop());
         }
       } catch (err) {
         console.error('enumerate error', err);
