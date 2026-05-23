@@ -40,6 +40,7 @@ import {
   Activity,
   Droplet,
   BellRing,
+  Bluetooth,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -537,6 +538,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       path: "/dashboard/booking-sections",
       badge: null
     },
+    ...(userProfile?.role === 'admin' ? [{
+      icon: Bluetooth,
+      label: "Blackmagic View",
+      path: "/dashboard/blackmagic-view",
+      badge: null,
+    }] : []),
     { type: 'separator' },
     { 
       icon: Calendar, 
