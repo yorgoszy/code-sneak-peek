@@ -125,6 +125,13 @@ export const Commands = {
     buf[3] = (v >> 24) & 0xff;
     return buildPacket(1, 14, 3, 0, Array.from(buf));
   },
+  // Query packets — operation=1 (offset) with zero payload requests the camera
+  // to echo back the current value without changing it.
+  queryFocus: () => buildPacket(0, 0, 128, 1, [0, 0]),
+  queryIris: () => buildPacket(0, 3, 128, 1, [0, 0]),
+  queryApertureAv: () => buildPacket(0, 2, 128, 1, [0, 0]),
+  queryWhiteBalance: () => buildPacket(1, 2, 2, 1, [0, 0, 0, 0]),
+  queryIso: () => buildPacket(1, 14, 3, 1, [0, 0, 0, 0]),
 };
 
 // ---------- Connection wrapper ----------
