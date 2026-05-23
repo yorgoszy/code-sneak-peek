@@ -355,6 +355,9 @@ const BlackmagicViewPage: React.FC = () => {
                   step={0.01}
                   onValueChange={(v) => {
                     setFocus(v);
+                    if (connectedName) throttledSend('focus', 'Focus', () => Commands.focus(v[0]));
+                  }}
+                  onValueCommit={(v) => {
                     if (connectedName) sendOrToast('Focus', Commands.focus(v[0]));
                   }}
                   disabled={!connectedName}
