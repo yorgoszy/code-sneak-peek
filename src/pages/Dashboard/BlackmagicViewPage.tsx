@@ -352,11 +352,12 @@ const BlackmagicViewPage: React.FC = () => {
                   min={2500}
                   max={10000}
                   step={50}
-                  onValueChange={(v) => {
-                    setWb(v);
-                    if (connectedName) sendOrToast(`WB ${v[0]}K`, Commands.whiteBalance(v[0]));
+                  onValueChange={setWb}
+                  onValueCommit={(v) => {
+                    const kelvin = Math.round(v[0]);
+                    setWb([kelvin]);
+                    if (connectedName) sendOrToast(`WB ${kelvin}K`, Commands.whiteBalance(kelvin));
                   }}
-                  disabled={!connectedName}
                 />
                 <div className="grid grid-cols-3 gap-2">
                   {[3200, 4600, 5600].map((k) => (
@@ -365,10 +366,9 @@ const BlackmagicViewPage: React.FC = () => {
                       variant="outline"
                       size="sm"
                       className="rounded-none text-xs"
-                      disabled={!connectedName}
                       onClick={() => {
                         setWb([k]);
-                        sendOrToast(`WB ${k}K`, Commands.whiteBalance(k));
+                        if (connectedName) sendOrToast(`WB ${k}K`, Commands.whiteBalance(k));
                       }}
                     >
                       {k}K
@@ -387,11 +387,12 @@ const BlackmagicViewPage: React.FC = () => {
                   min={100}
                   max={25600}
                   step={100}
-                  onValueChange={(v) => {
-                    setIso(v);
-                    if (connectedName) sendOrToast(`ISO ${v[0]}`, Commands.iso(v[0]));
+                  onValueChange={setIso}
+                  onValueCommit={(v) => {
+                    const isoValue = Math.round(v[0]);
+                    setIso([isoValue]);
+                    if (connectedName) sendOrToast(`ISO ${isoValue}`, Commands.iso(isoValue));
                   }}
-                  disabled={!connectedName}
                 />
                 <div className="grid grid-cols-3 gap-2">
                   {[400, 800, 1600].map((isoVal) => (
@@ -400,10 +401,9 @@ const BlackmagicViewPage: React.FC = () => {
                       variant="outline"
                       size="sm"
                       className="rounded-none text-xs"
-                      disabled={!connectedName}
                       onClick={() => {
                         setIso([isoVal]);
-                        sendOrToast(`ISO ${isoVal}`, Commands.iso(isoVal));
+                        if (connectedName) sendOrToast(`ISO ${isoVal}`, Commands.iso(isoVal));
                       }}
                     >
                       {isoVal}
