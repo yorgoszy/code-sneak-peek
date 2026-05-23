@@ -282,10 +282,11 @@ const BlackmagicViewPage: React.FC = () => {
   const handleRemoteCommand = useCallback((cmd: RemoteCommand) => {
     switch (cmd.type) {
       case 'record': {
-        if (cmd.value && !recording) {
+        const cur = stateRef.current.recording;
+        if (cmd.value && !cur) {
           sendOrToast('Start record', Commands.recordStart());
           setRecording(true);
-        } else if (!cmd.value && recording) {
+        } else if (!cmd.value && cur) {
           sendOrToast('Stop record', Commands.recordStop());
           setRecording(false);
         }
@@ -314,7 +315,7 @@ const BlackmagicViewPage: React.FC = () => {
         if (connectedName) sendOrToast(`ISO ${cmd.value}`, Commands.iso(cmd.value));
         break;
     }
-  }, [recording, connectedName]);
+  }, [connectedName]);
 
   const startSharing = () => {
     let sid = sessionId;
