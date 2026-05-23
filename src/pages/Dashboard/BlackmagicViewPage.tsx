@@ -453,7 +453,7 @@ const BlackmagicViewPage: React.FC = () => {
     <button
       type="button"
       onClick={() => setActiveControl((prev) => (prev === key ? null : key))}
-      className={`flex flex-col items-center justify-center gap-1 px-2 py-1 min-w-[44px] text-white ${activeControl === key ? 'bg-white/30' : 'bg-black/50 hover:bg-black/70'}`}
+      className={`flex flex-col items-center justify-center gap-1 px-2 py-1 min-w-[44px] text-white ${activeControl === key ? 'bg-white/20' : 'hover:bg-white/10'}`}
     >
       <Icon className="h-3.5 w-3.5" />
       <span className="text-[9px] leading-none uppercase tracking-wide">{label}</span>
