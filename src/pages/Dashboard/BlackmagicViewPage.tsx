@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Sidebar } from '@/components/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -22,8 +23,17 @@ const getErrorMessage = (error: unknown, fallback: string) => (
 );
 
 const BlackmagicViewPage: React.FC = () => {
+  const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [joinCode, setJoinCode] = useState('');
+
+  const handleJoinSession = () => {
+    const code = joinCode.trim();
+    if (/^\d{4}$/.test(code)) {
+      navigate(`/remote-camera/${code}`);
+    }
+  };
 
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(
@@ -751,6 +761,28 @@ const BlackmagicViewPage: React.FC = () => {
                   ? `Share (${viewerCount})`
                   : 'Share'}
               </Button>
+              <div className="flex items-center gap-1">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={4}
+                  placeholder="Κωδικός"
+                  value={joinCode}
+                  onChange={(e) => setJoinCode(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleJoinSession(); }}
+                  className="border border-border bg-background px-3 py-1.5 text-sm rounded-none w-24 text-center tracking-widest"
+                />
+                <Button
+                  variant="outline"
+                  className="rounded-none"
+                  onClick={handleJoinSession}
+                  disabled={joinCode.length !== 4}
+                  title="Σύνδεση σε υπάρχουσα συνεδρία"
+                >
+                  Join
+                </Button>
+              </div>
               <Button variant="outline" className="rounded-none" onClick={toggleFullscreen}>
                 <Maximize2 className="h-4 w-4 mr-2" />
                 Fullscreen
