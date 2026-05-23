@@ -21,7 +21,9 @@ const RemoteCameraView: React.FC = () => {
   const [state, setState] = useState<RemoteState | null>(null);
   const [activeControl, setActiveControl] = useState<null | 'focus' | 'iris' | 'wb' | 'iso'>(null);
   const [controlsVisible, setControlsVisible] = useState(true);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [nativeFullscreen, setNativeFullscreen] = useState(false);
+  const [immersiveFullscreen, setImmersiveFullscreen] = useState(false);
+  const [fullscreenHintVisible, setFullscreenHintVisible] = useState(false);
 
   // Local optimistic values
   const [focus, setFocus] = useState(0.5);
@@ -54,8 +56,10 @@ const RemoteCameraView: React.FC = () => {
     return () => s.close();
   }, [sessionId]);
 
+  const isFullscreen = nativeFullscreen || immersiveFullscreen;
+
   useEffect(() => {
-    const onFs = () => setIsFullscreen(!!(document.fullscreenElement || (document as any).webkitFullscreenElement));
+    const onFs = () => setNativeFullscreen(!!(document.fullscreenElement || (document as any).webkitFullscreenElement));
     document.addEventListener('fullscreenchange', onFs);
     document.addEventListener('webkitfullscreenchange', onFs as any);
     return () => {
@@ -64,18 +68,60 @@ const RemoteCameraView: React.FC = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!immersiveFullscreen) return;
+    const html = document.documentElement;
+    const body = document.body;
+    const previous = {
+      htmlOverflow: html.style.overflow,
+      bodyOverflow: body.style.overflow,
+      bodyPosition: body.style.position,
+      bodyInset: body.style.inset,
+      bodyWidth: body.style.width,
+      bodyBackground: body.style.background,
+    };
+    html.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+    body.style.position = 'fixed';
+    body.style.inset = '0';
+    body.style.width = '100%';
+    body.style.background = 'black';
+    const nudge = () => window.scrollTo(0, 1);
+    requestAnimationFrame(nudge);
+    window.setTimeout(nudge, 120);
+    return () => {
+      html.style.overflow = previous.htmlOverflow;
+      body.style.overflow = previous.bodyOverflow;
+      body.style.position = previous.bodyPosition;
+      body.style.inset = previous.bodyInset;
+      body.style.width = previous.bodyWidth;
+      body.style.background = previous.bodyBackground;
+    };
+  }, [immersiveFullscreen]);
+
   const send = sessionRef.current?.send ?? (() => {});
 
   const toggleFullscreen = async () => {
     try {
       const anyDoc = document as any;
-      const isFs = !!(document.fullscreenElement || anyDoc.webkitFullscreenElement);
+      const anyNav = navigator as any;
+      const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const standalone = window.matchMedia('(display-mode: standalone)').matches || anyNav.standalone === true;
+      const isFs = !!(document.fullscreenElement || anyDoc.webkitFullscreenElement) || immersiveFullscreen;
       if (!isFs) {
         const el: any = containerRef.current || document.documentElement;
-        if (el.requestFullscreen) await el.requestFullscreen();
-        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        if (!isiOS && el.requestFullscreen) await el.requestFullscreen();
+        else if (!isiOS && el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        else {
+          setImmersiveFullscreen(true);
+          setControlsVisible(true);
+          setFullscreenHintVisible(isiOS && !standalone);
+          if (isiOS && !standalone) window.setTimeout(() => setFullscreenHintVisible(false), 6500);
+        }
       } else {
-        if (document.exitFullscreen) await document.exitFullscreen();
+        setImmersiveFullscreen(false);
+        setFullscreenHintVisible(false);
+        if (document.fullscreenElement && document.exitFullscreen) await document.exitFullscreen();
         else if (anyDoc.webkitExitFullscreen) anyDoc.webkitExitFullscreen();
       }
     } catch {}
@@ -176,12 +222,19 @@ const RemoteCameraView: React.FC = () => {
   const connected = status === 'connected';
 
   return (
-    <div ref={containerRef} className="fixed inset-0 bg-black overflow-hidden">
+    <div
+      ref={containerRef}
+      className="fixed inset-0 bg-black overflow-hidden"
+      style={{ height: '100dvh', width: '100vw', touchAction: 'manipulation', WebkitUserSelect: 'none' } as React.CSSProperties}
+    >
       <video
         ref={videoRef}
         playsInline
         muted
         autoPlay
+        disablePictureInPicture
+        controls={false}
+        controlsList="nodownload nofullscreen noremoteplayback"
         className="absolute inset-0 w-full h-full object-contain"
       />
 
@@ -240,6 +293,12 @@ const RemoteCameraView: React.FC = () => {
       {activeControl && controlsVisible && (
         <div className="absolute left-1/2 -translate-x-1/2 top-14 z-20 w-[92%] max-w-xl pointer-events-auto" onClick={(e) => e.stopPropagation()}>
           {renderSliderPanel()}
+        </div>
+      )}
+
+      {fullscreenHintVisible && controlsVisible && (
+        <div className="absolute left-3 right-3 bottom-20 z-30 bg-black/80 border border-white/20 p-3 text-center text-xs text-white pointer-events-none">
+          Για πραγματικό fullscreen στο iPhone: Share → Add to Home Screen και άνοιγμα από το εικονίδιο.
         </div>
       )}
 
