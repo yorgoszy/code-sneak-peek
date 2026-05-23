@@ -40,6 +40,45 @@ const BlackmagicViewPage: React.FC = () => {
   const [lastError, setLastError] = useState<string>('');
   const [password, setPassword] = useState<string>('');
 
+  // Fullscreen / overlay UI
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [activeControl, setActiveControl] = useState<null | 'focus' | 'iris' | 'wb' | 'iso'>(null);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [isPortrait, setIsPortrait] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const mqSmall = window.matchMedia('(max-width: 1023px)');
+    const mqPortrait = window.matchMedia('(orientation: portrait)');
+    const upd = () => {
+      setIsSmallScreen(mqSmall.matches);
+      setIsPortrait(mqPortrait.matches);
+    };
+    upd();
+    mqSmall.addEventListener('change', upd);
+    mqPortrait.addEventListener('change', upd);
+    const onFs = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onFs);
+    return () => {
+      mqSmall.removeEventListener('change', upd);
+      mqPortrait.removeEventListener('change', upd);
+      document.removeEventListener('fullscreenchange', onFs);
+    };
+  }, []);
+
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await (containerRef.current || document.documentElement).requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.warn('fullscreen error', err);
+    }
+  };
+
+
   // Throttle live BLE sends per control to avoid flooding (~50ms)
   const throttleRef = useRef<Record<string, { last: number; pending: ReturnType<typeof setTimeout> | null; lastArgs: unknown }>>({});
   const throttledSend = (key: string, label: string, build: () => Uint8Array, intervalMs = 60) => {
