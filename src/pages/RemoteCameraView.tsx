@@ -74,9 +74,6 @@ const RemoteCameraView: React.FC = () => {
         const el: any = containerRef.current || document.documentElement;
         if (el.requestFullscreen) await el.requestFullscreen();
         else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-        else if ((videoRef.current as any)?.webkitEnterFullscreen) {
-          (videoRef.current as any).webkitEnterFullscreen();
-        }
       } else {
         if (document.exitFullscreen) await document.exitFullscreen();
         else if (anyDoc.webkitExitFullscreen) anyDoc.webkitExitFullscreen();
