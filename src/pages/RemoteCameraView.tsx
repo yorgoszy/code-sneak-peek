@@ -64,10 +64,18 @@ const RemoteCameraView: React.FC = () => {
 
   const toggleFullscreen = async () => {
     try {
-      if (!document.fullscreenElement) {
-        await (containerRef.current || document.documentElement).requestFullscreen();
+      const anyDoc = document as any;
+      const isFs = !!(document.fullscreenElement || anyDoc.webkitFullscreenElement);
+      if (!isFs) {
+        const el: any = containerRef.current || document.documentElement;
+        if (el.requestFullscreen) await el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        else if ((videoRef.current as any)?.webkitEnterFullscreen) {
+          (videoRef.current as any).webkitEnterFullscreen();
+        }
       } else {
-        await document.exitFullscreen();
+        if (document.exitFullscreen) await document.exitFullscreen();
+        else if (anyDoc.webkitExitFullscreen) anyDoc.webkitExitFullscreen();
       }
     } catch {}
   };
