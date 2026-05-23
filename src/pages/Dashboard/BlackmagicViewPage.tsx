@@ -408,7 +408,10 @@ const BlackmagicViewPage: React.FC = () => {
     return buttons;
   })();
 
-  const immersive = isSmallScreen || isFullscreen;
+  // On mobile, only go immersive when a camera stream is active OR the user
+  // explicitly toggled fullscreen. This keeps the dashboard (Join input, BLE
+  // connect, share QR) reachable on phones before a session is started.
+  const immersive = isFullscreen || (isSmallScreen && !!cameraStream);
 
   // ── Slider panels (rendered inside overlay popover) ──
   const renderSliderPanel = () => {
