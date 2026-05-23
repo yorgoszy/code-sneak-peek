@@ -1,10 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { BlueSlider }  from '@/components/ui/blue-slider';
-import { Menu, Bluetooth, BluetoothOff, Video as VideoIcon, Circle, Square, Focus, Sun, Cloud, CloudSun, Lightbulb, Zap, Home, RefreshCw, Maximize2, Minimize2, Aperture, Thermometer, Gauge, Smartphone, X } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { QRCodeSVG } from 'qrcode.react';
+import { Menu, Bluetooth, BluetoothOff, Video as VideoIcon, Circle, Square, Focus, Sun, Cloud, CloudSun, Lightbulb, Zap, Home, RefreshCw, Maximize2, Minimize2, Aperture, Thermometer, Gauge, Smartphone, X, Share2, Copy, Check } from 'lucide-react';
 import { CameraFeed } from '@/components/federation/CameraFeed';
 import {
   connectBlackmagic,
@@ -13,6 +15,7 @@ import {
   detectPlatform,
   type BmdConnection,
 } from '@/lib/blackmagicBle';
+import { startHostSession, generateSessionId, type HostSession, type RemoteCommand } from '@/lib/blackmagicRemoteSession';
 
 const getErrorMessage = (error: unknown, fallback: string) => (
   error instanceof Error && error.message ? error.message : fallback
@@ -259,6 +262,108 @@ const BlackmagicViewPage: React.FC = () => {
       setRecording(true);
     }
   };
+
+  // ── Remote Share Session (QR) ──
+  const [shareOpen, setShareOpen] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [viewerCount, setViewerCount] = useState(0);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const hostSessionRef = useRef<HostSession | null>(null);
+
+  // Latest values refs so host callbacks always see fresh data
+  const stateRef = useRef({ recording, focus: focus[0], iris: iris[0], wb: wb[0], iso: iso[0] });
+  useEffect(() => {
+    stateRef.current = { recording, focus: focus[0], iris: iris[0], wb: wb[0], iso: iso[0] };
+  }, [recording, focus, iris, wb, iso]);
+
+  const cameraStreamRef = useRef<MediaStream | null>(null);
+  useEffect(() => { cameraStreamRef.current = cameraStream; }, [cameraStream]);
+
+  const handleRemoteCommand = useCallback((cmd: RemoteCommand) => {
+    switch (cmd.type) {
+      case 'record': {
+        if (cmd.value && !recording) {
+          sendOrToast('Start record', Commands.recordStart());
+          setRecording(true);
+        } else if (!cmd.value && recording) {
+          sendOrToast('Stop record', Commands.recordStop());
+          setRecording(false);
+        }
+        break;
+      }
+      case 'autofocus':
+        sendOrToast('Autofocus', Commands.autoFocus());
+        break;
+      case 'autowb':
+        sendOrToast('Auto WB', Commands.autoWhiteBalance());
+        break;
+      case 'focus':
+        setFocus([cmd.value]);
+        if (connectedName) sendOrToast('Focus', Commands.focus(cmd.value));
+        break;
+      case 'iris':
+        setIris([cmd.value]);
+        if (connectedName) sendOrToast('Iris', Commands.iris(cmd.value));
+        break;
+      case 'wb':
+        setWb([cmd.value]);
+        if (connectedName) sendOrToast(`WB ${cmd.value}K`, Commands.whiteBalance(cmd.value));
+        break;
+      case 'iso':
+        setIso([cmd.value]);
+        if (connectedName) sendOrToast(`ISO ${cmd.value}`, Commands.iso(cmd.value));
+        break;
+    }
+  }, [recording, connectedName]);
+
+  const startSharing = () => {
+    let sid = sessionId;
+    if (!sid) {
+      sid = generateSessionId();
+      setSessionId(sid);
+    }
+    if (!hostSessionRef.current) {
+      hostSessionRef.current = startHostSession({
+        sessionId: sid,
+        getStream: () => cameraStreamRef.current,
+        getState: () => ({
+          connected: true,
+          recording: stateRef.current.recording,
+          focus: stateRef.current.focus,
+          iris: stateRef.current.iris,
+          wb: stateRef.current.wb,
+          iso: stateRef.current.iso,
+        }),
+        onCommand: handleRemoteCommand,
+        onViewerChange: setViewerCount,
+      });
+    }
+    setShareOpen(true);
+  };
+
+  const stopSharing = () => {
+    try { hostSessionRef.current?.close(); } catch {}
+    hostSessionRef.current = null;
+    setSessionId(null);
+    setViewerCount(0);
+    setShareOpen(false);
+  };
+
+  useEffect(() => () => { try { hostSessionRef.current?.close(); } catch {} }, []);
+
+  const remoteUrl = sessionId
+    ? `${window.location.origin}/remote-camera/${sessionId}`
+    : '';
+
+  const copyRemoteLink = async () => {
+    if (!remoteUrl) return;
+    try {
+      await navigator.clipboard.writeText(remoteUrl);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 1500);
+    } catch {}
+  };
+
 
   // ── ISO helpers ──
   const ISO_STEPS = [
@@ -632,6 +737,18 @@ const BlackmagicViewPage: React.FC = () => {
                   {connecting ? 'Σύνδεση...' : 'Σύνδεση BLE'}
                 </Button>
               )}
+              <Button
+                variant={hostSessionRef.current ? 'default' : 'outline'}
+                className="rounded-none"
+                onClick={hostSessionRef.current ? () => setShareOpen(true) : startSharing}
+                disabled={!cameraStream}
+                title={!cameraStream ? 'Επίλεξε πρώτα κάμερα' : 'Απομακρυσμένη προβολή με QR'}
+              >
+                <Share2 className="h-4 w-4 mr-2" />
+                {hostSessionRef.current
+                  ? `Share (${viewerCount})`
+                  : 'Share'}
+              </Button>
               <Button variant="outline" className="rounded-none" onClick={toggleFullscreen}>
                 <Maximize2 className="h-4 w-4 mr-2" />
                 Fullscreen
@@ -674,6 +791,43 @@ const BlackmagicViewPage: React.FC = () => {
           </Card>
         </main>
       </div>
+
+      <Dialog open={shareOpen} onOpenChange={(o) => !o && setShareOpen(false)}>
+        <DialogContent className="rounded-none max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Απομακρυσμένη Προβολή</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Σκάναρε το QR με άλλη συσκευή για live view και έλεγχο της κάμερας.
+            </p>
+            {remoteUrl && (
+              <div className="flex flex-col items-center gap-3">
+                <div className="bg-white p-3 rounded-none border border-border">
+                  <QRCodeSVG value={remoteUrl} size={220} />
+                </div>
+                <div className="flex w-full gap-2">
+                  <input
+                    readOnly
+                    value={remoteUrl}
+                    className="flex-1 border border-border bg-background px-2 py-1.5 text-xs rounded-none"
+                  />
+                  <Button variant="outline" size="sm" className="rounded-none" onClick={copyRemoteLink}>
+                    {linkCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  </Button>
+                </div>
+                <div className="flex items-center justify-between w-full text-xs text-muted-foreground">
+                  <span>Θεατές: <strong className="text-foreground">{viewerCount}</strong></span>
+                  <span>Session: {sessionId}</span>
+                </div>
+              </div>
+            )}
+            <Button variant="outline" className="w-full rounded-none" onClick={stopSharing}>
+              Τερματισμός συνεδρίας
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

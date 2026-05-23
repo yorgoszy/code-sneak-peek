@@ -25,6 +25,7 @@ const TermsOfService = React.lazy(() => import("@/pages/TermsOfService"));
 const JudgeScoring = React.lazy(() => import("@/pages/JudgeScoring"));
 const CompetitionAI = React.lazy(() => import("@/pages/CompetitionAI"));
 const MobileCameraFeed = React.lazy(() => import("@/pages/MobileCameraFeed"));
+const RemoteCameraView = React.lazy(() => import("@/pages/RemoteCameraView"));
 import Dashboard from "@/pages/Dashboard";
 import Users from "@/pages/Users";
 import Groups from "@/pages/Groups";
@@ -171,6 +172,7 @@ function App() {
                       <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/dashboard/notification-preferences" element={<ProtectedRoute><NotificationPreferencesPage /></ProtectedRoute>} />
                       <Route path="/dashboard/blackmagic-view" element={<ProtectedRoute requireAdmin><BlackmagicViewPage /></ProtectedRoute>} />
+                      <Route path="/remote-camera/:sessionId" element={<RemoteCameraView />} />
                       <Route path="/privacy" element={<PrivacyPolicy />} />
                       <Route path="/terms" element={<TermsOfService />} />
                       <Route path="/judge" element={<JudgeScoring />} />
