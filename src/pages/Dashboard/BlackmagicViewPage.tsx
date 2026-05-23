@@ -201,7 +201,10 @@ const BlackmagicViewPage: React.FC = () => {
                 <select
                   className="border border-border bg-background px-2 py-1 text-sm rounded-none"
                   value={selectedDeviceId || ''}
-                  onChange={(e) => setSelectedDeviceId(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedDeviceId(e.target.value);
+                    localStorage.setItem('blackmagic_camera_device_id', e.target.value);
+                  }}
                 >
                   {devices.length === 0 && <option value="">— καμία —</option>}
                   {devices.map((d, i) => (
