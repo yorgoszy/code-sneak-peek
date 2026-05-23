@@ -516,7 +516,7 @@ const BlackmagicViewPage: React.FC = () => {
         </div>
 
         {/* Control buttons row (top) */}
-        <div className="flex items-center justify-center gap-1 bg-black/40 backdrop-blur py-1 px-2 pointer-events-auto self-center" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-center gap-1 py-1 px-2 pointer-events-auto self-center" onClick={(e) => e.stopPropagation()}>
           {overlayButton('focus', Focus, 'Focus', focus[0].toFixed(2))}
           <button
             type="button"
