@@ -208,7 +208,7 @@ const BlackmagicViewPage: React.FC = () => {
         // If we already have permission, skip the slow getUserMedia probe and
         // enumerate directly — labels will already be available.
         let all = await navigator.mediaDevices.enumerateDevices();
-        let hasLabels = all.some(d => d.kind === 'videoinput' && d.label);
+        const hasLabels = all.some(d => d.kind === 'videoinput' && d.label);
         let tmp: MediaStream | null = null;
         if (!hasLabels) {
           // First time: ask for permission with minimal constraints to open as fast as possible.
@@ -436,14 +436,14 @@ const BlackmagicViewPage: React.FC = () => {
   };
 
   const stopSharing = () => {
-    try { hostSessionRef.current?.close(); } catch {}
+    try { hostSessionRef.current?.close(); } catch (err) { console.warn('stop sharing error', err); }
     hostSessionRef.current = null;
     setSessionId(null);
     setViewerCount(0);
     setShareOpen(false);
   };
 
-  useEffect(() => () => { try { hostSessionRef.current?.close(); } catch {} }, []);
+  useEffect(() => () => { try { hostSessionRef.current?.close(); } catch (err) { console.warn('host session cleanup error', err); } }, []);
 
   // Use the production PWA origin so that, on iOS/Android, scanning the QR
   // opens the installed PWA (in-scope deep link) instead of the browser.
@@ -458,7 +458,7 @@ const BlackmagicViewPage: React.FC = () => {
       await navigator.clipboard.writeText(remoteUrl);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 1500);
-    } catch {}
+    } catch (err) { console.warn('copy remote link error', err); }
   };
 
 
