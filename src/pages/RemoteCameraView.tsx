@@ -258,34 +258,51 @@ const RemoteCameraView: React.FC = () => {
       );
     }
     if (activeControl === 'iso') {
-      const steps = [100, 200, 400, 800, 1600, 3200, 6400, 12800, 25600];
-      const idx = Math.max(0, steps.indexOf(iso));
+      const currentIdx = Math.max(0, ISO_STEPS.indexOf(snapIso(iso)));
+      const nativeIsoButtons = (() => {
+        const natives = getNativeIsos(state?.cameraName);
+        const buttons: { label: string; value: number }[] = [];
+        natives.forEach((nv) => {
+          const nativeIdx = ISO_STEPS.indexOf(nv);
+          const below = nativeIdx > 0 ? ISO_STEPS[nativeIdx - 1] : null;
+          const above = nativeIdx >= 0 && nativeIdx < ISO_STEPS.length - 1 ? ISO_STEPS[nativeIdx + 1] : null;
+          if (below !== null) buttons.push({ label: `${below}`, value: below });
+          buttons.push({ label: `${nv}★`, value: nv });
+          if (above !== null) buttons.push({ label: `${above}`, value: above });
+        });
+        return buttons;
+      })();
       return (
-        <div className="p-4 text-white bg-black/70 backdrop-blur-sm">
+        <div className={panelBase}>
           <div className="flex items-center justify-between text-xs mb-2">
             <span>ISO</span>
             <span className="opacity-70">{iso}</span>
           </div>
           <BlueSlider
-            value={[idx >= 0 ? idx : 2]}
+            value={[currentIdx]}
             min={0}
-            max={steps.length - 1}
+            max={ISO_STEPS.length - 1}
             step={1}
-            onValueChange={(v) => { const val = steps[v[0]]; setIso(val); send({ type: 'iso', value: val }); }}
+            onValueChange={(v) => { const val = ISO_STEPS[v[0]]; setIso(val); send({ type: 'iso', value: val }); }}
           />
-          <div className="flex flex-wrap gap-1 mt-3">
-            {steps.map((val) => (
-              <Button
-                key={val}
-                size="sm"
-                variant="outline"
-                className={`rounded-none text-xs h-7 px-2 bg-transparent text-white border-white/20 hover:bg-white/10 ${iso === val ? 'bg-white/20 border-white' : ''}`}
-                onClick={() => { setIso(val); send({ type: 'iso', value: val }); }}
-              >
-                {val}
-              </Button>
-            ))}
-          </div>
+          {nativeIsoButtons.length > 0 && (
+            <div
+              className="grid gap-1 mt-3"
+              style={{ gridTemplateColumns: `repeat(${nativeIsoButtons.length}, minmax(0, 1fr))` }}
+            >
+              {nativeIsoButtons.map((b, i) => (
+                <Button
+                  key={`${b.value}-${i}`}
+                  size="sm"
+                  variant="outline"
+                  className={`rounded-none text-xs px-1 bg-white/10 border-white/30 text-white hover:bg-white/20 ${iso === b.value ? 'bg-white/20 border-white' : ''}`}
+                  onClick={() => { setIso(b.value); send({ type: 'iso', value: b.value }); }}
+                >
+                  {b.label}
+                </Button>
+              ))}
+            </div>
+          )}
         </div>
       );
     }
