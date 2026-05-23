@@ -507,7 +507,7 @@ const BlackmagicViewPage: React.FC = () => {
             <Button
               size="sm"
               variant="outline"
-              className="rounded-none bg-black/50 text-white hover:bg-black/70"
+              className="rounded-none bg-transparent text-white hover:bg-white/10 border-0"
               onClick={toggleFullscreen}
             >
               {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
