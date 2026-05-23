@@ -548,7 +548,7 @@ const BlackmagicViewPage: React.FC = () => {
           onClick={toggleRecord}
           disabled={!connectedName}
           aria-label={recording ? 'Stop recording' : 'Start recording'}
-          className="flex items-center justify-center w-14 h-14 bg-black/50 hover:bg-black/70 disabled:opacity-40"
+          className="flex items-center justify-center w-14 h-14 hover:bg-white/10 disabled:opacity-40"
         >
           {recording ? (
             <span className="block w-5 h-5 bg-red-600" />
