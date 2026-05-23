@@ -192,8 +192,17 @@ const RemoteCameraView: React.FC = () => {
       );
     }
     if (activeControl === 'wb') {
+      const wbPresets: { label: string; value: number }[] = [
+        { label: 'Κερί', value: 2500 },
+        { label: 'Σπίτι', value: 3200 },
+        { label: 'Φθόριο', value: 4000 },
+        { label: 'Ημέρα', value: 5600 },
+        { label: 'Flash', value: 6500 },
+        { label: 'Συννεφιά', value: 7500 },
+        { label: 'Σκιά', value: 9000 },
+      ];
       return (
-        <div className="p-4 text-white">
+        <div className="p-4 text-white bg-black/70 backdrop-blur-sm">
           <div className="flex items-center justify-between text-xs mb-2">
             <span>White Balance</span>
             <span className="opacity-70">{wb}K</span>
@@ -205,6 +214,19 @@ const RemoteCameraView: React.FC = () => {
             step={50}
             onValueChange={(v) => { const k = Math.round(v[0]); setWb(k); send({ type: 'wb', value: k }); }}
           />
+          <div className="flex flex-wrap gap-1 mt-3">
+            {wbPresets.map((p) => (
+              <Button
+                key={p.value}
+                size="sm"
+                variant="outline"
+                className={`rounded-none text-xs h-7 px-2 bg-transparent text-white border-white/20 hover:bg-white/10 ${wb === p.value ? 'bg-white/20 border-white' : ''}`}
+                onClick={() => { setWb(p.value); send({ type: 'wb', value: p.value }); }}
+              >
+                {p.label} {p.value}K
+              </Button>
+            ))}
+          </div>
         </div>
       );
     }
@@ -212,7 +234,7 @@ const RemoteCameraView: React.FC = () => {
       const steps = [100, 200, 400, 800, 1600, 3200, 6400, 12800, 25600];
       const idx = Math.max(0, steps.indexOf(iso));
       return (
-        <div className="p-4 text-white">
+        <div className="p-4 text-white bg-black/70 backdrop-blur-sm">
           <div className="flex items-center justify-between text-xs mb-2">
             <span>ISO</span>
             <span className="opacity-70">{iso}</span>
@@ -224,6 +246,19 @@ const RemoteCameraView: React.FC = () => {
             step={1}
             onValueChange={(v) => { const val = steps[v[0]]; setIso(val); send({ type: 'iso', value: val }); }}
           />
+          <div className="flex flex-wrap gap-1 mt-3">
+            {steps.map((val) => (
+              <Button
+                key={val}
+                size="sm"
+                variant="outline"
+                className={`rounded-none text-xs h-7 px-2 bg-transparent text-white border-white/20 hover:bg-white/10 ${iso === val ? 'bg-white/20 border-white' : ''}`}
+                onClick={() => { setIso(val); send({ type: 'iso', value: val }); }}
+              >
+                {val}
+              </Button>
+            ))}
+          </div>
         </div>
       );
     }
