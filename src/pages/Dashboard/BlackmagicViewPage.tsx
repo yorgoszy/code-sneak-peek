@@ -3,7 +3,6 @@ import { Sidebar } from '@/components/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
-import { toast } from 'sonner';
 import { Menu, Bluetooth, BluetoothOff, Video as VideoIcon, Circle, Square, Focus } from 'lucide-react';
 import { CameraFeed } from '@/components/federation/CameraFeed';
 import {
@@ -100,7 +99,6 @@ const BlackmagicViewPage: React.FC = () => {
         }
       } catch (err) {
         console.error('enumerate error', err);
-        toast.error('Δεν βρέθηκαν κάμερες ή δεν δόθηκε άδεια');
       }
     };
     enumerate();
@@ -108,11 +106,6 @@ const BlackmagicViewPage: React.FC = () => {
 
   const handleConnect = async () => {
     if (!bleAvailable) {
-      toast.error(
-        platform === 'web'
-          ? 'Το Web Bluetooth δεν υποστηρίζεται σε αυτόν τον browser. Χρησιμοποιήστε Chrome σε Android/Desktop ή την native build.'
-          : 'BLE δεν είναι διαθέσιμο'
-      );
       return;
     }
     setConnecting(true);
@@ -138,10 +131,8 @@ const BlackmagicViewPage: React.FC = () => {
           setIso([u.value]);
         }
       });
-      toast.success(`Συνδέθηκε με ${c.name}`);
     } catch (err: unknown) {
       console.error(err);
-      toast.error(getErrorMessage(err, 'Αποτυχία σύνδεσης BLE'));
     } finally {
       setConnecting(false);
     }
@@ -168,7 +159,6 @@ const BlackmagicViewPage: React.FC = () => {
       });
     } catch (err) {
       console.error('camera switch error', err);
-      toast.error('Δεν άνοιξε το επιλεγμένο σήμα κάμερας');
     }
   };
 
@@ -176,7 +166,6 @@ const BlackmagicViewPage: React.FC = () => {
     const hex = Array.from(packet).map(b => b.toString(16).padStart(2, '0')).join(' ');
     setLastPacket(`${label}: ${hex}`);
     if (!conn.current) {
-      toast.error('Δεν υπάρχει σύνδεση με κάμερα');
       setLastError('conn.current is null');
       return;
     }
@@ -187,7 +176,6 @@ const BlackmagicViewPage: React.FC = () => {
       console.error(label, err);
       const msg = getErrorMessage(err, 'σφάλμα');
       setLastError(msg);
-      toast.error(`${label}: ${msg}`);
     }
   };
 
