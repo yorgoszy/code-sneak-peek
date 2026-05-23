@@ -25,7 +25,41 @@ export function detectPlatform(): Platform {
 
 export function isBluetoothAvailable(): boolean {
   if (Capacitor.isNativePlatform()) return true;
-  return typeof navigator !== 'undefined' && !!(navigator as any).bluetooth;
+  return typeof navigator !== 'undefined' && !!(navigator as BluetoothNavigator).bluetooth;
+}
+
+interface BluetoothRequestOptions {
+  filters: Array<{ services: string[] }>;
+  optionalServices?: string[];
+}
+
+interface WebBluetoothCharacteristic extends EventTarget {
+  value?: DataView;
+  writeValue?: (value: Uint8Array) => Promise<void>;
+  writeValueWithResponse?: (value: Uint8Array) => Promise<void>;
+  writeValueWithoutResponse?: (value: Uint8Array) => Promise<void>;
+  startNotifications?: () => Promise<WebBluetoothCharacteristic>;
+}
+
+interface WebBluetoothService {
+  getCharacteristic: (uuid: string) => Promise<WebBluetoothCharacteristic>;
+}
+
+interface WebBluetoothServer {
+  connect: () => Promise<WebBluetoothServer>;
+  getPrimaryService: (uuid: string) => Promise<WebBluetoothService>;
+  disconnect?: () => void;
+}
+
+interface WebBluetoothDevice {
+  name?: string;
+  gatt?: WebBluetoothServer;
+}
+
+interface BluetoothNavigator extends Navigator {
+  bluetooth?: {
+    requestDevice: (options: BluetoothRequestOptions) => Promise<WebBluetoothDevice>;
+  };
 }
 
 // ---------- Packet builders ----------
@@ -102,42 +136,63 @@ export interface BmdConnection {
 }
 
 const CLIENT_NAME = 'HyperKids';
+const CAMERA_POWER_ON = new Uint8Array([0x01]);
 
 function encodeName(name: string): Uint8Array {
   return new TextEncoder().encode(name);
 }
 
+async function writeWebCharacteristic(characteristic: WebBluetoothCharacteristic, value: Uint8Array): Promise<void> {
+  if (characteristic.writeValueWithResponse) {
+    await characteristic.writeValueWithResponse(value);
+  } else {
+    await characteristic.writeValue(value);
+  }
+}
+
 export async function connectWeb(): Promise<BmdConnection> {
-  const nav = navigator as any;
+  const nav = navigator as BluetoothNavigator;
   if (!nav.bluetooth) throw new Error('Web Bluetooth not supported in this browser');
-  const device: any = await nav.bluetooth.requestDevice({
+  const device = await nav.bluetooth.requestDevice({
     filters: [{ services: [BMD_SERVICE] }],
     optionalServices: [BMD_SERVICE],
   });
   const server = await device.gatt!.connect();
   const service = await server.getPrimaryService(BMD_SERVICE);
 
-  // 1) Write client name → triggers pairing/PIN dialog on camera
+  // 1) Write client name. This only labels the controller in the camera menu.
   try {
     const nameChar = await service.getCharacteristic(BMD_DEVICE_NAME);
-    await nameChar.writeValue(encodeName(CLIENT_NAME));
+    await writeWebCharacteristic(nameChar, encodeName(CLIENT_NAME));
   } catch (e) {
     console.warn('[BMD] device name write failed', e);
   }
 
-  // 2) Enable notifications on Camera Status (required for pairing handshake)
+  // 2) Trigger BLE bonding/PIN by writing to an encrypted characteristic.
+  // Blackmagic docs explicitly use Camera Status 0x01 (power on) for this.
+  try {
+    const statusChar = await service.getCharacteristic(BMD_CAMERA_STATUS);
+    await writeWebCharacteristic(statusChar, CAMERA_POWER_ON);
+  } catch (e) {
+    console.error('[BMD] pairing trigger failed', e);
+    throw new Error('Η σύζευξη Bluetooth απέτυχε. Σβήστε το failed pair από την κάμερα/υπολογιστή και δοκιμάστε ξανά.');
+  }
+
+  // 3) Enable notifications after bonding succeeds.
   try {
     const statusChar = await service.getCharacteristic(BMD_CAMERA_STATUS);
     await statusChar.startNotifications();
-    statusChar.addEventListener('characteristicvaluechanged', (ev: any) => {
-      const v = new Uint8Array(ev.target.value.buffer);
+    statusChar.addEventListener('characteristicvaluechanged', (ev: Event) => {
+      const target = ev.target as WebBluetoothCharacteristic | null;
+      if (!target?.value) return;
+      const v = new Uint8Array(target.value.buffer);
       console.log('[BMD] status', v[0]);
     });
   } catch (e) {
     console.warn('[BMD] status notifications failed', e);
   }
 
-  // 3) Enable notifications on Incoming Camera Control (keeps link alive)
+  // 4) Enable notifications on Incoming Camera Control
   try {
     const incoming = await service.getCharacteristic(BMD_INCOMING_CC);
     await incoming.startNotifications();
@@ -170,7 +225,7 @@ export async function connectNative(): Promise<BmdConnection> {
   });
   await BleClient.connect(device.deviceId, () => { /* on disconnect */ });
 
-  // 1) Write client name → triggers PIN pairing on the camera
+  // 1) Write client name. This only labels the controller in the camera menu.
   try {
     await BleClient.write(
       device.deviceId,
@@ -182,7 +237,21 @@ export async function connectNative(): Promise<BmdConnection> {
     console.warn('[BMD native] device name write failed', e);
   }
 
-  // 2) Subscribe to Camera Status (pairing handshake)
+  // 2) Trigger BLE bonding/PIN by writing to an encrypted characteristic.
+  try {
+    await BleClient.write(
+      device.deviceId,
+      BMD_SERVICE,
+      BMD_CAMERA_STATUS,
+      numbersToDataView(Array.from(CAMERA_POWER_ON))
+    );
+  } catch (e) {
+    console.error('[BMD native] pairing trigger failed', e);
+    try { await BleClient.disconnect(device.deviceId); } catch { /* noop */ }
+    throw new Error('Η σύζευξη Bluetooth απέτυχε. Σβήστε το failed pair από την κάμερα/συσκευή και δοκιμάστε ξανά.');
+  }
+
+  // 3) Subscribe to Camera Status after bonding succeeds.
   try {
     await BleClient.startNotifications(
       device.deviceId,
@@ -194,7 +263,7 @@ export async function connectNative(): Promise<BmdConnection> {
     console.warn('[BMD native] status notifications failed', e);
   }
 
-  // 3) Subscribe to Incoming CC
+  // 4) Subscribe to Incoming CC
   try {
     await BleClient.startNotifications(
       device.deviceId,

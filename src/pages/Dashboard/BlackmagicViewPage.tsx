@@ -14,6 +14,10 @@ import {
   type BmdConnection,
 } from '@/lib/blackmagicBle';
 
+const getErrorMessage = (error: unknown, fallback: string) => (
+  error instanceof Error && error.message ? error.message : fallback
+);
+
 const BlackmagicViewPage: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -22,6 +26,7 @@ const BlackmagicViewPage: React.FC = () => {
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(
     typeof window !== 'undefined' ? localStorage.getItem('blackmagic_camera_device_id') : null
   );
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
 
   const conn = useRef<BmdConnection | null>(null);
   const [connectedName, setConnectedName] = useState<string | null>(null);
@@ -33,13 +38,16 @@ const BlackmagicViewPage: React.FC = () => {
   const platform = detectPlatform();
   const bleAvailable = isBluetoothAvailable();
 
+  useEffect(() => () => {
+    cameraStream?.getTracks().forEach(t => t.stop());
+  }, [cameraStream]);
+
   // Enumerate cameras (need permission first)
   useEffect(() => {
     const enumerate = async () => {
       try {
-        // Trigger permission
-        const tmp = await navigator.mediaDevices.getUserMedia({ video: true });
-        tmp.getTracks().forEach(t => t.stop());
+        // Trigger permission once and keep this stream alive so the HDMI/capture preview does not blink.
+        const tmp = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
         const all = await navigator.mediaDevices.enumerateDevices();
         const cams = all.filter(d => d.kind === 'videoinput');
         setDevices(cams);
@@ -48,10 +56,23 @@ const BlackmagicViewPage: React.FC = () => {
         const savedExists = saved && cams.some(c => c.deviceId === saved);
         if (savedExists) {
           setSelectedDeviceId(saved!);
+          const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: saved! } }, audio: false });
+          tmp.getTracks().forEach(t => t.stop());
+          setCameraStream(stream);
         } else if (cams.length) {
           // Prefer a camera whose label mentions capture/blackmagic/hdmi/usb if any
           const preferred = cams.find(c => /capture|blackmagic|hdmi|usb|cam ?link|atem/i.test(c.label));
-          setSelectedDeviceId((preferred || cams[0]).deviceId);
+          const deviceId = (preferred || cams[0]).deviceId;
+          setSelectedDeviceId(deviceId);
+          if (preferred) {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: deviceId } }, audio: false });
+            tmp.getTracks().forEach(t => t.stop());
+            setCameraStream(stream);
+          } else {
+            setCameraStream(tmp);
+          }
+        } else {
+          tmp.getTracks().forEach(t => t.stop());
         }
       } catch (err) {
         console.error('enumerate error', err);
@@ -76,9 +97,9 @@ const BlackmagicViewPage: React.FC = () => {
       conn.current = c;
       setConnectedName(c.name);
       toast.success(`Συνδέθηκε με ${c.name}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err?.message || 'Αποτυχία σύνδεσης BLE');
+      toast.error(getErrorMessage(err, 'Αποτυχία σύνδεσης BLE'));
     } finally {
       setConnecting(false);
     }
@@ -94,6 +115,21 @@ const BlackmagicViewPage: React.FC = () => {
     }
   };
 
+  const handleCameraChange = async (deviceId: string) => {
+    setSelectedDeviceId(deviceId);
+    localStorage.setItem('blackmagic_camera_device_id', deviceId);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: deviceId } }, audio: false });
+      setCameraStream(prev => {
+        prev?.getTracks().forEach(t => t.stop());
+        return stream;
+      });
+    } catch (err) {
+      console.error('camera switch error', err);
+      toast.error('Δεν άνοιξε το επιλεγμένο σήμα κάμερας');
+    }
+  };
+
   const sendOrToast = async (label: string, packet: Uint8Array) => {
     if (!conn.current) {
       toast.error('Δεν υπάρχει σύνδεση με κάμερα');
@@ -101,9 +137,9 @@ const BlackmagicViewPage: React.FC = () => {
     }
     try {
       await conn.current.send(packet);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(label, err);
-      toast.error(`${label}: ${err?.message || 'σφάλμα'}`);
+      toast.error(`${label}: ${getErrorMessage(err, 'σφάλμα')}`);
     }
   };
 
@@ -201,10 +237,7 @@ const BlackmagicViewPage: React.FC = () => {
                 <select
                   className="border border-border bg-background px-2 py-1 text-sm rounded-none"
                   value={selectedDeviceId || ''}
-                  onChange={(e) => {
-                    setSelectedDeviceId(e.target.value);
-                    localStorage.setItem('blackmagic_camera_device_id', e.target.value);
-                  }}
+                  onChange={(e) => handleCameraChange(e.target.value)}
                 >
                   {devices.length === 0 && <option value="">— καμία —</option>}
                   {devices.map((d, i) => (
@@ -215,7 +248,7 @@ const BlackmagicViewPage: React.FC = () => {
                 </select>
               </div>
               <div className="aspect-video w-full bg-black">
-                <CameraFeed deviceId={selectedDeviceId || undefined} className="w-full h-full" />
+                <CameraFeed deviceId={selectedDeviceId || undefined} stream={cameraStream} className="w-full h-full" />
               </div>
               <p className="text-xs text-muted-foreground">
                 Συνδέστε την Blackmagic στο iPad/PC μέσω HDMI→USB capture (π.χ. ATEM Mini, Cam Link) για να εμφανίζεται εδώ.

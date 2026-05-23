@@ -4,14 +4,30 @@ import { Video } from 'lucide-react';
 interface CameraFeedProps {
   deviceId?: string | null;
   className?: string;
+  stream?: MediaStream | null;
 }
 
-export const CameraFeed: React.FC<CameraFeedProps> = ({ deviceId, className }) => {
+export const CameraFeed: React.FC<CameraFeedProps> = ({ deviceId, className, stream }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [error, setError] = useState<string | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
+    if (!stream) return;
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
+
+    if (videoRef.current) {
+      videoRef.current.srcObject = stream;
+    }
+    setError(null);
+  }, [stream]);
+
+  useEffect(() => {
+    if (stream) return;
     let active = true;
 
     const startCamera = async () => {
@@ -51,7 +67,7 @@ export const CameraFeed: React.FC<CameraFeedProps> = ({ deviceId, className }) =
         streamRef.current = null;
       }
     };
-  }, [deviceId]);
+  }, [deviceId, stream]);
 
   if (error) {
     return (
