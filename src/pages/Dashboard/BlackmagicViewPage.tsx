@@ -23,8 +23,17 @@ const getErrorMessage = (error: unknown, fallback: string) => (
 );
 
 const BlackmagicViewPage: React.FC = () => {
+  const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [joinCode, setJoinCode] = useState('');
+
+  const handleJoinSession = () => {
+    const code = joinCode.trim();
+    if (/^\d{4}$/.test(code)) {
+      navigate(`/remote-camera/${code}`);
+    }
+  };
 
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(
