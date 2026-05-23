@@ -291,6 +291,6 @@ export async function connectNative(): Promise<BmdConnection> {
   };
 }
 
-export async function connectBlackmagic(): Promise<BmdConnection> {
-  return detectPlatform() === 'native' ? connectNative() : connectWeb();
+export async function connectBlackmagic(password?: string): Promise<BmdConnection> {
+  return detectPlatform() === 'native' ? connectNative() : connectWeb(password);
 }
