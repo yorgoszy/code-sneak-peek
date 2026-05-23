@@ -510,17 +510,17 @@ const BlackmagicViewPage: React.FC = () => {
       )}
 
       {/* Bottom control row */}
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-black/40 backdrop-blur p-2">
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-black/40 backdrop-blur p-1.5">
         {overlayButton('focus', Focus, 'Focus', focus[0].toFixed(2))}
         <button
           type="button"
           onClick={() => sendOrToast('Autofocus', Commands.autoFocus())}
           disabled={!connectedName}
-          className="flex flex-col items-center justify-center gap-0.5 px-3 py-2 min-w-[64px] text-white border border-white/30 bg-black/50 hover:bg-black/70 disabled:opacity-40"
+          className="flex flex-col items-center justify-center gap-0.5 px-2 py-1 min-w-[44px] text-white border border-white/30 bg-black/50 hover:bg-black/70 disabled:opacity-40"
         >
-          <Focus className="h-5 w-5" />
-          <span className="text-[10px] leading-none uppercase tracking-wide">Auto</span>
-          <span className="text-[10px] leading-none opacity-80">Focus</span>
+          <Focus className="h-3.5 w-3.5" />
+          <span className="text-[9px] leading-none uppercase tracking-wide">Auto</span>
+          <span className="text-[9px] leading-none opacity-80">Focus</span>
         </button>
         {overlayButton('iris', Aperture, 'Iris', fStop !== null ? `f/${fStop.toFixed(1)}` : iris[0].toFixed(2))}
         {overlayButton('wb', Thermometer, 'WB', `${wb[0]}K`)}
@@ -530,12 +530,12 @@ const BlackmagicViewPage: React.FC = () => {
           onClick={toggleRecord}
           disabled={!connectedName}
           aria-label={recording ? 'Stop recording' : 'Start recording'}
-          className="flex items-center justify-center w-14 h-14 border-2 border-white/60 bg-black/50 hover:bg-black/70 disabled:opacity-40 ml-2"
+          className="flex items-center justify-center w-11 h-11 border-2 border-white/60 bg-black/50 hover:bg-black/70 disabled:opacity-40 ml-1"
         >
           {recording ? (
-            <span className="block w-5 h-5 bg-red-600" />
+            <span className="block w-3.5 h-3.5 bg-red-600" />
           ) : (
-            <span className="block w-8 h-8 rounded-full bg-red-600" />
+            <span className="block w-6 h-6 rounded-full bg-red-600" />
           )}
         </button>
       </div>
