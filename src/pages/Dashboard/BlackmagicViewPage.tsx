@@ -84,24 +84,25 @@ const BlackmagicViewPage: React.FC = () => {
         }
         const cams = all.filter(d => d.kind === 'videoinput');
         setDevices(cams);
+        const HD = {
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          frameRate: { ideal: 60, max: 60 },
+        } as const;
         const saved = localStorage.getItem('blackmagic_camera_device_id');
         const savedExists = saved && cams.some(c => c.deviceId === saved);
         if (savedExists) {
           setSelectedDeviceId(saved!);
-          const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: saved! } }, audio: false });
+          const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: saved! }, ...HD }, audio: false });
           tmp?.getTracks().forEach(t => t.stop());
           setCameraStream(stream);
         } else if (cams.length) {
           const preferred = cams.find(c => /capture|blackmagic|hdmi|usb|cam ?link|atem/i.test(c.label));
           const deviceId = (preferred || cams[0]).deviceId;
           setSelectedDeviceId(deviceId);
-          if (preferred) {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: deviceId } }, audio: false });
-            tmp?.getTracks().forEach(t => t.stop());
-            setCameraStream(stream);
-          } else if (tmp) {
-            setCameraStream(tmp);
-          }
+          const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: deviceId }, ...HD }, audio: false });
+          tmp?.getTracks().forEach(t => t.stop());
+          setCameraStream(stream);
         } else {
           tmp?.getTracks().forEach(t => t.stop());
         }
@@ -173,7 +174,15 @@ const BlackmagicViewPage: React.FC = () => {
     setSelectedDeviceId(deviceId);
     localStorage.setItem('blackmagic_camera_device_id', deviceId);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: deviceId } }, audio: false });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          deviceId: { exact: deviceId },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          frameRate: { ideal: 60, max: 60 },
+        },
+        audio: false,
+      });
       setCameraStream(prev => {
         prev?.getTracks().forEach(t => t.stop());
         return stream;
