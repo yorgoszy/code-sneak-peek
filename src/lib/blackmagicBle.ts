@@ -101,6 +101,12 @@ export interface BmdConnection {
   disconnect: () => Promise<void>;
 }
 
+const CLIENT_NAME = 'HyperKids';
+
+function encodeName(name: string): Uint8Array {
+  return new TextEncoder().encode(name);
+}
+
 export async function connectWeb(): Promise<BmdConnection> {
   const nav = navigator as any;
   if (!nav.bluetooth) throw new Error('Web Bluetooth not supported in this browser');
@@ -110,11 +116,45 @@ export async function connectWeb(): Promise<BmdConnection> {
   });
   const server = await device.gatt!.connect();
   const service = await server.getPrimaryService(BMD_SERVICE);
+
+  // 1) Write client name → triggers pairing/PIN dialog on camera
+  try {
+    const nameChar = await service.getCharacteristic(BMD_DEVICE_NAME);
+    await nameChar.writeValue(encodeName(CLIENT_NAME));
+  } catch (e) {
+    console.warn('[BMD] device name write failed', e);
+  }
+
+  // 2) Enable notifications on Camera Status (required for pairing handshake)
+  try {
+    const statusChar = await service.getCharacteristic(BMD_CAMERA_STATUS);
+    await statusChar.startNotifications();
+    statusChar.addEventListener('characteristicvaluechanged', (ev: any) => {
+      const v = new Uint8Array(ev.target.value.buffer);
+      console.log('[BMD] status', v[0]);
+    });
+  } catch (e) {
+    console.warn('[BMD] status notifications failed', e);
+  }
+
+  // 3) Enable notifications on Incoming Camera Control (keeps link alive)
+  try {
+    const incoming = await service.getCharacteristic(BMD_INCOMING_CC);
+    await incoming.startNotifications();
+  } catch (e) {
+    console.warn('[BMD] incoming notifications failed', e);
+  }
+
   const outgoing = await service.getCharacteristic(BMD_OUTGOING_CC);
   return {
     name: device.name || 'Blackmagic Camera',
     send: async (packet) => {
-      await outgoing.writeValueWithResponse(packet);
+      // Use writeWithoutResponse — Blackmagic outgoing CC is write-without-response
+      if (outgoing.writeValueWithoutResponse) {
+        await outgoing.writeValueWithoutResponse(packet);
+      } else {
+        await outgoing.writeValue(packet);
+      }
     },
     disconnect: async () => {
       try { device.gatt?.disconnect(); } catch { /* noop */ }
@@ -129,10 +169,47 @@ export async function connectNative(): Promise<BmdConnection> {
     optionalServices: [BMD_SERVICE],
   });
   await BleClient.connect(device.deviceId, () => { /* on disconnect */ });
+
+  // 1) Write client name → triggers PIN pairing on the camera
+  try {
+    await BleClient.write(
+      device.deviceId,
+      BMD_SERVICE,
+      BMD_DEVICE_NAME,
+      numbersToDataView(Array.from(encodeName(CLIENT_NAME)))
+    );
+  } catch (e) {
+    console.warn('[BMD native] device name write failed', e);
+  }
+
+  // 2) Subscribe to Camera Status (pairing handshake)
+  try {
+    await BleClient.startNotifications(
+      device.deviceId,
+      BMD_SERVICE,
+      BMD_CAMERA_STATUS,
+      (value) => { console.log('[BMD native] status', value.getUint8(0)); }
+    );
+  } catch (e) {
+    console.warn('[BMD native] status notifications failed', e);
+  }
+
+  // 3) Subscribe to Incoming CC
+  try {
+    await BleClient.startNotifications(
+      device.deviceId,
+      BMD_SERVICE,
+      BMD_INCOMING_CC,
+      () => { /* noop */ }
+    );
+  } catch (e) {
+    console.warn('[BMD native] incoming notifications failed', e);
+  }
+
   return {
     name: device.name || 'Blackmagic Camera',
     send: async (packet) => {
-      await BleClient.write(
+      await BleClient.writeWithoutResponse(
         device.deviceId,
         BMD_SERVICE,
         BMD_OUTGOING_CC,
