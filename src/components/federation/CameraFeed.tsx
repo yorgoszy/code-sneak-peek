@@ -14,15 +14,10 @@ export const CameraFeed: React.FC<CameraFeedProps> = ({ deviceId, className, str
 
   useEffect(() => {
     if (!stream) return;
-
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(t => t.stop());
-      streamRef.current = null;
-    }
-
-    if (videoRef.current) {
-      videoRef.current.srcObject = stream;
-      videoRef.current.play().catch(err => console.warn('Video play failed:', err));
+    const v = videoRef.current;
+    if (v && v.srcObject !== stream) {
+      v.srcObject = stream;
+      v.play().catch(err => console.warn('Video play failed:', err));
     }
     setError(null);
   }, [stream]);
