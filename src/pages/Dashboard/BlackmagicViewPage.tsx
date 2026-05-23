@@ -7,7 +7,8 @@ import { Slider } from '@/components/ui/slider';
 import { BlueSlider }  from '@/components/ui/blue-slider';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { QRCodeSVG } from 'qrcode.react';
-import { Menu, Bluetooth, BluetoothOff, Video as VideoIcon, Circle, Square, Focus, Sun, Cloud, CloudSun, Lightbulb, Zap, Home, RefreshCw, Maximize2, Minimize2, Aperture, Thermometer, Gauge, Share2, Copy, Check } from 'lucide-react';
+import jsQR from 'jsqr';
+import { Menu, Bluetooth, BluetoothOff, Video as VideoIcon, Circle, Square, Focus, Sun, Cloud, CloudSun, Lightbulb, Zap, Home, RefreshCw, Maximize2, Minimize2, Aperture, Thermometer, Gauge, Share2, Copy, Check, QrCode } from 'lucide-react';
 import { CameraFeed } from '@/components/federation/CameraFeed';
 import {
   connectBlackmagic,
@@ -61,6 +62,11 @@ const BlackmagicViewPage: React.FC = () => {
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [isPortrait, setIsPortrait] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const qrVideoRef = useRef<HTMLVideoElement>(null);
+  const qrCanvasRef = useRef<HTMLCanvasElement>(null);
+  const qrScanStreamRef = useRef<MediaStream | null>(null);
+  const [qrScanOpen, setQrScanOpen] = useState(false);
+  const [qrScanError, setQrScanError] = useState('');
 
   useEffect(() => {
     const mqSmall = window.matchMedia('(max-width: 1023px)');
@@ -92,6 +98,82 @@ const BlackmagicViewPage: React.FC = () => {
       console.warn('fullscreen error', err);
     }
   };
+
+  const stopQrScanStream = useCallback(() => {
+    qrScanStreamRef.current?.getTracks().forEach((track) => track.stop());
+    qrScanStreamRef.current = null;
+  }, []);
+
+  const closeQrScanner = useCallback(() => {
+    setQrScanOpen(false);
+    stopQrScanStream();
+  }, [stopQrScanStream]);
+
+  const extractSessionCode = useCallback((value: string) => {
+    const urlMatch = value.match(/\/remote-camera\/(\d{4})\b/);
+    if (urlMatch) return urlMatch[1];
+    const plainMatch = value.trim().match(/^\d{4}$/) || value.match(/\b(\d{4})\b/);
+    return plainMatch?.[1] || plainMatch?.[0] || null;
+  }, []);
+
+  useEffect(() => {
+    if (!qrScanOpen) return;
+    let cancelled = false;
+    let frame = 0;
+
+    const startScanner = async () => {
+      try {
+        setQrScanError('');
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: false,
+        });
+        if (cancelled) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+        qrScanStreamRef.current = stream;
+        const video = qrVideoRef.current;
+        const canvas = qrCanvasRef.current;
+        if (!video || !canvas) return;
+        video.srcObject = stream;
+        await video.play().catch(() => {});
+
+        const scan = () => {
+          if (cancelled) return;
+          if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && video.videoWidth && video.videoHeight) {
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            if (ctx) {
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+              const result = jsQR(imageData.data, imageData.width, imageData.height);
+              const code = result?.data ? extractSessionCode(result.data) : null;
+              if (code) {
+                setJoinCode(code);
+                closeQrScanner();
+                navigate(`/remote-camera/${code}`);
+                return;
+              }
+            }
+          }
+          frame = requestAnimationFrame(scan);
+        };
+        frame = requestAnimationFrame(scan);
+      } catch (err) {
+        console.error('QR scanner error', err);
+        setQrScanError('Δεν άνοιξε η κάμερα για scan QR.');
+      }
+    };
+
+    startScanner();
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frame);
+      stopQrScanStream();
+    };
+  }, [closeQrScanner, extractSessionCode, navigate, qrScanOpen, stopQrScanStream]);
 
 
   // Throttle live BLE sends per control to avoid flooding (~50ms)
@@ -126,7 +208,7 @@ const BlackmagicViewPage: React.FC = () => {
         // If we already have permission, skip the slow getUserMedia probe and
         // enumerate directly — labels will already be available.
         let all = await navigator.mediaDevices.enumerateDevices();
-        let hasLabels = all.some(d => d.kind === 'videoinput' && d.label);
+        const hasLabels = all.some(d => d.kind === 'videoinput' && d.label);
         let tmp: MediaStream | null = null;
         if (!hasLabels) {
           // First time: ask for permission with minimal constraints to open as fast as possible.
@@ -354,14 +436,14 @@ const BlackmagicViewPage: React.FC = () => {
   };
 
   const stopSharing = () => {
-    try { hostSessionRef.current?.close(); } catch {}
+    try { hostSessionRef.current?.close(); } catch (err) { console.warn('stop sharing error', err); }
     hostSessionRef.current = null;
     setSessionId(null);
     setViewerCount(0);
     setShareOpen(false);
   };
 
-  useEffect(() => () => { try { hostSessionRef.current?.close(); } catch {} }, []);
+  useEffect(() => () => { try { hostSessionRef.current?.close(); } catch (err) { console.warn('host session cleanup error', err); } }, []);
 
   // Use the production PWA origin so that, on iOS/Android, scanning the QR
   // opens the installed PWA (in-scope deep link) instead of the browser.
@@ -376,7 +458,7 @@ const BlackmagicViewPage: React.FC = () => {
       await navigator.clipboard.writeText(remoteUrl);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 1500);
-    } catch {}
+    } catch (err) { console.warn('copy remote link error', err); }
   };
 
 
@@ -598,9 +680,9 @@ const BlackmagicViewPage: React.FC = () => {
 
       {/* TOP: all controls in one row at the very top */}
       <div
-        className={`absolute top-1 left-2 right-2 z-20 flex items-start justify-between gap-2 pointer-events-none transition-opacity duration-200 ${controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`absolute top-1 left-2 right-2 z-40 flex items-start justify-between gap-2 pointer-events-none transition-opacity duration-200 ${controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       >
-        <div className="flex items-center gap-1 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-1 pointer-events-auto" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
           {devices.length > 0 && (
             <select
               className="bg-transparent text-white px-2 py-1 text-xs rounded-none max-w-[160px]"
@@ -633,9 +715,18 @@ const BlackmagicViewPage: React.FC = () => {
           >
             Join
           </button>
+          <button
+            type="button"
+            onClick={() => setQrScanOpen(true)}
+            className="text-white px-2 py-1 border border-white/30 hover:bg-white/10"
+            aria-label="Scan QR"
+            title="Scan QR"
+          >
+            <QrCode className="h-4 w-4" />
+          </button>
         </div>
 
-        <div className="flex items-center gap-1 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-1 pointer-events-auto" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
           {overlayButton('focus', Focus, 'Focus', focus[0].toFixed(2))}
           <button
             type="button"
@@ -663,7 +754,7 @@ const BlackmagicViewPage: React.FC = () => {
 
       {/* Slider popover (appears below top controls when active) */}
       {activeControl && controlsVisible && (
-        <div className="absolute left-1/2 -translate-x-1/2 top-14 z-20 w-[92%] max-w-xl pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute left-1/2 -translate-x-1/2 top-14 z-40 w-[92%] max-w-xl pointer-events-auto touch-none" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
           {renderSliderPanel()}
         </div>
       )}
@@ -688,30 +779,54 @@ const BlackmagicViewPage: React.FC = () => {
     </>
   );
 
+  const renderQrScannerDialog = () => (
+    <Dialog open={qrScanOpen} onOpenChange={(open) => (open ? setQrScanOpen(true) : closeQrScanner())}>
+      <DialogContent className="rounded-none max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Scan QR</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="relative overflow-hidden bg-black" style={{ aspectRatio: '1 / 1' }}>
+            <video ref={qrVideoRef} className="h-full w-full object-cover" autoPlay playsInline muted />
+            <canvas ref={qrCanvasRef} className="hidden" />
+            <div className="absolute inset-8 border-2 border-primary pointer-events-none" />
+          </div>
+          {qrScanError && <p className="text-sm text-destructive">{qrScanError}</p>}
+          <Button variant="outline" className="w-full rounded-none" onClick={closeQrScanner}>
+            Κλείσιμο
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+
 
   // ── IMMERSIVE FULLSCREEN MODE (mobile/tablet always, desktop on fullscreen) ──
   if (immersive) {
     const forceLandscape = isSmallScreen && isPortrait;
 
     return (
-      <div ref={containerRef} className="fixed inset-0 z-50 bg-black overflow-hidden">
-        <div
-          className={forceLandscape ? 'absolute left-1/2 top-1/2 bg-black overflow-hidden' : 'absolute inset-0 bg-black overflow-hidden'}
-          style={forceLandscape ? {
-            width: '100dvh',
-            height: '100dvw',
-            transform: 'translate(-50%, -50%) rotate(90deg)',
-            transformOrigin: 'center',
-          } : undefined}
-        >
-          <CameraFeed
-            deviceId={selectedDeviceId || undefined}
-            stream={cameraStream}
-            className="absolute inset-0 w-full h-full object-contain"
-          />
-          {renderOverlay()}
+      <>
+        <div ref={containerRef} className="fixed inset-0 z-50 bg-black overflow-hidden">
+          <div
+            className={forceLandscape ? 'absolute left-1/2 top-1/2 bg-black overflow-hidden' : 'absolute inset-0 bg-black overflow-hidden'}
+            style={forceLandscape ? {
+              width: '100dvh',
+              height: '100dvw',
+              transform: 'translate(-50%, -50%) rotate(90deg)',
+              transformOrigin: 'center',
+            } : undefined}
+          >
+            <CameraFeed
+              deviceId={selectedDeviceId || undefined}
+              stream={cameraStream}
+              className="absolute inset-0 w-full h-full object-contain"
+            />
+            {renderOverlay()}
+          </div>
         </div>
-      </div>
+        {renderQrScannerDialog()}
+      </>
     );
   }
 
@@ -801,6 +916,14 @@ const BlackmagicViewPage: React.FC = () => {
                 >
                   Join
                 </Button>
+                <Button
+                  variant="outline"
+                  className="rounded-none"
+                  onClick={() => setQrScanOpen(true)}
+                  title="Scan QR συνεδρίας"
+                >
+                  <QrCode className="h-4 w-4" />
+                </Button>
               </div>
               <Button variant="outline" className="rounded-none" onClick={toggleFullscreen}>
                 <Maximize2 className="h-4 w-4 mr-2" />
@@ -881,6 +1004,7 @@ const BlackmagicViewPage: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
+      {renderQrScannerDialog()}
     </div>
   );
 };

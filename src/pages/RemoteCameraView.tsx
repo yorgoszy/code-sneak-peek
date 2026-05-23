@@ -11,6 +11,17 @@ import {
   type RemoteState,
 } from '@/lib/blackmagicRemoteSession';
 
+type WebkitFullscreenDocument = Document & {
+  webkitFullscreenElement?: Element | null;
+  webkitExitFullscreen?: () => Promise<void> | void;
+};
+
+type WebkitFullscreenElement = HTMLElement & {
+  webkitRequestFullscreen?: () => Promise<void> | void;
+};
+
+type StandaloneNavigator = Navigator & { standalone?: boolean };
+
 const RemoteCameraView: React.FC = () => {
   const { sessionId = '' } = useParams();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -59,12 +70,12 @@ const RemoteCameraView: React.FC = () => {
   const isFullscreen = nativeFullscreen || immersiveFullscreen;
 
   useEffect(() => {
-    const onFs = () => setNativeFullscreen(!!(document.fullscreenElement || (document as any).webkitFullscreenElement));
+    const onFs = () => setNativeFullscreen(!!(document.fullscreenElement || (document as WebkitFullscreenDocument).webkitFullscreenElement));
     document.addEventListener('fullscreenchange', onFs);
-    document.addEventListener('webkitfullscreenchange', onFs as any);
+    document.addEventListener('webkitfullscreenchange', onFs);
     return () => {
       document.removeEventListener('fullscreenchange', onFs);
-      document.removeEventListener('webkitfullscreenchange', onFs as any);
+      document.removeEventListener('webkitfullscreenchange', onFs);
     };
   }, []);
 
@@ -103,13 +114,13 @@ const RemoteCameraView: React.FC = () => {
 
   const toggleFullscreen = async () => {
     try {
-      const anyDoc = document as any;
-      const anyNav = navigator as any;
+      const webkitDoc = document as WebkitFullscreenDocument;
+      const standaloneNav = navigator as StandaloneNavigator;
       const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-      const standalone = window.matchMedia('(display-mode: standalone)').matches || anyNav.standalone === true;
-      const isFs = !!(document.fullscreenElement || anyDoc.webkitFullscreenElement) || immersiveFullscreen;
+      const standalone = window.matchMedia('(display-mode: standalone)').matches || standaloneNav.standalone === true;
+      const isFs = !!(document.fullscreenElement || webkitDoc.webkitFullscreenElement) || immersiveFullscreen;
       if (!isFs) {
-        const el: any = containerRef.current || document.documentElement;
+        const el = (containerRef.current || document.documentElement) as WebkitFullscreenElement;
         if (!isiOS && el.requestFullscreen) await el.requestFullscreen();
         else if (!isiOS && el.webkitRequestFullscreen) el.webkitRequestFullscreen();
         else {
@@ -122,9 +133,9 @@ const RemoteCameraView: React.FC = () => {
         setImmersiveFullscreen(false);
         setFullscreenHintVisible(false);
         if (document.fullscreenElement && document.exitFullscreen) await document.exitFullscreen();
-        else if (anyDoc.webkitExitFullscreen) anyDoc.webkitExitFullscreen();
+        else if (webkitDoc.webkitExitFullscreen) webkitDoc.webkitExitFullscreen();
       }
-    } catch {}
+    } catch (err) { console.warn('fullscreen toggle error', err); }
   };
 
   const overlayButton = (
@@ -272,9 +283,9 @@ const RemoteCameraView: React.FC = () => {
 
       {/* Top controls */}
       <div
-        className={`absolute top-1 left-2 right-2 z-20 flex items-start justify-end gap-2 pointer-events-none transition-opacity ${controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`absolute top-1 left-2 right-2 z-40 flex items-start justify-end gap-2 pointer-events-none transition-opacity ${controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       >
-        <div className="flex items-center gap-1 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-1 pointer-events-auto" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
           {overlayButton('focus', Focus, 'Focus', focus.toFixed(2))}
           {overlayButton('iris', Aperture, 'Iris', iris.toFixed(2))}
           {overlayButton('wb', Thermometer, 'WB', `${wb}K`)}
@@ -291,7 +302,7 @@ const RemoteCameraView: React.FC = () => {
       </div>
 
       {activeControl && controlsVisible && (
-        <div className="absolute left-1/2 -translate-x-1/2 top-14 z-20 w-[92%] max-w-xl pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute left-1/2 -translate-x-1/2 top-14 z-40 w-[92%] max-w-xl pointer-events-auto touch-none" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
           {renderSliderPanel()}
         </div>
       )}
