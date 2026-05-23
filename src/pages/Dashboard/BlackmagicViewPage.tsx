@@ -916,6 +916,14 @@ const BlackmagicViewPage: React.FC = () => {
                 >
                   Join
                 </Button>
+                <Button
+                  variant="outline"
+                  className="rounded-none"
+                  onClick={() => setQrScanOpen(true)}
+                  title="Scan QR συνεδρίας"
+                >
+                  <QrCode className="h-4 w-4" />
+                </Button>
               </div>
               <Button variant="outline" className="rounded-none" onClick={toggleFullscreen}>
                 <Maximize2 className="h-4 w-4 mr-2" />
@@ -996,6 +1004,7 @@ const BlackmagicViewPage: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
+      {renderQrScannerDialog()}
     </div>
   );
 };
