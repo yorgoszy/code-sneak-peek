@@ -382,18 +382,29 @@ const BlackmagicViewPage: React.FC = () => {
                   <span>ISO</span>
                   <span className="text-muted-foreground">{iso[0]}</span>
                 </div>
-                <Slider
-                  value={iso}
-                  min={100}
-                  max={25600}
-                  step={100}
-                  onValueChange={setIso}
-                  onValueCommit={(v) => {
-                    const isoValue = Math.round(v[0]);
-                    setIso([isoValue]);
-                    if (connectedName) sendOrToast(`ISO ${isoValue}`, Commands.iso(isoValue));
-                  }}
-                />
+                {(() => {
+                  const ISO_STEPS = [100, 200, 400, 800, 1600, 3200, 6400, 12800, 25600];
+                  const snapIso = (val: number) => {
+                    return ISO_STEPS.reduce((prev, curr) =>
+                      Math.abs(curr - val) < Math.abs(prev - val) ? curr : prev
+                    );
+                  };
+                  const currentIdx = Math.max(0, ISO_STEPS.indexOf(snapIso(iso[0])));
+                  return (
+                    <Slider
+                      value={[currentIdx]}
+                      min={0}
+                      max={ISO_STEPS.length - 1}
+                      step={1}
+                      onValueChange={(v) => setIso([ISO_STEPS[v[0]]])}
+                      onValueCommit={(v) => {
+                        const isoValue = ISO_STEPS[v[0]];
+                        setIso([isoValue]);
+                        if (connectedName) sendOrToast(`ISO ${isoValue}`, Commands.iso(isoValue));
+                      }}
+                    />
+                  );
+                })()}
                 <div className="grid grid-cols-3 gap-2">
                   {[400, 800, 1600].map((isoVal) => (
                     <Button
