@@ -3,7 +3,7 @@ import { Sidebar } from '@/components/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
-import { Menu, Bluetooth, BluetoothOff, Video as VideoIcon, Circle, Square, Focus, Sun, Cloud, CloudSun, Lightbulb, Zap } from 'lucide-react';
+import { Menu, Bluetooth, BluetoothOff, Video as VideoIcon, Circle, Square, Focus, Sun, Cloud, CloudSun, Lightbulb, Zap, Home } from 'lucide-react';
 import { CameraFeed } from '@/components/federation/CameraFeed';
 import {
   connectBlackmagic,
@@ -426,10 +426,11 @@ const BlackmagicViewPage: React.FC = () => {
                     if (connectedName) sendOrToast(`WB ${kelvin}K`, Commands.whiteBalance(kelvin));
                   }}
                 />
-                <div className="grid grid-cols-5 gap-2">
+                <div className="grid grid-cols-6 gap-2">
                   {[
                     { k: 3200, label: 'Tungsten', Icon: Lightbulb },
                     { k: 4000, label: 'Fluorescent', Icon: Zap },
+                    { k: 4500, label: 'Indoor', Icon: Home },
                     { k: 5600, label: 'Daylight', Icon: Sun },
                     { k: 6500, label: 'Cloudy', Icon: Cloud },
                     { k: 7500, label: 'Shade', Icon: CloudSun },
