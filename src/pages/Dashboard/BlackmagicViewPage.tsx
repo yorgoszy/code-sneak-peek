@@ -479,7 +479,7 @@ const BlackmagicViewPage: React.FC = () => {
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
             {connectedName ? (
-              <Button size="sm" variant="outline" className="rounded-none bg-black/50 text-white hover:bg-black/70 border-1 border-white/10" onClick={handleDisconnect}>
+              <Button size="sm" variant="outline" className="rounded-none bg-transparent text-white hover:bg-white/10 border-0" onClick={handleDisconnect}>
                 <BluetoothOff className="h-4 w-4 mr-1" />
                 <span className="text-xs truncate max-w-[140px]">{connectedName}</span>
               </Button>
