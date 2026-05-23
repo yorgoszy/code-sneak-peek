@@ -171,7 +171,7 @@ function App() {
                       <Route path="/auth/reset-password" element={<ResetPassword />} />
                       <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/dashboard/notification-preferences" element={<ProtectedRoute><NotificationPreferencesPage /></ProtectedRoute>} />
-                      <Route path="/dashboard/blackmagic-view" element={<ProtectedRoute requireAdmin><BlackmagicViewPage /></ProtectedRoute>} />
+                      <Route path="/dashboard/blackmagic-view" element={<ProtectedRoute><BlackmagicViewPage /></ProtectedRoute>} />
                       <Route path="/remote-camera/:sessionId" element={<RemoteCameraView />} />
                       <Route path="/privacy" element={<PrivacyPolicy />} />
                       <Route path="/terms" element={<TermsOfService />} />
