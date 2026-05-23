@@ -104,7 +104,7 @@ export interface BmdConnection {
 export async function connectWeb(): Promise<BmdConnection> {
   const nav = navigator as any;
   if (!nav.bluetooth) throw new Error('Web Bluetooth not supported in this browser');
-  const device: BluetoothDevice = await nav.bluetooth.requestDevice({
+  const device: any = await nav.bluetooth.requestDevice({
     filters: [{ services: [BMD_SERVICE] }],
     optionalServices: [BMD_SERVICE],
   });
