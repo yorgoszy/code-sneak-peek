@@ -55,19 +55,31 @@ const RemoteCameraView: React.FC = () => {
   }, [sessionId]);
 
   useEffect(() => {
-    const onFs = () => setIsFullscreen(!!document.fullscreenElement);
+    const onFs = () => setIsFullscreen(!!(document.fullscreenElement || (document as any).webkitFullscreenElement));
     document.addEventListener('fullscreenchange', onFs);
-    return () => document.removeEventListener('fullscreenchange', onFs);
+    document.addEventListener('webkitfullscreenchange', onFs as any);
+    return () => {
+      document.removeEventListener('fullscreenchange', onFs);
+      document.removeEventListener('webkitfullscreenchange', onFs as any);
+    };
   }, []);
 
   const send = sessionRef.current?.send ?? (() => {});
 
   const toggleFullscreen = async () => {
     try {
-      if (!document.fullscreenElement) {
-        await (containerRef.current || document.documentElement).requestFullscreen();
+      const anyDoc = document as any;
+      const isFs = !!(document.fullscreenElement || anyDoc.webkitFullscreenElement);
+      if (!isFs) {
+        const el: any = containerRef.current || document.documentElement;
+        if (el.requestFullscreen) await el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        else if ((videoRef.current as any)?.webkitEnterFullscreen) {
+          (videoRef.current as any).webkitEnterFullscreen();
+        }
       } else {
-        await document.exitFullscreen();
+        if (document.exitFullscreen) await document.exitFullscreen();
+        else if (anyDoc.webkitExitFullscreen) anyDoc.webkitExitFullscreen();
       }
     } catch {}
   };
@@ -105,13 +117,6 @@ const RemoteCameraView: React.FC = () => {
             step={0.01}
             onValueChange={(v) => { setFocus(v[0]); send({ type: 'focus', value: v[0] }); }}
           />
-          <Button
-            variant="outline"
-            className="w-full rounded-none mt-3 bg-white/10 border-white/30 text-white hover:bg-white/20"
-            onClick={() => send({ type: 'autofocus' })}
-          >
-            Auto Focus
-          </Button>
         </div>
       );
     }
@@ -146,13 +151,6 @@ const RemoteCameraView: React.FC = () => {
             step={50}
             onValueChange={(v) => { const k = Math.round(v[0]); setWb(k); send({ type: 'wb', value: k }); }}
           />
-          <Button
-            variant="outline"
-            className="w-full rounded-none mt-3 bg-white/10 border-white/30 text-white hover:bg-white/20"
-            onClick={() => send({ type: 'autowb' })}
-          >
-            Auto WB
-          </Button>
         </div>
       );
     }
