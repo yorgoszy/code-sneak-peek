@@ -79,7 +79,7 @@ function buildPacket(
   const padded = Math.ceil(totalLen / 4) * 4;
   const buf = new Uint8Array(padded);
   buf[0] = 0xff; // destination broadcast, as used by working Blackmagic BLE libraries
-  buf[1] = padded - 4;
+  buf[1] = cmdLen;
   buf[2] = 0;
   buf[3] = 0;
   buf[4] = category;
