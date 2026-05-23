@@ -74,12 +74,11 @@ function buildPacket(
   operation: number,
   data: number[] = []
 ): Uint8Array {
-  const rawCmdLen = 4 + data.length;
-  const totalLen = 4 + rawCmdLen;
-  const padded = Math.ceil(totalLen / 4) * 4;
-  const buf = new Uint8Array(padded);
-  buf[0] = 0x01; // destination: camera 1 over Bluetooth
-  buf[1] = padded - 4;
+  const cmdLen = 4 + data.length;
+  const totalLen = 4 + cmdLen;
+  const buf = new Uint8Array(totalLen);
+  buf[0] = 0xff; // destination broadcast, as used by working Blackmagic BLE libraries
+  buf[1] = cmdLen;
   buf[2] = 0;
   buf[3] = 0;
   buf[4] = category;
@@ -205,7 +204,11 @@ export async function connectWeb(): Promise<BmdConnection> {
     name: device.name || 'Blackmagic Camera',
     send: async (packet) => {
       console.log('[BMD] outgoing', Array.from(packet));
-      await writeWebCharacteristic(outgoing, packet);
+      if (outgoing.writeValueWithoutResponse) {
+        await outgoing.writeValueWithoutResponse(packet);
+      } else {
+        await outgoing.writeValue(packet);
+      }
     },
     disconnect: async () => {
       try { device.gatt?.disconnect(); } catch { /* noop */ }
@@ -275,7 +278,7 @@ export async function connectNative(): Promise<BmdConnection> {
     name: device.name || 'Blackmagic Camera',
     send: async (packet) => {
       console.log('[BMD native] outgoing', Array.from(packet));
-      await BleClient.write(
+      await BleClient.writeWithoutResponse(
         device.deviceId,
         BMD_SERVICE,
         BMD_OUTGOING_CC,
