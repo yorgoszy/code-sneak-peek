@@ -522,7 +522,7 @@ const BlackmagicViewPage: React.FC = () => {
             type="button"
             onClick={() => sendOrToast('Autofocus', Commands.autoFocus())}
             disabled={!connectedName}
-            className="flex flex-col items-center justify-center gap-1 px-2 py-1 min-w-[44px] text-white bg-black/50 hover:bg-black/70 disabled:opacity-40"
+            className="flex flex-col items-center justify-center gap-1 px-2 py-1 min-w-[44px] text-white hover:bg-white/10 disabled:opacity-40"
           >
             <Focus className="h-3.5 w-3.5" />
             <span className="text-[9px] leading-none uppercase tracking-wide">Auto</span>
