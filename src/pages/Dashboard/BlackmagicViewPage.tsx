@@ -199,15 +199,13 @@ const BlackmagicViewPage: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              {!connectedName && (
-                <input
-                  type="password"
-                  placeholder="Remote password (αν χρειάζεται)"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="border border-border bg-background px-2 py-1 text-sm rounded-none w-56"
-                />
-              )}
+              <input
+                type="password"
+                placeholder="Remote Password (αν υπάρχει)"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="border border-border bg-background px-3 py-1.5 text-sm rounded-none w-64"
+              />
               {connectedName ? (
                 <Button variant="outline" className="rounded-none" onClick={handleDisconnect}>
                   <BluetoothOff className="h-4 w-4 mr-2" />
@@ -224,15 +222,13 @@ const BlackmagicViewPage: React.FC = () => {
 
           {/* Mobile connect bar */}
           <div className="flex lg:hidden flex-col gap-2">
-            {!connectedName && (
-              <input
-                type="password"
-                placeholder="Remote password (αν χρειάζεται)"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="border border-border bg-background px-2 py-2 text-sm rounded-none w-full"
-              />
-            )}
+            <input
+              type="password"
+              placeholder="Remote Password (αν υπάρχει)"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="border border-border bg-background px-3 py-1.5 text-sm rounded-none w-full"
+            />
             {connectedName ? (
               <Button variant="outline" className="rounded-none w-full" onClick={handleDisconnect}>
                 <BluetoothOff className="h-4 w-4 mr-2" />
@@ -376,6 +372,7 @@ const BlackmagicViewPage: React.FC = () => {
           <Card className="rounded-none p-3 font-mono text-xs space-y-1 bg-muted/40">
             <div className="font-semibold text-sm">Debug</div>
             <div>BLE: <span className={connectedName ? 'text-green-500' : 'text-red-500'}>{connectedName || 'Αποσύνδετο'}</span></div>
+            <div>Κωδικός κάμερας: <span className="break-all">{password ? '•'.repeat(password.length) + ` (${password.length} χαρ.)` : '— (κενό)'}</span></div>
             <div>Packet: <span className="break-all">{lastPacket || '—'}</span></div>
             <div>Error: <span className="text-red-500">{lastError || '—'}</span></div>
           </Card>
