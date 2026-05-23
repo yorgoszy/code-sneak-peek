@@ -34,6 +34,7 @@ const BlackmagicViewPage: React.FC = () => {
   const [recording, setRecording] = useState(false);
   const [focus, setFocus] = useState([0.5]);
   const [iris, setIris] = useState([0.5]);
+  const [fStop, setFStop] = useState<number | null>(null);
   const [wb, setWb] = useState([5600]);
   const [iso, setIso] = useState([400]);
   const [lastPacket, setLastPacket] = useState<string>('');
@@ -101,6 +102,24 @@ const BlackmagicViewPage: React.FC = () => {
       const c = await connectBlackmagic(password || undefined);
       conn.current = c;
       setConnectedName(c.name);
+      c.onUpdate?.((u) => {
+        // category 0 = Lens
+        if (u.category === 0 && u.parameter === 2 && typeof u.value === 'number') {
+          // Aperture f-stop (AV): f = 2^(av/2)
+          setFStop(Math.pow(2, u.value / 2));
+        } else if (u.category === 0 && u.parameter === 3 && typeof u.value === 'number') {
+          // Aperture normalised 0..1
+          setIris([Math.max(0, Math.min(1, u.value))]);
+        } else if (u.category === 0 && u.parameter === 0 && typeof u.value === 'number') {
+          setFocus([Math.max(0, Math.min(1, u.value))]);
+        }
+        // category 1 = Video
+        else if (u.category === 1 && u.parameter === 2 && typeof u.value === 'number') {
+          setWb([u.value]);
+        } else if (u.category === 1 && u.parameter === 14 && typeof u.value === 'number') {
+          setIso([u.value]);
+        }
+      });
       toast.success(`Συνδέθηκε με ${c.name}`);
     } catch (err: unknown) {
       console.error(err);
@@ -327,7 +346,9 @@ const BlackmagicViewPage: React.FC = () => {
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   <span>Iris</span>
-                  <span className="text-muted-foreground">{iris[0].toFixed(2)}</span>
+                  <span className="text-muted-foreground">
+                    {fStop !== null ? `f/${fStop.toFixed(1)}` : iris[0].toFixed(2)}
+                  </span>
                 </div>
                 <Slider
                   value={iris}

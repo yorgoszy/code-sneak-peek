@@ -129,10 +129,47 @@ export const Commands = {
 
 // ---------- Connection wrapper ----------
 
+export interface BmdUpdate {
+  category: number;
+  parameter: number;
+  dataType: number;
+  /** decoded primary value for well-known parameters */
+  value?: number;
+  /** raw payload bytes */
+  raw: Uint8Array;
+}
+
 export interface BmdConnection {
   name: string;
   send: (packet: Uint8Array) => Promise<void>;
   disconnect: () => Promise<void>;
+  onUpdate?: (cb: (u: BmdUpdate) => void) => void;
+}
+
+// Parse incoming Camera Control packets (same wire format as outgoing).
+// May contain multiple commands back-to-back.
+function parseIncoming(data: Uint8Array, emit: (u: BmdUpdate) => void) {
+  let i = 0;
+  while (i + 8 <= data.length) {
+    const cmdLen = data[i + 1];
+    if (cmdLen < 4) break;
+    const padded = Math.ceil((4 + cmdLen) / 4) * 4;
+    if (i + padded > data.length) break;
+    const category = data[i + 4];
+    const parameter = data[i + 5];
+    const dataType = data[i + 6];
+    const payload = data.slice(i + 8, i + 4 + cmdLen);
+    let value: number | undefined;
+    try {
+      const dv = new DataView(payload.buffer, payload.byteOffset, payload.byteLength);
+      if (dataType === 1 && payload.length >= 1) value = dv.getInt8(0);
+      else if (dataType === 2 && payload.length >= 2) value = dv.getInt16(0, true);
+      else if (dataType === 3 && payload.length >= 4) value = dv.getInt32(0, true);
+      else if (dataType === 128 && payload.length >= 2) value = dv.getInt16(0, true) / 2048;
+    } catch { /* ignore */ }
+    emit({ category, parameter, dataType, value, raw: payload });
+    i += padded;
+  }
 }
 
 const CLIENT_NAME = 'HyperKids';
@@ -195,10 +232,17 @@ export async function connectWeb(password?: string): Promise<BmdConnection> {
     console.warn('[BMD] status notifications failed (non-fatal)', e);
   }
 
-  // 3) Subscribe to Incoming CC to keep the link alive.
+  // 3) Subscribe to Incoming CC to receive parameter updates from camera.
+  let updateCb: ((u: BmdUpdate) => void) | null = null;
   try {
     const incoming = await service.getCharacteristic(BMD_INCOMING_CC);
     await incoming.startNotifications();
+    incoming.addEventListener('characteristicvaluechanged', (ev: Event) => {
+      const target = ev.target as WebBluetoothCharacteristic | null;
+      if (!target?.value || !updateCb) return;
+      const bytes = new Uint8Array(target.value.buffer, target.value.byteOffset, target.value.byteLength);
+      parseIncoming(bytes, updateCb);
+    });
   } catch (e) {
     console.warn('[BMD] incoming CC notifications failed (non-fatal)', e);
   }
@@ -227,6 +271,7 @@ export async function connectWeb(password?: string): Promise<BmdConnection> {
     disconnect: async () => {
       try { device.gatt?.disconnect(); } catch { /* noop */ }
     },
+    onUpdate: (cb) => { updateCb = cb; },
   };
 }
 
@@ -262,13 +307,18 @@ export async function connectNative(): Promise<BmdConnection> {
     console.warn('[BMD native] status notifications failed', e);
   }
 
-  // 3) Subscribe to Incoming CC
+  // 3) Subscribe to Incoming CC and parse parameter updates
+  let updateCb: ((u: BmdUpdate) => void) | null = null;
   try {
     await BleClient.startNotifications(
       device.deviceId,
       BMD_SERVICE,
       BMD_INCOMING_CC,
-      () => { /* noop */ }
+      (value) => {
+        if (!updateCb) return;
+        const bytes = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+        parseIncoming(bytes, updateCb);
+      }
     );
   } catch (e) {
     console.warn('[BMD native] incoming notifications failed', e);
@@ -288,6 +338,7 @@ export async function connectNative(): Promise<BmdConnection> {
     disconnect: async () => {
       try { await BleClient.disconnect(device.deviceId); } catch { /* noop */ }
     },
+    onUpdate: (cb) => { updateCb = cb; },
   };
 }
 
