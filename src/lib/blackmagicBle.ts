@@ -307,13 +307,18 @@ export async function connectNative(): Promise<BmdConnection> {
     console.warn('[BMD native] status notifications failed', e);
   }
 
-  // 3) Subscribe to Incoming CC
+  // 3) Subscribe to Incoming CC and parse parameter updates
+  let updateCb: ((u: BmdUpdate) => void) | null = null;
   try {
     await BleClient.startNotifications(
       device.deviceId,
       BMD_SERVICE,
       BMD_INCOMING_CC,
-      () => { /* noop */ }
+      (value) => {
+        if (!updateCb) return;
+        const bytes = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+        parseIncoming(bytes, updateCb);
+      }
     );
   } catch (e) {
     console.warn('[BMD native] incoming notifications failed', e);
@@ -333,6 +338,7 @@ export async function connectNative(): Promise<BmdConnection> {
     disconnect: async () => {
       try { await BleClient.disconnect(device.deviceId); } catch { /* noop */ }
     },
+    onUpdate: (cb) => { updateCb = cb; },
   };
 }
 
