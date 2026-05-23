@@ -198,10 +198,19 @@ export async function connectWeb(): Promise<BmdConnection> {
   return {
     name: device.name || 'Blackmagic Camera',
     send: async (packet) => {
-      if (outgoing.writeValueWithoutResponse) {
-        await outgoing.writeValueWithoutResponse(packet);
-      } else {
-        await outgoing.writeValue(packet);
+      const hex = Array.from(packet).map(b => b.toString(16).padStart(2, '0')).join(' ');
+      console.log('[BMD web] sending packet:', hex);
+      try {
+        if (outgoing.writeValueWithoutResponse) {
+          await outgoing.writeValueWithoutResponse(packet);
+          console.log('[BMD web] writeValueWithoutResponse OK');
+        } else {
+          await outgoing.writeValue(packet);
+          console.log('[BMD web] writeValue OK');
+        }
+      } catch (err) {
+        console.error('[BMD web] send FAILED:', err);
+        throw err;
       }
     },
     disconnect: async () => {
