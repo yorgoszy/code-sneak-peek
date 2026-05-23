@@ -147,13 +147,6 @@ const RemoteCameraView: React.FC = () => {
             step={50}
             onValueChange={(v) => { const k = Math.round(v[0]); setWb(k); send({ type: 'wb', value: k }); }}
           />
-          <Button
-            variant="outline"
-            className="w-full rounded-none mt-3 bg-white/10 border-white/30 text-white hover:bg-white/20"
-            onClick={() => send({ type: 'autowb' })}
-          >
-            Auto WB
-          </Button>
         </div>
       );
     }
