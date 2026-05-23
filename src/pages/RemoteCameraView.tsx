@@ -55,9 +55,13 @@ const RemoteCameraView: React.FC = () => {
   }, [sessionId]);
 
   useEffect(() => {
-    const onFs = () => setIsFullscreen(!!document.fullscreenElement);
+    const onFs = () => setIsFullscreen(!!(document.fullscreenElement || (document as any).webkitFullscreenElement));
     document.addEventListener('fullscreenchange', onFs);
-    return () => document.removeEventListener('fullscreenchange', onFs);
+    document.addEventListener('webkitfullscreenchange', onFs as any);
+    return () => {
+      document.removeEventListener('fullscreenchange', onFs);
+      document.removeEventListener('webkitfullscreenchange', onFs as any);
+    };
   }, []);
 
   const send = sessionRef.current?.send ?? (() => {});
