@@ -531,7 +531,7 @@ const BlackmagicViewPage: React.FC = () => {
 
       {/* Slider popover (appears below top controls when active) */}
       {activeControl && controlsVisible && (
-        <div className="absolute left-1/2 -translate-x-1/2 top-20 z-20 w-[92%] max-w-xl pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute left-1/2 -translate-x-1/2 top-14 z-20 w-[92%] max-w-xl pointer-events-auto" onClick={(e) => e.stopPropagation()}>
           {renderSliderPanel()}
         </div>
       )}
