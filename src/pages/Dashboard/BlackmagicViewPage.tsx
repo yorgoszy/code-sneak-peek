@@ -216,8 +216,8 @@ const BlackmagicViewPage: React.FC = () => {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           deviceId: { exact: deviceId },
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
           frameRate: { ideal: 60, max: 60 },
         },
         audio: false,
