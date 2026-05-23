@@ -133,15 +133,21 @@ const BlackmagicViewPage: React.FC = () => {
   };
 
   const sendOrToast = async (label: string, packet: Uint8Array) => {
+    const hex = Array.from(packet).map(b => b.toString(16).padStart(2, '0')).join(' ');
+    setLastPacket(`${label}: ${hex}`);
     if (!conn.current) {
       toast.error('Δεν υπάρχει σύνδεση με κάμερα');
+      setLastError('conn.current is null');
       return;
     }
     try {
       await conn.current.send(packet);
+      setLastError('');
     } catch (err: unknown) {
       console.error(label, err);
-      toast.error(`${label}: ${getErrorMessage(err, 'σφάλμα')}`);
+      const msg = getErrorMessage(err, 'σφάλμα');
+      setLastError(msg);
+      toast.error(`${label}: ${msg}`);
     }
   };
 
