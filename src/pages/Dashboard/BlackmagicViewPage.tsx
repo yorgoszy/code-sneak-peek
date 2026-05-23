@@ -614,6 +614,25 @@ const BlackmagicViewPage: React.FC = () => {
               ))}
             </select>
           )}
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={4}
+            placeholder="Κωδ."
+            value={joinCode}
+            onChange={(e) => setJoinCode(e.target.value.replace(/\D/g, '').slice(0, 4))}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleJoinSession(); }}
+            className="bg-transparent border border-white/30 text-white placeholder-white/50 px-2 py-1 text-xs rounded-none w-16 text-center tracking-widest"
+          />
+          <button
+            type="button"
+            onClick={handleJoinSession}
+            disabled={joinCode.length !== 4}
+            className="text-white text-xs px-2 py-1 border border-white/30 hover:bg-white/10 disabled:opacity-40"
+          >
+            Join
+          </button>
         </div>
 
         <div className="flex items-center gap-1 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
