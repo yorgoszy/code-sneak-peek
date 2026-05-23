@@ -34,6 +34,8 @@ const BlackmagicViewPage: React.FC = () => {
   const [recording, setRecording] = useState(false);
   const [focus, setFocus] = useState([0.5]);
   const [iris, setIris] = useState([0.5]);
+  const [lastPacket, setLastPacket] = useState<string>('');
+  const [lastError, setLastError] = useState<string>('');
 
   const platform = detectPlatform();
   const bleAvailable = isBluetoothAvailable();
@@ -131,15 +133,21 @@ const BlackmagicViewPage: React.FC = () => {
   };
 
   const sendOrToast = async (label: string, packet: Uint8Array) => {
+    const hex = Array.from(packet).map(b => b.toString(16).padStart(2, '0')).join(' ');
+    setLastPacket(`${label}: ${hex}`);
     if (!conn.current) {
       toast.error('Δεν υπάρχει σύνδεση με κάμερα');
+      setLastError('conn.current is null');
       return;
     }
     try {
       await conn.current.send(packet);
+      setLastError('');
     } catch (err: unknown) {
       console.error(label, err);
-      toast.error(`${label}: ${getErrorMessage(err, 'σφάλμα')}`);
+      const msg = getErrorMessage(err, 'σφάλμα');
+      setLastError(msg);
+      toast.error(`${label}: ${msg}`);
     }
   };
 
@@ -345,6 +353,13 @@ const BlackmagicViewPage: React.FC = () => {
               </div>
             </Card>
           </div>
+
+          <Card className="rounded-none p-3 font-mono text-xs space-y-1 bg-muted/40">
+            <div className="font-semibold text-sm">Debug</div>
+            <div>BLE: <span className={connectedName ? 'text-green-500' : 'text-red-500'}>{connectedName || 'Αποσύνδετο'}</span></div>
+            <div>Packet: <span className="break-all">{lastPacket || '—'}</span></div>
+            <div>Error: <span className="text-red-500">{lastError || '—'}</span></div>
+          </Card>
         </main>
       </div>
     </div>
