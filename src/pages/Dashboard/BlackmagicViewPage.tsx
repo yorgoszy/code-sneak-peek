@@ -493,7 +493,7 @@ const BlackmagicViewPage: React.FC = () => {
           <div className="flex items-center gap-2 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
             {devices.length > 1 && (
               <select
-                className="bg-black/50 text-white px-2 py-1 text-xs rounded-none max-w-[160px]"
+                className="bg-transparent text-white px-2 py-1 text-xs rounded-none max-w-[160px]"
                 value={selectedDeviceId || ''}
                 onChange={(e) => handleCameraChange(e.target.value)}
               >
