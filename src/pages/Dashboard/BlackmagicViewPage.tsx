@@ -363,8 +363,11 @@ const BlackmagicViewPage: React.FC = () => {
 
   useEffect(() => () => { try { hostSessionRef.current?.close(); } catch {} }, []);
 
+  // Use the production PWA origin so that, on iOS/Android, scanning the QR
+  // opens the installed PWA (in-scope deep link) instead of the browser.
+  const PWA_ORIGIN = 'https://hyperkids.lovable.app';
   const remoteUrl = sessionId
-    ? `${window.location.origin}/remote-camera/${sessionId}`
+    ? `${PWA_ORIGIN}/remote-camera/${sessionId}`
     : '';
 
   const copyRemoteLink = async () => {
