@@ -779,30 +779,54 @@ const BlackmagicViewPage: React.FC = () => {
     </>
   );
 
+  const renderQrScannerDialog = () => (
+    <Dialog open={qrScanOpen} onOpenChange={(open) => (open ? setQrScanOpen(true) : closeQrScanner())}>
+      <DialogContent className="rounded-none max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Scan QR</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="relative overflow-hidden bg-black" style={{ aspectRatio: '1 / 1' }}>
+            <video ref={qrVideoRef} className="h-full w-full object-cover" autoPlay playsInline muted />
+            <canvas ref={qrCanvasRef} className="hidden" />
+            <div className="absolute inset-8 border-2 border-primary pointer-events-none" />
+          </div>
+          {qrScanError && <p className="text-sm text-destructive">{qrScanError}</p>}
+          <Button variant="outline" className="w-full rounded-none" onClick={closeQrScanner}>
+            Κλείσιμο
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+
 
   // ── IMMERSIVE FULLSCREEN MODE (mobile/tablet always, desktop on fullscreen) ──
   if (immersive) {
     const forceLandscape = isSmallScreen && isPortrait;
 
     return (
-      <div ref={containerRef} className="fixed inset-0 z-50 bg-black overflow-hidden">
-        <div
-          className={forceLandscape ? 'absolute left-1/2 top-1/2 bg-black overflow-hidden' : 'absolute inset-0 bg-black overflow-hidden'}
-          style={forceLandscape ? {
-            width: '100dvh',
-            height: '100dvw',
-            transform: 'translate(-50%, -50%) rotate(90deg)',
-            transformOrigin: 'center',
-          } : undefined}
-        >
-          <CameraFeed
-            deviceId={selectedDeviceId || undefined}
-            stream={cameraStream}
-            className="absolute inset-0 w-full h-full object-contain"
-          />
-          {renderOverlay()}
+      <>
+        <div ref={containerRef} className="fixed inset-0 z-50 bg-black overflow-hidden">
+          <div
+            className={forceLandscape ? 'absolute left-1/2 top-1/2 bg-black overflow-hidden' : 'absolute inset-0 bg-black overflow-hidden'}
+            style={forceLandscape ? {
+              width: '100dvh',
+              height: '100dvw',
+              transform: 'translate(-50%, -50%) rotate(90deg)',
+              transformOrigin: 'center',
+            } : undefined}
+          >
+            <CameraFeed
+              deviceId={selectedDeviceId || undefined}
+              stream={cameraStream}
+              className="absolute inset-0 w-full h-full object-contain"
+            />
+            {renderOverlay()}
+          </div>
         </div>
-      </div>
+        {renderQrScannerDialog()}
+      </>
     );
   }
 
