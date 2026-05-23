@@ -406,7 +406,7 @@ const BlackmagicViewPage: React.FC = () => {
             <span>ISO</span>
             <span className="opacity-70">{iso[0]}</span>
           </div>
-          <Slider
+          <BlueSlider
             value={[currentIdx]}
             min={0}
             max={ISO_STEPS.length - 1}
