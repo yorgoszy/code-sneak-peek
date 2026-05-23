@@ -680,9 +680,9 @@ const BlackmagicViewPage: React.FC = () => {
 
       {/* TOP: all controls in one row at the very top */}
       <div
-        className={`absolute top-1 left-2 right-2 z-20 flex items-start justify-between gap-2 pointer-events-none transition-opacity duration-200 ${controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`absolute top-1 left-2 right-2 z-40 flex items-start justify-between gap-2 pointer-events-none transition-opacity duration-200 ${controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       >
-        <div className="flex items-center gap-1 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-1 pointer-events-auto" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
           {devices.length > 0 && (
             <select
               className="bg-transparent text-white px-2 py-1 text-xs rounded-none max-w-[160px]"
@@ -715,9 +715,18 @@ const BlackmagicViewPage: React.FC = () => {
           >
             Join
           </button>
+          <button
+            type="button"
+            onClick={() => setQrScanOpen(true)}
+            className="text-white px-2 py-1 border border-white/30 hover:bg-white/10"
+            aria-label="Scan QR"
+            title="Scan QR"
+          >
+            <QrCode className="h-4 w-4" />
+          </button>
         </div>
 
-        <div className="flex items-center gap-1 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-1 pointer-events-auto" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
           {overlayButton('focus', Focus, 'Focus', focus[0].toFixed(2))}
           <button
             type="button"
@@ -745,7 +754,7 @@ const BlackmagicViewPage: React.FC = () => {
 
       {/* Slider popover (appears below top controls when active) */}
       {activeControl && controlsVisible && (
-        <div className="absolute left-1/2 -translate-x-1/2 top-14 z-20 w-[92%] max-w-xl pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute left-1/2 -translate-x-1/2 top-14 z-40 w-[92%] max-w-xl pointer-events-auto touch-none" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
           {renderSliderPanel()}
         </div>
       )}
