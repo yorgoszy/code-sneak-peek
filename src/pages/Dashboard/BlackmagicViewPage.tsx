@@ -346,7 +346,9 @@ const BlackmagicViewPage: React.FC = () => {
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   <span>Iris</span>
-                  <span className="text-muted-foreground">{iris[0].toFixed(2)}</span>
+                  <span className="text-muted-foreground">
+                    {fStop !== null ? `f/${fStop.toFixed(1)}` : iris[0].toFixed(2)}
+                  </span>
                 </div>
                 <Slider
                   value={iris}
