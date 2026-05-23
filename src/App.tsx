@@ -243,6 +243,7 @@ function App() {
                       <Route path="/user/:userId/weigh-in" element={<ProtectedRoute><UserScopedRedirect tab="coach-weigh-in" /></ProtectedRoute>} />
                       {/* Admin-only routes */}
                       <Route path="/dashboard" element={<ProtectedRoute requireAdmin><Dashboard /></ProtectedRoute>} />
+                      <Route path="/dashboard/blackmagic" element={<ProtectedRoute requireAdmin><BlackmagicViewPage /></ProtectedRoute>} />
                       <Route path="/dashboard/users" element={<ProtectedRoute requireAdmin><Users /></ProtectedRoute>} />
                       <Route path="/dashboard/groups" element={<ProtectedRoute requireAdmin><Groups /></ProtectedRoute>} />
                       <Route path="/dashboard/subscriptions" element={<ProtectedRoute requireAdmin><Subscriptions /></ProtectedRoute>} />

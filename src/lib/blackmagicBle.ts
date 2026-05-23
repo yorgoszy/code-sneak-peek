@@ -78,7 +78,7 @@ function buildPacket(
   const totalLen = 4 + cmdLen;
   const padded = Math.ceil(totalLen / 4) * 4;
   const buf = new Uint8Array(padded);
-  buf[0] = 0xff; // destination broadcast
+  buf[0] = 0x01; // destination: camera 1 over Bluetooth
   buf[1] = cmdLen;
   buf[2] = 0;
   buf[3] = 0;
@@ -111,10 +111,10 @@ export const Commands = {
   autoFocus: () => buildPacket(0, 1, 0, 0, []),
   iris: (value: number) => buildPacket(0, 3, 128, 0, fixed16(value)), // 0..1
   // Transport (start/stop record)
-  recordStart: () => buildPacket(10, 1, 0, 0, [2]),
-  recordStop: () => buildPacket(10, 1, 0, 0, [0]),
+  recordStart: () => buildPacket(10, 1, 1, 0, [2]),
+  recordStop: () => buildPacket(10, 1, 1, 0, [0]),
   // Video: white balance (Kelvin)
-  whiteBalance: (kelvin: number) => buildPacket(1, 2, 2, 0, int16(kelvin)),
+  whiteBalance: (kelvin: number) => buildPacket(1, 2, 2, 0, [...int16(kelvin), 0, 0]),
   // ISO (gain in dB increments)
   iso: (iso: number) => {
     const buf = new Uint8Array(4);
