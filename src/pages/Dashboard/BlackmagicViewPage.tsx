@@ -504,7 +504,7 @@ const BlackmagicViewPage: React.FC = () => {
 
       {/* Slider popover */}
       {activeControl && (
-        <div className="absolute left-1/2 -translate-x-1/2 bottom-24 z-20 w-[92%] max-w-xl">
+        <div className="absolute left-1/2 -translate-x-1/2 bottom-20 z-20 w-[92%] max-w-xl">
           {renderSliderPanel()}
         </div>
       )}
