@@ -3,6 +3,7 @@ import { Sidebar } from '@/components/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
+import { BlueSlider }  from '@/components/ui/blue-slider';
 import { Menu, Bluetooth, BluetoothOff, Video as VideoIcon, Circle, Square, Focus, Sun, Cloud, CloudSun, Lightbulb, Zap, Home, RefreshCw, Maximize2, Minimize2, Aperture, Thermometer, Gauge, Smartphone, X } from 'lucide-react';
 import { CameraFeed } from '@/components/federation/CameraFeed';
 import {
@@ -300,7 +301,7 @@ const BlackmagicViewPage: React.FC = () => {
             <span>Focus</span>
             <span className="opacity-70">{focus[0].toFixed(2)}</span>
           </div>
-          <Slider
+          <BlueSlider
             value={focus}
             min={0}
             max={1}
@@ -322,7 +323,7 @@ const BlackmagicViewPage: React.FC = () => {
             <span>Iris</span>
             <span className="opacity-70">{fStop !== null ? `f/${fStop.toFixed(1)}` : iris[0].toFixed(2)}</span>
           </div>
-          <Slider
+          <BlueSlider
             value={iris}
             min={0}
             max={1}
@@ -344,7 +345,7 @@ const BlackmagicViewPage: React.FC = () => {
             <span>White Balance</span>
             <span className="opacity-70">{wb[0]}K</span>
           </div>
-          <Slider
+          <BlueSlider
             value={wb}
             min={2500}
             max={10000}
@@ -405,7 +406,7 @@ const BlackmagicViewPage: React.FC = () => {
             <span>ISO</span>
             <span className="opacity-70">{iso[0]}</span>
           </div>
-          <Slider
+          <BlueSlider
             value={[currentIdx]}
             min={0}
             max={ISO_STEPS.length - 1}
