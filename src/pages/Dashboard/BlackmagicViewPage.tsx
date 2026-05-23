@@ -422,6 +422,7 @@ const BlackmagicViewPage: React.FC = () => {
         getStream: () => cameraStreamRef.current,
         getState: () => ({
           connected: true,
+          cameraName: connectedName,
           recording: stateRef.current.recording,
           focus: stateRef.current.focus,
           iris: stateRef.current.iris,

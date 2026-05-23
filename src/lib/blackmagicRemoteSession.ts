@@ -21,6 +21,7 @@ export type RemoteCommand =
 
 export type RemoteState = {
   connected: boolean;
+  cameraName?: string | null;
   recording: boolean;
   focus: number;
   iris: number;

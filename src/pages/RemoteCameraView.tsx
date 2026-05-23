@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { BlueSlider } from '@/components/ui/blue-slider';
 import {
   Focus, Aperture, Thermometer, Gauge, Maximize2, Minimize2, Loader2, WifiOff,
+  Sun, Cloud, CloudSun, Lightbulb, Zap, Home, RefreshCw,
 } from 'lucide-react';
 import {
   startViewerSession,
@@ -21,6 +22,22 @@ type WebkitFullscreenElement = HTMLElement & {
 };
 
 type StandaloneNavigator = Navigator & { standalone?: boolean };
+
+const ISO_STEPS = [
+  100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1000, 1250,
+  1600, 2000, 2500, 3200, 4000, 5000, 6400, 8000, 10000, 12800,
+  16000, 20000, 25600,
+];
+
+const snapIso = (val: number) =>
+  ISO_STEPS.reduce((prev, curr) => (Math.abs(curr - val) < Math.abs(prev - val) ? curr : prev));
+
+const getNativeIsos = (name?: string | null): number[] => {
+  const n = (name || '').toLowerCase();
+  if (/ursa.*(mini pro)?\s*12k|pyxis\s*12k/.test(n)) return [800, 3200];
+  if (/studio|broadcast/.test(n)) return [400];
+  return [400, 3200];
+};
 
 const RemoteCameraView: React.FC = () => {
   const { sessionId = '' } = useParams();
