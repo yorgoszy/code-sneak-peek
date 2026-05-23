@@ -34,6 +34,7 @@ const BlackmagicViewPage: React.FC = () => {
   const [recording, setRecording] = useState(false);
   const [focus, setFocus] = useState([0.5]);
   const [iris, setIris] = useState([0.5]);
+  const [fStop, setFStop] = useState<number | null>(null);
   const [wb, setWb] = useState([5600]);
   const [iso, setIso] = useState([400]);
   const [lastPacket, setLastPacket] = useState<string>('');
