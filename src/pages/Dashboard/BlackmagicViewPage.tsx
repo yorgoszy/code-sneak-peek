@@ -501,22 +501,48 @@ const BlackmagicViewPage: React.FC = () => {
                     />
                   );
                 })()}
-                <div className="grid grid-cols-3 gap-2">
-                  {[400, 800, 1600].map((isoVal) => (
-                    <Button
-                      key={isoVal}
-                      variant="outline"
-                      size="sm"
-                      className="rounded-none text-xs"
-                      onClick={() => {
-                        setIso([isoVal]);
-                        if (connectedName) sendOrToast(`ISO ${isoVal}`, Commands.iso(isoVal));
-                      }}
-                    >
-                      {isoVal}
-                    </Button>
-                  ))}
-                </div>
+                {(() => {
+                  const ISO_STEPS = [
+                    100, 125, 160, 200, 250, 320, 400, 500, 640, 800, 1000, 1250,
+                    1600, 2000, 2500, 3200, 4000, 5000, 6400, 8000, 10000, 12800,
+                    16000, 20000, 25600,
+                  ];
+                  const getNativeIsos = (name: string | null): number[] => {
+                    const n = (name || '').toLowerCase();
+                    if (/ursa.*(mini pro)?\s*12k|pyxis\s*12k/.test(n)) return [800, 3200];
+                    if (/studio|broadcast/.test(n)) return [400];
+                    // Pocket 4K/6K, Cinema 6K, URSA 4.6K G2, Pyxis 6K, default
+                    return [400, 3200];
+                  };
+                  const natives = getNativeIsos(connectedName);
+                  const buttons: { label: string; value: number }[] = [];
+                  natives.forEach((nv, i) => {
+                    const idx = ISO_STEPS.indexOf(nv);
+                    const below = idx > 0 ? ISO_STEPS[idx - 1] : null;
+                    const above = idx >= 0 && idx < ISO_STEPS.length - 1 ? ISO_STEPS[idx + 1] : null;
+                    if (below !== null) buttons.push({ label: `${below}`, value: below });
+                    buttons.push({ label: `${nv}★`, value: nv });
+                    if (above !== null) buttons.push({ label: `${above}`, value: above });
+                  });
+                  return (
+                    <div className={`grid gap-2`} style={{ gridTemplateColumns: `repeat(${buttons.length}, minmax(0, 1fr))` }}>
+                      {buttons.map((b, i) => (
+                        <Button
+                          key={`${b.value}-${i}`}
+                          variant="outline"
+                          size="sm"
+                          className="rounded-none text-xs px-1"
+                          onClick={() => {
+                            setIso([b.value]);
+                            if (connectedName) sendOrToast(`ISO ${b.value}`, Commands.iso(b.value));
+                          }}
+                        >
+                          {b.label}
+                        </Button>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
             </Card>
           </div>
