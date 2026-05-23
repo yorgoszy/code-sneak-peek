@@ -159,51 +159,44 @@ export async function connectWeb(): Promise<BmdConnection> {
   const server = await device.gatt!.connect();
   const service = await server.getPrimaryService(BMD_SERVICE);
 
-  // 1) Write client name. This only labels the controller in the camera menu.
+  // 1) Write client name to the WRITABLE BMD_DEVICE_NAME characteristic.
+  //    This labels our controller in the camera menu.
   try {
     const nameChar = await service.getCharacteristic(BMD_DEVICE_NAME);
-    await writeWebCharacteristic(nameChar, encodeName(CLIENT_NAME));
+    await nameChar.writeValueWithResponse(new TextEncoder().encode('HyperKids'));
   } catch (e) {
-    console.warn('[BMD] device name write failed', e);
+    console.warn('[BMD] device name write failed (non-fatal)', e);
   }
 
-  // 2) Trigger BLE bonding/PIN by writing to an encrypted characteristic.
-  // Blackmagic docs explicitly use Camera Status 0x01 (power on) for this.
-  try {
-    const statusChar = await service.getCharacteristic(BMD_CAMERA_STATUS);
-    await writeWebCharacteristic(statusChar, CAMERA_POWER_ON);
-  } catch (e) {
-    console.error('[BMD] pairing trigger failed', e);
-    throw new Error('Η σύζευξη Bluetooth απέτυχε. Σβήστε το failed pair από την κάμερα/υπολογιστή και δοκιμάστε ξανά.');
-  }
-
-  // 3) Enable notifications after bonding succeeds.
+  // 2) Subscribe to Camera Status notifications.
+  //    This triggers the PIN pairing dialog on the camera screen.
+  //    Do NOT write to this characteristic — it is read/notify only.
   try {
     const statusChar = await service.getCharacteristic(BMD_CAMERA_STATUS);
     await statusChar.startNotifications();
     statusChar.addEventListener('characteristicvaluechanged', (ev: Event) => {
       const target = ev.target as WebBluetoothCharacteristic | null;
       if (!target?.value) return;
-      const v = new Uint8Array(target.value.buffer);
-      console.log('[BMD] status', v[0]);
+      console.log('[BMD] status byte:', new Uint8Array(target.value.buffer)[0]);
     });
   } catch (e) {
-    console.warn('[BMD] status notifications failed', e);
+    console.warn('[BMD] status notifications failed (non-fatal)', e);
   }
 
-  // 4) Enable notifications on Incoming Camera Control
+  // 3) Subscribe to Incoming CC to keep the link alive.
   try {
     const incoming = await service.getCharacteristic(BMD_INCOMING_CC);
     await incoming.startNotifications();
   } catch (e) {
-    console.warn('[BMD] incoming notifications failed', e);
+    console.warn('[BMD] incoming CC notifications failed (non-fatal)', e);
   }
 
+  // 4) Get the Outgoing CC characteristic for sending commands.
+  //    Blackmagic requires writeValueWithoutResponse for this characteristic.
   const outgoing = await service.getCharacteristic(BMD_OUTGOING_CC);
   return {
     name: device.name || 'Blackmagic Camera',
     send: async (packet) => {
-      console.log('[BMD] outgoing', Array.from(packet));
       if (outgoing.writeValueWithoutResponse) {
         await outgoing.writeValueWithoutResponse(packet);
       } else {
@@ -236,21 +229,7 @@ export async function connectNative(): Promise<BmdConnection> {
     console.warn('[BMD native] device name write failed', e);
   }
 
-  // 2) Trigger BLE bonding/PIN by writing to an encrypted characteristic.
-  try {
-    await BleClient.write(
-      device.deviceId,
-      BMD_SERVICE,
-      BMD_CAMERA_STATUS,
-      numbersToDataView(Array.from(CAMERA_POWER_ON))
-    );
-  } catch (e) {
-    console.error('[BMD native] pairing trigger failed', e);
-    try { await BleClient.disconnect(device.deviceId); } catch { /* noop */ }
-    throw new Error('Η σύζευξη Bluetooth απέτυχε. Σβήστε το failed pair από την κάμερα/συσκευή και δοκιμάστε ξανά.');
-  }
-
-  // 3) Subscribe to Camera Status after bonding succeeds.
+  // 2) Subscribe to Camera Status notifications. Do NOT write to this read/notify characteristic.
   try {
     await BleClient.startNotifications(
       device.deviceId,
@@ -262,7 +241,7 @@ export async function connectNative(): Promise<BmdConnection> {
     console.warn('[BMD native] status notifications failed', e);
   }
 
-  // 4) Subscribe to Incoming CC
+  // 3) Subscribe to Incoming CC
   try {
     await BleClient.startNotifications(
       device.deviceId,
