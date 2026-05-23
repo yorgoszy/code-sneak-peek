@@ -109,12 +109,12 @@ const BlackmagicViewPage: React.FC = () => {
     stopQrScanStream();
   }, [stopQrScanStream]);
 
-  const extractSessionCode = (value: string) => {
+  const extractSessionCode = useCallback((value: string) => {
     const urlMatch = value.match(/\/remote-camera\/(\d{4})\b/);
     if (urlMatch) return urlMatch[1];
     const plainMatch = value.trim().match(/^\d{4}$/) || value.match(/\b(\d{4})\b/);
     return plainMatch?.[1] || plainMatch?.[0] || null;
-  };
+  }, []);
 
   useEffect(() => {
     if (!qrScanOpen) return;
@@ -173,7 +173,7 @@ const BlackmagicViewPage: React.FC = () => {
       cancelAnimationFrame(frame);
       stopQrScanStream();
     };
-  }, [closeQrScanner, navigate, qrScanOpen, stopQrScanStream]);
+  }, [closeQrScanner, extractSessionCode, navigate, qrScanOpen, stopQrScanStream]);
 
 
   // Throttle live BLE sends per control to avoid flooding (~50ms)
