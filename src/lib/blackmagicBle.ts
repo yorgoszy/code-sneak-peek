@@ -229,21 +229,7 @@ export async function connectNative(): Promise<BmdConnection> {
     console.warn('[BMD native] device name write failed', e);
   }
 
-  // 2) Trigger BLE bonding/PIN by writing to an encrypted characteristic.
-  try {
-    await BleClient.write(
-      device.deviceId,
-      BMD_SERVICE,
-      BMD_CAMERA_STATUS,
-      numbersToDataView(Array.from(CAMERA_POWER_ON))
-    );
-  } catch (e) {
-    console.error('[BMD native] pairing trigger failed', e);
-    try { await BleClient.disconnect(device.deviceId); } catch { /* noop */ }
-    throw new Error('Η σύζευξη Bluetooth απέτυχε. Σβήστε το failed pair από την κάμερα/συσκευή και δοκιμάστε ξανά.');
-  }
-
-  // 3) Subscribe to Camera Status after bonding succeeds.
+  // 2) Subscribe to Camera Status notifications. Do NOT write to this read/notify characteristic.
   try {
     await BleClient.startNotifications(
       device.deviceId,
@@ -255,7 +241,7 @@ export async function connectNative(): Promise<BmdConnection> {
     console.warn('[BMD native] status notifications failed', e);
   }
 
-  // 4) Subscribe to Incoming CC
+  // 3) Subscribe to Incoming CC
   try {
     await BleClient.startNotifications(
       device.deviceId,
