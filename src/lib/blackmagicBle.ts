@@ -35,9 +35,9 @@ interface BluetoothRequestOptions {
 
 interface WebBluetoothCharacteristic extends EventTarget {
   value?: DataView;
-  writeValue?: (value: BufferSource) => Promise<void>;
-  writeValueWithResponse?: (value: BufferSource) => Promise<void>;
-  writeValueWithoutResponse?: (value: BufferSource) => Promise<void>;
+  writeValue?: (value: Uint8Array) => Promise<void>;
+  writeValueWithResponse?: (value: Uint8Array) => Promise<void>;
+  writeValueWithoutResponse?: (value: Uint8Array) => Promise<void>;
   startNotifications?: () => Promise<WebBluetoothCharacteristic>;
 }
 
