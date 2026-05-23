@@ -223,7 +223,16 @@ const BlackmagicViewPage: React.FC = () => {
           </div>
 
           {/* Mobile connect bar */}
-          <div className="flex lg:hidden">
+          <div className="flex lg:hidden flex-col gap-2">
+            {!connectedName && (
+              <input
+                type="password"
+                placeholder="Remote password (αν χρειάζεται)"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="border border-border bg-background px-2 py-2 text-sm rounded-none w-full"
+              />
+            )}
             {connectedName ? (
               <Button variant="outline" className="rounded-none w-full" onClick={handleDisconnect}>
                 <BluetoothOff className="h-4 w-4 mr-2" />
