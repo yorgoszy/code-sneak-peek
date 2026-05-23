@@ -84,6 +84,7 @@ export const CameraFeed: React.FC<CameraFeedProps> = ({ deviceId, className, str
       playsInline
       muted
       className={`w-full h-full object-cover ${className || ''}`}
+      style={{ willChange: 'transform', transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
     />
   );
 };
