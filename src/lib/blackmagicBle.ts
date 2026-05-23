@@ -25,7 +25,41 @@ export function detectPlatform(): Platform {
 
 export function isBluetoothAvailable(): boolean {
   if (Capacitor.isNativePlatform()) return true;
-  return typeof navigator !== 'undefined' && !!(navigator as any).bluetooth;
+  return typeof navigator !== 'undefined' && !!(navigator as BluetoothNavigator).bluetooth;
+}
+
+interface BluetoothRequestOptions {
+  filters: Array<{ services: string[] }>;
+  optionalServices?: string[];
+}
+
+interface WebBluetoothCharacteristic extends EventTarget {
+  value?: DataView;
+  writeValue?: (value: BufferSource) => Promise<void>;
+  writeValueWithResponse?: (value: BufferSource) => Promise<void>;
+  writeValueWithoutResponse?: (value: BufferSource) => Promise<void>;
+  startNotifications?: () => Promise<WebBluetoothCharacteristic>;
+}
+
+interface WebBluetoothService {
+  getCharacteristic: (uuid: string) => Promise<WebBluetoothCharacteristic>;
+}
+
+interface WebBluetoothServer {
+  connect: () => Promise<WebBluetoothServer>;
+  getPrimaryService: (uuid: string) => Promise<WebBluetoothService>;
+  disconnect?: () => void;
+}
+
+interface WebBluetoothDevice {
+  name?: string;
+  gatt?: WebBluetoothServer;
+}
+
+interface BluetoothNavigator extends Navigator {
+  bluetooth?: {
+    requestDevice: (options: BluetoothRequestOptions) => Promise<WebBluetoothDevice>;
+  };
 }
 
 // ---------- Packet builders ----------
@@ -108,7 +142,7 @@ function encodeName(name: string): Uint8Array {
   return new TextEncoder().encode(name);
 }
 
-async function writeWebCharacteristic(characteristic: any, value: Uint8Array): Promise<void> {
+async function writeWebCharacteristic(characteristic: WebBluetoothCharacteristic, value: Uint8Array): Promise<void> {
   if (characteristic.writeValueWithResponse) {
     await characteristic.writeValueWithResponse(value);
   } else {
@@ -117,9 +151,9 @@ async function writeWebCharacteristic(characteristic: any, value: Uint8Array): P
 }
 
 export async function connectWeb(): Promise<BmdConnection> {
-  const nav = navigator as any;
+  const nav = navigator as BluetoothNavigator;
   if (!nav.bluetooth) throw new Error('Web Bluetooth not supported in this browser');
-  const device: any = await nav.bluetooth.requestDevice({
+  const device = await nav.bluetooth.requestDevice({
     filters: [{ services: [BMD_SERVICE] }],
     optionalServices: [BMD_SERVICE],
   });
@@ -148,8 +182,10 @@ export async function connectWeb(): Promise<BmdConnection> {
   try {
     const statusChar = await service.getCharacteristic(BMD_CAMERA_STATUS);
     await statusChar.startNotifications();
-    statusChar.addEventListener('characteristicvaluechanged', (ev: any) => {
-      const v = new Uint8Array(ev.target.value.buffer);
+    statusChar.addEventListener('characteristicvaluechanged', (ev: Event) => {
+      const target = ev.target as WebBluetoothCharacteristic | null;
+      if (!target?.value) return;
+      const v = new Uint8Array(target.value.buffer);
       console.log('[BMD] status', v[0]);
     });
   } catch (e) {
