@@ -36,6 +36,7 @@ const BlackmagicViewPage: React.FC = () => {
   const [iris, setIris] = useState([0.5]);
   const [lastPacket, setLastPacket] = useState<string>('');
   const [lastError, setLastError] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
 
   const platform = detectPlatform();
   const bleAvailable = isBluetoothAvailable();
