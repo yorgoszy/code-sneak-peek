@@ -477,18 +477,7 @@ const BlackmagicViewPage: React.FC = () => {
         className={`absolute top-1 left-2 right-2 z-20 flex items-start justify-between gap-2 pointer-events-none transition-opacity duration-200 ${controlsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       >
         <div className="flex items-center gap-1 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
-          {connectedName ? (
-            <Button size="sm" variant="outline" className="rounded-none bg-transparent text-white hover:bg-white/10 border-1 border-white/10" onClick={handleDisconnect}>
-              <BluetoothOff className="h-4 w-4 mr-1" />
-              <span className="text-xs truncate max-w-[140px]">{connectedName}</span>
-            </Button>
-          ) : (
-            <Button size="sm" className="rounded-none" onClick={handleConnect} disabled={connecting || !bleAvailable}>
-              <Bluetooth className="h-4 w-4 mr-1" />
-              <span className="text-xs">{connecting ? '...' : 'BLE'}</span>
-            </Button>
-          )}
-          {devices.length > 1 && (
+          {devices.length > 0 && (
             <select
               className="bg-transparent text-white px-2 py-1 text-xs rounded-none max-w-[160px]"
               value={selectedDeviceId || ''}
