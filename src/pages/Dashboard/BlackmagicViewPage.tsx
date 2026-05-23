@@ -292,7 +292,7 @@ const BlackmagicViewPage: React.FC = () => {
   // ── Slider panels (rendered inside overlay popover) ──
   const renderSliderPanel = () => {
     if (!activeControl) return null;
-    const panelBase = 'bg-black/80 backdrop-blur p-4 rounded-none text-white';
+    const panelBase = 'p-4 rounded-none text-white';
     if (activeControl === 'focus') {
       return (
         <div className={panelBase}>
