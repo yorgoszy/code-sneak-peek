@@ -508,7 +508,20 @@ export const SubscriptionManagement: React.FC = () => {
 
       // Εμφάνιση dialog ειδοποίησης ότι δεν πήρε MARK
       setMydataErrorReceiptNumber(receiptNumber);
+      setMydataErrorPayload({ receiptId, receiptNumber, netPrice, vatAmount, totalPrice });
       setMydataErrorDialogOpen(true);
+    }
+  };
+
+  const handleResendMyData = async () => {
+    if (!mydataErrorPayload) return;
+    setMydataResending(true);
+    try {
+      const { receiptId, receiptNumber, netPrice, vatAmount, totalPrice } = mydataErrorPayload;
+      setMydataErrorDialogOpen(false);
+      await sendReceiptToMyData(receiptNumber, receiptId, netPrice, vatAmount, totalPrice);
+    } finally {
+      setMydataResending(false);
     }
   };
 
