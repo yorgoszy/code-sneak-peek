@@ -2401,16 +2401,24 @@ export const SubscriptionManagement: React.FC = () => {
               Αποτυχία αποστολής MyData
             </AlertDialogTitle>
             <AlertDialogDescription className="text-base">
-              Η απόδειξη <strong>{mydataErrorReceiptNumber}</strong> δημιουργήθηκε αλλά <strong>δεν έλαβε MARK</strong> από το MyData. 
-              Μπορείτε να την επαναποστείλετε από τη σελίδα Αποδείξεων.
+              Η απόδειξη <strong>{mydataErrorReceiptNumber}</strong> δημιουργήθηκε αλλά <strong>δεν έλαβε MARK</strong> από το MyData.
+              Μπορείτε να την επαναποστείλετε άμεσα από εδώ.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction 
-              onClick={() => setMydataErrorDialogOpen(false)} 
+            <AlertDialogCancel
+              onClick={() => setMydataErrorDialogOpen(false)}
               className="rounded-none"
+              disabled={mydataResending}
             >
-              Κατάλαβα
+              Κλείσιμο
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleResendMyData(); }}
+              className="rounded-none bg-[#00ffba] text-black hover:bg-[#00ffba]/90"
+              disabled={mydataResending || !mydataErrorPayload}
+            >
+              {mydataResending ? 'Αποστολή...' : 'Επαναποστολή στο MyData'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
