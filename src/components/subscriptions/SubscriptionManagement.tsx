@@ -408,14 +408,12 @@ export const SubscriptionManagement: React.FC = () => {
 
   const sendReceiptToMyData = async (receiptNumber: string, receiptId: string, netPrice: number, vatAmount: number, totalPrice: number) => {
     const settings = getMyDataSettings();
-    
-    if (!settings.enabled || !settings.autoSend) {
-      console.log('⏭️ MyData auto-send is disabled');
-      return;
-    }
 
-    // Always use server-side credentials from mydata_settings table
+    // Πάντα αυτόματη αποστολή στο MyData ανεξαρτήτως localStorage settings.
+    // Τα credentials είναι αποθηκευμένα server-side στο mydata_settings table.
     const useStoredCredentials = true;
+
+
 
     try {
       // Extract series and number from receipt number (e.g., "ΑΠΥ-0060" -> series="ΑΠΥ", aa=60)
