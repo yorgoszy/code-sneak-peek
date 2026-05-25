@@ -92,6 +92,8 @@ export const SubscriptionManagement: React.FC = () => {
   const [selectedReceiptData, setSelectedReceiptData] = useState<any>(null);
   const [mydataErrorDialogOpen, setMydataErrorDialogOpen] = useState(false);
   const [mydataErrorReceiptNumber, setMydataErrorReceiptNumber] = useState('');
+  const [mydataErrorPayload, setMydataErrorPayload] = useState<{ receiptId: string; receiptNumber: string; netPrice: number; vatAmount: number; totalPrice: number } | null>(null);
+  const [mydataResending, setMydataResending] = useState(false);
 
   useEffect(() => {
     loadData();
