@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
@@ -92,6 +92,8 @@ export const SubscriptionManagement: React.FC = () => {
   const [selectedReceiptData, setSelectedReceiptData] = useState<any>(null);
   const [mydataErrorDialogOpen, setMydataErrorDialogOpen] = useState(false);
   const [mydataErrorReceiptNumber, setMydataErrorReceiptNumber] = useState('');
+  const [mydataErrorPayload, setMydataErrorPayload] = useState<{ receiptId: string; receiptNumber: string; netPrice: number; vatAmount: number; totalPrice: number } | null>(null);
+  const [mydataResending, setMydataResending] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -506,7 +508,20 @@ export const SubscriptionManagement: React.FC = () => {
 
       // Εμφάνιση dialog ειδοποίησης ότι δεν πήρε MARK
       setMydataErrorReceiptNumber(receiptNumber);
+      setMydataErrorPayload({ receiptId, receiptNumber, netPrice, vatAmount, totalPrice });
       setMydataErrorDialogOpen(true);
+    }
+  };
+
+  const handleResendMyData = async () => {
+    if (!mydataErrorPayload) return;
+    setMydataResending(true);
+    try {
+      const { receiptId, receiptNumber, netPrice, vatAmount, totalPrice } = mydataErrorPayload;
+      setMydataErrorDialogOpen(false);
+      await sendReceiptToMyData(receiptNumber, receiptId, netPrice, vatAmount, totalPrice);
+    } finally {
+      setMydataResending(false);
     }
   };
 
@@ -2386,16 +2401,24 @@ export const SubscriptionManagement: React.FC = () => {
               Αποτυχία αποστολής MyData
             </AlertDialogTitle>
             <AlertDialogDescription className="text-base">
-              Η απόδειξη <strong>{mydataErrorReceiptNumber}</strong> δημιουργήθηκε αλλά <strong>δεν έλαβε MARK</strong> από το MyData. 
-              Μπορείτε να την επαναποστείλετε από τη σελίδα Αποδείξεων.
+              Η απόδειξη <strong>{mydataErrorReceiptNumber}</strong> δημιουργήθηκε αλλά <strong>δεν έλαβε MARK</strong> από το MyData.
+              Μπορείτε να την επαναποστείλετε άμεσα από εδώ.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction 
-              onClick={() => setMydataErrorDialogOpen(false)} 
+            <AlertDialogCancel
+              onClick={() => setMydataErrorDialogOpen(false)}
               className="rounded-none"
+              disabled={mydataResending}
             >
-              Κατάλαβα
+              Κλείσιμο
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleResendMyData(); }}
+              className="rounded-none bg-[#00ffba] text-black hover:bg-[#00ffba]/90"
+              disabled={mydataResending || !mydataErrorPayload}
+            >
+              {mydataResending ? 'Αποστολή...' : 'Επαναποστολή στο MyData'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
