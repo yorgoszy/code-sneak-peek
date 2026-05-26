@@ -270,6 +270,8 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
                 {sessions[1].weight && <span>{t('progress.weight')}: {sessions[1].weight}kg</span>}
                 {sessions[1].body_fat_percentage && <span>{t('progress.bodyFat')}: {sessions[1].body_fat_percentage}%</span>}
                 {sessions[1].muscle_mass_percentage && <span>{t('progress.muscleMass')}: {sessions[1].muscle_mass_percentage}%</span>}
+                {sessions[1].bone_density && <span>Οστ.: {sessions[1].bone_density}kg</span>}
+                {sessions[1].visceral_fat_percentage && <span>Σπλ.: {sessions[1].visceral_fat_percentage}%</span>}
               </div>
             </div>
           </div>
