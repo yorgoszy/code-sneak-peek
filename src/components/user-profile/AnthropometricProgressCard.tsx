@@ -144,7 +144,7 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
         </div>
       </CardHeader>
       <CardContent className="p-3 pt-1">
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
           {latestData.height && (
             <div className="space-y-0.5">
               <div className="text-[10px] text-gray-500">{t('progress.height')}</div>
@@ -220,6 +220,44 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
               </div>
             </div>
           )}
+
+          {latestData.bone_density && (
+            <div className="space-y-0.5">
+              <div className="text-[10px] text-gray-500">Οστική Πυκν.</div>
+              <div className="text-sm font-bold text-gray-900 flex items-center gap-1">
+                {latestData.bone_density}<span className="text-[9px] text-gray-400 ml-0.5">kg</span>
+                {getPreviousValue('bone_density') && calculatePercentageChange(latestData.bone_density, getPreviousValue('bone_density')!) !== null && (
+                  <span className={`text-[9px] font-semibold ${
+                    calculatePercentageChange(latestData.bone_density, getPreviousValue('bone_density')!)! > 0 
+                      ? 'text-green-700' 
+                      : 'text-red-600'
+                  }`}>
+                    {calculatePercentageChange(latestData.bone_density, getPreviousValue('bone_density')!)! > 0 ? '+' : ''}
+                    {calculatePercentageChange(latestData.bone_density, getPreviousValue('bone_density')!)}%
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {latestData.visceral_fat_percentage && (
+            <div className="space-y-0.5">
+              <div className="text-[10px] text-gray-500">Σπλαχνικό Λίπος</div>
+              <div className="text-sm font-bold text-gray-900 flex items-center gap-1">
+                {latestData.visceral_fat_percentage}<span className="text-[9px] text-gray-400 ml-0.5">%</span>
+                {getPreviousValue('visceral_fat_percentage') && calculatePercentageChange(latestData.visceral_fat_percentage, getPreviousValue('visceral_fat_percentage')!) !== null && (
+                  <span className={`text-[9px] font-semibold ${
+                    calculatePercentageChange(latestData.visceral_fat_percentage, getPreviousValue('visceral_fat_percentage')!)! > 0 
+                      ? 'text-red-600' 
+                      : 'text-green-700'
+                  }`}>
+                    {calculatePercentageChange(latestData.visceral_fat_percentage, getPreviousValue('visceral_fat_percentage')!)! > 0 ? '+' : ''}
+                    {calculatePercentageChange(latestData.visceral_fat_percentage, getPreviousValue('visceral_fat_percentage')!)}%
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {sessions.length > 1 && (
@@ -232,6 +270,8 @@ export const AnthropometricProgressCard: React.FC<AnthropometricProgressCardProp
                 {sessions[1].weight && <span>{t('progress.weight')}: {sessions[1].weight}kg</span>}
                 {sessions[1].body_fat_percentage && <span>{t('progress.bodyFat')}: {sessions[1].body_fat_percentage}%</span>}
                 {sessions[1].muscle_mass_percentage && <span>{t('progress.muscleMass')}: {sessions[1].muscle_mass_percentage}%</span>}
+                {sessions[1].bone_density && <span>Οστ.: {sessions[1].bone_density}kg</span>}
+                {sessions[1].visceral_fat_percentage && <span>Σπλ.: {sessions[1].visceral_fat_percentage}%</span>}
               </div>
             </div>
           </div>
