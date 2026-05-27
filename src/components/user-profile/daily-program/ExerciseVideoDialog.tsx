@@ -177,7 +177,7 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-xl rounded-none p-4">
+      <DialogContent className="max-w-xl rounded-none p-4 overflow-hidden">
         <DialogHeader className="pb-2">
           <DialogTitle className="text-sm font-semibold">{name}</DialogTitle>
         </DialogHeader>
