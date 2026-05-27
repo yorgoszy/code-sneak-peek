@@ -183,7 +183,7 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
         </DialogHeader>
 
         <div className="space-y-2">
-          <div className="max-h-[280px]">
+          <div>
             {renderVideo()}
           </div>
           
