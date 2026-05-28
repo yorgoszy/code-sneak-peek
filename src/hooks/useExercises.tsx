@@ -80,7 +80,14 @@ export const useExercises = () => {
     } catch (error) {
       console.error('Error fetching exercises:', error);
       toast.error('Σφάλμα κατά τη φόρτωση των ασκήσεων');
+    } finally {
+      setLoadingExercises(false);
+    }
+  };
+
   const deleteExercise = async (exerciseId: string) => {
+    try {
+
     try {
       const { error } = await supabase
         .from('exercises')
