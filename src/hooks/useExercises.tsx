@@ -104,13 +104,6 @@ export const useExercises = () => {
     }
   };
 
-      fetchExercises();
-    } catch (error) {
-      console.error('Error deleting exercise:', error);
-      toast.error('Σφάλμα κατά τη διαγραφή της άσκησης');
-    }
-  };
-
   useEffect(() => {
     fetchExercises();
     fetchCategories();
