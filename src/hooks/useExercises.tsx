@@ -88,7 +88,6 @@ export const useExercises = () => {
   const deleteExercise = async (exerciseId: string) => {
     try {
 
-    try {
       const { error } = await supabase
         .from('exercises')
         .delete()
