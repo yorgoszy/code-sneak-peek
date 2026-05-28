@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { categoryRows } from "@/utils/categoryRows";
+import { Plus } from "lucide-react";
 
 interface Category {
   id: string;
@@ -30,12 +30,22 @@ interface EditExerciseDialogProps {
   onSuccess: () => void;
 }
 
+// Κατηγορίες οργανωμένες σε σειρές
+const categoryRows = [
+  ["upper body", "lower body", "total body"],
+  ["push", "pull", "rotational", "antirotation", "antirotational", "antiextention", "antiflexion"],
+  ["vertical", "horizontal", "linear", "lateral"],
+  ["bilateral", "unilateral", "ipsilateral"],
+  ["hip dominate", "knee dominate"],
+  ["mobility", "stability", "activation", "intergration", "movement", "neural activation", "plyometric", "power", "strength", "endurance", "accesory", "oly lifting", "strongman", "core", "cardio"],
+];
+
 const rowLabels = [
   "Περιοχή Σώματος",
   "Τύπος Κίνησης",
   "Κατεύθυνση",
   "Στάση",
-  "Dominance / Anti",
+  "Dominance",
   "Τύπος Προπόνησης",
   "Equipment"
 ];
@@ -48,6 +58,9 @@ export const EditExerciseDialog = ({ open, onOpenChange, exercise, onSuccess }: 
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingCategories, setLoadingCategories] = useState(true);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategoryType, setNewCategoryType] = useState("");
+  const [showAddCategory, setShowAddCategory] = useState(false);
 
   useEffect(() => {
     if (open && exercise) {
@@ -61,8 +74,7 @@ export const EditExerciseDialog = ({ open, onOpenChange, exercise, onSuccess }: 
   const fetchCategories = async () => {
     try {
       setLoadingCategories(true);
-      
-      // Fetch all categories
+
       const { data: allCategories, error: categoriesError } = await supabase
         .from('exercise_categories')
         .select('*')
@@ -71,7 +83,6 @@ export const EditExerciseDialog = ({ open, onOpenChange, exercise, onSuccess }: 
       if (categoriesError) throw categoriesError;
       setCategories(allCategories || []);
 
-      // Fetch exercise's current categories
       if (exercise) {
         const { data: exerciseCategories, error: exerciseCategoriesError } = await supabase
           .from('exercise_to_category')
@@ -89,11 +100,40 @@ export const EditExerciseDialog = ({ open, onOpenChange, exercise, onSuccess }: 
     }
   };
 
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim() || !newCategoryType.trim()) {
+      toast.error('Συμπληρώστε όνομα και τύπο κατηγορίας');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('exercise_categories')
+        .insert({
+          name: newCategoryName.trim(),
+          type: newCategoryType.trim()
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setCategories(prev => [...prev, data]);
+      setNewCategoryName("");
+      setNewCategoryType("");
+      setShowAddCategory(false);
+      toast.success('Η κατηγορία προστέθηκε επιτυχώς');
+    } catch (error) {
+      console.error('Error adding category:', error);
+      toast.error('Σφάλμα κατά την προσθήκη της κατηγορίας');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!exercise) return;
-    
+
     if (!name.trim()) {
       toast.error('Το όνομα της άσκησης είναι υποχρεωτικό');
       return;
@@ -107,7 +147,6 @@ export const EditExerciseDialog = ({ open, onOpenChange, exercise, onSuccess }: 
     try {
       setLoading(true);
 
-      // Update exercise
       const { error: exerciseError } = await supabase
         .from('exercises')
         .update({
@@ -119,7 +158,6 @@ export const EditExerciseDialog = ({ open, onOpenChange, exercise, onSuccess }: 
 
       if (exerciseError) throw exerciseError;
 
-      // Delete existing category relationships
       const { error: deleteError } = await supabase
         .from('exercise_to_category')
         .delete()
@@ -127,7 +165,6 @@ export const EditExerciseDialog = ({ open, onOpenChange, exercise, onSuccess }: 
 
       if (deleteError) throw deleteError;
 
-      // Insert new category relationships
       const exerciseCategoryInserts = selectedCategories.map(categoryId => ({
         exercise_id: exercise.id,
         category_id: categoryId,
@@ -155,140 +192,176 @@ export const EditExerciseDialog = ({ open, onOpenChange, exercise, onSuccess }: 
     setDescription("");
     setVideoUrl("");
     setSelectedCategories([]);
+    setShowAddCategory(false);
+    setNewCategoryName("");
+    setNewCategoryType("");
     onOpenChange(false);
   };
 
   const handleCategoryClick = (categoryId: string) => {
-    setSelectedCategories(prev => 
-      prev.includes(categoryId) 
+    setSelectedCategories(prev =>
+      prev.includes(categoryId)
         ? prev.filter(id => id !== categoryId)
         : [...prev, categoryId]
     );
   };
 
-  // Organize categories into rows
   const getCategorizedRows = () => {
     const allCategoryNames = categoryRows.flat();
     const filteredCategories = categories.filter(cat => cat.name !== "ζορ");
-    
-    const rows = categoryRows.map(rowNames => 
+
+    const rows = categoryRows.map(rowNames =>
       rowNames
         .map(name => filteredCategories.find(cat => cat.name.toLowerCase() === name.toLowerCase()))
         .filter(Boolean) as Category[]
     );
-    
-    // Equipment row: all categories not in previous rows
-    const equipmentCategories = filteredCategories.filter(cat => 
+
+    const equipmentCategories = filteredCategories.filter(cat =>
       !allCategoryNames.some(name => name.toLowerCase() === cat.name.toLowerCase())
     );
-    
+
     return { rows, equipmentCategories };
   };
 
   const { rows, equipmentCategories } = getCategorizedRows();
 
+  const formatCategoryName = (name: string) => {
+    if (!name) return '';
+    return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+  };
+
   if (!exercise) return null;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Επεξεργασία Άσκησης</DialogTitle>
+      <DialogContent className="w-[95vw] max-w-3xl p-3 sm:p-4 max-h-[90vh] overflow-y-auto rounded-none">
+        <DialogHeader className="pb-1">
+          <DialogTitle className="text-sm">Επεξεργασία Άσκησης</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-2 sm:space-y-1.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
-              <Label htmlFor="name">Όνομα Άσκησης *</Label>
+              <Label htmlFor="name" className="text-[10px]">Όνομα *</Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="π.χ. Bench Press"
-                className="rounded-none"
+                className="rounded-none h-8 sm:h-7 text-xs"
                 required
               />
             </div>
-
             <div>
-              <Label htmlFor="videoUrl">URL Βίντεο</Label>
+              <Label htmlFor="videoUrl" className="text-[10px]">URL Βίντεο</Label>
               <Input
                 id="videoUrl"
                 type="url"
                 value={videoUrl}
                 onChange={(e) => setVideoUrl(e.target.value)}
-                placeholder="https://youtube.com/watch?v=..."
-                className="rounded-none"
+                placeholder="https://youtube.com/..."
+                className="rounded-none h-8 sm:h-7 text-xs"
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="description">Περιγραφή</Label>
+            <Label htmlFor="description" className="text-[10px]">Περιγραφή</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Περιγραφή της άσκησης..."
-              className="rounded-none resize-none"
-              rows={3}
+              placeholder="Περιγραφή..."
+              className="rounded-none resize-none text-xs py-1 min-h-0"
+              rows={1}
             />
           </div>
 
           <div>
-            <Label className="text-lg font-semibold">Κατηγορίες *</Label>
+            <div className="flex justify-between items-center">
+              <Label className="text-xs font-medium">Κατηγορίες *</Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAddCategory(!showAddCategory)}
+                className="rounded-none h-6 sm:h-5 text-[10px] px-2 sm:px-1.5"
+              >
+                <Plus className="h-3 w-3 sm:h-2.5 sm:w-2.5 mr-0.5" />
+                Νέα
+              </Button>
+            </div>
+
+            {showAddCategory && (
+              <div className="mt-1 p-2 sm:p-1.5 border bg-gray-50">
+                <div className="flex flex-col sm:flex-row gap-1.5 sm:items-end">
+                  <Input
+                    placeholder="Όνομα"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    className="rounded-none h-8 sm:h-6 text-xs sm:text-[10px] flex-1"
+                  />
+                  <Input
+                    placeholder="Τύπος"
+                    value={newCategoryType}
+                    onChange={(e) => setNewCategoryType(e.target.value)}
+                    className="rounded-none h-8 sm:h-6 text-xs sm:text-[10px] flex-1"
+                  />
+                  <div className="flex gap-1.5">
+                    <Button type="button" size="sm" onClick={handleAddCategory} className="rounded-none h-8 sm:h-6 text-xs sm:text-[10px] px-3 sm:px-1.5 flex-1 sm:flex-none">
+                      OK
+                    </Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => setShowAddCategory(false)} className="rounded-none h-8 sm:h-6 text-xs sm:text-[10px] px-3 sm:px-1.5 flex-1 sm:flex-none">
+                      ✕
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {loadingCategories ? (
-              <p className="text-sm text-gray-500 mt-2">Φόρτωση κατηγοριών...</p>
+              <p className="text-[10px] text-gray-500">Φόρτωση...</p>
             ) : (
-              <div className="space-y-4 mt-4">
+              <div className="space-y-1.5 sm:space-y-1 mt-1">
                 {rows.map((rowCategories, rowIndex) => (
                   rowCategories.length > 0 && (
-                    <div key={rowIndex} className="space-y-2">
-                      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                        {rowLabels[rowIndex]}
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
+                    <div key={rowIndex} className="border-b pb-1">
+                      <h4 className="text-[10px] sm:text-[9px] font-medium text-gray-500 mb-0.5">{rowLabels[rowIndex]}</h4>
+                      <div className="flex flex-wrap gap-1 sm:gap-0.5">
                         {rowCategories.map(category => (
-                          <div 
-                            key={category.id} 
-                            className={`px-3 py-2 border cursor-pointer transition-colors hover:bg-gray-100 ${
-                              selectedCategories.includes(category.id) 
-                                ? 'bg-blue-50 border-blue-200' 
+                          <div
+                            key={category.id}
+                            className={`px-2 sm:px-1.5 py-0.5 sm:py-0 border cursor-pointer transition-colors hover:bg-gray-100 ${
+                              selectedCategories.includes(category.id)
+                                ? 'bg-blue-50 border-blue-400 text-blue-700'
                                 : 'bg-white border-gray-200'
                             }`}
                             onClick={() => handleCategoryClick(category.id)}
                           >
-                            <span className="text-sm select-none font-medium">
-                              {category.name}
-                            </span>
+                            <span className="text-[11px] sm:text-[10px] select-none leading-tight">{formatCategoryName(category.name)}</span>
                           </div>
                         ))}
                       </div>
                     </div>
                   )
                 ))}
-                
+
                 {/* Equipment Row */}
                 {equipmentCategories.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                      Equipment
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
+                  <div className="border-b pb-1">
+                    <h4 className="text-[10px] sm:text-[9px] font-medium text-gray-500 mb-0.5">{rowLabels[6]}</h4>
+                    <div className="flex flex-wrap gap-1 sm:gap-0.5">
                       {equipmentCategories.map(category => (
-                        <div 
-                          key={category.id} 
-                          className={`px-3 py-2 border cursor-pointer transition-colors hover:bg-gray-100 ${
-                            selectedCategories.includes(category.id) 
-                              ? 'bg-blue-50 border-blue-200' 
+                        <div
+                          key={category.id}
+                          className={`px-2 sm:px-1.5 py-0.5 sm:py-0 border cursor-pointer transition-colors hover:bg-gray-100 ${
+                            selectedCategories.includes(category.id)
+                              ? 'bg-blue-50 border-blue-400 text-blue-700'
                               : 'bg-white border-gray-200'
                           }`}
                           onClick={() => handleCategoryClick(category.id)}
                         >
-                          <span className="text-sm select-none font-medium">
-                            {category.name}
-                          </span>
+                          <span className="text-[11px] sm:text-[10px] select-none leading-tight">{formatCategoryName(category.name)}</span>
                         </div>
                       ))}
                     </div>
@@ -297,43 +370,23 @@ export const EditExerciseDialog = ({ open, onOpenChange, exercise, onSuccess }: 
               </div>
             )}
 
-            {/* Show selected categories summary */}
+            {/* Selected categories summary */}
             {selectedCategories.length > 0 && (
-              <div className="mt-4 p-3 bg-blue-50 border">
-                <h4 className="font-medium text-sm text-blue-900 mb-2">
-                  Επιλεγμένες Κατηγορίες ({selectedCategories.length})
-                </h4>
-                <div className="flex flex-wrap gap-1">
-                  {selectedCategories.map(categoryId => {
-                    const category = categories.find(c => c.id === categoryId);
-                    return category ? (
-                      <span 
-                        key={categoryId}
-                        className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1"
-                      >
-                        {category.name}
-                      </span>
-                    ) : null;
-                  })}
-                </div>
+              <div className="mt-1 p-1.5 sm:p-1 bg-blue-50 border text-[11px] sm:text-[10px]">
+                <span className="font-medium text-blue-900">Επιλεγμένες ({selectedCategories.length}): </span>
+                {selectedCategories.map(categoryId => {
+                  const category = categories.find(c => c.id === categoryId);
+                  return category ? formatCategoryName(category.name) : null;
+                }).filter(Boolean).join(', ')}
               </div>
             )}
           </div>
 
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={handleClose}
-              className="rounded-none"
-            >
+          <div className="flex justify-end gap-2 sm:gap-1.5 pt-2 sm:pt-1">
+            <Button type="button" variant="outline" size="sm" onClick={handleClose} className="rounded-none h-9 sm:h-7 text-xs px-4 sm:px-3">
               Ακύρωση
             </Button>
-            <Button 
-              type="submit" 
-              disabled={loading || loadingCategories}
-              className="rounded-none"
-            >
+            <Button type="submit" size="sm" disabled={loading || loadingCategories} className="rounded-none h-9 sm:h-7 text-xs px-4 sm:px-3">
               {loading ? 'Ενημέρωση...' : 'Ενημέρωση'}
             </Button>
           </div>
