@@ -80,11 +80,6 @@ export const useExercises = () => {
     } catch (error) {
       console.error('Error fetching exercises:', error);
       toast.error('Σφάλμα κατά τη φόρτωση των ασκήσεων');
-    } finally {
-      setLoadingExercises(false);
-    }
-  };
-
   const deleteExercise = async (exerciseId: string) => {
     try {
       const { error } = await supabase
@@ -92,13 +87,20 @@ export const useExercises = () => {
         .delete()
         .eq('id', exerciseId);
 
-      if (error) throw error;
+      if (error) {
+        // Postgres foreign key violation
+        if ((error as any).code === '23503') {
+          toast.error('Η άσκηση χρησιμοποιείται σε προγράμματα ή τεστ και δεν μπορεί να διαγραφεί.');
+          return;
+        }
+        throw error;
+      }
 
       toast.success('Η άσκηση διαγράφηκε επιτυχώς');
       fetchExercises();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting exercise:', error);
-      toast.error('Σφάλμα κατά τη διαγραφή της άσκησης');
+      toast.error(error?.message || 'Σφάλμα κατά τη διαγραφή της άσκησης');
     }
   };
 
