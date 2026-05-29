@@ -122,6 +122,8 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
         const youtubeParams = new URLSearchParams({
           autoplay: '1',
           mute: '1',
+          loop: '1',
+          playlist: videoId,
           controls: '0',
           modestbranding: '1',
           rel: '0',
@@ -130,6 +132,7 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
           iv_load_policy: '3',
           cc_load_policy: '0',
           playsinline: '1',
+          enablejsapi: '1',
           origin: window.location.origin,
         });
 
@@ -141,8 +144,9 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
               frameBorder="0"
               allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
               referrerPolicy="strict-origin-when-cross-origin"
-              className="w-full h-full rounded-none pointer-events-none"
+              className="absolute left-1/2 top-1/2 h-[124%] w-[124%] -translate-x-1/2 -translate-y-1/2 rounded-none pointer-events-none"
             />
+            <div className="pointer-events-none absolute inset-0 border-[28px] border-black" />
           </div>
         );
       }
