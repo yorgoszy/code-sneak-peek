@@ -1575,39 +1575,15 @@ serve(async (req) => {
         } else {
         
         const allWeekIds = allWeeksData.map((w: any) => w.id);
-        
-        const daysResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/program_days?week_id=in.(${allWeekIds.join(',')})&select=*&order=day_number.asc`,
-          {
-            headers: {
-              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-            }
-          }
-        );
-        const daysJsonData = await daysResponse.json();
-        const allDaysData = Array.isArray(daysJsonData) ? daysJsonData : [];
+        const allDaysData = allWeekIds.length > 0
+          ? await fetchRowsByInFilter('program_days', 'week_id', allWeekIds, 'day_number')
+          : [];
         console.log(`✅ Loaded ${allDaysData.length} days`);
         
         const allDayIds = allDaysData.length > 0 ? allDaysData.map((d: any) => d.id) : [];
-
-        // Batch the day_ids to avoid exceeding URL length limits (was causing 500s)
-        const allBlocksData: any[] = [];
-        const dayBatchSize = 50;
-        for (let i = 0; i < allDayIds.length; i += dayBatchSize) {
-          const batchIds = allDayIds.slice(i, i + dayBatchSize);
-          const blocksResponse = await fetch(
-            `${SUPABASE_URL}/rest/v1/program_blocks?day_id=in.(${batchIds.join(',')})&select=*&order=block_order.asc`,
-            {
-              headers: {
-                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-              }
-            }
-          );
-          const blocksJsonData = await blocksResponse.json();
-          if (Array.isArray(blocksJsonData)) allBlocksData.push(...blocksJsonData);
-        }
+        const allBlocksData = allDayIds.length > 0
+          ? await fetchRowsByInFilter('program_blocks', 'day_id', allDayIds, 'block_order')
+          : [];
         console.log(`✅ Loaded ${allBlocksData.length} blocks`);
         
         const allBlockIds = allBlocksData.length > 0 ? allBlocksData.map((b: any) => b.id) : [];
