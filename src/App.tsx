@@ -274,7 +274,7 @@ function App() {
                       <Route path="/dashboard/muscle-mapping" element={<ProtectedRoute requireAdmin><MuscleMappingWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/one-rm" element={<ProtectedRoute requireAdmin><OneRMManagementWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/rid-ai-coach" element={<ProtectedRoute><RidAiCoachPage /></ProtectedRoute>} />
-                      <Route path="/dashboard/ai" element={<ProtectedRoute><AiAgentPage /></ProtectedRoute>} />
+                      <Route path="/dashboard/ai" element={<ProtectedRoute requireAdmin><AiAgentPage /></ProtectedRoute>} />
                       <Route path="/dashboard/ai-knowledge" element={<ProtectedRoute requireAdmin><AdminAIKnowledgeWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/knowledge" element={<ProtectedRoute><KnowledgeManagementWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/goals-awards" element={<ProtectedRoute requireAdmin><AdminGoalsAwardsPage /></ProtectedRoute>} />
