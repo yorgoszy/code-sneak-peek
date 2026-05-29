@@ -101,6 +101,35 @@ serve(async (req) => {
     const isFederation = callerUserData[0]?.role === 'federation';
     const isAdminOrCoach = isAdmin || isCoach || isFederation;
 
+    const fetchRowsByInFilter = async (table: string, column: string, ids: string[], orderColumn?: string) => {
+      const rows: any[] = [];
+      const batchSize = 20;
+
+      for (let i = 0; i < ids.length; i += batchSize) {
+        const batchIds = ids.slice(i, i + batchSize);
+        const orderQuery = orderColumn ? `&order=${orderColumn}.asc` : '';
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/${table}?${column}=in.(${batchIds.join(',')})&select=*${orderQuery}`,
+          {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+          }
+        );
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`${table} batch ${Math.floor(i / batchSize) + 1} failed: ${response.status} ${errorText}`);
+        }
+
+        const data = await response.json();
+        if (Array.isArray(data)) rows.push(...data);
+      }
+
+      return rows;
+    };
+
     // 🏋️ ΦΟΡΤΩΣΗ COACH DATA (Αθλητές και Συνδρομές Coach)
     let coachAthletesContext = '';
     let coachSubscriptionsContext = '';
