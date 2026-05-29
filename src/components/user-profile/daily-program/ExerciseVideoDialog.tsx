@@ -144,7 +144,7 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
               frameBorder="0"
               allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
               referrerPolicy="strict-origin-when-cross-origin"
-              className="absolute left-1/2 top-1/2 h-[150%] w-[150%] -translate-x-1/2 -translate-y-1/2 rounded-none pointer-events-none"
+              className="absolute inset-0 w-full h-full rounded-none pointer-events-none"
             />
           </div>
         );
