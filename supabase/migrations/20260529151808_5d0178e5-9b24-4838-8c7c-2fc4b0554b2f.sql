@@ -1,0 +1,2 @@
+INSERT INTO public.program_assignments (program_id, user_id, coach_id, assigned_by, status, training_dates, start_date, end_date, assignment_type)
+VALUES ('1ccf9753-e68a-4f5c-8c65-febb7f03c5ce', 'c6d44641-3b95-46bd-8270-e5ed72de25ad', 'c6d44641-3b95-46bd-8270-e5ed72de25ad', 'c6d44641-3b95-46bd-8270-e5ed72de25ad', 'active', ARRAY['2026-05-29']::date[], '2026-05-29', '2026-05-29', 'individual');
