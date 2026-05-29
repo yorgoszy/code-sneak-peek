@@ -120,13 +120,13 @@ export const ExerciseVideoDialog: React.FC<ExerciseVideoDialogProps> = ({
 
       if (videoId) {
         return (
-          <div className="aspect-video relative overflow-hidden">
+          <div className="aspect-video relative overflow-hidden bg-black">
             <iframe
-              src={`https://www.youtube-nocookie.com/embed/${videoId}?modestbranding=1&rel=0&showinfo=0&controls=1&fs=0&disablekb=1&iv_load_policy=3`}
+              src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0&showinfo=0&fs=0&disablekb=1&iv_load_policy=3&playsinline=1`}
               title={name}
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              className="w-full h-full rounded-none"
+              className="w-full h-full rounded-none pointer-events-none"
             />
           </div>
         );
