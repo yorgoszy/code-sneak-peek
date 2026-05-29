@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { DisabledModuleNotice } from "@/components/ams/DisabledModuleNotice";
 import {
@@ -33,7 +33,7 @@ const MODE_BADGE: Record<AgentMode, string> = {
 
 export default function AiAgentPage() {
   const { enabled, loading: flagLoading } = useFeatureFlag("ai_agent_unified");
-  const { isAdmin, hasRole, user } = useAuth();
+  const { isAdmin, hasRole, user } = useAuthContext();
 
   const adminFlag = isAdmin();
   const coachFlag = hasRole("coach");
