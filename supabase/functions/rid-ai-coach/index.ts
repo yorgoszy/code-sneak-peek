@@ -2062,17 +2062,21 @@ ${calendarDisplay}`;
         const menuDayIds = menuDays.map((d: any) => d.id);
         let menuBlocks: any[] = [];
         if (menuDayIds.length > 0) {
-          const menuBlocksResponse = await fetch(
-            `${SUPABASE_URL}/rest/v1/program_blocks?day_id=in.(${menuDayIds.join(',')})&select=*&order=block_order.asc`,
-            {
-              headers: {
-                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          const dayBatchSize = 50;
+          for (let i = 0; i < menuDayIds.length; i += dayBatchSize) {
+            const batchIds = menuDayIds.slice(i, i + dayBatchSize);
+            const menuBlocksResponse = await fetch(
+              `${SUPABASE_URL}/rest/v1/program_blocks?day_id=in.(${batchIds.join(',')})&select=*&order=block_order.asc`,
+              {
+                headers: {
+                  "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+                  "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+                }
               }
-            }
-          );
-          const menuBlocksData = await menuBlocksResponse.json();
-          menuBlocks = Array.isArray(menuBlocksData) ? menuBlocksData : [];
+            );
+            const menuBlocksData = await menuBlocksResponse.json();
+            if (Array.isArray(menuBlocksData)) menuBlocks.push(...menuBlocksData);
+          }
         }
         
         // Exercises
