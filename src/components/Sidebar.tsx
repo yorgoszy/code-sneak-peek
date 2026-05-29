@@ -41,7 +41,6 @@ import {
   Droplet,
   BellRing,
   Bluetooth,
-  Sparkles,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -709,12 +708,6 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       label: "1RM",
       path: "/dashboard/one-rm",
       badge: null
-    },
-    {
-      icon: Sparkles,
-      label: "AI Agent",
-      path: "/dashboard/ai",
-      badge: "NEW"
     },
     {
       icon: Brain,
