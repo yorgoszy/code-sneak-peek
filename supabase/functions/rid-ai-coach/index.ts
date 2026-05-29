@@ -101,6 +101,35 @@ serve(async (req) => {
     const isFederation = callerUserData[0]?.role === 'federation';
     const isAdminOrCoach = isAdmin || isCoach || isFederation;
 
+    const fetchRowsByInFilter = async (table: string, column: string, ids: string[], orderColumn?: string) => {
+      const rows: any[] = [];
+      const batchSize = 20;
+
+      for (let i = 0; i < ids.length; i += batchSize) {
+        const batchIds = ids.slice(i, i + batchSize);
+        const orderQuery = orderColumn ? `&order=${orderColumn}.asc` : '';
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/${table}?${column}=in.(${batchIds.join(',')})&select=*${orderQuery}`,
+          {
+            headers: {
+              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+            }
+          }
+        );
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`${table} batch ${Math.floor(i / batchSize) + 1} failed: ${response.status} ${errorText}`);
+        }
+
+        const data = await response.json();
+        if (Array.isArray(data)) rows.push(...data);
+      }
+
+      return rows;
+    };
+
     // 🏋️ ΦΟΡΤΩΣΗ COACH DATA (Αθλητές και Συνδρομές Coach)
     let coachAthletesContext = '';
     let coachSubscriptionsContext = '';
@@ -1546,39 +1575,15 @@ serve(async (req) => {
         } else {
         
         const allWeekIds = allWeeksData.map((w: any) => w.id);
-        
-        const daysResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/program_days?week_id=in.(${allWeekIds.join(',')})&select=*&order=day_number.asc`,
-          {
-            headers: {
-              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-            }
-          }
-        );
-        const daysJsonData = await daysResponse.json();
-        const allDaysData = Array.isArray(daysJsonData) ? daysJsonData : [];
+        const allDaysData = allWeekIds.length > 0
+          ? await fetchRowsByInFilter('program_days', 'week_id', allWeekIds, 'day_number')
+          : [];
         console.log(`✅ Loaded ${allDaysData.length} days`);
         
         const allDayIds = allDaysData.length > 0 ? allDaysData.map((d: any) => d.id) : [];
-
-        // Batch the day_ids to avoid exceeding URL length limits (was causing 500s)
-        const allBlocksData: any[] = [];
-        const dayBatchSize = 50;
-        for (let i = 0; i < allDayIds.length; i += dayBatchSize) {
-          const batchIds = allDayIds.slice(i, i + dayBatchSize);
-          const blocksResponse = await fetch(
-            `${SUPABASE_URL}/rest/v1/program_blocks?day_id=in.(${batchIds.join(',')})&select=*&order=block_order.asc`,
-            {
-              headers: {
-                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-              }
-            }
-          );
-          const blocksJsonData = await blocksResponse.json();
-          if (Array.isArray(blocksJsonData)) allBlocksData.push(...blocksJsonData);
-        }
+        const allBlocksData = allDayIds.length > 0
+          ? await fetchRowsByInFilter('program_blocks', 'day_id', allDayIds, 'block_order')
+          : [];
         console.log(`✅ Loaded ${allBlocksData.length} blocks`);
         
         const allBlockIds = allBlocksData.length > 0 ? allBlocksData.map((b: any) => b.id) : [];
@@ -2045,38 +2050,14 @@ ${calendarDisplay}`;
         const menuWeekIds = menuWeeks.map((w: any) => w.id);
         let menuDays: any[] = [];
         if (menuWeekIds.length > 0) {
-          const menuDaysResponse = await fetch(
-            `${SUPABASE_URL}/rest/v1/program_days?week_id=in.(${menuWeekIds.join(',')})&select=*&order=day_number.asc`,
-            {
-              headers: {
-                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-              }
-            }
-          );
-          const menuDaysData = await menuDaysResponse.json();
-          menuDays = Array.isArray(menuDaysData) ? menuDaysData : [];
+          menuDays = await fetchRowsByInFilter('program_days', 'week_id', menuWeekIds, 'day_number');
         }
         
         // Blocks
         const menuDayIds = menuDays.map((d: any) => d.id);
         let menuBlocks: any[] = [];
         if (menuDayIds.length > 0) {
-          const dayBatchSize = 50;
-          for (let i = 0; i < menuDayIds.length; i += dayBatchSize) {
-            const batchIds = menuDayIds.slice(i, i + dayBatchSize);
-            const menuBlocksResponse = await fetch(
-              `${SUPABASE_URL}/rest/v1/program_blocks?day_id=in.(${batchIds.join(',')})&select=*&order=block_order.asc`,
-              {
-                headers: {
-                  "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-                  "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-                }
-              }
-            );
-            const menuBlocksData = await menuBlocksResponse.json();
-            if (Array.isArray(menuBlocksData)) menuBlocks.push(...menuBlocksData);
-          }
+          menuBlocks = await fetchRowsByInFilter('program_blocks', 'day_id', menuDayIds, 'block_order');
         }
         
         // Exercises
