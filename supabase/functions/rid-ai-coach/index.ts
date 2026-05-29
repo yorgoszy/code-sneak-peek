@@ -1561,18 +1561,24 @@ serve(async (req) => {
         console.log(`✅ Loaded ${allDaysData.length} days`);
         
         const allDayIds = allDaysData.length > 0 ? allDaysData.map((d: any) => d.id) : [];
-        
-        const blocksResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/program_blocks?day_id=in.(${allDayIds.join(',')})&select=*&order=block_order.asc`,
-          {
-            headers: {
-              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+
+        // Batch the day_ids to avoid exceeding URL length limits (was causing 500s)
+        const allBlocksData: any[] = [];
+        const dayBatchSize = 50;
+        for (let i = 0; i < allDayIds.length; i += dayBatchSize) {
+          const batchIds = allDayIds.slice(i, i + dayBatchSize);
+          const blocksResponse = await fetch(
+            `${SUPABASE_URL}/rest/v1/program_blocks?day_id=in.(${batchIds.join(',')})&select=*&order=block_order.asc`,
+            {
+              headers: {
+                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+              }
             }
-          }
-        );
-        const blocksJsonData = await blocksResponse.json();
-        const allBlocksData = Array.isArray(blocksJsonData) ? blocksJsonData : [];
+          );
+          const blocksJsonData = await blocksResponse.json();
+          if (Array.isArray(blocksJsonData)) allBlocksData.push(...blocksJsonData);
+        }
         console.log(`✅ Loaded ${allBlocksData.length} blocks`);
         
         const allBlockIds = allBlocksData.length > 0 ? allBlocksData.map((b: any) => b.id) : [];
@@ -2056,17 +2062,21 @@ ${calendarDisplay}`;
         const menuDayIds = menuDays.map((d: any) => d.id);
         let menuBlocks: any[] = [];
         if (menuDayIds.length > 0) {
-          const menuBlocksResponse = await fetch(
-            `${SUPABASE_URL}/rest/v1/program_blocks?day_id=in.(${menuDayIds.join(',')})&select=*&order=block_order.asc`,
-            {
-              headers: {
-                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          const dayBatchSize = 50;
+          for (let i = 0; i < menuDayIds.length; i += dayBatchSize) {
+            const batchIds = menuDayIds.slice(i, i + dayBatchSize);
+            const menuBlocksResponse = await fetch(
+              `${SUPABASE_URL}/rest/v1/program_blocks?day_id=in.(${batchIds.join(',')})&select=*&order=block_order.asc`,
+              {
+                headers: {
+                  "apikey": SUPABASE_SERVICE_ROLE_KEY!,
+                  "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+                }
               }
-            }
-          );
-          const menuBlocksData = await menuBlocksResponse.json();
-          menuBlocks = Array.isArray(menuBlocksData) ? menuBlocksData : [];
+            );
+            const menuBlocksData = await menuBlocksResponse.json();
+            if (Array.isArray(menuBlocksData)) menuBlocks.push(...menuBlocksData);
+          }
         }
         
         // Exercises
