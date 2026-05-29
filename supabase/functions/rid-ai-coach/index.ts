@@ -2050,38 +2050,14 @@ ${calendarDisplay}`;
         const menuWeekIds = menuWeeks.map((w: any) => w.id);
         let menuDays: any[] = [];
         if (menuWeekIds.length > 0) {
-          const menuDaysResponse = await fetch(
-            `${SUPABASE_URL}/rest/v1/program_days?week_id=in.(${menuWeekIds.join(',')})&select=*&order=day_number.asc`,
-            {
-              headers: {
-                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-              }
-            }
-          );
-          const menuDaysData = await menuDaysResponse.json();
-          menuDays = Array.isArray(menuDaysData) ? menuDaysData : [];
+          menuDays = await fetchRowsByInFilter('program_days', 'week_id', menuWeekIds, 'day_number');
         }
         
         // Blocks
         const menuDayIds = menuDays.map((d: any) => d.id);
         let menuBlocks: any[] = [];
         if (menuDayIds.length > 0) {
-          const dayBatchSize = 50;
-          for (let i = 0; i < menuDayIds.length; i += dayBatchSize) {
-            const batchIds = menuDayIds.slice(i, i + dayBatchSize);
-            const menuBlocksResponse = await fetch(
-              `${SUPABASE_URL}/rest/v1/program_blocks?day_id=in.(${batchIds.join(',')})&select=*&order=block_order.asc`,
-              {
-                headers: {
-                  "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-                  "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-                }
-              }
-            );
-            const menuBlocksData = await menuBlocksResponse.json();
-            if (Array.isArray(menuBlocksData)) menuBlocks.push(...menuBlocksData);
-          }
+          menuBlocks = await fetchRowsByInFilter('program_blocks', 'day_id', menuDayIds, 'block_order');
         }
         
         // Exercises
