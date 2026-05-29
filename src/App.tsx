@@ -139,6 +139,7 @@ const VideoGallery = React.lazy(() => import("@/pages/VideoGallery"));
 const LiveRingAnalysis = React.lazy(() => import("@/pages/Dashboard/LiveRingAnalysis"));
 const MultiCameraAnalysis = React.lazy(() => import("@/pages/Dashboard/MultiCameraAnalysis"));
 import { FederationPersistentLayout } from "@/components/federation/FederationPersistentLayout";
+import AiAgentPage from "@/pages/Dashboard/AiAgentPage";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -273,6 +274,7 @@ function App() {
                       <Route path="/dashboard/muscle-mapping" element={<ProtectedRoute requireAdmin><MuscleMappingWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/one-rm" element={<ProtectedRoute requireAdmin><OneRMManagementWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/rid-ai-coach" element={<ProtectedRoute><RidAiCoachPage /></ProtectedRoute>} />
+                      <Route path="/dashboard/ai" element={<ProtectedRoute><AiAgentPage /></ProtectedRoute>} />
                       <Route path="/dashboard/ai-knowledge" element={<ProtectedRoute requireAdmin><AdminAIKnowledgeWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/knowledge" element={<ProtectedRoute><KnowledgeManagementWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/goals-awards" element={<ProtectedRoute requireAdmin><AdminGoalsAwardsPage /></ProtectedRoute>} />
