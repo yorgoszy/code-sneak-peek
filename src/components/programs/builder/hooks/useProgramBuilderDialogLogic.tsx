@@ -41,6 +41,10 @@ export const useProgramBuilderDialogLogic = ({
   }, [users]);
 
   const handleClose = () => {
+    // Καθαρίζουμε το draft για να μην κολλάει στο επόμενο άνοιγμα
+    if (!editingProgram) {
+      clearProgramDraft();
+    }
     onOpenChange();
   };
 
