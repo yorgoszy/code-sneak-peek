@@ -1,6 +1,6 @@
 import React from 'react';
 import { toast } from "sonner";
-import { CreditCard, CheckCircle, Clock } from "lucide-react";
+import { CreditCard, CheckCircle, Clock, ChevronDown } from "lucide-react";
 import { ProgramCard } from "@/components/active-programs/ProgramCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
@@ -31,6 +31,7 @@ const CoachProgramCardsContent = () => {
     open: false,
     assignmentId: null
   });
+  const [showAllCompleted, setShowAllCompleted] = React.useState(false);
 
   // Fetch coach's program assignments
   const fetchCoachPrograms = React.useCallback(async () => {
@@ -290,9 +291,27 @@ const CoachProgramCardsContent = () => {
   const activeIncompletePrograms = programsWithStats.filter(item => 
     item.assignment.status === 'active' && item.stats.progress < 100
   );
-  const completedPrograms = programsWithStats.filter(item => 
-    item.assignment.status === 'completed' || item.stats.progress >= 100
-  );
+
+  // Sort completed programs by most recent completion date
+  const getLatestCompletionDate = (assignmentId: string): number => {
+    const completions = workoutCompletions.filter(
+      c => c.assignment_id === assignmentId && c.status === 'completed'
+    );
+    if (completions.length === 0) return 0;
+    return Math.max(
+      ...completions.map(c => new Date(c.completed_date || c.scheduled_date).getTime())
+    );
+  };
+
+  const completedPrograms = programsWithStats
+    .filter(item => item.assignment.status === 'completed' || item.stats.progress >= 100)
+    .sort((a, b) => {
+      return getLatestCompletionDate(b.assignment.id) - getLatestCompletionDate(a.assignment.id);
+    });
+
+  const visibleCompletedPrograms = showAllCompleted
+    ? completedPrograms
+    : completedPrograms.slice(0, 10);
 
   if (!coachId) return null;
 
@@ -363,9 +382,9 @@ const CoachProgramCardsContent = () => {
             </div>
           </div>
 
-          {completedPrograms.length > 0 ? (
+          {visibleCompletedPrograms.length > 0 ? (
             <div className="space-y-3 sm:space-y-4">
-              {completedPrograms.map((item) => (
+              {visibleCompletedPrograms.map((item) => (
                 <div key={item.assignment.id} className="flex justify-center">
                   <ProgramCard
                     assignment={item.assignment}
@@ -376,6 +395,17 @@ const CoachProgramCardsContent = () => {
                   />
                 </div>
               ))}
+              {completedPrograms.length > 10 && !showAllCompleted && (
+                <div className="flex justify-center pt-2">
+                  <button
+                    onClick={() => setShowAllCompleted(true)}
+                    className="flex items-center gap-1 text-sm text-[#00ffba] hover:text-[#00ffba]/80 transition-colors border border-[#00ffba] px-4 py-2 rounded-none"
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                    Περισσότερα
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-center py-8 text-gray-500 bg-white border border-gray-200 rounded-none">
