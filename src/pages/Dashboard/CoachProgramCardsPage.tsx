@@ -291,9 +291,21 @@ const CoachProgramCardsContent = () => {
   const activeIncompletePrograms = programsWithStats.filter(item => 
     item.assignment.status === 'active' && item.stats.progress < 100
   );
-  const completedPrograms = programsWithStats.filter(item => 
-    item.assignment.status === 'completed' || item.stats.progress >= 100
-  );
+
+  // Sort completed programs by most recent completion date
+  const completedPrograms = programsWithStats
+    .filter(item => item.assignment.status === 'completed' || item.stats.progress >= 100)
+    .sort((a, b) => {
+      const aCompletions = workoutCompletions.filter(c => c.assignment_id === a.assignment.id && c.status === 'completed');
+      const bCompletions = workoutCompletions.filter(c => c.assignment_id === b.assignment.id && c.status === 'completed');
+      const aLatest = aCompletions.length > 0 ? new Date(aCompletions[0].completed_date || aCompletions[0].scheduled_date).getTime() : 0;
+      const bLatest = bCompletions.length > 0 ? new Date(bCompletions[0].completed_date || bCompletions[0].scheduled_date).getTime() : 0;
+      return bLatest - aLatest;
+    });
+
+  const visibleCompletedPrograms = showAllCompleted
+    ? completedPrograms
+    : completedPrograms.slice(0, 10);
 
   if (!coachId) return null;
 
