@@ -6,6 +6,7 @@ import { assignmentService } from '../services/assignmentService';
 import { recalculateWeeksForUser } from '../services/perUserRecalculation';
 import { applyUserWarmUps } from '../services/applyUserWarmUps';
 import { clearProgramDraft } from './useProgramBuilderState';
+import { supabase } from '@/integrations/supabase/client';
 
 interface UseProgramBuilderDialogLogicProps {
   users: User[];
