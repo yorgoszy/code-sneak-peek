@@ -620,6 +620,147 @@ export const useEditableProgramActions = (
     }
   };
 
+  // ============ PASTE OPERATIONS ============
+
+  // Εισάγει ένα block (με ασκήσεις) σε υπάρχουσα ημέρα
+  const insertBlockIntoDay = async (dayId: string, sourceBlock: any, orderOffset: number) => {
+    const { data: newBlock, error: blockErr } = await supabase
+      .from('program_blocks')
+      .insert({
+        day_id: dayId,
+        name: sourceBlock.name || sourceBlock.training_type || 'str',
+        training_type: sourceBlock.training_type,
+        workout_format: sourceBlock.workout_format,
+        workout_duration: sourceBlock.workout_duration,
+        block_sets: sourceBlock.block_sets,
+        block_order: (sourceBlock.block_order ?? 0) + orderOffset,
+      })
+      .select()
+      .single();
+    if (blockErr) throw blockErr;
+
+    const sourceExercises = sourceBlock.program_exercises || [];
+    const insertedExercises: any[] = [];
+    if (sourceExercises.length > 0) {
+      const exerciseRows = sourceExercises.map((ex: any, idx: number) => ({
+        block_id: newBlock.id,
+        exercise_id: ex.exercise_id,
+        sets: ex.sets ?? 1,
+        reps: ex.reps ?? '',
+        kg: ex.kg ?? '',
+        percentage_1rm: ex.percentage_1rm ?? null,
+        tempo: ex.tempo ?? '',
+        rest: ex.rest ?? '',
+        notes: ex.notes ?? '',
+        velocity_ms: ex.velocity_ms ?? null,
+        kg_mode: ex.kg_mode ?? null,
+        reps_mode: ex.reps_mode ?? null,
+        exercise_order: ex.exercise_order ?? idx + 1,
+      }));
+      const { data: newExercises, error: exErr } = await supabase
+        .from('program_exercises')
+        .insert(exerciseRows)
+        .select();
+      if (exErr) throw exErr;
+
+      // attach exercises metadata for display
+      const exerciseIds: string[] = Array.from(new Set(exerciseRows.map(r => r.exercise_id).filter(Boolean) as string[]));
+      let exerciseDetails: Record<string, any> = {};
+      if (exerciseIds.length > 0) {
+        const { data: exData } = await supabase
+          .from('exercises')
+          .select('*')
+          .in('id', exerciseIds);
+        (exData || []).forEach((e: any) => { exerciseDetails[e.id] = e; });
+      }
+      (newExercises || []).forEach((ex: any) => {
+        insertedExercises.push({ ...ex, exercises: exerciseDetails[ex.exercise_id] });
+      });
+    }
+
+    return { ...newBlock, program_exercises: insertedExercises };
+  };
+
+  const pasteBlockToDay = async (dayId: string, sourceBlock: any, setProgramData: (data: any) => void) => {
+    try {
+      const updatedProgram = { ...programData };
+      const day = updatedProgram.program_weeks
+        ?.flatMap((w: any) => w.program_days || [])
+        .find((d: any) => d.id === dayId);
+      const existingBlocks = day?.program_blocks || [];
+      const maxOrder = existingBlocks.length > 0
+        ? Math.max(...existingBlocks.map((b: any) => b.block_order || 0))
+        : 0;
+      const newBlock = await insertBlockIntoDay(dayId, sourceBlock, maxOrder + 1 - (sourceBlock.block_order ?? 0));
+      if (day) {
+        day.program_blocks = [...existingBlocks, newBlock];
+        setProgramData(updatedProgram);
+      }
+      toast.success('Block επικολλήθηκε');
+    } catch (error: any) {
+      console.error('❌ Σφάλμα paste block:', error);
+      toast.error(`Σφάλμα paste block: ${error?.message || ''}`);
+    }
+  };
+
+  const pasteDayContent = async (dayId: string, sourceDay: any, setProgramData: (data: any) => void) => {
+    try {
+      // Διαγραφή υπαρχόντων blocks (cascade σε exercises)
+      const { error: delErr } = await supabase
+        .from('program_blocks')
+        .delete()
+        .eq('day_id', dayId);
+      if (delErr) throw delErr;
+
+      const sourceBlocks = sourceDay.program_blocks || [];
+      const newBlocks: any[] = [];
+      for (let i = 0; i < sourceBlocks.length; i++) {
+        const sb = sourceBlocks[i];
+        const inserted = await insertBlockIntoDay(dayId, { ...sb, block_order: i + 1 }, 0);
+        newBlocks.push(inserted);
+      }
+
+      const updatedProgram = { ...programData };
+      const day = updatedProgram.program_weeks
+        ?.flatMap((w: any) => w.program_days || [])
+        .find((d: any) => d.id === dayId);
+      if (day) {
+        day.program_blocks = newBlocks;
+        setProgramData(updatedProgram);
+      }
+      toast.success('Ημέρα επικολλήθηκε');
+    } catch (error: any) {
+      console.error('❌ Σφάλμα paste day:', error);
+      toast.error(`Σφάλμα paste day: ${error?.message || ''}`);
+    }
+  };
+
+  const pasteWeekContent = async (weekId: string, sourceWeek: any, setProgramData: (data: any) => void) => {
+    try {
+      const updatedProgram = { ...programData };
+      const targetWeek = updatedProgram.program_weeks?.find((w: any) => w.id === weekId);
+      if (!targetWeek) return;
+      const targetDays = [...(targetWeek.program_days || [])].sort(
+        (a: any, b: any) => (a.day_number || 0) - (b.day_number || 0)
+      );
+      const sourceDays = [...(sourceWeek.program_days || [])].sort(
+        (a: any, b: any) => (a.day_number || 0) - (b.day_number || 0)
+      );
+      const pairs = Math.min(targetDays.length, sourceDays.length);
+      for (let i = 0; i < pairs; i++) {
+        await pasteDayContent(targetDays[i].id, sourceDays[i], setProgramData);
+      }
+      if (sourceDays.length > targetDays.length) {
+        toast.info(`Η εβδομάδα-πηγή είχε ${sourceDays.length} ημέρες· επικολλήθηκαν μόνο οι πρώτες ${pairs}`);
+      } else {
+        toast.success('Εβδομάδα επικολλήθηκε');
+      }
+    } catch (error: any) {
+      console.error('❌ Σφάλμα paste week:', error);
+      toast.error(`Σφάλμα paste week: ${error?.message || ''}`);
+    }
+  };
+
   return {
     saveChanges,
     addNewBlock,
@@ -631,6 +772,9 @@ export const useEditableProgramActions = (
     updateBlockTrainingType,
     updateBlockFormat,
     updateBlockDuration,
-    updateBlockSets
+    updateBlockSets,
+    pasteBlockToDay,
+    pasteDayContent,
+    pasteWeekContent,
   };
 };

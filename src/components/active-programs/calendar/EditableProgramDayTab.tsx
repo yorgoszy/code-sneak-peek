@@ -2,8 +2,9 @@
 import React from 'react';
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Plus, FlaskConical, Trophy } from "lucide-react";
+import { Plus, FlaskConical, Trophy, Copy, ClipboardPaste } from "lucide-react";
 import { ExerciseBlock } from "@/components/user-profile/daily-program/ExerciseBlock";
+import { useProgramClipboard } from "@/contexts/ProgramClipboardContext";
 
 interface EditableProgramDayTabProps {
   day: any;
@@ -21,6 +22,8 @@ interface EditableProgramDayTabProps {
   onUpdateBlockFormat?: (blockId: string, format: string) => void;
   onUpdateBlockDuration?: (blockId: string, duration: string) => void;
   onUpdateBlockSets?: (blockId: string, sets: number) => void;
+  onPasteBlock?: (dayId: string, block: any) => void;
+  onPasteDay?: (dayId: string, day: any) => void;
   displayName?: string;
 }
 
@@ -40,10 +43,26 @@ export const EditableProgramDayTab: React.FC<EditableProgramDayTabProps> = ({
   onUpdateBlockFormat,
   onUpdateBlockDuration,
   onUpdateBlockSets,
+  onPasteBlock,
+  onPasteDay,
   displayName
 }) => {
   const isTestDay = day.is_test_day === true;
   const isCompetitionDay = day.is_competition_day === true;
+  const { copyDay, paste, hasDay, hasBlock, clearClipboard } = useProgramClipboard();
+
+  const handleCopyDay = () => copyDay(day);
+  const handlePaste = () => {
+    const c = paste();
+    if (!c) return;
+    if (c.type === 'day' && onPasteDay) {
+      onPasteDay(day.id, c.data);
+      clearClipboard();
+    } else if (c.type === 'block' && onPasteBlock) {
+      onPasteBlock(day.id, c.data);
+      clearClipboard();
+    }
+  };
 
   // Αν είναι ημέρα τεστ ή αγώνα, εμφάνιση μόνο του label
   if (isTestDay || isCompetitionDay) {
@@ -67,12 +86,40 @@ export const EditableProgramDayTab: React.FC<EditableProgramDayTabProps> = ({
     );
   }
 
+  const canPaste = hasDay || hasBlock;
+  const pasteTitle = hasDay
+    ? "Επικόλληση ημέρας (αντικαθιστά)"
+    : hasBlock
+      ? "Επικόλληση block"
+      : "Δεν υπάρχει αντιγραμμένο στοιχείο";
+
   return (
     <TabsContent key={day.id} value={dayIndex.toString()} className="mt-0 flex-1 overflow-y-auto">
       <div className="bg-white rounded-none p-1.5">
-        {/* Κουμπί προσθήκης block (μόνο σε edit mode) */}
+        {/* Action bar - μόνο σε edit mode */}
         {isEditing && (
-          <div className="flex items-center justify-end mb-1">
+          <div className="flex items-center justify-end gap-1 mb-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-5 w-5 p-0 rounded-none"
+              title="Αντιγραφή ημέρας"
+              onClick={handleCopyDay}
+            >
+              <Copy className="w-3 h-3" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-5 w-5 p-0 rounded-none disabled:opacity-30"
+              title={pasteTitle}
+              disabled={!canPaste}
+              onClick={handlePaste}
+            >
+              <ClipboardPaste className="w-3 h-3" />
+            </Button>
             <Button
               onClick={() => onAddNewBlock(day.id)}
               size="sm"

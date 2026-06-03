@@ -1,12 +1,14 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsList, TabsContent } from "@/components/ui/tabs";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Copy, ClipboardPaste } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { EditableProgramDayTab } from './EditableProgramDayTab';
 import { SortableDay } from './SortableDay';
 import { useTranslation } from 'react-i18next';
+import { useProgramClipboard } from "@/contexts/ProgramClipboardContext";
 
 interface EditableProgramWeekCardProps {
   week: any;
@@ -27,6 +29,9 @@ interface EditableProgramWeekCardProps {
   onUpdateBlockFormat?: (blockId: string, format: string) => void;
   onUpdateBlockDuration?: (blockId: string, duration: string) => void;
   onUpdateBlockSets?: (blockId: string, sets: number) => void;
+  onPasteBlock?: (dayId: string, block: any) => void;
+  onPasteDay?: (dayId: string, day: any) => void;
+  onPasteWeek?: (weekId: string, week: any) => void;
   getDayLabel?: (week: any, day: any) => string;
 }
 
@@ -49,11 +54,15 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
   onUpdateBlockFormat,
   onUpdateBlockDuration,
   onUpdateBlockSets,
+  onPasteBlock,
+  onPasteDay,
+  onPasteWeek,
   getDayLabel
 }) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("0");
   const isCompleted = isWeekCompleted(week.week_number, week.program_days?.length || 0);
+  const { copyWeek, paste, hasWeek, clearClipboard } = useProgramClipboard();
 
   const handleDayDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -69,6 +78,15 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
     }
   };
 
+  const handleCopyWeek = () => copyWeek(week);
+  const handlePasteWeek = () => {
+    const c = paste();
+    if (c?.type === 'week' && onPasteWeek) {
+      onPasteWeek(week.id, c.data);
+      clearClipboard();
+    }
+  };
+
   return (
     <div 
       key={week.id} 
@@ -78,11 +96,36 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
         {/* Header + tabs container */}
         <div className="z-20 bg-white">
           {/* Week Header */}
-          <div className="bg-gray-50 px-2 sm:px-3 py-1.5 sm:py-2 border-b border-gray-200">
-            <h3 className="font-semibold text-gray-900 flex items-center gap-1 sm:gap-2 text-sm sm:text-base">
+          <div className="bg-gray-50 px-2 sm:px-3 py-1.5 sm:py-2 border-b border-gray-200 flex items-center justify-between gap-2">
+            <h3 className="font-semibold text-gray-900 flex items-center gap-1 sm:gap-2 text-sm sm:text-base min-w-0">
               {isCompleted && <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-[#00ffba] flex-shrink-0" />}
               <span className="truncate">{week.name || `${t('programs.weekShort', 'Wk')} ${week.week_number}`}</span>
             </h3>
+            {editMode && isEditing && (
+              <div className="flex items-center gap-0.5 flex-shrink-0">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 rounded-none"
+                  title="Αντιγραφή εβδομάδας"
+                  onClick={handleCopyWeek}
+                >
+                  <Copy className="w-3 h-3" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 rounded-none disabled:opacity-30"
+                  title={hasWeek ? "Επικόλληση εβδομάδας" : "Δεν υπάρχει εβδομάδα στο clipboard"}
+                  disabled={!hasWeek}
+                  onClick={handlePasteWeek}
+                >
+                  <ClipboardPaste className="w-3 h-3" />
+                </Button>
+              </div>
+            )}
           </div>
           
           {/* Day Tabs - immediately below header */}
@@ -160,6 +203,8 @@ export const EditableProgramWeekCard: React.FC<EditableProgramWeekCardProps> = (
               onUpdateBlockFormat={onUpdateBlockFormat}
               onUpdateBlockDuration={onUpdateBlockDuration}
               onUpdateBlockSets={onUpdateBlockSets}
+              onPasteBlock={onPasteBlock}
+              onPasteDay={onPasteDay}
               displayName={getDayLabel ? getDayLabel(week, day) : (day.name || `${t('programs.dayShort', 'Day')} ${day.day_number}`)}
             />
           ))}

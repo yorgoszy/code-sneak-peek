@@ -73,7 +73,10 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
     updateBlockTrainingType,
     updateBlockFormat,
     updateBlockDuration,
-    updateBlockSets
+    updateBlockSets,
+    pasteBlockToDay,
+    pasteDayContent,
+    pasteWeekContent,
   } = useEditableProgramActions(
     programData,
     assignment,
@@ -175,6 +178,21 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
     updateBlockSets(blockId, sets, setProgramData);
   };
 
+  const handlePasteBlock = (dayId: string, block: any) => {
+    if (!isEditing) return;
+    pasteBlockToDay(dayId, block, setProgramData);
+  };
+
+  const handlePasteDay = (dayId: string, day: any) => {
+    if (!isEditing) return;
+    pasteDayContent(dayId, day, setProgramData);
+  };
+
+  const handlePasteWeek = (weekId: string, week: any) => {
+    if (!isEditing) return;
+    pasteWeekContent(weekId, week, setProgramData);
+  };
+
   if (!assignment || !programData) return null;
 
   // Χρήση της πραγματικής δομής εβδομάδων του προγράμματος με σωστή σειρά
@@ -267,6 +285,9 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
                     onUpdateBlockFormat={handleUpdateBlockFormat}
                     onUpdateBlockDuration={handleUpdateBlockDuration}
                     onUpdateBlockSets={handleUpdateBlockSets}
+                    onPasteBlock={handlePasteBlock}
+                    onPasteDay={handlePasteDay}
+                    onPasteWeek={handlePasteWeek}
                     getDayLabel={(w, d) => {
                       // Αν δεν υπάρχουν πραγματικές training_dates, χρησιμοποιούμε το όνομα της ημέρας
                       const hasRealDate =
