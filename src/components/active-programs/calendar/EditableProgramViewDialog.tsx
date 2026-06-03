@@ -285,6 +285,9 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
                     onUpdateBlockFormat={handleUpdateBlockFormat}
                     onUpdateBlockDuration={handleUpdateBlockDuration}
                     onUpdateBlockSets={handleUpdateBlockSets}
+                    onPasteBlock={handlePasteBlock}
+                    onPasteDay={handlePasteDay}
+                    onPasteWeek={handlePasteWeek}
                     getDayLabel={(w, d) => {
                       // Αν δεν υπάρχουν πραγματικές training_dates, χρησιμοποιούμε το όνομα της ημέρας
                       const hasRealDate =
