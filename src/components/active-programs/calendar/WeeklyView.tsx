@@ -140,9 +140,47 @@ export const WeeklyView: React.FC<WeeklyViewProps> = ({
                   </div>
                 ))}
                 {dateProgramsWithStatus.length > 6 && (
-                  <div className="text-xs text-gray-500" style={{ fontSize: '10px' }}>
-                    +{dateProgramsWithStatus.length - 6}
-                  </div>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="text-xs text-gray-500 hover:text-black hover:underline text-left w-full leading-tight cursor-pointer"
+                        style={{ fontSize: '10px' }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        +{dateProgramsWithStatus.length - 6}
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-56 p-2 rounded-none"
+                      align="start"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="text-xs font-semibold mb-2 text-gray-700">
+                        Όλες οι προπονήσεις ({dateProgramsWithStatus.length})
+                      </div>
+                      <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
+                        {dateProgramsWithStatus.map((program, i) => (
+                          <button
+                            type="button"
+                            key={`pop-${program.assignmentId}-${i}`}
+                            className={`text-xs text-left px-2 py-1 hover:bg-gray-100 flex items-center justify-between gap-2 ${getNameColor(program.status, program.date)}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onUserNameClick(program, e);
+                            }}
+                          >
+                            <span className="truncate">{program.userName}</span>
+                            {program.status === 'completed' && program.rpeScore && (
+                              <span className={`text-[10px] text-white px-1 rounded-none ${getRpeColor(program.rpeScore)}`}>
+                                {program.rpeScore}
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 )}
               </div>
             </div>
