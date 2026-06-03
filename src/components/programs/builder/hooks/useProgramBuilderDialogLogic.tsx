@@ -6,6 +6,7 @@ import { assignmentService } from '../services/assignmentService';
 import { recalculateWeeksForUser } from '../services/perUserRecalculation';
 import { applyUserWarmUps } from '../services/applyUserWarmUps';
 import { clearProgramDraft } from './useProgramBuilderState';
+import { supabase } from '@/integrations/supabase/client';
 
 interface UseProgramBuilderDialogLogicProps {
   users: User[];
@@ -40,13 +41,57 @@ export const useProgramBuilderDialogLogic = ({
     return [...users];
   }, [users]);
 
-  const handleClose = () => {
-    // Καθαρίζουμε το draft για να μην κολλάει στο επόμενο άνοιγμα
-    if (!editingProgram) {
-      clearProgramDraft();
+  const hasMeaningfulProgram = (p: ProgramStructure) => {
+    return Boolean(
+      (p.name && p.name.trim()) ||
+      (p.description && p.description.trim()) ||
+      (p.weeks && p.weeks.length > 0)
+    );
+  };
+
+  const getNextDraftName = async (): Promise<string> => {
+    try {
+      const { data } = await supabase
+        .from('programs')
+        .select('name')
+        .ilike('name', 'draft %');
+      const nums = (data || [])
+        .map((r: any) => {
+          const m = /^draft\s+(\d+)$/i.exec((r.name || '').trim());
+          return m ? parseInt(m[1], 10) : 0;
+        })
+        .filter((n) => n > 0);
+      const next = nums.length ? Math.max(...nums) + 1 : 1;
+      return `draft ${next}`;
+    } catch {
+      return `draft ${Date.now()}`;
     }
+  };
+
+  const handleClose = async () => {
+    // Αν είναι νέο πρόγραμμα με περιεχόμενο και ΧΩΡΙΣ αποθηκευμένο id,
+    // το αποθηκεύουμε αυτόματα σαν "draft X" στη βάση.
+    if (!editingProgram && !program.id && hasMeaningfulProgram(program)) {
+      try {
+        const draftName = program.name?.trim() ? program.name : await getNextDraftName();
+        const draftProgram = {
+          ...program,
+          name: draftName,
+          is_template: true,
+          user_ids: [],
+          user_id: '',
+          training_dates: [],
+        };
+        await onCreateProgram(draftProgram);
+        toast.success(`Αποθηκεύτηκε ως πρόχειρο: ${draftName}`);
+      } catch (err) {
+        console.error('❌ Auto-save draft failed:', err);
+      }
+    }
+    clearProgramDraft();
     onOpenChange();
   };
+
 
   const handleSave = async () => {
     try {
