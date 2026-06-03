@@ -302,13 +302,11 @@ const ProgramCards = () => {
   const completedPrograms = programsWithStats
     .filter(item => item.assignment.status === 'completed' || item.stats.progress >= 100)
     .map(item => {
-      const comps = workoutCompletions.filter(
-        c => c.assignment_id === item.assignment.id && c.status === 'completed'
-      );
+      const comps = workoutCompletions.filter(c => c.assignment_id === item.assignment.id);
       const latest = comps.reduce((max, c) => {
-        const d = c.completed_date || c.scheduled_date;
-        return d && d > max ? d : max;
-      }, '');
+        const d = c.completed_at || c.completed_date || c.scheduled_date || '';
+        return d > max ? d : max;
+      }, item.assignment.updated_at || item.assignment.created_at || '');
       return { ...item, latestCompletion: latest };
     })
     .sort((a, b) => (b.latestCompletion || '').localeCompare(a.latestCompletion || ''));
