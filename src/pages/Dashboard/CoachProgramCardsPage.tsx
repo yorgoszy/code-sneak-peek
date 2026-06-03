@@ -1,6 +1,6 @@
 import React from 'react';
 import { toast } from "sonner";
-import { CreditCard, CheckCircle, Clock } from "lucide-react";
+import { CreditCard, CheckCircle, Clock, ChevronDown } from "lucide-react";
 import { ProgramCard } from "@/components/active-programs/ProgramCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
