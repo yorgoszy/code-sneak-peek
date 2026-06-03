@@ -299,9 +299,22 @@ const ProgramCards = () => {
   const activeIncompletePrograms = programsWithStats.filter(item => 
     item.assignment.status === 'active' && item.stats.progress < 100
   );
-  const completedPrograms = programsWithStats.filter(item => 
-    item.assignment.status === 'completed' || item.stats.progress >= 100
-  );
+  const completedPrograms = programsWithStats
+    .filter(item => item.assignment.status === 'completed' || item.stats.progress >= 100)
+    .map(item => {
+      const comps = workoutCompletions.filter(
+        c => c.assignment_id === item.assignment.id && c.status === 'completed'
+      );
+      const latest = comps.reduce((max, c) => {
+        const d = c.completed_date || c.scheduled_date;
+        return d && d > max ? d : max;
+      }, '');
+      return { ...item, latestCompletion: latest };
+    })
+    .sort((a, b) => (b.latestCompletion || '').localeCompare(a.latestCompletion || ''));
+
+  const [showAllCompleted, setShowAllCompleted] = React.useState(false);
+  const visibleCompletedPrograms = showAllCompleted ? completedPrograms : completedPrograms.slice(0, 10);
 
   // Debug για να δούμε τι συμβαίνει με το φιλτράρισμα
   console.log('🔍 Program filtering results:', {
@@ -495,7 +508,7 @@ const ProgramCards = () => {
 
                 {completedPrograms.length > 0 ? (
                   <div className="space-y-3 sm:space-y-4">
-                    {completedPrograms.map((item) => (
+                    {visibleCompletedPrograms.map((item) => (
                       <div key={item.assignment.id} className="flex justify-center">
                         <ProgramCard
                           assignment={item.assignment}
@@ -505,6 +518,17 @@ const ProgramCards = () => {
                         />
                       </div>
                     ))}
+                    {completedPrograms.length > 10 && !showAllCompleted && (
+                      <div className="flex justify-center pt-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowAllCompleted(true)}
+                          className="rounded-none border-[#00ffba] text-black hover:bg-[#00ffba]/10"
+                        >
+                          Περισσότερα ({completedPrograms.length - 10})
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="text-center py-8 sm:py-12 text-gray-500 border-2 border-dashed border-gray-200 rounded-none">
