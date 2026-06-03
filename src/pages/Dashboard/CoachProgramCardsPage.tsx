@@ -376,9 +376,9 @@ const CoachProgramCardsContent = () => {
             </div>
           </div>
 
-          {completedPrograms.length > 0 ? (
+          {visibleCompletedPrograms.length > 0 ? (
             <div className="space-y-3 sm:space-y-4">
-              {completedPrograms.map((item) => (
+              {visibleCompletedPrograms.map((item) => (
                 <div key={item.assignment.id} className="flex justify-center">
                   <ProgramCard
                     assignment={item.assignment}
@@ -389,6 +389,17 @@ const CoachProgramCardsContent = () => {
                   />
                 </div>
               ))}
+              {completedPrograms.length > 10 && !showAllCompleted && (
+                <div className="flex justify-center pt-2">
+                  <button
+                    onClick={() => setShowAllCompleted(true)}
+                    className="flex items-center gap-1 text-sm text-[#00ffba] hover:text-[#00ffba]/80 transition-colors border border-[#00ffba] px-4 py-2 rounded-none"
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                    Περισσότερα
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-center py-8 text-gray-500 bg-white border border-gray-200 rounded-none">
