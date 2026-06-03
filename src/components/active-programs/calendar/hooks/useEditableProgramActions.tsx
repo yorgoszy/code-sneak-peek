@@ -664,7 +664,7 @@ export const useEditableProgramActions = (
       if (exErr) throw exErr;
 
       // attach exercises metadata for display
-      const exerciseIds = Array.from(new Set(exerciseRows.map(r => r.exercise_id).filter(Boolean)));
+      const exerciseIds: string[] = Array.from(new Set(exerciseRows.map(r => r.exercise_id).filter(Boolean) as string[]));
       let exerciseDetails: Record<string, any> = {};
       if (exerciseIds.length > 0) {
         const { data: exData } = await supabase
