@@ -31,6 +31,7 @@ const CoachProgramCardsContent = () => {
     open: false,
     assignmentId: null
   });
+  const [showAllCompleted, setShowAllCompleted] = React.useState(false);
 
   // Fetch coach's program assignments
   const fetchCoachPrograms = React.useCallback(async () => {
