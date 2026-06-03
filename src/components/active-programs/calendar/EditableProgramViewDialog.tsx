@@ -73,7 +73,10 @@ export const EditableProgramViewDialog: React.FC<EditableProgramViewDialogProps>
     updateBlockTrainingType,
     updateBlockFormat,
     updateBlockDuration,
-    updateBlockSets
+    updateBlockSets,
+    pasteBlockToDay,
+    pasteDayContent,
+    pasteWeekContent,
   } = useEditableProgramActions(
     programData,
     assignment,
