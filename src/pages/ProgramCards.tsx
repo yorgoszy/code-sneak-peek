@@ -508,7 +508,7 @@ const ProgramCards = () => {
 
                 {completedPrograms.length > 0 ? (
                   <div className="space-y-3 sm:space-y-4">
-                    {completedPrograms.map((item) => (
+                    {visibleCompletedPrograms.map((item) => (
                       <div key={item.assignment.id} className="flex justify-center">
                         <ProgramCard
                           assignment={item.assignment}
@@ -518,6 +518,17 @@ const ProgramCards = () => {
                         />
                       </div>
                     ))}
+                    {completedPrograms.length > 10 && !showAllCompleted && (
+                      <div className="flex justify-center pt-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowAllCompleted(true)}
+                          className="rounded-none border-[#00ffba] text-black hover:bg-[#00ffba]/10"
+                        >
+                          Περισσότερα ({completedPrograms.length - 10})
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="text-center py-8 sm:py-12 text-gray-500 border-2 border-dashed border-gray-200 rounded-none">
