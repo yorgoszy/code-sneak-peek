@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { useIsMobile } from "@/hooks/use-mobile";
+
 import {
   Carousel,
   CarouselContent,
@@ -30,7 +30,7 @@ interface Result {
 const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
   const [results, setResults] = useState<Result[]>([]);
   const [loading, setLoading] = useState(true);
-  const isMobile = useIsMobile();
+  
 
   useEffect(() => {
     fetchResults();
@@ -42,8 +42,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
         .from('results')
         .select('*')
         .eq('status', 'published')
-        .order('result_date', { ascending: false })
-        .limit(6); // Περιορισμός στα 6 πιο πρόσφατα
+        .order('result_date', { ascending: false });
 
       if (error) throw error;
       setResults(data || []);
@@ -53,6 +52,41 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
       setLoading(false);
     }
   };
+
+  const renderCard = (result: Result) => (
+    <article className="bg-black rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow flex flex-col h-full">
+      {result.image_url && (
+        <div className="relative">
+          <img
+            src={result.image_url}
+            alt={result.title_el}
+            className="w-full h-48 object-cover"
+          />
+          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black to-transparent"></div>
+        </div>
+      )}
+      <div className="p-6 flex flex-col flex-grow">
+        <div className="text-sm mb-2" style={{ color: '#aca097' }}>
+          {format(new Date(result.result_date), 'dd MMM yyyy')}
+        </div>
+        <h3 className="text-xl font-bold mb-3 text-white" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
+          {translations?.language === 'en' && result.title_en ? result.title_en : result.title_el}
+        </h3>
+        <p className="mb-4 flex-grow text-white">
+          {translations?.language === 'en' && result.content_en ? result.content_en : result.content_el}
+        </p>
+        {result.hashtags && (
+          <div className="flex flex-wrap gap-1">
+            {parseHashtags(result.hashtags).map((tag, index) => (
+              <span key={index} className="inline-block px-2 py-1 text-xs rounded-full bg-white text-black">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    </article>
+  );
 
   const parseHashtags = (hashtagsString: string) => {
     if (!hashtagsString) return [];
@@ -87,10 +121,9 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
           <div style={{ color: '#aca097' }}>
             Δεν υπάρχουν αποτελέσματα προς εμφάνιση
           </div>
-        ) : isMobile ? (
+        ) : (
           <div className="relative">
-            <Carousel className="w-full max-w-sm mx-auto">
-              {/* Navigation buttons positioned absolutely below title */}
+            <Carousel opts={{ align: "start" }} className="w-full">
               <div className="absolute -top-16 right-0 flex gap-2 z-10">
                 <CarouselPrevious className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none hover:bg-transparent rounded-none text-white">
                   <ChevronLeft className="h-6 w-6" />
@@ -102,90 +135,12 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
 
               <CarouselContent>
                 {results.map((result) => (
-                  <CarouselItem key={result.id}>
-                    <article className="bg-black rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow flex flex-col h-full">
-                      {result.image_url && (
-                        <div className="relative">
-                          <img 
-                            src={result.image_url} 
-                            alt={result.title_el}
-                            className="w-full h-48 object-cover"
-                          />
-                          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black to-transparent"></div>
-                        </div>
-                      )}
-                      
-                      <div className="p-6 flex flex-col flex-grow">
-                        <div className="text-sm mb-2" style={{ color: '#aca097' }}>
-                          {format(new Date(result.result_date), 'dd MMM yyyy')}
-                        </div>
-                        
-                        <h3 className="text-xl font-bold mb-3 text-white" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
-                          {translations?.language === 'en' && result.title_en ? result.title_en : result.title_el}
-                        </h3>
-                        
-                        <p className="mb-4 flex-grow text-white">
-                          {translations?.language === 'en' && result.content_en ? result.content_en : result.content_el}
-                        </p>
-                        
-                        {result.hashtags && (
-                          <div className="flex flex-wrap gap-1">
-                            {parseHashtags(result.hashtags).map((tag, index) => (
-                              <span key={index} className="inline-block px-2 py-1 text-xs rounded-full bg-white text-black">
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </article>
+                  <CarouselItem key={result.id} className="basis-full md:basis-1/2 lg:basis-1/3">
+                    {renderCard(result)}
                   </CarouselItem>
                 ))}
               </CarouselContent>
             </Carousel>
-          </div>
-        ) : (
-          <div className="flex justify-center">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl">
-              {results.map((result) => (
-                <article key={result.id} className="bg-black rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow flex flex-col h-full">
-                  {result.image_url && (
-                    <div className="relative">
-                      <img 
-                        src={result.image_url} 
-                        alt={result.title_el}
-                        className="w-full h-48 object-cover"
-                      />
-                      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black to-transparent"></div>
-                    </div>
-                  )}
-                  
-                  <div className="p-6 flex flex-col flex-grow">
-                    <div className="text-sm mb-2" style={{ color: '#aca097' }}>
-                      {format(new Date(result.result_date), 'dd MMM yyyy')}
-                    </div>
-                    
-                    <h3 className="text-xl font-bold mb-3 text-white" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
-                      {translations?.language === 'en' && result.title_en ? result.title_en : result.title_el}
-                    </h3>
-                    
-                    <p className="mb-4 flex-grow text-white">
-                      {translations?.language === 'en' && result.content_en ? result.content_en : result.content_el}
-                    </p>
-                    
-                    {result.hashtags && (
-                      <div className="flex flex-wrap gap-1">
-                        {parseHashtags(result.hashtags).map((tag, index) => (
-                          <span key={index} className="inline-block px-2 py-1 text-xs rounded-full bg-white text-black">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </article>
-              ))}
-            </div>
           </div>
         )}
       </div>
