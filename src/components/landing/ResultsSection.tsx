@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { useIsMobile } from "@/hooks/use-mobile";
+
 import {
   Carousel,
   CarouselContent,
