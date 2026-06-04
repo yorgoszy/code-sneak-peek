@@ -215,22 +215,24 @@ export default function ResetPassword() {
       if (error) {
         console.error('Password reset error:', error);
         toast.error('Σφάλμα κατά την ενημέρωση του κωδικού: ' + error.message);
+        setLoading(false);
         return;
       }
 
       toast.success('Ο κωδικός σας ενημερώθηκε επιτυχώς!');
-      
-      // Sign out and redirect to login page after successful password reset
-      await supabase.auth.signOut();
-      
-      setTimeout(() => {
-        navigate('/auth');
-      }, 2000);
+      setLoading(false);
+
+      // Fire-and-forget sign out (don't block redirect if it hangs)
+      supabase.auth.signOut().catch((err) => {
+        console.warn('Sign out after password reset failed:', err);
+      });
+
+      // Redirect immediately to login page
+      navigate('/auth', { replace: true });
 
     } catch (error) {
       console.error('Unexpected error:', error);
       toast.error('Παρουσιάστηκε σφάλμα. Δοκιμάστε ξανά.');
-    } finally {
       setLoading(false);
     }
   };
