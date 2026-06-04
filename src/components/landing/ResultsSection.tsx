@@ -30,7 +30,7 @@ interface Result {
 const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
   const [results, setResults] = useState<Result[]>([]);
   const [loading, setLoading] = useState(true);
-  const isMobile = useIsMobile();
+  
 
   useEffect(() => {
     fetchResults();
