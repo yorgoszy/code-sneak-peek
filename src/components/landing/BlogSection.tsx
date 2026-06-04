@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { BlogSectionProps, Article } from './blog/types';
 import ArticleCard from './blog/ArticleCard';
 import ArticleModal from './blog/ArticleModal';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Carousel,
