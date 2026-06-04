@@ -62,6 +62,8 @@ export const ResultsManagement: React.FC = () => {
   const [resultToDelete, setResultToDelete] = useState<Result | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [cropSourceUrl, setCropSourceUrl] = useState<string>('');
   const { toast } = useToast();
 
   const [formData, setFormData] = useState<ResultFormData>({
