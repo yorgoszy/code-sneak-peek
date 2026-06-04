@@ -125,10 +125,10 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
           <div className="relative">
             <Carousel opts={{ align: "start" }} className="w-full">
               <div className="absolute -top-16 right-0 flex gap-2 z-10">
-                <CarouselPrevious className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none hover:bg-transparent rounded-none text-white">
+                <CarouselPrevious className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none hover:bg-transparent rounded-none text-white hover:text-[#aca097]">
                   <ChevronLeft className="h-6 w-6" />
                 </CarouselPrevious>
-                <CarouselNext className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none hover:bg-transparent rounded-none text-white">
+                <CarouselNext className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none hover:bg-transparent rounded-none text-white hover:text-[#aca097]">
                   <ChevronRight className="h-6 w-6" />
                 </CarouselNext>
               </div>
