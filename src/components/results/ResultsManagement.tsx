@@ -617,6 +617,15 @@ export const ResultsManagement: React.FC = () => {
         confirmText="Διαγραφή"
         cancelText="Ακύρωση"
       />
+
+      <ImageCropperDialog
+        isOpen={cropperOpen}
+        onClose={() => setCropperOpen(false)}
+        imageSrc={cropSourceUrl}
+        aspect={16 / 9}
+        onCropComplete={handleCroppedFile}
+        originalFileName={selectedFile?.name || 'image.jpg'}
+      />
     </div>
   );
 };
