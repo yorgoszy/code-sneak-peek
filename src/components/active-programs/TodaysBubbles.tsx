@@ -55,122 +55,118 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
     return currentStatus;
   };
 
-  // Filter out today's programs that already have a minimized bubble
-  const minimizedAssignmentIds = new Set(
-    bubbles.map(b => b.id.replace('bubble-', '').split('-').slice(0, -3).join('-'))
-  );
+  // Split bubbles by date: today's stay on the left, other days go to the right
+  const todayBubbles = bubbles.filter(b => b.id.endsWith(`-${todayStr}`));
+  const otherDayBubbles = bubbles.filter(b => !b.id.endsWith(`-${todayStr}`));
 
   // Programs for today that are NOT already shown as minimized bubbles
   const todayProgramsFiltered = programsForToday.filter(a => {
     const bubbleId = `bubble-${a.id}-${todayStr}`;
-    return !bubbles.some(b => b.id === bubbleId);
+    return !todayBubbles.some(b => b.id === bubbleId);
   });
 
-  // Build a unified, stable-ordered list of all items (bubbles + today's programs)
-  const allItems = React.useMemo(() => {
-    if (todayProgramsFiltered.length === 0 && bubbles.length === 0) return [];
-    
-    const items: Array<{ type: 'bubble'; data: typeof bubbles[0] } | { type: 'today'; data: EnrichedAssignment }> = [];
-    
-    // Add minimized bubbles
-    bubbles.forEach(bubble => {
-      items.push({ type: 'bubble', data: bubble });
-    });
-    
-    // Add today's programs (not already minimized)
-    todayProgramsFiltered.forEach(assignment => {
-      items.push({ type: 'today', data: assignment });
-    });
-    
-    // Sort by the underlying assignment ID (extracted from bubble id format: bubble-{assignmentId}-{date})
-    const extractAssignmentId = (item: typeof items[0]) => {
-      if (item.type === 'today') return (item.data as EnrichedAssignment).id;
-      const bubbleData = item.data as typeof bubbles[0];
-      // bubble id format: bubble-{assignmentId}-{date}
-      return bubbleData.id.replace('bubble-', '').replace(`-${todayStr}`, '');
-    };
-    items.sort((a, b) => {
-      return extractAssignmentId(a).localeCompare(extractAssignmentId(b));
-    });
-    
-    return items;
-  }, [bubbles, todayProgramsFiltered]);
-
-  if (allItems.length === 0) return null;
+  if (todayBubbles.length === 0 && otherDayBubbles.length === 0 && todayProgramsFiltered.length === 0) {
+    return null;
+  }
 
   // Helper to check if an assignment's dialog is currently open
   const isDialogOpen = (assignmentId: string) => {
-    // openAssignmentIds contains workoutIds like "assignmentId-date"
     for (const wid of openAssignmentIds) {
       if (wid.startsWith(assignmentId)) return true;
     }
     return false;
   };
 
-  return (
-    <div className="fixed bottom-4 left-4 z-[9999] flex gap-2 items-end" data-bubbles-container>
-      {allItems.map(item => {
-        if (item.type === 'bubble') {
-          const bubble = item.data as typeof bubbles[0];
-          const assignmentId = bubble.id.replace('bubble-', '').replace(`-${todayStr}`, '');
-          const isActive = isDialogOpen(assignmentId);
-          // Check completion status for this bubble's assignment
-          const bubbleAssignment = programsForToday.find(a => a.id === assignmentId);
-          const bubbleCompleted = bubbleAssignment ? getWorkoutStatus(bubbleAssignment) === 'completed' : false;
-          
-          return (
-            <MinimizedWorkoutBubble
-              key={bubble.id}
-              athleteName={bubble.athleteName}
-              avatarUrl={bubble.photoUrl || bubble.avatarUrl}
-              workoutInProgress={bubble.workoutInProgress}
-              elapsedTime={bubble.elapsedTime}
-              size={isActive ? 'lg' : 'sm'}
-              isCompleted={bubbleCompleted}
-              onRestore={() => {
-                bubble.onRestore();
-                removeBubble(bubble.id);
-                onBubbleRestore?.(assignmentId);
-              }}
-            />
-          );
-        } else {
-          const assignment = item.data as EnrichedAssignment;
-          const status = getWorkoutStatus(assignment);
-          const name = assignment.app_users?.name || 'Άγνωστος';
-          const avatarUrl = assignment.app_users?.photo_url || assignment.app_users?.avatar_url;
-          const isCompleted = status === 'completed';
-          const isActive = isDialogOpen(assignment.id);
-          
-          // Check if this workout is currently in progress via MultipleWorkoutsContext (local)
-          const workoutId = `${assignment.id}-${todayStr}`;
-          const activeWorkout = activeWorkouts.find(w => w.id === workoutId);
-          let isInProgress = activeWorkout?.workoutInProgress || false;
-          let elapsedTime = activeWorkout?.elapsedTime || 0;
-          
-          // Also check live data from DB (cross-device)
-          const liveWorkout = liveWorkouts.find(
-            lw => lw.assignment_id === assignment.id && lw.scheduled_date === todayStr
-          );
-          if (liveWorkout && liveWorkout.start_time && !isInProgress) {
-            isInProgress = true;
-            elapsedTime = Math.floor((Date.now() - new Date(liveWorkout.start_time).getTime()) / 1000);
-          }
+  const extractAssignmentId = (bubbleId: string, dateSuffix: string) =>
+    bubbleId.replace('bubble-', '').replace(`-${dateSuffix}`, '');
 
-          return (
-            <MinimizedWorkoutBubble
-              key={assignment.id}
-              athleteName={name}
-              avatarUrl={avatarUrl}
-              workoutInProgress={isInProgress}
-              elapsedTime={elapsedTime}
-              size={isActive ? 'lg' : 'sm'}
-              isCompleted={isCompleted}
-              onRestore={() => onProgramClick(assignment)}
-            />
-          );
-        }
-      })}
-    </div>
+  // Build left-side items (today's bubbles + today's pending programs), stable sort
+  const leftItems: Array<{ type: 'bubble'; data: typeof bubbles[0] } | { type: 'today'; data: EnrichedAssignment }> = [
+    ...todayBubbles.map(b => ({ type: 'bubble' as const, data: b })),
+    ...todayProgramsFiltered.map(a => ({ type: 'today' as const, data: a })),
+  ];
+  leftItems.sort((a, b) => {
+    const idA = a.type === 'today' ? a.data.id : extractAssignmentId(a.data.id, todayStr);
+    const idB = b.type === 'today' ? b.data.id : extractAssignmentId(b.data.id, todayStr);
+    return idA.localeCompare(idB);
+  });
+
+  const renderBubbleItem = (bubble: typeof bubbles[0]) => {
+    // bubble id format: bubble-{assignmentId}-YYYY-MM-DD (date suffix is 10 chars)
+    const dateSuffix = bubble.id.slice(-10);
+    const assignmentId = extractAssignmentId(bubble.id, dateSuffix);
+    const isActive = isDialogOpen(assignmentId);
+    const bubbleAssignment = programsForToday.find(a => a.id === assignmentId);
+    const bubbleCompleted = bubbleAssignment ? getWorkoutStatus(bubbleAssignment) === 'completed' : false;
+
+    return (
+      <MinimizedWorkoutBubble
+        key={bubble.id}
+        athleteName={bubble.athleteName}
+        avatarUrl={bubble.photoUrl || bubble.avatarUrl}
+        workoutInProgress={bubble.workoutInProgress}
+        elapsedTime={bubble.elapsedTime}
+        size={isActive ? 'lg' : 'sm'}
+        isCompleted={bubbleCompleted}
+        onRestore={() => {
+          bubble.onRestore();
+          removeBubble(bubble.id);
+          onBubbleRestore?.(assignmentId);
+        }}
+      />
+    );
+  };
+
+  return (
+    <>
+      {/* Today's bubbles + pending programs — bottom-left */}
+      {leftItems.length > 0 && (
+        <div className="fixed bottom-4 left-4 z-[9999] flex gap-2 items-end" data-bubbles-container>
+          {leftItems.map(item => {
+            if (item.type === 'bubble') return renderBubbleItem(item.data);
+
+            const assignment = item.data;
+            const status = getWorkoutStatus(assignment);
+            const name = assignment.app_users?.name || 'Άγνωστος';
+            const avatarUrl = assignment.app_users?.photo_url || assignment.app_users?.avatar_url;
+            const isCompleted = status === 'completed';
+            const isActive = isDialogOpen(assignment.id);
+
+            const workoutId = `${assignment.id}-${todayStr}`;
+            const activeWorkout = activeWorkouts.find(w => w.id === workoutId);
+            let isInProgress = activeWorkout?.workoutInProgress || false;
+            let elapsedTime = activeWorkout?.elapsedTime || 0;
+
+            const liveWorkout = liveWorkouts.find(
+              lw => lw.assignment_id === assignment.id && lw.scheduled_date === todayStr
+            );
+            if (liveWorkout && liveWorkout.start_time && !isInProgress) {
+              isInProgress = true;
+              elapsedTime = Math.floor((Date.now() - new Date(liveWorkout.start_time).getTime()) / 1000);
+            }
+
+            return (
+              <MinimizedWorkoutBubble
+                key={assignment.id}
+                athleteName={name}
+                avatarUrl={avatarUrl}
+                workoutInProgress={isInProgress}
+                elapsedTime={elapsedTime}
+                size={isActive ? 'lg' : 'sm'}
+                isCompleted={isCompleted}
+                onRestore={() => onProgramClick(assignment)}
+              />
+            );
+          })}
+        </div>
+      )}
+
+      {/* Other-day bubbles — bottom-right */}
+      {otherDayBubbles.length > 0 && (
+        <div className="fixed bottom-4 right-4 z-[9999] flex gap-2 items-end" data-bubbles-container-right>
+          {otherDayBubbles.map(renderBubbleItem)}
+        </div>
+      )}
+    </>
   );
 };
