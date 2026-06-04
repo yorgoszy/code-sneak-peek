@@ -213,7 +213,22 @@ export const ResultsManagement: React.FC = () => {
       setSelectedFile(file);
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
+      // Open cropper automatically so user can position/zoom
+      setCropSourceUrl(url);
+      setCropperOpen(true);
     }
+  };
+
+  const handleCroppedFile = (file: File) => {
+    setSelectedFile(file);
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+  };
+
+  const handleOpenCropper = () => {
+    if (!previewUrl) return;
+    setCropSourceUrl(previewUrl);
+    setCropperOpen(true);
   };
 
   const handleRemoveImage = () => {
@@ -221,6 +236,7 @@ export const ResultsManagement: React.FC = () => {
     setPreviewUrl('');
     setFormData(prev => ({ ...prev, image_url: '' }));
   };
+
 
   const handleEdit = (result: Result) => {
     setEditingResult(result);
