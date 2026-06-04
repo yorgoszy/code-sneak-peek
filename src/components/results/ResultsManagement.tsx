@@ -18,13 +18,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Upload, X } from "lucide-react";
+import { CalendarIcon, Upload, X, Crop } from "lucide-react";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { ImageCropperDialog } from "./ImageCropperDialog";
 
 interface Result {
   id: string;
