@@ -14,8 +14,7 @@ interface ImageCropperDialogProps {
   originalFileName?: string;
 }
 
-const PREVIEW_MAX = 1280; // fast preview
-const OUTPUT_MAX = 1600;  // final output cap
+const OUTPUT_MAX = 1920;
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -27,29 +26,11 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-async function downscaleSource(src: string, max: number): Promise<{ url: string; scale: number }> {
-  const img = await loadImage(src);
-  const longest = Math.max(img.width, img.height);
-  if (longest <= max) return { url: src, scale: 1 };
-  const scale = max / longest;
-  const w = Math.round(img.width * scale);
-  const h = Math.round(img.height * scale);
-  const canvas = document.createElement('canvas');
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext('2d')!;
-  ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(img, 0, 0, w, h);
-  const url = canvas.toDataURL('image/jpeg', 0.9);
-  return { url, scale };
-}
-
 async function getCroppedImg(imageSrc: string, crop: Area, fileName: string): Promise<File> {
   const image = await loadImage(imageSrc);
 
-  // cap output
-  let outW = crop.width;
-  let outH = crop.height;
+  let outW = Math.round(crop.width);
+  let outH = Math.round(crop.height);
   const longest = Math.max(outW, outH);
   if (longest > OUTPUT_MAX) {
     const s = OUTPUT_MAX / longest;
@@ -62,6 +43,7 @@ async function getCroppedImg(imageSrc: string, crop: Area, fileName: string): Pr
   canvas.height = outH;
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('No 2d context');
+  ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(image, crop.x, crop.y, crop.width, crop.height, 0, 0, outW, outH);
 
@@ -70,7 +52,7 @@ async function getCroppedImg(imageSrc: string, crop: Area, fileName: string): Pr
       if (!blob) return reject(new Error('Canvas empty'));
       const name = fileName.replace(/\.[^.]+$/, '') + '-cropped.jpg';
       resolve(new File([blob], name, { type: 'image/jpeg' }));
-    }, 'image/jpeg', 0.88);
+    }, 'image/jpeg', 0.95);
   });
 }
 
@@ -86,33 +68,13 @@ export const ImageCropperDialog: React.FC<ImageCropperDialogProps> = ({
   const [zoom, setZoom] = useState(1);
   const [croppedArea, setCroppedArea] = useState<Area | null>(null);
   const [saving, setSaving] = useState(false);
-  const [previewSrc, setPreviewSrc] = useState<string>('');
-  const [preparing, setPreparing] = useState(false);
 
-  // downscale source for fast preview when dialog opens
   useEffect(() => {
-    let cancelled = false;
-    if (!isOpen || !imageSrc) {
-      setPreviewSrc('');
-      return;
+    if (isOpen) {
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+      setCroppedArea(null);
     }
-    setPreparing(true);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setCroppedArea(null);
-    downscaleSource(imageSrc, PREVIEW_MAX)
-      .then(({ url }) => {
-        if (!cancelled) setPreviewSrc(url);
-      })
-      .catch(() => {
-        if (!cancelled) setPreviewSrc(imageSrc);
-      })
-      .finally(() => {
-        if (!cancelled) setPreparing(false);
-      });
-    return () => {
-      cancelled = true;
-    };
   }, [isOpen, imageSrc]);
 
   const onCropChangeComplete = useCallback((_: Area, areaPixels: Area) => {
@@ -120,10 +82,10 @@ export const ImageCropperDialog: React.FC<ImageCropperDialogProps> = ({
   }, []);
 
   const handleSave = async () => {
-    if (!croppedArea || !previewSrc) return;
+    if (!croppedArea || !imageSrc) return;
     try {
       setSaving(true);
-      const file = await getCroppedImg(previewSrc, croppedArea, originalFileName);
+      const file = await getCroppedImg(imageSrc, croppedArea, originalFileName);
       onCropComplete(file);
       onClose();
     } catch (e) {
@@ -141,21 +103,17 @@ export const ImageCropperDialog: React.FC<ImageCropperDialogProps> = ({
         </DialogHeader>
 
         <div className="relative w-full h-[400px] bg-black">
-          {preparing || !previewSrc ? (
-            <div className="absolute inset-0 flex items-center justify-center text-white text-sm">
-              Προετοιμασία...
-            </div>
-          ) : (
+          {imageSrc && (
             <Cropper
-              image={previewSrc}
+              image={imageSrc}
               crop={crop}
               zoom={zoom}
               aspect={aspect}
               onCropChange={setCrop}
               onZoomChange={setZoom}
               onCropComplete={onCropChangeComplete}
-              objectFit="contain"
               showGrid
+              restrictPosition
               zoomSpeed={0.5}
             />
           )}
@@ -183,7 +141,7 @@ export const ImageCropperDialog: React.FC<ImageCropperDialogProps> = ({
             type="button"
             className="rounded-none"
             onClick={handleSave}
-            disabled={saving || preparing || !croppedArea}
+            disabled={saving || !croppedArea}
           >
             {saving ? 'Αποθήκευση...' : 'Εφαρμογή'}
           </Button>
