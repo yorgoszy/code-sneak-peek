@@ -458,6 +458,16 @@ export const ResultsManagement: React.FC = () => {
                       />
                       <Button
                         type="button"
+                        variant="secondary"
+                        size="sm"
+                        className="absolute top-2 right-12 rounded-none"
+                        onClick={handleOpenCropper}
+                      >
+                        <Crop className="w-4 h-4 mr-1" />
+                        Προσαρμογή
+                      </Button>
+                      <Button
+                        type="button"
                         variant="destructive"
                         size="sm"
                         className="absolute top-2 right-2 rounded-none"
