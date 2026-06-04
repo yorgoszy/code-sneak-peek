@@ -227,8 +227,12 @@ export const ResultsManagement: React.FC = () => {
 
   const handleOpenCropper = () => {
     if (!previewUrl) return;
-    setCropSourceUrl(previewUrl);
-    setCropperOpen(true);
+    setCropSourceUrl('');
+    setCropperOpen(false);
+    setTimeout(() => {
+      setCropSourceUrl(previewUrl);
+      setCropperOpen(true);
+    }, 0);
   };
 
   const handleRemoveImage = () => {
@@ -485,6 +489,7 @@ export const ResultsManagement: React.FC = () => {
                       type="file"
                       accept="image/*"
                       onChange={handleFileSelect}
+                      onClick={(e) => { (e.target as HTMLInputElement).value = ''; }}
                       className="rounded-none"
                     />
                     <Button
