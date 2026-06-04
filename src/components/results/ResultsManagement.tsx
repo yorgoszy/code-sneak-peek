@@ -485,6 +485,7 @@ export const ResultsManagement: React.FC = () => {
                       type="file"
                       accept="image/*"
                       onChange={handleFileSelect}
+                      onClick={(e) => { (e.target as HTMLInputElement).value = ''; }}
                       className="rounded-none"
                     />
                     <Button
