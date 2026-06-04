@@ -18,13 +18,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Upload, X } from "lucide-react";
+import { CalendarIcon, Upload, X, Crop } from "lucide-react";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { ImageCropperDialog } from "./ImageCropperDialog";
 
 interface Result {
   id: string;
@@ -61,6 +62,8 @@ export const ResultsManagement: React.FC = () => {
   const [resultToDelete, setResultToDelete] = useState<Result | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [cropSourceUrl, setCropSourceUrl] = useState<string>('');
   const { toast } = useToast();
 
   const [formData, setFormData] = useState<ResultFormData>({
@@ -210,7 +213,22 @@ export const ResultsManagement: React.FC = () => {
       setSelectedFile(file);
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
+      // Open cropper automatically so user can position/zoom
+      setCropSourceUrl(url);
+      setCropperOpen(true);
     }
+  };
+
+  const handleCroppedFile = (file: File) => {
+    setSelectedFile(file);
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+  };
+
+  const handleOpenCropper = () => {
+    if (!previewUrl) return;
+    setCropSourceUrl(previewUrl);
+    setCropperOpen(true);
   };
 
   const handleRemoveImage = () => {
@@ -218,6 +236,7 @@ export const ResultsManagement: React.FC = () => {
     setPreviewUrl('');
     setFormData(prev => ({ ...prev, image_url: '' }));
   };
+
 
   const handleEdit = (result: Result) => {
     setEditingResult(result);
@@ -439,6 +458,16 @@ export const ResultsManagement: React.FC = () => {
                       />
                       <Button
                         type="button"
+                        variant="secondary"
+                        size="sm"
+                        className="absolute top-2 right-12 rounded-none"
+                        onClick={handleOpenCropper}
+                      >
+                        <Crop className="w-4 h-4 mr-1" />
+                        Προσαρμογή
+                      </Button>
+                      <Button
+                        type="button"
                         variant="destructive"
                         size="sm"
                         className="absolute top-2 right-2 rounded-none"
@@ -587,6 +616,15 @@ export const ResultsManagement: React.FC = () => {
         description="Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το αποτέλεσμα;"
         confirmText="Διαγραφή"
         cancelText="Ακύρωση"
+      />
+
+      <ImageCropperDialog
+        isOpen={cropperOpen}
+        onClose={() => setCropperOpen(false)}
+        imageSrc={cropSourceUrl}
+        aspect={16 / 9}
+        onCropComplete={handleCroppedFile}
+        originalFileName={selectedFile?.name || 'image.jpg'}
       />
     </div>
   );
