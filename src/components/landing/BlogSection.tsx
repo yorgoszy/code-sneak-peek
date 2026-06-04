@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { BlogSectionProps, Article } from './blog/types';
 import ArticleCard from './blog/ArticleCard';
 import ArticleModal from './blog/ArticleModal';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Carousel,
@@ -12,15 +11,11 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
-  const [api, setApi] = useState<any>();
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAutoplayPaused, setIsAutoplayPaused] = useState(false);
-  const isMobile = useIsMobile();
 
   const currentLanguage = translations.language || 'el';
 
@@ -32,8 +27,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
           .from('articles')
           .select('*')
           .eq('status', 'published')
-          .order('published_date', { ascending: false })
-          .limit(6);
+          .order('published_date', { ascending: false });
 
         if (error) throw error;
         
@@ -64,35 +58,8 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
     fetchArticles();
   }, [currentLanguage]);
 
-  // Auto-rotate carousel on mobile
-  useEffect(() => {
-    if (!api || !isMobile || isAutoplayPaused) return;
-
-    const interval = setInterval(() => {
-      api.scrollNext();
-    }, 1500);
-
-    return () => clearInterval(interval);
-  }, [api, isMobile, isAutoplayPaused]);
-
-  const handleTouchStart = () => {
-    if (isMobile) {
-      setIsAutoplayPaused(true);
-    }
-  };
-
-  const handleTouchEnd = () => {
-    // Δεν επανεκκινούμε το autoplay πια
-  };
-
-  const handleScreenClick = () => {
-    if (isMobile) {
-      setIsAutoplayPaused(true);
-    }
-  };
-
   return (
-    <section id="blog" className="pt-32 pb-28 bg-black" onClick={handleScreenClick}>
+    <section id="blog" className="pt-32 pb-28 bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-16">
           <h2 className="text-4xl font-bold mb-4 text-white" style={{ fontFamily: 'Robert, sans-serif' }}>
@@ -102,30 +69,20 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
 
         <div className="relative mb-16">
           <Carousel
-            setApi={setApi}
             opts={{
               align: "start",
-              loop: true,
             }}
             className="w-full"
           >
             {/* Navigation buttons positioned absolutely in top right */}
             <div className="absolute -top-16 right-0 flex gap-2 z-10">
-              <CarouselPrevious className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none hover:bg-transparent rounded-none text-white">
-                <ChevronLeft className="h-6 w-6" />
+              <CarouselPrevious className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none hover:bg-transparent rounded-none text-white hover:text-[#aca097]">
               </CarouselPrevious>
-              <CarouselNext className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none hover:bg-transparent rounded-none text-white">
-                <ChevronRight className="h-6 w-6" />
+              <CarouselNext className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none hover:bg-transparent rounded-none text-white hover:text-[#aca097]">
               </CarouselNext>
             </div>
 
-            <CarouselContent 
-              className="-ml-4"
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-              onMouseDown={handleTouchStart}
-              onMouseUp={handleTouchEnd}
-            >
+            <CarouselContent className="-ml-4">
               {loading ? (
                 <div className="flex items-center justify-center w-full p-8">
                   <div className="text-gray-500">Φόρτωση άρθρων...</div>
@@ -138,7 +95,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
                 articles.map((article) => (
                   <CarouselItem 
                     key={article.id} 
-                    className={`pl-4 ${isMobile ? 'basis-full' : 'basis-1/3'}`}
+                    className="pl-4 basis-full md:basis-1/2 lg:basis-1/3"
                   >
                     <ArticleCard
                       article={article}
