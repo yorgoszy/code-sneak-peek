@@ -138,6 +138,7 @@ const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, 
 
 interface MonthNLItem { name: string; exerciseId?: string; videoUrl?: string; nlPerWeek: number[]; totalNL: number; nlPerZonePerWeek?: number[][]; zoneKg?: number[]; zonePct?: number[] }
 
+interface AssignUser { id: string; name: string; email?: string; avatar_url?: string | null; photo_url?: string | null }
 interface Worksheet2Props {
   monthsCount: number;
   ws2Programs: (PlanStrongWS2Program | null)[];
@@ -146,6 +147,8 @@ interface Worksheet2Props {
   coachId?: string;
   monthsNL?: MonthNLItem[][];
   weekDifficulties?: (string | null)[];
+  planName?: string;
+  assignUsers?: AssignUser[];
 }
 
 // Parse reps strings like "5", "3.2.1" (sums to 6), etc.
