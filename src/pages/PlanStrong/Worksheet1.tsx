@@ -88,7 +88,14 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
   });
   const lastApplied1RM = useRef<{ key: string; val: number } | null>(null);
   useEffect(() => {
-    if (fetched1RM != null && side.exerciseId && userId) {
+    if (!userId) {
+      lastApplied1RM.current = null;
+      if (side.oneRM !== undefined) {
+        onChange({ ...side, oneRM: undefined as any });
+      }
+      return;
+    }
+    if (fetched1RM != null && side.exerciseId) {
       const key = `${userId}:${side.exerciseId}`;
       if (lastApplied1RM.current?.key !== key || lastApplied1RM.current?.val !== fetched1RM) {
         lastApplied1RM.current = { key, val: fetched1RM };
