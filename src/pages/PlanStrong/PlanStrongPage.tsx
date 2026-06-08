@@ -166,7 +166,52 @@ export default function PlanStrongPage() {
               })}
             </div>
           )}
-          <Worksheet1Side side={data.side} userId={previewUserId || userIds[0] || userId} onChange={s => setData({ ...data, side: s })} />
+          <Worksheet1Side
+            side={data.side}
+            userId={previewUserId || userIds[0] || userId}
+            onChange={s => setData({ ...data, side: s })}
+            userPickerSlot={
+              <div>
+                <Label className="text-xs">Χρήστες</Label>
+                <UserSearchCombobox
+                  value={pickerValue}
+                  onValueChange={addUser}
+                  placeholder={draftId ? "Επεξεργασία υπάρχοντος (1 χρήστης)" : "Προσθήκη χρήστη..."}
+                  coachId={user?.id}
+                  adminOwned={isAdmin?.()}
+                  disabled={!!draftId}
+                />
+                {selectedUsers.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedUsers.map(u => (
+                      <Badge key={u.id} variant="outline" className="rounded-none gap-2 py-1 pr-1 pl-1">
+                        <Avatar className="h-5 w-5">
+                          {(u.photo_url || u.avatar_url) ? (
+                            <AvatarImage src={u.photo_url || u.avatar_url || ''} alt={u.name} />
+                          ) : null}
+                          <AvatarFallback className="text-[10px] bg-muted">
+                            {u.name?.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-xs">{u.name}</span>
+                        {!draftId && (
+                          <button
+                            type="button"
+                            onClick={() => removeUser(u.id)}
+                            className="ml-1 hover:text-destructive"
+                            title="Αφαίρεση"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            }
+          />
+
         </TabsContent>
 
         <TabsContent value="ws2" className="space-y-3">
