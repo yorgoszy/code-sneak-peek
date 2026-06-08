@@ -183,7 +183,7 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
           <thead>
             <tr>
               <th className={headCell}></th>
-              {visibleIdx.map(i => <th key={i} className={headCell}>{ZONE_LABELS[i]}</th>)}
+              {visibleIdx.map(i => <th key={i} className={headCell}>{ZONE_PCT_LABELS[i]}1RM</th>)}
               <th className={headCell}>TOTAL</th>
             </tr>
           </thead>
