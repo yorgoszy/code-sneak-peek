@@ -5,6 +5,8 @@ import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { useProgramBuilderState } from '@/components/programs/builder/hooks/useProgramBuilderState';
 import { useProgramBuilderActions } from '@/components/programs/builder/hooks/useProgramBuilderActions';
 import { TrainingWeeks } from '@/components/programs/builder/TrainingWeeks';
+import { ZONE_COEF } from './planStrongCalc';
+import { Separator } from '@/components/ui/separator';
 
 export interface PlanStrongWS2Program {
   weeks: any[];
