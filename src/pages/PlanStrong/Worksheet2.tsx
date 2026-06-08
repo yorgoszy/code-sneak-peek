@@ -6,6 +6,7 @@ import { useProgramBuilderState } from '@/components/programs/builder/hooks/useP
 import { useProgramBuilderActions } from '@/components/programs/builder/hooks/useProgramBuilderActions';
 import { TrainingWeeks } from '@/components/programs/builder/TrainingWeeks';
 import { PlanStrongZoneKgProvider } from '@/contexts/PlanStrongZoneKgContext';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface PlanStrongWS2Program {
   weeks: any[];
