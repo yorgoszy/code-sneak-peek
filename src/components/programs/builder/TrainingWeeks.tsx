@@ -48,6 +48,7 @@ interface TrainingWeeksProps {
   onSelectBlockTemplate?: (weekId: string, dayId: string, blockId: string, template: any) => void;
   coachId?: string;
   onActiveWeekChange?: (weekId: string) => void;
+  weekDifficulties?: (string | null)[];
 }
 
 export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
@@ -87,7 +88,8 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   onPasteDay,
   onSelectBlockTemplate,
   coachId,
-  onActiveWeekChange
+  onActiveWeekChange,
+  weekDifficulties
 }) => {
   const {
     activeWeek,
@@ -148,6 +150,7 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
                       onDuplicateWeek={onDuplicateWeek}
                       onRemoveWeek={onRemoveWeek}
                       onPasteWeek={onPasteWeek}
+                      weekDifficulties={weekDifficulties}
                     />
                   </SortableContext>
                 </div>

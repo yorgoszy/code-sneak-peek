@@ -533,6 +533,13 @@ export default function PlanStrongPage() {
               const out = computeSide(s);
               return { name, nlPerWeek: out.mainNlPerWeek, totalNL: out.totalNL };
             }))}
+            weekDifficulties={monthsList.flatMap(m => {
+              const mainSide = m.sides?.[0];
+              const diffs = computeWeekDifficulties(mainSide?.mainPct || []);
+              const arr = [...diffs];
+              while (arr.length < 4) arr.push(null);
+              return arr.slice(0, 4);
+            })}
             ws2Programs={((data as any).ws2Programs as any[]) ?? []}
             onChange={(programs) => setData({ ...data, ws2Programs: programs } as any)}
             selectedUserId={previewUserId || userIds[0] || userId}

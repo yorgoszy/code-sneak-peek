@@ -22,7 +22,18 @@ interface SortableWeekTabProps {
   onDuplicateWeek: (weekId: string) => void;
   onRemoveWeek: (weekId: string) => void;
   onPasteWeek?: (weekId: string, clipboardWeek: Week) => void;
+  difficulty?: string | null;
 }
+
+const difficultyClass = (d?: string | null) => {
+  switch (d) {
+    case 'Light': return 'bg-blue-200 text-blue-900 data-[state=active]:bg-blue-300';
+    case 'Medium': return 'bg-green-200 text-green-900 data-[state=active]:bg-green-300';
+    case 'Heavy': return 'bg-yellow-200 text-yellow-900 data-[state=active]:bg-yellow-300';
+    case 'Very Heavy': return 'bg-red-200 text-red-900 data-[state=active]:bg-red-300';
+    default: return '';
+  }
+};
 
 export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
   week,
@@ -36,7 +47,8 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
   setEditingWeekName,
   onDuplicateWeek,
   onRemoveWeek,
-  onPasteWeek
+  onPasteWeek,
+  difficulty
 }) => {
   const { copyWeek, paste, hasWeek, clearClipboard, clipboard } = useProgramClipboard();
   
@@ -91,9 +103,10 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
         <div className="flex items-center min-w-0">
           <TabsTrigger 
             value={week.id} 
-            className={`rounded-none whitespace-nowrap px-2 text-[10px] h-5 min-w-0 transition-colors ${
-              isActive ? 'bg-foreground/10 font-semibold' : ''
+            className={`rounded-none whitespace-nowrap px-2 text-[10px] h-5 min-w-0 transition-colors ${difficultyClass(difficulty)} ${
+              isActive && !difficulty ? 'bg-foreground/10 font-semibold' : (isActive ? 'font-semibold' : '')
             }`}
+            title={difficulty || undefined}
             onDoubleClick={() => onWeekNameDoubleClick(week)}
           >
             {editingWeekId === week.id ? (

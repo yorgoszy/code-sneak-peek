@@ -15,9 +15,10 @@ interface EmbeddedBuilderProps {
   selectedUserId?: string;
   coachId?: string;
   onActiveWeekIndexChange?: (idx: number) => void;
+  weekDifficulties?: (string | null)[];
 }
 
-const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, onChange, selectedUserId, coachId, onActiveWeekIndexChange }) => {
+const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, onChange, selectedUserId, coachId, onActiveWeekIndexChange, weekDifficulties }) => {
   const { exercises } = useExercises();
   const { program, updateProgram, generateId, loadProgramFromData } = useProgramBuilderState(exercises as any);
   const actions = useProgramBuilderActions(program, updateProgram, generateId, exercises as any);
@@ -116,6 +117,7 @@ const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, 
         const idx = program.weeks.findIndex((w: any) => w.id === weekId);
         if (idx >= 0 && onActiveWeekIndexChange) onActiveWeekIndexChange(idx);
       }}
+      weekDifficulties={weekDifficulties}
     />
   );
 };
@@ -129,9 +131,10 @@ interface Worksheet2Props {
   selectedUserId?: string;
   coachId?: string;
   monthsNL?: MonthNLItem[][];
+  weekDifficulties?: (string | null)[];
 }
 
-export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs, onChange, selectedUserId, coachId, monthsNL }) => {
+export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs, onChange, selectedUserId, coachId, monthsNL, weekDifficulties }) => {
   const [activeW, setActiveW] = useState(0);
   const totalWeeks = Math.max(monthsCount, 1) * 4;
   const safeW = Math.min(Math.max(activeW, 0), totalWeeks - 1);
@@ -173,6 +176,7 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
           selectedUserId={selectedUserId}
           coachId={coachId}
           onActiveWeekIndexChange={setActiveW}
+          weekDifficulties={weekDifficulties}
         />
       </div>
     </div>
