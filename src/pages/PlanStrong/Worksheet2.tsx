@@ -92,15 +92,18 @@ const EmbeddedMonthBuilder: React.FC<EmbeddedMonthBuilderProps> = ({ initial, on
   );
 };
 
+interface MonthNLItem { name: string; nlPerWeek: number[]; totalNL: number }
+
 interface Worksheet2Props {
   monthsCount: number;
   ws2Programs: (PlanStrongWS2Program | null)[];
   onChange: (programs: (PlanStrongWS2Program | null)[]) => void;
   selectedUserId?: string;
   coachId?: string;
+  monthsNL?: MonthNLItem[][];
 }
 
-export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs, onChange, selectedUserId, coachId }) => {
+export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs, onChange, selectedUserId, coachId, monthsNL }) => {
   const [activeM, setActiveM] = useState(0);
   const safeActive = Math.min(Math.max(activeM, 0), Math.max(monthsCount - 1, 0));
 
