@@ -58,8 +58,9 @@ const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, 
             id: generateId(),
             name: 'Block 1',
             block_sets: 1,
+            block_order: 1,
             program_exercises: [],
-          });
+          } as any);
         }
         const lastIdx = blocks.length - 1;
         const lastBlock = { ...blocks[lastIdx] };
