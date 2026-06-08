@@ -418,7 +418,7 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                 const kgs = row.zoneKg || [];
                 const pcts = row.zonePct || [];
                 const sets = zones
-                  .map((nl, z) => ({ nl, kg: kgs[z] || 0, pct: pcts[z] || 0 }))
+                  .map((nl, z) => ({ nl, kg: kgs[z] || 0, pct: Math.round((pcts[z] || 0) * (pcts[z] && pcts[z] <= 1 ? 100 : 1)) }))
                   .filter(p => p.nl > 0);
                 const hasVideo = row.videoUrl && isValidVideoUrl(row.videoUrl);
                 const thumb = hasVideo ? getVideoThumbnail(row.videoUrl!) : null;
