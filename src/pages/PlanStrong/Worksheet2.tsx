@@ -530,12 +530,23 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                         const remain = Math.max(0, p.nl - used);
                         const done = used >= p.nl;
                         return (
-                          <button
+                          <div
                             key={idx}
-                            type="button"
-                            onClick={() => handleNlChipClick(row.exerciseId, row.name, p.kg, p.pct)}
-                            className={`inline-flex flex-col items-center border px-1 py-0.5 tabular-nums leading-tight cursor-pointer hover:bg-foreground/10 ${done ? 'border-[#00ffba] bg-[#00ffba]/10' : 'border-border'}`}
-                            title={`Κλικ για προσθήκη · Χρησιμοποιημένα: ${used} / ${p.nl}`}
+                            draggable={!!row.exerciseId}
+                            onDragStart={(e) => {
+                              if (!row.exerciseId) return;
+                              const payload = {
+                                exerciseId: row.exerciseId,
+                                exerciseName: row.name,
+                                kg: p.kg,
+                                pct: p.pct,
+                                weekIdx: safeW,
+                              };
+                              e.dataTransfer.setData('application/x-planstrong-nl', JSON.stringify(payload));
+                              e.dataTransfer.effectAllowed = 'copy';
+                            }}
+                            className={`inline-flex flex-col items-center border px-1 py-0.5 tabular-nums leading-tight cursor-grab active:cursor-grabbing hover:bg-foreground/10 ${done ? 'border-[#00ffba] bg-[#00ffba]/10' : 'border-border'}`}
+                            title={`Σύρε σε ένα block · Χρησιμοποιημένα: ${used} / ${p.nl}`}
                           >
                             <span className="font-medium">
                               {p.pct}<span className="text-[9px] text-muted-foreground">%</span>
