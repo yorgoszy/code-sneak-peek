@@ -122,7 +122,7 @@ const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, 
   );
 };
 
-interface MonthNLItem { name: string; nlPerWeek: number[]; totalNL: number }
+interface MonthNLItem { name: string; nlPerWeek: number[]; totalNL: number; nlPerZonePerWeek?: number[][] }
 
 interface Worksheet2Props {
   monthsCount: number;
@@ -160,12 +160,22 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
               <span>NL — M{monthIdx + 1} · Εβδομάδα {weekInMonth + 1}</span>
             </div>
             <div className="p-2 space-y-1">
-              {currentMonthNL.map((row, i) => (
-                <div key={i} className="flex justify-between text-xs">
-                  <span className="truncate pr-2">{row.name}</span>
-                  <span className="tabular-nums font-medium">{row.nlPerWeek[weekInMonth] ?? 0}</span>
-                </div>
-              ))}
+              {currentMonthNL.map((row, i) => {
+                const zones = row.nlPerZonePerWeek?.[weekInMonth] || [];
+                const parts = zones
+                  .map((nl, z) => ({ nl, z }))
+                  .filter(p => p.nl > 0)
+                  .map(p => `${p.nl}/${p.z + 1}`);
+                return (
+                  <div key={i} className="flex justify-between items-center text-xs gap-2">
+                    <span className="truncate pr-2 flex-shrink-0">{row.name}</span>
+                    <span className="tabular-nums text-muted-foreground text-[10px] truncate flex-1 text-right">
+                      {parts.join(', ')}
+                    </span>
+                    <span className="tabular-nums font-medium min-w-[2rem] text-right">{row.nlPerWeek[weekInMonth] ?? 0}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
