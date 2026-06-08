@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Worksheet1Side } from './Worksheet1';
 import { UserExerciseDataCacheProvider } from '@/hooks/useUserExerciseDataCache';
 import { Worksheet2 } from './Worksheet2';
-import { defaultPlanStrongData, defaultSide, PlanStrongData, PlanStrongSideInput, computeWeekDifficulties } from './planStrongCalc';
+import { defaultPlanStrongData, defaultSide, PlanStrongData, PlanStrongSideInput, computeWeekDifficulties, computeSide } from './planStrongCalc';
 import { SimpleExerciseSelectionDialog } from '@/components/programs/builder/SimpleExerciseSelectionDialog';
 import { useExercises } from '@/hooks/useExercises';
 
