@@ -55,14 +55,21 @@ export default function PlanStrongPage() {
       const activeIdx = typeof loaded.activeSideIndex === 'number'
         ? Math.min(Math.max(loaded.activeSideIndex, 0), loadedSides.length - 1)
         : 0;
+      const loadedMonths: any[] = Array.isArray(loaded.months) && loaded.months.length > 0
+        ? loaded.months.map((m: any) => ({
+            sides: Array.isArray(m?.sides) && m.sides.length > 0 ? m.sides : [activeSide],
+            activeSideIndex: typeof m?.activeSideIndex === 'number' ? m.activeSideIndex : 0,
+          }))
+        : [{ sides: loadedSides, activeSideIndex: activeIdx }];
       setData({
         ...def,
         ...loaded,
         side: loadedSides[activeIdx] ?? activeSide,
         sides: loadedSides,
         activeSideIndex: activeIdx,
+        months: loadedMonths,
         sessions: loaded.sessions ?? loaded.sessionsLeft ?? def.sessions,
-      });
+      } as any);
       // Load all sibling drafts (same coach + same plan name) so the user
       // can add/remove athletes from this plan.
       const { data: siblings } = await supabase
