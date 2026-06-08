@@ -190,7 +190,14 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
           <thead>
             <tr>
               <th className={headCell}></th>
-              {visibleIdx.map(i => <th key={i} className={headCell}>{ZONE_PCT_LABELS[i]}1RM</th>)}
+              {visibleIdx.map(i => (
+                <th key={i} className={headCell + " p-0"}>
+                  <PctInput className={inp + " text-center font-semibold"} value={currentCoef[i]} placeholder="0%"
+                    onCommit={frac => {
+                      const arr = [...currentCoef]; arr[i] = frac; set({ zoneCoef: arr });
+                    }} />
+                </th>
+              ))}
               <th className={headCell}>TOTAL</th>
             </tr>
           </thead>
@@ -198,18 +205,6 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
             <tr>
               <td className={headCell}>KG</td>
               {visibleIdx.map(i => <td key={i} className={cell + " bg-muted/30"}>{out.zoneKg[i] || '-'}</td>)}
-              <td className={cell + " bg-muted/30"}>-</td>
-            </tr>
-            <tr>
-              <td className={headCell}>%1RM</td>
-              {visibleIdx.map(i => (
-                <td key={i} className={cell + " p-0"}>
-                  <PctInput className={inp} value={currentCoef[i]} placeholder="0%"
-                    onCommit={frac => {
-                      const arr = [...currentCoef]; arr[i] = frac; set({ zoneCoef: arr });
-                    }} />
-                </td>
-              ))}
               <td className={cell + " bg-muted/30"}>-</td>
             </tr>
             <tr>
