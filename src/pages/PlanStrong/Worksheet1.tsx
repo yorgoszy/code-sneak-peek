@@ -151,7 +151,8 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
                   </Button>
                 </td>
                 <td className={cell}>
-                  <Input className={inp} type="number" value={side.oneRM}
+                  <Input className={inp} type="number" value={effectiveOneRM}
+                    readOnly={!!userId}
                     onChange={e => set({ oneRM: toNum(e.target.value) })} />
                 </td>
                 <td className={cell}>
@@ -176,31 +177,8 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
                   </select>
                 </td>
                 <td className={cell}>
-                  <div className="flex items-center gap-1">
-                    <Input className={inp + " flex-1"} type="number" value={side.monthlyNL}
-                      onChange={e => set({ monthlyNL: toNum(e.target.value) })} />
-                    {onCopy && (
-                      <button
-                        type="button"
-                        onClick={onCopy}
-                        className="p-1 hover:bg-muted rounded-none border border-border"
-                        title="Αντιγραφή worksheet"
-                      >
-                        <Copy className="w-3 h-3" />
-                      </button>
-                    )}
-                    {onPaste && (
-                      <button
-                        type="button"
-                        onClick={onPaste}
-                        disabled={!hasClipboard}
-                        className="p-1 hover:bg-muted rounded-none border border-border disabled:opacity-30 disabled:cursor-not-allowed"
-                        title={hasClipboard ? 'Επικόλληση worksheet' : 'Δεν υπάρχει αντιγραμμένο worksheet'}
-                      >
-                        <ClipboardPaste className="w-3 h-3" />
-                      </button>
-                    )}
-                  </div>
+                  <Input className={inp} type="number" value={side.monthlyNL}
+                    onChange={e => set({ monthlyNL: toNum(e.target.value) })} />
                 </td>
               </tr>
             </tbody>
