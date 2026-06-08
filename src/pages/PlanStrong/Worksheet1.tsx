@@ -35,13 +35,13 @@ const parsePct = (raw: string): number => {
 
 // Color WEEK header based on MAIN VARIANT % value for that week.
 // 15% → blue, 22% → green, 28% → yellow, 35% → red.
-const weekHeadColor = (frac: number): string => {
+const weekHeadStyle = (frac: number): React.CSSProperties => {
   const pct = Math.round((frac || 0) * 100);
-  if (pct === 15) return 'bg-blue-500 text-white';
-  if (pct === 22) return 'bg-green-500 text-white';
-  if (pct === 28) return 'bg-yellow-400 text-black';
-  if (pct === 35) return 'bg-red-500 text-white';
-  return '';
+  if (pct === 15) return { backgroundColor: '#3b82f6', color: '#fff' };
+  if (pct === 22) return { backgroundColor: '#22c55e', color: '#fff' };
+  if (pct === 28) return { backgroundColor: '#facc15', color: '#000' };
+  if (pct === 35) return { backgroundColor: '#ef4444', color: '#fff' };
+  return {};
 };
 
 // Editable percent input — keeps a local string while focused so backspace works,
