@@ -453,6 +453,10 @@ export default function PlanStrongPage() {
                     side={mActiveSide}
                     userId={previewUserId || userIds[0] || userId}
                     onChange={(next) => updateMonthSide(mIdx, mActiveIdx, next)}
+                    prevSide={mIdx > 0 ? (monthsList[mIdx - 1].sides.find(s =>
+                      (mActiveSide.exerciseId && s.exerciseId === mActiveSide.exerciseId) ||
+                      (mActiveSide.lift && s.lift === mActiveSide.lift)
+                    ) || null) : null}
                     headerSlot={
                       <div className="flex items-center gap-2 flex-wrap">
                         {deltaInfo}
