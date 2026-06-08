@@ -13,6 +13,7 @@ interface EmbeddedMonthBuilderProps {
   onChange: (program: PlanStrongWS2Program) => void;
   selectedUserId?: string;
   coachId?: string;
+  onActiveWeekIndexChange?: (idx: number) => void;
 }
 
 const EmbeddedMonthBuilder: React.FC<EmbeddedMonthBuilderProps> = ({ initial, onChange, selectedUserId, coachId }) => {
