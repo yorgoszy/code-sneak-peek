@@ -48,6 +48,7 @@ interface TrainingWeeksProps {
   onSelectBlockTemplate?: (weekId: string, dayId: string, blockId: string, template: any) => void;
   coachId?: string;
   onActiveWeekChange?: (weekId: string) => void;
+  weekDifficulties?: (string | null)[];
 }
 
 export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
