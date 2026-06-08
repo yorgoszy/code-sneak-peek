@@ -47,6 +47,7 @@ interface TrainingWeeksProps {
   onPasteDay: (weekId: string, dayId: string, clipboardDay: any) => void;
   onSelectBlockTemplate?: (weekId: string, dayId: string, blockId: string, template: any) => void;
   coachId?: string;
+  onActiveWeekChange?: (weekId: string) => void;
 }
 
 export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
