@@ -314,7 +314,9 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
             </colgroup>
             <thead>
               <tr>
-                <th className={headCell + " text-left"} colSpan={6}>{v.label}</th>
+                <th className={headCell + " text-left"} colSpan={6}>
+                  {v.label} — {v.zones.map(z => `${Math.round(((side.zoneCoef?.[z] ?? ZONE_COEF[z]) * 100))}%`).join(', ')}
+                </th>
               </tr>
               <tr>
                 <th className={headCell}></th>
