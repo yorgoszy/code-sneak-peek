@@ -86,7 +86,8 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   onPasteBlockAtBlock,
   onPasteDay,
   onSelectBlockTemplate,
-  coachId
+  coachId,
+  onActiveWeekChange
 }) => {
   const {
     activeWeek,
@@ -104,6 +105,10 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
       setActiveWeek(weeks[0].id);
     }
   }, [weeks, activeWeek, setActiveWeek]);
+
+  useEffect(() => {
+    if (activeWeek && onActiveWeekChange) onActiveWeekChange(activeWeek);
+  }, [activeWeek, onActiveWeekChange]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
