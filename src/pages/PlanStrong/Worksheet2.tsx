@@ -125,7 +125,7 @@ const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, 
   );
 };
 
-interface MonthNLItem { name: string; videoUrl?: string; nlPerWeek: number[]; totalNL: number; nlPerZonePerWeek?: number[][]; zoneKg?: number[] }
+interface MonthNLItem { name: string; exerciseId?: string; videoUrl?: string; nlPerWeek: number[]; totalNL: number; nlPerZonePerWeek?: number[][]; zoneKg?: number[] }
 
 interface Worksheet2Props {
   monthsCount: number;
