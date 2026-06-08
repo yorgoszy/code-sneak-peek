@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Worksheet1Side } from './Worksheet1';
 import { UserExerciseDataCacheProvider } from '@/hooks/useUserExerciseDataCache';
 import { Worksheet2 } from './Worksheet2';
-import { defaultPlanStrongData, defaultSide, PlanStrongData, PlanStrongSideInput, computeWeekDifficulties, computeSide, PlanStrongMonthWS2, defaultMonthWS2 } from './planStrongCalc';
+import { defaultPlanStrongData, defaultSide, PlanStrongData, PlanStrongSideInput, computeWeekDifficulties, computeSide, PlanStrongMonthWS2, defaultMonthWS2, ZONE_COEF } from './planStrongCalc';
 import { SimpleExerciseSelectionDialog } from '@/components/programs/builder/SimpleExerciseSelectionDialog';
 import { useExercises } from '@/hooks/useExercises';
 
@@ -541,7 +541,8 @@ export default function PlanStrongPage() {
                     return Math.round(monthlyNL * (zonePct[z] || 0) * vp);
                   })
                 );
-                return { name, exerciseId: s.exerciseId, videoUrl: ex?.video_url, nlPerWeek: out.mainNlPerWeek, totalNL: out.totalNL, nlPerZonePerWeek, zoneKg: out.zoneKg, zonePct };
+                const zonePctLabels = ((s as any).zoneCoef && (s as any).zoneCoef.length === 6 ? (s as any).zoneCoef : ZONE_COEF).map((c: number) => Math.round(c * 100));
+                return { name, exerciseId: s.exerciseId, videoUrl: ex?.video_url, nlPerWeek: out.mainNlPerWeek, totalNL: out.totalNL, nlPerZonePerWeek, zoneKg: out.zoneKg, zonePct, zonePctLabels };
               }))}
               weekDifficulties={monthsList.flatMap(m => {
                 const mainSide = m.sides?.[0];

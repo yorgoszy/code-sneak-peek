@@ -136,7 +136,7 @@ const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, 
   );
 };
 
-interface MonthNLItem { name: string; exerciseId?: string; videoUrl?: string; nlPerWeek: number[]; totalNL: number; nlPerZonePerWeek?: number[][]; zoneKg?: number[]; zonePct?: number[] }
+interface MonthNLItem { name: string; exerciseId?: string; videoUrl?: string; nlPerWeek: number[]; totalNL: number; nlPerZonePerWeek?: number[][]; zoneKg?: number[]; zonePct?: number[]; zonePctLabels?: number[] }
 
 interface AssignUser { id: string; name: string; email?: string; avatar_url?: string | null; photo_url?: string | null }
 interface Worksheet2Props {
@@ -416,9 +416,9 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
               {currentMonthNL.map((row, i) => {
                 const zones = row.nlPerZonePerWeek?.[weekInMonth] || [];
                 const kgs = row.zoneKg || [];
-                const pcts = row.zonePct || [];
+                const pctLabels = row.zonePctLabels || [];
                 const sets = zones
-                  .map((nl, z) => ({ nl, kg: kgs[z] || 0, pct: Math.round((pcts[z] || 0) * (pcts[z] && pcts[z] <= 1 ? 100 : 1)) }))
+                  .map((nl, z) => ({ nl, kg: kgs[z] || 0, pct: pctLabels[z] || 0 }))
                   .filter(p => p.nl > 0);
                 const hasVideo = row.videoUrl && isValidVideoUrl(row.videoUrl);
                 const thumb = hasVideo ? getVideoThumbnail(row.videoUrl!) : null;
