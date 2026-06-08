@@ -3,8 +3,6 @@ import React, { useState, useCallback } from 'react';
 import { ProgramExercise } from '../types';
 import { DebouncedInput } from './DebouncedInput';
 import { RollingTimeInput } from './RollingTimeInput';
-import { useZoneKgMeta } from '@/contexts/PlanStrongZoneKgContext';
-import { useUserExerciseDataCacheContext } from '@/hooks/useUserExerciseDataCache';
 
 interface ExerciseDetailsFormOptimizedProps {
   exercise: ProgramExercise;
@@ -18,8 +16,6 @@ export const ExerciseDetailsFormOptimized: React.FC<ExerciseDetailsFormOptimized
   const [isTimeMode, setIsTimeMode] = useState(false);
   const [repsMode, setRepsMode] = useState<'reps' | 'time' | 'meter'>(exercise.reps_mode || 'reps');
   const [kgMode, setKgMode] = useState<'kg' | 'rpm' | 'meter' | 's/m' | 'km/h'>(exercise.kg_mode || 'kg');
-  const zoneMeta = useZoneKgMeta(exercise.exercise_id);
-  const { getOneRM, getVelocityForPercentage } = useUserExerciseDataCacheContext();
 
   // Sync local state with exercise props when they change
   React.useEffect(() => {
@@ -177,42 +173,13 @@ export const ExerciseDetailsFormOptimized: React.FC<ExerciseDetailsFormOptimized
         >
           {kgMode === 'kg' ? 'Kg' : kgMode === 'rpm' ? 'rpm' : kgMode === 'meter' ? 'meter' : kgMode === 's/m' ? 's/m' : 'km/h'}
         </label>
-        {zoneMeta && kgMode === 'kg' ? (
-          <select
-            value={exercise.kg ? String(exercise.kg).replace(',', '.') : ''}
-            onChange={(e) => {
-              const kgStr = e.target.value;
-              handleKgChange(kgStr);
-              const kgNum = parseFloat(kgStr);
-              const match = zoneMeta.find((m) => m.kg === kgNum);
-              if (match) {
-                onUpdate('percentage_1rm', match.percentage);
-                if (exercise.exercise_id) {
-                  const oneRM = getOneRM(exercise.exercise_id) ?? 0;
-                  const v = getVelocityForPercentage(exercise.exercise_id, match.percentage, oneRM);
-                  if (v && v > 0) {
-                    onUpdate('velocity_ms', String(v).replace('.', ','));
-                  }
-                }
-              }
-            }}
-            className="text-center w-full border border-input bg-background"
-            style={inputStyle}
-          >
-            <option value="">—</option>
-            {zoneMeta.map((m) => (
-              <option key={m.kg} value={m.kg}>{m.kg}</option>
-            ))}
-          </select>
-        ) : (
-          <DebouncedInput
-            inputMode="decimal"
-            value={exercise.kg || ''}
-            onChange={handleKgChange}
-            className="text-center w-full"
-            style={inputStyle}
-          />
-        )}
+        <DebouncedInput
+          inputMode="decimal"
+          value={exercise.kg || ''}
+          onChange={handleKgChange}
+          className="text-center w-full"
+          style={inputStyle}
+        />
       </div>
       
       <div className="flex flex-col items-center" style={{ width: '60px' }}>
