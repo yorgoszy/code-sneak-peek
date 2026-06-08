@@ -97,7 +97,7 @@ export default function PlanStrongPage() {
 
     if (draftId) {
       // EDIT mode — sync sibling drafts (one per user) against current selection
-      const updates: Promise<any>[] = [];
+      const updates: any[] = [];
       const toInsert: any[] = [];
       const newMap: Record<string, string> = {};
 
