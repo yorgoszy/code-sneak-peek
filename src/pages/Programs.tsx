@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Sidebar } from "@/components/Sidebar";
 import { ProgramsLayout } from "@/components/programs/ProgramsLayout";
 import { Program } from "@/components/programs/types";
@@ -7,15 +8,19 @@ import { usePrograms } from "@/hooks/usePrograms";
 import { useProgramsData } from "@/hooks/useProgramsData";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
-import { Menu, LogOut } from "lucide-react";
+import { Menu, LogOut, Trash2, Pencil } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Programs = () => {
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { userProfile: dashboardUserProfile } = useDashboard();
   const { isAdmin } = useRoleCheck();
+  const [planStrongDrafts, setPlanStrongDrafts] = useState<Array<{ id: string; name: string; status: string; user_id: string; created_at: string; userName?: string }>>([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const isMobile = useIsMobile();
@@ -56,7 +61,35 @@ const Programs = () => {
 
   useEffect(() => {
     loadPrograms();
-  }, []);
+    loadPlanStrongDrafts();
+  }, [user?.id]);
+
+  const loadPlanStrongDrafts = async () => {
+    if (!user?.id) return;
+    const { data, error } = await supabase
+      .from('plan_strong_drafts')
+      .select('id, name, status, user_id, created_at')
+      .eq('coach_id', user.id)
+      .order('created_at', { ascending: false });
+    if (error) { console.error('plan_strong_drafts load error', error); return; }
+    const userIds = Array.from(new Set((data || []).map(d => d.user_id)));
+    let nameMap: Record<string, string> = {};
+    if (userIds.length > 0) {
+      const { data: usersData } = await supabase
+        .from('app_users').select('id, name').in('id', userIds);
+      (usersData || []).forEach((u: any) => { nameMap[u.id] = u.name; });
+    }
+    setPlanStrongDrafts((data || []).map(d => ({ ...d, userName: nameMap[d.user_id] })));
+  };
+
+  const handleDeletePlanStrong = async (id: string) => {
+    if (!confirm('Διαγραφή Plan Strong;')) return;
+    const { error } = await supabase.from('plan_strong_drafts').delete().eq('id', id);
+    if (error) { toast.error(error.message); return; }
+    toast.success('Διαγράφηκε');
+    loadPlanStrongDrafts();
+  };
+
 
   const loadPrograms = async () => {
     try {
@@ -299,6 +332,40 @@ const Programs = () => {
             onConvertToTemplate={handleConvertToTemplate}
             coachId={adminCoachId}
           />
+
+          {planStrongDrafts.length > 0 && (
+            <div className="mt-6 border border-border">
+              <div className="bg-foreground text-background px-3 py-2 text-sm font-bold">
+                PLAN STRONG — Προχείρα & Αναθέσεις ({planStrongDrafts.length})
+              </div>
+              <div className="divide-y divide-border">
+                {planStrongDrafts.map(d => (
+                  <div key={d.id} className="flex items-center justify-between px-3 py-2 hover:bg-muted/30">
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/plan-strong?id=${d.id}`)}
+                      className="flex-1 text-left"
+                    >
+                      <div className="text-sm font-medium">{d.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {d.userName || d.user_id.slice(0, 8)} · {d.status} · {new Date(d.created_at).toLocaleDateString('el-GR')}
+                      </div>
+                    </button>
+                    <div className="flex items-center gap-1">
+                      <Button size="sm" variant="outline" className="rounded-none h-7 w-7 p-0"
+                        onClick={() => navigate(`/plan-strong?id=${d.id}`)}>
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                      <Button size="sm" variant="outline" className="rounded-none h-7 w-7 p-0 text-destructive"
+                        onClick={() => handleDeletePlanStrong(d.id)}>
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
