@@ -307,23 +307,6 @@ export default function PlanStrongPage() {
             >
               <Plus className="w-3 h-3 mr-1" /> Άσκηση
             </Button>
-            <button
-              type="button"
-              onClick={copyActiveSide}
-              className="h-7 px-2 ml-1 hover:bg-muted rounded-none border border-border inline-flex items-center"
-              title="Αντιγραφή worksheet"
-            >
-              <Copy className="w-3 h-3" />
-            </button>
-            <button
-              type="button"
-              onClick={pasteIntoActiveSide}
-              disabled={!sideClipboard}
-              className="h-7 px-2 hover:bg-muted rounded-none border border-border inline-flex items-center disabled:opacity-30 disabled:cursor-not-allowed"
-              title={sideClipboard ? 'Επικόλληση worksheet' : 'Δεν υπάρχει αντιγραμμένο worksheet'}
-            >
-              <ClipboardPaste className="w-3 h-3" />
-            </button>
           </div>
 
           {/* User tabs */}
