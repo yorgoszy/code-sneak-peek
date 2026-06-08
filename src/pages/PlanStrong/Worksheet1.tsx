@@ -5,7 +5,7 @@ import {
   computeSide, ZONE_LABELS, ZONE_PCT_LABELS, ZONE_COEF, PlanStrongSideInput, getWeekDifficulty,
 } from './planStrongCalc';
 import { useExercises } from '@/hooks/useExercises';
-import { useExercise1RM } from '@/hooks/useExercise1RM';
+import { useUserExerciseDataCacheContext } from '@/hooks/useUserExerciseDataCache';
 import { SimpleExerciseSelectionDialog } from '@/components/programs/builder/SimpleExerciseSelectionDialog';
 
 interface Props {
@@ -77,11 +77,11 @@ const PctInput: React.FC<{
 };
 
 export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPickerSlot }) => {
-  const { oneRM: fetched1RM } = useExercise1RM({
-    userId: userId || null,
-    exerciseId: side.exerciseId || null,
-  });
-  // When a user is previewed, show THEIR 1RM (don't mutate the shared side data)
+  const { getOneRM, userId: cachedUserId } = useUserExerciseDataCacheContext();
+  // Use cache when a user is previewed (loads once per user, no refetch per exercise switch)
+  const fetched1RM = (userId && cachedUserId === userId && side.exerciseId)
+    ? getOneRM(side.exerciseId)
+    : null;
   const effectiveOneRM: number | '' = userId
     ? (fetched1RM != null ? fetched1RM : '')
     : (side.oneRM ?? '');
