@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useExercises } from '@/hooks/useExercises';
-import { useProgramBuilderState, ProgramStructure } from '@/components/programs/builder/hooks/useProgramBuilderState';
+import { useProgramBuilderState } from '@/components/programs/builder/hooks/useProgramBuilderState';
 import { useProgramBuilderActions } from '@/components/programs/builder/hooks/useProgramBuilderActions';
 import { TrainingWeeks } from '@/components/programs/builder/TrainingWeeks';
 
@@ -8,15 +8,16 @@ export interface PlanStrongWS2Program {
   weeks: any[];
 }
 
-interface EmbeddedMonthBuilderProps {
+interface EmbeddedBuilderProps {
   initial?: PlanStrongWS2Program | null;
+  totalWeeks: number;
   onChange: (program: PlanStrongWS2Program) => void;
   selectedUserId?: string;
   coachId?: string;
   onActiveWeekIndexChange?: (idx: number) => void;
 }
 
-const EmbeddedMonthBuilder: React.FC<EmbeddedMonthBuilderProps> = ({ initial, onChange, selectedUserId, coachId, onActiveWeekIndexChange }) => {
+const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, onChange, selectedUserId, coachId, onActiveWeekIndexChange }) => {
   const { exercises } = useExercises();
   const { program, updateProgram, generateId, loadProgramFromData } = useProgramBuilderState(exercises as any);
   const actions = useProgramBuilderActions(program, updateProgram, generateId, exercises as any);
@@ -24,13 +25,13 @@ const EmbeddedMonthBuilder: React.FC<EmbeddedMonthBuilderProps> = ({ initial, on
   const seededRef = useRef(false);
   useEffect(() => {
     if (seededRef.current) return;
-    if (!exercises || exercises.length === 0) return; // wait for exercises
+    if (!exercises || exercises.length === 0) return;
     seededRef.current = true;
 
     if (initial && Array.isArray(initial.weeks) && initial.weeks.length > 0) {
       loadProgramFromData({ weeks: initial.weeks });
     } else {
-      const weeks = Array.from({ length: 4 }).map((_, i) => ({
+      const weeks = Array.from({ length: totalWeeks }).map((_, i) => ({
         id: generateId(),
         name: `Εβδομάδα ${i + 1}`,
         week_number: i + 1,
@@ -45,7 +46,6 @@ const EmbeddedMonthBuilder: React.FC<EmbeddedMonthBuilderProps> = ({ initial, on
     }
   }, [exercises]);
 
-  // Sync up
   useEffect(() => {
     if (!seededRef.current) return;
     onChange({ weeks: program.weeks });
@@ -109,60 +109,44 @@ interface Worksheet2Props {
 }
 
 export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs, onChange, selectedUserId, coachId, monthsNL }) => {
-  const [activeM, setActiveM] = useState(0);
   const [activeW, setActiveW] = useState(0);
-  const safeActive = Math.min(Math.max(activeM, 0), Math.max(monthsCount - 1, 0));
-  const safeW = Math.min(Math.max(activeW, 0), 3);
+  const totalWeeks = Math.max(monthsCount, 1) * 4;
+  const safeW = Math.min(Math.max(activeW, 0), totalWeeks - 1);
+  const monthIdx = Math.floor(safeW / 4);
+  const weekInMonth = safeW % 4;
 
-  const setMonthProgram = (mIdx: number, p: PlanStrongWS2Program) => {
-    const next = Array.from({ length: monthsCount }).map((_, i) =>
-      i === mIdx ? p : (ws2Programs[i] ?? null)
-    );
-    onChange(next);
+  const setSingleProgram = (p: PlanStrongWS2Program) => {
+    onChange([p]);
   };
+
+  const currentMonthNL = monthsNL && monthsNL[monthIdx] ? monthsNL[monthIdx] : [];
 
   return (
     <div className="border border-border">
-      <div className="bg-foreground text-background px-3 py-2 text-sm font-bold flex items-center justify-between flex-wrap gap-2">
+      <div className="bg-foreground text-background px-3 py-2 text-sm font-bold flex items-center justify-between">
         <span>PLAN STRONG™ — Program Builder</span>
-        <div className="flex items-center gap-1">
-          {Array.from({ length: monthsCount }).map((_, i) => {
-            const active = i === safeActive;
-            return (
-              <button
-                key={i}
-                type="button"
-                onClick={() => setActiveM(i)}
-                className={`px-2 h-6 border rounded-none text-xs ${active ? 'bg-background text-foreground border-background' : 'bg-transparent text-background border-background/40 hover:bg-background/10'}`}
-              >
-                M{i + 1}
-              </button>
-            );
-          })}
-        </div>
         <span>WORKSHEET #2</span>
       </div>
       <div className="p-2 space-y-2">
-        {monthsNL && monthsNL[safeActive] && monthsNL[safeActive].length > 0 && (
+        {currentMonthNL.length > 0 && (
           <div className="border border-border">
             <div className="bg-muted px-2 py-1 text-xs font-bold flex items-center justify-between">
-              <span>NL — Εβδομάδα {safeW + 1}</span>
+              <span>NL — M{monthIdx + 1} · Εβδομάδα {weekInMonth + 1}</span>
             </div>
             <div className="p-2 space-y-1">
-              {monthsNL[safeActive].map((row, i) => (
+              {currentMonthNL.map((row, i) => (
                 <div key={i} className="flex justify-between text-xs">
                   <span className="truncate pr-2">{row.name}</span>
-                  <span className="tabular-nums font-medium">{row.nlPerWeek[safeW] ?? 0}</span>
+                  <span className="tabular-nums font-medium">{row.nlPerWeek[weekInMonth] ?? 0}</span>
                 </div>
               ))}
             </div>
           </div>
         )}
-        {/* key by safeActive to remount builder per month (avoids state leak between months) */}
-        <EmbeddedMonthBuilder
-          key={safeActive}
-          initial={ws2Programs[safeActive] ?? null}
-          onChange={(p) => setMonthProgram(safeActive, p)}
+        <EmbeddedBuilder
+          initial={ws2Programs[0] ?? null}
+          totalWeeks={totalWeeks}
+          onChange={setSingleProgram}
           selectedUserId={selectedUserId}
           coachId={coachId}
           onActiveWeekIndexChange={setActiveW}
