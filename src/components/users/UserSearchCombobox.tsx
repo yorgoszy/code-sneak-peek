@@ -35,6 +35,8 @@ interface UserSearchComboboxProps {
   adminOwned?: boolean;
   filterByCoach?: boolean;
   disabled?: boolean;
+  /** Extra classes for the trigger button (e.g. to match LIFT styling) */
+  triggerClassName?: string;
 }
 
 // Normalize text for search (remove accents, lowercase)
@@ -60,6 +62,7 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
   adminOwned = false,
   filterByCoach = true,
   disabled = false,
+  triggerClassName,
 }) => {
   const [open, setOpen] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
@@ -138,7 +141,7 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
           role="combobox"
           aria-expanded={open}
           disabled={disabled}
-          className={cn("w-full justify-between rounded-none", disabled && "opacity-50 cursor-not-allowed")}
+          className={cn("w-full justify-between rounded-none", triggerClassName, disabled && "opacity-50 cursor-not-allowed")}
         >
           {selectedUser ? (
             <div className="flex items-center gap-2">
