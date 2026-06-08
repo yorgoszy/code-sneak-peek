@@ -117,9 +117,12 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
 
   return (
     <div className="border border-border max-w-3xl">
-      <div className="bg-foreground text-background px-3 py-2 text-sm font-bold flex justify-between">
+      <div className="bg-foreground text-background px-3 py-2 text-sm font-bold flex justify-between items-center gap-2">
         <span>PLAN STRONG™ — PS {side.ps}</span>
-        <span>WORKSHEET #1</span>
+        <div className="flex items-center gap-2">
+          {headerSlot}
+          <span>WORKSHEET #1</span>
+        </div>
       </div>
       <div className="p-2 text-xs space-y-2 overflow-x-auto">
         <div className="flex flex-wrap items-start gap-3">
