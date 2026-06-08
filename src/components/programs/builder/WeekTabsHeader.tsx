@@ -16,6 +16,7 @@ interface WeekTabsHeaderProps {
   onDuplicateWeek: (weekId: string) => void;
   onRemoveWeek: (weekId: string) => void;
   onPasteWeek?: (weekId: string, clipboardWeek: Week) => void;
+  weekDifficulties?: (string | null)[];
 }
 
 export const WeekTabsHeader: React.FC<WeekTabsHeaderProps> = ({
