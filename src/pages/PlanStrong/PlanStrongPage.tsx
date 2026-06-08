@@ -330,6 +330,23 @@ export default function PlanStrongPage() {
             >
               <Plus className="w-3 h-3 mr-1" /> Άσκηση
             </Button>
+            <Button
+              type="button" variant="outline" size="sm"
+              className="h-7 rounded-none ml-auto"
+              onClick={copyActiveSide}
+              title="Αντιγραφή worksheet τρέχουσας άσκησης"
+            >
+              Αντιγραφή
+            </Button>
+            <Button
+              type="button" variant="outline" size="sm"
+              className="h-7 rounded-none"
+              onClick={pasteIntoActiveSide}
+              disabled={!sideClipboard}
+              title={sideClipboard ? 'Επικόλληση στην τρέχουσα άσκηση' : 'Δεν υπάρχει αντιγραμμένο worksheet'}
+            >
+              Επικόλληση
+            </Button>
           </div>
 
           <Worksheet1Side
