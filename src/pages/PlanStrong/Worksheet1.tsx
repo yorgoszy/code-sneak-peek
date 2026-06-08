@@ -111,11 +111,19 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
         <span>WORKSHEET #1</span>
       </div>
       <div className="p-2 text-xs space-y-2 overflow-x-auto">
-        <table className="border-collapse w-full">
+        <div className="flex flex-wrap items-start gap-3">
+        <table className="border-collapse w-auto">
           <thead>
             <tr>
-              {['LIFT','PREP/COMP','1RM','KG/LB','PS/BTS','NL'].map(h =>
-                <th key={h} className={headCell}>{h}</th>)}
+              {[
+                {h: 'LIFT', w: '160px'},
+                {h: 'PREP/COMP', w: '110px'},
+                {h: '1RM', w: '80px'},
+                {h: 'KG/LB', w: '80px'},
+                {h: 'PS/BTS', w: '90px'},
+                {h: 'NL', w: '80px'},
+              ].map(({h, w}) =>
+                <th key={h} className={headCell} style={{ width: w }}>{h}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -159,6 +167,11 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
             </tr>
           </tbody>
         </table>
+        {userPickerSlot && (
+          <div className="flex-1 min-w-[240px]">{userPickerSlot}</div>
+        )}
+        </div>
+
 
         {(() => {
           const hiddenZones = side.ps === '70' ? [0, 1] : [];
