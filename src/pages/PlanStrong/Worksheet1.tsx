@@ -297,6 +297,7 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
           );
         })()}
 
+        <div className="bg-black p-2 space-y-2">
         {([
           { key: 'v95Pct' as const, zones: [5] },
           { key: 'v91Pct' as const, zones: [4] },
@@ -311,7 +312,7 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
           const targetNl = v.zones.reduce((a, z) => a + (out.monthlyNlPerZone[z] || 0), 0);
           const nl = arr.map(p => Math.round(targetNl * p));
           return (
-          <table key={v.key} className="border-collapse w-full table-fixed">
+          <table key={v.key} className="border-collapse w-full table-fixed bg-background">
             <colgroup>
               <col style={{ width: '80px' }} />
               <col /><col /><col /><col />
@@ -371,6 +372,8 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
             </tbody>
           </table>
         );})}
+        </div>
+
 
         <table className="border-collapse w-full table-fixed">
           <colgroup>
