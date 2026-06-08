@@ -33,6 +33,17 @@ const parsePct = (raw: string): number => {
   return n / 100;
 };
 
+// Color WEEK header based on MAIN VARIANT % value for that week.
+// 15% → blue, 22% → green, 28% → yellow, 35% → red.
+const weekHeadColor = (frac: number): string => {
+  const pct = Math.round((frac || 0) * 100);
+  if (pct === 15) return 'bg-blue-500 text-white';
+  if (pct === 22) return 'bg-green-500 text-white';
+  if (pct === 28) return 'bg-yellow-400 text-black';
+  if (pct === 35) return 'bg-red-500 text-white';
+  return '';
+};
+
 // Editable percent input — keeps a local string while focused so backspace works,
 // commits parsed fraction on blur / Enter.
 const PctInput: React.FC<{
@@ -264,10 +275,9 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
               </tr>
               <tr>
                 <th className={headCell}></th>
-                <th className={headCell}>WEEK 1</th>
-                <th className={headCell}>WEEK 2</th>
-                <th className={headCell}>WEEK 3</th>
-                <th className={headCell}>WEEK 4</th>
+                {[0,1,2,3].map(i => (
+                  <th key={i} className={headCell + " " + weekHeadColor(arr[i])}>WEEK {i+1}</th>
+                ))}
                 <th className={headCell}>TOTAL NL</th>
               </tr>
             </thead>
@@ -326,10 +336,10 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
               </tr>
               <tr>
                 <th className={headCell}></th>
-                <th className={headCell}>WEEK 1</th>
-                <th className={headCell}>WEEK 2</th>
-                <th className={headCell}>WEEK 3</th>
-                <th className={headCell}>WEEK 4</th>
+                {[0,1,2,3].map(i => {
+                  const mp = (side.mainPct && side.mainPct[i]) || 0;
+                  return <th key={i} className={headCell + " " + weekHeadColor(mp)}>WEEK {i+1}</th>;
+                })}
                 <th className={headCell}>TOTAL NL</th>
               </tr>
             </thead>
