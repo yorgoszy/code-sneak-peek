@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Copy, ClipboardPaste } from 'lucide-react';
 import {
   computeSide, ZONE_LABELS, ZONE_PCT_LABELS, ZONE_COEF, PlanStrongSideInput, getWeekDifficulty,
 } from './planStrongCalc';
@@ -14,9 +13,6 @@ interface Props {
   onChange: (s: PlanStrongSideInput) => void;
   userId?: string;
   userPickerSlot?: React.ReactNode;
-  onCopy?: () => void;
-  onPaste?: () => void;
-  hasClipboard?: boolean;
 }
 
 const cell = "border border-border px-2 py-1 text-xs";
@@ -80,8 +76,17 @@ const PctInput: React.FC<{
   );
 };
 
-export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPickerSlot, onCopy, onPaste, hasClipboard }) => {
-  const out = computeSide(side);
+export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPickerSlot }) => {
+  const { oneRM: fetched1RM } = useExercise1RM({
+    userId: userId || null,
+    exerciseId: side.exerciseId || null,
+  });
+  // When a user is previewed, show THEIR 1RM (don't mutate the shared side data)
+  const effectiveOneRM: number | '' = userId
+    ? (fetched1RM != null ? fetched1RM : '')
+    : (side.oneRM ?? '');
+  const effectiveSide: PlanStrongSideInput = { ...side, oneRM: effectiveOneRM };
+  const out = computeSide(effectiveSide);
   const set = (patch: Partial<PlanStrongSideInput>) => onChange({ ...side, ...patch });
   const setZone = (i: number, raw: string) => {
     const arr = [...side.zonePct]; arr[i] = parsePct(raw); set({ zonePct: arr });
@@ -101,28 +106,6 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
 
   const [pickerOpen, setPickerOpen] = useState(false);
   const { exercises } = useExercises();
-  const { oneRM: fetched1RM } = useExercise1RM({
-    userId: userId || null,
-    exerciseId: side.exerciseId || null,
-  });
-  const lastApplied1RM = useRef<{ key: string; val: number } | null>(null);
-  useEffect(() => {
-    if (!userId) {
-      lastApplied1RM.current = null;
-      if (side.oneRM !== undefined) {
-        onChange({ ...side, oneRM: undefined as any });
-      }
-      return;
-    }
-    if (fetched1RM != null && side.exerciseId) {
-      const key = `${userId}:${side.exerciseId}`;
-      if (lastApplied1RM.current?.key !== key || lastApplied1RM.current?.val !== fetched1RM) {
-        lastApplied1RM.current = { key, val: fetched1RM };
-        onChange({ ...side, oneRM: fetched1RM });
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetched1RM, side.exerciseId, userId]);
 
   const handleSelectExercise = (exId: string) => {
     const ex = exercises.find(e => e.id === exId);
@@ -165,7 +148,8 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
                   </Button>
                 </td>
                 <td className={cell}>
-                  <Input className={inp} type="number" value={side.oneRM}
+                  <Input className={inp} type="number" value={effectiveOneRM}
+                    readOnly={!!userId}
                     onChange={e => set({ oneRM: toNum(e.target.value) })} />
                 </td>
                 <td className={cell}>
@@ -190,31 +174,8 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
                   </select>
                 </td>
                 <td className={cell}>
-                  <div className="flex items-center gap-1">
-                    <Input className={inp + " flex-1"} type="number" value={side.monthlyNL}
-                      onChange={e => set({ monthlyNL: toNum(e.target.value) })} />
-                    {onCopy && (
-                      <button
-                        type="button"
-                        onClick={onCopy}
-                        className="p-1 hover:bg-muted rounded-none border border-border"
-                        title="Αντιγραφή worksheet"
-                      >
-                        <Copy className="w-3 h-3" />
-                      </button>
-                    )}
-                    {onPaste && (
-                      <button
-                        type="button"
-                        onClick={onPaste}
-                        disabled={!hasClipboard}
-                        className="p-1 hover:bg-muted rounded-none border border-border disabled:opacity-30 disabled:cursor-not-allowed"
-                        title={hasClipboard ? 'Επικόλληση worksheet' : 'Δεν υπάρχει αντιγραμμένο worksheet'}
-                      >
-                        <ClipboardPaste className="w-3 h-3" />
-                      </button>
-                    )}
-                  </div>
+                  <Input className={inp} type="number" value={side.monthlyNL}
+                    onChange={e => set({ monthlyNL: toNum(e.target.value) })} />
                 </td>
               </tr>
             </tbody>
