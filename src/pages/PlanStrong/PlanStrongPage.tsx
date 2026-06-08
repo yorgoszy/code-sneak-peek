@@ -91,6 +91,38 @@ export default function PlanStrongPage() {
     })();
   }, [userIds]);
 
+  // ---- Exercise tabs (multiple exercises per worksheet) ----
+  const sides: PlanStrongSideInput[] = (data.sides && data.sides.length > 0) ? data.sides : [data.side];
+  const activeIdx = Math.min(Math.max(data.activeSideIndex ?? 0, 0), sides.length - 1);
+  const activeSide = sides[activeIdx] || data.side;
+  const [exPickerOpen, setExPickerOpen] = useState(false);
+  const { exercises } = useExercises();
+
+  const updateActiveSide = (next: PlanStrongSideInput) => {
+    const nextSides = sides.map((s, i) => i === activeIdx ? next : s);
+    setData({ ...data, sides: nextSides, side: next, activeSideIndex: activeIdx });
+  };
+  const selectTab = (i: number) => {
+    setData({ ...data, sides, side: sides[i], activeSideIndex: i });
+  };
+  const addExerciseTab = (exId: string) => {
+    const ex = exercises.find((e: any) => e.id === exId);
+    const fresh = defaultSide();
+    const newSide: PlanStrongSideInput = ex
+      ? { ...fresh, exerciseId: ex.id, lift: ex.name }
+      : fresh;
+    const nextSides = [...sides, newSide];
+    setData({ ...data, sides: nextSides, side: newSide, activeSideIndex: nextSides.length - 1 });
+    setExPickerOpen(false);
+  };
+  const removeExerciseTab = (i: number) => {
+    if (sides.length <= 1) return;
+    const nextSides = sides.filter((_, idx) => idx !== i);
+    const nextIdx = Math.max(0, Math.min(activeIdx, nextSides.length - 1));
+    setData({ ...data, sides: nextSides, side: nextSides[nextIdx], activeSideIndex: nextIdx });
+  };
+
+
   const addUser = (uid: string | null) => {
     if (!uid) return;
     setUserIds(prev => prev.includes(uid) ? prev : [...prev, uid]);
