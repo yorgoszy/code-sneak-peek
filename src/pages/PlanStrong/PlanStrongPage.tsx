@@ -107,6 +107,7 @@ export default function PlanStrongPage() {
     : [{ sides: (data.sides && data.sides.length > 0) ? data.sides : [data.side], activeSideIndex: data.activeSideIndex ?? 0 }];
 
   const [exPickerForMonth, setExPickerForMonth] = useState<number | null>(null);
+  const [activeMonthIdx, setActiveMonthIdx] = useState<number>(0);
   const { exercises } = useExercises();
 
   const writeMonths = (nextMonths: MonthState[]) => {
@@ -156,11 +157,15 @@ export default function PlanStrongPage() {
 
   const addMonth = () => {
     const fresh: MonthState = { sides: [defaultSide()], activeSideIndex: 0 };
-    writeMonths([...monthsList, fresh]);
+    const nextMonths = [...monthsList, fresh];
+    writeMonths(nextMonths);
+    setActiveMonthIdx(nextMonths.length - 1);
   };
   const removeMonth = (mIdx: number) => {
     if (monthsList.length <= 1) return;
-    writeMonths(monthsList.filter((_, i) => i !== mIdx));
+    const nextMonths = monthsList.filter((_, i) => i !== mIdx);
+    writeMonths(nextMonths);
+    setActiveMonthIdx(prev => Math.max(0, Math.min(prev > mIdx ? prev - 1 : prev, nextMonths.length - 1)));
   };
 
   // Clipboard για copy/paste worksheet μεταξύ ασκήσεων (διαμοιραζόμενο)
@@ -362,11 +367,12 @@ export default function PlanStrongPage() {
           </div>
 
           <UserExerciseDataCacheProvider userId={previewUserId || userIds[0] || userId || null}>
-            {monthsList.map((m, mIdx) => {
+            {(() => {
+              const mIdx = Math.min(Math.max(activeMonthIdx, 0), monthsList.length - 1);
+              const m = monthsList[mIdx];
               const mSides = m.sides;
               const mActiveIdx = Math.min(Math.max(m.activeSideIndex ?? 0, 0), mSides.length - 1);
               const mActiveSide = mSides[mActiveIdx] || data.side;
-              const isLast = mIdx === monthsList.length - 1;
 
               // Σύγκριση με τον προηγούμενο μήνα (ίδια άσκηση κατά exerciseId ή lift)
               let deltaInfo: React.ReactNode = null;
@@ -449,12 +455,33 @@ export default function PlanStrongPage() {
                     userId={previewUserId || userIds[0] || userId}
                     onChange={(next) => updateMonthSide(mIdx, mActiveIdx, next)}
                     headerSlot={
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         {deltaInfo}
-                        {monthsList.length > 1 && (
-                          <span className="text-xs opacity-80">M{mIdx + 1}</span>
-                        )}
-                        {isLast && (
+                        {/* Month tabs */}
+                        <div className="flex items-center gap-1">
+                          {monthsList.map((_, i) => {
+                            const active = i === mIdx;
+                            return (
+                              <div
+                                key={i}
+                                onClick={() => setActiveMonthIdx(i)}
+                                className={`flex items-center gap-1 px-2 h-6 border cursor-pointer rounded-none text-xs ${active ? 'bg-background text-foreground border-background' : 'bg-transparent text-background border-background/40 hover:bg-background/10'}`}
+                                title={`Μήνας ${i + 1}`}
+                              >
+                                <span>M{i + 1}</span>
+                                {monthsList.length > 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); removeMonth(i); }}
+                                    className="hover:text-destructive"
+                                    title="Αφαίρεση μήνα"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                )}
+                              </div>
+                            );
+                          })}
                           <button
                             type="button"
                             onClick={addMonth}
@@ -463,17 +490,7 @@ export default function PlanStrongPage() {
                           >
                             <Plus className="w-3 h-3" />
                           </button>
-                        )}
-                        {monthsList.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeMonth(mIdx)}
-                            className="h-6 w-6 inline-flex items-center justify-center border border-background/40 hover:bg-destructive hover:text-destructive-foreground rounded-none"
-                            title="Αφαίρεση μήνα"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        )}
+                        </div>
                       </div>
                     }
                     nlActionsSlot={
@@ -500,7 +517,7 @@ export default function PlanStrongPage() {
                   />
                 </div>
               );
-            })}
+            })()}
           </UserExerciseDataCacheProvider>
         </TabsContent>
 
