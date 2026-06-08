@@ -137,33 +137,23 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
       </div>
       <div className="p-2 space-y-2">
         {monthsNL && monthsNL[safeActive] && monthsNL[safeActive].length > 0 && (
-          <div className="border border-border">
-            <div className="bg-muted px-2 py-1 text-xs font-bold flex justify-between">
-              <span>NL ανά άσκηση / εβδομάδα (από Worksheet #1)</span>
-              <span>M{safeActive + 1}</span>
-            </div>
-            <table className="w-full text-xs">
-              <thead className="bg-muted/50">
-                <tr>
-                  <th className="text-left px-2 py-1 border-b border-border">Άσκηση</th>
-                  {[1,2,3,4].map(w => (
-                    <th key={w} className="text-center px-2 py-1 border-b border-border w-16">W{w}</th>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {[0,1,2,3].map(w => (
+              <div key={w} className="border border-border">
+                <div className="bg-muted px-2 py-1 text-xs font-bold flex justify-between">
+                  <span>Εβδομάδα {w + 1}</span>
+                  <span className="text-muted-foreground">NL</span>
+                </div>
+                <div className="p-2 space-y-1">
+                  {monthsNL[safeActive].map((row, i) => (
+                    <div key={i} className="flex justify-between text-xs">
+                      <span className="truncate pr-2">{row.name}</span>
+                      <span className="tabular-nums font-medium">{row.nlPerWeek[w] ?? 0}</span>
+                    </div>
                   ))}
-                  <th className="text-center px-2 py-1 border-b border-border w-20">Σύνολο NL</th>
-                </tr>
-              </thead>
-              <tbody>
-                {monthsNL[safeActive].map((row, i) => (
-                  <tr key={i} className="border-b border-border last:border-b-0">
-                    <td className="px-2 py-1 font-medium">{row.name}</td>
-                    {[0,1,2,3].map(w => (
-                      <td key={w} className="text-center px-2 py-1 tabular-nums">{row.nlPerWeek[w] ?? 0}</td>
-                    ))}
-                    <td className="text-center px-2 py-1 font-bold tabular-nums">{row.totalNL || 0}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                </div>
+              </div>
+            ))}
           </div>
         )}
         {/* key by safeActive to remount builder per month (avoids state leak between months) */}
