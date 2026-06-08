@@ -62,6 +62,7 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
   adminOwned = false,
   filterByCoach = true,
   disabled = false,
+  triggerClassName,
 }) => {
   const [open, setOpen] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
