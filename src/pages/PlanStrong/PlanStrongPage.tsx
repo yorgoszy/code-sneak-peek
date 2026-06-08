@@ -376,7 +376,7 @@ export default function PlanStrongPage() {
 
 
         {monthsList.map((_, mIdx) => (
-        <TabsContent key={mIdx} value={`ws1-${mIdx}`} className="space-y-3" forceMount={mIdx === monthIdx ? true : undefined} hidden={mIdx !== monthIdx}>
+        <TabsContent key={mIdx} value={`ws1-${mIdx}`} className="space-y-3">
           {/* Exercise tabs */}
           <div className="flex items-center gap-1 flex-wrap border-b border-border">
             {sides.map((s, i) => {
