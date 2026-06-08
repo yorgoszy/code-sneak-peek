@@ -274,32 +274,7 @@ export default function PlanStrongPage() {
         </TabsList>
 
         <TabsContent value="ws1" className="space-y-3">
-          {selectedUsers.length > 1 && (
-            <div className="flex items-center gap-2 flex-wrap border border-border p-2">
-              <span className="text-xs text-muted-foreground mr-1">Προβολή 1RM για:</span>
-              {selectedUsers.map(u => {
-                const active = previewUserId === u.id;
-                return (
-                  <button
-                    key={u.id}
-                    type="button"
-                    onClick={() => setPreviewUserId(u.id)}
-                    className={`flex items-center gap-2 px-2 py-1 border ${active ? 'border-foreground bg-foreground text-background' : 'border-border'} rounded-none`}
-                  >
-                    <Avatar className="h-5 w-5">
-                      {(u.photo_url || u.avatar_url) ? (
-                        <AvatarImage src={u.photo_url || u.avatar_url || ''} alt={u.name} />
-                      ) : null}
-                      <AvatarFallback className="text-[10px] bg-muted text-foreground">
-                        {u.name?.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-xs">{u.name}</span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
+          {/* Exercise tabs */}
           <div className="flex items-center gap-1 flex-wrap border-b border-border">
             {sides.map((s, i) => {
               const active = i === activeIdx;
@@ -330,66 +305,57 @@ export default function PlanStrongPage() {
             >
               <Plus className="w-3 h-3 mr-1" /> Άσκηση
             </Button>
-            <Button
-              type="button" variant="outline" size="sm"
-              className="h-7 rounded-none ml-auto"
-              onClick={copyActiveSide}
-              title="Αντιγραφή worksheet τρέχουσας άσκησης"
-            >
-              Αντιγραφή
-            </Button>
-            <Button
-              type="button" variant="outline" size="sm"
-              className="h-7 rounded-none"
-              onClick={pasteIntoActiveSide}
-              disabled={!sideClipboard}
-              title={sideClipboard ? 'Επικόλληση στην τρέχουσα άσκηση' : 'Δεν υπάρχει αντιγραμμένο worksheet'}
-            >
-              Επικόλληση
-            </Button>
+          </div>
+
+          {/* User tabs */}
+          <div className="flex items-center gap-1 flex-wrap border-b border-border">
+            {selectedUsers.map(u => {
+              const active = previewUserId === u.id;
+              return (
+                <div
+                  key={u.id}
+                  className={`flex items-center gap-1 px-2 py-1 border border-b-0 ${active ? 'bg-foreground text-background border-foreground' : 'bg-background border-border'} rounded-none cursor-pointer`}
+                  onClick={() => setPreviewUserId(u.id)}
+                >
+                  <Avatar className="h-5 w-5">
+                    {(u.photo_url || u.avatar_url) ? (
+                      <AvatarImage src={u.photo_url || u.avatar_url || ''} alt={u.name} />
+                    ) : null}
+                    <AvatarFallback className={`text-[10px] ${active ? 'bg-background text-foreground' : 'bg-muted text-foreground'}`}>
+                      {u.name?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-xs">{u.name}</span>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); removeUser(u.id); }}
+                    className="ml-1 hover:text-destructive"
+                    title="Αφαίρεση χρήστη"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              );
+            })}
+            <div className="ml-1 min-w-[180px]">
+              <UserSearchCombobox
+                value={pickerValue}
+                onValueChange={addUser}
+                placeholder="+ Χρήστης"
+                coachId={user?.id}
+                adminOwned={isAdmin?.()}
+                triggerClassName="h-7 justify-start text-xs px-2"
+              />
+            </div>
           </div>
 
           <Worksheet1Side
             side={activeSide}
             userId={previewUserId || userIds[0] || userId}
             onChange={updateActiveSide}
-            userPickerSlot={
-              <div className="space-y-2">
-                <UserSearchCombobox
-                  value={pickerValue}
-                  onValueChange={addUser}
-                  placeholder="Προσθήκη χρήστη..."
-                  coachId={user?.id}
-                  adminOwned={isAdmin?.()}
-                  triggerClassName="h-7 justify-start text-xs px-2"
-                />
-                {selectedUsers.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {selectedUsers.map(u => (
-                      <Badge key={u.id} variant="outline" className="rounded-none gap-1 py-0.5 pr-1 pl-0.5 text-xs">
-                        <Avatar className="h-4 w-4">
-                          {(u.photo_url || u.avatar_url) ? (
-                            <AvatarImage src={u.photo_url || u.avatar_url || ''} alt={u.name} />
-                          ) : null}
-                          <AvatarFallback className="text-[8px] bg-muted">
-                            {u.name?.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span>{u.name}</span>
-                        <button
-                          type="button"
-                          onClick={() => removeUser(u.id)}
-                          className="ml-0.5 hover:text-destructive"
-                          title="Αφαίρεση"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </div>
-            }
+            onCopy={copyActiveSide}
+            onPaste={pasteIntoActiveSide}
+            hasClipboard={!!sideClipboard}
           />
 
         </TabsContent>
