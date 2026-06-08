@@ -184,8 +184,8 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                     )}
                     {/* Name */}
                     <span className="truncate font-medium min-w-[80px] max-w-[140px]">{row.name}</span>
-                    {/* Per-zone kg/reps */}
-                    <div className="flex flex-wrap gap-1 flex-1 justify-end">
+                    {/* Per-zone kg/reps — αμέσως δίπλα από το όνομα */}
+                    <div className="flex flex-wrap gap-1">
                       {sets.map((p, idx) => (
                         <div key={idx} className="inline-flex items-center gap-0.5 border border-border px-1 py-0.5 tabular-nums">
                           <span className="font-medium">{p.kg}</span>
@@ -196,6 +196,7 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                         </div>
                       ))}
                     </div>
+                    <div className="flex-1" />
                     {/* Total NL for week */}
                     <span className="tabular-nums font-bold min-w-[2rem] text-right">{row.nlPerWeek[weekInMonth] ?? 0}</span>
                   </div>
