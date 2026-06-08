@@ -175,8 +175,11 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
                   </select>
                 </td>
                 <td className={cell}>
-                  <Input className={inp} type="number" value={side.monthlyNL}
-                    onChange={e => set({ monthlyNL: toNum(e.target.value) })} />
+                  <div className="flex items-center gap-1">
+                    <Input className={inp} type="number" value={side.monthlyNL}
+                      onChange={e => set({ monthlyNL: toNum(e.target.value) })} />
+                    {nlActionsSlot}
+                  </div>
                 </td>
               </tr>
             </tbody>
