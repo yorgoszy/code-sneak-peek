@@ -80,6 +80,7 @@ export function defaultSide(): PlanStrongSideInput {
     zoneCoef: [...ZONE_COEF],
     mainPct: [0, 0, 0, 0],
     v91Pct: [0, 0, 0, 0],
+    v95Pct: [0, 0, 0, 0],
     v81Pct: [0, 0, 0, 0],
     v71Pct: [0, 0, 0, 0],
     v61Pct: [0, 0, 0, 0],
