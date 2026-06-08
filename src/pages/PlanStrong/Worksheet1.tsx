@@ -79,8 +79,17 @@ const PctInput: React.FC<{
   );
 };
 
-export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPickerSlot, onCopy, onPaste, hasClipboard }) => {
-  const out = computeSide(side);
+export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPickerSlot }) => {
+  const { oneRM: fetched1RM } = useExercise1RM({
+    userId: userId || null,
+    exerciseId: side.exerciseId || null,
+  });
+  // When a user is previewed, show THEIR 1RM (don't mutate the shared side data)
+  const effectiveOneRM: number | '' = userId
+    ? (fetched1RM != null ? fetched1RM : '')
+    : (side.oneRM ?? '');
+  const effectiveSide: PlanStrongSideInput = { ...side, oneRM: effectiveOneRM };
+  const out = computeSide(effectiveSide);
   const set = (patch: Partial<PlanStrongSideInput>) => onChange({ ...side, ...patch });
   const setZone = (i: number, raw: string) => {
     const arr = [...side.zonePct]; arr[i] = parsePct(raw); set({ zonePct: arr });
@@ -100,28 +109,6 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
 
   const [pickerOpen, setPickerOpen] = useState(false);
   const { exercises } = useExercises();
-  const { oneRM: fetched1RM } = useExercise1RM({
-    userId: userId || null,
-    exerciseId: side.exerciseId || null,
-  });
-  const lastApplied1RM = useRef<{ key: string; val: number } | null>(null);
-  useEffect(() => {
-    if (!userId) {
-      lastApplied1RM.current = null;
-      if (side.oneRM !== undefined) {
-        onChange({ ...side, oneRM: undefined as any });
-      }
-      return;
-    }
-    if (fetched1RM != null && side.exerciseId) {
-      const key = `${userId}:${side.exerciseId}`;
-      if (lastApplied1RM.current?.key !== key || lastApplied1RM.current?.val !== fetched1RM) {
-        lastApplied1RM.current = { key, val: fetched1RM };
-        onChange({ ...side, oneRM: fetched1RM });
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetched1RM, side.exerciseId, userId]);
 
   const handleSelectExercise = (exId: string) => {
     const ex = exercises.find(e => e.id === exId);
