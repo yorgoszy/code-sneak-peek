@@ -170,25 +170,6 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
 
   const currentMonthNL = monthsNL && monthsNL[monthIdx] ? monthsNL[monthIdx] : [];
 
-  const zoneMetaByExerciseId = useMemo(() => {
-    const map: Record<string, { kg: number; percentage: number }[]> = {};
-    currentMonthNL.forEach((row) => {
-      if (row.exerciseId && row.zoneKg && row.zoneKg.length > 0) {
-        const ZONE_PCT = [55, 65, 75, 85, 93, 100];
-        const meta = row.zoneKg.map((kg, i) => ({
-          kg,
-          percentage: ZONE_PCT[i] ?? 0,
-        })).filter(m => m.kg > 0);
-        map[row.exerciseId] = meta;
-      }
-    });
-    // Propagate WS1 meta to linked variants so they share the kg dropdown
-    for (const [linkedId, rootId] of Object.entries(linkedToRoot)) {
-      if (map[rootId] && !map[linkedId]) map[linkedId] = map[rootId];
-    }
-    return map;
-  }, [currentMonthNL, linkedToRoot]);
-
   // Fetch exercise relationships and map any related exercise -> its WS1 root exercise id
   const ws1ExerciseIds = useMemo(
     () => currentMonthNL.map(r => r.exerciseId).filter(Boolean) as string[],
@@ -204,7 +185,6 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
         .select('exercise_id, related_exercise_id')
         .eq('relationship_type', 'strength_variant');
       if (cancelled || !data) return;
-      // Build adjacency + BFS groups, then map every member -> first WS1 root found in its group
       const adj = new Map<string, Set<string>>();
       for (const rel of data) {
         if (!adj.has(rel.exercise_id)) adj.set(rel.exercise_id, new Set());
@@ -233,6 +213,24 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
     })();
     return () => { cancelled = true; };
   }, [ws1ExerciseIds.join('|')]);
+
+  const zoneMetaByExerciseId = useMemo(() => {
+    const map: Record<string, { kg: number; percentage: number }[]> = {};
+    currentMonthNL.forEach((row) => {
+      if (row.exerciseId && row.zoneKg && row.zoneKg.length > 0) {
+        const ZONE_PCT = [55, 65, 75, 85, 93, 100];
+        const meta = row.zoneKg.map((kg, i) => ({
+          kg,
+          percentage: ZONE_PCT[i] ?? 0,
+        })).filter(m => m.kg > 0);
+        map[row.exerciseId] = meta;
+      }
+    });
+    for (const [linkedId, rootId] of Object.entries(linkedToRoot)) {
+      if (map[rootId] && !map[linkedId]) map[linkedId] = map[rootId];
+    }
+    return map;
+  }, [currentMonthNL, linkedToRoot]);
 
   // Compute "used reps" per exercise per kg across ALL days of the current week
   const usedByExerciseKg = useMemo(() => {
