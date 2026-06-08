@@ -120,18 +120,18 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
       <div className="p-2 text-xs space-y-2 overflow-x-auto">
         <div className="flex flex-wrap items-start gap-3">
           {userPickerSlot && (
-            <div className="w-[110px]">{userPickerSlot}</div>
+            <div className="w-[160px]">{userPickerSlot}</div>
           )}
           <table className="border-collapse w-auto">
             <thead>
               <tr>
                 {[
-                  {h: 'LIFT', w: '110px'},
-                  {h: '1RM', w: '70px'},
-                  {h: 'PREP/COMP', w: '90px'},
-                  {h: 'KG/LB', w: '70px'},
-                  {h: 'PS/BTS', w: '80px'},
-                  {h: 'NL', w: '70px'},
+                  {h: 'LIFT', w: '160px'},
+                  {h: '1RM', w: '80px'},
+                  {h: 'PREP/COMP', w: '110px'},
+                  {h: 'KG/LB', w: '80px'},
+                  {h: 'PS/BTS', w: '90px'},
+                  {h: 'NL', w: '80px'},
                 ].map(({h, w}) =>
                   <th key={h} className={headCell} style={{ width: w }}>{h}</th>)}
               </tr>
