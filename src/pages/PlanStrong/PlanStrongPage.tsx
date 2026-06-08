@@ -279,10 +279,42 @@ export default function PlanStrongPage() {
               })}
             </div>
           )}
+          <div className="flex items-center gap-1 flex-wrap border-b border-border">
+            {sides.map((s, i) => {
+              const active = i === activeIdx;
+              return (
+                <div
+                  key={i}
+                  className={`flex items-center gap-1 px-2 py-1 border border-b-0 ${active ? 'bg-foreground text-background border-foreground' : 'bg-background border-border'} rounded-none cursor-pointer`}
+                  onClick={() => selectTab(i)}
+                >
+                  <span className="text-xs font-semibold">{s.lift || `Άσκηση ${i + 1}`}</span>
+                  {sides.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); removeExerciseTab(i); }}
+                      className="ml-1 hover:text-destructive"
+                      title="Αφαίρεση άσκησης"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+            <Button
+              type="button" variant="outline" size="sm"
+              className="h-7 rounded-none ml-1"
+              onClick={() => setExPickerOpen(true)}
+            >
+              <Plus className="w-3 h-3 mr-1" /> Άσκηση
+            </Button>
+          </div>
+
           <Worksheet1Side
-            side={data.side}
+            side={activeSide}
             userId={previewUserId || userIds[0] || userId}
-            onChange={s => setData({ ...data, side: s })}
+            onChange={updateActiveSide}
             userPickerSlot={
               <div className="space-y-2">
                 <UserSearchCombobox
