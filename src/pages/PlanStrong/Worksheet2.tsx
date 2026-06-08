@@ -89,6 +89,10 @@ const EmbeddedMonthBuilder: React.FC<EmbeddedMonthBuilderProps> = ({ initial, on
       onPasteDay={actions.pasteDay}
       onSelectBlockTemplate={actions.loadBlockTemplate}
       coachId={coachId}
+      onActiveWeekChange={(weekId) => {
+        const idx = program.weeks.findIndex((w: any) => w.id === weekId);
+        if (idx >= 0 && onActiveWeekIndexChange) onActiveWeekIndexChange(idx);
+      }}
     />
   );
 };
