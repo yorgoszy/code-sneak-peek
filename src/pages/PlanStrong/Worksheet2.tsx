@@ -555,7 +555,7 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                               <span className="font-medium">{remain}</span>
                               <span className="text-[9px] text-muted-foreground">/{p.nl}</span>
                             </span>
-                          </button>
+                          </div>
                         );
                       })}
                     </div>
