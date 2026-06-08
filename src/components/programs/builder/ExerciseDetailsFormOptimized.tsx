@@ -220,7 +220,7 @@ export const ExerciseDetailsFormOptimized: React.FC<ExerciseDetailsFormOptimized
         />
       </div>
       
-      <div className="flex flex-col items-center" style={{ width: '52px' }}>
+      <div className="flex flex-col items-center" style={{ width: '70px' }}>
         <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>Rest</label>
         <RollingTimeInput
           value={exercise.rest || ''}
