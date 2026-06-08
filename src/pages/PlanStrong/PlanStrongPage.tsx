@@ -400,15 +400,14 @@ export default function PlanStrongPage() {
                       : true;
                   const nlOk = Math.abs(dNLRel) <= 20;
                   const fmt = (n: number) => `${n >= 0 ? '+' : ''}${n.toFixed(1)}%`;
-                  const hariRule = ps === '50' ? '(στόχος 1–5%)' : ps === '70' ? '(στόχος ~1%)' : '';
                   deltaInfo = (
                     <div className="flex items-center gap-2 text-[11px]">
                       <span className="opacity-80">vs M{mIdx}:</span>
                       <span className={hariOk ? 'text-[#00ffba]' : 'text-red-400'}>
-                        Δ HARI {fmt(dHariRel)} {hariRule}
+                        Δ HARI {fmt(dHariRel)}
                       </span>
                       <span className={nlOk ? 'text-[#00ffba]' : 'text-red-400'}>
-                        Δ NL {fmt(dNLRel)} (στόχος ±20%)
+                        Δ NL {fmt(dNLRel)}
                       </span>
                     </div>
                   );
