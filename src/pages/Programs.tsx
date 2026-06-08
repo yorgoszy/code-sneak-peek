@@ -332,6 +332,40 @@ const Programs = () => {
             onConvertToTemplate={handleConvertToTemplate}
             coachId={adminCoachId}
           />
+
+          {planStrongDrafts.length > 0 && (
+            <div className="mt-6 border border-border">
+              <div className="bg-foreground text-background px-3 py-2 text-sm font-bold">
+                PLAN STRONG — Προχείρα & Αναθέσεις ({planStrongDrafts.length})
+              </div>
+              <div className="divide-y divide-border">
+                {planStrongDrafts.map(d => (
+                  <div key={d.id} className="flex items-center justify-between px-3 py-2 hover:bg-muted/30">
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/plan-strong?id=${d.id}`)}
+                      className="flex-1 text-left"
+                    >
+                      <div className="text-sm font-medium">{d.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {d.userName || d.user_id.slice(0, 8)} · {d.status} · {new Date(d.created_at).toLocaleDateString('el-GR')}
+                      </div>
+                    </button>
+                    <div className="flex items-center gap-1">
+                      <Button size="sm" variant="outline" className="rounded-none h-7 w-7 p-0"
+                        onClick={() => navigate(`/plan-strong?id=${d.id}`)}>
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                      <Button size="sm" variant="outline" className="rounded-none h-7 w-7 p-0 text-destructive"
+                        onClick={() => handleDeletePlanStrong(d.id)}>
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
