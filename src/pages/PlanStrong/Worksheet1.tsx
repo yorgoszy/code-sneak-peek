@@ -78,7 +78,7 @@ const PctInput: React.FC<{
   );
 };
 
-export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPickerSlot, nlActionsSlot }) => {
+export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPickerSlot, nlActionsSlot, headerSlot }) => {
   const { getOneRM, userId: cachedUserId } = useUserExerciseDataCacheContext();
   // Use cache when a user is previewed (loads once per user, no refetch per exercise switch)
   const fetched1RM = (userId && cachedUserId === userId && side.exerciseId)
