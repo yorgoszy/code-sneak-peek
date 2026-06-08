@@ -16,8 +16,6 @@ export const ExerciseDetailsFormOptimized: React.FC<ExerciseDetailsFormOptimized
   const [isTimeMode, setIsTimeMode] = useState(false);
   const [repsMode, setRepsMode] = useState<'reps' | 'time' | 'meter'>(exercise.reps_mode || 'reps');
   const [kgMode, setKgMode] = useState<'kg' | 'rpm' | 'meter' | 's/m' | 'km/h'>(exercise.kg_mode || 'kg');
-  const zoneMeta = useZoneKgMeta(exercise.exercise_id);
-  const { getOneRM, getVelocityForPercentage } = useUserExerciseDataCacheContext();
 
   // Sync local state with exercise props when they change
   React.useEffect(() => {
