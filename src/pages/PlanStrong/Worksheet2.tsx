@@ -143,6 +143,21 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
         <span>WORKSHEET #2</span>
       </div>
       <div className="p-2 space-y-2">
+        {monthsNL && monthsNL[safeActive] && monthsNL[safeActive].length > 0 && (
+          <div className="border border-border">
+            <div className="bg-muted px-2 py-1 text-xs font-bold flex items-center justify-between">
+              <span>NL — Εβδομάδα {safeW + 1}</span>
+            </div>
+            <div className="p-2 space-y-1">
+              {monthsNL[safeActive].map((row, i) => (
+                <div key={i} className="flex justify-between text-xs">
+                  <span className="truncate pr-2">{row.name}</span>
+                  <span className="tabular-nums font-medium">{row.nlPerWeek[safeW] ?? 0}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {/* key by safeActive to remount builder per month (avoids state leak between months) */}
         <EmbeddedMonthBuilder
           key={safeActive}
@@ -150,6 +165,7 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
           onChange={(p) => setMonthProgram(safeActive, p)}
           selectedUserId={selectedUserId}
           coachId={coachId}
+          onActiveWeekIndexChange={setActiveW}
         />
       </div>
     </div>
