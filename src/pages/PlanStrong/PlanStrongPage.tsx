@@ -527,6 +527,12 @@ export default function PlanStrongPage() {
         <TabsContent value="ws2" className="space-y-3">
           <Worksheet2
             monthsCount={monthsList.length}
+            monthsNL={monthsList.map(m => m.sides.map(s => {
+              const ex = exercises.find((e: any) => e.id === s.exerciseId);
+              const name = ex?.name || s.lift || '—';
+              const out = computeSide(s);
+              return { name, nlPerWeek: out.mainNlPerWeek, totalNL: out.totalNL };
+            }))}
             ws2Programs={((data as any).ws2Programs as any[]) ?? []}
             onChange={(programs) => setData({ ...data, ws2Programs: programs } as any)}
             selectedUserId={previewUserId || userIds[0] || userId}
