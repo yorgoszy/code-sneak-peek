@@ -61,7 +61,35 @@ const Programs = () => {
 
   useEffect(() => {
     loadPrograms();
-  }, []);
+    loadPlanStrongDrafts();
+  }, [user?.id]);
+
+  const loadPlanStrongDrafts = async () => {
+    if (!user?.id) return;
+    const { data, error } = await supabase
+      .from('plan_strong_drafts')
+      .select('id, name, status, user_id, created_at')
+      .eq('coach_id', user.id)
+      .order('created_at', { ascending: false });
+    if (error) { console.error('plan_strong_drafts load error', error); return; }
+    const userIds = Array.from(new Set((data || []).map(d => d.user_id)));
+    let nameMap: Record<string, string> = {};
+    if (userIds.length > 0) {
+      const { data: usersData } = await supabase
+        .from('app_users').select('id, name').in('id', userIds);
+      (usersData || []).forEach((u: any) => { nameMap[u.id] = u.name; });
+    }
+    setPlanStrongDrafts((data || []).map(d => ({ ...d, userName: nameMap[d.user_id] })));
+  };
+
+  const handleDeletePlanStrong = async (id: string) => {
+    if (!confirm('Διαγραφή Plan Strong;')) return;
+    const { error } = await supabase.from('plan_strong_drafts').delete().eq('id', id);
+    if (error) { toast.error(error.message); return; }
+    toast.success('Διαγράφηκε');
+    loadPlanStrongDrafts();
+  };
+
 
   const loadPrograms = async () => {
     try {
