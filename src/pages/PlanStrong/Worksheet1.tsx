@@ -181,6 +181,9 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
               </tr>
             </tbody>
           </table>
+          {nlActionsSlot && (
+            <div className="flex items-center gap-1 pt-6">{nlActionsSlot}</div>
+          )}
         </div>
 
 
