@@ -541,7 +541,8 @@ export default function PlanStrongPage() {
                     return Math.round(monthlyNL * (zonePct[z] || 0) * vp);
                   })
                 );
-                return { name, exerciseId: s.exerciseId, videoUrl: ex?.video_url, nlPerWeek: out.mainNlPerWeek, totalNL: out.totalNL, nlPerZonePerWeek, zoneKg: out.zoneKg, zonePct };
+                const zonePctLabels = ((s as any).zoneCoef && (s as any).zoneCoef.length === 6 ? (s as any).zoneCoef : ZONE_COEF).map((c: number) => Math.round(c * 100));
+                return { name, exerciseId: s.exerciseId, videoUrl: ex?.video_url, nlPerWeek: out.mainNlPerWeek, totalNL: out.totalNL, nlPerZonePerWeek, zoneKg: out.zoneKg, zonePct, zonePctLabels };
               }))}
               weekDifficulties={monthsList.flatMap(m => {
                 const mainSide = m.sides?.[0];
