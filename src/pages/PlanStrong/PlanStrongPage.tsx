@@ -126,50 +126,11 @@ export default function PlanStrongPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 border border-border p-3">
-        <div>
-          <Label className="text-xs">Όνομα Πλάνου</Label>
-          <Input className="rounded-none" value={name} onChange={e => setName(e.target.value)} />
-        </div>
-        <div>
-          <Label className="text-xs">Χρήστες</Label>
-          <UserSearchCombobox
-            value={pickerValue}
-            onValueChange={addUser}
-            placeholder={draftId ? "Επεξεργασία υπάρχοντος (1 χρήστης)" : "Προσθήκη χρήστη..."}
-            coachId={user?.id}
-            adminOwned={isAdmin?.()}
-            disabled={!!draftId}
-          />
-          {selectedUsers.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {selectedUsers.map(u => (
-                <Badge key={u.id} variant="outline" className="rounded-none gap-2 py-1 pr-1 pl-1">
-                  <Avatar className="h-5 w-5">
-                    {(u.photo_url || u.avatar_url) ? (
-                      <AvatarImage src={u.photo_url || u.avatar_url || ''} alt={u.name} />
-                    ) : null}
-                    <AvatarFallback className="text-[10px] bg-muted">
-                      {u.name?.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-xs">{u.name}</span>
-                  {!draftId && (
-                    <button
-                      type="button"
-                      onClick={() => removeUser(u.id)}
-                      className="ml-1 hover:text-destructive"
-                      title="Αφαίρεση"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
-                </Badge>
-              ))}
-            </div>
-          )}
-        </div>
+      <div className="border border-border p-3">
+        <Label className="text-xs">Όνομα Πλάνου</Label>
+        <Input className="rounded-none" value={name} onChange={e => setName(e.target.value)} />
       </div>
+
 
       <Tabs defaultValue="ws1" className="w-full">
         <TabsList className="rounded-none">
