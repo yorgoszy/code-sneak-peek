@@ -13,9 +13,6 @@ interface Props {
   onChange: (s: PlanStrongSideInput) => void;
   userId?: string;
   userPickerSlot?: React.ReactNode;
-  onCopy?: () => void;
-  onPaste?: () => void;
-  hasClipboard?: boolean;
 }
 
 const cell = "border border-border px-2 py-1 text-xs";
