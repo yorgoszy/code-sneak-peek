@@ -122,6 +122,27 @@ export default function PlanStrongPage() {
     setData({ ...data, sides: nextSides, side: nextSides[nextIdx], activeSideIndex: nextIdx });
   };
 
+  // Clipboard για copy/paste worksheet μεταξύ ασκήσεων
+  const [sideClipboard, setSideClipboard] = useState<PlanStrongSideInput | null>(null);
+  const copyActiveSide = () => {
+    setSideClipboard(JSON.parse(JSON.stringify(activeSide)));
+    toast.success(`Αντιγράφηκε: ${activeSide.lift || 'άσκηση'}`);
+  };
+  const pasteIntoActiveSide = () => {
+    if (!sideClipboard) { toast.error('Δεν υπάρχει αντιγραμμένο worksheet'); return; }
+    // Διατηρούμε την ταυτότητα της τρέχουσας άσκησης (lift + exerciseId + oneRM)
+    const next: PlanStrongSideInput = {
+      ...sideClipboard,
+      lift: activeSide.lift,
+      exerciseId: activeSide.exerciseId,
+      oneRM: activeSide.oneRM,
+    };
+    updateActiveSide(next);
+    toast.success('Επικολλήθηκε worksheet');
+  };
+
+
+
 
   const addUser = (uid: string | null) => {
     if (!uid) return;
@@ -308,6 +329,23 @@ export default function PlanStrongPage() {
               onClick={() => setExPickerOpen(true)}
             >
               <Plus className="w-3 h-3 mr-1" /> Άσκηση
+            </Button>
+            <Button
+              type="button" variant="outline" size="sm"
+              className="h-7 rounded-none ml-auto"
+              onClick={copyActiveSide}
+              title="Αντιγραφή worksheet τρέχουσας άσκησης"
+            >
+              Αντιγραφή
+            </Button>
+            <Button
+              type="button" variant="outline" size="sm"
+              className="h-7 rounded-none"
+              onClick={pasteIntoActiveSide}
+              disabled={!sideClipboard}
+              title={sideClipboard ? 'Επικόλληση στην τρέχουσα άσκηση' : 'Δεν υπάρχει αντιγραμμένο worksheet'}
+            >
+              Επικόλληση
             </Button>
           </div>
 
