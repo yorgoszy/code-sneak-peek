@@ -367,11 +367,12 @@ export default function PlanStrongPage() {
           </div>
 
           <UserExerciseDataCacheProvider userId={previewUserId || userIds[0] || userId || null}>
-            {monthsList.map((m, mIdx) => {
+            {(() => {
+              const mIdx = Math.min(Math.max(activeMonthIdx, 0), monthsList.length - 1);
+              const m = monthsList[mIdx];
               const mSides = m.sides;
               const mActiveIdx = Math.min(Math.max(m.activeSideIndex ?? 0, 0), mSides.length - 1);
               const mActiveSide = mSides[mActiveIdx] || data.side;
-              const isLast = mIdx === monthsList.length - 1;
 
               // Σύγκριση με τον προηγούμενο μήνα (ίδια άσκηση κατά exerciseId ή lift)
               let deltaInfo: React.ReactNode = null;
