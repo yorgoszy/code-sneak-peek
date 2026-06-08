@@ -150,6 +150,16 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
 
   const currentMonthNL = monthsNL && monthsNL[monthIdx] ? monthsNL[monthIdx] : [];
 
+  const kgOptionsByExerciseId = useMemo(() => {
+    const map: Record<string, number[]> = {};
+    currentMonthNL.forEach((row) => {
+      if (row.exerciseId && row.zoneKg && row.zoneKg.length > 0) {
+        map[row.exerciseId] = row.zoneKg.filter((k) => k > 0);
+      }
+    });
+    return map;
+  }, [currentMonthNL]);
+
   return (
     <div className="border border-border">
       <div className="bg-foreground text-background px-3 py-2 text-sm font-bold flex items-center justify-between">
