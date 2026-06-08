@@ -21,6 +21,10 @@ const inp = "h-7 px-1 text-xs rounded-none border-0 bg-transparent focus-visible
 
 const toNum = (v: string): number | '' => v === '' ? '' : +v;
 const pctDisplay = (frac: number) => frac ? `${Math.round(frac * 100)}%` : '';
+const zonePctLabel = (frac: number) => {
+  const pct = frac * 100;
+  return `${Number.isInteger(pct) ? pct : +pct.toFixed(1)}%`;
+};
 const parsePct = (raw: string): number => {
   const cleaned = raw.replace('%', '').trim();
   if (cleaned === '') return 0;
@@ -294,11 +298,11 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
         })()}
 
         {([
-          { label: 'Zone (95-100% 1RM)', key: 'v91Pct' as const, zones: [4, 5] },
-          { label: 'Zone (90% 1RM)', key: 'v81Pct' as const, zones: [3] },
-          { label: 'Zone (85% 1RM)', key: 'v71Pct' as const, zones: [2] },
-          { label: 'Zone (75% 1RM)', key: 'v61Pct' as const, zones: [1] },
-          { label: 'Zone (55% 1RM)', key: 'v50Pct' as const, zones: [0] },
+          { key: 'v91Pct' as const, zones: [4, 5] },
+          { key: 'v81Pct' as const, zones: [3] },
+          { key: 'v71Pct' as const, zones: [2] },
+          { key: 'v61Pct' as const, zones: [1] },
+          { key: 'v50Pct' as const, zones: [0] },
         ]).filter(v => !hiddenVariants.includes(v.key)).map(v => {
           const arr = (side as any)[v.key] && (side as any)[v.key].length === 4
             ? (side as any)[v.key] as number[]
@@ -315,7 +319,7 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
             <thead>
               <tr>
                 <th className={headCell + " text-left"} colSpan={6}>
-                  {v.label}
+                  Zone {v.zones.map(z => zonePctLabel(currentCoef[z] ?? ZONE_COEF[z])).join(' - ')}
                 </th>
               </tr>
               <tr>
