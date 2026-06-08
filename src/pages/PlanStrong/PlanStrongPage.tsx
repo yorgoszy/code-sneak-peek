@@ -449,7 +449,8 @@ export default function PlanStrongPage() {
                     userId={previewUserId || userIds[0] || userId}
                     onChange={(next) => updateMonthSide(mIdx, mActiveIdx, next)}
                     headerSlot={
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-2">
+                        {deltaInfo}
                         {monthsList.length > 1 && (
                           <span className="text-xs opacity-80">M{mIdx + 1}</span>
                         )}
