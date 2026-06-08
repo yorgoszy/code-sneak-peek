@@ -228,9 +228,12 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                   .filter(p => p.nl > 0);
                 const hasVideo = row.videoUrl && isValidVideoUrl(row.videoUrl);
                 const thumb = hasVideo ? getVideoThumbnail(row.videoUrl!) : null;
+                const usedMap = row.exerciseId ? (usedByExerciseKg[row.exerciseId] || {}) : {};
+                const totalUsed = Object.values(usedMap).reduce((a, b) => a + b, 0);
+                const totalReq = row.nlPerWeek[weekInMonth] ?? 0;
+                const totalRemain = Math.max(0, totalReq - totalUsed);
                 return (
                   <div key={i} className="flex items-center gap-2 text-xs border-b border-border/50 pb-1 last:border-0">
-                    {/* Thumbnail */}
                     {thumb ? (
                       <div className="w-8 h-5 overflow-hidden bg-muted flex-shrink-0">
                         <img src={thumb} alt={row.name} className="w-full h-full object-cover" />
@@ -240,30 +243,38 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                         <Play className="w-2 h-2 text-muted-foreground" />
                       </div>
                     )}
-                    {/* Name */}
                     <span className="truncate font-medium min-w-[80px] max-w-[140px]">{row.name}</span>
-                    {/* Per-zone kg/reps — αμέσως δίπλα από το όνομα */}
                     <div className="flex flex-wrap gap-1">
-                      {sets.map((p, idx) => (
-                        <div key={idx} className="inline-flex items-center gap-0.5 border border-border px-1 py-0.5 tabular-nums">
-                          <span className="font-medium">{p.kg}</span>
-                          <span className="text-[9px] text-muted-foreground">kg</span>
-                          <span className="text-muted-foreground mx-0.5">·</span>
-                          <span className="font-medium">{p.nl}</span>
-                          <span className="text-[9px] text-muted-foreground">reps</span>
-                        </div>
-                      ))}
+                      {sets.map((p, idx) => {
+                        const used = usedMap[p.kg] || 0;
+                        const remain = Math.max(0, p.nl - used);
+                        const done = used >= p.nl;
+                        return (
+                          <div
+                            key={idx}
+                            className={`inline-flex items-center gap-0.5 border px-1 py-0.5 tabular-nums ${done ? 'border-[#00ffba] bg-[#00ffba]/10' : 'border-border'}`}
+                            title={`Χρησιμοποιημένα: ${used} / ${p.nl}`}
+                          >
+                            <span className="font-medium">{p.kg}</span>
+                            <span className="text-[9px] text-muted-foreground">kg</span>
+                            <span className="text-muted-foreground mx-0.5">·</span>
+                            <span className="font-medium">{remain}</span>
+                            <span className="text-[9px] text-muted-foreground">/{p.nl}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                     <div className="flex-1" />
-                    {/* Total NL for week */}
-                    <span className="tabular-nums font-bold min-w-[2rem] text-right">{row.nlPerWeek[weekInMonth] ?? 0}</span>
+                    <span className="tabular-nums font-bold min-w-[3.5rem] text-right">
+                      {totalRemain}/{totalReq}
+                    </span>
                   </div>
                 );
               })}
             </div>
           </div>
         )}
-        <PlanStrongZoneKgProvider kgOptionsByExerciseId={kgOptionsByExerciseId}>
+        <PlanStrongZoneKgProvider zoneMetaByExerciseId={zoneMetaByExerciseId}>
           <EmbeddedBuilder
             initial={ws2Programs[0] ?? null}
             totalWeeks={totalWeeks}
