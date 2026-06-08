@@ -88,7 +88,8 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   onPasteDay,
   onSelectBlockTemplate,
   coachId,
-  onActiveWeekChange
+  onActiveWeekChange,
+  weekDifficulties
 }) => {
   const {
     activeWeek,
