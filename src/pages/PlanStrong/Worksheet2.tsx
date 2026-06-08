@@ -92,15 +92,18 @@ const EmbeddedMonthBuilder: React.FC<EmbeddedMonthBuilderProps> = ({ initial, on
   );
 };
 
+interface MonthNLItem { name: string; nlPerWeek: number[]; totalNL: number }
+
 interface Worksheet2Props {
   monthsCount: number;
   ws2Programs: (PlanStrongWS2Program | null)[];
   onChange: (programs: (PlanStrongWS2Program | null)[]) => void;
   selectedUserId?: string;
   coachId?: string;
+  monthsNL?: MonthNLItem[][];
 }
 
-export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs, onChange, selectedUserId, coachId }) => {
+export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs, onChange, selectedUserId, coachId, monthsNL }) => {
   const [activeM, setActiveM] = useState(0);
   const safeActive = Math.min(Math.max(activeM, 0), Math.max(monthsCount - 1, 0));
 
@@ -132,7 +135,37 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
         </div>
         <span>WORKSHEET #2</span>
       </div>
-      <div className="p-2">
+      <div className="p-2 space-y-2">
+        {monthsNL && monthsNL[safeActive] && monthsNL[safeActive].length > 0 && (
+          <div className="border border-border">
+            <div className="bg-muted px-2 py-1 text-xs font-bold flex justify-between">
+              <span>NL ανά άσκηση / εβδομάδα (από Worksheet #1)</span>
+              <span>M{safeActive + 1}</span>
+            </div>
+            <table className="w-full text-xs">
+              <thead className="bg-muted/50">
+                <tr>
+                  <th className="text-left px-2 py-1 border-b border-border">Άσκηση</th>
+                  {[1,2,3,4].map(w => (
+                    <th key={w} className="text-center px-2 py-1 border-b border-border w-16">W{w}</th>
+                  ))}
+                  <th className="text-center px-2 py-1 border-b border-border w-20">Σύνολο NL</th>
+                </tr>
+              </thead>
+              <tbody>
+                {monthsNL[safeActive].map((row, i) => (
+                  <tr key={i} className="border-b border-border last:border-b-0">
+                    <td className="px-2 py-1 font-medium">{row.name}</td>
+                    {[0,1,2,3].map(w => (
+                      <td key={w} className="text-center px-2 py-1 tabular-nums">{row.nlPerWeek[w] ?? 0}</td>
+                    ))}
+                    <td className="text-center px-2 py-1 font-bold tabular-nums">{row.totalNL || 0}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
         {/* key by safeActive to remount builder per month (avoids state leak between months) */}
         <EmbeddedMonthBuilder
           key={safeActive}
