@@ -13,6 +13,7 @@ interface Props {
   onChange: (s: PlanStrongSideInput) => void;
   userId?: string;
   userPickerSlot?: React.ReactNode;
+  nlActionsSlot?: React.ReactNode;
 }
 
 const cell = "border border-border px-2 py-1 text-xs";
@@ -76,7 +77,7 @@ const PctInput: React.FC<{
   );
 };
 
-export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPickerSlot }) => {
+export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPickerSlot, nlActionsSlot }) => {
   const { getOneRM, userId: cachedUserId } = useUserExerciseDataCacheContext();
   // Use cache when a user is previewed (loads once per user, no refetch per exercise switch)
   const fetched1RM = (userId && cachedUserId === userId && side.exerciseId)
@@ -180,6 +181,9 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
               </tr>
             </tbody>
           </table>
+          {nlActionsSlot && (
+            <div className="flex items-center gap-1 pt-6">{nlActionsSlot}</div>
+          )}
         </div>
 
 
