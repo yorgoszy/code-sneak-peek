@@ -185,6 +185,51 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
     return map;
   }, [currentMonthNL]);
 
+  // Fetch exercise relationships and map any related exercise -> its WS1 root exercise id
+  const ws1ExerciseIds = useMemo(
+    () => currentMonthNL.map(r => r.exerciseId).filter(Boolean) as string[],
+    [currentMonthNL]
+  );
+  const [linkedToRoot, setLinkedToRoot] = useState<Record<string, string>>({});
+  useEffect(() => {
+    if (ws1ExerciseIds.length === 0) { setLinkedToRoot({}); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('exercise_relationships')
+        .select('exercise_id, related_exercise_id')
+        .eq('relationship_type', 'strength_variant');
+      if (cancelled || !data) return;
+      // Build adjacency + BFS groups, then map every member -> first WS1 root found in its group
+      const adj = new Map<string, Set<string>>();
+      for (const rel of data) {
+        if (!adj.has(rel.exercise_id)) adj.set(rel.exercise_id, new Set());
+        if (!adj.has(rel.related_exercise_id)) adj.set(rel.related_exercise_id, new Set());
+        adj.get(rel.exercise_id)!.add(rel.related_exercise_id);
+        adj.get(rel.related_exercise_id)!.add(rel.exercise_id);
+      }
+      const ws1Set = new Set(ws1ExerciseIds);
+      const visited = new Set<string>();
+      const result: Record<string, string> = {};
+      for (const start of adj.keys()) {
+        if (visited.has(start)) continue;
+        const group: string[] = [];
+        const queue = [start];
+        while (queue.length) {
+          const cur = queue.pop()!;
+          if (visited.has(cur)) continue;
+          visited.add(cur);
+          group.push(cur);
+          for (const n of adj.get(cur) || []) if (!visited.has(n)) queue.push(n);
+        }
+        const root = group.find(g => ws1Set.has(g));
+        if (root) for (const g of group) if (g !== root) result[g] = root;
+      }
+      setLinkedToRoot(result);
+    })();
+    return () => { cancelled = true; };
+  }, [ws1ExerciseIds.join('|')]);
+
   // Compute "used reps" per exercise per kg across ALL days of the current week
   const usedByExerciseKg = useMemo(() => {
     const map: Record<string, Record<number, number>> = {};
@@ -195,7 +240,8 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
       (d.program_blocks || []).forEach((b: any) => {
         const blockSets = Number(b.block_sets) || 1;
         (b.program_exercises || []).forEach((pe: any) => {
-          const exId = pe.exercise_id;
+          const rawId = pe.exercise_id;
+          const exId = rawId && linkedToRoot[rawId] ? linkedToRoot[rawId] : rawId;
           const kg = parseKg(pe.kg);
           const setsN = (Number(pe.sets) || 0) * blockSets;
           const repsN = parseRepsCount(pe.reps);
@@ -206,7 +252,8 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
       });
     });
     return map;
-  }, [currentProgram, ws2Programs, safeW]);
+  }, [currentProgram, ws2Programs, safeW, linkedToRoot]);
+
 
   return (
     <div className="border border-border">
