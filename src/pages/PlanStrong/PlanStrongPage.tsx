@@ -100,19 +100,40 @@ export default function PlanStrongPage() {
     })();
   }, [userIds]);
 
+  // ---- Months (each month = independent Worksheet #1 with its own exercises) ----
+  type MonthState = { sides: PlanStrongSideInput[]; activeSideIndex: number };
+  const monthsList: MonthState[] = ((data as any).months && (data as any).months.length > 0)
+    ? (data as any).months as MonthState[]
+    : [{ sides: (data.sides && data.sides.length > 0) ? data.sides : [data.side], activeSideIndex: data.activeSideIndex ?? 0 }];
+  const [activeMonth, setActiveMonth] = useState(0);
+  const [activeTab, setActiveTab] = useState<string>('ws1-0');
+  const monthIdx = Math.min(Math.max(activeMonth, 0), monthsList.length - 1);
+  const currentMonth = monthsList[monthIdx];
+
   // ---- Exercise tabs (multiple exercises per worksheet) ----
-  const sides: PlanStrongSideInput[] = (data.sides && data.sides.length > 0) ? data.sides : [data.side];
-  const activeIdx = Math.min(Math.max(data.activeSideIndex ?? 0, 0), sides.length - 1);
+  const sides: PlanStrongSideInput[] = currentMonth.sides;
+  const activeIdx = Math.min(Math.max(currentMonth.activeSideIndex ?? 0, 0), sides.length - 1);
   const activeSide = sides[activeIdx] || data.side;
   const [exPickerOpen, setExPickerOpen] = useState(false);
   const { exercises } = useExercises();
 
+  const writeMonth = (next: MonthState) => {
+    const nextMonths = monthsList.map((m, i) => i === monthIdx ? next : m);
+    setData({
+      ...data,
+      months: nextMonths,
+      sides: next.sides,
+      side: next.sides[next.activeSideIndex] || data.side,
+      activeSideIndex: next.activeSideIndex,
+    } as any);
+  };
+
   const updateActiveSide = (next: PlanStrongSideInput) => {
     const nextSides = sides.map((s, i) => i === activeIdx ? next : s);
-    setData({ ...data, sides: nextSides, side: next, activeSideIndex: activeIdx });
+    writeMonth({ sides: nextSides, activeSideIndex: activeIdx });
   };
   const selectTab = (i: number) => {
-    setData({ ...data, sides, side: sides[i], activeSideIndex: i });
+    writeMonth({ sides, activeSideIndex: i });
   };
   const addExerciseTab = (exId: string) => {
     const ex = exercises.find((e: any) => e.id === exId);
@@ -121,14 +142,63 @@ export default function PlanStrongPage() {
       ? { ...fresh, exerciseId: ex.id, lift: ex.name }
       : fresh;
     const nextSides = [...sides, newSide];
-    setData({ ...data, sides: nextSides, side: newSide, activeSideIndex: nextSides.length - 1 });
+    writeMonth({ sides: nextSides, activeSideIndex: nextSides.length - 1 });
     setExPickerOpen(false);
   };
   const removeExerciseTab = (i: number) => {
     if (sides.length <= 1) return;
     const nextSides = sides.filter((_, idx) => idx !== i);
     const nextIdx = Math.max(0, Math.min(activeIdx, nextSides.length - 1));
-    setData({ ...data, sides: nextSides, side: nextSides[nextIdx], activeSideIndex: nextIdx });
+    writeMonth({ sides: nextSides, activeSideIndex: nextIdx });
+  };
+
+  const addMonth = () => {
+    const fresh: MonthState = { sides: [defaultSide()], activeSideIndex: 0 };
+    const nextMonths = [...monthsList, fresh];
+    setData({
+      ...data,
+      months: nextMonths,
+      sides: fresh.sides,
+      side: fresh.sides[0],
+      activeSideIndex: 0,
+    } as any);
+    const newIdx = nextMonths.length - 1;
+    setActiveMonth(newIdx);
+    setActiveTab(`ws1-${newIdx}`);
+  };
+  const removeMonth = (i: number) => {
+    if (monthsList.length <= 1) return;
+    const nextMonths = monthsList.filter((_, idx) => idx !== i);
+    const newActive = Math.max(0, Math.min(monthIdx, nextMonths.length - 1));
+    const m = nextMonths[newActive];
+    setData({
+      ...data,
+      months: nextMonths,
+      sides: m.sides,
+      side: m.sides[m.activeSideIndex] || data.side,
+      activeSideIndex: m.activeSideIndex,
+    } as any);
+    setActiveMonth(newActive);
+    setActiveTab(`ws1-${newActive}`);
+  };
+  const handleTabChange = (val: string) => {
+    setActiveTab(val);
+    if (val.startsWith('ws1-')) {
+      const idx = parseInt(val.slice(4), 10);
+      if (!Number.isNaN(idx)) {
+        setActiveMonth(idx);
+        const m = monthsList[idx];
+        if (m) {
+          setData({
+            ...data,
+            months: monthsList,
+            sides: m.sides,
+            side: m.sides[m.activeSideIndex] || data.side,
+            activeSideIndex: m.activeSideIndex,
+          } as any);
+        }
+      }
+    }
   };
 
   // Clipboard για copy/paste worksheet μεταξύ ασκήσεων
