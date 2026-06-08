@@ -15,6 +15,7 @@ interface EmbeddedBuilderProps {
   selectedUserId?: string;
   coachId?: string;
   onActiveWeekIndexChange?: (idx: number) => void;
+  weekDifficulties?: (string | null)[];
 }
 
 const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, onChange, selectedUserId, coachId, onActiveWeekIndexChange, weekDifficulties }) => {
