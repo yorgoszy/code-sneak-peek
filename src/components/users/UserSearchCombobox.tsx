@@ -141,7 +141,7 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
           role="combobox"
           aria-expanded={open}
           disabled={disabled}
-          className={cn("w-full justify-between rounded-none", disabled && "opacity-50 cursor-not-allowed")}
+          className={cn("w-full justify-between rounded-none", triggerClassName, disabled && "opacity-50 cursor-not-allowed")}
         >
           {selectedUser ? (
             <div className="flex items-center gap-2">
