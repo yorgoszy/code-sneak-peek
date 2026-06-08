@@ -483,6 +483,9 @@ export default function PlanStrongPage() {
 
 
         </TabsContent>
+        ))}
+
+
 
         <TabsContent value="ws2" className="space-y-3">
           <Worksheet2 title={`PS ${activeSide.ps}`} weeks={data.sessions}
