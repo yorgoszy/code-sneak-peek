@@ -165,17 +165,39 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
               {currentMonthNL.map((row, i) => {
                 const zones = row.nlPerZonePerWeek?.[weekInMonth] || [];
                 const kgs = row.zoneKg || [];
-                const parts = zones
+                const sets = zones
                   .map((nl, z) => ({ nl, kg: kgs[z] || 0 }))
-                  .filter(p => p.nl > 0)
-                  .map(p => `${p.kg}×${p.nl}`);
+                  .filter(p => p.nl > 0);
+                const hasVideo = row.videoUrl && isValidVideoUrl(row.videoUrl);
+                const thumb = hasVideo ? getVideoThumbnail(row.videoUrl!) : null;
                 return (
-                  <div key={i} className="flex justify-between items-center text-xs gap-2">
-                    <span className="truncate pr-2 flex-shrink-0">{row.name}</span>
-                    <span className="tabular-nums text-muted-foreground text-[10px] truncate flex-1 text-right">
-                      {parts.join(', ')}
-                    </span>
-                    <span className="tabular-nums font-medium min-w-[2rem] text-right">{row.nlPerWeek[weekInMonth] ?? 0}</span>
+                  <div key={i} className="flex items-center gap-2 text-xs border-b border-border/50 pb-1 last:border-0">
+                    {/* Thumbnail */}
+                    {thumb ? (
+                      <div className="w-8 h-5 overflow-hidden bg-muted flex-shrink-0">
+                        <img src={thumb} alt={row.name} className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="w-8 h-5 bg-muted flex items-center justify-center flex-shrink-0">
+                        <Play className="w-2 h-2 text-muted-foreground" />
+                      </div>
+                    )}
+                    {/* Name */}
+                    <span className="truncate font-medium min-w-[80px] max-w-[140px]">{row.name}</span>
+                    {/* Per-zone kg/reps */}
+                    <div className="flex flex-wrap gap-1 flex-1 justify-end">
+                      {sets.map((p, idx) => (
+                        <div key={idx} className="inline-flex items-center gap-0.5 border border-border px-1 py-0.5 tabular-nums">
+                          <span className="font-medium">{p.kg}</span>
+                          <span className="text-[9px] text-muted-foreground">kg</span>
+                          <span className="text-muted-foreground mx-0.5">·</span>
+                          <span className="font-medium">{p.nl}</span>
+                          <span className="text-[9px] text-muted-foreground">reps</span>
+                        </div>
+                      ))}
+                    </div>
+                    {/* Total NL for week */}
+                    <span className="tabular-nums font-bold min-w-[2rem] text-right">{row.nlPerWeek[weekInMonth] ?? 0}</span>
                   </div>
                 );
               })}
