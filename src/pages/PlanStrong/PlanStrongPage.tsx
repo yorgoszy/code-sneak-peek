@@ -107,6 +107,7 @@ export default function PlanStrongPage() {
     : [{ sides: (data.sides && data.sides.length > 0) ? data.sides : [data.side], activeSideIndex: data.activeSideIndex ?? 0 }];
 
   const [exPickerForMonth, setExPickerForMonth] = useState<number | null>(null);
+  const [activeMonthIdx, setActiveMonthIdx] = useState<number>(0);
   const { exercises } = useExercises();
 
   const writeMonths = (nextMonths: MonthState[]) => {
