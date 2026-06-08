@@ -275,9 +275,14 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
               </tr>
               <tr>
                 <th className={headCell}></th>
-                {[0,1,2,3].map(i => (
-                  <th key={i} className={headCell} style={weekHeadStyle(arr[i])}>WEEK {i+1}</th>
-                ))}
+                {[0,1,2,3].map(i => {
+                  const diff = getWeekDifficulty(arr[i]);
+                  return (
+                    <th key={i} className={headCell} style={weekHeadStyle(arr[i])}>
+                      WEEK {i+1}{diff ? ` · ${diff}` : ''}
+                    </th>
+                  );
+                })}
                 <th className={headCell}>TOTAL NL</th>
               </tr>
             </thead>
