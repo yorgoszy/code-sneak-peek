@@ -122,6 +122,24 @@ export default function PlanStrongPage() {
     setData({ ...data, sides: nextSides, side: nextSides[nextIdx], activeSideIndex: nextIdx });
   };
 
+  // Clipboard για copy/paste worksheet μεταξύ ασκήσεων
+  const [sideClipboard, setSideClipboard] = useState<PlanStrongSideInput | null>(null);
+  const copyActiveSide = () => {
+    setSideClipboard(JSON.parse(JSON.stringify(activeSide)));
+    toast.success(`Αντιγράφηκε: ${activeSide.lift || 'άσκηση'}`);
+  };
+  const pasteIntoActiveSide = () => {
+    if (!sideClipboard) { toast.error('Δεν υπάρχει αντιγραμμένο worksheet'); return; }
+    // Διατηρούμε την ταυτότητα της τρέχουσας άσκησης (lift + exerciseId + oneRM)
+    const next: PlanStrongSideInput = {
+      ...sideClipboard,
+      lift: activeSide.lift,
+      exerciseId: activeSide.exerciseId,
+      oneRM: activeSide.oneRM,
+    };
+    updateActiveSide(next);
+    toast.success('Επικολλήθηκε worksheet');
+
 
   const addUser = (uid: string | null) => {
     if (!uid) return;
