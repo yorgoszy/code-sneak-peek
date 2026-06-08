@@ -174,16 +174,20 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
     const map: Record<string, { kg: number; percentage: number }[]> = {};
     currentMonthNL.forEach((row) => {
       if (row.exerciseId && row.zoneKg && row.zoneKg.length > 0) {
-        // ZONE_COEF = [0.55, 0.65, 0.75, 0.85, 0.93, 1] → percentages
         const ZONE_PCT = [55, 65, 75, 85, 93, 100];
-        map[row.exerciseId] = row.zoneKg.map((kg, i) => ({
+        const meta = row.zoneKg.map((kg, i) => ({
           kg,
           percentage: ZONE_PCT[i] ?? 0,
         })).filter(m => m.kg > 0);
+        map[row.exerciseId] = meta;
       }
     });
+    // Propagate WS1 meta to linked variants so they share the kg dropdown
+    for (const [linkedId, rootId] of Object.entries(linkedToRoot)) {
+      if (map[rootId] && !map[linkedId]) map[linkedId] = map[rootId];
+    }
     return map;
-  }, [currentMonthNL]);
+  }, [currentMonthNL, linkedToRoot]);
 
   // Fetch exercise relationships and map any related exercise -> its WS1 root exercise id
   const ws1ExerciseIds = useMemo(
