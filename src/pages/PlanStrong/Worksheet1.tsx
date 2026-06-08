@@ -264,10 +264,9 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
               </tr>
               <tr>
                 <th className={headCell}></th>
-                <th className={headCell}>WEEK 1</th>
-                <th className={headCell}>WEEK 2</th>
-                <th className={headCell}>WEEK 3</th>
-                <th className={headCell}>WEEK 4</th>
+                {[0,1,2,3].map(i => (
+                  <th key={i} className={headCell + " " + weekHeadColor(arr[i])}>WEEK {i+1}</th>
+                ))}
                 <th className={headCell}>TOTAL NL</th>
               </tr>
             </thead>
