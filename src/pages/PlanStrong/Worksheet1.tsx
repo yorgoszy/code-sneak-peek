@@ -12,6 +12,7 @@ interface Props {
   side: PlanStrongSideInput;
   onChange: (s: PlanStrongSideInput) => void;
   userId?: string;
+  userPickerSlot?: React.ReactNode;
 }
 
 const cell = "border border-border px-2 py-1 text-xs";
@@ -60,7 +61,7 @@ const PctInput: React.FC<{
   );
 };
 
-export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
+export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPickerSlot }) => {
   const out = computeSide(side);
   const set = (patch: Partial<PlanStrongSideInput>) => onChange({ ...side, ...patch });
   const setZone = (i: number, raw: string) => {
@@ -110,11 +111,19 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
         <span>WORKSHEET #1</span>
       </div>
       <div className="p-2 text-xs space-y-2 overflow-x-auto">
-        <table className="border-collapse w-full">
+        <div className="flex flex-wrap items-start gap-3">
+        <table className="border-collapse w-auto">
           <thead>
             <tr>
-              {['LIFT','PREP/COMP','1RM','KG/LB','PS/BTS','NL'].map(h =>
-                <th key={h} className={headCell}>{h}</th>)}
+              {[
+                {h: 'LIFT', w: '160px'},
+                {h: 'PREP/COMP', w: '110px'},
+                {h: '1RM', w: '80px'},
+                {h: 'KG/LB', w: '80px'},
+                {h: 'PS/BTS', w: '90px'},
+                {h: 'NL', w: '80px'},
+              ].map(({h, w}) =>
+                <th key={h} className={headCell} style={{ width: w }}>{h}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -158,6 +167,11 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
             </tr>
           </tbody>
         </table>
+        {userPickerSlot && (
+          <div className="flex-1 min-w-[240px]">{userPickerSlot}</div>
+        )}
+        </div>
+
 
         {(() => {
           const hiddenZones = side.ps === '70' ? [0, 1] : [];
@@ -169,7 +183,7 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId }) => {
           <thead>
             <tr>
               <th className={headCell}></th>
-              {visibleIdx.map(i => <th key={i} className={headCell}>{ZONE_LABELS[i]}</th>)}
+              {visibleIdx.map(i => <th key={i} className={headCell}>{ZONE_PCT_LABELS[i]}1RM</th>)}
               <th className={headCell}>TOTAL</th>
             </tr>
           </thead>
