@@ -13,6 +13,7 @@ interface Props {
   onChange: (s: PlanStrongSideInput) => void;
   userId?: string;
   userPickerSlot?: React.ReactNode;
+  nlActionsSlot?: React.ReactNode;
 }
 
 const cell = "border border-border px-2 py-1 text-xs";
