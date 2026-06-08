@@ -395,6 +395,7 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
         </div>
 
 
+        <div className="sticky bottom-0 z-20 bg-background border-t border-border shadow-[0_-2px_4px_rgba(0,0,0,0.08)]">
         <table className="border-collapse w-full table-fixed">
           <colgroup>
             <col style={{ width: '80px' }} />
@@ -414,11 +415,16 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
           <tbody>
             <tr>
               <td className={headCell}>WEEKLY HARI</td>
-              {out.weeklyHari.map((h, i) => <td key={i} className={cell + " bg-muted/30"}>{h.toFixed(2)}</td>)}
+              {out.weeklyHari.map((h, i) => {
+                const inRange = h >= 75 && h <= 81;
+                const color = h > 0 ? (inRange ? 'text-blue-600' : 'text-red-600') : '';
+                return <td key={i} className={cell + " bg-muted/30 font-bold " + color}>{h.toFixed(2)}</td>;
+              })}
               <td className={cell + " bg-muted/30"}></td>
             </tr>
           </tbody>
         </table>
+        </div>
         </div>
         );})()}
       </div>
