@@ -47,7 +47,8 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
   setEditingWeekName,
   onDuplicateWeek,
   onRemoveWeek,
-  onPasteWeek
+  onPasteWeek,
+  difficulty
 }) => {
   const { copyWeek, paste, hasWeek, clearClipboard, clipboard } = useProgramClipboard();
   
