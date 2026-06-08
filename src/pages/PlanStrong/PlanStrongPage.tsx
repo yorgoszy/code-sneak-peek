@@ -517,7 +517,7 @@ export default function PlanStrongPage() {
                   />
                 </div>
               );
-            })}
+            })()}
           </UserExerciseDataCacheProvider>
         </TabsContent>
 
