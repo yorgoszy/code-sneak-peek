@@ -245,10 +245,9 @@ export default function PlanStrongPage() {
                 <UserSearchCombobox
                   value={pickerValue}
                   onValueChange={addUser}
-                  placeholder={draftId ? "Επεξεργασία υπάρχοντος (1 χρήστης)" : "Προσθήκη χρήστη..."}
+                  placeholder="Προσθήκη χρήστη..."
                   coachId={user?.id}
                   adminOwned={isAdmin?.()}
-                  disabled={!!draftId}
                   triggerClassName="h-7 justify-start text-xs px-2"
                 />
                 {selectedUsers.length > 0 && (
@@ -264,16 +263,14 @@ export default function PlanStrongPage() {
                           </AvatarFallback>
                         </Avatar>
                         <span>{u.name}</span>
-                        {!draftId && (
-                          <button
-                            type="button"
-                            onClick={() => removeUser(u.id)}
-                            className="ml-0.5 hover:text-destructive"
-                            title="Αφαίρεση"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => removeUser(u.id)}
+                          className="ml-0.5 hover:text-destructive"
+                          title="Αφαίρεση"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
                       </Badge>
                     ))}
                   </div>
