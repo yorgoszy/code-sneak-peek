@@ -3,8 +3,6 @@ import React, { useState, useCallback } from 'react';
 import { ProgramExercise } from '../types';
 import { DebouncedInput } from './DebouncedInput';
 import { RollingTimeInput } from './RollingTimeInput';
-import { useZoneKgMeta } from '@/contexts/PlanStrongZoneKgContext';
-import { useUserExerciseDataCacheContext } from '@/hooks/useUserExerciseDataCache';
 
 interface ExerciseDetailsFormOptimizedProps {
   exercise: ProgramExercise;
