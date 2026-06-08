@@ -162,10 +162,11 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
             <div className="p-2 space-y-1">
               {currentMonthNL.map((row, i) => {
                 const zones = row.nlPerZonePerWeek?.[weekInMonth] || [];
+                const kgs = row.zoneKg || [];
                 const parts = zones
-                  .map((nl, z) => ({ nl, z }))
+                  .map((nl, z) => ({ nl, kg: kgs[z] || 0 }))
                   .filter(p => p.nl > 0)
-                  .map(p => `${p.nl}/${p.z + 1}`);
+                  .map(p => `${p.kg}×${p.nl}`);
                 return (
                   <div key={i} className="flex justify-between items-center text-xs gap-2">
                     <span className="truncate pr-2 flex-shrink-0">{row.name}</span>
