@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
-  computeSide, ZONE_LABELS, ZONE_PCT_LABELS, ZONE_COEF, PlanStrongSideInput,
+  computeSide, ZONE_LABELS, ZONE_PCT_LABELS, ZONE_COEF, PlanStrongSideInput, getWeekDifficulty,
 } from './planStrongCalc';
 import { useExercises } from '@/hooks/useExercises';
 import { useExercise1RM } from '@/hooks/useExercise1RM';
@@ -275,9 +275,14 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
               </tr>
               <tr>
                 <th className={headCell}></th>
-                {[0,1,2,3].map(i => (
-                  <th key={i} className={headCell} style={weekHeadStyle(arr[i])}>WEEK {i+1}</th>
-                ))}
+                {[0,1,2,3].map(i => {
+                  const diff = getWeekDifficulty(arr[i]);
+                  return (
+                    <th key={i} className={headCell} style={weekHeadStyle(arr[i])}>
+                      WEEK {i+1}{diff ? ` · ${diff}` : ''}
+                    </th>
+                  );
+                })}
                 <th className={headCell}>TOTAL NL</th>
               </tr>
             </thead>
@@ -338,7 +343,12 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
                 <th className={headCell}></th>
                 {[0,1,2,3].map(i => {
                   const mp = (side.mainPct && side.mainPct[i]) || 0;
-                  return <th key={i} className={headCell} style={weekHeadStyle(mp)}>WEEK {i+1}</th>;
+                  const diff = getWeekDifficulty(mp);
+                  return (
+                    <th key={i} className={headCell} style={weekHeadStyle(mp)}>
+                      WEEK {i+1}{diff ? ` · ${diff}` : ''}
+                    </th>
+                  );
                 })}
                 <th className={headCell}>TOTAL NL</th>
               </tr>

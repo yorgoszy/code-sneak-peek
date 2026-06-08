@@ -29,6 +29,21 @@ export const ZONE_PCT_LABELS = ['55%','65%','75%','85%','93%','100%'];
 // Intensity coefficients for HARI calc
 export const ZONE_COEF = [0.55, 0.65, 0.75, 0.85, 0.93, 1];
 
+// Week difficulty derived from MAIN VARIANT %1RM (15±3 → Light, 22±3 → Medium,
+// 28±3 → Heavy, 35±3 → Very Heavy). Persisted with the draft and reusable in
+// athlete profile, AI chat, etc.
+export type WeekDifficulty = 'Light' | 'Medium' | 'Heavy' | 'Very Heavy' | null;
+export const getWeekDifficulty = (frac: number): WeekDifficulty => {
+  const pct = Math.round((frac || 0) * 100);
+  if (Math.abs(pct - 15) <= 3) return 'Light';
+  if (Math.abs(pct - 22) <= 3) return 'Medium';
+  if (Math.abs(pct - 28) <= 3) return 'Heavy';
+  if (Math.abs(pct - 35) <= 3) return 'Very Heavy';
+  return null;
+};
+export const computeWeekDifficulties = (mainPct: number[]): WeekDifficulty[] =>
+  (mainPct || []).map(getWeekDifficulty);
+
 export const ZONE_COUNT = 6;
 
 export interface PlanStrongSideOutput {
