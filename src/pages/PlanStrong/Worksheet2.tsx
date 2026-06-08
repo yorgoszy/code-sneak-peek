@@ -28,10 +28,11 @@ const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, 
     if (!exercises || exercises.length === 0) return;
     seededRef.current = true;
 
-    if (initial && Array.isArray(initial.weeks) && initial.weeks.length > 0) {
-      loadProgramFromData({ weeks: initial.weeks });
-    } else {
-      const weeks = Array.from({ length: totalWeeks }).map((_, i) => ({
+    const existing = (initial && Array.isArray(initial.weeks)) ? initial.weeks : [];
+    const weeks = [...existing];
+    while (weeks.length < totalWeeks) {
+      const i = weeks.length;
+      weeks.push({
         id: generateId(),
         name: `Εβδομάδα ${i + 1}`,
         week_number: i + 1,
@@ -41,10 +42,32 @@ const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, 
           day_number: 1,
           program_blocks: [],
         }],
-      }));
-      updateProgram({ weeks });
+      });
     }
+    loadProgramFromData({ weeks });
   }, [exercises]);
+
+  // Auto-extend if monthsCount grows after seed
+  useEffect(() => {
+    if (!seededRef.current) return;
+    if (program.weeks.length >= totalWeeks) return;
+    const weeks = [...program.weeks];
+    while (weeks.length < totalWeeks) {
+      const i = weeks.length;
+      weeks.push({
+        id: generateId(),
+        name: `Εβδομάδα ${i + 1}`,
+        week_number: i + 1,
+        program_days: [{
+          id: generateId(),
+          name: 'Ημέρα 1',
+          day_number: 1,
+          program_blocks: [],
+        }],
+      });
+    }
+    updateProgram({ weeks });
+  }, [totalWeeks, program.weeks.length]);
 
   useEffect(() => {
     if (!seededRef.current) return;
