@@ -112,64 +112,64 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
       </div>
       <div className="p-2 text-xs space-y-2 overflow-x-auto">
         <div className="flex flex-wrap items-start gap-3">
-        <table className="border-collapse w-auto">
-          <thead>
-            <tr>
-              {[
-                {h: 'LIFT', w: '160px'},
-                {h: 'PREP/COMP', w: '110px'},
-                {h: '1RM', w: '80px'},
-                {h: 'KG/LB', w: '80px'},
-                {h: 'PS/BTS', w: '90px'},
-                {h: 'NL', w: '80px'},
-              ].map(({h, w}) =>
-                <th key={h} className={headCell} style={{ width: w }}>{h}</th>)}
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className={cell}>
-                <Button type="button" variant="outline" size="sm"
-                  className="h-7 w-full justify-start rounded-none text-xs px-2"
-                  onClick={() => setPickerOpen(true)}>
-                  {side.lift || 'Επιλογή άσκησης...'}
-                </Button>
-              </td>
-              <td className={cell}>
-                <select className={inp + " w-full"} value={side.prepComp}
-                  onChange={e => set({ prepComp: e.target.value })}>
-                  <option>PREP</option><option>COMP</option>
-                </select>
-              </td>
-              <td className={cell}>
-                <Input className={inp} type="number" value={side.oneRM}
-                  onChange={e => set({ oneRM: toNum(e.target.value) })} />
-              </td>
-              <td className={cell}>
-                <select className={inp + " w-full"} value={side.unit}
-                  onChange={e => set({ unit: e.target.value as any })}>
-                  <option>KG</option><option>LB</option>
-                </select>
-              </td>
-              <td className={cell}>
-                <select className={inp + " w-full"} value={side.ps}
-                  onChange={e => set({ ps: e.target.value as any })}>
-                  <option value="50">50</option>
-                  <option value="70">70</option>
-                  <option value="BTS3">BTS3</option>
-                  <option value="BTS6">BTS6</option>
-                </select>
-              </td>
-              <td className={cell}>
-                <Input className={inp} type="number" value={side.monthlyNL}
-                  onChange={e => set({ monthlyNL: toNum(e.target.value) })} />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        {userPickerSlot && (
-          <div className="flex-1 min-w-[240px]">{userPickerSlot}</div>
-        )}
+          {userPickerSlot && (
+            <div className="flex-1 min-w-[240px]">{userPickerSlot}</div>
+          )}
+          <table className="border-collapse w-auto">
+            <thead>
+              <tr>
+                {[
+                  {h: 'LIFT', w: '160px'},
+                  {h: 'PREP/COMP', w: '110px'},
+                  {h: '1RM', w: '80px'},
+                  {h: 'KG/LB', w: '80px'},
+                  {h: 'PS/BTS', w: '90px'},
+                  {h: 'NL', w: '80px'},
+                ].map(({h, w}) =>
+                  <th key={h} className={headCell} style={{ width: w }}>{h}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className={cell}>
+                  <Button type="button" variant="outline" size="sm"
+                    className="h-7 w-full justify-start rounded-none text-xs px-2"
+                    onClick={() => setPickerOpen(true)}>
+                    {side.lift || 'Επιλογή άσκησης...'}
+                  </Button>
+                </td>
+                <td className={cell}>
+                  <select className={inp + " w-full"} value={side.prepComp}
+                    onChange={e => set({ prepComp: e.target.value })}>
+                    <option>PREP</option><option>COMP</option>
+                  </select>
+                </td>
+                <td className={cell}>
+                  <Input className={inp} type="number" value={side.oneRM}
+                    onChange={e => set({ oneRM: toNum(e.target.value) })} />
+                </td>
+                <td className={cell}>
+                  <select className={inp + " w-full"} value={side.unit}
+                    onChange={e => set({ unit: e.target.value as any })}>
+                    <option>KG</option><option>LB</option>
+                  </select>
+                </td>
+                <td className={cell}>
+                  <select className={inp + " w-full"} value={side.ps}
+                    onChange={e => set({ ps: e.target.value as any })}>
+                    <option value="50">50</option>
+                    <option value="70">70</option>
+                    <option value="BTS3">BTS3</option>
+                    <option value="BTS6">BTS6</option>
+                  </select>
+                </td>
+                <td className={cell}>
+                  <Input className={inp} type="number" value={side.monthlyNL}
+                    onChange={e => set({ monthlyNL: toNum(e.target.value) })} />
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
 
