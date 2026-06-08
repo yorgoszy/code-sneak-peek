@@ -31,7 +31,7 @@ interface EmbeddedBuilderProps {
   coachId?: string;
   onActiveWeekIndexChange?: (idx: number) => void;
   weekDifficulties?: (string | null)[];
-  addFromNLRef?: React.MutableRefObject<((weekIdx: number, exerciseId: string, exerciseName: string, kg: number, pct: number, velocity: number) => void) | null>;
+  addFromNLRef?: React.MutableRefObject<((weekIdx: number, exerciseId: string, exerciseName: string, kg: number, pct: number, velocity: number, blockId?: string) => void) | null>;
 }
 
 const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, onChange, selectedUserId, coachId, onActiveWeekIndexChange, weekDifficulties, addFromNLRef }) => {
@@ -42,7 +42,7 @@ const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, 
   // Expose function for parent NL row to add an exercise into the current week
   useEffect(() => {
     if (!addFromNLRef) return;
-    addFromNLRef.current = (weekIdx, exerciseId, exerciseName, kg, pct, velocity) => {
+    addFromNLRef.current = (weekIdx, exerciseId, exerciseName, kg, pct, velocity, blockId) => {
       updateProgram((prev) => {
         const weeks = [...(prev.weeks || [])];
         if (!weeks[weekIdx]) return prev;
@@ -51,20 +51,32 @@ const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, 
         if (days.length === 0) {
           days.push({ id: generateId(), name: 'Ημέρα 1', day_number: 1, program_blocks: [] });
         }
-        const day = { ...days[0] };
-        let blocks = [...(day.program_blocks || [])];
-        if (blocks.length === 0) {
-          blocks.push({
-            id: generateId(),
-            name: 'Block 1',
-            block_sets: 1,
-            block_order: 1,
-            program_exercises: [],
-          } as any);
+
+        // Locate target block (by id across days) or fall back to last block of day 0
+        let targetDayIdx = 0;
+        let targetBlockIdx = -1;
+        if (blockId) {
+          for (let di = 0; di < days.length; di++) {
+            const idx = (days[di].program_blocks || []).findIndex((b: any) => b.id === blockId);
+            if (idx >= 0) { targetDayIdx = di; targetBlockIdx = idx; break; }
+          }
         }
-        const lastIdx = blocks.length - 1;
-        const lastBlock = { ...blocks[lastIdx] };
-        const exList = [...(lastBlock.program_exercises || [])];
+        const day = { ...days[targetDayIdx] };
+        let blocks = [...(day.program_blocks || [])];
+        if (targetBlockIdx < 0) {
+          if (blocks.length === 0) {
+            blocks.push({
+              id: generateId(),
+              name: 'Block 1',
+              block_sets: 1,
+              block_order: 1,
+              program_exercises: [],
+            } as any);
+          }
+          targetBlockIdx = blocks.length - 1;
+        }
+        const targetBlock = { ...blocks[targetBlockIdx] };
+        const exList = [...(targetBlock.program_exercises || [])];
         exList.push({
           id: generateId(),
           exercise_id: exerciseId,
@@ -81,10 +93,10 @@ const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, 
           exercise_order: exList.length + 1,
           exercises: { id: exerciseId, name: exerciseName, description: '' },
         });
-        lastBlock.program_exercises = exList;
-        blocks[lastIdx] = lastBlock;
+        targetBlock.program_exercises = exList;
+        blocks[targetBlockIdx] = targetBlock;
         day.program_blocks = blocks;
-        days[0] = day;
+        days[targetDayIdx] = day;
         week.program_days = days;
         weeks[weekIdx] = week;
         return { weeks };
@@ -232,15 +244,22 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
   const weekInMonth = safeW % 4;
 
   const [currentProgram, setCurrentProgram] = useState<PlanStrongWS2Program | null>(ws2Programs[0] ?? null);
-  const addFromNLRef = useRef<((weekIdx: number, exerciseId: string, exerciseName: string, kg: number, pct: number, velocity: number) => void) | null>(null);
+  const addFromNLRef = useRef<((weekIdx: number, exerciseId: string, exerciseName: string, kg: number, pct: number, velocity: number, blockId?: string) => void) | null>(null);
   const { getOneRM, getVelocityForPercentage } = useUserExerciseDataCacheContext();
 
-  const handleNlChipClick = useCallback((exerciseId: string | undefined, exerciseName: string, kg: number, pct: number) => {
-    if (!exerciseId || !addFromNLRef.current) return;
-    const oneRM = getOneRM(exerciseId) ?? 0;
-    const v = getVelocityForPercentage(exerciseId, pct, oneRM) || 0;
-    addFromNLRef.current(safeW, exerciseId, exerciseName, kg, pct, v);
-    toast.success(`Προστέθηκε ${exerciseName} · ${pct}% · ${kg}kg`);
+  // Listen for drag-and-drop drops onto blocks
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent<{ blockId: string; payload: { exerciseId: string; exerciseName: string; kg: number; pct: number; weekIdx: number } }>;
+      const { blockId, payload } = ce.detail || ({} as any);
+      if (!payload?.exerciseId || !addFromNLRef.current) return;
+      const oneRM = getOneRM(payload.exerciseId) ?? 0;
+      const v = getVelocityForPercentage(payload.exerciseId, payload.pct, oneRM) || 0;
+      addFromNLRef.current(payload.weekIdx ?? safeW, payload.exerciseId, payload.exerciseName, payload.kg, payload.pct, v, blockId);
+      toast.success(`Προστέθηκε ${payload.exerciseName} · ${payload.pct}% · ${payload.kg}kg`);
+    };
+    window.addEventListener('planstrong-nl-drop', handler as EventListener);
+    return () => window.removeEventListener('planstrong-nl-drop', handler as EventListener);
   }, [getOneRM, getVelocityForPercentage, safeW]);
 
   const setSingleProgram = (p: PlanStrongWS2Program) => {
@@ -511,12 +530,23 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                         const remain = Math.max(0, p.nl - used);
                         const done = used >= p.nl;
                         return (
-                          <button
+                          <div
                             key={idx}
-                            type="button"
-                            onClick={() => handleNlChipClick(row.exerciseId, row.name, p.kg, p.pct)}
-                            className={`inline-flex flex-col items-center border px-1 py-0.5 tabular-nums leading-tight cursor-pointer hover:bg-foreground/10 ${done ? 'border-[#00ffba] bg-[#00ffba]/10' : 'border-border'}`}
-                            title={`Κλικ για προσθήκη · Χρησιμοποιημένα: ${used} / ${p.nl}`}
+                            draggable={!!row.exerciseId}
+                            onDragStart={(e) => {
+                              if (!row.exerciseId) return;
+                              const payload = {
+                                exerciseId: row.exerciseId,
+                                exerciseName: row.name,
+                                kg: p.kg,
+                                pct: p.pct,
+                                weekIdx: safeW,
+                              };
+                              e.dataTransfer.setData('application/x-planstrong-nl', JSON.stringify(payload));
+                              e.dataTransfer.effectAllowed = 'copy';
+                            }}
+                            className={`inline-flex flex-col items-center border px-1 py-0.5 tabular-nums leading-tight cursor-grab active:cursor-grabbing hover:bg-foreground/10 ${done ? 'border-[#00ffba] bg-[#00ffba]/10' : 'border-border'}`}
+                            title={`Σύρε σε ένα block · Χρησιμοποιημένα: ${used} / ${p.nl}`}
                           >
                             <span className="font-medium">
                               {p.pct}<span className="text-[9px] text-muted-foreground">%</span>
@@ -525,7 +555,7 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                               <span className="font-medium">{remain}</span>
                               <span className="text-[9px] text-muted-foreground">/{p.nl}</span>
                             </span>
-                          </button>
+                          </div>
                         );
                       })}
                     </div>

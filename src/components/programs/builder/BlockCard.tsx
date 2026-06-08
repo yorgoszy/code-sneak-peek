@@ -147,9 +147,35 @@ export const BlockCard: React.FC<BlockCardProps> = React.memo(({
 
   const exercisesCount = displayedExercises.length;
 
+  const [isDragOver, setIsDragOver] = useState(false);
+  const handlePsDragOver = (e: React.DragEvent) => {
+    if (Array.from(e.dataTransfer.types || []).includes('application/x-planstrong-nl')) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+      setIsDragOver(true);
+    }
+  };
+  const handlePsDragLeave = () => setIsDragOver(false);
+  const handlePsDrop = (e: React.DragEvent) => {
+    const raw = e.dataTransfer.getData('application/x-planstrong-nl');
+    if (!raw) return;
+    e.preventDefault();
+    setIsDragOver(false);
+    try {
+      const payload = JSON.parse(raw);
+      window.dispatchEvent(new CustomEvent('planstrong-nl-drop', { detail: { blockId: block.id, payload } }));
+    } catch {}
+  };
+
   return (
     <>
-      <Card className={`rounded-none w-full transition-all duration-200 ${isOpen ? 'min-h-[120px]' : 'min-h-[40px]'}`} style={{ backgroundColor: '#31365d' }}>
+      <Card
+        onDragOver={handlePsDragOver}
+        onDragLeave={handlePsDragLeave}
+        onDrop={handlePsDrop}
+        className={`rounded-none w-full transition-all duration-200 ${isOpen ? 'min-h-[120px]' : 'min-h-[40px]'} ${isDragOver ? 'ring-2 ring-[#00ffba]' : ''}`}
+        style={{ backgroundColor: '#31365d' }}
+      >
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <BlockCardHeader
             block={block}
