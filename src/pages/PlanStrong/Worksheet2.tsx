@@ -216,15 +216,17 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
             </div>
           </div>
         )}
-        <EmbeddedBuilder
-          initial={ws2Programs[0] ?? null}
-          totalWeeks={totalWeeks}
-          onChange={setSingleProgram}
-          selectedUserId={selectedUserId}
-          coachId={coachId}
-          onActiveWeekIndexChange={setActiveW}
-          weekDifficulties={weekDifficulties}
-        />
+        <PlanStrongZoneKgProvider kgOptionsByExerciseId={kgOptionsByExerciseId}>
+          <EmbeddedBuilder
+            initial={ws2Programs[0] ?? null}
+            totalWeeks={totalWeeks}
+            onChange={setSingleProgram}
+            selectedUserId={selectedUserId}
+            coachId={coachId}
+            onActiveWeekIndexChange={setActiveW}
+            weekDifficulties={weekDifficulties}
+          />
+        </PlanStrongZoneKgProvider>
       </div>
     </div>
   );
