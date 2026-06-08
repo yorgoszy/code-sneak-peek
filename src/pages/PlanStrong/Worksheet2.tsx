@@ -17,7 +17,7 @@ interface EmbeddedBuilderProps {
   onActiveWeekIndexChange?: (idx: number) => void;
 }
 
-const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, onChange, selectedUserId, coachId, onActiveWeekIndexChange }) => {
+const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, onChange, selectedUserId, coachId, onActiveWeekIndexChange, weekDifficulties }) => {
   const { exercises } = useExercises();
   const { program, updateProgram, generateId, loadProgramFromData } = useProgramBuilderState(exercises as any);
   const actions = useProgramBuilderActions(program, updateProgram, generateId, exercises as any);
