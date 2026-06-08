@@ -5,6 +5,8 @@ import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { useProgramBuilderState } from '@/components/programs/builder/hooks/useProgramBuilderState';
 import { useProgramBuilderActions } from '@/components/programs/builder/hooks/useProgramBuilderActions';
 import { TrainingWeeks } from '@/components/programs/builder/TrainingWeeks';
+import { ZONE_COEF } from './planStrongCalc';
+import { Separator } from '@/components/ui/separator';
 
 export interface PlanStrongWS2Program {
   weeks: any[];
@@ -165,40 +167,73 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
               {currentMonthNL.map((row, i) => {
                 const zones = row.nlPerZonePerWeek?.[weekInMonth] || [];
                 const kgs = row.zoneKg || [];
-                const sets = zones
-                  .map((nl, z) => ({ nl, kg: kgs[z] || 0 }))
+                const zoneRows = zones
+                  .map((nl, z) => ({ nl, kg: kgs[z] || 0, pct: Math.round((ZONE_COEF[z] || 0) * 100), z }))
                   .filter(p => p.nl > 0);
                 const hasVideo = row.videoUrl && isValidVideoUrl(row.videoUrl);
                 const thumb = hasVideo ? getVideoThumbnail(row.videoUrl!) : null;
                 return (
-                  <div key={i} className="flex items-center gap-2 text-xs border-b border-border/50 pb-1 last:border-0">
-                    {/* Thumbnail */}
-                    {thumb ? (
-                      <div className="w-8 h-5 overflow-hidden bg-muted flex-shrink-0">
-                        <img src={thumb} alt={row.name} className="w-full h-full object-cover" />
-                      </div>
-                    ) : (
-                      <div className="w-8 h-5 bg-muted flex items-center justify-center flex-shrink-0">
-                        <Play className="w-2 h-2 text-muted-foreground" />
-                      </div>
-                    )}
-                    {/* Name */}
-                    <span className="truncate font-medium min-w-[80px] max-w-[140px]">{row.name}</span>
-                    {/* Per-zone kg/reps — αμέσως δίπλα από το όνομα */}
-                    <div className="flex flex-wrap gap-1">
-                      {sets.map((p, idx) => (
-                        <div key={idx} className="inline-flex items-center gap-0.5 border border-border px-1 py-0.5 tabular-nums">
-                          <span className="font-medium">{p.kg}</span>
-                          <span className="text-[9px] text-muted-foreground">kg</span>
-                          <span className="text-muted-foreground mx-0.5">·</span>
-                          <span className="font-medium">{p.nl}</span>
-                          <span className="text-[9px] text-muted-foreground">reps</span>
+                  <div key={i} className="border border-border bg-white">
+                    {/* Exercise header */}
+                    <div className="flex items-center gap-2 px-2 py-1 border-b border-border bg-muted/30">
+                      {thumb ? (
+                        <div className="w-10 h-6 overflow-hidden bg-muted flex-shrink-0">
+                          <img src={thumb} alt={row.name} className="w-full h-full object-cover" />
                         </div>
-                      ))}
+                      ) : (
+                        <div className="w-10 h-6 bg-muted flex items-center justify-center flex-shrink-0">
+                          <Play className="w-2.5 h-2.5 text-muted-foreground" />
+                        </div>
+                      )}
+                      <span className="text-xs font-medium truncate flex-1">{row.name}</span>
+                      <span className="text-[10px] text-muted-foreground">Σύνολο εβδομάδας</span>
+                      <span className="tabular-nums font-bold text-xs min-w-[2rem] text-right">{row.nlPerWeek[weekInMonth] ?? 0}</span>
                     </div>
-                    <div className="flex-1" />
-                    {/* Total NL for week */}
-                    <span className="tabular-nums font-bold min-w-[2rem] text-right">{row.nlPerWeek[weekInMonth] ?? 0}</span>
+                    {/* Per-zone rows — same UI as program builder details grid */}
+                    {zoneRows.length === 0 ? (
+                      <div className="text-[10px] text-muted-foreground px-2 py-1">—</div>
+                    ) : (
+                      zoneRows.map((zr, idx) => (
+                        <div key={idx} className="p-1 bg-gray-50 border-t border-border/50 first:border-0">
+                          <div className="flex text-[11px]" style={{ width: '70%' }}>
+                            <div className="flex-1 text-center">
+                              <div className="font-medium text-gray-600 mb-0.5">Sets</div>
+                              <div className="text-gray-900">1</div>
+                            </div>
+                            <Separator orientation="vertical" className="h-8 mx-1" />
+                            <div className="flex-1 text-center">
+                              <div className="font-medium text-gray-600 mb-0.5">Reps</div>
+                              <div className="text-gray-900 tabular-nums">{zr.nl}</div>
+                            </div>
+                            <Separator orientation="vertical" className="h-8 mx-1" />
+                            <div className="flex-1 text-center">
+                              <div className="font-medium text-gray-600 mb-0.5">%1RM</div>
+                              <div className="text-gray-900 tabular-nums">{zr.pct}</div>
+                            </div>
+                            <Separator orientation="vertical" className="h-8 mx-1" />
+                            <div className="flex-1 text-center">
+                              <div className="font-medium text-gray-600 mb-0.5">Kg</div>
+                              <div className="text-gray-900 tabular-nums">{zr.kg}</div>
+                            </div>
+                            <Separator orientation="vertical" className="h-8 mx-1" />
+                            <div className="flex-1 text-center">
+                              <div className="font-medium text-gray-600 mb-0.5">m/s</div>
+                              <div className="text-gray-900">-</div>
+                            </div>
+                            <Separator orientation="vertical" className="h-8 mx-1" />
+                            <div className="flex-1 text-center">
+                              <div className="font-medium text-gray-600 mb-0.5">Tempo</div>
+                              <div className="text-gray-900">-</div>
+                            </div>
+                            <Separator orientation="vertical" className="h-8 mx-1" />
+                            <div className="flex-1 text-center">
+                              <div className="font-medium text-gray-600 mb-0.5">Rest</div>
+                              <div className="text-gray-900">-</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 );
               })}
