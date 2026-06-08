@@ -79,12 +79,16 @@ export default function PlanStrongPage() {
   const save = async (status: 'draft' | 'assigned') => {
     if (userIds.length === 0) { toast.error('Επίλεξε τουλάχιστον έναν χρήστη'); return; }
     setSaving(true);
+    // Derive & persist week difficulty labels (Light/Medium/Heavy/Very Heavy)
+    // so other modules (athlete profile, AI chat) can reuse them.
+    const weekDifficulties = computeWeekDifficulties(data.side.mainPct || []);
+    const dataToSave: any = { ...data, weekDifficulties };
     if (draftId) {
       // Edit mode — single record update
       const payload = {
         name, user_id: userIds[0], status,
         coach_id: user?.id, created_by: user?.id,
-        data: data as any,
+        data: dataToSave,
       };
       const { error } = await supabase.from('plan_strong_drafts').update(payload).eq('id', draftId);
       setSaving(false);
@@ -96,7 +100,7 @@ export default function PlanStrongPage() {
     const rows = userIds.map(uid => ({
       name, user_id: uid, status,
       coach_id: user?.id, created_by: user?.id,
-      data: data as any,
+      data: dataToSave,
     }));
     const { data: inserted, error } = await supabase.from('plan_strong_drafts').insert(rows).select();
     setSaving(false);
