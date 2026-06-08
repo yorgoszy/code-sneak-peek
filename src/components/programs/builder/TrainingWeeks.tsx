@@ -150,6 +150,7 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
                       onDuplicateWeek={onDuplicateWeek}
                       onRemoveWeek={onRemoveWeek}
                       onPasteWeek={onPasteWeek}
+                      weekDifficulties={weekDifficulties}
                     />
                   </SortableContext>
                 </div>
