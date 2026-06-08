@@ -337,9 +337,75 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
 
   return (
     <div className="border border-border">
-      <div className="bg-foreground text-background px-3 py-2 text-sm font-bold flex items-center justify-between">
+      <div className="bg-foreground text-background px-3 py-2 text-sm font-bold flex items-center justify-between gap-2">
         <span>PLAN STRONG™ — Program Builder</span>
-        <span>WORKSHEET #2</span>
+        <div className="flex items-center gap-2">
+          <Popover open={assignOpen} onOpenChange={setAssignOpen}>
+            <PopoverTrigger asChild>
+              <Button size="sm" variant="outline" className="rounded-none h-7 text-foreground">
+                <CalendarIcon className="w-3 h-3 mr-1" />
+                Ανάθεση
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-3 rounded-none" align="end">
+              <div className="space-y-3">
+                <div>
+                  <div className="text-xs font-semibold mb-1">Χρήστες ({assignUsers?.length || 0})</div>
+                  {(!assignUsers || assignUsers.length === 0) ? (
+                    <div className="text-xs text-muted-foreground">Πρόσθεσε χρήστες στο Worksheet #1</div>
+                  ) : (
+                    <div className="flex flex-wrap gap-1 max-w-[320px]">
+                      {assignUsers.map(u => (
+                        <div key={u.id} className="flex items-center gap-1 border border-border px-1.5 py-0.5">
+                          <Avatar className="h-4 w-4">
+                            {(u.photo_url || u.avatar_url) ? (
+                              <AvatarImage src={u.photo_url || u.avatar_url || ''} alt={u.name} />
+                            ) : null}
+                            <AvatarFallback className="text-[8px]">{u.name?.charAt(0).toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                          <span className="text-[11px]">{u.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <div className="text-xs font-semibold mb-1">
+                    Ημερομηνίες: {assignDates.length}/{totalRequiredDays}
+                  </div>
+                  <Calendar
+                    mode="multiple"
+                    selected={assignDates}
+                    onSelect={(d) => setAssignDates((d as Date[]) || [])}
+                    disabled={(date) => {
+                      const today = new Date(); today.setHours(0,0,0,0);
+                      return date < today;
+                    }}
+                    className={cn("p-3 pointer-events-auto rounded-none border border-border")}
+                  />
+                  {assignDates.length > 0 && (
+                    <Button
+                      type="button" size="sm" variant="ghost"
+                      className="rounded-none mt-1 h-6 text-[11px]"
+                      onClick={() => setAssignDates([])}
+                    >
+                      <X className="w-3 h-3 mr-1" /> Καθαρισμός
+                    </Button>
+                  )}
+                </div>
+                <Button
+                  size="sm" className="rounded-none w-full"
+                  disabled={assigning || !assignUsers?.length || assignDates.length < totalRequiredDays}
+                  onClick={handleAssign}
+                >
+                  <Send className="w-3 h-3 mr-1" />
+                  {assigning ? 'Ανάθεση...' : `Ανάθεση σε ${assignUsers?.length || 0}`}
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+          <span>WORKSHEET #2</span>
+        </div>
       </div>
       <div className="p-2 space-y-2">
         {currentMonthNL.length > 0 && (
