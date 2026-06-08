@@ -376,6 +376,14 @@ export default function PlanStrongPage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      <SimpleExerciseSelectionDialog
+        open={exPickerOpen}
+        onOpenChange={setExPickerOpen}
+        exercises={exercises as any}
+        onSelectExercise={addExerciseTab}
+      />
+
     </div>
   );
 }
