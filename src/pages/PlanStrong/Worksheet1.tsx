@@ -113,15 +113,15 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
       <div className="p-2 text-xs space-y-2 overflow-x-auto">
         <div className="flex flex-wrap items-start gap-3">
           {userPickerSlot && (
-            <div className="flex-1 min-w-[240px]">{userPickerSlot}</div>
+            <div className="w-[160px]">{userPickerSlot}</div>
           )}
           <table className="border-collapse w-auto">
             <thead>
               <tr>
                 {[
                   {h: 'LIFT', w: '160px'},
-                  {h: 'PREP/COMP', w: '110px'},
                   {h: '1RM', w: '80px'},
+                  {h: 'PREP/COMP', w: '110px'},
                   {h: 'KG/LB', w: '80px'},
                   {h: 'PS/BTS', w: '90px'},
                   {h: 'NL', w: '80px'},
@@ -139,14 +139,14 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
                   </Button>
                 </td>
                 <td className={cell}>
+                  <Input className={inp} type="number" value={side.oneRM}
+                    onChange={e => set({ oneRM: toNum(e.target.value) })} />
+                </td>
+                <td className={cell}>
                   <select className={inp + " w-full"} value={side.prepComp}
                     onChange={e => set({ prepComp: e.target.value })}>
                     <option>PREP</option><option>COMP</option>
                   </select>
-                </td>
-                <td className={cell}>
-                  <Input className={inp} type="number" value={side.oneRM}
-                    onChange={e => set({ oneRM: toNum(e.target.value) })} />
                 </td>
                 <td className={cell}>
                   <select className={inp + " w-full"} value={side.unit}
