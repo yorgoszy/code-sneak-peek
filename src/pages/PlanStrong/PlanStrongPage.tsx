@@ -32,25 +32,38 @@ export default function PlanStrongPage() {
   const [data, setData] = useState<PlanStrongData>(defaultPlanStrongData());
   const [saving, setSaving] = useState(false);
   const [draftId, setDraftId] = useState<string | null>(editId);
+  // Map of userId -> draftId for sibling drafts that belong to the same plan
+  // (same coach_id + name). Lets us update/insert/delete per user on save.
+  const [draftIdByUser, setDraftIdByUser] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!editId) return;
     (async () => {
       const { data: row } = await supabase
         .from('plan_strong_drafts').select('*').eq('id', editId).maybeSingle();
-      if (row) {
-        setName(row.name);
-        setUserId(row.user_id);
-        setUserIds([row.user_id]);
-        const def = defaultPlanStrongData();
-        const loaded = (row.data as any) || {};
-        setData({
-          ...def,
-          ...loaded,
-          side: loaded.side ?? loaded.left ?? def.side,
-          sessions: loaded.sessions ?? loaded.sessionsLeft ?? def.sessions,
-        });
-      }
+      if (!row) return;
+      setName(row.name);
+      const def = defaultPlanStrongData();
+      const loaded = (row.data as any) || {};
+      setData({
+        ...def,
+        ...loaded,
+        side: loaded.side ?? loaded.left ?? def.side,
+        sessions: loaded.sessions ?? loaded.sessionsLeft ?? def.sessions,
+      });
+      // Load all sibling drafts (same coach + same plan name) so the user
+      // can add/remove athletes from this plan.
+      const { data: siblings } = await supabase
+        .from('plan_strong_drafts')
+        .select('id, user_id')
+        .eq('coach_id', row.coach_id)
+        .eq('name', row.name);
+      const list = siblings && siblings.length > 0 ? siblings : [{ id: row.id, user_id: row.user_id }];
+      const map: Record<string, string> = {};
+      list.forEach((s: any) => { map[s.user_id] = s.id; });
+      setDraftIdByUser(map);
+      setUserId(row.user_id);
+      setUserIds(list.map((s: any) => s.user_id));
     })();
   }, [editId]);
 
@@ -79,24 +92,71 @@ export default function PlanStrongPage() {
   const save = async (status: 'draft' | 'assigned') => {
     if (userIds.length === 0) { toast.error('Επίλεξε τουλάχιστον έναν χρήστη'); return; }
     setSaving(true);
-    // Derive & persist week difficulty labels (Light/Medium/Heavy/Very Heavy)
-    // so other modules (athlete profile, AI chat) can reuse them.
     const weekDifficulties = computeWeekDifficulties(data.side.mainPct || []);
     const dataToSave: any = { ...data, weekDifficulties };
+
     if (draftId) {
-      // Edit mode — single record update
-      const payload = {
-        name, user_id: userIds[0], status,
-        coach_id: user?.id, created_by: user?.id,
-        data: dataToSave,
-      };
-      const { error } = await supabase.from('plan_strong_drafts').update(payload).eq('id', draftId);
+      // EDIT mode — sync sibling drafts (one per user) against current selection
+      const updates: Promise<any>[] = [];
+      const toInsert: any[] = [];
+      const newMap: Record<string, string> = {};
+
+      userIds.forEach(uid => {
+        const existingId = draftIdByUser[uid];
+        if (existingId) {
+          newMap[uid] = existingId;
+          updates.push(
+            supabase.from('plan_strong_drafts').update({
+              name, user_id: uid, status,
+              coach_id: user?.id, created_by: user?.id,
+              data: dataToSave,
+            }).eq('id', existingId)
+          );
+        } else {
+          toInsert.push({
+            name, user_id: uid, status,
+            coach_id: user?.id, created_by: user?.id,
+            data: dataToSave,
+          });
+        }
+      });
+
+      // Removed users → delete their sibling rows
+      const removedIds = Object.entries(draftIdByUser)
+        .filter(([uid]) => !userIds.includes(uid))
+        .map(([, id]) => id);
+
+      const ops: Promise<any>[] = [...updates];
+      if (toInsert.length > 0) {
+        ops.push(
+          supabase.from('plan_strong_drafts').insert(toInsert).select().then((res: any) => {
+            (res.data || []).forEach((r: any) => { newMap[r.user_id] = r.id; });
+            return res;
+          })
+        );
+      }
+      if (removedIds.length > 0) {
+        ops.push(supabase.from('plan_strong_drafts').delete().in('id', removedIds));
+      }
+
+      const results = await Promise.all(ops);
       setSaving(false);
-      if (error) { toast.error(error.message); return; }
-      toast.success(status === 'draft' ? 'Αποθηκεύτηκε' : 'Ανατέθηκε');
+      const firstError = results.find((r: any) => r?.error)?.error;
+      if (firstError) { toast.error(firstError.message); return; }
+      setDraftIdByUser(newMap);
+      // Keep primary draftId pointing to a still-existing row
+      if (!userIds.includes(userId) || !newMap[userId]) {
+        const firstUid = userIds[0];
+        setUserId(firstUid);
+        if (newMap[firstUid]) setDraftId(newMap[firstUid]);
+      }
+      toast.success(status === 'draft'
+        ? `Αποθηκεύτηκαν ${userIds.length} πρόχειρα`
+        : `Ανατέθηκε σε ${userIds.length} χρήστες`);
       return;
     }
-    // New — one row per user
+
+    // NEW — one row per user
     const rows = userIds.map(uid => ({
       name, user_id: uid, status,
       coach_id: user?.id, created_by: user?.id,
@@ -105,7 +165,13 @@ export default function PlanStrongPage() {
     const { data: inserted, error } = await supabase.from('plan_strong_drafts').insert(rows).select();
     setSaving(false);
     if (error) { toast.error(error.message); return; }
-    if (inserted && inserted.length === 1) setDraftId(inserted[0].id);
+    if (inserted && inserted.length > 0) {
+      const map: Record<string, string> = {};
+      inserted.forEach((r: any) => { map[r.user_id] = r.id; });
+      setDraftIdByUser(map);
+      setDraftId(inserted[0].id);
+      setUserId(inserted[0].user_id);
+    }
     toast.success(status === 'draft'
       ? `Αποθηκεύτηκαν ${rows.length} πρόχειρα`
       : `Ανατέθηκε σε ${rows.length} χρήστες`);
