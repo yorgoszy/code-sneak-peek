@@ -35,6 +35,8 @@ interface UserSearchComboboxProps {
   adminOwned?: boolean;
   filterByCoach?: boolean;
   disabled?: boolean;
+  /** Extra classes for the trigger button (e.g. to match LIFT styling) */
+  triggerClassName?: string;
 }
 
 // Normalize text for search (remove accents, lowercase)
