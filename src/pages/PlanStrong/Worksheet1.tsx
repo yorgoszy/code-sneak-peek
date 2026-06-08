@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Copy, ClipboardPaste } from 'lucide-react';
 import {
   computeSide, ZONE_LABELS, ZONE_PCT_LABELS, ZONE_COEF, PlanStrongSideInput, getWeekDifficulty,
 } from './planStrongCalc';
@@ -13,6 +14,9 @@ interface Props {
   onChange: (s: PlanStrongSideInput) => void;
   userId?: string;
   userPickerSlot?: React.ReactNode;
+  onCopy?: () => void;
+  onPaste?: () => void;
+  hasClipboard?: boolean;
 }
 
 const cell = "border border-border px-2 py-1 text-xs";
@@ -76,7 +80,7 @@ const PctInput: React.FC<{
   );
 };
 
-export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPickerSlot }) => {
+export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPickerSlot, onCopy, onPaste, hasClipboard }) => {
   const out = computeSide(side);
   const set = (patch: Partial<PlanStrongSideInput>) => onChange({ ...side, ...patch });
   const setZone = (i: number, raw: string) => {
@@ -186,8 +190,31 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
                   </select>
                 </td>
                 <td className={cell}>
-                  <Input className={inp} type="number" value={side.monthlyNL}
-                    onChange={e => set({ monthlyNL: toNum(e.target.value) })} />
+                  <div className="flex items-center gap-1">
+                    <Input className={inp + " flex-1"} type="number" value={side.monthlyNL}
+                      onChange={e => set({ monthlyNL: toNum(e.target.value) })} />
+                    {onCopy && (
+                      <button
+                        type="button"
+                        onClick={onCopy}
+                        className="p-1 hover:bg-muted rounded-none border border-border"
+                        title="Αντιγραφή worksheet"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </button>
+                    )}
+                    {onPaste && (
+                      <button
+                        type="button"
+                        onClick={onPaste}
+                        disabled={!hasClipboard}
+                        className="p-1 hover:bg-muted rounded-none border border-border disabled:opacity-30 disabled:cursor-not-allowed"
+                        title={hasClipboard ? 'Επικόλληση worksheet' : 'Δεν υπάρχει αντιγραμμένο worksheet'}
+                      >
+                        <ClipboardPaste className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             </tbody>
