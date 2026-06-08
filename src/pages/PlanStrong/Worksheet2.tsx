@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useUserExerciseDataCacheContext } from '@/hooks/useUserExerciseDataCache';
 import { Play, CalendarIcon, Send, X } from 'lucide-react';
 import { useExercises } from '@/hooks/useExercises';
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
