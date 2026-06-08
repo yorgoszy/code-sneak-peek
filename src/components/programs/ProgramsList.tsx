@@ -223,7 +223,7 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
   if (programs.length === 0) {
     return (
       <div className="w-full">
-        <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-semibold ${isMobile ? 'mb-3' : 'mb-4'}`}>Προγράμματα</h2>
+        
         <div className={`text-center ${isMobile ? 'py-6' : 'py-8'} text-gray-500`}>
           Δεν υπάρχουν προγράμματα ακόμα
         </div>
@@ -234,7 +234,6 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
   return (
     <>
       <div className="w-full">
-        <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-semibold ${isMobile ? 'mb-3' : 'mb-4'}`}>Προγράμματα</h2>
         <div className={`space-y-${isMobile ? '2' : '3'}`}>
           {programs.map(program => {
             const { weeksCount, avgDaysPerWeek } = getProgramStats(program);
