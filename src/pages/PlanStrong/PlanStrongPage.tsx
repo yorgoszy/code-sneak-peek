@@ -55,14 +55,21 @@ export default function PlanStrongPage() {
       const activeIdx = typeof loaded.activeSideIndex === 'number'
         ? Math.min(Math.max(loaded.activeSideIndex, 0), loadedSides.length - 1)
         : 0;
+      const loadedMonths: any[] = Array.isArray(loaded.months) && loaded.months.length > 0
+        ? loaded.months.map((m: any) => ({
+            sides: Array.isArray(m?.sides) && m.sides.length > 0 ? m.sides : [activeSide],
+            activeSideIndex: typeof m?.activeSideIndex === 'number' ? m.activeSideIndex : 0,
+          }))
+        : [{ sides: loadedSides, activeSideIndex: activeIdx }];
       setData({
         ...def,
         ...loaded,
         side: loadedSides[activeIdx] ?? activeSide,
         sides: loadedSides,
         activeSideIndex: activeIdx,
+        months: loadedMonths,
         sessions: loaded.sessions ?? loaded.sessionsLeft ?? def.sessions,
-      });
+      } as any);
       // Load all sibling drafts (same coach + same plan name) so the user
       // can add/remove athletes from this plan.
       const { data: siblings } = await supabase
@@ -93,19 +100,40 @@ export default function PlanStrongPage() {
     })();
   }, [userIds]);
 
+  // ---- Months (each month = independent Worksheet #1 with its own exercises) ----
+  type MonthState = { sides: PlanStrongSideInput[]; activeSideIndex: number };
+  const monthsList: MonthState[] = ((data as any).months && (data as any).months.length > 0)
+    ? (data as any).months as MonthState[]
+    : [{ sides: (data.sides && data.sides.length > 0) ? data.sides : [data.side], activeSideIndex: data.activeSideIndex ?? 0 }];
+  const [activeMonth, setActiveMonth] = useState(0);
+  const [activeTab, setActiveTab] = useState<string>('ws1-0');
+  const monthIdx = Math.min(Math.max(activeMonth, 0), monthsList.length - 1);
+  const currentMonth = monthsList[monthIdx];
+
   // ---- Exercise tabs (multiple exercises per worksheet) ----
-  const sides: PlanStrongSideInput[] = (data.sides && data.sides.length > 0) ? data.sides : [data.side];
-  const activeIdx = Math.min(Math.max(data.activeSideIndex ?? 0, 0), sides.length - 1);
+  const sides: PlanStrongSideInput[] = currentMonth.sides;
+  const activeIdx = Math.min(Math.max(currentMonth.activeSideIndex ?? 0, 0), sides.length - 1);
   const activeSide = sides[activeIdx] || data.side;
   const [exPickerOpen, setExPickerOpen] = useState(false);
   const { exercises } = useExercises();
 
+  const writeMonth = (next: MonthState) => {
+    const nextMonths = monthsList.map((m, i) => i === monthIdx ? next : m);
+    setData({
+      ...data,
+      months: nextMonths,
+      sides: next.sides,
+      side: next.sides[next.activeSideIndex] || data.side,
+      activeSideIndex: next.activeSideIndex,
+    } as any);
+  };
+
   const updateActiveSide = (next: PlanStrongSideInput) => {
     const nextSides = sides.map((s, i) => i === activeIdx ? next : s);
-    setData({ ...data, sides: nextSides, side: next, activeSideIndex: activeIdx });
+    writeMonth({ sides: nextSides, activeSideIndex: activeIdx });
   };
   const selectTab = (i: number) => {
-    setData({ ...data, sides, side: sides[i], activeSideIndex: i });
+    writeMonth({ sides, activeSideIndex: i });
   };
   const addExerciseTab = (exId: string) => {
     const ex = exercises.find((e: any) => e.id === exId);
@@ -114,14 +142,63 @@ export default function PlanStrongPage() {
       ? { ...fresh, exerciseId: ex.id, lift: ex.name }
       : fresh;
     const nextSides = [...sides, newSide];
-    setData({ ...data, sides: nextSides, side: newSide, activeSideIndex: nextSides.length - 1 });
+    writeMonth({ sides: nextSides, activeSideIndex: nextSides.length - 1 });
     setExPickerOpen(false);
   };
   const removeExerciseTab = (i: number) => {
     if (sides.length <= 1) return;
     const nextSides = sides.filter((_, idx) => idx !== i);
     const nextIdx = Math.max(0, Math.min(activeIdx, nextSides.length - 1));
-    setData({ ...data, sides: nextSides, side: nextSides[nextIdx], activeSideIndex: nextIdx });
+    writeMonth({ sides: nextSides, activeSideIndex: nextIdx });
+  };
+
+  const addMonth = () => {
+    const fresh: MonthState = { sides: [defaultSide()], activeSideIndex: 0 };
+    const nextMonths = [...monthsList, fresh];
+    setData({
+      ...data,
+      months: nextMonths,
+      sides: fresh.sides,
+      side: fresh.sides[0],
+      activeSideIndex: 0,
+    } as any);
+    const newIdx = nextMonths.length - 1;
+    setActiveMonth(newIdx);
+    setActiveTab(`ws1-${newIdx}`);
+  };
+  const removeMonth = (i: number) => {
+    if (monthsList.length <= 1) return;
+    const nextMonths = monthsList.filter((_, idx) => idx !== i);
+    const newActive = Math.max(0, Math.min(monthIdx, nextMonths.length - 1));
+    const m = nextMonths[newActive];
+    setData({
+      ...data,
+      months: nextMonths,
+      sides: m.sides,
+      side: m.sides[m.activeSideIndex] || data.side,
+      activeSideIndex: m.activeSideIndex,
+    } as any);
+    setActiveMonth(newActive);
+    setActiveTab(`ws1-${newActive}`);
+  };
+  const handleTabChange = (val: string) => {
+    setActiveTab(val);
+    if (val.startsWith('ws1-')) {
+      const idx = parseInt(val.slice(4), 10);
+      if (!Number.isNaN(idx)) {
+        setActiveMonth(idx);
+        const m = monthsList[idx];
+        if (m) {
+          setData({
+            ...data,
+            months: monthsList,
+            sides: m.sides,
+            side: m.sides[m.activeSideIndex] || data.side,
+            activeSideIndex: m.activeSideIndex,
+          } as any);
+        }
+      }
+    }
   };
 
   // Clipboard για copy/paste worksheet μεταξύ ασκήσεων
@@ -268,14 +345,38 @@ export default function PlanStrongPage() {
       </div>
 
 
-      <Tabs defaultValue="ws1" className="w-full">
-        <TabsList className="rounded-none">
-          <TabsTrigger className="rounded-none" value="ws1">WORKSHEET #1</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+        <TabsList className="rounded-none flex-wrap h-auto">
+          {monthsList.map((_, i) => (
+            <TabsTrigger key={i} className="rounded-none group relative" value={`ws1-${i}`}>
+              WORKSHEET #1{monthsList.length > 1 ? ` · M${i + 1}` : ''}
+              {monthsList.length > 1 && (
+                <span
+                  role="button"
+                  onClick={(e) => { e.stopPropagation(); removeMonth(i); }}
+                  className="ml-2 inline-flex items-center hover:text-destructive"
+                  title="Αφαίρεση μήνα"
+                >
+                  <X className="w-3 h-3" />
+                </span>
+              )}
+            </TabsTrigger>
+          ))}
+          <Button
+            type="button" variant="outline" size="sm"
+            className="h-7 rounded-none mx-1 self-center"
+            onClick={addMonth}
+            title="Προσθήκη μήνα (νέο Worksheet #1)"
+          >
+            <Plus className="w-3 h-3" />
+          </Button>
           <TabsTrigger className="rounded-none" value="ws2">WORKSHEET #2</TabsTrigger>
           <TabsTrigger className="rounded-none" value="ws3">WORKSHEET #3</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="ws1" className="space-y-3">
+
+        {monthsList.map((_, mIdx) => (
+        <TabsContent key={mIdx} value={`ws1-${mIdx}`} className="space-y-3">
           {/* Exercise tabs */}
           <div className="flex items-center gap-1 flex-wrap border-b border-border">
             {sides.map((s, i) => {
@@ -382,6 +483,9 @@ export default function PlanStrongPage() {
 
 
         </TabsContent>
+        ))}
+
+
 
         <TabsContent value="ws2" className="space-y-3">
           <Worksheet2 title={`PS ${activeSide.ps}`} weeks={data.sessions}
