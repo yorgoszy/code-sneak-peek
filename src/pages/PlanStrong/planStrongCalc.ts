@@ -114,15 +114,25 @@ export function defaultSide(): PlanStrongSideInput {
 
 export interface SessionWeek {
   week: 1 | 2 | 3 | 4;
-  sessions: number[][];
-  plans: string[][];
+  sessions: number[][];   // [zone][day]
+  plans: string[][];      // [zone][day]
 }
 
-export function defaultSessionWeek(week: 1 | 2 | 3 | 4): SessionWeek {
+export function defaultSessionWeek(week: 1 | 2 | 3 | 4, days: number = 5): SessionWeek {
   return {
     week,
-    sessions: Array.from({ length: 6 }, () => [0, 0, 0, 0, 0]),
-    plans: Array.from({ length: 6 }, () => ['', '', '', '', '']),
+    sessions: Array.from({ length: 6 }, () => Array(days).fill(0)),
+    plans: Array.from({ length: 6 }, () => Array(days).fill('')),
+  };
+}
+
+export interface PlanStrongMonthWS2 {
+  weeks: SessionWeek[]; // always 4
+}
+
+export function defaultMonthWS2(): PlanStrongMonthWS2 {
+  return {
+    weeks: [defaultSessionWeek(1), defaultSessionWeek(2), defaultSessionWeek(3), defaultSessionWeek(4)],
   };
 }
 
@@ -130,7 +140,8 @@ export interface PlanStrongData {
   side: PlanStrongSideInput;          // active (back-compat) — mirrors sides[activeSideIndex]
   sides?: PlanStrongSideInput[];      // one entry per exercise (tabs)
   activeSideIndex?: number;
-  sessions: SessionWeek[];
+  sessions: SessionWeek[];            // legacy (Month 1) — kept for backward compat
+  ws2Months?: PlanStrongMonthWS2[];   // new: per-month WS2 (4 weeks each)
   ws3Notes: string;
   // legacy fields kept for backward compat with saved drafts
   left?: PlanStrongSideInput;
@@ -146,6 +157,7 @@ export function defaultPlanStrongData(): PlanStrongData {
     sides: [s],
     activeSideIndex: 0,
     sessions: [defaultSessionWeek(1), defaultSessionWeek(2), defaultSessionWeek(3), defaultSessionWeek(4)],
+    ws2Months: [defaultMonthWS2()],
     ws3Notes: '',
   };
 }
