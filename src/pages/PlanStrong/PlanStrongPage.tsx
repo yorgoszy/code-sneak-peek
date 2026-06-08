@@ -14,6 +14,7 @@ import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Worksheet1Side } from './Worksheet1';
+import { UserExerciseDataCacheProvider } from '@/hooks/useUserExerciseDataCache';
 import { Worksheet2 } from './Worksheet2';
 import { defaultPlanStrongData, defaultSide, PlanStrongData, PlanStrongSideInput, computeWeekDifficulties } from './planStrongCalc';
 import { SimpleExerciseSelectionDialog } from '@/components/programs/builder/SimpleExerciseSelectionDialog';
@@ -366,11 +367,14 @@ export default function PlanStrongPage() {
             </div>
           </div>
 
-          <Worksheet1Side
-            side={activeSide}
-            userId={previewUserId || userIds[0] || userId}
-            onChange={updateActiveSide}
-          />
+          <UserExerciseDataCacheProvider userId={previewUserId || userIds[0] || userId || null}>
+            <Worksheet1Side
+              side={activeSide}
+              userId={previewUserId || userIds[0] || userId}
+              onChange={updateActiveSide}
+            />
+          </UserExerciseDataCacheProvider>
+
 
         </TabsContent>
 
