@@ -117,6 +117,7 @@ const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, 
         const idx = program.weeks.findIndex((w: any) => w.id === weekId);
         if (idx >= 0 && onActiveWeekIndexChange) onActiveWeekIndexChange(idx);
       }}
+      weekDifficulties={weekDifficulties}
     />
   );
 };
@@ -130,6 +131,7 @@ interface Worksheet2Props {
   selectedUserId?: string;
   coachId?: string;
   monthsNL?: MonthNLItem[][];
+  weekDifficulties?: (string | null)[];
 }
 
 export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs, onChange, selectedUserId, coachId, monthsNL }) => {
