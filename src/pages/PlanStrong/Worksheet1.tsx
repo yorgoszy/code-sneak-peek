@@ -389,7 +389,7 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
             </tr>
           </tbody>
         </table>
-        </>
+        </div>
         );})()}
       </div>
 
