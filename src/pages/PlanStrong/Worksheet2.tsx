@@ -232,6 +232,16 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
   const weekInMonth = safeW % 4;
 
   const [currentProgram, setCurrentProgram] = useState<PlanStrongWS2Program | null>(ws2Programs[0] ?? null);
+  const addFromNLRef = useRef<((weekIdx: number, exerciseId: string, exerciseName: string, kg: number, pct: number, velocity: number) => void) | null>(null);
+  const { getOneRM, getVelocityForPercentage } = useUserExerciseDataCacheContext();
+
+  const handleNlChipClick = useCallback((exerciseId: string | undefined, exerciseName: string, kg: number, pct: number) => {
+    if (!exerciseId || !addFromNLRef.current) return;
+    const oneRM = getOneRM(exerciseId) ?? 0;
+    const v = getVelocityForPercentage(exerciseId, pct, oneRM) || 0;
+    addFromNLRef.current(safeW, exerciseId, exerciseName, kg, pct, v);
+    toast.success(`Προστέθηκε ${exerciseName} · ${pct}% · ${kg}kg`);
+  }, [getOneRM, getVelocityForPercentage, safeW]);
 
   const setSingleProgram = (p: PlanStrongWS2Program) => {
     setCurrentProgram(p);
