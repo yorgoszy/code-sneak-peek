@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Play } from 'lucide-react';
 import { useExercises } from '@/hooks/useExercises';
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { useProgramBuilderState } from '@/components/programs/builder/hooks/useProgramBuilderState';
 import { useProgramBuilderActions } from '@/components/programs/builder/hooks/useProgramBuilderActions';
 import { TrainingWeeks } from '@/components/programs/builder/TrainingWeeks';
+import { PlanStrongZoneKgProvider } from '@/contexts/PlanStrongZoneKgContext';
 
 export interface PlanStrongWS2Program {
   weeks: any[];
