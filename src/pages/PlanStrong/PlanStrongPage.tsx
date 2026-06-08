@@ -157,11 +157,15 @@ export default function PlanStrongPage() {
 
   const addMonth = () => {
     const fresh: MonthState = { sides: [defaultSide()], activeSideIndex: 0 };
-    writeMonths([...monthsList, fresh]);
+    const nextMonths = [...monthsList, fresh];
+    writeMonths(nextMonths);
+    setActiveMonthIdx(nextMonths.length - 1);
   };
   const removeMonth = (mIdx: number) => {
     if (monthsList.length <= 1) return;
-    writeMonths(monthsList.filter((_, i) => i !== mIdx));
+    const nextMonths = monthsList.filter((_, i) => i !== mIdx);
+    writeMonths(nextMonths);
+    setActiveMonthIdx(prev => Math.max(0, Math.min(prev > mIdx ? prev - 1 : prev, nextMonths.length - 1)));
   };
 
   // Clipboard για copy/paste worksheet μεταξύ ασκήσεων (διαμοιραζόμενο)
