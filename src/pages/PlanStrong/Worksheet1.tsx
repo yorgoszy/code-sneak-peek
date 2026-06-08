@@ -15,6 +15,7 @@ interface Props {
   userPickerSlot?: React.ReactNode;
   nlActionsSlot?: React.ReactNode;
   headerSlot?: React.ReactNode;
+  prevSide?: PlanStrongSideInput | null;
 }
 
 const cell = "border border-border px-2 py-1 text-xs";
@@ -78,7 +79,7 @@ const PctInput: React.FC<{
   );
 };
 
-export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPickerSlot, nlActionsSlot, headerSlot }) => {
+export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPickerSlot, nlActionsSlot, headerSlot, prevSide }) => {
   const { getOneRM, userId: cachedUserId } = useUserExerciseDataCacheContext();
   // Use cache when a user is previewed (loads once per user, no refetch per exercise switch)
   const fetched1RM = (userId && cachedUserId === userId && side.exerciseId)
@@ -89,6 +90,21 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
     : (side.oneRM ?? '');
   const effectiveSide: PlanStrongSideInput = { ...side, oneRM: effectiveOneRM };
   const out = computeSide(effectiveSide);
+  const prevOut = prevSide ? computeSide({ ...prevSide, oneRM: prevSide.oneRM ?? effectiveOneRM }) : null;
+  const ps = String(side.ps);
+  const curHari = out.ari * 100;
+  const prvHari = prevOut ? prevOut.ari * 100 : 0;
+  const dHariRel = prevOut && prvHari > 0 ? ((curHari - prvHari) / prvHari) * 100 : null;
+  const curNL = out.totalNL || 0;
+  const prvNL = prevOut ? prevOut.totalNL || 0 : 0;
+  const dNLRel = prevOut && prvNL > 0 ? ((curNL - prvNL) / prvNL) * 100 : null;
+  const hariOk = dHariRel == null ? true : (
+    ps === '50' ? Math.abs(dHariRel) >= 1 && Math.abs(dHariRel) <= 5
+    : ps === '70' ? Math.abs(dHariRel) >= 0.5 && Math.abs(dHariRel) <= 1.5
+    : true
+  );
+  const nlOk = dNLRel == null ? true : Math.abs(dNLRel) <= 20;
+  const fmtDelta = (n: number) => `${n >= 0 ? '+' : ''}${n.toFixed(1)}%`;
   const set = (patch: Partial<PlanStrongSideInput>) => onChange({ ...side, ...patch });
   const setZone = (i: number, raw: string) => {
     const arr = [...side.zonePct]; arr[i] = parsePct(raw); set({ zonePct: arr });
@@ -249,10 +265,28 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
           </tbody>
         </table>
 
-        <div className="text-xs">
-          <strong>ARI/HARI:</strong> {(out.ari * 100).toFixed(2)}
-          &nbsp;|&nbsp; <strong>Total NL:</strong> {out.totalNL}
+        <div className="text-xs flex items-center gap-2 flex-wrap">
+          <span>
+            <strong>ARI/HARI:</strong>{' '}
+            <span className={dHariRel == null ? '' : (hariOk ? 'text-[#00ffba] font-semibold' : 'text-red-500 font-semibold')}>
+              {(out.ari * 100).toFixed(2)}
+            </span>
+            {dHariRel != null && (
+              <span className={`ml-1 ${hariOk ? 'text-[#00ffba]' : 'text-red-500'}`}>({fmtDelta(dHariRel)})</span>
+            )}
+          </span>
+          <span>|</span>
+          <span>
+            <strong>Total NL:</strong>{' '}
+            <span className={dNLRel == null ? '' : (nlOk ? 'text-[#00ffba] font-semibold' : 'text-red-500 font-semibold')}>
+              {out.totalNL}
+            </span>
+            {dNLRel != null && (
+              <span className={`ml-1 ${nlOk ? 'text-[#00ffba]' : 'text-red-500'}`}>({fmtDelta(dNLRel)})</span>
+            )}
+          </span>
         </div>
+
 
         {(() => {
           const arr = side.mainPct && side.mainPct.length === 4 ? side.mainPct : [0, 0, 0, 0];

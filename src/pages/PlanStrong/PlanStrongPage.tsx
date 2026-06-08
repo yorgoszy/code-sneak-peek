@@ -400,15 +400,14 @@ export default function PlanStrongPage() {
                       : true;
                   const nlOk = Math.abs(dNLRel) <= 20;
                   const fmt = (n: number) => `${n >= 0 ? '+' : ''}${n.toFixed(1)}%`;
-                  const hariRule = ps === '50' ? '(στόχος 1–5%)' : ps === '70' ? '(στόχος ~1%)' : '';
                   deltaInfo = (
                     <div className="flex items-center gap-2 text-[11px]">
                       <span className="opacity-80">vs M{mIdx}:</span>
                       <span className={hariOk ? 'text-[#00ffba]' : 'text-red-400'}>
-                        Δ HARI {fmt(dHariRel)} {hariRule}
+                        Δ HARI {fmt(dHariRel)}
                       </span>
                       <span className={nlOk ? 'text-[#00ffba]' : 'text-red-400'}>
-                        Δ NL {fmt(dNLRel)} (στόχος ±20%)
+                        Δ NL {fmt(dNLRel)}
                       </span>
                     </div>
                   );
@@ -454,6 +453,10 @@ export default function PlanStrongPage() {
                     side={mActiveSide}
                     userId={previewUserId || userIds[0] || userId}
                     onChange={(next) => updateMonthSide(mIdx, mActiveIdx, next)}
+                    prevSide={mIdx > 0 ? (monthsList[mIdx - 1].sides.find(s =>
+                      (mActiveSide.exerciseId && s.exerciseId === mActiveSide.exerciseId) ||
+                      (mActiveSide.lift && s.lift === mActiveSide.lift)
+                    ) || null) : null}
                     headerSlot={
                       <div className="flex items-center gap-2 flex-wrap">
                         {deltaInfo}
