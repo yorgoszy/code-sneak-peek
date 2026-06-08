@@ -525,8 +525,24 @@ export default function PlanStrongPage() {
         </TabsContent>
 
         <TabsContent value="ws2" className="space-y-3">
-          <Worksheet2 title={`PS ${(monthsList[0]?.sides[monthsList[0]?.activeSideIndex ?? 0] ?? data.side).ps}`} weeks={data.sessions}
-            onChange={w => setData({ ...data, sessions: w })} />
+          {(() => {
+            // Συγχρονισμός ws2Months με τον αριθμό των μηνών του WS1
+            const existing = (data as any).ws2Months as PlanStrongMonthWS2[] | undefined;
+            const synced: PlanStrongMonthWS2[] = monthsList.map((_, i) =>
+              existing?.[i] ?? defaultMonthWS2()
+            );
+            const titles = monthsList.map(m => {
+              const active = m.sides[Math.min(Math.max(m.activeSideIndex ?? 0, 0), m.sides.length - 1)];
+              return `PS ${active?.ps ?? '50'}`;
+            });
+            return (
+              <Worksheet2
+                months={synced}
+                titles={titles}
+                onChange={next => setData({ ...data, ws2Months: next } as any)}
+              />
+            );
+          })()}
         </TabsContent>
 
         <TabsContent value="ws3">
