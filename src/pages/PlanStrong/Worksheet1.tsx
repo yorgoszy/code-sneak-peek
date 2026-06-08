@@ -265,10 +265,28 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
           </tbody>
         </table>
 
-        <div className="text-xs">
-          <strong>ARI/HARI:</strong> {(out.ari * 100).toFixed(2)}
-          &nbsp;|&nbsp; <strong>Total NL:</strong> {out.totalNL}
+        <div className="text-xs flex items-center gap-2 flex-wrap">
+          <span>
+            <strong>ARI/HARI:</strong>{' '}
+            <span className={dHariRel == null ? '' : (hariOk ? 'text-[#00ffba] font-semibold' : 'text-red-500 font-semibold')}>
+              {(out.ari * 100).toFixed(2)}
+            </span>
+            {dHariRel != null && (
+              <span className={`ml-1 ${hariOk ? 'text-[#00ffba]' : 'text-red-500'}`}>({fmtDelta(dHariRel)})</span>
+            )}
+          </span>
+          <span>|</span>
+          <span>
+            <strong>Total NL:</strong>{' '}
+            <span className={dNLRel == null ? '' : (nlOk ? 'text-[#00ffba] font-semibold' : 'text-red-500 font-semibold')}>
+              {out.totalNL}
+            </span>
+            {dNLRel != null && (
+              <span className={`ml-1 ${nlOk ? 'text-[#00ffba]' : 'text-red-500'}`}>({fmtDelta(dNLRel)})</span>
+            )}
+          </span>
         </div>
+
 
         {(() => {
           const arr = side.mainPct && side.mainPct.length === 4 ? side.mainPct : [0, 0, 0, 0];
