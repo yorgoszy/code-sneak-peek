@@ -103,9 +103,10 @@ export const SortableWeekTab: React.FC<SortableWeekTabProps> = ({
         <div className="flex items-center min-w-0">
           <TabsTrigger 
             value={week.id} 
-            className={`rounded-none whitespace-nowrap px-2 text-[10px] h-5 min-w-0 transition-colors ${
-              isActive ? 'bg-foreground/10 font-semibold' : ''
+            className={`rounded-none whitespace-nowrap px-2 text-[10px] h-5 min-w-0 transition-colors ${difficultyClass(difficulty)} ${
+              isActive && !difficulty ? 'bg-foreground/10 font-semibold' : (isActive ? 'font-semibold' : '')
             }`}
+            title={difficulty || undefined}
             onDoubleClick={() => onWeekNameDoubleClick(week)}
           >
             {editingWeekId === week.id ? (
