@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { supabase } from "@/integrations/supabase/client";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
 const Programs = () => {
@@ -307,65 +308,83 @@ const Programs = () => {
 
         {/* Programs Layout Content */}
         <div className={`flex-1 ${isMobile ? 'p-3' : 'p-6'}`}>
-          <ProgramsLayout
-            programs={programs}
-            selectedProgram={selectedProgram}
-            users={users}
-            exercises={exercises}
-            editingProgram={editingProgram}
-            builderDialogOpen={builderOpen}
-            previewProgram={previewProgram}
-            previewDialogOpen={previewOpen}
-            onSelectProgram={setSelectedProgram}
-            onDeleteProgram={handleDeleteProgram}
-            onEditProgram={handleEditProgram}
-            onCreateProgram={handleCreateProgram}
-            onBuilderDialogClose={handleBuilderClose}
-            onDuplicateProgram={handleDuplicateProgram}
-            onPreviewProgram={handlePreviewProgram}
-            onPreviewDialogClose={handlePreviewClose}
-            onDeleteWeek={() => {}}
-            onDeleteDay={() => {}}
-            onDeleteBlock={() => {}}
-            onDeleteExercise={() => {}}
-            onOpenBuilder={handleOpenBuilder}
-            onConvertToTemplate={handleConvertToTemplate}
-            coachId={adminCoachId}
-          />
+          <Tabs defaultValue="programs" className="w-full">
+            <TabsList className="rounded-none">
+              <TabsTrigger value="programs" className="rounded-none">Προγράμματα</TabsTrigger>
+              <TabsTrigger value="plan-strong" className="rounded-none">
+                Plan Strong{planStrongDrafts.length > 0 ? ` (${planStrongDrafts.length})` : ''}
+              </TabsTrigger>
+            </TabsList>
 
-          {planStrongDrafts.length > 0 && (
-            <div className="mt-6 border border-border">
-              <div className="bg-foreground text-background px-3 py-2 text-sm font-bold">
-                PLAN STRONG — Προχείρα & Αναθέσεις ({planStrongDrafts.length})
+            <TabsContent value="programs" className="mt-4">
+              <ProgramsLayout
+                programs={programs}
+                selectedProgram={selectedProgram}
+                users={users}
+                exercises={exercises}
+                editingProgram={editingProgram}
+                builderDialogOpen={builderOpen}
+                previewProgram={previewProgram}
+                previewDialogOpen={previewOpen}
+                onSelectProgram={setSelectedProgram}
+                onDeleteProgram={handleDeleteProgram}
+                onEditProgram={handleEditProgram}
+                onCreateProgram={handleCreateProgram}
+                onBuilderDialogClose={handleBuilderClose}
+                onDuplicateProgram={handleDuplicateProgram}
+                onPreviewProgram={handlePreviewProgram}
+                onPreviewDialogClose={handlePreviewClose}
+                onDeleteWeek={() => {}}
+                onDeleteDay={() => {}}
+                onDeleteBlock={() => {}}
+                onDeleteExercise={() => {}}
+                onOpenBuilder={handleOpenBuilder}
+                onConvertToTemplate={handleConvertToTemplate}
+                coachId={adminCoachId}
+              />
+            </TabsContent>
+
+            <TabsContent value="plan-strong" className="mt-4">
+              <div className="flex justify-between items-center mb-3">
+                <h2 className="text-xl font-bold">Plan Strong</h2>
+                <Button className="rounded-none" onClick={() => navigate('/plan-strong')}>
+                  + Νέο Plan Strong
+                </Button>
               </div>
-              <div className="divide-y divide-border">
-                {planStrongDrafts.map(d => (
-                  <div key={d.id} className="flex items-center justify-between px-3 py-2 hover:bg-muted/30">
-                    <button
-                      type="button"
-                      onClick={() => navigate(`/plan-strong?id=${d.id}`)}
-                      className="flex-1 text-left"
-                    >
-                      <div className="text-sm font-medium">{d.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {d.userName || d.user_id.slice(0, 8)} · {d.status} · {new Date(d.created_at).toLocaleDateString('el-GR')}
+              {planStrongDrafts.length === 0 ? (
+                <div className="border border-border p-6 text-center text-sm text-muted-foreground">
+                  Δεν υπάρχουν Plan Strong πρόχειρα ακόμη.
+                </div>
+              ) : (
+                <div className="border border-border divide-y divide-border">
+                  {planStrongDrafts.map(d => (
+                    <div key={d.id} className="flex items-center justify-between px-3 py-2 hover:bg-muted/30">
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/plan-strong?id=${d.id}`)}
+                        className="flex-1 text-left"
+                      >
+                        <div className="text-sm font-medium">{d.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {d.userName || d.user_id.slice(0, 8)} · {d.status} · {new Date(d.created_at).toLocaleDateString('el-GR')}
+                        </div>
+                      </button>
+                      <div className="flex items-center gap-1">
+                        <Button size="sm" variant="outline" className="rounded-none h-7 w-7 p-0"
+                          onClick={() => navigate(`/plan-strong?id=${d.id}`)}>
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                        <Button size="sm" variant="outline" className="rounded-none h-7 w-7 p-0 text-destructive"
+                          onClick={() => handleDeletePlanStrong(d.id)}>
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
                       </div>
-                    </button>
-                    <div className="flex items-center gap-1">
-                      <Button size="sm" variant="outline" className="rounded-none h-7 w-7 p-0"
-                        onClick={() => navigate(`/plan-strong?id=${d.id}`)}>
-                        <Pencil className="h-3 w-3" />
-                      </Button>
-                      <Button size="sm" variant="outline" className="rounded-none h-7 w-7 p-0 text-destructive"
-                        onClick={() => handleDeletePlanStrong(d.id)}>
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
