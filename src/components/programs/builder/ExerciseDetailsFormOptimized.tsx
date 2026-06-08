@@ -175,13 +175,27 @@ export const ExerciseDetailsFormOptimized: React.FC<ExerciseDetailsFormOptimized
         >
           {kgMode === 'kg' ? 'Kg' : kgMode === 'rpm' ? 'rpm' : kgMode === 'meter' ? 'meter' : kgMode === 's/m' ? 's/m' : 'km/h'}
         </label>
-        <DebouncedInput
-          inputMode="decimal"
-          value={exercise.kg || ''}
-          onChange={handleKgChange}
-          className="text-center w-full"
-          style={inputStyle}
-        />
+        {zoneKgOptions && kgMode === 'kg' ? (
+          <select
+            value={exercise.kg ? String(exercise.kg).replace(',', '.') : ''}
+            onChange={(e) => handleKgChange(e.target.value)}
+            className="text-center w-full border border-input bg-background"
+            style={inputStyle}
+          >
+            <option value="">—</option>
+            {zoneKgOptions.map((kg) => (
+              <option key={kg} value={kg}>{kg}</option>
+            ))}
+          </select>
+        ) : (
+          <DebouncedInput
+            inputMode="decimal"
+            value={exercise.kg || ''}
+            onChange={handleKgChange}
+            className="text-center w-full"
+            style={inputStyle}
+          />
+        )}
       </div>
       
       <div className="flex flex-col items-center" style={{ width: '60px' }}>
