@@ -67,14 +67,23 @@ export function computeSide(s: PlanStrongSideInput): PlanStrongSideOutput {
   const monthlyNlPerZone = zonePct.map(p => roundNl(monthlyNL * p));
   const mainNlPerWeek = s.mainPct.map(p => roundNl(monthlyNL * p));
   const v91NlPerWeek = s.v91Pct.map(p => roundNl(monthlyNL * p));
-  const weeklyHari = s.mainPct.map((wpct) => {
-    const weekNl = monthlyNL * wpct;
-    if (!weekNl) return 0;
-    const intensity = coef.reduce(
-      (a, c, i) => a + c * (zonePct[i] * weekNl) / weekNl,
-      0
-    );
-    return +(intensity * 100).toFixed(2);
+  // Weekly HARI per spreadsheet formula:
+  //   weeklyHARI_w = Σ_z (variantNL_z_w / mainVariantNL_w) × zoneCoef[z] × 100
+  // where variantNL_z_w = monthlyNL × zonePct[z] × vPct_z[w]
+  //   and mainVariantNL_w = monthlyNL × mainPct[w]
+  // => weeklyHARI_w = Σ_z (zonePct[z] × vPct_z[w] / mainPct[w]) × coef[z] × 100
+  const variantByZone: (number[] | undefined)[] = [
+    s.v50Pct, s.v61Pct, s.v71Pct, s.v81Pct, s.v91Pct, s.v95Pct,
+  ];
+  const weeklyHari = s.mainPct.map((mp, w) => {
+    if (!mp) return 0;
+    let sum = 0;
+    for (let z = 0; z < ZONE_COUNT; z++) {
+      const vArr = variantByZone[z];
+      const vp = vArr && vArr.length === 4 ? (vArr[w] || 0) : 0;
+      sum += (zonePct[z] || 0) * vp / mp * (coef[z] || 0);
+    }
+    return +(sum * 100).toFixed(2);
   });
   return {
     zoneKg, ari: +ari.toFixed(4), monthlyNlPerZone,
