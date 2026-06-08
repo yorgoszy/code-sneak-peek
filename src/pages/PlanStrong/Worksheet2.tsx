@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useUserExerciseDataCacheContext } from '@/hooks/useUserExerciseDataCache';
 import { Play, CalendarIcon, Send, X } from 'lucide-react';
 import { useExercises } from '@/hooks/useExercises';
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
@@ -30,12 +31,68 @@ interface EmbeddedBuilderProps {
   coachId?: string;
   onActiveWeekIndexChange?: (idx: number) => void;
   weekDifficulties?: (string | null)[];
+  addFromNLRef?: React.MutableRefObject<((weekIdx: number, exerciseId: string, exerciseName: string, kg: number, pct: number, velocity: number) => void) | null>;
 }
 
-const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, onChange, selectedUserId, coachId, onActiveWeekIndexChange, weekDifficulties }) => {
+const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, onChange, selectedUserId, coachId, onActiveWeekIndexChange, weekDifficulties, addFromNLRef }) => {
   const { exercises } = useExercises();
   const { program, updateProgram, generateId, loadProgramFromData } = useProgramBuilderState(exercises as any);
   const actions = useProgramBuilderActions(program, updateProgram, generateId, exercises as any);
+
+  // Expose function for parent NL row to add an exercise into the current week
+  useEffect(() => {
+    if (!addFromNLRef) return;
+    addFromNLRef.current = (weekIdx, exerciseId, exerciseName, kg, pct, velocity) => {
+      updateProgram((prev) => {
+        const weeks = [...(prev.weeks || [])];
+        if (!weeks[weekIdx]) return prev;
+        const week = { ...weeks[weekIdx] };
+        const days = [...(week.program_days || [])];
+        if (days.length === 0) {
+          days.push({ id: generateId(), name: 'Ημέρα 1', day_number: 1, program_blocks: [] });
+        }
+        const day = { ...days[0] };
+        let blocks = [...(day.program_blocks || [])];
+        if (blocks.length === 0) {
+          blocks.push({
+            id: generateId(),
+            name: 'Block 1',
+            block_sets: 1,
+            block_order: 1,
+            program_exercises: [],
+          } as any);
+        }
+        const lastIdx = blocks.length - 1;
+        const lastBlock = { ...blocks[lastIdx] };
+        const exList = [...(lastBlock.program_exercises || [])];
+        exList.push({
+          id: generateId(),
+          exercise_id: exerciseId,
+          sets: 1,
+          reps: '',
+          reps_mode: 'reps' as const,
+          kg: String(kg).replace('.', ','),
+          kg_mode: 'kg' as const,
+          percentage_1rm: pct,
+          velocity_ms: velocity ? Number(velocity.toFixed(2)) : 0,
+          tempo: '',
+          rest: '',
+          notes: '',
+          exercise_order: exList.length + 1,
+          exercises: { id: exerciseId, name: exerciseName, description: '' },
+        });
+        lastBlock.program_exercises = exList;
+        blocks[lastIdx] = lastBlock;
+        day.program_blocks = blocks;
+        days[0] = day;
+        week.program_days = days;
+        weeks[weekIdx] = week;
+        return { weeks };
+      });
+    };
+    return () => { if (addFromNLRef) addFromNLRef.current = null; };
+  }, [addFromNLRef, updateProgram, generateId]);
+
 
   const seededRef = useRef(false);
   useEffect(() => {
@@ -175,6 +232,16 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
   const weekInMonth = safeW % 4;
 
   const [currentProgram, setCurrentProgram] = useState<PlanStrongWS2Program | null>(ws2Programs[0] ?? null);
+  const addFromNLRef = useRef<((weekIdx: number, exerciseId: string, exerciseName: string, kg: number, pct: number, velocity: number) => void) | null>(null);
+  const { getOneRM, getVelocityForPercentage } = useUserExerciseDataCacheContext();
+
+  const handleNlChipClick = useCallback((exerciseId: string | undefined, exerciseName: string, kg: number, pct: number) => {
+    if (!exerciseId || !addFromNLRef.current) return;
+    const oneRM = getOneRM(exerciseId) ?? 0;
+    const v = getVelocityForPercentage(exerciseId, pct, oneRM) || 0;
+    addFromNLRef.current(safeW, exerciseId, exerciseName, kg, pct, v);
+    toast.success(`Προστέθηκε ${exerciseName} · ${pct}% · ${kg}kg`);
+  }, [getOneRM, getVelocityForPercentage, safeW]);
 
   const setSingleProgram = (p: PlanStrongWS2Program) => {
     setCurrentProgram(p);
@@ -444,10 +511,12 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                         const remain = Math.max(0, p.nl - used);
                         const done = used >= p.nl;
                         return (
-                          <div
+                          <button
                             key={idx}
-                            className={`inline-flex flex-col items-center border px-1 py-0.5 tabular-nums leading-tight ${done ? 'border-[#00ffba] bg-[#00ffba]/10' : 'border-border'}`}
-                            title={`Χρησιμοποιημένα: ${used} / ${p.nl}`}
+                            type="button"
+                            onClick={() => handleNlChipClick(row.exerciseId, row.name, p.kg, p.pct)}
+                            className={`inline-flex flex-col items-center border px-1 py-0.5 tabular-nums leading-tight cursor-pointer hover:bg-foreground/10 ${done ? 'border-[#00ffba] bg-[#00ffba]/10' : 'border-border'}`}
+                            title={`Κλικ για προσθήκη · Χρησιμοποιημένα: ${used} / ${p.nl}`}
                           >
                             <span className="font-medium">
                               {p.pct}<span className="text-[9px] text-muted-foreground">%</span>
@@ -456,7 +525,7 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                               <span className="font-medium">{remain}</span>
                               <span className="text-[9px] text-muted-foreground">/{p.nl}</span>
                             </span>
-                          </div>
+                          </button>
                         );
                       })}
                     </div>
@@ -479,6 +548,7 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
             coachId={coachId}
             onActiveWeekIndexChange={setActiveW}
             weekDifficulties={weekDifficulties}
+            addFromNLRef={addFromNLRef}
           />
         </PlanStrongZoneKgProvider>
       </div>
