@@ -1,176 +1,147 @@
-import React from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Plus, X } from 'lucide-react';
-import { SessionWeek, PlanStrongMonthWS2, defaultSessionWeek } from './planStrongCalc';
+import React, { useEffect, useRef, useState } from 'react';
+import { useExercises } from '@/hooks/useExercises';
+import { useProgramBuilderState, ProgramStructure } from '@/components/programs/builder/hooks/useProgramBuilderState';
+import { useProgramBuilderActions } from '@/components/programs/builder/hooks/useProgramBuilderActions';
+import { TrainingWeeks } from '@/components/programs/builder/TrainingWeeks';
 
-const ZONES = ['>=95%1RM', '91-94%1RM', '81-90%1RM', '71-80%1RM', '61-70%1RM', '50-60%1RM'];
-// Map display order (high→low) to data zone index (low→high in planStrongCalc)
-const ZONE_DATA_IDX = [5, 4, 3, 2, 1, 0];
-
-const cell = "border border-border px-2 py-1 text-xs";
-const head = cell + " bg-muted font-semibold";
-const inp = "h-7 px-1 text-xs rounded-none border-0 bg-transparent";
-
-interface WeekBlockProps {
-  w: SessionWeek;
-  onUpdate: (w: SessionWeek) => void;
+export interface PlanStrongWS2Program {
+  weeks: any[];
 }
 
-const WeekBlock: React.FC<WeekBlockProps> = ({ w, onUpdate }) => {
-  const dayCount = w.sessions[0]?.length ?? 5;
+interface EmbeddedMonthBuilderProps {
+  initial?: PlanStrongWS2Program | null;
+  onChange: (program: PlanStrongWS2Program) => void;
+  selectedUserId?: string;
+  coachId?: string;
+}
 
-  const setSession = (zi: number, di: number, v: number) => {
-    const sessions = w.sessions.map((row, ri) => ri === zi ? row.map((c, ci) => ci === di ? v : c) : row);
-    onUpdate({ ...w, sessions });
-  };
-  const setPlan = (zi: number, di: number, v: string) => {
-    const plans = w.plans.map((row, ri) => ri === zi ? row.map((c, ci) => ci === di ? v : c) : row);
-    onUpdate({ ...w, plans });
-  };
-  const dayTotal = (di: number) => w.sessions.reduce((a, row) => a + (row[di] || 0), 0);
+const EmbeddedMonthBuilder: React.FC<EmbeddedMonthBuilderProps> = ({ initial, onChange, selectedUserId, coachId }) => {
+  const { exercises } = useExercises();
+  const { program, updateProgram, generateId, loadProgramFromData } = useProgramBuilderState(exercises as any);
+  const actions = useProgramBuilderActions(program, updateProgram, generateId, exercises as any);
 
-  const addDay = () => {
-    const sessions = w.sessions.map(row => [...row, 0]);
-    const plans = w.plans.map(row => [...row, '']);
-    onUpdate({ ...w, sessions, plans });
-  };
-  const removeDay = (di: number) => {
-    if (dayCount <= 1) return;
-    const sessions = w.sessions.map(row => row.filter((_, i) => i !== di));
-    const plans = w.plans.map(row => row.filter((_, i) => i !== di));
-    onUpdate({ ...w, sessions, plans });
-  };
+  const seededRef = useRef(false);
+  useEffect(() => {
+    if (seededRef.current) return;
+    if (!exercises || exercises.length === 0) return; // wait for exercises
+    seededRef.current = true;
+
+    if (initial && Array.isArray(initial.weeks) && initial.weeks.length > 0) {
+      loadProgramFromData({ weeks: initial.weeks });
+    } else {
+      const weeks = Array.from({ length: 4 }).map((_, i) => ({
+        id: generateId(),
+        name: `Εβδομάδα ${i + 1}`,
+        week_number: i + 1,
+        program_days: [{
+          id: generateId(),
+          name: 'Ημέρα 1',
+          day_number: 1,
+          program_blocks: [],
+        }],
+      }));
+      updateProgram({ weeks });
+    }
+  }, [exercises]);
+
+  // Sync up
+  useEffect(() => {
+    if (!seededRef.current) return;
+    onChange({ weeks: program.weeks });
+  }, [program.weeks]);
 
   return (
-    <div className="border border-border">
-      <div className="bg-muted px-2 py-1 text-xs font-semibold flex items-center justify-between">
-        <span>WEEK {w.week}</span>
-        <Button size="sm" variant="outline" className="h-6 px-2 rounded-none" onClick={addDay}>
-          <Plus className="w-3 h-3 mr-1" /> Ημέρα
-        </Button>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="border-collapse w-full">
-          <thead>
-            <tr>
-              <th className={head}>ZONE / NL</th>
-              {Array.from({ length: dayCount }).map((_, di) => (
-                <th key={di} className={head}>
-                  <div className="flex items-center justify-between gap-1">
-                    <span>DAY {di + 1}</span>
-                    {dayCount > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeDay(di)}
-                        className="hover:text-destructive"
-                        title="Αφαίρεση ημέρας"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    )}
-                  </div>
-                </th>
-              ))}
-              <th className={head}>CHECK</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className={head}>DAY NL</td>
-              {Array.from({ length: dayCount }).map((_, di) => (
-                <td key={di} className={cell + " bg-muted/30"}>{dayTotal(di)}</td>
-              ))}
-              <td className={cell + " bg-muted/30"}></td>
-            </tr>
-            {ZONES.map((z, displayIdx) => {
-              const zi = ZONE_DATA_IDX[displayIdx];
-              return (
-                <tr key={z}>
-                  <td className={head}>{z}</td>
-                  {w.sessions[zi].map((v, di) => (
-                    <td key={di} className={cell + " p-0"}>
-                      <Input
-                        className={inp + " w-16"}
-                        type="number"
-                        value={v}
-                        onChange={e => setSession(zi, di, +e.target.value)}
-                      />
-                    </td>
-                  ))}
-                  <td className={cell + " bg-muted/30"}>{w.sessions[zi].reduce((a, b) => a + b, 0)}</td>
-                </tr>
-              );
-            })}
-            <tr>
-              <td className={head}>PLAN</td>
-              {Array.from({ length: dayCount }).map((_, di) => (
-                <td key={di} className={cell + " p-0"}>
-                  <Input
-                    className={inp}
-                    placeholder="3x75"
-                    value={w.plans[0]?.[di] ?? ''}
-                    onChange={e => setPlan(0, di, e.target.value)}
-                  />
-                </td>
-              ))}
-              <td className={cell}></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <TrainingWeeks
+      weeks={program.weeks}
+      exercises={exercises as any}
+      selectedUserId={selectedUserId}
+      onAddWeek={actions.addWeek}
+      onRemoveWeek={actions.removeWeek}
+      onDuplicateWeek={actions.duplicateWeek}
+      onUpdateWeekName={actions.updateWeekName}
+      onPasteWeek={actions.pasteWeek}
+      onAddDay={actions.addDay}
+      onRemoveDay={actions.removeDay}
+      onUpdateDayName={actions.updateDayName}
+      onUpdateDayTestDay={actions.updateDayTestDay}
+      onUpdateDayCompetitionDay={actions.updateDayCompetitionDay}
+      onUpdateDayEsdRecovery={actions.updateDayEsdRecovery}
+      onUpdateDayEffort={actions.updateDayEffort}
+      onAddBlock={actions.addBlock}
+      onRemoveBlock={actions.removeBlock}
+      onDuplicateBlock={actions.duplicateBlock}
+      onUpdateBlockName={actions.updateBlockName}
+      onUpdateBlockTrainingType={actions.updateBlockTrainingType}
+      onUpdateBlockWorkoutFormat={actions.updateBlockWorkoutFormat}
+      onUpdateBlockWorkoutDuration={actions.updateBlockWorkoutDuration}
+      onUpdateBlockSets={actions.updateBlockSets}
+      onAddExercise={actions.addExercise}
+      onRemoveExercise={actions.removeExercise}
+      onUpdateExercise={actions.updateExercise}
+      onDuplicateExercise={actions.duplicateExercise}
+      onReorderWeeks={actions.reorderWeeks}
+      onReorderDays={actions.reorderDays}
+      onReorderBlocks={actions.reorderBlocks}
+      onReorderExercises={actions.reorderExercises}
+      onPasteBlock={actions.pasteBlock}
+      onPasteBlockAtBlock={actions.pasteBlockAtBlock}
+      onPasteDay={actions.pasteDay}
+      onSelectBlockTemplate={actions.loadBlockTemplate}
+      coachId={coachId}
+    />
   );
 };
 
-interface MonthBlockProps {
-  monthIdx: number;
-  month: PlanStrongMonthWS2;
-  title: string;
-  onUpdate: (m: PlanStrongMonthWS2) => void;
+interface Worksheet2Props {
+  monthsCount: number;
+  ws2Programs: (PlanStrongWS2Program | null)[];
+  onChange: (programs: (PlanStrongWS2Program | null)[]) => void;
+  selectedUserId?: string;
+  coachId?: string;
 }
 
-const MonthBlock: React.FC<MonthBlockProps> = ({ monthIdx, month, title, onUpdate }) => {
-  const weeks = month.weeks;
-  const updateWeek = (wi: number) => (nw: SessionWeek) => {
-    onUpdate({ ...month, weeks: weeks.map((x, i) => i === wi ? nw : x) });
+export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs, onChange, selectedUserId, coachId }) => {
+  const [activeM, setActiveM] = useState(0);
+  const safeActive = Math.min(Math.max(activeM, 0), Math.max(monthsCount - 1, 0));
+
+  const setMonthProgram = (mIdx: number, p: PlanStrongWS2Program) => {
+    const next = Array.from({ length: monthsCount }).map((_, i) =>
+      i === mIdx ? p : (ws2Programs[i] ?? null)
+    );
+    onChange(next);
   };
+
   return (
     <div className="border border-border">
-      <div className="bg-foreground text-background px-3 py-2 text-sm font-bold flex justify-between">
-        <span>M{monthIdx + 1} — {title}</span>
+      <div className="bg-foreground text-background px-3 py-2 text-sm font-bold flex items-center justify-between flex-wrap gap-2">
+        <span>PLAN STRONG™ — Program Builder</span>
+        <div className="flex items-center gap-1">
+          {Array.from({ length: monthsCount }).map((_, i) => {
+            const active = i === safeActive;
+            return (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setActiveM(i)}
+                className={`px-2 h-6 border rounded-none text-xs ${active ? 'bg-background text-foreground border-background' : 'bg-transparent text-background border-background/40 hover:bg-background/10'}`}
+              >
+                M{i + 1}
+              </button>
+            );
+          })}
+        </div>
         <span>WORKSHEET #2</span>
       </div>
-      <div className="p-2 grid grid-cols-1 md:grid-cols-2 gap-2">
-        {weeks.map((w, i) => (
-          <WeekBlock key={i} w={w} onUpdate={updateWeek(i)} />
-        ))}
-      </div>
-    </div>
-  );
-};
-
-interface Props {
-  months: PlanStrongMonthWS2[];
-  onChange: (months: PlanStrongMonthWS2[]) => void;
-  titles: string[]; // length === months.length, e.g. "PS 50"
-}
-
-export const Worksheet2: React.FC<Props> = ({ months, onChange, titles }) => {
-  const updateMonth = (mi: number) => (m: PlanStrongMonthWS2) => {
-    onChange(months.map((x, i) => i === mi ? m : x));
-  };
-  return (
-    <div className="space-y-4">
-      {months.map((m, i) => (
-        <MonthBlock
-          key={i}
-          monthIdx={i}
-          month={m}
-          title={titles[i] ?? ''}
-          onUpdate={updateMonth(i)}
+      <div className="p-2">
+        {/* key by safeActive to remount builder per month (avoids state leak between months) */}
+        <EmbeddedMonthBuilder
+          key={safeActive}
+          initial={ws2Programs[safeActive] ?? null}
+          onChange={(p) => setMonthProgram(safeActive, p)}
+          selectedUserId={selectedUserId}
+          coachId={coachId}
         />
-      ))}
+      </div>
     </div>
   );
 };
