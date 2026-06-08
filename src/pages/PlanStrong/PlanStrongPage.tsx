@@ -126,7 +126,7 @@ export default function PlanStrongPage() {
         .filter(([uid]) => !userIds.includes(uid))
         .map(([, id]) => id);
 
-      const ops: Promise<any>[] = [...updates];
+      const ops: any[] = [...updates];
       if (toInsert.length > 0) {
         ops.push(
           supabase.from('plan_strong_drafts').insert(toInsert).select().then((res: any) => {
