@@ -139,6 +139,9 @@ export default function PlanStrongPage() {
     };
     updateActiveSide(next);
     toast.success('Επικολλήθηκε worksheet');
+  };
+
+
 
 
   const addUser = (uid: string | null) => {
