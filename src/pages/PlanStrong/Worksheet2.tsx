@@ -416,8 +416,9 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
               {currentMonthNL.map((row, i) => {
                 const zones = row.nlPerZonePerWeek?.[weekInMonth] || [];
                 const kgs = row.zoneKg || [];
+                const pcts = row.zonePct || [];
                 const sets = zones
-                  .map((nl, z) => ({ nl, kg: kgs[z] || 0 }))
+                  .map((nl, z) => ({ nl, kg: kgs[z] || 0, pct: Math.round((pcts[z] || 0) * (pcts[z] && pcts[z] <= 1 ? 100 : 1)) }))
                   .filter(p => p.nl > 0);
                 const hasVideo = row.videoUrl && isValidVideoUrl(row.videoUrl);
                 const thumb = hasVideo ? getVideoThumbnail(row.videoUrl!) : null;
@@ -445,14 +446,16 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                         return (
                           <div
                             key={idx}
-                            className={`inline-flex items-center gap-0.5 border px-1 py-0.5 tabular-nums ${done ? 'border-[#00ffba] bg-[#00ffba]/10' : 'border-border'}`}
+                            className={`inline-flex flex-col items-center border px-1 py-0.5 tabular-nums leading-tight ${done ? 'border-[#00ffba] bg-[#00ffba]/10' : 'border-border'}`}
                             title={`Χρησιμοποιημένα: ${used} / ${p.nl}`}
                           >
-                            <span className="font-medium">{p.kg}</span>
-                            <span className="text-[9px] text-muted-foreground">kg</span>
-                            <span className="text-muted-foreground mx-0.5">·</span>
-                            <span className="font-medium">{remain}</span>
-                            <span className="text-[9px] text-muted-foreground">/{p.nl}</span>
+                            <span className="font-medium">
+                              {p.pct}<span className="text-[9px] text-muted-foreground">%</span>
+                            </span>
+                            <span>
+                              <span className="font-medium">{remain}</span>
+                              <span className="text-[9px] text-muted-foreground">/{p.nl}</span>
+                            </span>
                           </div>
                         );
                       })}
