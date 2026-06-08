@@ -134,7 +134,7 @@ interface Worksheet2Props {
   weekDifficulties?: (string | null)[];
 }
 
-export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs, onChange, selectedUserId, coachId, monthsNL }) => {
+export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs, onChange, selectedUserId, coachId, monthsNL, weekDifficulties }) => {
   const [activeW, setActiveW] = useState(0);
   const totalWeeks = Math.max(monthsCount, 1) * 4;
   const safeW = Math.min(Math.max(activeW, 0), totalWeeks - 1);
