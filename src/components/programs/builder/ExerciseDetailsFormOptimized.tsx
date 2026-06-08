@@ -3,6 +3,7 @@ import React, { useState, useCallback } from 'react';
 import { ProgramExercise } from '../types';
 import { DebouncedInput } from './DebouncedInput';
 import { RollingTimeInput } from './RollingTimeInput';
+import { useZoneKgOptions } from '@/contexts/PlanStrongZoneKgContext';
 
 interface ExerciseDetailsFormOptimizedProps {
   exercise: ProgramExercise;
@@ -16,6 +17,7 @@ export const ExerciseDetailsFormOptimized: React.FC<ExerciseDetailsFormOptimized
   const [isTimeMode, setIsTimeMode] = useState(false);
   const [repsMode, setRepsMode] = useState<'reps' | 'time' | 'meter'>(exercise.reps_mode || 'reps');
   const [kgMode, setKgMode] = useState<'kg' | 'rpm' | 'meter' | 's/m' | 'km/h'>(exercise.kg_mode || 'kg');
+  const zoneKgOptions = useZoneKgOptions(exercise.exercise_id);
 
   // Sync local state with exercise props when they change
   React.useEffect(() => {
@@ -173,13 +175,27 @@ export const ExerciseDetailsFormOptimized: React.FC<ExerciseDetailsFormOptimized
         >
           {kgMode === 'kg' ? 'Kg' : kgMode === 'rpm' ? 'rpm' : kgMode === 'meter' ? 'meter' : kgMode === 's/m' ? 's/m' : 'km/h'}
         </label>
-        <DebouncedInput
-          inputMode="decimal"
-          value={exercise.kg || ''}
-          onChange={handleKgChange}
-          className="text-center w-full"
-          style={inputStyle}
-        />
+        {zoneKgOptions && kgMode === 'kg' ? (
+          <select
+            value={exercise.kg ? String(exercise.kg).replace(',', '.') : ''}
+            onChange={(e) => handleKgChange(e.target.value)}
+            className="text-center w-full border border-input bg-background"
+            style={inputStyle}
+          >
+            <option value="">—</option>
+            {zoneKgOptions.map((kg) => (
+              <option key={kg} value={kg}>{kg}</option>
+            ))}
+          </select>
+        ) : (
+          <DebouncedInput
+            inputMode="decimal"
+            value={exercise.kg || ''}
+            onChange={handleKgChange}
+            className="text-center w-full"
+            style={inputStyle}
+          />
+        )}
       </div>
       
       <div className="flex flex-col items-center" style={{ width: '60px' }}>

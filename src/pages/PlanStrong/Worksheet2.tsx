@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Play } from 'lucide-react';
 import { useExercises } from '@/hooks/useExercises';
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { useProgramBuilderState } from '@/components/programs/builder/hooks/useProgramBuilderState';
 import { useProgramBuilderActions } from '@/components/programs/builder/hooks/useProgramBuilderActions';
 import { TrainingWeeks } from '@/components/programs/builder/TrainingWeeks';
+import { PlanStrongZoneKgProvider } from '@/contexts/PlanStrongZoneKgContext';
 
 export interface PlanStrongWS2Program {
   weeks: any[];
@@ -124,7 +125,7 @@ const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, 
   );
 };
 
-interface MonthNLItem { name: string; videoUrl?: string; nlPerWeek: number[]; totalNL: number; nlPerZonePerWeek?: number[][]; zoneKg?: number[] }
+interface MonthNLItem { name: string; exerciseId?: string; videoUrl?: string; nlPerWeek: number[]; totalNL: number; nlPerZonePerWeek?: number[][]; zoneKg?: number[] }
 
 interface Worksheet2Props {
   monthsCount: number;
@@ -148,6 +149,16 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
   };
 
   const currentMonthNL = monthsNL && monthsNL[monthIdx] ? monthsNL[monthIdx] : [];
+
+  const kgOptionsByExerciseId = useMemo(() => {
+    const map: Record<string, number[]> = {};
+    currentMonthNL.forEach((row) => {
+      if (row.exerciseId && row.zoneKg && row.zoneKg.length > 0) {
+        map[row.exerciseId] = row.zoneKg.filter((k) => k > 0);
+      }
+    });
+    return map;
+  }, [currentMonthNL]);
 
   return (
     <div className="border border-border">
@@ -205,15 +216,17 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
             </div>
           </div>
         )}
-        <EmbeddedBuilder
-          initial={ws2Programs[0] ?? null}
-          totalWeeks={totalWeeks}
-          onChange={setSingleProgram}
-          selectedUserId={selectedUserId}
-          coachId={coachId}
-          onActiveWeekIndexChange={setActiveW}
-          weekDifficulties={weekDifficulties}
-        />
+        <PlanStrongZoneKgProvider kgOptionsByExerciseId={kgOptionsByExerciseId}>
+          <EmbeddedBuilder
+            initial={ws2Programs[0] ?? null}
+            totalWeeks={totalWeeks}
+            onChange={setSingleProgram}
+            selectedUserId={selectedUserId}
+            coachId={coachId}
+            onActiveWeekIndexChange={setActiveW}
+            weekDifficulties={weekDifficulties}
+          />
+        </PlanStrongZoneKgProvider>
       </div>
     </div>
   );
