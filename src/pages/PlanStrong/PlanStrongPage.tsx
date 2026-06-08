@@ -15,7 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Worksheet1Side } from './Worksheet1';
 import { Worksheet2 } from './Worksheet2';
-import { defaultPlanStrongData, PlanStrongData } from './planStrongCalc';
+import { defaultPlanStrongData, PlanStrongData, computeWeekDifficulties } from './planStrongCalc';
 
 export default function PlanStrongPage() {
   const navigate = useNavigate();
