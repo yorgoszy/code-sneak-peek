@@ -269,6 +269,71 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
     return map;
   }, [currentProgram, ws2Programs, safeW, linkedToRoot]);
 
+  // ===== Assignment =====
+  const weeksForAssign = currentProgram?.weeks || ws2Programs[0]?.weeks || [];
+  const totalRequiredDays = useMemo(
+    () => weeksForAssign.reduce((sum: number, w: any) => sum + (w.program_days?.length || 0), 0),
+    [weeksForAssign]
+  );
+  const [assignDates, setAssignDates] = useState<Date[]>([]);
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [assigning, setAssigning] = useState(false);
+
+  const handleAssign = async () => {
+    if (!assignUsers || assignUsers.length === 0) {
+      toast.error('Δεν υπάρχουν χρήστες — πρόσθεσε από το Worksheet #1');
+      return;
+    }
+    if (totalRequiredDays === 0) {
+      toast.error('Δεν υπάρχουν ημέρες προπόνησης');
+      return;
+    }
+    if (assignDates.length < totalRequiredDays) {
+      toast.error(`Επίλεξε ${totalRequiredDays} ημερομηνίες (έχεις ${assignDates.length})`);
+      return;
+    }
+    setAssigning(true);
+    try {
+      const trainingDates = assignDates
+        .slice(0, totalRequiredDays)
+        .sort((a, b) => a.getTime() - b.getTime())
+        .map(d => formatDateForStorage(d));
+
+      for (const u of assignUsers) {
+        const savedProgram = await programService.saveProgram({
+          name: planName || 'Plan Strong',
+          description: '',
+          user_id: u.id,
+          weeks: weeksForAssign,
+        } as any);
+
+        const assignment = await assignmentService.saveAssignment({
+          program: { ...savedProgram, weeks: weeksForAssign },
+          userId: u.id,
+          trainingDates,
+          coachId,
+        });
+
+        if (assignment && assignment.length > 0) {
+          await workoutCompletionService.createWorkoutCompletions(
+            assignment[0],
+            savedProgram,
+            u.id,
+            trainingDates,
+            { name: planName || 'Plan Strong', weeks: weeksForAssign } as any
+          );
+        }
+      }
+      toast.success(`Ανατέθηκε σε ${assignUsers.length} χρήστες`);
+      setAssignOpen(false);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || 'Σφάλμα ανάθεσης');
+    } finally {
+      setAssigning(false);
+    }
+  };
+
 
   return (
     <div className="border border-border">
