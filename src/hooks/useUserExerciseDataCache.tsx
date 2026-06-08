@@ -29,6 +29,16 @@ const UserExerciseDataCacheContext = createContext<UserExerciseDataCache>({
   userId: null,
 });
 
+type CachedExerciseData = {
+  rmMap: Map<string, number>;
+  rmVelocityMap: Map<string, number>;
+  linkMap: Map<string, string[]>;
+  velocityProfiles: Map<string, VelocityProfile>;
+};
+
+const exerciseDataCacheByUser = new Map<string, CachedExerciseData>();
+const exerciseDataRequestsByUser = new Map<string, Promise<CachedExerciseData>>();
+
 export const useUserExerciseDataCacheContext = () => useContext(UserExerciseDataCacheContext);
 
 interface Props {
@@ -45,17 +55,45 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
   const [linkMap, setLinkMap] = useState<Map<string, string[]>>(new Map());
   // Map: exerciseId -> VelocityProfile
   const [velocityProfiles, setVelocityProfiles] = useState<Map<string, VelocityProfile>>(new Map());
+  const [loadedUserId, setLoadedUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const applyCache = useCallback((cache: CachedExerciseData, cacheUserId: string) => {
+    setRmMap(new Map(cache.rmMap));
+    setRmVelocityMap(new Map(cache.rmVelocityMap));
+    setLinkMap(new Map(cache.linkMap));
+    setVelocityProfiles(new Map(cache.velocityProfiles));
+    setLoadedUserId(cacheUserId);
+  }, []);
+
   useEffect(() => {
+    let cancelled = false;
+
+    if (!userId) {
+      setRmMap(new Map());
+      setRmVelocityMap(new Map());
+      setLinkMap(new Map());
+      setVelocityProfiles(new Map());
+      setLoadedUserId(null);
+      setLoading(false);
+      return;
+    }
+
+    const cached = exerciseDataCacheByUser.get(userId);
+    if (cached) {
+      applyCache(cached, userId);
+      setLoading(false);
+      return;
+    }
+
     setRmMap(new Map());
     setRmVelocityMap(new Map());
     setLinkMap(new Map());
     setVelocityProfiles(new Map());
+    setLoadedUserId(null);
+    setLoading(true);
 
-    if (!userId) return;
-
-    const fetchAll = async () => {
+    const fetchAll = async (): Promise<CachedExerciseData> => {
       setLoading(true);
       try {
         // 1. Fetch ALL 1RM records for this user in ONE query
@@ -200,19 +238,38 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
           }
         }
 
-        setRmMap(newRmMap);
-        setRmVelocityMap(newRmVelocityMap);
-        setLinkMap(newLinkMap);
-        setVelocityProfiles(newVelocityProfiles);
+        return {
+          rmMap: newRmMap,
+          rmVelocityMap: newRmVelocityMap,
+          linkMap: newLinkMap,
+          velocityProfiles: newVelocityProfiles,
+        };
       } catch (err) {
         console.error('Error fetching user exercise data cache:', err);
-      } finally {
-        setLoading(false);
+        return {
+          rmMap: new Map(),
+          rmVelocityMap: new Map(),
+          linkMap: new Map(),
+          velocityProfiles: new Map(),
+        };
       }
     };
 
-    fetchAll();
-  }, [userId]);
+    const request = exerciseDataRequestsByUser.get(userId) || fetchAll();
+    exerciseDataRequestsByUser.set(userId, request);
+
+    request.then((cache) => {
+      exerciseDataCacheByUser.set(userId, cache);
+      if (!cancelled) {
+        applyCache(cache, userId);
+        setLoading(false);
+      }
+    }).finally(() => {
+      exerciseDataRequestsByUser.delete(userId);
+    });
+
+    return () => { cancelled = true; };
+  }, [applyCache, userId]);
 
   const getOneRM = useCallback((exerciseId: string): number | null => {
     // Direct match
@@ -275,8 +332,8 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
     getOneRMVelocity,
     getVelocityForPercentage,
     loading,
-    userId,
-  }), [getOneRM, getOneRMVelocity, getVelocityForPercentage, loading, userId]);
+    userId: loadedUserId,
+  }), [getOneRM, getOneRMVelocity, getVelocityForPercentage, loading, loadedUserId]);
 
   return (
     <UserExerciseDataCacheContext.Provider value={value}>
