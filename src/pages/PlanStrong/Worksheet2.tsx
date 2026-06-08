@@ -105,7 +105,9 @@ interface Worksheet2Props {
 
 export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs, onChange, selectedUserId, coachId, monthsNL }) => {
   const [activeM, setActiveM] = useState(0);
+  const [activeW, setActiveW] = useState(0);
   const safeActive = Math.min(Math.max(activeM, 0), Math.max(monthsCount - 1, 0));
+  const safeW = Math.min(Math.max(activeW, 0), 3);
 
   const setMonthProgram = (mIdx: number, p: PlanStrongWS2Program) => {
     const next = Array.from({ length: monthsCount }).map((_, i) =>
