@@ -11,7 +11,8 @@ export interface PlanStrongSideInput {
   zonePct: number[];       // length 6 (fractions, e.g. 0.58)
   zoneCoef?: number[];     // length 6 — editable %1RM row (fractions). Falls back to ZONE_COEF.
   mainPct: number[];       // length 4
-  v91Pct: number[];        // length 4
+  v91Pct: number[];        // length 4 — zone 4 (93% / 91-94%)
+  v95Pct?: number[];       // length 4 — zone 5 (100% / >=95%)
   v81Pct: number[];        // length 4
   v71Pct?: number[];       // length 4 — VARIANT (71-80%)
   v61Pct?: number[];       // length 4 — VARIANT (61-70%)
