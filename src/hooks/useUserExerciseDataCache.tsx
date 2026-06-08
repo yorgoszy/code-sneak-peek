@@ -55,13 +55,15 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
   const [linkMap, setLinkMap] = useState<Map<string, string[]>>(new Map());
   // Map: exerciseId -> VelocityProfile
   const [velocityProfiles, setVelocityProfiles] = useState<Map<string, VelocityProfile>>(new Map());
+  const [loadedUserId, setLoadedUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const applyCache = useCallback((cache: CachedExerciseData) => {
+  const applyCache = useCallback((cache: CachedExerciseData, cacheUserId: string) => {
     setRmMap(new Map(cache.rmMap));
     setRmVelocityMap(new Map(cache.rmVelocityMap));
     setLinkMap(new Map(cache.linkMap));
     setVelocityProfiles(new Map(cache.velocityProfiles));
+    setLoadedUserId(cacheUserId);
   }, []);
 
   useEffect(() => {
@@ -72,13 +74,14 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
       setRmVelocityMap(new Map());
       setLinkMap(new Map());
       setVelocityProfiles(new Map());
+      setLoadedUserId(null);
       setLoading(false);
       return;
     }
 
     const cached = exerciseDataCacheByUser.get(userId);
     if (cached) {
-      applyCache(cached);
+      applyCache(cached, userId);
       setLoading(false);
       return;
     }
@@ -87,6 +90,8 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
     setRmVelocityMap(new Map());
     setLinkMap(new Map());
     setVelocityProfiles(new Map());
+    setLoadedUserId(null);
+    setLoading(true);
 
     const fetchAll = async (): Promise<CachedExerciseData> => {
       setLoading(true);
@@ -256,7 +261,7 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
     request.then((cache) => {
       exerciseDataCacheByUser.set(userId, cache);
       if (!cancelled) {
-        applyCache(cache);
+        applyCache(cache, userId);
         setLoading(false);
       }
     }).finally(() => {
@@ -327,8 +332,8 @@ export const UserExerciseDataCacheProvider: React.FC<Props> = ({ userId, childre
     getOneRMVelocity,
     getVelocityForPercentage,
     loading,
-    userId,
-  }), [getOneRM, getOneRMVelocity, getVelocityForPercentage, loading, userId]);
+    userId: loadedUserId,
+  }), [getOneRM, getOneRMVelocity, getVelocityForPercentage, loading, loadedUserId]);
 
   return (
     <UserExerciseDataCacheContext.Provider value={value}>

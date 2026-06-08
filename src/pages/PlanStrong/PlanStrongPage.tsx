@@ -87,7 +87,8 @@ export default function PlanStrongPage() {
         .from('app_users')
         .select('id, name, email, avatar_url, photo_url')
         .in('id', userIds);
-      setSelectedUsers(data || []);
+      const usersById = new Map((data || []).map((u: any) => [u.id, u]));
+      setSelectedUsers(userIds.map(id => usersById.get(id)).filter(Boolean) as any);
       setPreviewUserId(prev => (prev && userIds.includes(prev)) ? prev : (userIds[0] || ''));
     })();
   }, [userIds]);
