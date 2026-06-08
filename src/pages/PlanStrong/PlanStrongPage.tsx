@@ -345,12 +345,35 @@ export default function PlanStrongPage() {
       </div>
 
 
-      <Tabs defaultValue="ws1" className="w-full">
-        <TabsList className="rounded-none">
-          <TabsTrigger className="rounded-none" value="ws1">WORKSHEET #1</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+        <TabsList className="rounded-none flex-wrap h-auto">
+          {monthsList.map((_, i) => (
+            <TabsTrigger key={i} className="rounded-none group relative" value={`ws1-${i}`}>
+              WORKSHEET #1{monthsList.length > 1 ? ` · M${i + 1}` : ''}
+              {monthsList.length > 1 && (
+                <span
+                  role="button"
+                  onClick={(e) => { e.stopPropagation(); removeMonth(i); }}
+                  className="ml-2 inline-flex items-center hover:text-destructive"
+                  title="Αφαίρεση μήνα"
+                >
+                  <X className="w-3 h-3" />
+                </span>
+              )}
+            </TabsTrigger>
+          ))}
+          <Button
+            type="button" variant="outline" size="sm"
+            className="h-7 rounded-none mx-1 self-center"
+            onClick={addMonth}
+            title="Προσθήκη μήνα (νέο Worksheet #1)"
+          >
+            <Plus className="w-3 h-3" />
+          </Button>
           <TabsTrigger className="rounded-none" value="ws2">WORKSHEET #2</TabsTrigger>
           <TabsTrigger className="rounded-none" value="ws3">WORKSHEET #3</TabsTrigger>
         </TabsList>
+
 
         <TabsContent value="ws1" className="space-y-3">
           {/* Exercise tabs */}
