@@ -127,7 +127,9 @@ export function defaultSessionWeek(week: 1 | 2 | 3 | 4): SessionWeek {
 }
 
 export interface PlanStrongData {
-  side: PlanStrongSideInput;          // single sheet now (PS dropdown)
+  side: PlanStrongSideInput;          // active (back-compat) — mirrors sides[activeSideIndex]
+  sides?: PlanStrongSideInput[];      // one entry per exercise (tabs)
+  activeSideIndex?: number;
   sessions: SessionWeek[];
   ws3Notes: string;
   // legacy fields kept for backward compat with saved drafts
@@ -138,9 +140,13 @@ export interface PlanStrongData {
 }
 
 export function defaultPlanStrongData(): PlanStrongData {
+  const s = defaultSide();
   return {
-    side: defaultSide(),
+    side: s,
+    sides: [s],
+    activeSideIndex: 0,
     sessions: [defaultSessionWeek(1), defaultSessionWeek(2), defaultSessionWeek(3), defaultSessionWeek(4)],
     ws3Notes: '',
   };
 }
+

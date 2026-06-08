@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, Send, X } from 'lucide-react';
+import { ArrowLeft, Save, Send, X, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
@@ -15,7 +15,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Worksheet1Side } from './Worksheet1';
 import { Worksheet2 } from './Worksheet2';
-import { defaultPlanStrongData, PlanStrongData, computeWeekDifficulties } from './planStrongCalc';
+import { defaultPlanStrongData, defaultSide, PlanStrongData, PlanStrongSideInput, computeWeekDifficulties } from './planStrongCalc';
+import { SimpleExerciseSelectionDialog } from '@/components/programs/builder/SimpleExerciseSelectionDialog';
+import { useExercises } from '@/hooks/useExercises';
 
 export default function PlanStrongPage() {
   const navigate = useNavigate();
@@ -45,10 +47,19 @@ export default function PlanStrongPage() {
       setName(row.name);
       const def = defaultPlanStrongData();
       const loaded = (row.data as any) || {};
+      const activeSide = loaded.side ?? loaded.left ?? def.side;
+      const loadedSides: any[] = Array.isArray(loaded.sides) && loaded.sides.length > 0
+        ? loaded.sides
+        : [activeSide];
+      const activeIdx = typeof loaded.activeSideIndex === 'number'
+        ? Math.min(Math.max(loaded.activeSideIndex, 0), loadedSides.length - 1)
+        : 0;
       setData({
         ...def,
         ...loaded,
-        side: loaded.side ?? loaded.left ?? def.side,
+        side: loadedSides[activeIdx] ?? activeSide,
+        sides: loadedSides,
+        activeSideIndex: activeIdx,
         sessions: loaded.sessions ?? loaded.sessionsLeft ?? def.sessions,
       });
       // Load all sibling drafts (same coach + same plan name) so the user
@@ -79,6 +90,38 @@ export default function PlanStrongPage() {
       setPreviewUserId(prev => (prev && userIds.includes(prev)) ? prev : (userIds[0] || ''));
     })();
   }, [userIds]);
+
+  // ---- Exercise tabs (multiple exercises per worksheet) ----
+  const sides: PlanStrongSideInput[] = (data.sides && data.sides.length > 0) ? data.sides : [data.side];
+  const activeIdx = Math.min(Math.max(data.activeSideIndex ?? 0, 0), sides.length - 1);
+  const activeSide = sides[activeIdx] || data.side;
+  const [exPickerOpen, setExPickerOpen] = useState(false);
+  const { exercises } = useExercises();
+
+  const updateActiveSide = (next: PlanStrongSideInput) => {
+    const nextSides = sides.map((s, i) => i === activeIdx ? next : s);
+    setData({ ...data, sides: nextSides, side: next, activeSideIndex: activeIdx });
+  };
+  const selectTab = (i: number) => {
+    setData({ ...data, sides, side: sides[i], activeSideIndex: i });
+  };
+  const addExerciseTab = (exId: string) => {
+    const ex = exercises.find((e: any) => e.id === exId);
+    const fresh = defaultSide();
+    const newSide: PlanStrongSideInput = ex
+      ? { ...fresh, exerciseId: ex.id, lift: ex.name }
+      : fresh;
+    const nextSides = [...sides, newSide];
+    setData({ ...data, sides: nextSides, side: newSide, activeSideIndex: nextSides.length - 1 });
+    setExPickerOpen(false);
+  };
+  const removeExerciseTab = (i: number) => {
+    if (sides.length <= 1) return;
+    const nextSides = sides.filter((_, idx) => idx !== i);
+    const nextIdx = Math.max(0, Math.min(activeIdx, nextSides.length - 1));
+    setData({ ...data, sides: nextSides, side: nextSides[nextIdx], activeSideIndex: nextIdx });
+  };
+
 
   const addUser = (uid: string | null) => {
     if (!uid) return;
@@ -236,10 +279,42 @@ export default function PlanStrongPage() {
               })}
             </div>
           )}
+          <div className="flex items-center gap-1 flex-wrap border-b border-border">
+            {sides.map((s, i) => {
+              const active = i === activeIdx;
+              return (
+                <div
+                  key={i}
+                  className={`flex items-center gap-1 px-2 py-1 border border-b-0 ${active ? 'bg-foreground text-background border-foreground' : 'bg-background border-border'} rounded-none cursor-pointer`}
+                  onClick={() => selectTab(i)}
+                >
+                  <span className="text-xs font-semibold">{s.lift || `Άσκηση ${i + 1}`}</span>
+                  {sides.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); removeExerciseTab(i); }}
+                      className="ml-1 hover:text-destructive"
+                      title="Αφαίρεση άσκησης"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+            <Button
+              type="button" variant="outline" size="sm"
+              className="h-7 rounded-none ml-1"
+              onClick={() => setExPickerOpen(true)}
+            >
+              <Plus className="w-3 h-3 mr-1" /> Άσκηση
+            </Button>
+          </div>
+
           <Worksheet1Side
-            side={data.side}
+            side={activeSide}
             userId={previewUserId || userIds[0] || userId}
-            onChange={s => setData({ ...data, side: s })}
+            onChange={updateActiveSide}
             userPickerSlot={
               <div className="space-y-2">
                 <UserSearchCombobox
@@ -282,7 +357,7 @@ export default function PlanStrongPage() {
         </TabsContent>
 
         <TabsContent value="ws2" className="space-y-3">
-          <Worksheet2 title={`PS ${data.side.ps}`} weeks={data.sessions}
+          <Worksheet2 title={`PS ${activeSide.ps}`} weeks={data.sessions}
             onChange={w => setData({ ...data, sessions: w })} />
         </TabsContent>
 
@@ -301,6 +376,14 @@ export default function PlanStrongPage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      <SimpleExerciseSelectionDialog
+        open={exPickerOpen}
+        onOpenChange={setExPickerOpen}
+        exercises={exercises as any}
+        onSelectExercise={addExerciseTab}
+      />
+
     </div>
   );
 }
