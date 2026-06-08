@@ -185,7 +185,7 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
           const visibleIdx = ZONE_LABELS.map((_, i) => i).filter(i => !hiddenZones.includes(i));
           const hiddenVariants = side.ps === '70' ? ['v50Pct', 'v61Pct'] : [];
           return (
-        <>
+        <div className="max-w-3xl space-y-2">
         <table className="border-collapse w-full">
           <thead>
             <tr>
