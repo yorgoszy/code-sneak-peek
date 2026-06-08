@@ -16,9 +16,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const Programs = () => {
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { userProfile: dashboardUserProfile } = useDashboard();
   const { isAdmin } = useRoleCheck();
+  const [planStrongDrafts, setPlanStrongDrafts] = useState<Array<{ id: string; name: string; status: string; user_id: string; created_at: string; userName?: string }>>([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const isMobile = useIsMobile();
