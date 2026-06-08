@@ -294,11 +294,11 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
         })()}
 
         {([
-          { label: 'VARIANT (91-100% INTENSITY ZONE)', key: 'v91Pct' as const, zones: [4, 5] },
-          { label: 'VARIANT (81-90% INTENSITY ZONE)', key: 'v81Pct' as const, zones: [3] },
-          { label: 'VARIANT (71-80% INTENSITY ZONE)', key: 'v71Pct' as const, zones: [2] },
-          { label: 'VARIANT (61-70% INTENSITY ZONE)', key: 'v61Pct' as const, zones: [1] },
-          { label: 'VARIANT (50-60% INTENSITY ZONE)', key: 'v50Pct' as const, zones: [0] },
+          { label: 'Zone (95-100% 1RM)', key: 'v91Pct' as const, zones: [4, 5] },
+          { label: 'Zone (90% 1RM)', key: 'v81Pct' as const, zones: [3] },
+          { label: 'Zone (85% 1RM)', key: 'v71Pct' as const, zones: [2] },
+          { label: 'Zone (75% 1RM)', key: 'v61Pct' as const, zones: [1] },
+          { label: 'Zone (55% 1RM)', key: 'v50Pct' as const, zones: [0] },
         ]).filter(v => !hiddenVariants.includes(v.key)).map(v => {
           const arr = (side as any)[v.key] && (side as any)[v.key].length === 4
             ? (side as any)[v.key] as number[]
@@ -315,7 +315,7 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
             <thead>
               <tr>
                 <th className={headCell + " text-left"} colSpan={6}>
-                  {v.label} — {v.zones.map(z => `${Math.round(((side.zoneCoef?.[z] ?? ZONE_COEF[z]) * 100))}%`).join(', ')}
+                  {v.label}
                 </th>
               </tr>
               <tr>
