@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Copy, ClipboardPaste } from 'lucide-react';
 import {
   computeSide, ZONE_LABELS, ZONE_PCT_LABELS, ZONE_COEF, PlanStrongSideInput, getWeekDifficulty,
 } from './planStrongCalc';
@@ -13,6 +14,9 @@ interface Props {
   onChange: (s: PlanStrongSideInput) => void;
   userId?: string;
   userPickerSlot?: React.ReactNode;
+  onCopy?: () => void;
+  onPaste?: () => void;
+  hasClipboard?: boolean;
 }
 
 const cell = "border border-border px-2 py-1 text-xs";
