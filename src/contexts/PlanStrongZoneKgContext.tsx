@@ -1,26 +1,47 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
 
-interface Ctx {
-  kgOptionsByExerciseId: Record<string, number[]>;
+export interface ZoneKgMeta {
+  kg: number;
+  percentage: number; // e.g. 75 for 75% 1RM
 }
 
-const PlanStrongZoneKgContext = createContext<Ctx>({ kgOptionsByExerciseId: {} });
+interface Ctx {
+  zoneMetaByExerciseId: Record<string, ZoneKgMeta[]>;
+}
+
+const PlanStrongZoneKgContext = createContext<Ctx>({ zoneMetaByExerciseId: {} });
 
 export const PlanStrongZoneKgProvider: React.FC<{
-  kgOptionsByExerciseId: Record<string, number[]>;
+  zoneMetaByExerciseId: Record<string, ZoneKgMeta[]>;
   children: React.ReactNode;
-}> = ({ kgOptionsByExerciseId, children }) => (
-  <PlanStrongZoneKgContext.Provider value={{ kgOptionsByExerciseId }}>
-    {children}
-  </PlanStrongZoneKgContext.Provider>
-);
+}> = ({ zoneMetaByExerciseId, children }) => {
+  const value = useMemo(() => ({ zoneMetaByExerciseId }), [zoneMetaByExerciseId]);
+  return (
+    <PlanStrongZoneKgContext.Provider value={value}>
+      {children}
+    </PlanStrongZoneKgContext.Provider>
+  );
+};
 
-export const useZoneKgOptions = (exerciseId?: string): number[] | null => {
-  const { kgOptionsByExerciseId } = useContext(PlanStrongZoneKgContext);
+export const useZoneKgMeta = (exerciseId?: string): ZoneKgMeta[] | null => {
+  const { zoneMetaByExerciseId } = useContext(PlanStrongZoneKgContext);
   if (!exerciseId) return null;
-  const arr = kgOptionsByExerciseId[exerciseId];
+  const arr = zoneMetaByExerciseId[exerciseId];
   if (!arr || arr.length === 0) return null;
-  // dedupe + sort ascending, keep only >0
-  const uniq = Array.from(new Set(arr.filter(n => n > 0))).sort((a, b) => a - b);
-  return uniq.length > 0 ? uniq : null;
+  // dedupe by kg, keep first percentage
+  const seen = new Set<number>();
+  const out: ZoneKgMeta[] = [];
+  for (const m of arr) {
+    if (m.kg > 0 && !seen.has(m.kg)) {
+      seen.add(m.kg);
+      out.push(m);
+    }
+  }
+  return out.sort((a, b) => a.kg - b.kg);
+};
+
+// Back-compat helper used elsewhere — returns just the kg numbers.
+export const useZoneKgOptions = (exerciseId?: string): number[] | null => {
+  const meta = useZoneKgMeta(exerciseId);
+  return meta ? meta.map(m => m.kg) : null;
 };

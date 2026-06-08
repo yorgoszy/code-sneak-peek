@@ -125,7 +125,7 @@ const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, 
   );
 };
 
-interface MonthNLItem { name: string; exerciseId?: string; videoUrl?: string; nlPerWeek: number[]; totalNL: number; nlPerZonePerWeek?: number[][]; zoneKg?: number[] }
+interface MonthNLItem { name: string; exerciseId?: string; videoUrl?: string; nlPerWeek: number[]; totalNL: number; nlPerZonePerWeek?: number[][]; zoneKg?: number[]; zonePct?: number[] }
 
 interface Worksheet2Props {
   monthsCount: number;
@@ -137,6 +137,22 @@ interface Worksheet2Props {
   weekDifficulties?: (string | null)[];
 }
 
+// Parse reps strings like "5", "3.2.1" (sums to 6), etc.
+const parseRepsCount = (reps: any): number => {
+  if (reps === null || reps === undefined) return 0;
+  const s = String(reps).trim();
+  if (!s) return 0;
+  // tempo-style additive notation
+  if (s.includes('.')) {
+    return s.split('.').reduce((a, p) => a + (parseInt(p, 10) || 0), 0);
+  }
+  return parseInt(s, 10) || 0;
+};
+const parseKg = (kg: any): number => {
+  if (kg === null || kg === undefined) return 0;
+  return parseFloat(String(kg).replace(',', '.')) || 0;
+};
+
 export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs, onChange, selectedUserId, coachId, monthsNL, weekDifficulties }) => {
   const [activeW, setActiveW] = useState(0);
   const totalWeeks = Math.max(monthsCount, 1) * 4;
@@ -144,21 +160,52 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
   const monthIdx = Math.floor(safeW / 4);
   const weekInMonth = safeW % 4;
 
+  const [currentProgram, setCurrentProgram] = useState<PlanStrongWS2Program | null>(ws2Programs[0] ?? null);
+
   const setSingleProgram = (p: PlanStrongWS2Program) => {
+    setCurrentProgram(p);
     onChange([p]);
   };
 
   const currentMonthNL = monthsNL && monthsNL[monthIdx] ? monthsNL[monthIdx] : [];
 
-  const kgOptionsByExerciseId = useMemo(() => {
-    const map: Record<string, number[]> = {};
+  const zoneMetaByExerciseId = useMemo(() => {
+    const map: Record<string, { kg: number; percentage: number }[]> = {};
     currentMonthNL.forEach((row) => {
       if (row.exerciseId && row.zoneKg && row.zoneKg.length > 0) {
-        map[row.exerciseId] = row.zoneKg.filter((k) => k > 0);
+        // ZONE_COEF = [0.55, 0.65, 0.75, 0.85, 0.93, 1] → percentages
+        const ZONE_PCT = [55, 65, 75, 85, 93, 100];
+        map[row.exerciseId] = row.zoneKg.map((kg, i) => ({
+          kg,
+          percentage: ZONE_PCT[i] ?? 0,
+        })).filter(m => m.kg > 0);
       }
     });
     return map;
   }, [currentMonthNL]);
+
+  // Compute "used reps" per exercise per kg across ALL days of the current week
+  const usedByExerciseKg = useMemo(() => {
+    const map: Record<string, Record<number, number>> = {};
+    const weeks = currentProgram?.weeks || (ws2Programs[0]?.weeks ?? []);
+    const week = weeks[safeW];
+    if (!week) return map;
+    (week.program_days || []).forEach((d: any) => {
+      (d.program_blocks || []).forEach((b: any) => {
+        const blockSets = Number(b.block_sets) || 1;
+        (b.program_exercises || []).forEach((pe: any) => {
+          const exId = pe.exercise_id;
+          const kg = parseKg(pe.kg);
+          const setsN = (Number(pe.sets) || 0) * blockSets;
+          const repsN = parseRepsCount(pe.reps);
+          if (!exId || !kg || !setsN || !repsN) return;
+          if (!map[exId]) map[exId] = {};
+          map[exId][kg] = (map[exId][kg] || 0) + setsN * repsN;
+        });
+      });
+    });
+    return map;
+  }, [currentProgram, ws2Programs, safeW]);
 
   return (
     <div className="border border-border">
@@ -181,9 +228,12 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                   .filter(p => p.nl > 0);
                 const hasVideo = row.videoUrl && isValidVideoUrl(row.videoUrl);
                 const thumb = hasVideo ? getVideoThumbnail(row.videoUrl!) : null;
+                const usedMap = row.exerciseId ? (usedByExerciseKg[row.exerciseId] || {}) : {};
+                const totalUsed = Object.values(usedMap).reduce((a, b) => a + b, 0);
+                const totalReq = row.nlPerWeek[weekInMonth] ?? 0;
+                const totalRemain = Math.max(0, totalReq - totalUsed);
                 return (
                   <div key={i} className="flex items-center gap-2 text-xs border-b border-border/50 pb-1 last:border-0">
-                    {/* Thumbnail */}
                     {thumb ? (
                       <div className="w-8 h-5 overflow-hidden bg-muted flex-shrink-0">
                         <img src={thumb} alt={row.name} className="w-full h-full object-cover" />
@@ -193,30 +243,38 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                         <Play className="w-2 h-2 text-muted-foreground" />
                       </div>
                     )}
-                    {/* Name */}
                     <span className="truncate font-medium min-w-[80px] max-w-[140px]">{row.name}</span>
-                    {/* Per-zone kg/reps — αμέσως δίπλα από το όνομα */}
                     <div className="flex flex-wrap gap-1">
-                      {sets.map((p, idx) => (
-                        <div key={idx} className="inline-flex items-center gap-0.5 border border-border px-1 py-0.5 tabular-nums">
-                          <span className="font-medium">{p.kg}</span>
-                          <span className="text-[9px] text-muted-foreground">kg</span>
-                          <span className="text-muted-foreground mx-0.5">·</span>
-                          <span className="font-medium">{p.nl}</span>
-                          <span className="text-[9px] text-muted-foreground">reps</span>
-                        </div>
-                      ))}
+                      {sets.map((p, idx) => {
+                        const used = usedMap[p.kg] || 0;
+                        const remain = Math.max(0, p.nl - used);
+                        const done = used >= p.nl;
+                        return (
+                          <div
+                            key={idx}
+                            className={`inline-flex items-center gap-0.5 border px-1 py-0.5 tabular-nums ${done ? 'border-[#00ffba] bg-[#00ffba]/10' : 'border-border'}`}
+                            title={`Χρησιμοποιημένα: ${used} / ${p.nl}`}
+                          >
+                            <span className="font-medium">{p.kg}</span>
+                            <span className="text-[9px] text-muted-foreground">kg</span>
+                            <span className="text-muted-foreground mx-0.5">·</span>
+                            <span className="font-medium">{remain}</span>
+                            <span className="text-[9px] text-muted-foreground">/{p.nl}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                     <div className="flex-1" />
-                    {/* Total NL for week */}
-                    <span className="tabular-nums font-bold min-w-[2rem] text-right">{row.nlPerWeek[weekInMonth] ?? 0}</span>
+                    <span className="tabular-nums font-bold min-w-[3.5rem] text-right">
+                      {totalRemain}/{totalReq}
+                    </span>
                   </div>
                 );
               })}
             </div>
           </div>
         )}
-        <PlanStrongZoneKgProvider kgOptionsByExerciseId={kgOptionsByExerciseId}>
+        <PlanStrongZoneKgProvider zoneMetaByExerciseId={zoneMetaByExerciseId}>
           <EmbeddedBuilder
             initial={ws2Programs[0] ?? null}
             totalWeeks={totalWeeks}
