@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Play } from 'lucide-react';
+import { Play, CalendarIcon, Send, X } from 'lucide-react';
 import { useExercises } from '@/hooks/useExercises';
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { useProgramBuilderState } from '@/components/programs/builder/hooks/useProgramBuilderState';
@@ -7,6 +7,16 @@ import { useProgramBuilderActions } from '@/components/programs/builder/hooks/us
 import { TrainingWeeks } from '@/components/programs/builder/TrainingWeeks';
 import { PlanStrongZoneKgProvider } from '@/contexts/PlanStrongZoneKgContext';
 import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { toast } from 'sonner';
+import { formatDateForStorage } from '@/utils/dateUtils';
+import { programService } from '@/components/programs/builder/services/programService';
+import { assignmentService } from '@/components/programs/builder/services/assignmentService';
+import { workoutCompletionService } from '@/components/programs/builder/services/workoutCompletionService';
+import { cn } from '@/lib/utils';
 
 export interface PlanStrongWS2Program {
   weeks: any[];
@@ -128,6 +138,7 @@ const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, 
 
 interface MonthNLItem { name: string; exerciseId?: string; videoUrl?: string; nlPerWeek: number[]; totalNL: number; nlPerZonePerWeek?: number[][]; zoneKg?: number[]; zonePct?: number[] }
 
+interface AssignUser { id: string; name: string; email?: string; avatar_url?: string | null; photo_url?: string | null }
 interface Worksheet2Props {
   monthsCount: number;
   ws2Programs: (PlanStrongWS2Program | null)[];
@@ -136,6 +147,8 @@ interface Worksheet2Props {
   coachId?: string;
   monthsNL?: MonthNLItem[][];
   weekDifficulties?: (string | null)[];
+  planName?: string;
+  assignUsers?: AssignUser[];
 }
 
 // Parse reps strings like "5", "3.2.1" (sums to 6), etc.
@@ -154,7 +167,7 @@ const parseKg = (kg: any): number => {
   return parseFloat(String(kg).replace(',', '.')) || 0;
 };
 
-export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs, onChange, selectedUserId, coachId, monthsNL, weekDifficulties }) => {
+export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs, onChange, selectedUserId, coachId, monthsNL, weekDifficulties, planName, assignUsers }) => {
   const [activeW, setActiveW] = useState(0);
   const totalWeeks = Math.max(monthsCount, 1) * 4;
   const safeW = Math.min(Math.max(activeW, 0), totalWeeks - 1);
@@ -256,12 +269,143 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
     return map;
   }, [currentProgram, ws2Programs, safeW, linkedToRoot]);
 
+  // ===== Assignment =====
+  const weeksForAssign = currentProgram?.weeks || ws2Programs[0]?.weeks || [];
+  const totalRequiredDays = useMemo(
+    () => weeksForAssign.reduce((sum: number, w: any) => sum + (w.program_days?.length || 0), 0),
+    [weeksForAssign]
+  );
+  const [assignDates, setAssignDates] = useState<Date[]>([]);
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [assigning, setAssigning] = useState(false);
+
+  const handleAssign = async () => {
+    if (!assignUsers || assignUsers.length === 0) {
+      toast.error('Δεν υπάρχουν χρήστες — πρόσθεσε από το Worksheet #1');
+      return;
+    }
+    if (totalRequiredDays === 0) {
+      toast.error('Δεν υπάρχουν ημέρες προπόνησης');
+      return;
+    }
+    if (assignDates.length < totalRequiredDays) {
+      toast.error(`Επίλεξε ${totalRequiredDays} ημερομηνίες (έχεις ${assignDates.length})`);
+      return;
+    }
+    setAssigning(true);
+    try {
+      const trainingDates = assignDates
+        .slice(0, totalRequiredDays)
+        .sort((a, b) => a.getTime() - b.getTime())
+        .map(d => formatDateForStorage(d));
+
+      for (const u of assignUsers) {
+        const savedProgram = await programService.saveProgram({
+          name: planName || 'Plan Strong',
+          description: '',
+          user_id: u.id,
+          weeks: weeksForAssign,
+        } as any);
+
+        const assignment = await assignmentService.saveAssignment({
+          program: { ...savedProgram, weeks: weeksForAssign },
+          userId: u.id,
+          trainingDates,
+          coachId,
+        });
+
+        if (assignment && assignment.length > 0) {
+          await workoutCompletionService.createWorkoutCompletions(
+            assignment[0],
+            savedProgram,
+            u.id,
+            trainingDates,
+            { name: planName || 'Plan Strong', weeks: weeksForAssign } as any
+          );
+        }
+      }
+      toast.success(`Ανατέθηκε σε ${assignUsers.length} χρήστες`);
+      setAssignOpen(false);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || 'Σφάλμα ανάθεσης');
+    } finally {
+      setAssigning(false);
+    }
+  };
+
 
   return (
     <div className="border border-border">
-      <div className="bg-foreground text-background px-3 py-2 text-sm font-bold flex items-center justify-between">
+      <div className="bg-foreground text-background px-3 py-2 text-sm font-bold flex items-center justify-between gap-2">
         <span>PLAN STRONG™ — Program Builder</span>
-        <span>WORKSHEET #2</span>
+        <div className="flex items-center gap-2">
+          <Popover open={assignOpen} onOpenChange={setAssignOpen}>
+            <PopoverTrigger asChild>
+              <Button size="sm" variant="outline" className="rounded-none h-7 text-foreground">
+                <CalendarIcon className="w-3 h-3 mr-1" />
+                Ανάθεση
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-3 rounded-none" align="end">
+              <div className="space-y-3">
+                <div>
+                  <div className="text-xs font-semibold mb-1">Χρήστες ({assignUsers?.length || 0})</div>
+                  {(!assignUsers || assignUsers.length === 0) ? (
+                    <div className="text-xs text-muted-foreground">Πρόσθεσε χρήστες στο Worksheet #1</div>
+                  ) : (
+                    <div className="flex flex-wrap gap-1 max-w-[320px]">
+                      {assignUsers.map(u => (
+                        <div key={u.id} className="flex items-center gap-1 border border-border px-1.5 py-0.5">
+                          <Avatar className="h-4 w-4">
+                            {(u.photo_url || u.avatar_url) ? (
+                              <AvatarImage src={u.photo_url || u.avatar_url || ''} alt={u.name} />
+                            ) : null}
+                            <AvatarFallback className="text-[8px]">{u.name?.charAt(0).toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                          <span className="text-[11px]">{u.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <div className="text-xs font-semibold mb-1">
+                    Ημερομηνίες: {assignDates.length}/{totalRequiredDays}
+                  </div>
+                  <Calendar
+                    mode="multiple"
+                    selected={assignDates}
+                    onSelect={(d) => setAssignDates((d as Date[]) || [])}
+                    disabled={(date) => {
+                      const today = new Date(); today.setHours(0,0,0,0);
+                      return date < today;
+                    }}
+                    className={cn("p-3 pointer-events-auto rounded-none border border-border")}
+                  />
+                  {assignDates.length > 0 && (
+                    <Button
+                      type="button" size="sm" variant="ghost"
+                      className="rounded-none mt-1 h-6 text-[11px]"
+                      onClick={() => setAssignDates([])}
+                    >
+                      <X className="w-3 h-3 mr-1" /> Καθαρισμός
+                    </Button>
+                  )}
+                </div>
+                <Button
+                  size="sm" className="rounded-none w-full"
+                  disabled={assigning || !assignUsers?.length || assignDates.length < totalRequiredDays}
+                  onClick={handleAssign}
+                >
+                  <Send className="w-3 h-3 mr-1" />
+                  {assigning ? 'Ανάθεση...' : `Ανάθεση σε ${assignUsers?.length || 0}`}
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+          <span>WORKSHEET #2</span>
+        </div>
       </div>
       <div className="p-2 space-y-2">
         {currentMonthNL.length > 0 && (
