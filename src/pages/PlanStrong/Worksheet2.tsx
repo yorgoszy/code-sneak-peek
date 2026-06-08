@@ -13,9 +13,10 @@ interface EmbeddedMonthBuilderProps {
   onChange: (program: PlanStrongWS2Program) => void;
   selectedUserId?: string;
   coachId?: string;
+  onActiveWeekIndexChange?: (idx: number) => void;
 }
 
-const EmbeddedMonthBuilder: React.FC<EmbeddedMonthBuilderProps> = ({ initial, onChange, selectedUserId, coachId }) => {
+const EmbeddedMonthBuilder: React.FC<EmbeddedMonthBuilderProps> = ({ initial, onChange, selectedUserId, coachId, onActiveWeekIndexChange }) => {
   const { exercises } = useExercises();
   const { program, updateProgram, generateId, loadProgramFromData } = useProgramBuilderState(exercises as any);
   const actions = useProgramBuilderActions(program, updateProgram, generateId, exercises as any);
@@ -88,6 +89,10 @@ const EmbeddedMonthBuilder: React.FC<EmbeddedMonthBuilderProps> = ({ initial, on
       onPasteDay={actions.pasteDay}
       onSelectBlockTemplate={actions.loadBlockTemplate}
       coachId={coachId}
+      onActiveWeekChange={(weekId) => {
+        const idx = program.weeks.findIndex((w: any) => w.id === weekId);
+        if (idx >= 0 && onActiveWeekIndexChange) onActiveWeekIndexChange(idx);
+      }}
     />
   );
 };
@@ -138,6 +143,21 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
         <span>WORKSHEET #2</span>
       </div>
       <div className="p-2 space-y-2">
+        {monthsNL && monthsNL[safeActive] && monthsNL[safeActive].length > 0 && (
+          <div className="border border-border">
+            <div className="bg-muted px-2 py-1 text-xs font-bold flex items-center justify-between">
+              <span>NL — Εβδομάδα {safeW + 1}</span>
+            </div>
+            <div className="p-2 space-y-1">
+              {monthsNL[safeActive].map((row, i) => (
+                <div key={i} className="flex justify-between text-xs">
+                  <span className="truncate pr-2">{row.name}</span>
+                  <span className="tabular-nums font-medium">{row.nlPerWeek[safeW] ?? 0}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {/* key by safeActive to remount builder per month (avoids state leak between months) */}
         <EmbeddedMonthBuilder
           key={safeActive}
@@ -145,6 +165,7 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
           onChange={(p) => setMonthProgram(safeActive, p)}
           selectedUserId={selectedUserId}
           coachId={coachId}
+          onActiveWeekIndexChange={setActiveW}
         />
       </div>
     </div>

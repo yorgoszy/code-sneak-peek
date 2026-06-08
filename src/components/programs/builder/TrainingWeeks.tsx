@@ -47,6 +47,7 @@ interface TrainingWeeksProps {
   onPasteDay: (weekId: string, dayId: string, clipboardDay: any) => void;
   onSelectBlockTemplate?: (weekId: string, dayId: string, blockId: string, template: any) => void;
   coachId?: string;
+  onActiveWeekChange?: (weekId: string) => void;
 }
 
 export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
@@ -85,7 +86,8 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
   onPasteBlockAtBlock,
   onPasteDay,
   onSelectBlockTemplate,
-  coachId
+  coachId,
+  onActiveWeekChange
 }) => {
   const {
     activeWeek,
@@ -103,6 +105,10 @@ export const TrainingWeeks: React.FC<TrainingWeeksProps> = ({
       setActiveWeek(weeks[0].id);
     }
   }, [weeks, activeWeek, setActiveWeek]);
+
+  useEffect(() => {
+    if (activeWeek && onActiveWeekChange) onActiveWeekChange(activeWeek);
+  }, [activeWeek, onActiveWeekChange]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
