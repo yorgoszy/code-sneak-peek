@@ -171,8 +171,7 @@ export default function PlanStrongPage() {
             userId={previewUserId || userIds[0] || userId}
             onChange={s => setData({ ...data, side: s })}
             userPickerSlot={
-              <div>
-                <Label className="text-xs">Χρήστες</Label>
+              <div className="space-y-2">
                 <UserSearchCombobox
                   value={pickerValue}
                   onValueChange={addUser}
@@ -180,25 +179,26 @@ export default function PlanStrongPage() {
                   coachId={user?.id}
                   adminOwned={isAdmin?.()}
                   disabled={!!draftId}
+                  triggerClassName="h-7 justify-start text-xs px-2"
                 />
                 {selectedUsers.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="flex flex-wrap gap-1">
                     {selectedUsers.map(u => (
-                      <Badge key={u.id} variant="outline" className="rounded-none gap-2 py-1 pr-1 pl-1">
-                        <Avatar className="h-5 w-5">
+                      <Badge key={u.id} variant="outline" className="rounded-none gap-1 py-0.5 pr-1 pl-0.5 text-xs">
+                        <Avatar className="h-4 w-4">
                           {(u.photo_url || u.avatar_url) ? (
                             <AvatarImage src={u.photo_url || u.avatar_url || ''} alt={u.name} />
                           ) : null}
-                          <AvatarFallback className="text-[10px] bg-muted">
+                          <AvatarFallback className="text-[8px] bg-muted">
                             {u.name?.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="text-xs">{u.name}</span>
+                        <span>{u.name}</span>
                         {!draftId && (
                           <button
                             type="button"
                             onClick={() => removeUser(u.id)}
-                            className="ml-1 hover:text-destructive"
+                            className="ml-0.5 hover:text-destructive"
                             title="Αφαίρεση"
                           >
                             <X className="w-3 h-3" />
