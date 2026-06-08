@@ -311,7 +311,6 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
           program: { ...savedProgram, weeks: weeksForAssign },
           userId: u.id,
           trainingDates,
-          coachId,
         });
 
         if (assignment && assignment.length > 0) {
