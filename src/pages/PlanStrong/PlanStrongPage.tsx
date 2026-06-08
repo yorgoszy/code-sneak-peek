@@ -525,35 +525,37 @@ export default function PlanStrongPage() {
         </TabsContent>
 
         <TabsContent value="ws2" className="space-y-3">
-          <Worksheet2
-            monthsCount={monthsList.length}
-            monthsNL={monthsList.map(m => m.sides.map(s => {
-              const ex = exercises.find((e: any) => e.id === s.exerciseId);
-              const name = ex?.name || s.lift || '—';
-              const out = computeSide(s);
-              const monthlyNL = Number(s.monthlyNL) || 0;
-              const zonePct = s.zonePct || [];
-              const variantByZone = [s.v50Pct, s.v61Pct, s.v71Pct, s.v81Pct, s.v91Pct, s.v95Pct];
-              const nlPerZonePerWeek = [0, 1, 2, 3].map(w =>
-                variantByZone.map((vArr, z) => {
-                  const vp = vArr && vArr.length === 4 ? (vArr[w] || 0) : 0;
-                  return Math.round(monthlyNL * (zonePct[z] || 0) * vp);
-                })
-              );
-              return { name, exerciseId: s.exerciseId, videoUrl: ex?.video_url, nlPerWeek: out.mainNlPerWeek, totalNL: out.totalNL, nlPerZonePerWeek, zoneKg: out.zoneKg };
-            }))}
-            weekDifficulties={monthsList.flatMap(m => {
-              const mainSide = m.sides?.[0];
-              const diffs = computeWeekDifficulties(mainSide?.mainPct || []);
-              const arr = [...diffs];
-              while (arr.length < 4) arr.push(null);
-              return arr.slice(0, 4);
-            })}
-            ws2Programs={((data as any).ws2Programs as any[]) ?? []}
-            onChange={(programs) => setData({ ...data, ws2Programs: programs } as any)}
-            selectedUserId={previewUserId || userIds[0] || userId}
-            coachId={user?.id}
-          />
+          <UserExerciseDataCacheProvider userId={previewUserId || userIds[0] || userId || null}>
+            <Worksheet2
+              monthsCount={monthsList.length}
+              monthsNL={monthsList.map(m => m.sides.map(s => {
+                const ex = exercises.find((e: any) => e.id === s.exerciseId);
+                const name = ex?.name || s.lift || '—';
+                const out = computeSide(s);
+                const monthlyNL = Number(s.monthlyNL) || 0;
+                const zonePct = s.zonePct || [];
+                const variantByZone = [s.v50Pct, s.v61Pct, s.v71Pct, s.v81Pct, s.v91Pct, s.v95Pct];
+                const nlPerZonePerWeek = [0, 1, 2, 3].map(w =>
+                  variantByZone.map((vArr, z) => {
+                    const vp = vArr && vArr.length === 4 ? (vArr[w] || 0) : 0;
+                    return Math.round(monthlyNL * (zonePct[z] || 0) * vp);
+                  })
+                );
+                return { name, exerciseId: s.exerciseId, videoUrl: ex?.video_url, nlPerWeek: out.mainNlPerWeek, totalNL: out.totalNL, nlPerZonePerWeek, zoneKg: out.zoneKg, zonePct };
+              }))}
+              weekDifficulties={monthsList.flatMap(m => {
+                const mainSide = m.sides?.[0];
+                const diffs = computeWeekDifficulties(mainSide?.mainPct || []);
+                const arr = [...diffs];
+                while (arr.length < 4) arr.push(null);
+                return arr.slice(0, 4);
+              })}
+              ws2Programs={((data as any).ws2Programs as any[]) ?? []}
+              onChange={(programs) => setData({ ...data, ws2Programs: programs } as any)}
+              selectedUserId={previewUserId || userIds[0] || userId}
+              coachId={user?.id}
+            />
+          </UserExerciseDataCacheProvider>
         </TabsContent>
 
         <TabsContent value="ws3">
