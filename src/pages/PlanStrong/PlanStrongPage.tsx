@@ -525,24 +525,13 @@ export default function PlanStrongPage() {
         </TabsContent>
 
         <TabsContent value="ws2" className="space-y-3">
-          {(() => {
-            // Συγχρονισμός ws2Months με τον αριθμό των μηνών του WS1
-            const existing = (data as any).ws2Months as PlanStrongMonthWS2[] | undefined;
-            const synced: PlanStrongMonthWS2[] = monthsList.map((_, i) =>
-              existing?.[i] ?? defaultMonthWS2()
-            );
-            const titles = monthsList.map(m => {
-              const active = m.sides[Math.min(Math.max(m.activeSideIndex ?? 0, 0), m.sides.length - 1)];
-              return `PS ${active?.ps ?? '50'}`;
-            });
-            return (
-              <Worksheet2
-                months={synced}
-                titles={titles}
-                onChange={next => setData({ ...data, ws2Months: next } as any)}
-              />
-            );
-          })()}
+          <Worksheet2
+            monthsCount={monthsList.length}
+            ws2Programs={((data as any).ws2Programs as any[]) ?? []}
+            onChange={(programs) => setData({ ...data, ws2Programs: programs } as any)}
+            selectedUserId={previewUserId || userIds[0] || userId}
+            coachId={user?.id}
+          />
         </TabsContent>
 
         <TabsContent value="ws3">
