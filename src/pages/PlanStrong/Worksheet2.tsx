@@ -548,6 +548,7 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
             coachId={coachId}
             onActiveWeekIndexChange={setActiveW}
             weekDifficulties={weekDifficulties}
+            addFromNLRef={addFromNLRef}
           />
         </PlanStrongZoneKgProvider>
       </div>
