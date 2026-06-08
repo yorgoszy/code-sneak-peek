@@ -139,23 +139,33 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
       </div>
       <div className="p-2 space-y-2">
         {monthsNL && monthsNL[safeActive] && monthsNL[safeActive].length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {[0,1,2,3].map(w => (
-              <div key={w} className="border border-border">
-                <div className="bg-muted px-2 py-1 text-xs font-bold flex justify-between">
-                  <span>Εβδομάδα {w + 1}</span>
-                  <span className="text-muted-foreground">NL</span>
-                </div>
-                <div className="p-2 space-y-1">
-                  {monthsNL[safeActive].map((row, i) => (
-                    <div key={i} className="flex justify-between text-xs">
-                      <span className="truncate pr-2">{row.name}</span>
-                      <span className="tabular-nums font-medium">{row.nlPerWeek[w] ?? 0}</span>
-                    </div>
-                  ))}
-                </div>
+          <div className="border border-border">
+            <div className="bg-muted px-2 py-1 text-xs font-bold flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1">
+                {[0,1,2,3].map(w => {
+                  const active = w === safeW;
+                  return (
+                    <button
+                      key={w}
+                      type="button"
+                      onClick={() => setActiveW(w)}
+                      className={`px-2 h-6 border rounded-none text-xs ${active ? 'bg-foreground text-background border-foreground' : 'bg-background text-foreground border-border hover:bg-muted'}`}
+                    >
+                      Εβδομάδα {w + 1}
+                    </button>
+                  );
+                })}
               </div>
-            ))}
+              <span className="text-muted-foreground">NL</span>
+            </div>
+            <div className="p-2 space-y-1">
+              {monthsNL[safeActive].map((row, i) => (
+                <div key={i} className="flex justify-between text-xs">
+                  <span className="truncate pr-2">{row.name}</span>
+                  <span className="tabular-nums font-medium">{row.nlPerWeek[safeW] ?? 0}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
         {/* key by safeActive to remount builder per month (avoids state leak between months) */}
