@@ -554,6 +554,8 @@ export default function PlanStrongPage() {
               onChange={(programs) => setData({ ...data, ws2Programs: programs } as any)}
               selectedUserId={previewUserId || userIds[0] || userId}
               coachId={user?.id}
+              planName={name}
+              assignUsers={selectedUsers}
             />
           </UserExerciseDataCacheProvider>
         </TabsContent>
