@@ -511,10 +511,12 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                         const remain = Math.max(0, p.nl - used);
                         const done = used >= p.nl;
                         return (
-                          <div
+                          <button
                             key={idx}
-                            className={`inline-flex flex-col items-center border px-1 py-0.5 tabular-nums leading-tight ${done ? 'border-[#00ffba] bg-[#00ffba]/10' : 'border-border'}`}
-                            title={`Χρησιμοποιημένα: ${used} / ${p.nl}`}
+                            type="button"
+                            onClick={() => handleNlChipClick(row.exerciseId, row.name, p.kg, p.pct)}
+                            className={`inline-flex flex-col items-center border px-1 py-0.5 tabular-nums leading-tight cursor-pointer hover:bg-foreground/10 ${done ? 'border-[#00ffba] bg-[#00ffba]/10' : 'border-border'}`}
+                            title={`Κλικ για προσθήκη · Χρησιμοποιημένα: ${used} / ${p.nl}`}
                           >
                             <span className="font-medium">
                               {p.pct}<span className="text-[9px] text-muted-foreground">%</span>
@@ -523,7 +525,7 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                               <span className="font-medium">{remain}</span>
                               <span className="text-[9px] text-muted-foreground">/{p.nl}</span>
                             </span>
-                          </div>
+                          </button>
                         );
                       })}
                     </div>
