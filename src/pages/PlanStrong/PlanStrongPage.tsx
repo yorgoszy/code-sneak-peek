@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Worksheet1Side } from './Worksheet1';
 import { UserExerciseDataCacheProvider } from '@/hooks/useUserExerciseDataCache';
 import { Worksheet2 } from './Worksheet2';
-import { defaultPlanStrongData, defaultSide, PlanStrongData, PlanStrongSideInput, computeWeekDifficulties } from './planStrongCalc';
+import { defaultPlanStrongData, defaultSide, PlanStrongData, PlanStrongSideInput, computeWeekDifficulties, computeSide } from './planStrongCalc';
 import { SimpleExerciseSelectionDialog } from '@/components/programs/builder/SimpleExerciseSelectionDialog';
 import { useExercises } from '@/hooks/useExercises';
 
@@ -367,6 +367,48 @@ export default function PlanStrongPage() {
               const mActiveIdx = Math.min(Math.max(m.activeSideIndex ?? 0, 0), mSides.length - 1);
               const mActiveSide = mSides[mActiveIdx] || data.side;
               const isLast = mIdx === monthsList.length - 1;
+
+              // Σύγκριση με τον προηγούμενο μήνα (ίδια άσκηση κατά exerciseId ή lift)
+              let deltaInfo: React.ReactNode = null;
+              if (mIdx > 0) {
+                const prevMonth = monthsList[mIdx - 1];
+                const prevSide = prevMonth.sides.find(s =>
+                  (mActiveSide.exerciseId && s.exerciseId === mActiveSide.exerciseId) ||
+                  (mActiveSide.lift && s.lift === mActiveSide.lift)
+                );
+                if (prevSide) {
+                  const cur = computeSide({ ...mActiveSide });
+                  const prv = computeSide({ ...prevSide });
+                  const curHari = cur.ari * 100;
+                  const prvHari = prv.ari * 100;
+                  const curNL = Number(mActiveSide.monthlyNL) || 0;
+                  const prvNL = Number(prevSide.monthlyNL) || 0;
+                  const dHariRel = prvHari > 0 ? ((curHari - prvHari) / prvHari) * 100 : 0;
+                  const dNLRel = prvNL > 0 ? ((curNL - prvNL) / prvNL) * 100 : 0;
+                  const ps = String(mActiveSide.ps);
+                  // Επιτρεπτό εύρος HARI ανά PS
+                  const hariOk = ps === '50'
+                    ? Math.abs(dHariRel) >= 1 && Math.abs(dHariRel) <= 5
+                    : ps === '70'
+                      ? Math.abs(dHariRel) >= 0.5 && Math.abs(dHariRel) <= 1.5
+                      : true;
+                  const nlOk = Math.abs(dNLRel) <= 20;
+                  const fmt = (n: number) => `${n >= 0 ? '+' : ''}${n.toFixed(1)}%`;
+                  const hariRule = ps === '50' ? '(στόχος 1–5%)' : ps === '70' ? '(στόχος ~1%)' : '';
+                  deltaInfo = (
+                    <div className="flex items-center gap-2 text-[11px]">
+                      <span className="opacity-80">vs M{mIdx}:</span>
+                      <span className={hariOk ? 'text-[#00ffba]' : 'text-red-400'}>
+                        Δ HARI {fmt(dHariRel)} {hariRule}
+                      </span>
+                      <span className={nlOk ? 'text-[#00ffba]' : 'text-red-400'}>
+                        Δ NL {fmt(dNLRel)} (στόχος ±20%)
+                      </span>
+                    </div>
+                  );
+                }
+              }
+
               return (
                 <div key={mIdx} className="space-y-3">
                   {/* Exercise tabs για αυτόν τον μήνα */}
@@ -407,7 +449,8 @@ export default function PlanStrongPage() {
                     userId={previewUserId || userIds[0] || userId}
                     onChange={(next) => updateMonthSide(mIdx, mActiveIdx, next)}
                     headerSlot={
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-2">
+                        {deltaInfo}
                         {monthsList.length > 1 && (
                           <span className="text-xs opacity-80">M{mIdx + 1}</span>
                         )}
