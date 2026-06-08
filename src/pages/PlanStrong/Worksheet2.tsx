@@ -31,7 +31,7 @@ interface EmbeddedBuilderProps {
   coachId?: string;
   onActiveWeekIndexChange?: (idx: number) => void;
   weekDifficulties?: (string | null)[];
-  addFromNLRef?: React.MutableRefObject<((weekIdx: number, exerciseId: string, exerciseName: string, kg: number, pct: number, velocity: number) => void) | null>;
+  addFromNLRef?: React.MutableRefObject<((weekIdx: number, exerciseId: string, exerciseName: string, kg: number, pct: number, velocity: number, blockId?: string) => void) | null>;
 }
 
 const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, onChange, selectedUserId, coachId, onActiveWeekIndexChange, weekDifficulties, addFromNLRef }) => {
