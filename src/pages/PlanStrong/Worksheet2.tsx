@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Play } from 'lucide-react';
+import { Play, CalendarIcon, Send, X } from 'lucide-react';
 import { useExercises } from '@/hooks/useExercises';
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { useProgramBuilderState } from '@/components/programs/builder/hooks/useProgramBuilderState';
@@ -7,6 +7,16 @@ import { useProgramBuilderActions } from '@/components/programs/builder/hooks/us
 import { TrainingWeeks } from '@/components/programs/builder/TrainingWeeks';
 import { PlanStrongZoneKgProvider } from '@/contexts/PlanStrongZoneKgContext';
 import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { toast } from 'sonner';
+import { formatDateForStorage } from '@/utils/dateUtils';
+import { programService } from '@/components/programs/builder/services/programService';
+import { assignmentService } from '@/components/programs/builder/services/assignmentService';
+import { workoutCompletionService } from '@/components/programs/builder/services/workoutCompletionService';
+import { cn } from '@/lib/utils';
 
 export interface PlanStrongWS2Program {
   weeks: any[];
