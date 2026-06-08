@@ -14,6 +14,7 @@ interface Props {
   userId?: string;
   userPickerSlot?: React.ReactNode;
   nlActionsSlot?: React.ReactNode;
+  headerSlot?: React.ReactNode;
 }
 
 const cell = "border border-border px-2 py-1 text-xs";
@@ -77,7 +78,7 @@ const PctInput: React.FC<{
   );
 };
 
-export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPickerSlot, nlActionsSlot }) => {
+export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPickerSlot, nlActionsSlot, headerSlot }) => {
   const { getOneRM, userId: cachedUserId } = useUserExerciseDataCacheContext();
   // Use cache when a user is previewed (loads once per user, no refetch per exercise switch)
   const fetched1RM = (userId && cachedUserId === userId && side.exerciseId)
@@ -116,9 +117,12 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
 
   return (
     <div className="border border-border max-w-3xl">
-      <div className="bg-foreground text-background px-3 py-2 text-sm font-bold flex justify-between">
+      <div className="bg-foreground text-background px-3 py-2 text-sm font-bold flex justify-between items-center gap-2">
         <span>PLAN STRONG™ — PS {side.ps}</span>
-        <span>WORKSHEET #1</span>
+        <div className="flex items-center gap-2">
+          {headerSlot}
+          <span>WORKSHEET #1</span>
+        </div>
       </div>
       <div className="p-2 text-xs space-y-2 overflow-x-auto">
         <div className="flex flex-wrap items-start gap-3">

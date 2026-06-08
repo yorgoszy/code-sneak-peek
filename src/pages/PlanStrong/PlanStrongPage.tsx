@@ -100,125 +100,91 @@ export default function PlanStrongPage() {
     })();
   }, [userIds]);
 
-  // ---- Months (each month = independent Worksheet #1 with its own exercises) ----
+  // ---- Months (each month = independent Worksheet #1, stacked vertically) ----
   type MonthState = { sides: PlanStrongSideInput[]; activeSideIndex: number };
   const monthsList: MonthState[] = ((data as any).months && (data as any).months.length > 0)
     ? (data as any).months as MonthState[]
     : [{ sides: (data.sides && data.sides.length > 0) ? data.sides : [data.side], activeSideIndex: data.activeSideIndex ?? 0 }];
-  const [activeMonth, setActiveMonth] = useState(0);
-  const [activeTab, setActiveTab] = useState<string>('ws1-0');
-  const monthIdx = Math.min(Math.max(activeMonth, 0), monthsList.length - 1);
-  const currentMonth = monthsList[monthIdx];
 
-  // ---- Exercise tabs (multiple exercises per worksheet) ----
-  const sides: PlanStrongSideInput[] = currentMonth.sides;
-  const activeIdx = Math.min(Math.max(currentMonth.activeSideIndex ?? 0, 0), sides.length - 1);
-  const activeSide = sides[activeIdx] || data.side;
-  const [exPickerOpen, setExPickerOpen] = useState(false);
+  const [exPickerForMonth, setExPickerForMonth] = useState<number | null>(null);
   const { exercises } = useExercises();
 
-  const writeMonth = (next: MonthState) => {
-    const nextMonths = monthsList.map((m, i) => i === monthIdx ? next : m);
+  const writeMonths = (nextMonths: MonthState[]) => {
+    const safeIdx = Math.max(0, Math.min(monthsList[0] ? 0 : 0, nextMonths.length - 1));
+    const first = nextMonths[0];
     setData({
       ...data,
       months: nextMonths,
-      sides: next.sides,
-      side: next.sides[next.activeSideIndex] || data.side,
-      activeSideIndex: next.activeSideIndex,
+      // Keep legacy fields aligned to first month for back-compat (Worksheet2 uses data.side.ps)
+      sides: first?.sides ?? [],
+      side: first?.sides?.[first.activeSideIndex] || data.side,
+      activeSideIndex: first?.activeSideIndex ?? 0,
     } as any);
   };
 
-  const updateActiveSide = (next: PlanStrongSideInput) => {
-    const nextSides = sides.map((s, i) => i === activeIdx ? next : s);
-    writeMonth({ sides: nextSides, activeSideIndex: activeIdx });
+  const updateMonth = (mIdx: number, next: MonthState) => {
+    writeMonths(monthsList.map((m, i) => i === mIdx ? next : m));
   };
-  const selectTab = (i: number) => {
-    writeMonth({ sides, activeSideIndex: i });
+  const updateMonthSide = (mIdx: number, sIdx: number, next: PlanStrongSideInput) => {
+    const m = monthsList[mIdx];
+    if (!m) return;
+    const nextSides = m.sides.map((s, i) => i === sIdx ? next : s);
+    updateMonth(mIdx, { sides: nextSides, activeSideIndex: sIdx });
   };
-  const addExerciseTab = (exId: string) => {
+  const selectMonthSideTab = (mIdx: number, sIdx: number) => {
+    const m = monthsList[mIdx];
+    if (!m) return;
+    updateMonth(mIdx, { sides: m.sides, activeSideIndex: sIdx });
+  };
+  const addMonthExercise = (mIdx: number, exId: string) => {
+    const m = monthsList[mIdx];
+    if (!m) return;
     const ex = exercises.find((e: any) => e.id === exId);
     const fresh = defaultSide();
-    const newSide: PlanStrongSideInput = ex
-      ? { ...fresh, exerciseId: ex.id, lift: ex.name }
-      : fresh;
-    const nextSides = [...sides, newSide];
-    writeMonth({ sides: nextSides, activeSideIndex: nextSides.length - 1 });
-    setExPickerOpen(false);
+    const newSide: PlanStrongSideInput = ex ? { ...fresh, exerciseId: ex.id, lift: ex.name } : fresh;
+    const nextSides = [...m.sides, newSide];
+    updateMonth(mIdx, { sides: nextSides, activeSideIndex: nextSides.length - 1 });
+    setExPickerForMonth(null);
   };
-  const removeExerciseTab = (i: number) => {
-    if (sides.length <= 1) return;
-    const nextSides = sides.filter((_, idx) => idx !== i);
-    const nextIdx = Math.max(0, Math.min(activeIdx, nextSides.length - 1));
-    writeMonth({ sides: nextSides, activeSideIndex: nextIdx });
+  const removeMonthExercise = (mIdx: number, sIdx: number) => {
+    const m = monthsList[mIdx];
+    if (!m || m.sides.length <= 1) return;
+    const nextSides = m.sides.filter((_, i) => i !== sIdx);
+    const nextIdx = Math.max(0, Math.min(m.activeSideIndex, nextSides.length - 1));
+    updateMonth(mIdx, { sides: nextSides, activeSideIndex: nextIdx });
   };
 
   const addMonth = () => {
     const fresh: MonthState = { sides: [defaultSide()], activeSideIndex: 0 };
-    const nextMonths = [...monthsList, fresh];
-    setData({
-      ...data,
-      months: nextMonths,
-      sides: fresh.sides,
-      side: fresh.sides[0],
-      activeSideIndex: 0,
-    } as any);
-    const newIdx = nextMonths.length - 1;
-    setActiveMonth(newIdx);
-    setActiveTab(`ws1-${newIdx}`);
+    writeMonths([...monthsList, fresh]);
   };
-  const removeMonth = (i: number) => {
+  const removeMonth = (mIdx: number) => {
     if (monthsList.length <= 1) return;
-    const nextMonths = monthsList.filter((_, idx) => idx !== i);
-    const newActive = Math.max(0, Math.min(monthIdx, nextMonths.length - 1));
-    const m = nextMonths[newActive];
-    setData({
-      ...data,
-      months: nextMonths,
-      sides: m.sides,
-      side: m.sides[m.activeSideIndex] || data.side,
-      activeSideIndex: m.activeSideIndex,
-    } as any);
-    setActiveMonth(newActive);
-    setActiveTab(`ws1-${newActive}`);
-  };
-  const handleTabChange = (val: string) => {
-    setActiveTab(val);
-    if (val.startsWith('ws1-')) {
-      const idx = parseInt(val.slice(4), 10);
-      if (!Number.isNaN(idx)) {
-        setActiveMonth(idx);
-        const m = monthsList[idx];
-        if (m) {
-          setData({
-            ...data,
-            months: monthsList,
-            sides: m.sides,
-            side: m.sides[m.activeSideIndex] || data.side,
-            activeSideIndex: m.activeSideIndex,
-          } as any);
-        }
-      }
-    }
+    writeMonths(monthsList.filter((_, i) => i !== mIdx));
   };
 
-  // Clipboard για copy/paste worksheet μεταξύ ασκήσεων
+  // Clipboard για copy/paste worksheet μεταξύ ασκήσεων (διαμοιραζόμενο)
   const [sideClipboard, setSideClipboard] = useState<PlanStrongSideInput | null>(null);
-  const copyActiveSide = () => {
-    setSideClipboard(JSON.parse(JSON.stringify(activeSide)));
-    toast.success(`Αντιγράφηκε: ${activeSide.lift || 'άσκηση'}`);
+  const copySide = (s: PlanStrongSideInput) => {
+    setSideClipboard(JSON.parse(JSON.stringify(s)));
+    toast.success(`Αντιγράφηκε: ${s.lift || 'άσκηση'}`);
   };
-  const pasteIntoActiveSide = () => {
+  const pasteIntoMonthSide = (mIdx: number, sIdx: number) => {
     if (!sideClipboard) { toast.error('Δεν υπάρχει αντιγραμμένο worksheet'); return; }
-    // Διατηρούμε την ταυτότητα της τρέχουσας άσκησης (lift + exerciseId + oneRM)
+    const m = monthsList[mIdx];
+    const current = m?.sides[sIdx];
+    if (!current) return;
     const next: PlanStrongSideInput = {
       ...sideClipboard,
-      lift: activeSide.lift,
-      exerciseId: activeSide.exerciseId,
-      oneRM: activeSide.oneRM,
+      lift: current.lift,
+      exerciseId: current.exerciseId,
+      oneRM: current.oneRM,
     };
-    updateActiveSide(next);
+    updateMonthSide(mIdx, sIdx, next);
     toast.success('Επικολλήθηκε worksheet');
   };
+
+
 
 
 
@@ -345,72 +311,15 @@ export default function PlanStrongPage() {
       </div>
 
 
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="rounded-none flex-wrap h-auto">
-          {monthsList.map((_, i) => (
-            <TabsTrigger key={i} className="rounded-none group relative" value={`ws1-${i}`}>
-              WORKSHEET #1{monthsList.length > 1 ? ` · M${i + 1}` : ''}
-              {monthsList.length > 1 && (
-                <span
-                  role="button"
-                  onClick={(e) => { e.stopPropagation(); removeMonth(i); }}
-                  className="ml-2 inline-flex items-center hover:text-destructive"
-                  title="Αφαίρεση μήνα"
-                >
-                  <X className="w-3 h-3" />
-                </span>
-              )}
-            </TabsTrigger>
-          ))}
-          <Button
-            type="button" variant="outline" size="sm"
-            className="h-7 rounded-none mx-1 self-center"
-            onClick={addMonth}
-            title="Προσθήκη μήνα (νέο Worksheet #1)"
-          >
-            <Plus className="w-3 h-3" />
-          </Button>
+      <Tabs defaultValue="ws1" className="w-full">
+        <TabsList className="rounded-none">
+          <TabsTrigger className="rounded-none" value="ws1">WORKSHEET #1</TabsTrigger>
           <TabsTrigger className="rounded-none" value="ws2">WORKSHEET #2</TabsTrigger>
           <TabsTrigger className="rounded-none" value="ws3">WORKSHEET #3</TabsTrigger>
         </TabsList>
 
-
-        {monthsList.map((_, mIdx) => (
-        <TabsContent key={mIdx} value={`ws1-${mIdx}`} className="space-y-3">
-          {/* Exercise tabs */}
-          <div className="flex items-center gap-1 flex-wrap border-b border-border">
-            {sides.map((s, i) => {
-              const active = i === activeIdx;
-              return (
-                <div
-                  key={i}
-                  className={`flex items-center gap-1 px-2 py-1 border border-b-0 ${active ? 'bg-foreground text-background border-foreground' : 'bg-background border-border'} rounded-none cursor-pointer`}
-                  onClick={() => selectTab(i)}
-                >
-                  <span className="text-xs font-semibold">{s.lift || `Άσκηση ${i + 1}`}</span>
-                  {sides.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); removeExerciseTab(i); }}
-                      className="ml-1 hover:text-destructive"
-                      title="Αφαίρεση άσκησης"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-            <Button
-              type="button" variant="outline" size="sm"
-              className="h-7 rounded-none ml-1"
-              onClick={() => setExPickerOpen(true)}
-            >
-              <Plus className="w-3 h-3 mr-1" /> Άσκηση
-            </Button>
-          </div>
-
-          {/* User tabs */}
+        <TabsContent value="ws1" className="space-y-6">
+          {/* User tabs (κοινό για όλους τους μήνες) */}
           <div className="flex items-center gap-1 flex-wrap border-b border-border">
             {selectedUsers.map(u => {
               const active = previewUserId === u.id;
@@ -453,42 +362,107 @@ export default function PlanStrongPage() {
           </div>
 
           <UserExerciseDataCacheProvider userId={previewUserId || userIds[0] || userId || null}>
-            <Worksheet1Side
-              side={activeSide}
-              userId={previewUserId || userIds[0] || userId}
-              onChange={updateActiveSide}
-              nlActionsSlot={
-                <>
-                  <button
-                    type="button"
-                    onClick={copyActiveSide}
-                    className="h-7 px-2 hover:bg-muted rounded-none border border-border inline-flex items-center"
-                    title="Αντιγραφή worksheet"
-                  >
-                    <Copy className="w-3 h-3" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={pasteIntoActiveSide}
-                    disabled={!sideClipboard}
-                    className={`h-7 px-2 rounded-none border inline-flex items-center disabled:opacity-30 disabled:cursor-not-allowed ${sideClipboard ? 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black border-[#00ffba]' : 'hover:bg-muted border-border'}`}
-                    title={sideClipboard ? 'Επικόλληση worksheet' : 'Δεν υπάρχει αντιγραμμένο worksheet'}
-                  >
-                    <ClipboardPaste className="w-3 h-3" />
-                  </button>
-                </>
-              }
-            />
+            {monthsList.map((m, mIdx) => {
+              const mSides = m.sides;
+              const mActiveIdx = Math.min(Math.max(m.activeSideIndex ?? 0, 0), mSides.length - 1);
+              const mActiveSide = mSides[mActiveIdx] || data.side;
+              const isLast = mIdx === monthsList.length - 1;
+              return (
+                <div key={mIdx} className="space-y-3">
+                  {/* Exercise tabs για αυτόν τον μήνα */}
+                  <div className="flex items-center gap-1 flex-wrap border-b border-border">
+                    {mSides.map((s, i) => {
+                      const active = i === mActiveIdx;
+                      return (
+                        <div
+                          key={i}
+                          className={`flex items-center gap-1 px-2 py-1 border border-b-0 ${active ? 'bg-foreground text-background border-foreground' : 'bg-background border-border'} rounded-none cursor-pointer`}
+                          onClick={() => selectMonthSideTab(mIdx, i)}
+                        >
+                          <span className="text-xs font-semibold">{s.lift || `Άσκηση ${i + 1}`}</span>
+                          {mSides.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); removeMonthExercise(mIdx, i); }}
+                              className="ml-1 hover:text-destructive"
+                              title="Αφαίρεση άσκησης"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                    <Button
+                      type="button" variant="outline" size="sm"
+                      className="h-7 rounded-none ml-1"
+                      onClick={() => setExPickerForMonth(mIdx)}
+                    >
+                      <Plus className="w-3 h-3 mr-1" /> Άσκηση
+                    </Button>
+                  </div>
+
+                  <Worksheet1Side
+                    side={mActiveSide}
+                    userId={previewUserId || userIds[0] || userId}
+                    onChange={(next) => updateMonthSide(mIdx, mActiveIdx, next)}
+                    headerSlot={
+                      <div className="flex items-center gap-1">
+                        {monthsList.length > 1 && (
+                          <span className="text-xs opacity-80">M{mIdx + 1}</span>
+                        )}
+                        {isLast && (
+                          <button
+                            type="button"
+                            onClick={addMonth}
+                            className="h-6 w-6 inline-flex items-center justify-center border border-background/40 hover:bg-background/10 rounded-none"
+                            title="Προσθήκη μήνα (νέο Worksheet #1)"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        )}
+                        {monthsList.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeMonth(mIdx)}
+                            className="h-6 w-6 inline-flex items-center justify-center border border-background/40 hover:bg-destructive hover:text-destructive-foreground rounded-none"
+                            title="Αφαίρεση μήνα"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                    }
+                    nlActionsSlot={
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => copySide(mActiveSide)}
+                          className="h-7 px-2 hover:bg-muted rounded-none border border-border inline-flex items-center"
+                          title="Αντιγραφή worksheet"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => pasteIntoMonthSide(mIdx, mActiveIdx)}
+                          disabled={!sideClipboard}
+                          className={`h-7 px-2 rounded-none border inline-flex items-center disabled:opacity-30 disabled:cursor-not-allowed ${sideClipboard ? 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black border-[#00ffba]' : 'hover:bg-muted border-border'}`}
+                          title={sideClipboard ? 'Επικόλληση worksheet' : 'Δεν υπάρχει αντιγραμμένο worksheet'}
+                        >
+                          <ClipboardPaste className="w-3 h-3" />
+                        </button>
+                      </>
+                    }
+                  />
+                </div>
+              );
+            })}
           </UserExerciseDataCacheProvider>
-
-
         </TabsContent>
-        ))}
-
-
 
         <TabsContent value="ws2" className="space-y-3">
-          <Worksheet2 title={`PS ${activeSide.ps}`} weeks={data.sessions}
+          <Worksheet2 title={`PS ${(monthsList[0]?.sides[monthsList[0]?.activeSideIndex ?? 0] ?? data.side).ps}`} weeks={data.sessions}
             onChange={w => setData({ ...data, sessions: w })} />
         </TabsContent>
 
@@ -509,11 +483,12 @@ export default function PlanStrongPage() {
       </Tabs>
 
       <SimpleExerciseSelectionDialog
-        open={exPickerOpen}
-        onOpenChange={setExPickerOpen}
+        open={exPickerForMonth !== null}
+        onOpenChange={(open) => { if (!open) setExPickerForMonth(null); }}
         exercises={exercises as any}
-        onSelectExercise={addExerciseTab}
+        onSelectExercise={(exId) => { if (exPickerForMonth !== null) addMonthExercise(exPickerForMonth, exId); }}
       />
+
 
     </div>
   );
