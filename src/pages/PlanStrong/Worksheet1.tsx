@@ -298,12 +298,13 @@ export const Worksheet1Side: React.FC<Props> = ({ side, onChange, userId, userPi
         })()}
 
         {([
-          { key: 'v91Pct' as const, zones: [4, 5] },
+          { key: 'v95Pct' as const, zones: [5] },
+          { key: 'v91Pct' as const, zones: [4] },
           { key: 'v81Pct' as const, zones: [3] },
           { key: 'v71Pct' as const, zones: [2] },
           { key: 'v61Pct' as const, zones: [1] },
           { key: 'v50Pct' as const, zones: [0] },
-        ]).filter(v => !hiddenVariants.includes(v.key)).map(v => {
+        ]).filter(v => !hiddenVariants.includes(v.key as any)).map(v => {
           const arr = (side as any)[v.key] && (side as any)[v.key].length === 4
             ? (side as any)[v.key] as number[]
             : [0, 0, 0, 0];
