@@ -540,7 +540,7 @@ export default function PlanStrongPage() {
                   return Math.round(monthlyNL * (zonePct[z] || 0) * vp);
                 })
               );
-              return { name, nlPerWeek: out.mainNlPerWeek, totalNL: out.totalNL, nlPerZonePerWeek };
+              return { name, nlPerWeek: out.mainNlPerWeek, totalNL: out.totalNL, nlPerZonePerWeek, zoneKg: out.zoneKg };
             }))}
             weekDifficulties={monthsList.flatMap(m => {
               const mainSide = m.sides?.[0];
