@@ -31,12 +31,67 @@ interface EmbeddedBuilderProps {
   coachId?: string;
   onActiveWeekIndexChange?: (idx: number) => void;
   weekDifficulties?: (string | null)[];
+  addFromNLRef?: React.MutableRefObject<((weekIdx: number, exerciseId: string, exerciseName: string, kg: number, pct: number, velocity: number) => void) | null>;
 }
 
-const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, onChange, selectedUserId, coachId, onActiveWeekIndexChange, weekDifficulties }) => {
+const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, onChange, selectedUserId, coachId, onActiveWeekIndexChange, weekDifficulties, addFromNLRef }) => {
   const { exercises } = useExercises();
   const { program, updateProgram, generateId, loadProgramFromData } = useProgramBuilderState(exercises as any);
   const actions = useProgramBuilderActions(program, updateProgram, generateId, exercises as any);
+
+  // Expose function for parent NL row to add an exercise into the current week
+  useEffect(() => {
+    if (!addFromNLRef) return;
+    addFromNLRef.current = (weekIdx, exerciseId, exerciseName, kg, pct, velocity) => {
+      updateProgram((prev) => {
+        const weeks = [...(prev.weeks || [])];
+        if (!weeks[weekIdx]) return prev;
+        const week = { ...weeks[weekIdx] };
+        const days = [...(week.program_days || [])];
+        if (days.length === 0) {
+          days.push({ id: generateId(), name: 'Ημέρα 1', day_number: 1, program_blocks: [] });
+        }
+        const day = { ...days[0] };
+        let blocks = [...(day.program_blocks || [])];
+        if (blocks.length === 0) {
+          blocks.push({
+            id: generateId(),
+            name: 'Block 1',
+            block_sets: 1,
+            program_exercises: [],
+          });
+        }
+        const lastIdx = blocks.length - 1;
+        const lastBlock = { ...blocks[lastIdx] };
+        const exList = [...(lastBlock.program_exercises || [])];
+        exList.push({
+          id: generateId(),
+          exercise_id: exerciseId,
+          sets: 1,
+          reps: '',
+          reps_mode: 'reps' as const,
+          kg: String(kg).replace('.', ','),
+          kg_mode: 'kg' as const,
+          percentage_1rm: pct,
+          velocity_ms: velocity ? Number(velocity.toFixed(2)) : 0,
+          tempo: '',
+          rest: '',
+          notes: '',
+          exercise_order: exList.length + 1,
+          exercises: { id: exerciseId, name: exerciseName, description: '' },
+        });
+        lastBlock.program_exercises = exList;
+        blocks[lastIdx] = lastBlock;
+        day.program_blocks = blocks;
+        days[0] = day;
+        week.program_days = days;
+        weeks[weekIdx] = week;
+        return { weeks };
+      });
+    };
+    return () => { if (addFromNLRef) addFromNLRef.current = null; };
+  }, [addFromNLRef, updateProgram, generateId]);
+
 
   const seededRef = useRef(false);
   useEffect(() => {
