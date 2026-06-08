@@ -244,15 +244,22 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
   const weekInMonth = safeW % 4;
 
   const [currentProgram, setCurrentProgram] = useState<PlanStrongWS2Program | null>(ws2Programs[0] ?? null);
-  const addFromNLRef = useRef<((weekIdx: number, exerciseId: string, exerciseName: string, kg: number, pct: number, velocity: number) => void) | null>(null);
+  const addFromNLRef = useRef<((weekIdx: number, exerciseId: string, exerciseName: string, kg: number, pct: number, velocity: number, blockId?: string) => void) | null>(null);
   const { getOneRM, getVelocityForPercentage } = useUserExerciseDataCacheContext();
 
-  const handleNlChipClick = useCallback((exerciseId: string | undefined, exerciseName: string, kg: number, pct: number) => {
-    if (!exerciseId || !addFromNLRef.current) return;
-    const oneRM = getOneRM(exerciseId) ?? 0;
-    const v = getVelocityForPercentage(exerciseId, pct, oneRM) || 0;
-    addFromNLRef.current(safeW, exerciseId, exerciseName, kg, pct, v);
-    toast.success(`Προστέθηκε ${exerciseName} · ${pct}% · ${kg}kg`);
+  // Listen for drag-and-drop drops onto blocks
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent<{ blockId: string; payload: { exerciseId: string; exerciseName: string; kg: number; pct: number; weekIdx: number } }>;
+      const { blockId, payload } = ce.detail || ({} as any);
+      if (!payload?.exerciseId || !addFromNLRef.current) return;
+      const oneRM = getOneRM(payload.exerciseId) ?? 0;
+      const v = getVelocityForPercentage(payload.exerciseId, payload.pct, oneRM) || 0;
+      addFromNLRef.current(payload.weekIdx ?? safeW, payload.exerciseId, payload.exerciseName, payload.kg, payload.pct, v, blockId);
+      toast.success(`Προστέθηκε ${payload.exerciseName} · ${payload.pct}% · ${payload.kg}kg`);
+    };
+    window.addEventListener('planstrong-nl-drop', handler as EventListener);
+    return () => window.removeEventListener('planstrong-nl-drop', handler as EventListener);
   }, [getOneRM, getVelocityForPercentage, safeW]);
 
   const setSingleProgram = (p: PlanStrongWS2Program) => {
