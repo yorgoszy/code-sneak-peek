@@ -234,7 +234,6 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
   return (
     <>
       <div className="w-full">
-        <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-semibold ${isMobile ? 'mb-3' : 'mb-4'}`}>Προγράμματα</h2>
         <div className={`space-y-${isMobile ? '2' : '3'}`}>
           {programs.map(program => {
             const { weeksCount, avgDaysPerWeek } = getProgramStats(program);
