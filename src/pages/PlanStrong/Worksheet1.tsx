@@ -34,13 +34,13 @@ const parsePct = (raw: string): number => {
 };
 
 // Color WEEK header based on MAIN VARIANT % value for that week.
-// 15% → blue, 22% → green, 28% → yellow, 35% → red.
+// 15±3% → blue, 22±3% → green, 28±3% → yellow, 35±3% → red.
 const weekHeadStyle = (frac: number): React.CSSProperties => {
   const pct = Math.round((frac || 0) * 100);
-  if (pct === 15) return { backgroundColor: '#3b82f6', color: '#fff' };
-  if (pct === 22) return { backgroundColor: '#22c55e', color: '#fff' };
-  if (pct === 28) return { backgroundColor: '#facc15', color: '#000' };
-  if (pct === 35) return { backgroundColor: '#ef4444', color: '#fff' };
+  if (Math.abs(pct - 15) <= 3) return { backgroundColor: '#3b82f6', color: '#fff' };
+  if (Math.abs(pct - 22) <= 3) return { backgroundColor: '#22c55e', color: '#fff' };
+  if (Math.abs(pct - 28) <= 3) return { backgroundColor: '#facc15', color: '#000' };
+  if (Math.abs(pct - 35) <= 3) return { backgroundColor: '#ef4444', color: '#fff' };
   return {};
 };
 
