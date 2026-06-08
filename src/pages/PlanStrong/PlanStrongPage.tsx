@@ -45,10 +45,19 @@ export default function PlanStrongPage() {
       setName(row.name);
       const def = defaultPlanStrongData();
       const loaded = (row.data as any) || {};
+      const activeSide = loaded.side ?? loaded.left ?? def.side;
+      const loadedSides: any[] = Array.isArray(loaded.sides) && loaded.sides.length > 0
+        ? loaded.sides
+        : [activeSide];
+      const activeIdx = typeof loaded.activeSideIndex === 'number'
+        ? Math.min(Math.max(loaded.activeSideIndex, 0), loadedSides.length - 1)
+        : 0;
       setData({
         ...def,
         ...loaded,
-        side: loaded.side ?? loaded.left ?? def.side,
+        side: loadedSides[activeIdx] ?? activeSide,
+        sides: loadedSides,
+        activeSideIndex: activeIdx,
         sessions: loaded.sessions ?? loaded.sessionsLeft ?? def.sessions,
       });
       // Load all sibling drafts (same coach + same plan name) so the user
