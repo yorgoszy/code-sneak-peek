@@ -551,6 +551,7 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                       selectedRowIdx === i && "bg-foreground/5"
                     )}
                   >
+                    {thumb ? (
                       <div className="w-8 h-5 overflow-hidden bg-muted flex-shrink-0">
                         <img src={thumb} alt={row.name} className="w-full h-full object-cover" />
                       </div>
