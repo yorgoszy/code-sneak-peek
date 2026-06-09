@@ -279,6 +279,23 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
 
   const currentMonthNL = monthsNL && monthsNL[monthIdx] ? monthsNL[monthIdx] : [];
 
+  // Selection: clicking an NL row colors the week headers per that exercise's mainPct
+  const [selectedRowByMonth, setSelectedRowByMonth] = useState<Record<number, number>>({});
+  const selectedRowIdx = selectedRowByMonth[monthIdx];
+
+  const effectiveWeekDifficulties = useMemo(() => {
+    const base = [...(weekDifficulties || [])];
+    while (base.length < totalWeeks) base.push(null);
+    const sel = selectedRowIdx != null ? currentMonthNL[selectedRowIdx] : null;
+    if (sel && sel.mainPct && sel.mainPct.length > 0) {
+      const diffs = computeWeekDifficulties(sel.mainPct);
+      for (let w = 0; w < 4; w++) {
+        base[monthIdx * 4 + w] = diffs[w] ?? null;
+      }
+    }
+    return base;
+  }, [weekDifficulties, totalWeeks, selectedRowIdx, currentMonthNL, monthIdx]);
+
   // Fetch exercise relationships and map any related exercise -> its WS1 root exercise id
   const ws1ExerciseIds = useMemo(
     () => currentMonthNL.map(r => r.exerciseId).filter(Boolean) as string[],
