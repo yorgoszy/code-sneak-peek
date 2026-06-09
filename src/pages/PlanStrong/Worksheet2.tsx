@@ -543,8 +543,14 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                 const totalReq = row.nlPerWeek[weekInMonth] ?? 0;
                 const totalRemain = Math.max(0, totalReq - totalUsed);
                 return (
-                  <div key={i} className="flex items-center gap-2 text-xs border-b border-border/50 pb-1 last:border-0">
-                    {thumb ? (
+                  <div
+                    key={i}
+                    onClick={() => setSelectedRowByMonth(prev => ({ ...prev, [monthIdx]: prev[monthIdx] === i ? -1 : i }))}
+                    className={cn(
+                      "flex items-center gap-2 text-xs border-b border-border/50 pb-1 last:border-0 cursor-pointer",
+                      selectedRowIdx === i && "bg-foreground/5"
+                    )}
+                  >
                       <div className="w-8 h-5 overflow-hidden bg-muted flex-shrink-0">
                         <img src={thumb} alt={row.name} className="w-full h-full object-cover" />
                       </div>
