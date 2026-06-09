@@ -395,15 +395,18 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
         .map(d => formatDateForStorage(d));
 
       for (const u of assignUsers) {
+        // 🔄 Per-user personalization: compute kg/m/s based on this user's 1RM
+        const userWeeks = await recalculateWeeksForUser(weeksForAssign, u.id);
+
         const savedProgram = await programService.saveProgram({
           name: planName || 'Plan Strong',
           description: '',
           user_id: u.id,
-          weeks: weeksForAssign,
+          weeks: userWeeks,
         } as any);
 
         const assignment = await assignmentService.saveAssignment({
-          program: { ...savedProgram, weeks: weeksForAssign },
+          program: { ...savedProgram, weeks: userWeeks },
           userId: u.id,
           trainingDates,
         });
@@ -414,7 +417,7 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
             savedProgram,
             u.id,
             trainingDates,
-            { name: planName || 'Plan Strong', weeks: weeksForAssign } as any
+            { name: planName || 'Plan Strong', weeks: userWeeks } as any
           );
         }
       }
