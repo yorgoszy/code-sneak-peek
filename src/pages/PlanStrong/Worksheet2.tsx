@@ -18,6 +18,7 @@ import { programService } from '@/components/programs/builder/services/programSe
 import { assignmentService } from '@/components/programs/builder/services/assignmentService';
 import { workoutCompletionService } from '@/components/programs/builder/services/workoutCompletionService';
 import { recalculateWeeksForUser } from '@/components/programs/builder/services/perUserRecalculation';
+import { computeWeekDifficulties } from './planStrongCalc';
 import { cn } from '@/lib/utils';
 
 export interface PlanStrongWS2Program {
@@ -206,7 +207,7 @@ const EmbeddedBuilder: React.FC<EmbeddedBuilderProps> = ({ initial, totalWeeks, 
   );
 };
 
-interface MonthNLItem { name: string; exerciseId?: string; videoUrl?: string; nlPerWeek: number[]; totalNL: number; nlPerZonePerWeek?: number[][]; zoneKg?: number[]; zonePct?: number[]; zonePctLabels?: number[] }
+interface MonthNLItem { name: string; exerciseId?: string; videoUrl?: string; nlPerWeek: number[]; totalNL: number; nlPerZonePerWeek?: number[][]; zoneKg?: number[]; zonePct?: number[]; zonePctLabels?: number[]; mainPct?: number[] }
 
 interface AssignUser { id: string; name: string; email?: string; avatar_url?: string | null; photo_url?: string | null }
 interface Worksheet2Props {
@@ -277,6 +278,23 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
   };
 
   const currentMonthNL = monthsNL && monthsNL[monthIdx] ? monthsNL[monthIdx] : [];
+
+  // Selection: clicking an NL row colors the week headers per that exercise's mainPct
+  const [selectedRowByMonth, setSelectedRowByMonth] = useState<Record<number, number>>({});
+  const selectedRowIdx = selectedRowByMonth[monthIdx];
+
+  const effectiveWeekDifficulties = useMemo(() => {
+    const base = [...(weekDifficulties || [])];
+    while (base.length < totalWeeks) base.push(null);
+    const sel = selectedRowIdx != null ? currentMonthNL[selectedRowIdx] : null;
+    if (sel && sel.mainPct && sel.mainPct.length > 0) {
+      const diffs = computeWeekDifficulties(sel.mainPct);
+      for (let w = 0; w < 4; w++) {
+        base[monthIdx * 4 + w] = diffs[w] ?? null;
+      }
+    }
+    return base;
+  }, [weekDifficulties, totalWeeks, selectedRowIdx, currentMonthNL, monthIdx]);
 
   // Fetch exercise relationships and map any related exercise -> its WS1 root exercise id
   const ws1ExerciseIds = useMemo(
@@ -525,7 +543,14 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                 const totalReq = row.nlPerWeek[weekInMonth] ?? 0;
                 const totalRemain = Math.max(0, totalReq - totalUsed);
                 return (
-                  <div key={i} className="flex items-center gap-2 text-xs border-b border-border/50 pb-1 last:border-0">
+                  <div
+                    key={i}
+                    onClick={() => setSelectedRowByMonth(prev => ({ ...prev, [monthIdx]: prev[monthIdx] === i ? -1 : i }))}
+                    className={cn(
+                      "flex items-center gap-2 text-xs border-b border-border/50 pb-1 last:border-0 cursor-pointer",
+                      selectedRowIdx === i && "bg-foreground/5"
+                    )}
+                  >
                     {thumb ? (
                       <div className="w-8 h-5 overflow-hidden bg-muted flex-shrink-0">
                         <img src={thumb} alt={row.name} className="w-full h-full object-cover" />
@@ -589,7 +614,7 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
             selectedUserId={selectedUserId}
             coachId={coachId}
             onActiveWeekIndexChange={setActiveW}
-            weekDifficulties={weekDifficulties}
+            weekDifficulties={effectiveWeekDifficulties}
             addFromNLRef={addFromNLRef}
           />
         </PlanStrongZoneKgProvider>

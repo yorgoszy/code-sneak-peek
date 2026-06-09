@@ -584,7 +584,7 @@ export default function PlanStrongPage() {
                   })
                 );
                 const zonePctLabels = ((s as any).zoneCoef && (s as any).zoneCoef.length === 6 ? (s as any).zoneCoef : ZONE_COEF).map((c: number) => Math.round(c * 100));
-                return { name, exerciseId: s.exerciseId, videoUrl: ex?.video_url, nlPerWeek: out.mainNlPerWeek, totalNL: out.totalNL, nlPerZonePerWeek, zoneKg: out.zoneKg, zonePct, zonePctLabels };
+                return { name, exerciseId: s.exerciseId, videoUrl: ex?.video_url, nlPerWeek: out.mainNlPerWeek, totalNL: out.totalNL, nlPerZonePerWeek, zoneKg: out.zoneKg, zonePct, zonePctLabels, mainPct: s.mainPct || [] };
               }))}
               weekDifficulties={monthsList.flatMap(m => {
                 const mainSide = m.sides?.[0];
