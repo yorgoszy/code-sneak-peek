@@ -17,6 +17,7 @@ import { formatDateForStorage } from '@/utils/dateUtils';
 import { programService } from '@/components/programs/builder/services/programService';
 import { assignmentService } from '@/components/programs/builder/services/assignmentService';
 import { workoutCompletionService } from '@/components/programs/builder/services/workoutCompletionService';
+import { recalculateWeeksForUser } from '@/components/programs/builder/services/perUserRecalculation';
 import { cn } from '@/lib/utils';
 
 export interface PlanStrongWS2Program {
