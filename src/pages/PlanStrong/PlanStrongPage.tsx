@@ -525,6 +525,48 @@ export default function PlanStrongPage() {
         </TabsContent>
 
         <TabsContent value="ws2" className="space-y-3">
+          {/* User tabs (κοινό για όλους τους μήνες) */}
+          <div className="flex items-center gap-1 flex-wrap border-b border-border">
+            {selectedUsers.map(u => {
+              const active = previewUserId === u.id;
+              return (
+                <div
+                  key={u.id}
+                  className={`flex items-center gap-1 px-2 py-1 border border-b-0 ${active ? 'bg-foreground text-background border-foreground' : 'bg-background border-border'} rounded-none cursor-pointer`}
+                  onClick={() => setPreviewUserId(u.id)}
+                >
+                  <Avatar className="h-5 w-5">
+                    {(u.photo_url || u.avatar_url) ? (
+                      <AvatarImage src={u.photo_url || u.avatar_url || ''} alt={u.name} />
+                    ) : null}
+                    <AvatarFallback className={`text-[10px] ${active ? 'bg-background text-foreground' : 'bg-muted text-foreground'}`}>
+                      {u.name?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-xs">{u.name}</span>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); removeUser(u.id); }}
+                    className="ml-1 hover:text-destructive"
+                    title="Αφαίρεση χρήστη"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              );
+            })}
+            <div className="ml-1 min-w-[180px]">
+              <UserSearchCombobox
+                value={pickerValue}
+                onValueChange={addUser}
+                placeholder="+ Χρήστης"
+                coachId={user?.id}
+                adminOwned={isAdmin?.()}
+                triggerClassName="h-7 justify-start text-xs px-2"
+              />
+            </div>
+          </div>
+
           <UserExerciseDataCacheProvider userId={previewUserId || userIds[0] || userId || null}>
             <Worksheet2
               monthsCount={monthsList.length}
