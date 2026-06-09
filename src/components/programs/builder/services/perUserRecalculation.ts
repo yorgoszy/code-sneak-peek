@@ -159,12 +159,18 @@ export async function recalculateWeeksForUser(
         ...block,
         program_exercises: (block.program_exercises || []).map((ex: any) => {
           if (!ex.exercise_id) return ex;
-          
-          const oneRM = getOneRM(ex.exercise_id);
-          if (!oneRM) return ex;
 
-          const hasPercentage = ex.percentage_1rm && 
+          const hasPercentage = ex.percentage_1rm &&
             parseFloat(ex.percentage_1rm.toString().replace(',', '.')) > 0;
+
+          const oneRM = getOneRM(ex.exercise_id);
+
+          // If there is a %1RM but no 1RM for this user, clear kg/velocity so we
+          // don't carry over another user's baked-in values.
+          if (hasPercentage && !oneRM) {
+            return { ...ex, kg: '', velocity_ms: 0 };
+          }
+          if (!oneRM) return ex;
 
           let newKg = ex.kg;
           let newVelocity = ex.velocity_ms;
