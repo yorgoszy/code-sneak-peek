@@ -17,6 +17,7 @@ import { formatDateForStorage } from '@/utils/dateUtils';
 import { programService } from '@/components/programs/builder/services/programService';
 import { assignmentService } from '@/components/programs/builder/services/assignmentService';
 import { workoutCompletionService } from '@/components/programs/builder/services/workoutCompletionService';
+import { recalculateWeeksForUser } from '@/components/programs/builder/services/perUserRecalculation';
 import { cn } from '@/lib/utils';
 
 export interface PlanStrongWS2Program {
@@ -248,19 +249,27 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
   const { getOneRM, getVelocityForPercentage } = useUserExerciseDataCacheContext();
 
   // Listen for drag-and-drop drops onto blocks
+  const isMultiUser = (assignUsers?.length || 0) > 1;
   useEffect(() => {
     const handler = (e: Event) => {
       const ce = e as CustomEvent<{ blockId: string; payload: { exerciseId: string; exerciseName: string; kg: number; pct: number; weekIdx: number } }>;
       const { blockId, payload } = ce.detail || ({} as any);
       if (!payload?.exerciseId || !addFromNLRef.current) return;
-      const oneRM = getOneRM(payload.exerciseId) ?? 0;
-      const v = getVelocityForPercentage(payload.exerciseId, payload.pct, oneRM) || 0;
-      addFromNLRef.current(payload.weekIdx ?? safeW, payload.exerciseId, payload.exerciseName, payload.kg, payload.pct, v, blockId);
-      toast.success(`Προστέθηκε ${payload.exerciseName} · ${payload.pct}% · ${payload.kg}kg`);
+      // With multiple users selected, do NOT bake in kg/velocity from a single
+      // user's 1RM — leave kg empty; it will be computed per-user on assignment.
+      const kgToInsert = isMultiUser ? 0 : payload.kg;
+      const oneRM = isMultiUser ? 0 : (getOneRM(payload.exerciseId) ?? 0);
+      const v = isMultiUser ? 0 : (getVelocityForPercentage(payload.exerciseId, payload.pct, oneRM) || 0);
+      addFromNLRef.current(payload.weekIdx ?? safeW, payload.exerciseId, payload.exerciseName, kgToInsert, payload.pct, v, blockId);
+      toast.success(
+        isMultiUser
+          ? `Προστέθηκε ${payload.exerciseName} · ${payload.pct}% (kg ανά χρήστη στην ανάθεση)`
+          : `Προστέθηκε ${payload.exerciseName} · ${payload.pct}% · ${payload.kg}kg`
+      );
     };
     window.addEventListener('planstrong-nl-drop', handler as EventListener);
     return () => window.removeEventListener('planstrong-nl-drop', handler as EventListener);
-  }, [getOneRM, getVelocityForPercentage, safeW]);
+  }, [getOneRM, getVelocityForPercentage, safeW, isMultiUser]);
 
   const setSingleProgram = (p: PlanStrongWS2Program) => {
     setCurrentProgram(p);
@@ -386,15 +395,18 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
         .map(d => formatDateForStorage(d));
 
       for (const u of assignUsers) {
+        // 🔄 Per-user personalization: compute kg/m/s based on this user's 1RM
+        const userWeeks = await recalculateWeeksForUser(weeksForAssign, u.id);
+
         const savedProgram = await programService.saveProgram({
           name: planName || 'Plan Strong',
           description: '',
           user_id: u.id,
-          weeks: weeksForAssign,
+          weeks: userWeeks,
         } as any);
 
         const assignment = await assignmentService.saveAssignment({
-          program: { ...savedProgram, weeks: weeksForAssign },
+          program: { ...savedProgram, weeks: userWeeks },
           userId: u.id,
           trainingDates,
         });
@@ -405,7 +417,7 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
             savedProgram,
             u.id,
             trainingDates,
-            { name: planName || 'Plan Strong', weeks: weeksForAssign } as any
+            { name: planName || 'Plan Strong', weeks: userWeeks } as any
           );
         }
       }
