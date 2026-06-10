@@ -333,7 +333,8 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
           for (const n of adj.get(cur) || []) if (!visited.has(n)) queue.push(n);
         }
         const root = group.find(g => ws1Set.has(g));
-        if (root) for (const g of group) if (g !== root) result[g] = root;
+        // Only map NON-WS1 ids to root, so each WS1 exercise tracks its own reps
+        if (root) for (const g of group) if (g !== root && !ws1Set.has(g)) result[g] = root;
       }
       setLinkedToRoot(result);
     })();
@@ -561,11 +562,12 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                       </div>
                     )}
                     <span className="truncate font-medium min-w-[80px] max-w-[140px]">{row.name}</span>
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1 items-center">
                       {sets.map((p, idx) => {
                         const used = usedMap[p.kg] || 0;
-                        const remain = Math.max(0, p.nl - used);
-                        const done = used >= p.nl;
+                        const remain = p.nl - used;
+                        const over = used > p.nl;
+                        const done = used >= p.nl && !over;
                         return (
                           <div
                             key={idx}
@@ -582,7 +584,14 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                               e.dataTransfer.setData('application/x-planstrong-nl', JSON.stringify(payload));
                               e.dataTransfer.effectAllowed = 'copy';
                             }}
-                            className={`inline-flex flex-col items-center border px-1 py-0.5 tabular-nums leading-tight cursor-grab active:cursor-grabbing hover:bg-foreground/10 ${done ? 'border-[#00ffba] bg-[#00ffba]/10' : 'border-border'}`}
+                            className={cn(
+                              "inline-flex flex-col items-center border px-1 py-0.5 tabular-nums leading-tight cursor-grab active:cursor-grabbing hover:bg-foreground/10",
+                              over
+                                ? "border-destructive bg-destructive/10 text-destructive"
+                                : done
+                                  ? "border-[#00ffba] bg-[#00ffba]/10"
+                                  : "border-border"
+                            )}
                             title={`Σύρε σε ένα block · Χρησιμοποιημένα: ${used} / ${p.nl}`}
                           >
                             <span className="font-medium">
@@ -595,11 +604,16 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                           </div>
                         );
                       })}
+                      <span
+                        className={cn(
+                          "tabular-nums font-bold text-xs px-1",
+                          totalUsed > totalReq && "text-destructive"
+                        )}
+                      >
+                        {totalReq - totalUsed}/{totalReq}
+                      </span>
                     </div>
                     <div className="flex-1" />
-                    <span className="tabular-nums font-bold min-w-[3.5rem] text-right">
-                      {totalRemain}/{totalReq}
-                    </span>
                   </div>
                 );
               })}
