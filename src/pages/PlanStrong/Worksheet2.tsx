@@ -359,9 +359,9 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
     return map;
   }, [currentMonthNL, linkedToRoot]);
 
-  // Compute "used reps" per exercise per kg across ALL days of the current week
+  // Compute "used reps" per exercise per kg AND per %1RM across ALL days of the current week
   const usedByExerciseKg = useMemo(() => {
-    const map: Record<string, Record<number, number>> = {};
+    const map: Record<string, { byKg: Record<number, number>; byPct: Record<number, number> }> = {};
     const weeks = currentProgram?.weeks || (ws2Programs[0]?.weeks ?? []);
     const week = weeks[safeW];
     if (!week) return map;
@@ -372,11 +372,14 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
           const rawId = pe.exercise_id;
           const exId = rawId && linkedToRoot[rawId] ? linkedToRoot[rawId] : rawId;
           const kg = parseKg(pe.kg);
+          const pct = Number(pe.percentage_1rm) || 0;
           const setsN = (Number(pe.sets) || 0) * blockSets;
           const repsN = parseRepsCount(pe.reps);
-          if (!exId || !kg || !setsN || !repsN) return;
-          if (!map[exId]) map[exId] = {};
-          map[exId][kg] = (map[exId][kg] || 0) + setsN * repsN;
+          if (!exId || !setsN || !repsN) return;
+          if (!map[exId]) map[exId] = { byKg: {}, byPct: {} };
+          const total = setsN * repsN;
+          if (kg) map[exId].byKg[kg] = (map[exId].byKg[kg] || 0) + total;
+          if (pct) map[exId].byPct[pct] = (map[exId].byPct[pct] || 0) + total;
         });
       });
     });
