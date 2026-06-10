@@ -542,8 +542,8 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                   .filter(p => p.nl > 0);
                 const hasVideo = row.videoUrl && isValidVideoUrl(row.videoUrl);
                 const thumb = hasVideo ? getVideoThumbnail(row.videoUrl!) : null;
-                const usedMap = row.exerciseId ? (usedByExerciseKg[row.exerciseId] || {}) : {};
-                const totalUsed = Object.values(usedMap).reduce((a, b) => a + b, 0);
+                const usedEntry = row.exerciseId ? (usedByExerciseKg[row.exerciseId] || { byKg: {}, byPct: {} }) : { byKg: {} as Record<number, number>, byPct: {} as Record<number, number> };
+                const totalUsed = Object.values(usedEntry.byPct).reduce((a: number, b: number) => a + b, 0) || Object.values(usedEntry.byKg).reduce((a: number, b: number) => a + b, 0);
                 const totalReq = row.nlPerWeek[weekInMonth] ?? 0;
                 const totalRemain = Math.max(0, totalReq - totalUsed);
                 return (
