@@ -567,7 +567,7 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                     <span className="truncate font-medium min-w-[80px] max-w-[140px]">{row.name}</span>
                     <div className="flex flex-wrap gap-1 items-center">
                       {sets.map((p, idx) => {
-                        const used = usedMap[p.kg] || 0;
+                        const used = (p.pct && usedEntry.byPct[p.pct]) || usedEntry.byKg[p.kg] || 0;
                         const remain = p.nl - used;
                         const over = used > p.nl;
                         const done = used >= p.nl && !over;
