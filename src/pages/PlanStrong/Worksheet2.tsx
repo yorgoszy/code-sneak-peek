@@ -333,7 +333,8 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
           for (const n of adj.get(cur) || []) if (!visited.has(n)) queue.push(n);
         }
         const root = group.find(g => ws1Set.has(g));
-        if (root) for (const g of group) if (g !== root) result[g] = root;
+        // Only map NON-WS1 ids to root, so each WS1 exercise tracks its own reps
+        if (root) for (const g of group) if (g !== root && !ws1Set.has(g)) result[g] = root;
       }
       setLinkedToRoot(result);
     })();
