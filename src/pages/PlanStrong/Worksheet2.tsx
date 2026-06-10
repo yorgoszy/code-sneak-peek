@@ -359,9 +359,9 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
     return map;
   }, [currentMonthNL, linkedToRoot]);
 
-  // Compute "used reps" per exercise per kg across ALL days of the current week
+  // Compute "used reps" per exercise per kg AND per %1RM across ALL days of the current week
   const usedByExerciseKg = useMemo(() => {
-    const map: Record<string, Record<number, number>> = {};
+    const map: Record<string, { byKg: Record<number, number>; byPct: Record<number, number> }> = {};
     const weeks = currentProgram?.weeks || (ws2Programs[0]?.weeks ?? []);
     const week = weeks[safeW];
     if (!week) return map;
@@ -372,11 +372,14 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
           const rawId = pe.exercise_id;
           const exId = rawId && linkedToRoot[rawId] ? linkedToRoot[rawId] : rawId;
           const kg = parseKg(pe.kg);
+          const pct = Number(pe.percentage_1rm) || 0;
           const setsN = (Number(pe.sets) || 0) * blockSets;
           const repsN = parseRepsCount(pe.reps);
-          if (!exId || !kg || !setsN || !repsN) return;
-          if (!map[exId]) map[exId] = {};
-          map[exId][kg] = (map[exId][kg] || 0) + setsN * repsN;
+          if (!exId || !setsN || !repsN) return;
+          if (!map[exId]) map[exId] = { byKg: {}, byPct: {} };
+          const total = setsN * repsN;
+          if (kg) map[exId].byKg[kg] = (map[exId].byKg[kg] || 0) + total;
+          if (pct) map[exId].byPct[pct] = (map[exId].byPct[pct] || 0) + total;
         });
       });
     });
@@ -539,8 +542,8 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                   .filter(p => p.nl > 0);
                 const hasVideo = row.videoUrl && isValidVideoUrl(row.videoUrl);
                 const thumb = hasVideo ? getVideoThumbnail(row.videoUrl!) : null;
-                const usedMap = row.exerciseId ? (usedByExerciseKg[row.exerciseId] || {}) : {};
-                const totalUsed = Object.values(usedMap).reduce((a, b) => a + b, 0);
+                const usedEntry = row.exerciseId ? (usedByExerciseKg[row.exerciseId] || { byKg: {}, byPct: {} }) : { byKg: {} as Record<number, number>, byPct: {} as Record<number, number> };
+                const totalUsed = Object.values(usedEntry.byPct).reduce((a: number, b: number) => a + b, 0) || Object.values(usedEntry.byKg).reduce((a: number, b: number) => a + b, 0);
                 const totalReq = row.nlPerWeek[weekInMonth] ?? 0;
                 const totalRemain = Math.max(0, totalReq - totalUsed);
                 return (
@@ -564,7 +567,7 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                     <span className="truncate font-medium min-w-[80px] max-w-[140px]">{row.name}</span>
                     <div className="flex flex-wrap gap-1 items-center">
                       {sets.map((p, idx) => {
-                        const used = usedMap[p.kg] || 0;
+                        const used = (p.pct && usedEntry.byPct[p.pct]) || usedEntry.byKg[p.kg] || 0;
                         const remain = p.nl - used;
                         const over = used > p.nl;
                         const done = used >= p.nl && !over;
