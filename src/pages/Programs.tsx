@@ -357,30 +357,49 @@ const Programs = () => {
                 </div>
               ) : (
                 <div className="border border-border divide-y divide-border">
-                  {planStrongDrafts.map(d => (
-                    <div key={d.id} className="flex items-center justify-between px-3 py-2 hover:bg-muted/30">
-                      <button
-                        type="button"
-                        onClick={() => navigate(`/plan-strong?id=${d.id}`)}
-                        className="flex-1 text-left"
-                      >
-                        <div className="text-sm font-medium">{d.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {d.userName || d.user_id.slice(0, 8)} · {d.status} · {new Date(d.created_at).toLocaleDateString('el-GR')}
+                  {(() => {
+                    // Group sibling rows (same plan saved per-user) by name
+                    const groups = new Map<string, typeof planStrongDrafts>();
+                    planStrongDrafts.forEach(d => {
+                      const arr = groups.get(d.name) || [];
+                      arr.push(d);
+                      groups.set(d.name, arr);
+                    });
+                    return Array.from(groups.entries()).map(([name, items]) => {
+                      const first = items[0];
+                      const names = items.map(i => i.userName || i.user_id.slice(0, 6)).join(', ');
+                      return (
+                        <div key={first.id} className="flex items-center justify-between px-3 py-2 hover:bg-muted/30">
+                          <button
+                            type="button"
+                            onClick={() => navigate(`/plan-strong?id=${first.id}`)}
+                            className="flex-1 text-left min-w-0"
+                          >
+                            <div className="text-sm font-medium">{name}</div>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {items.length > 1 ? `${items.length} χρήστες · ` : ''}{names} · {first.status} · {new Date(first.created_at).toLocaleDateString('el-GR')}
+                            </div>
+                          </button>
+                          <div className="flex items-center gap-1">
+                            <Button size="sm" variant="outline" className="rounded-none h-7 w-7 p-0"
+                              onClick={() => navigate(`/plan-strong?id=${first.id}`)}>
+                              <Pencil className="h-3 w-3" />
+                            </Button>
+                            <Button size="sm" variant="outline" className="rounded-none h-7 w-7 p-0 text-destructive"
+                              onClick={async () => {
+                                if (!confirm(`Διαγραφή Plan Strong "${name}" (${items.length} ${items.length > 1 ? 'πρόχειρα' : 'πρόχειρο'});`)) return;
+                                const { error } = await supabase.from('plan_strong_drafts').delete().in('id', items.map(i => i.id));
+                                if (error) { toast.error(error.message); return; }
+                                toast.success('Διαγράφηκε');
+                                loadPlanStrongDrafts();
+                              }}>
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </div>
-                      </button>
-                      <div className="flex items-center gap-1">
-                        <Button size="sm" variant="outline" className="rounded-none h-7 w-7 p-0"
-                          onClick={() => navigate(`/plan-strong?id=${d.id}`)}>
-                          <Pencil className="h-3 w-3" />
-                        </Button>
-                        <Button size="sm" variant="outline" className="rounded-none h-7 w-7 p-0 text-destructive"
-                          onClick={() => handleDeletePlanStrong(d.id)}>
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                      );
+                    });
+                  })()}
                 </div>
               )}
             </TabsContent>
