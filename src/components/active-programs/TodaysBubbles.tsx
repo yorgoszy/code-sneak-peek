@@ -126,7 +126,7 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
             const name = assignment.app_users?.name || 'Άγνωστος';
             const avatarUrl = assignment.app_users?.photo_url || assignment.app_users?.avatar_url;
             const isCompleted = status === 'completed';
-            const isActive = isDialogOpen(assignment.id);
+            const isActive = isDialogOpen(`${assignment.id}-${todayStr}`);
 
             const workoutId = `${assignment.id}-${todayStr}`;
             const activeWorkout = activeWorkouts.find(w => w.id === workoutId);
