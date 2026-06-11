@@ -22,6 +22,7 @@ interface DayProgramDialogProps {
   workoutStatus: string;
   onRefresh?: () => void;
   onMinimize?: () => void;
+  onDateChange?: (newDate: Date) => void;
 }
 
 export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
@@ -31,7 +32,8 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   selectedDate,
   workoutStatus,
   onRefresh,
-  onMinimize
+  onMinimize,
+  onDateChange
 }) => {
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
