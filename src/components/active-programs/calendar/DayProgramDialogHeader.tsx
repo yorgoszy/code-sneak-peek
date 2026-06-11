@@ -3,7 +3,7 @@ import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
-import { Play, CheckCircle, X, FlaskConical, Trophy, Minus } from "lucide-react";
+import { Play, CheckCircle, X, FlaskConical, Trophy, Minus, ChevronLeft, ChevronRight } from "lucide-react";
 import { WorkoutTimer } from "./WorkoutTimer";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
