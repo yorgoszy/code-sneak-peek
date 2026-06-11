@@ -25,6 +25,8 @@ interface DayProgramDialogHeaderProps {
   onCompleteWorkout: () => void;
   onCancelWorkout: () => void;
   onMinimize?: () => void;
+  onPrevDay?: () => void;
+  onNextDay?: () => void;
   program: EnrichedAssignment;
   onClose: () => void;
 }
