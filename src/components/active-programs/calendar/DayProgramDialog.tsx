@@ -208,6 +208,29 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   };
 
   const dayProgram = getDayProgram();
+
+  // Prev/Next day navigation within program's training_dates
+  const sortedTrainingDates = React.useMemo(
+    () => [...(program.training_dates || [])].sort(),
+    [program.training_dates]
+  );
+  const currentDateStr = format(selectedDate, 'yyyy-MM-dd');
+  const currentDateIdx = sortedTrainingDates.indexOf(currentDateStr);
+  const canGoPrev = !!onDateChange && currentDateIdx > 0;
+  const canGoNext = !!onDateChange && currentDateIdx >= 0 && currentDateIdx < sortedTrainingDates.length - 1;
+  const handlePrevDay = () => {
+    if (!canGoPrev) return;
+    const prev = sortedTrainingDates[currentDateIdx - 1];
+    const [y, m, d] = prev.split('-').map(Number);
+    onDateChange?.(new Date(y, m - 1, d));
+  };
+  const handleNextDay = () => {
+    if (!canGoNext) return;
+    const next = sortedTrainingDates[currentDateIdx + 1];
+    const [y, m, d] = next.split('-').map(Number);
+    onDateChange?.(new Date(y, m - 1, d));
+  };
+
   const handleMinimize = () => {
     // Save scroll position before minimizing
     if (scrollContainerRef.current) {
