@@ -12,8 +12,8 @@ interface TodaysBubblesProps {
   workoutCompletions: any[];
   todayStr: string;
   onProgramClick: (assignment: EnrichedAssignment) => void;
-  openAssignmentIds?: Set<string>;
-  onBubbleRestore?: (assignmentId: string) => void;
+  openWorkoutIds?: Set<string>;
+  onBubbleRestore?: (workoutId: string) => void;
   liveWorkouts?: LiveWorkoutData[];
 }
 
@@ -22,7 +22,7 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
   workoutCompletions,
   todayStr,
   onProgramClick,
-  openAssignmentIds = new Set(),
+  openWorkoutIds = new Set(),
   onBubbleRestore,
   liveWorkouts = []
 }) => {
