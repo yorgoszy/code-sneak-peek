@@ -28,7 +28,7 @@ const CoachActiveProgramsContent = () => {
   const [realtimeKey, setRealtimeKey] = useState(0);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [activeAssignmentId, setActiveAssignmentId] = useState<string | null>(null);
+  const [activeWorkoutId, setActiveWorkoutId] = useState<string | null>(null);
 
   const completionsCache = useWorkoutCompletionsCache();
   
@@ -36,6 +36,7 @@ const CoachActiveProgramsContent = () => {
     activeWorkouts, 
     openWorkout,
     updateElapsedTime,
+    updateWorkoutDate,
     cancelWorkout,
     removeWorkout,
   } = useMultipleWorkouts();
@@ -170,19 +171,17 @@ const CoachActiveProgramsContent = () => {
 
   // Χειρισμός κλικ σε πρόγραμμα
   const handleProgramClick = (assignment: EnrichedAssignment) => {
+    const workoutId = `${assignment.id}-${format(dayToShow, 'yyyy-MM-dd')}`;
     openWorkout(assignment, dayToShow);
-    setActiveAssignmentId(prev => prev === assignment.id ? null : assignment.id);
+    setActiveWorkoutId(prev => prev === workoutId ? null : workoutId);
   };
 
-  const handleDialogClose = (assignmentId?: string) => {
-    // Remove from activeWorkouts tracking
-    if (assignmentId) {
-      const dateStr = format(dayToShow, 'yyyy-MM-dd');
-      const workoutId = `${assignmentId}-${dateStr}`;
+  const handleDialogClose = (workoutId?: string) => {
+    if (workoutId) {
       removeWorkout(workoutId);
     }
-    setActiveAssignmentId(prev => {
-      if (assignmentId && prev !== assignmentId) return prev;
+    setActiveWorkoutId(prev => {
+      if (workoutId && prev !== workoutId) return prev;
       return null;
     });
   };
@@ -224,23 +223,24 @@ const CoachActiveProgramsContent = () => {
         workoutCompletions={workoutCompletions}
         todayStr={todayStr}
         onProgramClick={handleProgramClick}
-        openAssignmentIds={activeAssignmentId ? new Set([activeAssignmentId]) : new Set()}
-        onBubbleRestore={(assignmentId) => setActiveAssignmentId(assignmentId)}
+        openWorkoutIds={activeWorkoutId ? new Set([activeWorkoutId]) : new Set()}
+        onBubbleRestore={(workoutId) => setActiveWorkoutId(workoutId)}
         liveWorkouts={liveWorkouts}
       />
 
       {activeWorkouts.map(workout => {
-        const isThisOpen = activeAssignmentId === workout.assignment.id;
+        const isThisOpen = activeWorkoutId === workout.id;
         return (
           <DayProgramDialog
             key={workout.id}
             isOpen={isThisOpen}
-            onClose={() => setActiveAssignmentId(prev => prev === workout.assignment.id ? null : prev)}
+            onClose={() => setActiveWorkoutId(prev => prev === workout.id ? null : prev)}
             program={workout.assignment}
             selectedDate={workout.selectedDate}
             workoutStatus={getWorkoutStatus(workout.assignment, format(workout.selectedDate, 'yyyy-MM-dd'))}
             onRefresh={handleCalendarRefresh}
-            onMinimize={() => setActiveAssignmentId(prev => prev === workout.assignment.id ? null : prev)}
+            onMinimize={() => setActiveWorkoutId(prev => prev === workout.id ? null : prev)}
+            onDateChange={(d) => updateWorkoutDate(workout.id, d)}
           />
         );
       })}

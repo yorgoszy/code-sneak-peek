@@ -18,6 +18,8 @@ interface MultipleWorkoutsContextType {
   /** Actually start the workout timer */
   startWorkout: (assignment: EnrichedAssignment, selectedDate: Date) => void;
   updateElapsedTime: (workoutId: string, elapsedTime: number) => void;
+  /** Update the selectedDate of an existing workout without changing its id (dialog stays mounted) */
+  updateWorkoutDate: (workoutId: string, newDate: Date) => void;
   completeWorkout: (workoutId: string) => void;
   cancelWorkout: (workoutId: string) => void;
   /** Remove workout from tracking without cancel toast */
@@ -108,6 +110,16 @@ export const MultipleWorkoutsProvider: React.FC<{ children: React.ReactNode }> =
     );
   }, []);
 
+  const updateWorkoutDate = useCallback((workoutId: string, newDate: Date) => {
+    setActiveWorkouts(prev =>
+      prev.map(workout =>
+        workout.id === workoutId
+          ? { ...workout, selectedDate: newDate }
+          : workout
+      )
+    );
+  }, []);
+
   const completeWorkout = useCallback((workoutId: string) => {
     setActiveWorkouts(prev => prev.filter(w => w.id !== workoutId));
   }, []);
@@ -141,6 +153,7 @@ export const MultipleWorkoutsProvider: React.FC<{ children: React.ReactNode }> =
       openWorkout,
       startWorkout,
       updateElapsedTime,
+      updateWorkoutDate,
       completeWorkout,
       cancelWorkout,
       removeWorkout,

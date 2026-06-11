@@ -22,6 +22,7 @@ interface DayProgramDialogProps {
   workoutStatus: string;
   onRefresh?: () => void;
   onMinimize?: () => void;
+  onDateChange?: (newDate: Date) => void;
 }
 
 export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
@@ -31,7 +32,8 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   selectedDate,
   workoutStatus,
   onRefresh,
-  onMinimize
+  onMinimize,
+  onDateChange
 }) => {
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
@@ -206,6 +208,29 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   };
 
   const dayProgram = getDayProgram();
+
+  // Prev/Next day navigation within program's training_dates
+  const sortedTrainingDates = React.useMemo(
+    () => [...(program.training_dates || [])].sort(),
+    [program.training_dates]
+  );
+  const currentDateStr = format(selectedDate, 'yyyy-MM-dd');
+  const currentDateIdx = sortedTrainingDates.indexOf(currentDateStr);
+  const canGoPrev = !!onDateChange && currentDateIdx > 0;
+  const canGoNext = !!onDateChange && currentDateIdx >= 0 && currentDateIdx < sortedTrainingDates.length - 1;
+  const handlePrevDay = () => {
+    if (!canGoPrev) return;
+    const prev = sortedTrainingDates[currentDateIdx - 1];
+    const [y, m, d] = prev.split('-').map(Number);
+    onDateChange?.(new Date(y, m - 1, d));
+  };
+  const handleNextDay = () => {
+    if (!canGoNext) return;
+    const next = sortedTrainingDates[currentDateIdx + 1];
+    const [y, m, d] = next.split('-').map(Number);
+    onDateChange?.(new Date(y, m - 1, d));
+  };
+
   const handleMinimize = () => {
     // Save scroll position before minimizing
     if (scrollContainerRef.current) {
@@ -288,6 +313,8 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             onCompleteWorkout={handleRequestComplete}
             onCancelWorkout={handleCancelWorkout}
             onMinimize={handleMinimize}
+            onPrevDay={canGoPrev ? handlePrevDay : undefined}
+            onNextDay={canGoNext ? handleNextDay : undefined}
             program={program}
             onClose={() => {
               // Set flag BEFORE any state changes

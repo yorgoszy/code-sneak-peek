@@ -3,7 +3,7 @@ import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
-import { Play, CheckCircle, X, FlaskConical, Trophy, Minus } from "lucide-react";
+import { Play, CheckCircle, X, FlaskConical, Trophy, Minus, ChevronLeft, ChevronRight } from "lucide-react";
 import { WorkoutTimer } from "./WorkoutTimer";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
@@ -25,6 +25,8 @@ interface DayProgramDialogHeaderProps {
   onCompleteWorkout: () => void;
   onCancelWorkout: () => void;
   onMinimize?: () => void;
+  onPrevDay?: () => void;
+  onNextDay?: () => void;
   program: EnrichedAssignment;
   onClose: () => void;
 }
@@ -45,6 +47,8 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
   onCompleteWorkout,
   onCancelWorkout,
   onMinimize,
+  onPrevDay,
+  onNextDay,
   program,
   onClose
 }) => {
@@ -105,9 +109,27 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
             )}
           </div>
           <div className="flex items-center gap-2">
+            {onPrevDay && (
+              <button
+                onClick={onPrevDay}
+                className="border border-input bg-background hover:bg-accent rounded-none inline-flex items-center justify-center h-5 w-5 p-0"
+                title="Προηγούμενη ημέρα"
+              >
+                <ChevronLeft className="w-3 h-3" />
+              </button>
+            )}
             <p className="text-xs text-gray-600">
               {format(selectedDate, 'EEEE, d/M/yyyy', { locale: el })}
             </p>
+            {onNextDay && (
+              <button
+                onClick={onNextDay}
+                className="border border-input bg-background hover:bg-accent rounded-none inline-flex items-center justify-center h-5 w-5 p-0"
+                title="Επόμενη ημέρα"
+              >
+                <ChevronRight className="w-3 h-3" />
+              </button>
+            )}
             {isTestDay && testTypes.length > 0 && (
               <p className="text-xs text-yellow-600">
                 ({testTypes.map(type => TEST_TYPE_LABELS[type] || type).join(', ')})
