@@ -69,13 +69,8 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
     return null;
   }
 
-  // Helper to check if an assignment's dialog is currently open
-  const isDialogOpen = (assignmentId: string) => {
-    for (const wid of openAssignmentIds) {
-      if (wid.startsWith(assignmentId)) return true;
-    }
-    return false;
-  };
+  // Helper to check if a workout's dialog is currently open
+  const isDialogOpen = (workoutId: string) => openWorkoutIds.has(workoutId);
 
   const extractAssignmentId = (bubbleId: string, dateSuffix: string) =>
     bubbleId.replace('bubble-', '').replace(`-${dateSuffix}`, '');
@@ -95,7 +90,8 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
     // bubble id format: bubble-{assignmentId}-YYYY-MM-DD (date suffix is 10 chars)
     const dateSuffix = bubble.id.slice(-10);
     const assignmentId = extractAssignmentId(bubble.id, dateSuffix);
-    const isActive = isDialogOpen(assignmentId);
+    const workoutId = `${assignmentId}-${dateSuffix}`;
+    const isActive = isDialogOpen(workoutId);
     const bubbleAssignment = programsForToday.find(a => a.id === assignmentId);
     const bubbleCompleted = bubbleAssignment ? getWorkoutStatus(bubbleAssignment) === 'completed' : false;
 
@@ -111,7 +107,7 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
         onRestore={() => {
           bubble.onRestore();
           removeBubble(bubble.id);
-          onBubbleRestore?.(assignmentId);
+          onBubbleRestore?.(workoutId);
         }}
       />
     );
