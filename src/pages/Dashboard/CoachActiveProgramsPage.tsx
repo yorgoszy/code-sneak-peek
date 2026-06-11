@@ -171,19 +171,17 @@ const CoachActiveProgramsContent = () => {
 
   // Χειρισμός κλικ σε πρόγραμμα
   const handleProgramClick = (assignment: EnrichedAssignment) => {
+    const workoutId = `${assignment.id}-${format(dayToShow, 'yyyy-MM-dd')}`;
     openWorkout(assignment, dayToShow);
-    setActiveAssignmentId(prev => prev === assignment.id ? null : assignment.id);
+    setActiveWorkoutId(prev => prev === workoutId ? null : workoutId);
   };
 
-  const handleDialogClose = (assignmentId?: string) => {
-    // Remove from activeWorkouts tracking
-    if (assignmentId) {
-      const dateStr = format(dayToShow, 'yyyy-MM-dd');
-      const workoutId = `${assignmentId}-${dateStr}`;
+  const handleDialogClose = (workoutId?: string) => {
+    if (workoutId) {
       removeWorkout(workoutId);
     }
-    setActiveAssignmentId(prev => {
-      if (assignmentId && prev !== assignmentId) return prev;
+    setActiveWorkoutId(prev => {
+      if (workoutId && prev !== workoutId) return prev;
       return null;
     });
   };
