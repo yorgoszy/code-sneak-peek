@@ -68,6 +68,7 @@ const ActivePrograms = () => {
     activeWorkouts, 
     openWorkout,
     updateElapsedTime,
+    updateWorkoutDate,
     completeWorkout,
     cancelWorkout,
     removeWorkout,
