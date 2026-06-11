@@ -110,6 +110,16 @@ export const MultipleWorkoutsProvider: React.FC<{ children: React.ReactNode }> =
     );
   }, []);
 
+  const updateWorkoutDate = useCallback((workoutId: string, newDate: Date) => {
+    setActiveWorkouts(prev =>
+      prev.map(workout =>
+        workout.id === workoutId
+          ? { ...workout, selectedDate: newDate }
+          : workout
+      )
+    );
+  }, []);
+
   const completeWorkout = useCallback((workoutId: string) => {
     setActiveWorkouts(prev => prev.filter(w => w.id !== workoutId));
   }, []);
