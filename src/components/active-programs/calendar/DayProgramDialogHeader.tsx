@@ -47,6 +47,8 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
   onCompleteWorkout,
   onCancelWorkout,
   onMinimize,
+  onPrevDay,
+  onNextDay,
   program,
   onClose
 }) => {
