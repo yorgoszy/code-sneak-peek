@@ -36,7 +36,7 @@ const ActivePrograms = () => {
   const [realtimeKey, setRealtimeKey] = useState(0);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [activeAssignmentId, setActiveAssignmentId] = useState<string | null>(null);
+  const [activeWorkoutId, setActiveWorkoutId] = useState<string | null>(null);
 
   // Authentication and redirect logic
   useEffect(() => {
