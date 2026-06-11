@@ -313,6 +313,8 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             onCompleteWorkout={handleRequestComplete}
             onCancelWorkout={handleCancelWorkout}
             onMinimize={handleMinimize}
+            onPrevDay={canGoPrev ? handlePrevDay : undefined}
+            onNextDay={canGoNext ? handleNextDay : undefined}
             program={program}
             onClose={() => {
               // Set flag BEFORE any state changes
