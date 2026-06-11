@@ -18,6 +18,8 @@ interface MultipleWorkoutsContextType {
   /** Actually start the workout timer */
   startWorkout: (assignment: EnrichedAssignment, selectedDate: Date) => void;
   updateElapsedTime: (workoutId: string, elapsedTime: number) => void;
+  /** Update the selectedDate of an existing workout without changing its id (dialog stays mounted) */
+  updateWorkoutDate: (workoutId: string, newDate: Date) => void;
   completeWorkout: (workoutId: string) => void;
   cancelWorkout: (workoutId: string) => void;
   /** Remove workout from tracking without cancel toast */
