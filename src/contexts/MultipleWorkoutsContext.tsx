@@ -153,6 +153,7 @@ export const MultipleWorkoutsProvider: React.FC<{ children: React.ReactNode }> =
       openWorkout,
       startWorkout,
       updateElapsedTime,
+      updateWorkoutDate,
       completeWorkout,
       cancelWorkout,
       removeWorkout,
