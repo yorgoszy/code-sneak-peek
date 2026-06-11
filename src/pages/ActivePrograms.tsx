@@ -358,8 +358,8 @@ const ActivePrograms = () => {
             workoutCompletions={workoutCompletions}
             todayStr={todayStr}
             onProgramClick={handleProgramClick}
-            openAssignmentIds={activeAssignmentId ? new Set([activeAssignmentId]) : new Set()}
-            onBubbleRestore={(assignmentId) => setActiveAssignmentId(assignmentId)}
+            openWorkoutIds={activeWorkoutId ? new Set([activeWorkoutId]) : new Set()}
+            onBubbleRestore={(workoutId) => setActiveWorkoutId(workoutId)}
             liveWorkouts={liveWorkouts}
           />
         </div>
@@ -367,17 +367,18 @@ const ActivePrograms = () => {
 
       {/* Multiple Day Program Dialogs */}
       {activeWorkouts.map(workout => {
-        const isThisOpen = activeAssignmentId === workout.assignment.id;
+        const isThisOpen = activeWorkoutId === workout.id;
         return (
           <DayProgramDialog
             key={workout.id}
             isOpen={isThisOpen}
-            onClose={() => setActiveAssignmentId(prev => prev === workout.assignment.id ? null : prev)}
+            onClose={() => setActiveWorkoutId(prev => prev === workout.id ? null : prev)}
             program={workout.assignment}
             selectedDate={workout.selectedDate}
             workoutStatus={getWorkoutStatus(workout.assignment, format(workout.selectedDate, 'yyyy-MM-dd'))}
             onRefresh={handleCalendarRefresh}
-            onMinimize={() => setActiveAssignmentId(prev => prev === workout.assignment.id ? null : prev)}
+            onMinimize={() => setActiveWorkoutId(prev => prev === workout.id ? null : prev)}
+            onDateChange={(d) => updateWorkoutDate(workout.id, d)}
           />
         );
       })}
