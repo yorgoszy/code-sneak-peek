@@ -184,20 +184,17 @@ const ActivePrograms = () => {
 
   // Χειρισμός κλικ σε πρόγραμμα - always show the clicked one
   const handleProgramClick = (assignment: EnrichedAssignment) => {
+    const workoutId = `${assignment.id}-${format(dayToShow, 'yyyy-MM-dd')}`;
     openWorkout(assignment, dayToShow);
-    setActiveAssignmentId(assignment.id);
+    setActiveWorkoutId(workoutId);
   };
 
-  const handleDialogClose = (assignmentId?: string) => {
-    // Remove from activeWorkouts tracking
-    if (assignmentId) {
-      const dateStr = format(dayToShow, 'yyyy-MM-dd');
-      const workoutId = `${assignmentId}-${dateStr}`;
+  const handleDialogClose = (workoutId?: string) => {
+    if (workoutId) {
       removeWorkout(workoutId);
     }
-    // Only clear if this is still the active assignment (prevents race condition when switching bubbles)
-    setActiveAssignmentId(prev => {
-      if (assignmentId && prev !== assignmentId) return prev;
+    setActiveWorkoutId(prev => {
+      if (workoutId && prev !== workoutId) return prev;
       return null;
     });
   };
