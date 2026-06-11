@@ -109,9 +109,27 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
             )}
           </div>
           <div className="flex items-center gap-2">
+            {onPrevDay && (
+              <button
+                onClick={onPrevDay}
+                className="border border-input bg-background hover:bg-accent rounded-none inline-flex items-center justify-center h-5 w-5 p-0"
+                title="Προηγούμενη ημέρα"
+              >
+                <ChevronLeft className="w-3 h-3" />
+              </button>
+            )}
             <p className="text-xs text-gray-600">
               {format(selectedDate, 'EEEE, d/M/yyyy', { locale: el })}
             </p>
+            {onNextDay && (
+              <button
+                onClick={onNextDay}
+                className="border border-input bg-background hover:bg-accent rounded-none inline-flex items-center justify-center h-5 w-5 p-0"
+                title="Επόμενη ημέρα"
+              >
+                <ChevronRight className="w-3 h-3" />
+              </button>
+            )}
             {isTestDay && testTypes.length > 0 && (
               <p className="text-xs text-yellow-600">
                 ({testTypes.map(type => TEST_TYPE_LABELS[type] || type).join(', ')})
