@@ -108,10 +108,9 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
 
   return (
     <>
-      {/* Today's bubbles + pending programs — bottom-left */}
-      {leftItems.length > 0 && (
+      {items.length > 0 && (
         <div className="fixed bottom-4 left-4 z-[9999] flex gap-2 items-end" data-bubbles-container>
-          {leftItems.map(item => {
+          {items.map(item => {
             if (item.type === 'bubble') return renderBubbleItem(item.data);
 
             const assignment = item.data;
@@ -119,10 +118,9 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
             const name = assignment.app_users?.name || 'Άγνωστος';
             const avatarUrl = assignment.app_users?.photo_url || assignment.app_users?.avatar_url;
             const isCompleted = status === 'completed';
-            const isActive = isDialogOpen(`${assignment.id}-${todayStr}`);
+            const isActive = isDialogOpen(assignment.id);
 
-            const workoutId = `${assignment.id}-${todayStr}`;
-            const activeWorkout = activeWorkouts.find(w => w.id === workoutId);
+            const activeWorkout = activeWorkouts.find(w => w.id === assignment.id);
             let isInProgress = activeWorkout?.workoutInProgress || false;
             let elapsedTime = activeWorkout?.elapsedTime || 0;
 
@@ -147,13 +145,6 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
               />
             );
           })}
-        </div>
-      )}
-
-      {/* Other-day bubbles — bottom-right */}
-      {otherDayBubbles.length > 0 && (
-        <div className="fixed bottom-4 right-4 z-[9999] flex gap-2 items-end" data-bubbles-container-right>
-          {otherDayBubbles.map(renderBubbleItem)}
         </div>
       )}
     </>
