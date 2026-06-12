@@ -21,7 +21,7 @@ interface CalendarGridProps {
   activePrograms: EnrichedAssignment[];
   workoutCompletions: any[];
   realtimeKey: number;
-  onNameClick: (program: any, event: React.MouseEvent) => void;
+  onNameClick: (assignment: EnrichedAssignment, date: Date) => void;
   onRefresh?: () => void;
 }
 
@@ -156,10 +156,10 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 
   const handleUserNameClick = (programData: any, event: React.MouseEvent) => {
     event.stopPropagation();
-    console.log('👤 CalendarGrid: User name clicked:', programData);
-    setSelectedProgramForDay(programData.assignment);
-    setSelectedDialogDate(new Date(programData.date));
-    setDayProgramDialogOpen(true);
+    console.log('👤 CalendarGrid: User name clicked -> delegating to parent:', programData);
+    const date = new Date(programData.date);
+    // Delegate to parent so it can manage workouts/bubbles consistently
+    onNameClick(programData.assignment, date);
   };
 
   // ✨ Όταν γίνεται κλικ στον αριθμό ημέρας, αλλάζει σε ημερήσια καρτέλα και επιλέγεται η ημερομηνία!
@@ -236,24 +236,6 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         </CardContent>
       </Card>
 
-      {/* Dialog για συγκεκριμένη προπόνηση με enhanced refresh */}
-      <DayProgramDialog
-        isOpen={dayProgramDialogOpen}
-        onClose={handleDialogClose}
-        program={selectedProgramForDay}
-        selectedDate={selectedDialogDate}
-        workoutStatus={selectedProgramForDay && selectedDialogDate ? 
-          workoutCompletions.find(c => 
-            c.assignment_id === selectedProgramForDay.id && 
-            c.scheduled_date === format(selectedDialogDate, 'yyyy-MM-dd')
-          )?.status || 'scheduled'
-          : 'scheduled'
-        }
-        onRefresh={() => {
-          console.log('🔄 CalendarGrid: MANUAL FORCE refresh triggered');
-          setInternalRealtimeKey(Date.now());
-        }}
-      />
     </>
   );
 };

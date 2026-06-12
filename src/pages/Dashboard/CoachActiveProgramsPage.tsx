@@ -170,9 +170,9 @@ const CoachActiveProgramsContent = () => {
   }, [activePrograms.length, loadCompletions]);
 
   // Χειρισμός κλικ σε πρόγραμμα
-  const handleProgramClick = (assignment: EnrichedAssignment) => {
-    openWorkout(assignment, dayToShow);
-    setActiveWorkoutId(prev => prev === assignment.id ? null : assignment.id);
+  const handleProgramClick = (assignment: EnrichedAssignment, date?: Date) => {
+    openWorkout(assignment, date || dayToShow);
+    setActiveWorkoutId(assignment.id);
   };
 
   const handleDialogClose = (workoutId?: string) => {
