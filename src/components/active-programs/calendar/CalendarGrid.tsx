@@ -21,7 +21,7 @@ interface CalendarGridProps {
   activePrograms: EnrichedAssignment[];
   workoutCompletions: any[];
   realtimeKey: number;
-  onNameClick: (program: any, event: React.MouseEvent) => void;
+  onNameClick: (assignment: EnrichedAssignment, date: Date) => void;
   onRefresh?: () => void;
 }
 
