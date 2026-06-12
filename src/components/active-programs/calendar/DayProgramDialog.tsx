@@ -215,11 +215,8 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
 
   const dayProgram = getDayProgram();
 
-  // Prev/Next day navigation within program's training_dates
-  const sortedTrainingDates = React.useMemo(
-    () => [...(program.training_dates || [])].sort(),
-    [program.training_dates]
-  );
+  // Prev/Next day navigation
+
   const currentDateStr = format(selectedDate, 'yyyy-MM-dd');
   const currentDateIdx = sortedTrainingDates.indexOf(currentDateStr);
   const canGoPrev = !!onDateChange && currentDateIdx > 0;
