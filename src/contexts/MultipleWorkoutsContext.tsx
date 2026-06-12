@@ -52,43 +52,46 @@ export const MultipleWorkoutsProvider: React.FC<{ children: React.ReactNode }> =
     return () => clearInterval(interval);
   }, [activeWorkouts.some(w => w.workoutInProgress)]);
 
-  /** Add workout for tracking/viewing only - does NOT start timer */
+  /** Add workout for tracking/viewing only - does NOT start timer.
+   * ONE workout per assignment (per user). Opening a different date updates the existing one. */
   const openWorkout = useCallback((assignment: EnrichedAssignment, selectedDate: Date) => {
-    const workoutId = `${assignment.id}-${selectedDate.toISOString().split('T')[0]}`;
-    
+    const workoutId = assignment.id;
+
     setActiveWorkouts(prev => {
-      if (prev.some(w => w.id === workoutId)) {
-        return prev; // Already tracked
+      const existing = prev.find(w => w.id === workoutId);
+      if (existing) {
+        // Already tracked - just update the date
+        return prev.map(w =>
+          w.id === workoutId ? { ...w, selectedDate, assignment } : w
+        );
       }
-      
+
       return [...prev, {
         id: workoutId,
         assignment,
         selectedDate,
         startTime: new Date(),
         elapsedTime: 0,
-        workoutInProgress: false // NOT auto-started
+        workoutInProgress: false
       }];
     });
   }, []);
 
   /** Actually start the workout timer */
   const startWorkout = useCallback((assignment: EnrichedAssignment, selectedDate: Date) => {
-    const workoutId = `${assignment.id}-${selectedDate.toISOString().split('T')[0]}`;
-    
+    const workoutId = assignment.id;
+
     setActiveWorkouts(prev => {
       const existing = prev.find(w => w.id === workoutId);
       if (existing) {
-        // Already tracked - just set workoutInProgress to true if not already
         if (existing.workoutInProgress) return prev;
-        return prev.map(w => 
-          w.id === workoutId 
-            ? { ...w, workoutInProgress: true, startTime: new Date(), elapsedTime: 0 }
+        return prev.map(w =>
+          w.id === workoutId
+            ? { ...w, workoutInProgress: true, startTime: new Date(), elapsedTime: 0, selectedDate }
             : w
         );
       }
-      
-      // New workout - add and start
+
       return [...prev, {
         id: workoutId,
         assignment,
