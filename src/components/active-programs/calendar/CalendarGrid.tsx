@@ -236,24 +236,6 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         </CardContent>
       </Card>
 
-      {/* Dialog για συγκεκριμένη προπόνηση με enhanced refresh */}
-      <DayProgramDialog
-        isOpen={dayProgramDialogOpen}
-        onClose={handleDialogClose}
-        program={selectedProgramForDay}
-        selectedDate={selectedDialogDate}
-        workoutStatus={selectedProgramForDay && selectedDialogDate ? 
-          workoutCompletions.find(c => 
-            c.assignment_id === selectedProgramForDay.id && 
-            c.scheduled_date === format(selectedDialogDate, 'yyyy-MM-dd')
-          )?.status || 'scheduled'
-          : 'scheduled'
-        }
-        onRefresh={() => {
-          console.log('🔄 CalendarGrid: MANUAL FORCE refresh triggered');
-          setInternalRealtimeKey(Date.now());
-        }}
-      />
     </>
   );
 };
