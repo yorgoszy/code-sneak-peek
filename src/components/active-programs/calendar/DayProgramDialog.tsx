@@ -124,13 +124,11 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     wasOpenRef.current = isOpen;
   }, [isOpen]);
 
-  // Prev/Next day navigation — must be before any early return to keep hook order stable
-  const sortedTrainingDates = React.useMemo(
-    () => [...(program?.training_dates || [])].sort(),
-    [program?.training_dates]
-  );
-
   if (!program || !selectedDate) return null;
+
+  // Prev/Next day navigation
+  const sortedTrainingDates = [...(program.training_dates || [])].sort();
+
 
   const handleRequestComplete = () => {
     setIsRpeDialogOpen(true);
