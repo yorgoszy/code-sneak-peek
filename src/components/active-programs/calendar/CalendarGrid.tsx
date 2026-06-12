@@ -156,10 +156,10 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 
   const handleUserNameClick = (programData: any, event: React.MouseEvent) => {
     event.stopPropagation();
-    console.log('👤 CalendarGrid: User name clicked:', programData);
-    setSelectedProgramForDay(programData.assignment);
-    setSelectedDialogDate(new Date(programData.date));
-    setDayProgramDialogOpen(true);
+    console.log('👤 CalendarGrid: User name clicked -> delegating to parent:', programData);
+    const date = new Date(programData.date);
+    // Delegate to parent so it can manage workouts/bubbles consistently
+    onNameClick(programData.assignment, date);
   };
 
   // ✨ Όταν γίνεται κλικ στον αριθμό ημέρας, αλλάζει σε ημερήσια καρτέλα και επιλέγεται η ημερομηνία!
