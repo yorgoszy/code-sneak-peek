@@ -171,9 +171,8 @@ const CoachActiveProgramsContent = () => {
 
   // Χειρισμός κλικ σε πρόγραμμα
   const handleProgramClick = (assignment: EnrichedAssignment) => {
-    const workoutId = `${assignment.id}-${format(dayToShow, 'yyyy-MM-dd')}`;
     openWorkout(assignment, dayToShow);
-    setActiveWorkoutId(prev => prev === workoutId ? null : workoutId);
+    setActiveWorkoutId(prev => prev === assignment.id ? null : assignment.id);
   };
 
   const handleDialogClose = (workoutId?: string) => {
