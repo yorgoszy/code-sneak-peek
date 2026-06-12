@@ -124,6 +124,12 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     wasOpenRef.current = isOpen;
   }, [isOpen]);
 
+  // Prev/Next day navigation — must be before any early return to keep hook order stable
+  const sortedTrainingDates = React.useMemo(
+    () => [...(program?.training_dates || [])].sort(),
+    [program?.training_dates]
+  );
+
   if (!program || !selectedDate) return null;
 
   const handleRequestComplete = () => {
@@ -209,11 +215,8 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
 
   const dayProgram = getDayProgram();
 
-  // Prev/Next day navigation within program's training_dates
-  const sortedTrainingDates = React.useMemo(
-    () => [...(program.training_dates || [])].sort(),
-    [program.training_dates]
-  );
+  // Prev/Next day navigation
+
   const currentDateStr = format(selectedDate, 'yyyy-MM-dd');
   const currentDateIdx = sortedTrainingDates.indexOf(currentDateStr);
   const canGoPrev = !!onDateChange && currentDateIdx > 0;
