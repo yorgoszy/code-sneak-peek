@@ -79,10 +79,8 @@ export const useWorkoutState = (
     return null;
   }, [program]);
 
-  // Δημιουργία unique ID για την προπόνηση
-  const workoutId = program && selectedDate 
-    ? `${program.id}-${selectedDate.toISOString().split('T')[0]}`
-    : null;
+  // Unique ID per assignment (one workout per user, matches MultipleWorkoutsContext)
+  const workoutId = program ? program.id : null;
 
   // Παίρνουμε τα στοιχεία της προπόνησης από το multi-workout manager
   const currentWorkout = workoutId ? getWorkout(workoutId) : null;
