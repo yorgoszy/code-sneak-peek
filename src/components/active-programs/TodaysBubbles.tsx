@@ -64,21 +64,34 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
     return !bubbles.some(b => b.id === bubbleId);
   });
 
-  if (bubbles.length === 0 && todayProgramsFiltered.length === 0) {
+  // Active workouts opened for non-today dates (no bubble yet, not in today list)
+  const otherDayActive = activeWorkouts.filter(w => {
+    const bubbleId = `bubble-${w.assignment.id}`;
+    if (bubbles.some(b => b.id === bubbleId)) return false;
+    if (programsForToday.some(p => p.id === w.assignment.id)) return false;
+    return true;
+  });
+
+  if (bubbles.length === 0 && todayProgramsFiltered.length === 0 && otherDayActive.length === 0) {
     return null;
   }
 
   // Helper to check if a workout's dialog is currently open (workoutId = assignment.id)
   const isDialogOpen = (assignmentId: string) => openWorkoutIds.has(assignmentId);
 
-  // Build items: existing bubbles + today's pending programs, stable sort
-  const items: Array<{ type: 'bubble'; data: typeof bubbles[0] } | { type: 'today'; data: EnrichedAssignment }> = [
+  // Build items: existing bubbles + today's pending programs + other-day active, stable sort
+  const items: Array<
+    | { type: 'bubble'; data: typeof bubbles[0] }
+    | { type: 'today'; data: EnrichedAssignment }
+    | { type: 'other'; data: typeof activeWorkouts[0] }
+  > = [
     ...bubbles.map(b => ({ type: 'bubble' as const, data: b })),
     ...todayProgramsFiltered.map(a => ({ type: 'today' as const, data: a })),
+    ...otherDayActive.map(w => ({ type: 'other' as const, data: w })),
   ];
   items.sort((a, b) => {
-    const idA = a.type === 'today' ? a.data.id : extractAssignmentId(a.data.id);
-    const idB = b.type === 'today' ? b.data.id : extractAssignmentId(b.data.id);
+    const idA = a.type === 'today' ? a.data.id : a.type === 'other' ? a.data.assignment.id : extractAssignmentId(a.data.id);
+    const idB = b.type === 'today' ? b.data.id : b.type === 'other' ? b.data.assignment.id : extractAssignmentId(b.data.id);
     return idA.localeCompare(idB);
   });
 
