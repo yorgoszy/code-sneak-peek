@@ -91,7 +91,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     };
   }, [removeBubble]);
 
-  // Auto-minimize when isOpen becomes false (e.g. another bubble clicked)
+  // Auto-minimize when isOpen becomes false; auto-restore when isOpen becomes true
   const wasOpenRef = useRef(isOpen);
   useEffect(() => {
     if (wasOpenRef.current && !isOpen && !isMinimized && !isClosingRef.current && program && selectedDate) {
@@ -120,6 +120,14 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
         },
       });
       onMinimize?.();
+    }
+    // Auto-restore: reopening from calendar while minimized
+    if (!wasOpenRef.current && isOpen && isMinimized) {
+      if (bubbleIdRef.current) {
+        removeBubble(bubbleIdRef.current);
+        bubbleIdRef.current = '';
+      }
+      setIsMinimized(false);
     }
     wasOpenRef.current = isOpen;
   }, [isOpen]);
