@@ -225,18 +225,27 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
 
   const currentDateStr = format(selectedDate, 'yyyy-MM-dd');
   const currentDateIdx = sortedTrainingDates.indexOf(currentDateStr);
-  const canGoPrev = !!onDateChange && currentDateIdx > 0;
-  const canGoNext = !!onDateChange && currentDateIdx >= 0 && currentDateIdx < sortedTrainingDates.length - 1;
+  // If current date is not in training_dates, find nearest neighbors
+  const prevDate = currentDateIdx > 0
+    ? sortedTrainingDates[currentDateIdx - 1]
+    : (currentDateIdx === -1
+        ? [...sortedTrainingDates].reverse().find(d => d < currentDateStr)
+        : undefined);
+  const nextDate = currentDateIdx >= 0 && currentDateIdx < sortedTrainingDates.length - 1
+    ? sortedTrainingDates[currentDateIdx + 1]
+    : (currentDateIdx === -1
+        ? sortedTrainingDates.find(d => d > currentDateStr)
+        : undefined);
+  const canGoPrev = !!onDateChange && !!prevDate;
+  const canGoNext = !!onDateChange && !!nextDate;
   const handlePrevDay = () => {
-    if (!canGoPrev) return;
-    const prev = sortedTrainingDates[currentDateIdx - 1];
-    const [y, m, d] = prev.split('-').map(Number);
+    if (!canGoPrev || !prevDate) return;
+    const [y, m, d] = prevDate.split('-').map(Number);
     onDateChange?.(new Date(y, m - 1, d));
   };
   const handleNextDay = () => {
-    if (!canGoNext) return;
-    const next = sortedTrainingDates[currentDateIdx + 1];
-    const [y, m, d] = next.split('-').map(Number);
+    if (!canGoNext || !nextDate) return;
+    const [y, m, d] = nextDate.split('-').map(Number);
     onDateChange?.(new Date(y, m - 1, d));
   };
 

@@ -71,7 +71,7 @@ export const MonthlyView: React.FC<MonthlyViewProps> = ({
           {days.map((date) => {
             const dateStr = format(date, 'yyyy-MM-dd');
             const dateProgramsWithStatus = programDatesWithStatus.filter(d => d.date === dateStr);
-            const enhancedKey = `${dateStr}-${realtimeKey}-${internalRealtimeKey}-${Date.now()}`;
+            const enhancedKey = `${dateStr}-${realtimeKey}-${internalRealtimeKey}`;
             return (
               <CalendarDay
                 key={enhancedKey}
