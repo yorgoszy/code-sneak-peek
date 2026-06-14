@@ -126,7 +126,8 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
           {items.map(item => {
             if (item.type === 'bubble') return renderBubbleItem(item.data);
 
-            const assignment = item.data;
+            const assignment: EnrichedAssignment =
+              item.type === 'today' ? item.data : item.data.assignment;
             const status = getWorkoutStatus(assignment);
             const name = assignment.app_users?.name || 'Άγνωστος';
             const avatarUrl = assignment.app_users?.photo_url || assignment.app_users?.avatar_url;
