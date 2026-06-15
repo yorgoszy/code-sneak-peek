@@ -60,9 +60,13 @@ export const MultipleWorkoutsProvider: React.FC<{ children: React.ReactNode }> =
     setActiveWorkouts(prev => {
       const existing = prev.find(w => w.id === workoutId);
       if (existing) {
-        // Already tracked - just update the date
+        // If a workout is already in progress, keep its original selectedDate
+        // so the bubble always restores to the day the workout was started on.
+        const keepDate = existing.workoutInProgress;
         return prev.map(w =>
-          w.id === workoutId ? { ...w, selectedDate, assignment } : w
+          w.id === workoutId
+            ? { ...w, selectedDate: keepDate ? w.selectedDate : selectedDate, assignment }
+            : w
         );
       }
 
