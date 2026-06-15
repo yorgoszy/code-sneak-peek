@@ -161,7 +161,13 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
                 elapsedTime={elapsedTime}
                 size={isActive ? 'lg' : 'sm'}
                 isCompleted={isCompleted}
-                onRestore={() => onProgramClick(assignment)}
+                onRestore={() => {
+                  if (isActive) {
+                    onBubbleMinimize?.(assignment.id);
+                  } else {
+                    onProgramClick(assignment);
+                  }
+                }}
               />
             );
           })}
