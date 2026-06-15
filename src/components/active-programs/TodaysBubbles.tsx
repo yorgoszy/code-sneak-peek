@@ -14,6 +14,7 @@ interface TodaysBubblesProps {
   onProgramClick: (assignment: EnrichedAssignment) => void;
   openWorkoutIds?: Set<string>;
   onBubbleRestore?: (workoutId: string) => void;
+  onBubbleMinimize?: (workoutId: string) => void;
   liveWorkouts?: LiveWorkoutData[];
 }
 
