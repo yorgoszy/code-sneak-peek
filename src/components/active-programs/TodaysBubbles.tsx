@@ -25,6 +25,7 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
   onProgramClick,
   openWorkoutIds = new Set(),
   onBubbleRestore,
+  onBubbleMinimize,
   liveWorkouts = []
 }) => {
   const { bubbles, setSuppressRender, removeBubble } = useMinimizedBubbles();
