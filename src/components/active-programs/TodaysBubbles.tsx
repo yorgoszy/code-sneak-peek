@@ -14,6 +14,7 @@ interface TodaysBubblesProps {
   onProgramClick: (assignment: EnrichedAssignment) => void;
   openWorkoutIds?: Set<string>;
   onBubbleRestore?: (workoutId: string) => void;
+  onBubbleMinimize?: (workoutId: string) => void;
   liveWorkouts?: LiveWorkoutData[];
 }
 
@@ -24,6 +25,7 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
   onProgramClick,
   openWorkoutIds = new Set(),
   onBubbleRestore,
+  onBubbleMinimize,
   liveWorkouts = []
 }) => {
   const { bubbles, setSuppressRender, removeBubble } = useMinimizedBubbles();
@@ -111,6 +113,10 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
         size={isActive ? 'lg' : 'sm'}
         isCompleted={bubbleCompleted}
         onRestore={() => {
+          if (isActive) {
+            onBubbleMinimize?.(assignmentId);
+            return;
+          }
           bubble.onRestore();
           removeBubble(bubble.id);
           onBubbleRestore?.(assignmentId);
@@ -155,7 +161,13 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
                 elapsedTime={elapsedTime}
                 size={isActive ? 'lg' : 'sm'}
                 isCompleted={isCompleted}
-                onRestore={() => onProgramClick(assignment)}
+                onRestore={() => {
+                  if (isActive) {
+                    onBubbleMinimize?.(assignment.id);
+                  } else {
+                    onProgramClick(assignment);
+                  }
+                }}
               />
             );
           })}
