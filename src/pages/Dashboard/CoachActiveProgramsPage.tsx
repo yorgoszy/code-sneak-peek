@@ -37,6 +37,7 @@ const CoachActiveProgramsContent = () => {
     openWorkout,
     updateElapsedTime,
     updateWorkoutDate,
+    resetWorkoutToStartedDate,
     cancelWorkout,
     removeWorkout,
   } = useMultipleWorkouts();
@@ -223,7 +224,10 @@ const CoachActiveProgramsContent = () => {
         todayStr={todayStr}
         onProgramClick={handleProgramClick}
         openWorkoutIds={activeWorkoutId ? new Set([activeWorkoutId]) : new Set()}
-        onBubbleRestore={(workoutId) => setActiveWorkoutId(workoutId)}
+        onBubbleRestore={(workoutId) => {
+          resetWorkoutToStartedDate(workoutId);
+          setActiveWorkoutId(workoutId);
+        }}
         liveWorkouts={liveWorkouts}
       />
 

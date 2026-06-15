@@ -6,6 +6,7 @@ export interface ActiveWorkout {
   id: string;
   assignment: EnrichedAssignment;
   selectedDate: Date;
+  startedDate?: Date;
   startTime: Date;
   elapsedTime: number;
   workoutInProgress: boolean;
@@ -20,6 +21,8 @@ interface MultipleWorkoutsContextType {
   updateElapsedTime: (workoutId: string, elapsedTime: number) => void;
   /** Update the selectedDate of an existing workout without changing its id (dialog stays mounted) */
   updateWorkoutDate: (workoutId: string, newDate: Date) => void;
+  /** Restore dialog date to the date where the workout timer was started */
+  resetWorkoutToStartedDate: (workoutId: string) => void;
   completeWorkout: (workoutId: string) => void;
   cancelWorkout: (workoutId: string) => void;
   /** Remove workout from tracking without cancel toast */
@@ -65,7 +68,7 @@ export const MultipleWorkoutsProvider: React.FC<{ children: React.ReactNode }> =
         const keepDate = existing.workoutInProgress;
         return prev.map(w =>
           w.id === workoutId
-            ? { ...w, selectedDate: keepDate ? w.selectedDate : selectedDate, assignment }
+            ? { ...w, selectedDate: keepDate ? (w.startedDate || w.selectedDate) : selectedDate, assignment }
             : w
         );
       }
@@ -91,7 +94,7 @@ export const MultipleWorkoutsProvider: React.FC<{ children: React.ReactNode }> =
         if (existing.workoutInProgress) return prev;
         return prev.map(w =>
           w.id === workoutId
-            ? { ...w, workoutInProgress: true, startTime: new Date(), elapsedTime: 0, selectedDate }
+            ? { ...w, workoutInProgress: true, startTime: new Date(), elapsedTime: 0, selectedDate, startedDate: selectedDate }
             : w
         );
       }
@@ -100,6 +103,7 @@ export const MultipleWorkoutsProvider: React.FC<{ children: React.ReactNode }> =
         id: workoutId,
         assignment,
         selectedDate,
+        startedDate: selectedDate,
         startTime: new Date(),
         elapsedTime: 0,
         workoutInProgress: true
@@ -122,6 +126,16 @@ export const MultipleWorkoutsProvider: React.FC<{ children: React.ReactNode }> =
       prev.map(workout =>
         workout.id === workoutId
           ? { ...workout, selectedDate: newDate }
+          : workout
+      )
+    );
+  }, []);
+
+  const resetWorkoutToStartedDate = useCallback((workoutId: string) => {
+    setActiveWorkouts(prev =>
+      prev.map(workout =>
+        workout.id === workoutId && workout.workoutInProgress && workout.startedDate
+          ? { ...workout, selectedDate: workout.startedDate }
           : workout
       )
     );
@@ -161,6 +175,7 @@ export const MultipleWorkoutsProvider: React.FC<{ children: React.ReactNode }> =
       startWorkout,
       updateElapsedTime,
       updateWorkoutDate,
+      resetWorkoutToStartedDate,
       completeWorkout,
       cancelWorkout,
       removeWorkout,
