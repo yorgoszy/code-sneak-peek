@@ -364,6 +364,9 @@ const ActivePrograms = () => {
               resetWorkoutToStartedDate(workoutId);
               setActiveWorkoutId(workoutId);
             }}
+            onBubbleMinimize={(workoutId) => {
+              setActiveWorkoutId(prev => prev === workoutId ? null : prev);
+            }}
             liveWorkouts={liveWorkouts}
           />
         </div>
