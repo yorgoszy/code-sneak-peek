@@ -113,6 +113,10 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
         size={isActive ? 'lg' : 'sm'}
         isCompleted={bubbleCompleted}
         onRestore={() => {
+          if (isActive) {
+            onBubbleMinimize?.(assignmentId);
+            return;
+          }
           bubble.onRestore();
           removeBubble(bubble.id);
           onBubbleRestore?.(assignmentId);
