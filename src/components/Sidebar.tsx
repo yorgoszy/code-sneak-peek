@@ -728,6 +728,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       path: "/dashboard/analytics",
       badge: null
     },
+    {
+      icon: LayoutTemplate,
+      label: "Landing Page",
+      path: "/dashboard/landing-page",
+      badge: null
+    },
     { 
       icon: BookOpen, 
       label: "Άρθρα", 
