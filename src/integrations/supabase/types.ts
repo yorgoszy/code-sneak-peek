@@ -6531,6 +6531,39 @@ export type Database = {
         }
         Relationships: []
       }
+      landing_page_config: {
+        Row: {
+          accent_color: string
+          bg_color: string
+          body_font: string
+          heading_font: string
+          id: string
+          primary_color: string
+          text_color: string
+          updated_at: string
+        }
+        Insert: {
+          accent_color?: string
+          bg_color?: string
+          body_font?: string
+          heading_font?: string
+          id?: string
+          primary_color?: string
+          text_color?: string
+          updated_at?: string
+        }
+        Update: {
+          accent_color?: string
+          bg_color?: string
+          body_font?: string
+          heading_font?: string
+          id?: string
+          primary_color?: string
+          text_color?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       landing_page_layouts: {
         Row: {
           created_at: string
@@ -6581,6 +6614,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      landing_sections: {
+        Row: {
+          bg_color: string | null
+          cta_label: string | null
+          cta_url: string | null
+          description: string | null
+          display_order: number
+          extra_data: Json
+          id: string
+          image_url: string | null
+          is_visible: boolean
+          section_key: string
+          subtitle: string | null
+          text_color: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          bg_color?: string | null
+          cta_label?: string | null
+          cta_url?: string | null
+          description?: string | null
+          display_order?: number
+          extra_data?: Json
+          id?: string
+          image_url?: string | null
+          is_visible?: boolean
+          section_key: string
+          subtitle?: string | null
+          text_color?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bg_color?: string | null
+          cta_label?: string | null
+          cta_url?: string | null
+          description?: string | null
+          display_order?: number
+          extra_data?: Json
+          id?: string
+          image_url?: string | null
+          is_visible?: boolean
+          section_key?: string
+          subtitle?: string | null
+          text_color?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       live_event_rings: {
         Row: {
