@@ -29,6 +29,9 @@ const Index = () => {
   const [activeAboutSection, setActiveAboutSection] = useState<number>(1);
   const isPWA = useIsPWA();
   const [userRole, setUserRole] = useState<string | null>(null);
+  const { data: landingTheme } = useLandingTheme();
+  useApplyLandingTheme(landingTheme);
+  const ctaCms = useLandingSection('cta');
 
   // PWA Auto-redirect to dashboard when logged in
   useEffect(() => {
