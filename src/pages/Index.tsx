@@ -129,7 +129,14 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white font-robert">
+    <div
+      className="min-h-screen font-robert"
+      style={{
+        backgroundColor: landingTheme?.bg_color ?? '#ffffff',
+        color: landingTheme?.text_color ?? '#0a0a0a',
+        fontFamily: landingTheme ? `'${landingTheme.body_font}', sans-serif` : undefined,
+      }}
+    >
       <Navigation
         navigationItems={navigationItems}
         isAuthenticated={isAuthenticated}
