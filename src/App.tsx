@@ -261,6 +261,7 @@ function App() {
                       <Route path="/dashboard/athletes-progress" element={<ProtectedRoute requireAdmin><AthletesProgressWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/analytics" element={<ProtectedRoute requireAdmin><Analytics /></ProtectedRoute>} />
                       <Route path="/dashboard/articles" element={<ProtectedRoute requireAdmin><ArticlesWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/landing-page" element={<ProtectedRoute requireAdmin><LandingPageCMSWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/results" element={<ProtectedRoute requireAdmin><ResultsWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/shop" element={<ProtectedRoute requireAdmin><AdminShopWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/offers" element={<ProtectedRoute requireAdmin><Offers /></ProtectedRoute>} />
