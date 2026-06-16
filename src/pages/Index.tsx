@@ -20,6 +20,7 @@ import GiftCardSection from "@/components/landing/GiftCardSection";
 
 import Footer from "@/components/landing/Footer";
 import LandingChatbot from "@/components/landing/LandingChatbot";
+import { useLandingTheme, useApplyLandingTheme, useLandingSection } from "@/hooks/useLandingConfig";
 
 const Index = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
@@ -28,6 +29,8 @@ const Index = () => {
   const [activeAboutSection, setActiveAboutSection] = useState<number>(1);
   const isPWA = useIsPWA();
   const [userRole, setUserRole] = useState<string | null>(null);
+  const { data: landingTheme } = useLandingTheme();
+  useApplyLandingTheme(landingTheme);
 
   // PWA Auto-redirect to dashboard when logged in
   useEffect(() => {
@@ -126,7 +129,14 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white font-robert">
+    <div
+      className="min-h-screen font-robert"
+      style={{
+        backgroundColor: landingTheme?.bg_color ?? '#ffffff',
+        color: landingTheme?.text_color ?? '#0a0a0a',
+        fontFamily: landingTheme ? `'${landingTheme.body_font}', sans-serif` : undefined,
+      }}
+    >
       <Navigation
         navigationItems={navigationItems}
         isAuthenticated={isAuthenticated}

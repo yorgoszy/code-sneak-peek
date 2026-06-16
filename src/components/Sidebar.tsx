@@ -41,6 +41,7 @@ import {
   Droplet,
   BellRing,
   Bluetooth,
+  LayoutTemplate,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -725,6 +726,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: TrendingUp,
       label: "Analytics",
       path: "/dashboard/analytics",
+      badge: null
+    },
+    {
+      icon: LayoutTemplate,
+      label: "Landing Page",
+      path: "/dashboard/landing-page",
       badge: null
     },
     { 
