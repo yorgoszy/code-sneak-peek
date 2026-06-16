@@ -1,64 +1,84 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
+import { useLandingSection } from "@/hooks/useLandingConfig";
 
 interface HeroSectionProps {
   translations: any;
   onGetStarted: () => void;
 }
 
+const DEFAULT_HERO_IMAGE = '/lovable-uploads/7d78ce26-3ce9-488f-9948-1cb90eac5b9e.png';
+
 const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted }) => {
+  const cms = useLandingSection('hero');
+
   const handleContactClick = () => {
     const footerSection = document.getElementById('footer');
     if (footerSection) {
-      footerSection.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start'
-      });
+      footerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  if (cms && cms.is_visible === false) return null;
+
+  const title = cms?.title || translations.heroTitle;
+  const subtitle = cms?.subtitle || translations.heroSubtitle;
+  const ctaLabel = cms?.cta_label || translations.getStarted;
+  const bgImage = cms?.image_url || DEFAULT_HERO_IMAGE;
+  const onCtaClick = () => {
+    if (cms?.cta_url) {
+      if (cms.cta_url.startsWith('#')) {
+        const el = document.querySelector(cms.cta_url);
+        el?.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        window.location.href = cms.cta_url;
+      }
+    } else {
+      onGetStarted();
     }
   };
 
   return (
     <section id="home" className="relative pt-16 min-h-screen flex items-center">
       <style>{`
-        .get-started-btn {
-          background-color: white !important;
-          color: black !important;
-        }
-        .get-started-btn:hover {
-          background-color: #e5e5e5 !important;
-        }
+        .get-started-btn { background-color: white !important; color: black !important; }
+        .get-started-btn:hover { background-color: #e5e5e5 !important; }
         .contact-btn:hover {
           border-color: #aca097 !important;
           color: #aca097 !important;
           background-color: transparent !important;
         }
       `}</style>
-      
-      <div 
+
+      <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url('/lovable-uploads/7d78ce26-3ce9-488f-9948-1cb90eac5b9e.png')`
-        }}
+        style={{ backgroundImage: `url('${bgImage}')` }}
       >
         <div className="absolute inset-0 bg-black bg-opacity-60"></div>
       </div>
-      
+
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="text-left">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl mb-6 text-white">
-            {translations.heroTitle}<br />
-            <span className="text-white">{translations.heroSubtitle}</span>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl mb-6 text-white"
+              style={{ fontFamily: 'var(--landing-font-heading, inherit)' }}>
+            {title}<br />
+            <span className="text-white">{subtitle}</span>
           </h1>
+          {cms?.description && (
+            <p className="text-white/90 text-base sm:text-lg mb-6 max-w-2xl">
+              {cms.description}
+            </p>
+          )}
           <div className="flex flex-wrap gap-4">
-            <Button 
-              className="get-started-btn rounded-none transition-colors duration-200" 
-              onClick={onGetStarted}
+            <Button
+              className="get-started-btn rounded-none transition-colors duration-200"
+              onClick={onCtaClick}
             >
-              {translations.getStarted}
+              {ctaLabel}
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="contact-btn rounded-none bg-transparent text-white border-white"
               onClick={handleContactClick}
             >
@@ -72,3 +92,4 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
 };
 
 export default HeroSection;
+
