@@ -1624,7 +1624,11 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
         round_duration_seconds: avgRoundDuration,
         weight_class: initialWeightClass || null,
         location: initialLocation || null,
-        video_url: initialVideoUrl || initialYoutubeUrl || null,
+        video_url: (() => {
+          const ytFromActive = videos.find(v => (v as any).isYouTube)?.url;
+          const ytFromInput = youtubeUrlInput.trim();
+          return initialVideoUrl || initialYoutubeUrl || ytFromActive || ytFromInput || null;
+        })(),
         notes: `Video: ${videoFile?.name || initialMatchTitle || 'Unknown'}`,
         match_video_id: matchVideoId || null,
         our_corner: ourCorner,
