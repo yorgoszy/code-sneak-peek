@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { useLandingSection } from "@/hooks/useLandingConfig";
+import { useLandingSection, localized, backgroundCss, type Lang } from "@/hooks/useLandingConfig";
+import { useTranslations } from "@/hooks/useTranslations";
 
 interface HeroSectionProps {
   translations: any;
@@ -12,6 +13,8 @@ const DEFAULT_HERO_IMAGE = '/lovable-uploads/7d78ce26-3ce9-488f-9948-1cb90eac5b9
 
 const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted }) => {
   const cms = useLandingSection('hero');
+  const { language } = useTranslations();
+  const lang: Lang = language === 'en' ? 'en' : 'el';
 
   const handleContactClick = () => {
     const footerSection = document.getElementById('footer');
@@ -22,10 +25,12 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
 
   if (cms && cms.is_visible === false) return null;
 
-  const title = cms?.title || translations.heroTitle;
-  const subtitle = cms?.subtitle || translations.heroSubtitle;
-  const ctaLabel = cms?.cta_label || translations.getStarted;
+  const title = localized(cms, 'title', lang) || translations.heroTitle;
+  const subtitle = localized(cms, 'subtitle', lang) || translations.heroSubtitle;
+  const description = localized(cms, 'description', lang);
+  const ctaLabel = localized(cms, 'cta_label', lang) || translations.getStarted;
   const bgImage = cms?.image_url || DEFAULT_HERO_IMAGE;
+  const gradient = backgroundCss(cms?.extra_data);
   const onCtaClick = () => {
     if (cms?.cta_url) {
       if (cms.cta_url.startsWith('#')) {
@@ -53,7 +58,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
 
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url('${bgImage}')` }}
+        style={gradient ? { background: gradient } : { backgroundImage: `url('${bgImage}')` }}
       >
         <div className="absolute inset-0 bg-black bg-opacity-60"></div>
       </div>
@@ -65,9 +70,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             {title}<br />
             <span className="text-white">{subtitle}</span>
           </h1>
-          {cms?.description && (
+          {description && (
             <p className="text-white/90 text-base sm:text-lg mb-6 max-w-2xl">
-              {cms.description}
+              {description}
             </p>
           )}
           <div className="flex flex-wrap gap-4">
