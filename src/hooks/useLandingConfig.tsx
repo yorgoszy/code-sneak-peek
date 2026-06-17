@@ -21,6 +21,10 @@ export interface LandingSection {
   subtitle: string | null;
   description: string | null;
   cta_label: string | null;
+  title_en: string | null;
+  subtitle_en: string | null;
+  description_en: string | null;
+  cta_label_en: string | null;
   cta_url: string | null;
   image_url: string | null;
   bg_color: string | null;
@@ -29,50 +33,53 @@ export interface LandingSection {
 }
 
 export const SECTION_KEYS = [
-  'navigation',
-  'hero',
-  'elite_training',
-  'programs',
-  'about',
-  'live_matches',
-  'results',
-  'video_gallery',
-  'certificates',
-  'blog',
-  'gift_card',
-  'contact',
-  'footer',
+  'navigation', 'hero', 'elite_training', 'programs', 'about',
+  'live_matches', 'results', 'video_gallery', 'certificates',
+  'blog', 'gift_card', 'contact', 'footer',
 ] as const;
 
-export const SECTION_LABELS: Record<string, string> = {
-  navigation: 'Navigation',
-  hero: 'Hero',
-  elite_training: 'Elite Training',
-  programs: 'Programs',
-  about: 'About Us',
-  live_matches: 'Live Matches',
-  results: 'Results',
-  video_gallery: 'Video Gallery',
-  certificates: 'Certificates',
-  blog: 'Blog',
-  gift_card: 'Gift Card',
-  contact: 'Contact',
-  footer: 'Footer',
+export const SECTION_LABELS: Record<string, { el: string; en: string }> = {
+  navigation:     { el: 'Πλοήγηση',       en: 'Navigation' },
+  hero:           { el: 'Hero',           en: 'Hero' },
+  elite_training: { el: 'Elite Training', en: 'Elite Training' },
+  programs:       { el: 'Προγράμματα',    en: 'Programs' },
+  about:          { el: 'Σχετικά',        en: 'About' },
+  live_matches:   { el: 'Live Αγώνες',    en: 'Live Matches' },
+  results:        { el: 'Αποτελέσματα',   en: 'Results' },
+  video_gallery:  { el: 'Gallery Βίντεο', en: 'Video Gallery' },
+  certificates:   { el: 'Πιστοποιήσεις',  en: 'Certificates' },
+  blog:           { el: 'Blog',           en: 'Blog' },
+  gift_card:      { el: 'Δωροκάρτα',      en: 'Gift Card' },
+  contact:        { el: 'Επικοινωνία',    en: 'Contact' },
+  footer:         { el: 'Υποσέλιδο',      en: 'Footer' },
 };
+
+export type Lang = 'el' | 'en';
+
+/** Returns localized field with fallback to EL. */
+export function localized(
+  section: LandingSection | null | undefined,
+  field: 'title' | 'subtitle' | 'description' | 'cta_label',
+  lang: Lang
+): string | null {
+  if (!section) return null;
+  if (lang === 'en') {
+    const en = (section as any)[`${field}_en`];
+    if (en) return en;
+  }
+  return (section as any)[field] ?? null;
+}
 
 export function useLandingTheme() {
   return useQuery({
     queryKey: ['landing-theme'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('landing_page_config' as any)
-        .select('*')
-        .limit(1)
-        .maybeSingle();
+        .from('landing_page_config' as any).select('*').limit(1).maybeSingle();
       if (error) throw error;
       return data as unknown as LandingTheme | null;
     },
-    staleTime: 60_000,
+    staleTime: 30_000,
   });
 }
 
@@ -81,13 +88,12 @@ export function useLandingSections() {
     queryKey: ['landing-sections'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('landing_sections' as any)
-        .select('*')
+        .from('landing_sections' as any).select('*')
         .order('display_order', { ascending: true });
       if (error) throw error;
       return (data ?? []) as unknown as LandingSection[];
     },
-    staleTime: 60_000,
+    staleTime: 30_000,
   });
 }
 
@@ -115,7 +121,6 @@ function loadGoogleFont(name: string) {
   document.head.appendChild(link);
 }
 
-/** Apply theme tokens + load Google fonts. Mount once on landing page root. */
 export function useApplyLandingTheme(theme: LandingTheme | null | undefined) {
   useEffect(() => {
     if (!theme) return;
@@ -129,4 +134,16 @@ export function useApplyLandingTheme(theme: LandingTheme | null | undefined) {
     root.style.setProperty('--landing-font-heading', `'${theme.heading_font}', sans-serif`);
     root.style.setProperty('--landing-font-body', `'${theme.body_font}', sans-serif`);
   }, [theme]);
+}
+
+/** Build a CSS background string from extra_data.background. */
+export function backgroundCss(extra: Record<string, any> | null | undefined): string | undefined {
+  const bg = extra?.background;
+  if (!bg) return undefined;
+  if (bg.type === 'solid' && bg.color) return bg.color;
+  if (bg.type === 'gradient' && bg.from && bg.to) {
+    const angle = bg.angle ?? 135;
+    return `linear-gradient(${angle}deg, ${bg.from}, ${bg.to})`;
+  }
+  return undefined;
 }

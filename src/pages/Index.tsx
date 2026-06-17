@@ -21,6 +21,7 @@ import GiftCardSection from "@/components/landing/GiftCardSection";
 import Footer from "@/components/landing/Footer";
 import LandingChatbot from "@/components/landing/LandingChatbot";
 import { useLandingTheme, useApplyLandingTheme, useLandingSection } from "@/hooks/useLandingConfig";
+import { EditorOverlay } from "@/components/landing/EditorOverlay";
 
 const Index = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
@@ -210,6 +211,9 @@ const Index = () => {
       />
 
       <LandingChatbot language={language as 'el' | 'en'} />
+      {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('editor') === '1' && (
+        <EditorOverlay />
+      )}
     </div>
   );
 };

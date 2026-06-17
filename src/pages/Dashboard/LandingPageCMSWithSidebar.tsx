@@ -1,25 +1,55 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { Button } from '@/components/ui/button';
-import { LogOut, Menu, ExternalLink } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { useDashboard } from '@/hooks/useDashboard';
+import { Menu, Monitor, Tablet, Smartphone, ExternalLink, Palette } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useRoleCheck } from '@/hooks/useRoleCheck';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import {
+  useLandingSections, useInvalidateLanding, type Lang,
+} from '@/hooks/useLandingConfig';
+import { SectionsList } from '@/components/landing-cms/SectionsList';
+import { SectionEditPanel } from '@/components/landing-cms/SectionEditPanel';
+import { LivePreviewFrame, type PreviewDevice } from '@/components/landing-cms/LivePreviewFrame';
 import { ThemeEditor } from '@/components/landing-cms/ThemeEditor';
-import { SectionsEditor } from '@/components/landing-cms/SectionsEditor';
 
 const LandingPageCMSWithSidebar = () => {
-  const { user, signOut } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const isMobile = useIsMobile();
-  const { userProfile } = useDashboard();
-  const { isAdmin } = useRoleCheck();
+
+  const [lang, setLang] = useState<Lang>('el');
+  const [device, setDevice] = useState<PreviewDevice>('desktop');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
+  const [showTheme, setShowTheme] = useState(false);
+
+  const { data: sections = [] } = useLandingSections();
+  const invalidate = useInvalidateLanding();
+
+  const sortedSections = useMemo(
+    () => [...sections].sort((a, b) => a.display_order - b.display_order),
+    [sections],
+  );
+
+  const selected = sections.find((s) => s.id === selectedId) ?? null;
+
+  const handleSelectByKey = (key: string) => {
+    const s = sections.find((x) => x.section_key === key);
+    if (s) setSelectedId(s.id);
+  };
+
+  const handleSaved = () => {
+    invalidate();
+    setReloadToken((n) => n + 1);
+  };
+
+  const handleChangeOrder = () => {
+    invalidate();
+    setReloadToken((n) => n + 1);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex w-full">
+    <div className="h-screen flex w-full bg-background overflow-hidden">
       <div className="hidden md:block">
         <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
       </div>
@@ -34,50 +64,106 @@ const LandingPageCMSWithSidebar = () => {
       )}
 
       <div className="flex-1 flex flex-col min-w-0">
-        <div className="flex-1 p-3 md:p-6">
-          <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-            <div className="flex items-center gap-3">
-              {isMobile && (
-                <Button variant="outline" size="sm" className="rounded-none md:hidden" onClick={() => setShowMobileSidebar(true)}>
-                  <Menu className="h-5 w-5" />
-                </Button>
-              )}
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Landing Page</h1>
-                <p className="text-sm text-gray-600">Διαχείριση περιεχομένου, εικόνων και θέματος της landing</p>
-              </div>
-            </div>
+        {/* Top bar */}
+        <div className="border-b border-border bg-background px-3 py-2 flex items-center gap-2 flex-wrap">
+          {isMobile && (
+            <Button variant="outline" size="sm" className="rounded-none" onClick={() => setShowMobileSidebar(true)}>
+              <Menu className="h-5 w-5" />
+            </Button>
+          )}
+          <h1 className="text-base font-semibold mr-2">Landing Page Editor</h1>
 
-            <div className="flex items-center gap-3">
-              <a href="/" target="_blank" rel="noreferrer">
-                <Button variant="outline" className="rounded-none" size="sm">
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Προεπισκόπηση
-                </Button>
-              </a>
-              <span className="text-sm text-gray-600 hidden md:inline">
-                {userProfile?.name || user?.email}
-                {isAdmin() && <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded">Admin</span>}
-              </span>
-              <Button variant="outline" className="rounded-none" size="sm" onClick={() => signOut()}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Αποσύνδεση
-              </Button>
-            </div>
+          {/* Language switch */}
+          <div className="flex border border-border">
+            {(['el','en'] as const).map((l) => (
+              <button key={l} onClick={() => setLang(l)}
+                className={`px-3 py-1 text-xs ${lang === l ? 'bg-foreground text-background' : 'bg-background'}`}>
+                {l.toUpperCase()}
+              </button>
+            ))}
           </div>
 
-          <Tabs defaultValue="sections" className="w-full">
-            <TabsList className="rounded-none">
-              <TabsTrigger value="sections" className="rounded-none">Sections</TabsTrigger>
-              <TabsTrigger value="theme" className="rounded-none">Θέμα</TabsTrigger>
-            </TabsList>
-            <TabsContent value="sections" className="mt-4">
-              <SectionsEditor />
-            </TabsContent>
-            <TabsContent value="theme" className="mt-4">
+          {/* Device switch */}
+          <div className="flex border border-border ml-2">
+            <button onClick={() => setDevice('desktop')}
+              className={`px-2 py-1 ${device==='desktop' ? 'bg-foreground text-background' : ''}`}>
+              <Monitor className="w-4 h-4" />
+            </button>
+            <button onClick={() => setDevice('tablet')}
+              className={`px-2 py-1 ${device==='tablet' ? 'bg-foreground text-background' : ''}`}>
+              <Tablet className="w-4 h-4" />
+            </button>
+            <button onClick={() => setDevice('mobile')}
+              className={`px-2 py-1 ${device==='mobile' ? 'bg-foreground text-background' : ''}`}>
+              <Smartphone className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="flex-1" />
+
+          <Sheet open={showTheme} onOpenChange={setShowTheme}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm" className="rounded-none">
+                <Palette className="w-4 h-4 mr-2" />
+                {lang === 'en' ? 'Theme' : 'Θέμα'}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[420px] sm:w-[480px] overflow-y-auto rounded-none">
               <ThemeEditor />
-            </TabsContent>
-          </Tabs>
+            </SheetContent>
+          </Sheet>
+
+          <a href="/" target="_blank" rel="noreferrer">
+            <Button variant="outline" size="sm" className="rounded-none">
+              <ExternalLink className="w-4 h-4 mr-2" />
+              {lang === 'en' ? 'Open site' : 'Άνοιγμα'}
+            </Button>
+          </a>
+        </div>
+
+        {/* Body: 3 panes */}
+        <div className="flex-1 flex min-h-0">
+          {/* Left: sections list */}
+          <div className="w-60 border-r border-border bg-background overflow-y-auto p-2">
+            <div className="text-xs uppercase tracking-wide text-muted-foreground px-2 mb-2">
+              {lang === 'en' ? 'Sections' : 'Ενότητες'}
+            </div>
+            <SectionsList
+              sections={sortedSections}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              onChange={handleChangeOrder}
+              lang={lang}
+            />
+            <p className="text-[11px] text-muted-foreground px-2 mt-3">
+              {lang === 'en'
+                ? 'Drag to reorder. Click a section in the preview to edit it.'
+                : 'Σύρε για αναδιάταξη. Πάτα σε ενότητα στην προεπισκόπηση για επεξεργασία.'}
+            </p>
+          </div>
+
+          {/* Center: live preview */}
+          <div className="flex-1 min-w-0 bg-muted">
+            <LivePreviewFrame
+              device={device}
+              lang={lang}
+              reloadToken={reloadToken}
+              onSelectSection={handleSelectByKey}
+            />
+          </div>
+
+          {/* Right: edit panel */}
+          <div className="w-[400px] border-l border-border bg-background flex flex-col min-h-0">
+            {selected ? (
+              <SectionEditPanel section={selected} lang={lang} onSaved={handleSaved} />
+            ) : (
+              <div className="p-6 text-sm text-muted-foreground">
+                {lang === 'en'
+                  ? 'Click a section in the preview or in the list to start editing.'
+                  : 'Πάτα σε μια ενότητα στην προεπισκόπηση ή στη λίστα για να ξεκινήσεις.'}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
