@@ -1,81 +1,76 @@
+# Landing Page Visual Editor + i18n
+
 ## Στόχος
-Νέο menu **"Landing Page"** στο admin sidebar που επιτρέπει πλήρες CMS για κάθε section της landing (Hero, Programs, About, Live Matches, Results, Video Gallery, Certificates, Blog, Gift Card, Contact, Footer, Navigation): κείμενα, εικόνες, χρώματα, γραμματοσειρά, ορατότητα και σειρά.
+Μετατροπή του `/dashboard/landing-page` από form-based CMS σε **visual live editor** όπου ο admin βλέπει το πραγματικό landing page και κάνει αλλαγές κατευθείαν πάνω του (click-to-edit, drag-to-reorder, inline panels).
 
-## 1. Database (νέο schema)
+---
 
-Νέοι πίνακες:
+## 1. Διγλωσσία (EL/EN) στο CMS
 
-**`landing_page_config`** (singleton row για global theme)
-- `id` (uuid, default singleton)
-- `primary_color`, `accent_color`, `bg_color`, `text_color` (text - hex)
-- `heading_font`, `body_font` (text - Google Font name)
-- `updated_at`
+- Προσθήκη `title_en`, `subtitle_en`, `description_en`, `cta_label_en` στο `landing_sections` (migration).
+- `extra_data` ήδη JSONB → προσθέτουμε κλειδιά `*_en` παράλληλα (π.χ. `menu_items[].label_en`).
+- Toggle EL/EN στο πάνω μέρος του editor → αλλάζει ποιο πεδίο επεξεργάζεται.
+- Frontend (`HeroSection` κ.λπ.) διαβάζει βάσει `i18n.language` με fallback στο ελληνικό.
 
-**`landing_sections`** (μία γραμμή ανά section)
-- `id` (uuid)
-- `section_key` (text unique: 'hero', 'programs', 'about', 'live_matches', 'results', 'video_gallery', 'certificates', 'blog', 'gift_card', 'contact', 'footer', 'navigation')
-- `display_order` (int) — σειρά εμφάνισης
-- `is_visible` (boolean) — on/off
-- `title`, `subtitle`, `description` (text)
-- `cta_label`, `cta_url` (text)
-- `image_url` (text) — κύρια εικόνα (π.χ. hero background)
-- `bg_color`, `text_color` (text, nullable — overrides global)
-- `extra_data` (jsonb) — extra πεδία ανά section (badges, items, social links, secondary images, footer columns κλπ.)
-- `updated_at`
+## 2. Visual Live Editor (`/dashboard/landing-page`)
 
-**RLS**: read = public (anon + authenticated). write = admin only μέσω `has_role(auth.uid(),'admin')`.
+### Layout
+```text
++----------------------------------------------------------+
+| Top bar: [EL|EN] [Desktop|Tablet|Mobile] [Save] [Publish]|
++--------------------+-------------------------------------+
+| Sections panel     |                                     |
+| (drag to reorder)  |     LIVE PREVIEW (iframe of /)      |
+| ☰ Hero       👁    |     - click element → edit panel    |
+| ☰ Programs   👁    |     - hover → blue outline          |
+| ☰ About      👁    |     - selected → green outline      |
+| ☰ ...              |                                     |
++--------------------+-------------------------------------+
+                     | Right edit panel (when selected):   |
+                     | Text / Image / Color / Gradient /   |
+                     | Font / CTA url / Visibility         |
+```
 
-**Storage bucket** `landing-images` (public) για uploads εικόνων.
+### Πώς δουλεύει το click-to-edit
+- Live preview = `<iframe src="/?editor=1">`.
+- Στο `Index.tsx`, όταν `?editor=1` → φορτώνει `EditorOverlay` που τυλίγει κάθε section με `data-section-key`.
+- Hover → outline· click → `postMessage({type:'select', key})` στο parent (CMS page).
+- Parent ανοίγει το `SectionEditPanel` με τα σωστά πεδία (text/image/cta/colors/gradient).
+- Κάθε αλλαγή → optimistic update στη βάση + `postMessage({type:'refresh'})` ώστε το iframe να ξαναφέρει τα δεδομένα (χωρίς full reload, μέσω React Query invalidate).
 
-**Seed**: pre-populate και τους 12 sections με τα τρέχοντα default κείμενα/εικόνες.
+### Drag & drop
+- Στο αριστερό panel (sections list) με `@dnd-kit/sortable` → ενημερώνει `display_order`.
+- Toggle visibility (`is_visible`) με icon.
 
-## 2. Admin UI
+### Edit panel — διαθέσιμα controls ανά section
+- **Text fields** (title/subtitle/description/cta) με EL/EN tabs.
+- **Image** uploader (υπάρχει `LandingImageUploader`).
+- **Background**: solid color picker **ή** gradient builder (2 stops + angle) → αποθηκεύεται σε `extra_data.background` ως `{type:'solid'|'gradient', ...}`.
+- **Logo** (μόνο navigation/footer): image uploader στο `extra_data.logo_url`.
+- **CTA**: label + url.
+- **Font override** ανά section (προαιρετικό, στο `extra_data.font`).
 
-Νέο menu item **"Landing Page"** (icon: `LayoutTemplate`) στο `AdminSidebar` πριν από τα settings.
+### Theme tab (παραμένει)
+Global colors + Google Fonts όπως ήδη υπάρχει, με προσθήκη global gradient preset.
 
-Σελίδα `/dashboard/landing-page` (`LandingPageCMSWithSidebar.tsx`) με:
+---
 
-- **Tab 1: Theme** — color pickers (primary/accent/bg/text), Google Font dropdown (~15 επιλογές: Roboto, Inter, Montserrat, Poppins, Lato, Open Sans, Raleway, Playfair Display, Oswald, Bebas Neue, Robert Pro κλπ.) για heading & body, live preview.
-- **Tab 2: Sections** — accordion λίστα με drag-and-drop reorder, toggle visibility, και ανά section editor:
-  - Πεδία title/subtitle/description (textareas)
-  - CTA label + url
-  - Image upload (στο `landing-images` bucket) με preview
-  - Section-specific extra πεδία (μέσω `extra_data` jsonb form), π.χ.:
-    - Contact: phone, email, address, social links
-    - Footer: columns με links
-    - About: bullet points
-    - Certificates: λίστα εικόνων
+## Tech notes
+- Νέα αρχεία:
+  - `src/pages/Dashboard/LandingPageCMSWithSidebar.tsx` (rewrite σε visual layout).
+  - `src/components/landing-cms/LivePreviewFrame.tsx` (iframe + postMessage bridge).
+  - `src/components/landing-cms/SectionsList.tsx` (dnd-kit list).
+  - `src/components/landing-cms/SectionEditPanel.tsx` (dynamic form ανά section_key).
+  - `src/components/landing-cms/GradientPicker.tsx`.
+  - `src/components/landing/EditorOverlay.tsx` (τρέχει μόνο όταν `?editor=1`).
+- Migration: ALTER TABLE `landing_sections` ADD COLUMNS EN.
+- Dependency: `@dnd-kit/core` + `@dnd-kit/sortable` (αν δεν υπάρχει ήδη).
+- i18n: χρήση υπάρχουσας `src/i18n/config.ts`· νέο namespace `landingCms`.
 
-Κάθε αλλαγή κάνει upsert στη `landing_sections` / `landing_page_config`.
+## Εκτός scope (για επόμενο βήμα)
+- Full free-form drag των elements μέσα στο section (Webflow-style). Εδώ κάνουμε **structured editing**: κάθε section έχει συγκεκριμένα editable spots, drag μόνο για ordering των sections. Αυτό κρατά το frontend καθαρό και responsive.
 
-## 3. Frontend integration
+---
 
-- Νέο hook `useLandingConfig()` που φορτώνει theme + όλα τα sections (cached με React Query).
-- `LandingThemeProvider` που:
-  - Φορτώνει δυναμικά το Google Font (link tag στο `<head>`)
-  - Εφαρμόζει CSS variables (`--landing-primary`, `--landing-accent`, `--landing-bg`, `--landing-text`, `--font-heading`, `--font-body`) στο root του Index page.
-- Κάθε section component (`HeroSection`, `AboutSection`, κλπ.) παίρνει props ή διαβάζει από context τα title/subtitle/description/image_url/extra_data αντί για hardcoded.
-- `Index.tsx` mapping: render μόνο sections με `is_visible=true`, ταξινομημένα κατά `display_order`, μέσω registry `{ hero: HeroSection, programs: ProgramsSection, ... }`.
-- Fallback σε υπάρχοντα defaults αν λείπει κάτι από DB.
-
-## 4. Σειρά υλοποίησης
-
-1. Migration: tables + RLS + grants + storage bucket + seed.
-2. `useLandingConfig` hook + `LandingThemeProvider`.
-3. Refactor κάθε landing section ώστε να δέχεται data από config (12 αρχεία).
-4. `Index.tsx` δυναμικό rendering.
-5. Admin σελίδα `LandingPageCMSWithSidebar.tsx` με tabs Theme + Sections.
-6. Προσθήκη menu item στο `AdminSidebar` + route στο `App.tsx`.
-
-## Τεχνικές σημειώσεις
-
-- Google Fonts loader: δυναμικά inject `<link href="https://fonts.googleapis.com/css2?family=...">` στο `<head>` και CSS vars για font-family.
-- Image upload: `supabase.storage.from('landing-images').upload(...)`, παίρνουμε public URL, αποθηκεύουμε στο `image_url`.
-- Drag-and-drop: `@dnd-kit/core` (ήδη στο project ή install).
-- Όλα τα κουμπιά `rounded-none` σύμφωνα με το project style guide.
-- Sidebar pattern (mobile/desktop) ακολουθεί το υπάρχον responsive layout standard.
-
-## Εκτός scope (μπορούμε σε επόμενο γύρο)
-- Versioning / preview-before-publish.
-- Multi-language (Ελληνικά/Αγγλικά) — προς το παρόν ένα set κειμένων.
-- WYSIWYG rich text editor (χρησιμοποιούμε plain textareas + Markdown support).
+## Ερώτηση πριν προχωρήσω
+Συμφωνείς με **structured visual editor** (click element → edit panel, drag για reorder sections), ή θέλεις **free-form Webflow-style** όπου σέρνεις οτιδήποτε οπουδήποτε; Το δεύτερο είναι 5-10× μεγαλύτερη δουλειά και σπάει το responsive design.
