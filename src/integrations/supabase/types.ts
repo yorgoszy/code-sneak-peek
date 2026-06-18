@@ -6615,6 +6615,33 @@ export type Database = {
           },
         ]
       }
+      landing_page_tree: {
+        Row: {
+          id: string
+          locale: string
+          published_tree: Json | null
+          tree: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          locale?: string
+          published_tree?: Json | null
+          tree?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          locale?: string
+          published_tree?: Json | null
+          tree?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       landing_sections: {
         Row: {
           bg_color: string | null

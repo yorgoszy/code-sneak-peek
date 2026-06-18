@@ -44,6 +44,7 @@ import Subscriptions from "@/pages/Subscriptions";
 import Analytics from "@/pages/Analytics";
 import ArticlesWithSidebar from "@/pages/Dashboard/ArticlesWithSidebar";
 import LandingPageCMSWithSidebar from "@/pages/Dashboard/LandingPageCMSWithSidebar";
+import LandingPageBuilderV2 from "@/pages/Dashboard/LandingPageBuilderV2";
 import ResultsWithSidebar from "@/pages/Dashboard/ResultsWithSidebar";
 import TestResultsWithSidebar from "@/pages/Dashboard/TestResultsWithSidebar";
 import ProgressTrackingWithSidebar from "@/pages/Dashboard/ProgressTrackingWithSidebar";
@@ -262,6 +263,7 @@ function App() {
                       <Route path="/dashboard/analytics" element={<ProtectedRoute requireAdmin><Analytics /></ProtectedRoute>} />
                       <Route path="/dashboard/articles" element={<ProtectedRoute requireAdmin><ArticlesWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/landing-page" element={<ProtectedRoute requireAdmin><LandingPageCMSWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/landing-builder" element={<ProtectedRoute requireAdmin><LandingPageBuilderV2 /></ProtectedRoute>} />
                       <Route path="/dashboard/results" element={<ProtectedRoute requireAdmin><ResultsWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/shop" element={<ProtectedRoute requireAdmin><AdminShopWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/offers" element={<ProtectedRoute requireAdmin><Offers /></ProtectedRoute>} />
