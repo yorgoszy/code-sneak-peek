@@ -76,12 +76,22 @@ const LandingPageCMSWithSidebar = () => {
           {/* Language switch */}
           <div className="flex border border-border">
             {(['el','en'] as const).map((l) => (
-              <button key={l} onClick={() => setLang(l)}
-                className={`px-3 py-1 text-xs ${lang === l ? 'bg-foreground text-background' : 'bg-background'}`}>
+              <button
+                key={l}
+                type="button"
+                onClick={() => setLang(l)}
+                className={`px-3 py-1 text-xs font-medium transition-colors cursor-pointer ${lang === l ? 'bg-foreground text-background' : 'bg-background hover:bg-muted'}`}
+              >
                 {l.toUpperCase()}
               </button>
             ))}
           </div>
+
+          <a href="/dashboard/landing-builder" className="ml-2">
+            <Button type="button" variant="default" size="sm" className="rounded-none">
+              Νέος Builder (v2) →
+            </Button>
+          </a>
 
           {/* Device switch */}
           <div className="flex border border-border ml-2">
