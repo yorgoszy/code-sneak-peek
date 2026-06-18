@@ -1,76 +1,136 @@
-# Landing Page Visual Editor + i18n
+# Full Webflow-style Landing Page Editor
 
-## Στόχος
-Μετατροπή του `/dashboard/landing-page` από form-based CMS σε **visual live editor** όπου ο admin βλέπει το πραγματικό landing page και κάνει αλλαγές κατευθείαν πάνω του (click-to-edit, drag-to-reorder, inline panels).
+Επιλέχθηκε option C. Αυτό είναι πολυβδομαδιαίο έργο — θα χτιστεί σε **5 phases** και κάθε phase θα είναι ξεχωριστό prompt. Δεν μπορώ να κάνω τα πάντα σε ένα call χωρίς να σπάσουν πράγματα. Παρακάτω είναι ο πλήρης χάρτης· θα ξεκινήσω την υλοποίηση από το **Phase 1** σε αυτό το prompt.
 
 ---
 
-## 1. Διγλωσσία (EL/EN) στο CMS
+## Αρχιτεκτονική
 
-- Προσθήκη `title_en`, `subtitle_en`, `description_en`, `cta_label_en` στο `landing_sections` (migration).
-- `extra_data` ήδη JSONB → προσθέτουμε κλειδιά `*_en` παράλληλα (π.χ. `menu_items[].label_en`).
-- Toggle EL/EN στο πάνω μέρος του editor → αλλάζει ποιο πεδίο επεξεργάζεται.
-- Frontend (`HeroSection` κ.λπ.) διαβάζει βάσει `i18n.language` με fallback στο ελληνικό.
+**Schema-driven**: Όλη η σελίδα = JSON tree από `nodes`. Ο editor επεξεργάζεται το tree· ο runtime renderer το διαβάζει και φτιάχνει DOM.
 
-## 2. Visual Live Editor (`/dashboard/landing-page`)
-
-### Layout
 ```text
-+----------------------------------------------------------+
-| Top bar: [EL|EN] [Desktop|Tablet|Mobile] [Save] [Publish]|
-+--------------------+-------------------------------------+
-| Sections panel     |                                     |
-| (drag to reorder)  |     LIVE PREVIEW (iframe of /)      |
-| ☰ Hero       👁    |     - click element → edit panel    |
-| ☰ Programs   👁    |     - hover → blue outline          |
-| ☰ About      👁    |     - selected → green outline      |
-| ☰ ...              |                                     |
-+--------------------+-------------------------------------+
-                     | Right edit panel (when selected):   |
-                     | Text / Image / Color / Gradient /   |
-                     | Font / CTA url / Visibility         |
+LandingPage (root)
+├── Section (hero)
+│   ├── Container
+│   │   ├── Heading
+│   │   ├── Text
+│   │   └── Button
+│   └── Image
+└── Section (features)
+    └── Carousel
+        ├── Slide
+        └── Slide
 ```
 
-### Πώς δουλεύει το click-to-edit
-- Live preview = `<iframe src="/?editor=1">`.
-- Στο `Index.tsx`, όταν `?editor=1` → φορτώνει `EditorOverlay` που τυλίγει κάθε section με `data-section-key`.
-- Hover → outline· click → `postMessage({type:'select', key})` στο parent (CMS page).
-- Parent ανοίγει το `SectionEditPanel` με τα σωστά πεδία (text/image/cta/colors/gradient).
-- Κάθε αλλαγή → optimistic update στη βάση + `postMessage({type:'refresh'})` ώστε το iframe να ξαναφέρει τα δεδομένα (χωρίς full reload, μέσω React Query invalidate).
+### Node schema
+```ts
+type Node = {
+  id: string;
+  type: 'section' | 'container' | 'heading' | 'text' | 'image' | 'button'
+      | 'carousel' | 'accordion' | 'tabs' | 'video' | 'spacer' | 'columns' | 'icon' | 'form';
+  props: { text?, src?, href?, level?, ...componentSpecific };
+  style: {
+    // free-form
+    position?: 'static' | 'absolute';
+    top?, left?, right?, bottom?, width?, height?;
+    // box
+    padding?, margin?, gap?;
+    // visual
+    background?, color?, fontFamily?, fontSize?, fontWeight?, borderRadius?, boxShadow?;
+    // flex
+    display?, flexDirection?, justifyContent?, alignItems?;
+    // responsive overrides
+    md?: Partial<Style>;
+    sm?: Partial<Style>;
+  };
+  children: Node[];
+};
+```
 
-### Drag & drop
-- Στο αριστερό panel (sections list) με `@dnd-kit/sortable` → ενημερώνει `display_order`.
-- Toggle visibility (`is_visible`) με icon.
-
-### Edit panel — διαθέσιμα controls ανά section
-- **Text fields** (title/subtitle/description/cta) με EL/EN tabs.
-- **Image** uploader (υπάρχει `LandingImageUploader`).
-- **Background**: solid color picker **ή** gradient builder (2 stops + angle) → αποθηκεύεται σε `extra_data.background` ως `{type:'solid'|'gradient', ...}`.
-- **Logo** (μόνο navigation/footer): image uploader στο `extra_data.logo_url`.
-- **CTA**: label + url.
-- **Font override** ανά section (προαιρετικό, στο `extra_data.font`).
-
-### Theme tab (παραμένει)
-Global colors + Google Fonts όπως ήδη υπάρχει, με προσθήκη global gradient preset.
+### DB
+```sql
+-- New table
+landing_page_tree (
+  id uuid pk,
+  locale text default 'el',          -- 'el' | 'en'
+  tree jsonb not null,                -- root node
+  published_tree jsonb,               -- last published snapshot
+  updated_at timestamptz
+)
+```
+Old `landing_sections` παραμένει για backwards compat, θα γίνει migrate σε Phase 5.
 
 ---
 
-## Tech notes
-- Νέα αρχεία:
-  - `src/pages/Dashboard/LandingPageCMSWithSidebar.tsx` (rewrite σε visual layout).
-  - `src/components/landing-cms/LivePreviewFrame.tsx` (iframe + postMessage bridge).
-  - `src/components/landing-cms/SectionsList.tsx` (dnd-kit list).
-  - `src/components/landing-cms/SectionEditPanel.tsx` (dynamic form ανά section_key).
-  - `src/components/landing-cms/GradientPicker.tsx`.
-  - `src/components/landing/EditorOverlay.tsx` (τρέχει μόνο όταν `?editor=1`).
-- Migration: ALTER TABLE `landing_sections` ADD COLUMNS EN.
-- Dependency: `@dnd-kit/core` + `@dnd-kit/sortable` (αν δεν υπάρχει ήδη).
-- i18n: χρήση υπάρχουσας `src/i18n/config.ts`· νέο namespace `landingCms`.
+## Phase 1 — Foundation (αυτό το prompt)
 
-## Εκτός scope (για επόμενο βήμα)
-- Full free-form drag των elements μέσα στο section (Webflow-style). Εδώ κάνουμε **structured editing**: κάθε section έχει συγκεκριμένα editable spots, drag μόνο για ordering των sections. Αυτό κρατά το frontend καθαρό και responsive.
+**Παραδοτέα:**
+1. Fix τα 2 bugs που ανέφερες:
+   - EN toggle click δουλεύει
+   - Theme color save apply στο live preview
+2. Νέο schema + DB table `landing_page_tree`
+3. `<NodeRenderer>` component — δέχεται node tree και κάνει render σε production
+4. Seed: μεταφορά υπάρχοντος Hero/Sections σε αρχικό tree
+5. Νέος route `/dashboard/landing-page-v2` με placeholder canvas (read-only render του tree)
+
+**Out of scope σε Phase 1:** drag, layers, edit panel.
 
 ---
 
-## Ερώτηση πριν προχωρήσω
-Συμφωνείς με **structured visual editor** (click element → edit panel, drag για reorder sections), ή θέλεις **free-form Webflow-style** όπου σέρνεις οτιδήποτε οπουδήποτε; Το δεύτερο είναι 5-10× μεγαλύτερη δουλειά και σπάει το responsive design.
+## Phase 2 — Visual Editor Shell
+
+- 3-pane layout: **Layers (αριστερά) | Canvas (κέντρο) | Inspector (δεξιά)**
+- Click node σε canvas → select → highlight outline
+- Inspector: edit text/props για selected node
+- Layers panel: tree view με expand/collapse, select sync με canvas
+- Undo/redo (zundo)
+- Save → write tree στο DB, invalidate cache
+
+## Phase 3 — Drag & Drop
+
+- **Component library panel** (4η στήλη ή modal): text, heading, button, image, container, columns, spacer, video, carousel, accordion, tabs, form, icon
+- Drag από library → drop σε canvas σε valid position (μέσα σε container)
+- Drag υπάρχον node στο layers panel για reorder/reparent
+- **Free-form mode toggle**: όταν container έχει `position: relative`, τα children γίνονται draggable με absolute coords + resize handles
+- Snap to grid, alignment guides
+
+## Phase 4 — Style System & Responsive
+
+- Inspector tabs: **Content | Style | Layout | Effects**
+- Color picker, gradient editor, typography (font/size/weight), spacing (padding/margin visual), borders, shadows
+- Breakpoint switcher: Desktop / Tablet / Mobile → εφαρμόζει overrides στο `style.md` / `style.sm`
+- Asset picker integration (upload εικόνες από uploader)
+
+## Phase 5 — Components, i18n, Publish
+
+- Πλήρης υλοποίηση όλων των component types στον NodeRenderer (carousel με embla, accordion με shadcn, κτλ)
+- i18n: κάθε text node έχει `{ el, en }` strings, ο renderer διαλέγει βάσει `i18n.language`
+- Publish button: `tree` → `published_tree`. Public landing διαβάζει published_tree.
+- Migration: convert υπάρχον `landing_sections` σε αρχικό tree
+- Delete `LandingPageCMSWithSidebar.tsx` (v1), redirect στο v2
+
+---
+
+## Τεχνικές αποφάσεις
+
+- **DnD lib**: `@dnd-kit/core` (ήδη installed) για layers reorder + library drops. Για free-form absolute drag, custom mouse handlers (πιο controllable από dnd-kit για XY).
+- **State**: zustand store για editor (selected node id, hovered, tree, history). React Query για persistence.
+- **Renderer**: Recursive `<NodeRenderer node={node} editor={boolean} onSelect={fn} />`. Σε editor mode wraps κάθε node με outline + click handler. Σε production mode plain DOM.
+- **Style → CSS**: helper `nodeStyleToCss(style, breakpoint)` που merges base + responsive override.
+- **Performance**: tree μπορεί να γίνει βαρύ — memoize NodeRenderer per node.id, virtualize layers panel αν >100 nodes.
+
+---
+
+## Εκτίμηση credits / risk
+
+| Phase | Πολυπλοκότητα | Πιθανότητα να δουλέψει 1ο try |
+|---|---|---|
+| 1 | Μέτρια | Υψηλή |
+| 2 | Υψηλή | Μέτρια |
+| 3 | **Πολύ υψηλή** | Χαμηλή (θα χρειαστούν 2-3 iterations) |
+| 4 | Υψηλή | Μέτρια |
+| 5 | Μέτρια | Υψηλή |
+
+**Σύνολο: ~10-15 prompts** μέχρι σταθερό state. Free-form drag (Phase 3) είναι το πιο επικίνδυνο κομμάτι.
+
+Πάμε με Phase 1 τώρα;
