@@ -94,13 +94,12 @@ const Columns: React.FC<NodeRendererProps> = (p) => {
 };
 
 const Heading: React.FC<NodeRendererProps> = (p) => {
-  const Tag = (`h${p.node.props.level ?? 2}`) as keyof JSX.IntrinsicElements;
+  const level = p.node.props.level ?? 2;
   const text = getLocalized(p.node.props.text, p.locale);
-  return (
-    <Tag style={nodeStyleToCss(p.node.style, p.breakpoint)} data-node-id={p.node.id}>
-      {text || (p.editorMode ? '(empty heading)' : '')}
-    </Tag>
-  );
+  const content = text || (p.editorMode ? '(empty heading)' : '');
+  const style = nodeStyleToCss(p.node.style, p.breakpoint);
+  const common = { style, 'data-node-id': p.node.id, children: content } as any;
+  return React.createElement(`h${level}`, common);
 };
 
 const Text: React.FC<NodeRendererProps> = (p) => {
