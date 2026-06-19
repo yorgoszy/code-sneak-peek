@@ -22,8 +22,6 @@ import Footer from "@/components/landing/Footer";
 import LandingChatbot from "@/components/landing/LandingChatbot";
 import { useLandingTheme, useApplyLandingTheme, useLandingSection } from "@/hooks/useLandingConfig";
 import { EditorOverlay } from "@/components/landing/EditorOverlay";
-import { useLandingTree } from "@/hooks/useLandingTree";
-import { NodeRenderer } from "@/components/landing-builder/NodeRenderer";
 
 const Index = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
@@ -34,14 +32,6 @@ const Index = () => {
   const [userRole, setUserRole] = useState<string | null>(null);
   const { data: landingTheme } = useLandingTheme();
   useApplyLandingTheme(landingTheme);
-
-  // Phase 5: render the published landing tree if it exists for this locale.
-  const treeLocale = language === 'en' ? 'en' : 'el';
-  const { data: treeData } = useLandingTree(treeLocale, /* preferPublished */ true);
-  const publishedTree = treeData?.row?.published_tree ?? null;
-  const useLegacy = typeof window !== 'undefined'
-    && new URLSearchParams(window.location.search).get('legacy') === '1';
-  const renderFromTree = !!publishedTree && !useLegacy;
 
   // PWA Auto-redirect to dashboard when logged in
   useEffect(() => {
@@ -158,10 +148,7 @@ const Index = () => {
         translations={correctedTranslations}
       />
 
-      {renderFromTree && publishedTree ? (
-        <NodeRenderer node={publishedTree} locale={treeLocale} />
-      ) : (
-        <>
+      <>
           <HeroSection 
             translations={correctedTranslations}
             onGetStarted={handleGetStarted}
@@ -223,8 +210,7 @@ const Index = () => {
           <Footer 
             translations={correctedTranslations}
           />
-        </>
-      )}
+      </>
 
       <LandingChatbot language={language as 'el' | 'en'} />
       {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('editor') === '1' && (
