@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 
 /**
  * Mounted inside Index when ?editor=1. Tags each <section> with hover/click outlines
- * and posts the section key to the parent (CMS) window on click.
+ * and posts the section key to the parent (CMS) window on click. Also applies live
+ * per-section style overrides received from the parent CMS edit panel.
  */
 export const EditorOverlay = () => {
   useEffect(() => {
@@ -57,9 +58,53 @@ export const EditorOverlay = () => {
     };
     document.addEventListener('click', navBlock, true);
 
+    // Live preview: apply per-section style overrides pushed from the CMS edit panel
+    const STYLE_VAR_MAP: Array<[string, string]> = [
+      ['bg_color',                '--landing-bg'],
+      ['text_color',              '--landing-text'],
+      ['link_color',              '--landing-link'],
+      ['link_hover_color',        '--landing-link-hover'],
+      ['button_bg_color',         '--landing-btn-bg'],
+      ['button_text_color',       '--landing-btn-text'],
+      ['button_hover_bg_color',   '--landing-btn-hover-bg'],
+      ['button_hover_text_color', '--landing-btn-hover-text'],
+    ];
+    const NAV_VAR_MAP: Array<[string, string]> = [
+      ['bg_color',         '--landing-nav-bg'],
+      ['text_color',       '--landing-nav-text'],
+      ['link_hover_color', '--landing-nav-hover'],
+      ['icon_color',       '--landing-nav-icon'],
+    ];
+    const applyDraft = (sectionKey: string, s: Record<string, any>) => {
+      const el = document.querySelector(`[data-section-key="${sectionKey}"]`) as HTMLElement | null;
+      if (!el) return;
+      const set = (k: string, v: string | undefined | null) => {
+        if (v) el.style.setProperty(k, v);
+        else el.style.removeProperty(k);
+      };
+      for (const [k, v] of STYLE_VAR_MAP) set(v, s?.[k]);
+      if (sectionKey === 'navigation') {
+        for (const [k, v] of NAV_VAR_MAP) set(v, s?.[k]);
+      }
+      set('--landing-font-heading', s?.heading_font ? `'${s.heading_font}', sans-serif` : null);
+      set('--landing-font-body', s?.body_font ? `'${s.body_font}', sans-serif` : null);
+      el.style.fontFamily = s?.body_font ? `'${s.body_font}', sans-serif` : '';
+      el.style.backgroundColor = s?.bg_color ?? '';
+      el.style.color = s?.text_color ?? '';
+    };
+    const onMessage = (e: MessageEvent) => {
+      const d = e.data;
+      if (!d || d.type !== 'landing-editor-draft' || !d.sectionKey) return;
+      applyDraft(d.sectionKey, d.style ?? {});
+    };
+    window.addEventListener('message', onMessage);
+    // Tell the parent we're ready so it can replay the current draft
+    window.parent?.postMessage({ type: 'landing-editor-ready' }, '*');
+
     return () => {
       document.removeEventListener('click', click, true);
       document.removeEventListener('click', navBlock, true);
+      window.removeEventListener('message', onMessage);
       style.remove();
     };
   }, []);
