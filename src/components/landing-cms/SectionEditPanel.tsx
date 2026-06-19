@@ -8,9 +8,12 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Save } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { SECTION_LABELS, type LandingSection, type Lang } from '@/hooks/useLandingConfig';
+import { SECTION_LABELS, useLandingTheme, type LandingSection, type Lang } from '@/hooks/useLandingConfig';
 import { LandingImageUploader } from './LandingImageUploader';
 import { GradientPicker, type BackgroundValue } from './GradientPicker';
+import { ColorField, FontSelect, SectionTitle } from './shared';
+import { LucideIconPicker } from './LucideIconPicker';
+
 
 interface Props {
   section: LandingSection;
