@@ -182,7 +182,22 @@ const Navigation: React.FC<NavigationProps> = ({
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center" style={{ position: 'relative' }}>
+          <div
+            data-logo-edit-root
+            className="flex items-center"
+            style={{
+              position: 'relative',
+              outline: isEditor && logoActive ? '2px dashed #00ffba' : 'none',
+              outlineOffset: 4,
+              cursor: isEditor ? 'pointer' : 'default',
+            }}
+            onClick={(e) => {
+              if (!isEditor) return;
+              e.preventDefault();
+              e.stopPropagation();
+              setLogoActive((v) => !v);
+            }}
+          >
             <img 
               src={logoUrl} 
               alt="Logo" 
@@ -192,14 +207,14 @@ const Navigation: React.FC<NavigationProps> = ({
                 ...(extra.logo_url || liveImageUrl ? {} : { filter: 'brightness(0)' }),
               }}
             />
-            {isEditor && (
+            {isEditor && logoActive && (
               <>
                 <div
                   onMouseDown={startResize}
                   title="Drag to resize logo"
                   style={{
                     position: 'absolute', right: -6, top: 0, bottom: 0, width: 10,
-                    cursor: 'ew-resize', background: 'rgba(0,255,186,0.35)',
+                    cursor: 'ew-resize', background: 'rgba(0,255,186,0.45)',
                   }}
                 />
                 <div
