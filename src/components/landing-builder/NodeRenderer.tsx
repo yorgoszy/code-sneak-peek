@@ -2,8 +2,9 @@ import React, { CSSProperties, useState } from 'react';
 import {
   PageNode, NodeStyle, Locale, getLocalized, isContainerType,
 } from '@/hooks/useLandingTree';
-import { DRAG_MIME_NEW, DRAG_MIME_MOVE } from './PalettePanel';
-import type { DropTarget } from './LayersPanel';
+import { DRAG_MIME_NEW, DRAG_MIME_MOVE, DRAG_MIME_CMS } from './PalettePanel';
+import type { DropTarget, DropExtra } from './LayersPanel';
+import { CmsSectionRenderer, type CmsSectionKey } from './CmsSectionRenderer';
 
 // ============================================================================
 // NodeRenderer — turns a PageNode tree into actual DOM.
@@ -20,7 +21,7 @@ export interface NodeRendererProps {
   onSelect?: (id: string) => void;
   onHover?: (id: string | null) => void;
   breakpoint?: 'desktop' | 'tablet' | 'mobile';
-  onDropNew?: (type: string, target: DropTarget) => void;
+  onDropNew?: (type: string, target: DropTarget, extra?: DropExtra) => void;
   onDropMove?: (id: string, target: DropTarget) => void;
 }
 
@@ -182,6 +183,22 @@ const PlaceholderComponent: React.FC<NodeRendererProps & { label: string }> = (p
   </div>
 );
 
+const CmsSection: React.FC<NodeRendererProps> = (p) => {
+  const key = p.node.props.sectionKey as CmsSectionKey | undefined;
+  return (
+    <div
+      style={nodeStyleToCss(p.node.style, p.breakpoint)}
+      data-node-id={p.node.id}
+      // Block clicks inside CMS sections in editor mode so they don't navigate
+      onClick={p.editorMode ? (e) => e.preventDefault() : undefined}
+    >
+      <div style={p.editorMode ? { pointerEvents: 'none' } : undefined}>
+        <CmsSectionRenderer sectionKey={key} editorMode={p.editorMode} />
+      </div>
+    </div>
+  );
+};
+
 const RENDERERS: Record<string, React.FC<NodeRendererProps>> = {
   page: Page,
   section: Section,
@@ -194,6 +211,7 @@ const RENDERERS: Record<string, React.FC<NodeRendererProps>> = {
   button: ButtonNode,
   spacer: Spacer,
   video: VideoNode,
+  cms_section: CmsSection,
   carousel: (p) => <PlaceholderComponent {...p} label="Carousel" />,
   accordion: (p) => <PlaceholderComponent {...p} label="Accordion" />,
   tabs: (p) => <PlaceholderComponent {...p} label="Tabs" />,
@@ -255,7 +273,8 @@ export const NodeRenderer: React.FC<NodeRendererProps> = (props) => {
 
     const newType = e.dataTransfer.getData(DRAG_MIME_NEW);
     if (newType && props.onDropNew) {
-      props.onDropNew(newType, target);
+      const cmsKey = e.dataTransfer.getData(DRAG_MIME_CMS) || undefined;
+      props.onDropNew(newType, target, cmsKey ? { cmsKey } : undefined);
       return;
     }
     const moveId = e.dataTransfer.getData(DRAG_MIME_MOVE);

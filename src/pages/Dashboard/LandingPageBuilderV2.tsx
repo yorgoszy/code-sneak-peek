@@ -192,8 +192,11 @@ const LandingPageBuilderV2: React.FC = () => {
     setSelectedId(copy.id);
   }, [tree, commit]);
 
-  const handleDropNew = useCallback((type: string, target: DropTarget) => {
+  const handleDropNew = useCallback((type: string, target: DropTarget, extra?: { cmsKey?: string }) => {
     const node = createDefaultNode(type as NodeType);
+    if (type === 'cms_section' && extra?.cmsKey) {
+      node.props = { ...node.props, sectionKey: extra.cmsKey };
+    }
     commit(insertNode(tree, target.parentId, node, target.index));
     setSelectedId(node.id);
   }, [tree, commit]);

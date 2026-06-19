@@ -26,7 +26,8 @@ export type NodeType =
   | 'tabs'
   | 'tab'
   | 'form'
-  | 'input';
+  | 'input'
+  | 'cms_section';
 
 export interface LocalizedText {
   el?: string;
@@ -370,6 +371,8 @@ export function createDefaultNode(type: NodeType): PageNode {
       return { id, type, props: { src: '', controls: true }, style: {}, children: [] };
     case 'spacer':
       return { id, type, props: {}, style: { height: '40px' }, children: [] };
+    case 'cms_section':
+      return { id, type, props: { sectionKey: 'hero' }, style: {}, children: [] };
     default:
       return { id, type, props: {}, style: {}, children: [] };
   }

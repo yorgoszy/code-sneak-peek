@@ -3,6 +3,7 @@ import { type PageNode, type Locale, type NodeStyle } from '@/hooks/useLandingTr
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { CMS_SECTION_OPTIONS } from './CmsSectionRenderer';
 
 interface Props {
   node: PageNode | null;
@@ -83,6 +84,23 @@ export const InspectorPanel: React.FC<Props> = ({ node, locale, onChange }) => {
         <code className="text-[9px] normal-case text-muted-foreground/70">{node.type}</code>
       </div>
       <div className="flex-1 overflow-auto p-3 space-y-4">
+        {node.type === 'cms_section' && (
+          <div className="space-y-2">
+            <div className="text-[10px] uppercase tracking-wide font-semibold">CMS Section</div>
+            <Field label="Section">
+              <select
+                className="w-full h-8 border border-input bg-background text-xs rounded-none px-2"
+                value={(node.props as any).sectionKey ?? ''}
+                onChange={(e) => setProp('sectionKey', e.target.value)}
+              >
+                {CMS_SECTION_OPTIONS.map((opt) => (
+                  <option key={opt.key} value={opt.key}>{opt.label}</option>
+                ))}
+              </select>
+            </Field>
+          </div>
+        )}
+
         {/* CONTENT */}
         {(hasText || hasMedia || hasLink) && (
           <div className="space-y-3">

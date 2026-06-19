@@ -3,11 +3,15 @@ import { ChevronRight, ChevronDown, Trash2, Copy, Eye } from 'lucide-react';
 import {
   type PageNode, getLocalized, type Locale, isContainerType,
 } from '@/hooks/useLandingTree';
-import { DRAG_MIME_NEW, DRAG_MIME_MOVE } from './PalettePanel';
+import { DRAG_MIME_NEW, DRAG_MIME_MOVE, DRAG_MIME_CMS } from './PalettePanel';
 
 export interface DropTarget {
   parentId: string;
   index: number;
+}
+
+export interface DropExtra {
+  cmsKey?: string;
 }
 
 interface Props {
@@ -17,7 +21,7 @@ interface Props {
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
   onDuplicate: (id: string) => void;
-  onDropNew: (type: string, target: DropTarget) => void;
+  onDropNew: (type: string, target: DropTarget, extra?: DropExtra) => void;
   onDropMove: (id: string, target: DropTarget) => void;
 }
 
@@ -82,7 +86,8 @@ const Row: React.FC<Props & { node: PageNode; depth: number; parentId: string | 
 
     const newType = e.dataTransfer.getData(DRAG_MIME_NEW);
     if (newType) {
-      onDropNew(newType, target);
+      const cmsKey = e.dataTransfer.getData(DRAG_MIME_CMS) || undefined;
+      onDropNew(newType, target, cmsKey ? { cmsKey } : undefined);
       return;
     }
     const moveId = e.dataTransfer.getData(DRAG_MIME_MOVE);

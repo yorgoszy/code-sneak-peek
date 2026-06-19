@@ -1,12 +1,14 @@
 import React from 'react';
 import {
   LayoutTemplate, Box, Columns as ColumnsIcon, Heading as HeadingIcon,
-  Type as TypeIcon, Image as ImageIcon, MousePointerClick, Minus, Video,
+  Type as TypeIcon, Image as ImageIcon, MousePointerClick, Minus, Video, Puzzle,
 } from 'lucide-react';
 import type { NodeType } from '@/hooks/useLandingTree';
+import { CMS_SECTION_OPTIONS, type CmsSectionKey } from './CmsSectionRenderer';
 
 export const DRAG_MIME_NEW = 'application/x-landing-new-node';
 export const DRAG_MIME_MOVE = 'application/x-landing-move-node';
+export const DRAG_MIME_CMS = 'application/x-landing-cms-key';
 
 interface Item {
   type: NodeType;
@@ -46,6 +48,26 @@ export const PalettePanel: React.FC = () => {
           >
             <Icon className="w-4 h-4" />
             <span>{label}</span>
+          </div>
+        ))}
+      </div>
+      <div className="px-3 py-2 border-t border-border text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+        <Puzzle className="w-3 h-3" /> CMS Sections
+      </div>
+      <div className="grid grid-cols-2 gap-1 p-2">
+        {CMS_SECTION_OPTIONS.map(({ key, label }) => (
+          <div
+            key={key}
+            draggable
+            onDragStart={(e) => {
+              e.dataTransfer.setData(DRAG_MIME_NEW, 'cms_section');
+              e.dataTransfer.setData(DRAG_MIME_CMS, key as CmsSectionKey);
+              e.dataTransfer.effectAllowed = 'copy';
+            }}
+            className="flex items-center justify-center gap-1 px-1 py-2 border border-border bg-background hover:bg-muted cursor-grab active:cursor-grabbing select-none text-[10px] text-center"
+            title={`Drag to add ${label} section`}
+          >
+            {label}
           </div>
         ))}
       </div>
