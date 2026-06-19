@@ -3,6 +3,7 @@ import { type PageNode, type Locale, type NodeStyle } from '@/hooks/useLandingTr
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { CMS_SECTION_OPTIONS } from './CmsSectionRenderer';
 
 interface Props {
   node: PageNode | null;
