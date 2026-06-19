@@ -14,19 +14,14 @@ import {
 interface FightRow {
   id: string;
   user_id: string;
+  athlete_name: string | null;
+  athlete_avatar_url: string | null;
   opponent_name: string | null;
   fight_date: string;
   competition_name: string | null;
   location: string | null;
   video_url: string;
   our_corner: string | null;
-}
-
-interface AppUserLite {
-  id: string;
-  name: string | null;
-  avatar_url: string | null;
-  photo_url: string | null;
 }
 
 const parseYouTubeId = (url: string): string | null => {
@@ -51,7 +46,12 @@ const initials = (name?: string | null) => {
   return ((parts[0]?.[0] || "") + (parts[1]?.[0] || "")).toUpperCase() || "?";
 };
 
-const getAvatar = (u?: AppUserLite | null) => u?.avatar_url || u?.photo_url || undefined;
+const splitName = (name?: string | null): { first: string; last: string } => {
+  if (!name) return { first: "", last: "" };
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return { first: parts[0], last: "" };
+  return { first: parts[0], last: parts.slice(1).join(" ") };
+};
 
 interface Props {
   translations?: any;
@@ -60,32 +60,16 @@ interface Props {
 const VideoGallerySection: React.FC<Props> = ({ translations }) => {
   const navigate = useNavigate();
   const [fights, setFights] = useState<FightRow[]>([]);
-  const [users, setUsers] = useState<Record<string, AppUserLite>>({});
   const [playingId, setPlayingId] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase
-        .from("muaythai_fights")
-        .select("id,user_id,opponent_name,fight_date,competition_name,location,video_url,our_corner")
-        .not("video_url", "is", null)
-        .eq("is_public", true)
-        .order("fight_date", { ascending: false })
-        .limit(12);
-
-      const list = ((data as any[]) || []).filter(f => !!f.video_url) as FightRow[];
-      setFights(list);
-
-      const ids = Array.from(new Set(list.map(f => f.user_id).filter(Boolean)));
-      if (ids.length) {
-        const { data: usersData } = await supabase
-          .from("app_users")
-          .select("id,name,avatar_url,photo_url")
-          .in("id", ids);
-        const map: Record<string, AppUserLite> = {};
-        (usersData || []).forEach((u: any) => { map[u.id] = u; });
-        setUsers(map);
+      const { data, error } = await (supabase as any).rpc("get_public_fight_gallery", { _limit: 12 });
+      if (error) {
+        console.error("Error loading public fight gallery", error);
+        return;
       }
+      setFights(((data as any[]) || []) as FightRow[]);
     };
     load();
   }, []);
