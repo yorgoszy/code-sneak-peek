@@ -3,7 +3,7 @@ import {
   PageNode, NodeStyle, Locale, getLocalized, isContainerType,
 } from '@/hooks/useLandingTree';
 import { DRAG_MIME_NEW, DRAG_MIME_MOVE, DRAG_MIME_CMS } from './PalettePanel';
-import type { DropTarget } from './LayersPanel';
+import type { DropTarget, DropExtra } from './LayersPanel';
 import { CmsSectionRenderer, type CmsSectionKey } from './CmsSectionRenderer';
 
 // ============================================================================
