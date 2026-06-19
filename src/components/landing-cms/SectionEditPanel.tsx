@@ -24,6 +24,16 @@ interface Props {
 export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) => {
   const [draft, setDraft] = useState<LandingSection>(section);
   const [saving, setSaving] = useState(false);
+  const { data: theme } = useLandingTheme();
+  const customFonts = theme?.custom_fonts ?? [];
+  const style: Record<string, any> = (draft.extra_data?.style ?? {}) as Record<string, any>;
+  const setStyle = (patch: Record<string, any>) => {
+    const next = { ...style, ...patch };
+    // Strip empty strings/null
+    Object.keys(next).forEach((k) => { if (next[k] === '' || next[k] == null) delete next[k]; });
+    setDraft({ ...draft, extra_data: { ...(draft.extra_data ?? {}), style: next } });
+  };
+
 
   useEffect(() => { setDraft(section); }, [section.id]);
 
