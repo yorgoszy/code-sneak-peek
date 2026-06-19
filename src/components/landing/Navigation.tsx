@@ -126,7 +126,7 @@ const Navigation: React.FC<NavigationProps> = ({
                 <div className="flex items-center space-x-4">
                   <Button 
                     variant="ghost" 
-                    className="language-btn rounded-none bg-transparent text-white hover:text-black transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className="language-btn rounded-none bg-transparent text-[#151514] hover:text-[#cb8954] transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                     onClick={onToggleLanguage}
                   >
                     <Globe className="h-4 w-4" />
