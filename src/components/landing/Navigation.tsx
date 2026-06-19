@@ -170,13 +170,36 @@ const Navigation: React.FC<NavigationProps> = ({
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center">
+          <div className="flex items-center" style={{ position: 'relative' }}>
             <img 
               src={logoUrl} 
               alt="Logo" 
-              className="h-10 w-auto"
-              style={extra.logo_url || liveImageUrl ? undefined : { filter: 'brightness(0)' }}
+              className="w-auto"
+              style={{
+                height: `${logoHeight}px`,
+                ...(extra.logo_url || liveImageUrl ? {} : { filter: 'brightness(0)' }),
+              }}
             />
+            {isEditor && (
+              <>
+                <div
+                  onMouseDown={startResize}
+                  title="Drag to resize logo"
+                  style={{
+                    position: 'absolute', right: -6, top: 0, bottom: 0, width: 10,
+                    cursor: 'ew-resize', background: 'rgba(0,255,186,0.35)',
+                  }}
+                />
+                <div
+                  onMouseDown={startResize}
+                  title="Drag to resize logo"
+                  style={{
+                    position: 'absolute', right: -8, bottom: -8, width: 14, height: 14,
+                    cursor: 'nwse-resize', background: '#00ffba', border: '1px solid #000',
+                  }}
+                />
+              </>
+            )}
           </div>
           
           <div className="hidden lg:flex items-center space-x-8">
