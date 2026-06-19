@@ -26,7 +26,8 @@ export type NodeType =
   | 'tabs'
   | 'tab'
   | 'form'
-  | 'input';
+  | 'input'
+  | 'cms_section';
 
 export interface LocalizedText {
   el?: string;
