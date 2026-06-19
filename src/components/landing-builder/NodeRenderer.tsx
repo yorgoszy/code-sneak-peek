@@ -273,7 +273,8 @@ export const NodeRenderer: React.FC<NodeRendererProps> = (props) => {
 
     const newType = e.dataTransfer.getData(DRAG_MIME_NEW);
     if (newType && props.onDropNew) {
-      props.onDropNew(newType, target);
+      const cmsKey = e.dataTransfer.getData(DRAG_MIME_CMS) || undefined;
+      props.onDropNew(newType, target, cmsKey ? { cmsKey } : undefined);
       return;
     }
     const moveId = e.dataTransfer.getData(DRAG_MIME_MOVE);
