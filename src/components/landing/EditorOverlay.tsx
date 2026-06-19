@@ -40,7 +40,10 @@ export const EditorOverlay = () => {
     document.querySelectorAll('nav').forEach((n) => n.setAttribute('data-section-key', 'navigation'));
 
     const click = (e: MouseEvent) => {
-      const target = (e.target as HTMLElement).closest('[data-section-key]') as HTMLElement | null;
+      const t = e.target as HTMLElement;
+      // Let editable text + logo handles receive their own clicks
+      if (t.closest('[data-editable], [data-logo-edit-root]')) return;
+      const target = t.closest('[data-section-key]') as HTMLElement | null;
       if (!target) return;
       e.preventDefault();
       e.stopPropagation();
@@ -53,7 +56,9 @@ export const EditorOverlay = () => {
 
     // Disable all internal navigation while in editor
     const navBlock = (e: MouseEvent) => {
-      const a = (e.target as HTMLElement).closest('a, button');
+      const t = e.target as HTMLElement;
+      if (t.closest('[data-editable], [data-logo-edit-root]')) return;
+      const a = t.closest('a, button');
       if (a) { e.preventDefault(); e.stopPropagation(); }
     };
     document.addEventListener('click', navBlock, true);
