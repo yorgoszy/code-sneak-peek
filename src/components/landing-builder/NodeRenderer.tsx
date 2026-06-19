@@ -183,6 +183,22 @@ const PlaceholderComponent: React.FC<NodeRendererProps & { label: string }> = (p
   </div>
 );
 
+const CmsSection: React.FC<NodeRendererProps> = (p) => {
+  const key = p.node.props.sectionKey as CmsSectionKey | undefined;
+  return (
+    <div
+      style={nodeStyleToCss(p.node.style, p.breakpoint)}
+      data-node-id={p.node.id}
+      // Block clicks inside CMS sections in editor mode so they don't navigate
+      onClick={p.editorMode ? (e) => e.preventDefault() : undefined}
+    >
+      <div style={p.editorMode ? { pointerEvents: 'none' } : undefined}>
+        <CmsSectionRenderer sectionKey={key} editorMode={p.editorMode} />
+      </div>
+    </div>
+  );
+};
+
 const RENDERERS: Record<string, React.FC<NodeRendererProps>> = {
   page: Page,
   section: Section,
@@ -195,6 +211,7 @@ const RENDERERS: Record<string, React.FC<NodeRendererProps>> = {
   button: ButtonNode,
   spacer: Spacer,
   video: VideoNode,
+  cms_section: CmsSection,
   carousel: (p) => <PlaceholderComponent {...p} label="Carousel" />,
   accordion: (p) => <PlaceholderComponent {...p} label="Accordion" />,
   tabs: (p) => <PlaceholderComponent {...p} label="Tabs" />,
