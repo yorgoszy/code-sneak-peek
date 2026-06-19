@@ -129,9 +129,10 @@ const Navigation: React.FC<NavigationProps> = ({
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <img 
-              src={headerLogo} 
-              alt="HyperKids Logo" 
-              className="h-10 w-auto brightness-0"
+              src={logoUrl} 
+              alt="Logo" 
+              className="h-10 w-auto"
+              style={extra.logo_url || navSection?.image_url ? undefined : { filter: 'brightness(0)' }}
             />
           </div>
           
@@ -157,14 +158,14 @@ const Navigation: React.FC<NavigationProps> = ({
                     className="icon-btn rounded-none bg-transparent transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                     onClick={onToggleLanguage}
                   >
-                    <Globe className="h-4 w-4" />
+                    <LangIcon className="h-4 w-4" />
                   </Button>
                   <Link to="/dashboard">
                     <Button 
                       variant="ghost" 
                       className="icon-btn rounded-none bg-transparent transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                     >
-                      <LayoutDashboard className="h-4 w-4" />
+                      <DashIcon className="h-4 w-4" />
                     </Button>
                   </Link>
                   <Button 
@@ -172,7 +173,7 @@ const Navigation: React.FC<NavigationProps> = ({
                     className="icon-btn rounded-none bg-transparent transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                     onClick={onSignOut}
                   >
-                    <LogOut className="h-4 w-4" />
+                    <LogoutIcon className="h-4 w-4" />
                   </Button>
                 </div>
               ) : (
@@ -182,10 +183,11 @@ const Navigation: React.FC<NavigationProps> = ({
                     className="icon-btn rounded-none bg-transparent transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                     onClick={onToggleLanguage}
                   >
-                    <Globe className="h-4 w-4" />
+                    <LangIcon className="h-4 w-4" />
                   </Button>
                   <Link to={`/auth?lang=${language}`}>
                     <Button className="login-btn rounded-none">
+                      {showLoginIcon && <LoginIcon className="h-4 w-4 mr-2" />}
                       {translations.login}
                     </Button>
                   </Link>
