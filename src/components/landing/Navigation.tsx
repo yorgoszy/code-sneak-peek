@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Globe, LogOut, LayoutDashboard } from "lucide-react";
 import { Link } from "react-router-dom";
 import headerLogo from '@/assets/header-logo.png';
+import { useLandingSection } from '@/hooks/useLandingConfig';
+import { getSectionStyleVars } from './sectionStyle';
+
 
 interface NavigationProps {
   navigationItems: Array<{ name: string; href: string }>;
@@ -24,10 +27,13 @@ const Navigation: React.FC<NavigationProps> = ({
   onSignOut,
   translations
 }) => {
+  const navSection = useLandingSection('navigation');
+  const overrides = getSectionStyleVars(navSection);
+
   const handleNavigationClick = (href: string, event: React.MouseEvent) => {
     if (href.startsWith('#')) {
       event.preventDefault();
-      const targetId = href.substring(1); // Remove the #
+      const targetId = href.substring(1);
       const element = document.getElementById(targetId);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
@@ -40,7 +46,7 @@ const Navigation: React.FC<NavigationProps> = ({
   return (
     <nav
       className="fixed top-0 w-full z-50"
-      style={{ backgroundColor: 'var(--landing-nav-bg, #ffffff)' }}
+      style={{ backgroundColor: 'var(--landing-nav-bg, #ffffff)', ...overrides }}
     >
       <style>{`
         .nav-link {

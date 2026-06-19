@@ -8,9 +8,12 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Save } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { SECTION_LABELS, type LandingSection, type Lang } from '@/hooks/useLandingConfig';
+import { SECTION_LABELS, useLandingTheme, type LandingSection, type Lang } from '@/hooks/useLandingConfig';
 import { LandingImageUploader } from './LandingImageUploader';
 import { GradientPicker, type BackgroundValue } from './GradientPicker';
+import { ColorField, FontSelect, SectionTitle } from './shared';
+import { LucideIconPicker } from './LucideIconPicker';
+
 
 interface Props {
   section: LandingSection;
@@ -21,6 +24,16 @@ interface Props {
 export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) => {
   const [draft, setDraft] = useState<LandingSection>(section);
   const [saving, setSaving] = useState(false);
+  const { data: theme } = useLandingTheme();
+  const customFonts = theme?.custom_fonts ?? [];
+  const style: Record<string, any> = (draft.extra_data?.style ?? {}) as Record<string, any>;
+  const setStyle = (patch: Record<string, any>) => {
+    const next = { ...style, ...patch };
+    // Strip empty strings/null
+    Object.keys(next).forEach((k) => { if (next[k] === '' || next[k] == null) delete next[k]; });
+    setDraft({ ...draft, extra_data: { ...(draft.extra_data ?? {}), style: next } });
+  };
+
 
   useEffect(() => { setDraft(section); }, [section.id]);
 
@@ -134,7 +147,102 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
           </div>
         </div>
 
+        {/* PER-SECTION STYLE OVERRIDES */}
+        <div className="space-y-3 pt-2">
+          <SectionTitle>{lang === 'en' ? 'Section Style (overrides theme)' : 'Στυλ Section (πάνω από το θέμα)'}</SectionTitle>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <FontSelect
+              label={lang === 'en' ? 'Heading Font' : 'Γραμματοσειρά Τίτλων'}
+              value={style.heading_font ?? ''}
+              onChange={(v) => setStyle({ heading_font: v })}
+              customFonts={customFonts}
+              allowEmpty
+            />
+            <FontSelect
+              label={lang === 'en' ? 'Body Font' : 'Γραμματοσειρά Κειμένου'}
+              value={style.body_font ?? ''}
+              onChange={(v) => setStyle({ body_font: v })}
+              customFonts={customFonts}
+              allowEmpty
+            />
+            <ColorField
+              label={lang === 'en' ? 'Background' : 'Φόντο'}
+              value={style.bg_color}
+              onChange={(v) => setStyle({ bg_color: v })}
+              onClear={() => setStyle({ bg_color: '' })}
+            />
+            <ColorField
+              label={lang === 'en' ? 'Text' : 'Κείμενο'}
+              value={style.text_color}
+              onChange={(v) => setStyle({ text_color: v })}
+              onClear={() => setStyle({ text_color: '' })}
+            />
+            <ColorField
+              label={lang === 'en' ? 'Link' : 'Σύνδεσμος'}
+              value={style.link_color}
+              onChange={(v) => setStyle({ link_color: v })}
+              onClear={() => setStyle({ link_color: '' })}
+            />
+            <ColorField
+              label={lang === 'en' ? 'Link Hover' : 'Hover Συνδέσμου'}
+              value={style.link_hover_color}
+              onChange={(v) => setStyle({ link_hover_color: v })}
+              onClear={() => setStyle({ link_hover_color: '' })}
+            />
+            <ColorField
+              label={lang === 'en' ? 'Button Bg' : 'Φόντο Κουμπιού'}
+              value={style.button_bg_color}
+              onChange={(v) => setStyle({ button_bg_color: v })}
+              onClear={() => setStyle({ button_bg_color: '' })}
+            />
+            <ColorField
+              label={lang === 'en' ? 'Button Text' : 'Κείμενο Κουμπιού'}
+              value={style.button_text_color}
+              onChange={(v) => setStyle({ button_text_color: v })}
+              onClear={() => setStyle({ button_text_color: '' })}
+            />
+            <ColorField
+              label={lang === 'en' ? 'Button Hover Bg' : 'Hover Φόντο Κουμπιού'}
+              value={style.button_hover_bg_color}
+              onChange={(v) => setStyle({ button_hover_bg_color: v })}
+              onClear={() => setStyle({ button_hover_bg_color: '' })}
+            />
+            <ColorField
+              label={lang === 'en' ? 'Button Hover Text' : 'Hover Κείμενο Κουμπιού'}
+              value={style.button_hover_text_color}
+              onChange={(v) => setStyle({ button_hover_text_color: v })}
+              onClear={() => setStyle({ button_hover_text_color: '' })}
+            />
+            {draft.section_key === 'navigation' && (
+              <ColorField
+                label={lang === 'en' ? 'Icons Color' : 'Χρώμα Εικονιδίων'}
+                value={style.icon_color}
+                onChange={(v) => setStyle({ icon_color: v })}
+                onClear={() => setStyle({ icon_color: '' })}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* SECTION ICON */}
+        <div className="space-y-3 pt-2">
+          <SectionTitle>{lang === 'en' ? 'Section Icon' : 'Εικονίδιο Section'}</SectionTitle>
+          <LucideIconPicker
+            value={(draft.extra_data?.icon as string) ?? null}
+            onChange={(name) => setExtra({ icon: name })}
+            label={lang === 'en' ? 'Pick a Lucide icon' : 'Διάλεξε Lucide εικονίδιο'}
+            color={style.icon_color || draft.text_color || undefined}
+          />
+          <ColorField
+            label={lang === 'en' ? 'Icon Color' : 'Χρώμα Εικονιδίου'}
+            value={style.section_icon_color}
+            onChange={(v) => setStyle({ section_icon_color: v })}
+            onClear={() => setStyle({ section_icon_color: '' })}
+          />
+        </div>
+
         <details>
+
           <summary className="text-xs text-muted-foreground cursor-pointer">Extra data (JSON)</summary>
           <Textarea
             rows={6}
