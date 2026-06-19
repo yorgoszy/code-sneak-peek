@@ -87,7 +87,7 @@ const Navigation: React.FC<NavigationProps> = ({
               <a
                 key={item.name}
                 href={item.href}
-                className="nav-link transition-colors duration-200 text-sm font-medium text-white"
+                className="nav-link transition-colors duration-200 text-sm font-medium text-[#151514]"
                 onClick={(e) => handleNavigationClick(item.href, e)}
               >
                 {item.name}
