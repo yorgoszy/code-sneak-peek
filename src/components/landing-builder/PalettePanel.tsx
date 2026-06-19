@@ -1,12 +1,14 @@
 import React from 'react';
 import {
   LayoutTemplate, Box, Columns as ColumnsIcon, Heading as HeadingIcon,
-  Type as TypeIcon, Image as ImageIcon, MousePointerClick, Minus, Video,
+  Type as TypeIcon, Image as ImageIcon, MousePointerClick, Minus, Video, Puzzle,
 } from 'lucide-react';
 import type { NodeType } from '@/hooks/useLandingTree';
+import { CMS_SECTION_OPTIONS, type CmsSectionKey } from './CmsSectionRenderer';
 
 export const DRAG_MIME_NEW = 'application/x-landing-new-node';
 export const DRAG_MIME_MOVE = 'application/x-landing-move-node';
+export const DRAG_MIME_CMS = 'application/x-landing-cms-key';
 
 interface Item {
   type: NodeType;
