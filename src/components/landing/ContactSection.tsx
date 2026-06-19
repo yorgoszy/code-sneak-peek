@@ -88,7 +88,7 @@ const ContactSection = () => {
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-lg">
+            <div className="bg-[#f4f1ea] p-6 rounded-lg shadow-lg">
               <h4 className="font-semibold text-gray-900 mb-4">Ώρες Λειτουργίας</h4>
               <div className="space-y-2 text-gray-600">
                 <div className="flex justify-between">

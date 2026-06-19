@@ -543,7 +543,7 @@ export const ProgramDetailsContent: React.FC<ProgramDetailsContentProps> = ({
               />
               <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                 <div className="text-center">
-                  <h2 className="text-5xl font-bold text-white mb-4 border-b-4 border-[#00ffba] pb-2 inline-block" style={{ fontFamily: 'Robert, sans-serif' }}>
+                  <h2 className="text-5xl font-bold text-[#f4f1ea] mb-4 border-b-4 border-[#00ffba] pb-2 inline-block" style={{ fontFamily: 'Robert, sans-serif' }}>
                     {program.title}
                   </h2>
                   <p className="text-[#00ffba] text-lg font-semibold">
@@ -563,26 +563,26 @@ export const ProgramDetailsContent: React.FC<ProgramDetailsContentProps> = ({
             <div className="grid grid-cols-2 gap-6 mb-8">
               <div className="bg-gray-800 p-6 rounded-none border border-gray-700">
                 <h4 className="text-[#00ffba] font-bold mb-2">Ηλικιακή Ομάδα</h4>
-                <p className="text-white">{programData.ages}</p>
+                <p className="text-[#f4f1ea]">{programData.ages}</p>
               </div>
               <div className="bg-gray-800 p-6 rounded-none border border-gray-700">
                 <h4 className="text-[#00ffba] font-bold mb-2">Διάρκεια</h4>
-                <p className="text-white">{programData.duration}</p>
+                <p className="text-[#f4f1ea]">{programData.duration}</p>
               </div>
               <div className="bg-gray-800 p-6 rounded-none border border-gray-700">
                 <h4 className="text-[#00ffba] font-bold mb-2">Συχνότητα</h4>
-                <p className="text-white">{programData.frequency}</p>
+                <p className="text-[#f4f1ea]">{programData.frequency}</p>
               </div>
               <div className="bg-gray-800 p-6 rounded-none border border-gray-700">
                 <h4 className="text-[#00ffba] font-bold mb-2">Πρόγραμμα</h4>
-                <p className="text-white">{programData.schedule}</p>
+                <p className="text-[#f4f1ea]">{programData.schedule}</p>
               </div>
             </div>
 
             {programData.additionalInfo && (
               <div className="bg-gray-800 p-6 rounded-none border border-gray-700 mb-8">
                 <h4 className="text-[#00ffba] font-bold mb-2">Επιπλέον Πληροφορίες</h4>
-                <p className="text-white">{programData.additionalInfo}</p>
+                <p className="text-[#f4f1ea]">{programData.additionalInfo}</p>
               </div>
             )}
             
@@ -607,7 +607,7 @@ export const ProgramDetailsContent: React.FC<ProgramDetailsContentProps> = ({
       case 4:
         return (
           <div className="mb-12">
-            <h3 className="text-2xl font-bold text-white mb-6">Πακέτα Τιμών</h3>
+            <h3 className="text-2xl font-bold text-[#f4f1ea] mb-6">Πακέτα Τιμών</h3>
             <p className="text-gray-300 mb-8">
               Επιλέξτε το πακέτο που ταιριάζει καλύτερα στους στόχους προπόνησης και το πρόγραμμά σας. 
               Όλα τα πακέτα περιλαμβάνουν επαγγελματική καθοδήγηση και παρακολούθηση προόδου.
@@ -625,11 +625,11 @@ export const ProgramDetailsContent: React.FC<ProgramDetailsContentProps> = ({
   };
 
   return (
-    <div className="flex-1 bg-black text-white p-8 overflow-y-auto">
+    <div className="flex-1 bg-black text-[#f4f1ea] p-8 overflow-y-auto">
       <div className="flex justify-end mb-6">
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-white transition-colors"
+          className="text-gray-400 hover:text-[#f4f1ea] transition-colors"
         >
           <X className="w-6 h-6" />
         </button>

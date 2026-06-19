@@ -55,30 +55,30 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
 
             {/* Text */}
             <div className="flex-1 text-center md:text-left">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 font-['Roobert_Pro',sans-serif]">
+              <h2 className="text-3xl md:text-4xl font-bold text-[#f4f1ea] mb-4 font-['Roobert_Pro',sans-serif]">
                 {t.titleLine1}<br />
-                <span className="text-white">{t.titleLine2}</span>
+                <span className="text-[#f4f1ea]">{t.titleLine2}</span>
               </h2>
               <p className="text-gray-400 mb-6 text-lg font-['Roobert_Pro',sans-serif]">
                 {t.description}
               </p>
               <ul className="text-gray-300 space-y-2 mb-8 text-sm font-['Roobert_Pro',sans-serif]">
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-white rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-[#f4f1ea] rounded-full" />
                   {t.feature1}
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-white rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-[#f4f1ea] rounded-full" />
                   {t.feature2}
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-white rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-[#f4f1ea] rounded-full" />
                   {t.feature3}
                 </li>
               </ul>
               <button
                 onClick={() => setPurchaseOpen(true)}
-                className="bg-white text-black px-8 py-4 text-lg font-semibold hover:bg-gray-200 transition-colors inline-flex items-center gap-2 font-['Roobert_Pro',sans-serif]"
+                className="bg-[#f4f1ea] text-black px-8 py-4 text-lg font-semibold hover:bg-gray-200 transition-colors inline-flex items-center gap-2 font-['Roobert_Pro',sans-serif]"
               >
                 {t.cta}
                 <ArrowRight className="h-5 w-5" />

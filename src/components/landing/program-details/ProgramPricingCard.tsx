@@ -29,7 +29,7 @@ export const ProgramPricingCard: React.FC<ProgramPricingCardProps> = ({ plan }) 
       )}
       
       <div className="text-center mb-6">
-        <h4 className="text-xl font-bold text-white mb-2">{plan.title}</h4>
+        <h4 className="text-xl font-bold text-[#f4f1ea] mb-2">{plan.title}</h4>
         <div className="text-3xl font-bold text-[#00ffba] mb-1">{plan.price}</div>
         {plan.period && (
           <div className="text-gray-400 text-sm">{plan.period}</div>
@@ -55,7 +55,7 @@ export const ProgramPricingCard: React.FC<ProgramPricingCardProps> = ({ plan }) 
         className={`w-full rounded-none font-bold ${
           plan.popular 
             ? 'bg-[#00ffba] hover:bg-[#00ffba]/90 text-black' 
-            : 'bg-transparent border border-gray-600 text-white hover:bg-gray-700'
+            : 'bg-transparent border border-gray-600 text-[#f4f1ea] hover:bg-gray-700'
         }`}
       >
         Choose Plan

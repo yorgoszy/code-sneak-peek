@@ -50,7 +50,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({ article, onClose, language,
       </style>
       <div 
         ref={modalRef}
-        className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar"
+        className="bg-[#f4f1ea] rounded-lg max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar"
       >
         <div className={`relative ${article.id === 2 ? 'pt-8' : ''}`}>
           <img 
@@ -63,7 +63,7 @@ const ArticleModal: React.FC<ArticleModalProps> = ({ article, onClose, language,
           />
           <button 
             onClick={onClose}
-            className="absolute top-4 right-4 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
+            className="absolute top-4 right-4 bg-[#f4f1ea] rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

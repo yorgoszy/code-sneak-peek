@@ -319,7 +319,7 @@ const LandingChatbot: React.FC<LandingChatbotProps> = ({ language = 'el' }) => {
         <button
           onClick={() => setOpen(true)}
           aria-label={language === 'en' ? 'Open chat' : 'Άνοιγμα συνομιλίας'}
-          className="fixed bottom-6 right-6 z-50 group flex items-center gap-2 bg-black text-white pl-4 pr-5 py-3 shadow-2xl hover:bg-[#00ffba] hover:text-black transition-all duration-300"
+          className="fixed bottom-6 right-6 z-50 group flex items-center gap-2 bg-black text-[#f4f1ea] pl-4 pr-5 py-3 shadow-2xl hover:bg-[#00ffba] hover:text-black transition-all duration-300"
         >
           <div className="relative">
             <MessageCircle className="w-6 h-6" />
@@ -333,12 +333,12 @@ const LandingChatbot: React.FC<LandingChatbotProps> = ({ language = 'el' }) => {
 
       {/* Chat panel */}
       {open && (
-        <div className="fixed bottom-6 right-6 z-50 w-[calc(100vw-3rem)] sm:w-[400px] h-[600px] max-h-[calc(100vh-3rem)] bg-white shadow-2xl border border-gray-200 flex flex-col font-robert">
+        <div className="fixed bottom-6 right-6 z-50 w-[calc(100vw-3rem)] sm:w-[400px] h-[600px] max-h-[calc(100vh-3rem)] bg-[#f4f1ea] shadow-2xl border border-gray-200 flex flex-col font-robert">
           {/* Header */}
-          <div className="bg-black text-white px-4 py-3 flex items-center justify-between">
+          <div className="bg-black text-[#f4f1ea] px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-9 h-9 flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white" />
+                <Sparkles className="w-5 h-5 text-[#f4f1ea]" />
               </div>
               <div>
                 <p className="text-sm font-semibold leading-tight">Hyper AI</p>
@@ -346,7 +346,7 @@ const LandingChatbot: React.FC<LandingChatbotProps> = ({ language = 'el' }) => {
             </div>
             <button
               onClick={() => setOpen(false)}
-              className="p-1 hover:bg-white/10 transition-colors"
+              className="p-1 hover:bg-[#f4f1ea]/10 transition-colors"
               aria-label="Close"
             >
               <X className="w-5 h-5" />
@@ -366,8 +366,8 @@ const LandingChatbot: React.FC<LandingChatbotProps> = ({ language = 'el' }) => {
                       <div
                         className={`max-w-[85%] px-3 py-2 text-sm leading-relaxed ${
                           msg.role === 'user'
-                            ? 'bg-black text-white'
-                            : 'bg-white border border-gray-200 text-gray-900'
+                            ? 'bg-black text-[#f4f1ea]'
+                            : 'bg-[#f4f1ea] border border-gray-200 text-gray-900'
                         }`}
                       >
                         {msg.role === 'assistant' ? (
@@ -406,7 +406,7 @@ const LandingChatbot: React.FC<LandingChatbotProps> = ({ language = 'el' }) => {
             })}
             {loading && messages[messages.length - 1]?.role === 'user' && (
               <div className="flex justify-start">
-                <div className="bg-white border border-gray-200 px-3 py-2 flex items-center gap-2 text-gray-500 text-sm">
+                <div className="bg-[#f4f1ea] border border-gray-200 px-3 py-2 flex items-center gap-2 text-gray-500 text-sm">
                   <Loader2 className="w-4 h-4 animate-spin" />
                   <span>{language === 'en' ? 'Thinking...' : 'Σκέφτεται...'}</span>
                 </div>
@@ -416,7 +416,7 @@ const LandingChatbot: React.FC<LandingChatbotProps> = ({ language = 'el' }) => {
           </div>
 
           {/* Quick action: open lead form manually */}
-          <div className="border-t border-gray-200 px-3 pt-2 pb-1 bg-white">
+          <div className="border-t border-gray-200 px-3 pt-2 pb-1 bg-[#f4f1ea]">
             <button
               type="button"
               onClick={() => {
@@ -441,7 +441,7 @@ const LandingChatbot: React.FC<LandingChatbotProps> = ({ language = 'el' }) => {
           </div>
 
           {/* Input */}
-          <div className="border-t border-gray-200 p-3 bg-white flex gap-2 items-end">
+          <div className="border-t border-gray-200 p-3 bg-[#f4f1ea] flex gap-2 items-end">
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}

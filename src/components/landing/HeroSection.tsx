@@ -65,13 +65,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="text-left">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl mb-6 text-white"
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl mb-6 text-[#f4f1ea]"
               style={{ fontFamily: 'var(--landing-font-heading, inherit)' }}>
             {title}<br />
-            <span className="text-white">{subtitle}</span>
+            <span className="text-[#f4f1ea]">{subtitle}</span>
           </h1>
           {description && (
-            <p className="text-white/90 text-base sm:text-lg mb-6 max-w-2xl">
+            <p className="text-[#f4f1ea]/90 text-base sm:text-lg mb-6 max-w-2xl">
               {description}
             </p>
           )}
@@ -84,7 +84,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             </Button>
             <Button
               variant="outline"
-              className="contact-btn rounded-none bg-transparent text-white border-white"
+              className="contact-btn rounded-none bg-transparent text-[#f4f1ea] border-[#f4f1ea]"
               onClick={handleContactClick}
             >
               {translations.contactBtn}

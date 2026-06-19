@@ -57,7 +57,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
   };
 
   return (
-    <section id="programs" className="py-20 bg-black text-white" onClick={handleScreenClick}>
+    <section id="programs" className="py-20 bg-black text-[#f4f1ea]" onClick={handleScreenClick}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <div className="relative">
@@ -66,13 +66,13 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
             <div className="text-left">
               {translations.language === 'en' ? (
                 <>
-                  <h3 className="text-3xl font-bold mb-2 text-white" style={{ fontFamily: 'Robert, sans-serif' }}>
+                  <h3 className="text-3xl font-bold mb-2 text-[#f4f1ea]" style={{ fontFamily: 'Robert, sans-serif' }}>
                     Services
                   </h3>
                 </>
               ) : (
                 <>
-                   <h3 className="text-3xl font-bold mb-2 text-white" style={{ fontFamily: 'Robert, sans-serif' }}>
+                   <h3 className="text-3xl font-bold mb-2 text-[#f4f1ea]" style={{ fontFamily: 'Robert, sans-serif' }}>
                      {translations?.language === 'en' ? 'Services' : 'Υπηρεσίες'}
                    </h3>
                 </>

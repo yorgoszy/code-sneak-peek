@@ -23,7 +23,7 @@ export const ProgramDetailsSidebar: React.FC<ProgramDetailsSidebarProps> = ({
     <div className="w-80 bg-black p-8 border-r border-gray-700">
       <div className="mb-8">
         <div className="text-[#00ffba] text-sm font-medium mb-4">ΠΛΗΡΟΦΟΡΙΕΣ ΠΡΟΓΡΑΜΜΑΤΟΣ</div>
-        <h1 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Robert, sans-serif' }}>
+        <h1 className="text-4xl font-bold text-[#f4f1ea] mb-4" style={{ fontFamily: 'Robert, sans-serif' }}>
           Ξεκινήστε
         </h1>
         <h1 className="text-4xl font-bold mb-8" style={{ color: '#00ffba', fontFamily: 'Robert, sans-serif' }}>
@@ -43,7 +43,7 @@ export const ProgramDetailsSidebar: React.FC<ProgramDetailsSidebarProps> = ({
             </span>
             <span className={`font-medium transition-all duration-300 ${
               activeSection === section.id 
-                ? 'text-white border-b border-[#00ffba] pb-1' 
+                ? 'text-[#f4f1ea] border-b border-[#00ffba] pb-1' 
                 : 'text-gray-500'
             }`}>
               {section.title}
