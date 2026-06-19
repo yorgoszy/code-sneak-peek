@@ -37,6 +37,33 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
 
   useEffect(() => { setDraft(section); }, [section.id]);
 
+  // Live-preview: broadcast the draft style to the preview iframe(s) on every change
+  useEffect(() => {
+    const payload = {
+      type: 'landing-editor-draft',
+      sectionKey: draft.section_key,
+      style: (draft.extra_data?.style ?? {}) as Record<string, any>,
+    };
+    document.querySelectorAll('iframe').forEach((f) => {
+      try { (f as HTMLIFrameElement).contentWindow?.postMessage(payload, '*'); } catch { /* ignore */ }
+    });
+  }, [draft.section_key, draft.extra_data]);
+
+  // Replay current draft when an iframe signals ready (e.g. after reload)
+  useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      if (e.data?.type !== 'landing-editor-ready') return;
+      const payload = {
+        type: 'landing-editor-draft',
+        sectionKey: draft.section_key,
+        style: (draft.extra_data?.style ?? {}) as Record<string, any>,
+      };
+      (e.source as Window | null)?.postMessage(payload, '*');
+    };
+    window.addEventListener('message', onMsg);
+    return () => window.removeEventListener('message', onMsg);
+  }, [draft.section_key, draft.extra_data]);
+
   const setExtra = (patch: Record<string, any>) =>
     setDraft({ ...draft, extra_data: { ...(draft.extra_data ?? {}), ...patch } });
 
