@@ -321,16 +321,21 @@ const LandingPageBuilderV2: React.FC = () => {
         </div>
 
         <div className="flex-1 flex min-h-0">
-          {/* Layers */}
+          {/* Left: Palette + Layers */}
           <div className="hidden lg:flex w-60 border-r border-border bg-muted/30 flex-col">
-            <LayersPanel
-              root={tree}
-              locale={locale}
-              selectedId={selectedId}
-              onSelect={setSelectedId}
-              onDelete={handleDelete}
-              onDuplicate={handleDuplicate}
-            />
+            <PalettePanel />
+            <div className="flex-1 min-h-0 border-t border-border">
+              <LayersPanel
+                root={tree}
+                locale={locale}
+                selectedId={selectedId}
+                onSelect={setSelectedId}
+                onDelete={handleDelete}
+                onDuplicate={handleDuplicate}
+                onDropNew={handleDropNew}
+                onDropMove={handleDropMove}
+              />
+            </div>
           </div>
 
           {/* Canvas */}
@@ -356,6 +361,8 @@ const LandingPageBuilderV2: React.FC = () => {
                   onSelect={setSelectedId}
                   onHover={setHoveredId}
                   breakpoint={device}
+                  onDropNew={handleDropNew}
+                  onDropMove={handleDropMove}
                 />
               </div>
             )}
