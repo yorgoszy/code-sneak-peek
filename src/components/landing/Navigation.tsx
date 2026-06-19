@@ -1,11 +1,12 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Globe, LogOut, LayoutDashboard } from "lucide-react";
+import { Globe, LogOut, LayoutDashboard, LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
 import headerLogo from '@/assets/header-logo.png';
 import { useLandingSection } from '@/hooks/useLandingConfig';
 import { getSectionStyleVars } from './sectionStyle';
+import { getLucideIcon } from '@/components/landing-cms/LucideIconPicker';
 
 
 interface NavigationProps {
