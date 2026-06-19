@@ -76,7 +76,7 @@ export const CmsSectionRenderer: React.FC<Props> = ({ sectionKey, editorMode }) 
       case 'giftCard':
         return <GiftCardSection translations={t} />;
       case 'footer':
-        return <Footer translations={t} onGetStarted={noop} />;
+        return <Footer translations={t} />;
       default:
         return <Placeholder label={sectionKey} />;
     }
