@@ -65,6 +65,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="text-left">
+          <p className="text-[#f4f1ea]/70 text-xs sm:text-sm uppercase tracking-[0.2em] mb-3 font-medium">
+            Est. 2024 — Downtown
+          </p>
           <h1 className="text-5xl sm:text-7xl lg:text-8xl mb-6 text-[#f4f1ea] tracking-wide"
               style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
             {title}<br />
