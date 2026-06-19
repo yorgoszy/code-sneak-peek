@@ -146,7 +146,7 @@ const Navigation: React.FC<NavigationProps> = ({
               src={logoUrl} 
               alt="Logo" 
               className="h-10 w-auto"
-              style={extra.logo_url || navSection?.image_url ? undefined : { filter: 'brightness(0)' }}
+              style={extra.logo_url || liveImageUrl ? undefined : { filter: 'brightness(0)' }}
             />
           </div>
           
