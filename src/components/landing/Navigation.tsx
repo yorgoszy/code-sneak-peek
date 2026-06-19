@@ -32,6 +32,18 @@ const Navigation: React.FC<NavigationProps> = ({
   const [liveDraft, setLiveDraft] = React.useState<{ extra?: any; image_url?: string | null } | null>(null);
   const isEditor = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('editor') === '1';
   const [dragHeight, setDragHeight] = React.useState<number | null>(null);
+  const [logoActive, setLogoActive] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!logoActive) return;
+    const onDocClick = (ev: MouseEvent) => {
+      const t = ev.target as HTMLElement;
+      if (t.closest('[data-logo-edit-root]')) return;
+      setLogoActive(false);
+    };
+    document.addEventListener('mousedown', onDocClick, true);
+    return () => document.removeEventListener('mousedown', onDocClick, true);
+  }, [logoActive]);
 
   React.useEffect(() => {
     const onMsg = (e: MessageEvent) => {
