@@ -78,7 +78,7 @@ const Navigation: React.FC<NavigationProps> = ({
             <img 
               src={headerLogo} 
               alt="HyperKids Logo" 
-              className="h-10 w-auto"
+              className="h-10 w-auto brightness-0"
             />
           </div>
           
