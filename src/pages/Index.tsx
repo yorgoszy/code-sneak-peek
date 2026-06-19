@@ -143,7 +143,7 @@ const Index = () => {
     <div
       className="min-h-screen font-robert"
       style={{
-        backgroundColor: landingTheme?.bg_color ?? '#ffffff',
+        backgroundColor: landingTheme?.bg_color ?? '#f4f1ea',
         color: landingTheme?.text_color ?? '#0a0a0a',
         fontFamily: landingTheme ? `'${landingTheme.body_font}', sans-serif` : undefined,
       }}
@@ -203,7 +203,7 @@ const Index = () => {
           <GiftCardSection translations={correctedTranslations} />
 
           {/* CTA Section */}
-          <section className="py-20 bg-white">
+          <section className="py-20 bg-[#f4f1ea]">
             <div className="container mx-auto px-4 text-center">
               <h2 className="text-4xl font-bold text-black mb-6">
                 {correctedTranslations.readyQuestion}
@@ -212,7 +212,7 @@ const Index = () => {
                 {correctedTranslations.journeyText}
               </p>
               <button 
-                className="bg-black px-8 py-4 text-lg font-semibold hover:bg-gray-800 transition-colors text-white"
+                className="bg-black px-8 py-4 text-lg font-semibold hover:bg-gray-800 transition-colors text-[#f4f1ea]"
                 onClick={handleGetStarted}
               >
                 {correctedTranslations.startNow}
