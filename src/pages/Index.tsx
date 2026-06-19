@@ -22,6 +22,8 @@ import Footer from "@/components/landing/Footer";
 import LandingChatbot from "@/components/landing/LandingChatbot";
 import { useLandingTheme, useApplyLandingTheme, useLandingSection } from "@/hooks/useLandingConfig";
 import { EditorOverlay } from "@/components/landing/EditorOverlay";
+import { useLandingTree } from "@/hooks/useLandingTree";
+import { NodeRenderer } from "@/components/landing-builder/NodeRenderer";
 
 const Index = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
