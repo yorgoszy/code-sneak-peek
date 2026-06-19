@@ -29,14 +29,28 @@ const Navigation: React.FC<NavigationProps> = ({
   translations
 }) => {
   const navSection = useLandingSection('navigation');
+  const [liveDraft, setLiveDraft] = React.useState<{ extra?: any; image_url?: string | null } | null>(null);
+
+  React.useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      const d = e.data;
+      if (!d || d.type !== 'landing-editor-draft' || d.sectionKey !== 'navigation') return;
+      setLiveDraft({ extra: d.extra ?? {}, image_url: d.image_url ?? null });
+    };
+    window.addEventListener('message', onMsg);
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
   const overrides = getSectionStyleVars(navSection);
-  const extra: any = navSection?.extra_data ?? {};
-  const logoUrl: string = extra.logo_url || navSection?.image_url || headerLogo;
+  const extra: any = { ...(navSection?.extra_data ?? {}), ...(liveDraft?.extra ?? {}) };
+  const liveImageUrl = liveDraft?.image_url ?? navSection?.image_url;
+  const logoUrl: string = extra.logo_url || liveImageUrl || headerLogo;
   const LangIcon = getLucideIcon(extra.lang_icon) ?? Globe;
   const DashIcon = getLucideIcon(extra.dashboard_icon) ?? LayoutDashboard;
   const LogoutIcon = getLucideIcon(extra.logout_icon) ?? LogOut;
   const LoginIcon = getLucideIcon(extra.login_icon) ?? LogIn;
   const showLoginIcon: boolean = !!extra.login_icon;
+
 
   const handleNavigationClick = (href: string, event: React.MouseEvent) => {
     if (href.startsWith('#')) {
