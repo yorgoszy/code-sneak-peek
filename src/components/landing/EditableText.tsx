@@ -60,6 +60,7 @@ export const EditableText: React.FC<EditableTextProps> = ({
 
   return React.createElement(as, {
     ref,
+    'data-editable': '1',
     className,
     style: {
       ...style,
