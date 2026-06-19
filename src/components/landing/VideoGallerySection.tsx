@@ -102,8 +102,11 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
               {fights.map((f) => {
                 const thumb = getYouTubeThumb(f.video_url);
                 const isPlaying = playingId === f.id;
-                const athlete = users[f.user_id];
                 const athleteIsRed = (f.our_corner || "red") === "red";
+                const athleteName = f.athlete_name || "";
+                const opponentName = f.opponent_name || "";
+                const a = splitName(athleteName);
+                const o = splitName(opponentName);
                 return (
                   <CarouselItem key={f.id} className="md:basis-1/2 lg:basis-1/3">
                     <div className="bg-black border border-black overflow-hidden h-full">
@@ -114,7 +117,7 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
                             className="absolute inset-0 w-full h-full"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen
-                            title={`${athlete?.name || "Fight"} vs ${f.opponent_name || ""}`}
+                            title={`${athleteName || "Fight"} vs ${opponentName}`}
                           />
                         ) : (
                           <button
@@ -126,7 +129,7 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
                             {thumb ? (
                               <img
                                 src={thumb}
-                                alt={`${athlete?.name || ""} fight`}
+                                alt={`${athleteName} fight`}
                                 className="absolute inset-0 w-full h-full object-cover"
                                 loading="lazy"
                               />
@@ -142,28 +145,31 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
                       <div className="p-3 bg-white">
                         <div className="flex items-center justify-between gap-2 mb-2">
                           <div className="flex items-center gap-2 min-w-0 flex-1">
-                            <Avatar className={`w-8 h-8 border-2 ${athleteIsRed ? "border-red-500" : "border-blue-500"}`}>
-                              <AvatarImage src={getAvatar(athlete)} />
-                              <AvatarFallback className="text-xs">
-                                {initials(athlete?.name)}
+                            <Avatar className={`w-8 h-8 border-2 ${athleteIsRed ? "border-red-500" : "border-blue-500"} shrink-0`}>
+                              <AvatarImage src={f.athlete_avatar_url || undefined} />
+                              <AvatarFallback className="text-[10px]">
+                                {initials(athleteName)}
                               </AvatarFallback>
                             </Avatar>
-                            <span className="text-xs font-semibold text-black truncate">
-                              {athlete?.name || "—"}
-                            </span>
+                            <div className="min-w-0 leading-tight">
+                              <div className="text-[10px] font-semibold text-black truncate uppercase">{a.first || "—"}</div>
+                              <div className="text-[10px] font-semibold text-black truncate uppercase">{a.last}</div>
+                            </div>
                           </div>
-                          <span className="text-xs text-gray-400 font-bold">{vsLabel}</span>
+                          <span className="text-[10px] text-gray-400 font-bold shrink-0">{vsLabel}</span>
                           <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
-                            <span className="text-xs font-semibold text-black truncate text-right">
-                              {f.opponent_name || "—"}
-                            </span>
-                            <Avatar className={`w-8 h-8 border-2 ${athleteIsRed ? "border-blue-500" : "border-red-500"}`}>
-                              <AvatarFallback className="text-xs">
-                                {initials(f.opponent_name)}
+                            <div className="min-w-0 leading-tight text-right">
+                              <div className="text-[10px] font-semibold text-black truncate uppercase">{o.first || "—"}</div>
+                              <div className="text-[10px] font-semibold text-black truncate uppercase">{o.last}</div>
+                            </div>
+                            <Avatar className={`w-8 h-8 border-2 ${athleteIsRed ? "border-blue-500" : "border-red-500"} shrink-0`}>
+                              <AvatarFallback className="text-[10px]">
+                                {initials(opponentName)}
                               </AvatarFallback>
                             </Avatar>
                           </div>
                         </div>
+
 
                         <p className="text-xs text-gray-600 truncate">
                           {f.competition_name || f.location || ""}
