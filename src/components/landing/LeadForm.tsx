@@ -128,7 +128,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="border border-gray-200 bg-white p-2 space-y-1.5"
+      className="border border-gray-200 bg-[#f4f1ea] p-2 space-y-1.5"
     >
       <p className="text-xs font-semibold text-gray-900 leading-tight">{t.title}</p>
 

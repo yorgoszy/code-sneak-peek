@@ -23,7 +23,7 @@ export const ProgramScheduleSection: React.FC<ProgramScheduleSectionProps> = ({
 
   return (
     <div className="mb-12">
-      <h3 className="text-2xl font-bold text-white mb-6">Εβδομαδιαίο Πρόγραμμα</h3>
+      <h3 className="text-2xl font-bold text-[#f4f1ea] mb-6">Εβδομαδιαίο Πρόγραμμα</h3>
       <p className="text-gray-300 mb-6">
         Το πρόγραμμά μας προσφέρει ευέλικτο προγραμματισμό για να προσαρμοστεί στον πολυάσχολο τρόπο ζωής σας.
       </p>
@@ -37,7 +37,7 @@ export const ProgramScheduleSection: React.FC<ProgramScheduleSectionProps> = ({
         <div className="grid grid-cols-2 gap-6 mb-6">
           {weeklySchedule.map((schedule, index) => (
             <div key={index} className="bg-gray-700 p-4 rounded-none">
-              <div className="text-white font-medium mb-2">{schedule.ageGroup}</div>
+              <div className="text-[#f4f1ea] font-medium mb-2">{schedule.ageGroup}</div>
               <div className="text-gray-300 text-sm mb-1">{schedule.day}</div>
               <div className="text-[#00ffba] font-bold">{schedule.time}</div>
             </div>

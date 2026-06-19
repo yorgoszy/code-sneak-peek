@@ -85,10 +85,10 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
   const vsLabel = "VS";
 
   return (
-    <section id="video-gallery-section" className="py-20 bg-white">
+    <section id="video-gallery-section" className="py-20 bg-[#f4f1ea]">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-black text-white text-sm font-semibold mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-black text-[#f4f1ea] text-sm font-semibold mb-4">
             <Video className="w-4 h-4" />
             GALLERY
           </div>
@@ -137,12 +137,12 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
                               <div className="absolute inset-0 bg-gray-900" />
                             )}
                             <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/10 transition-colors">
-                              <Play className="w-12 h-12 text-white" fill="white" />
+                              <Play className="w-12 h-12 text-[#f4f1ea]" fill="white" />
                             </div>
                           </button>
                         )}
                       </div>
-                      <div className="p-3 bg-white">
+                      <div className="p-3 bg-[#f4f1ea]">
                         <div className="flex items-center justify-between gap-2 mb-2">
                           <div className="flex items-center gap-2 min-w-0 flex-1">
                             <Avatar className={`w-8 h-8 border-2 ${athleteIsRed ? "border-red-500" : "border-blue-500"} shrink-0`}>
@@ -189,7 +189,7 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
         <div className="text-center">
           <button
             onClick={() => navigate("/video-gallery")}
-            className="bg-black text-white px-8 py-4 text-lg font-semibold hover:bg-gray-800 transition-colors"
+            className="bg-black text-[#f4f1ea] px-8 py-4 text-lg font-semibold hover:bg-gray-800 transition-colors"
           >
             {viewAll}
           </button>

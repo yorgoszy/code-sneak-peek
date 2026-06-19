@@ -343,7 +343,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
   const programData = getProgramData();
 
   return (
-    <div className="bg-white rounded-none overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-[780px] flex flex-col">
+    <div className="bg-[#f4f1ea] rounded-none overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-[780px] flex flex-col">
       {/* Header Image */}
       <div className={`relative h-[460px] overflow-hidden flex-shrink-0 ${program.id === "10" ? "mt-0" : ""}`}>
         <img 
@@ -368,19 +368,19 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
       {/* Program Title */}
       {program.id === "10" ? (
         <div className="p-4 pb-2 bg-black">
-          <p className="text-xs leading-relaxed text-white">
+          <p className="text-xs leading-relaxed text-[#f4f1ea]">
             {translations?.language === 'en' ? 'Building multi-sport athletic fundamentals' : 'Χτίζοντας αθλητικές βάσεις για όλα τα σπορ'}
           </p>
         </div>
       ) : program.id === "11" ? (
         <div className="p-4 pb-2 bg-black">
-          <p className="text-xs leading-relaxed text-white">
+          <p className="text-xs leading-relaxed text-[#f4f1ea]">
             {translations?.language === 'en' ? 'Assessment based training plans' : 'Προπονητικά πλάνα βασισμένα στην αξιολόγηση'}
           </p>
         </div>
       ) : program.id === "13" ? (
         <div className="p-4 pb-2 bg-black">
-          <p className="text-xs leading-relaxed text-white">
+          <p className="text-xs leading-relaxed text-[#f4f1ea]">
             {translations?.language === 'en' ? 'New generation training methods' : 'Μέθοδοι Προπόνησης Νέας Γενιάς'}
           </p>
         </div>
@@ -417,30 +417,30 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
           </TabsList>
 
           <TabsContent value="details" className={`${program.id === "10" || program.id === "11" || program.id === "13" ? "mt-[-20px]" : "mt-4"} h-[140px]`}>
-            <div className={`${program.id === "10" || program.id === "11" || program.id === "13" ? "bg-black" : "bg-white"} p-3 rounded-none h-full`}>
+            <div className={`${program.id === "10" || program.id === "11" || program.id === "13" ? "bg-black" : "bg-[#f4f1ea]"} p-3 rounded-none h-full`}>
               {program.id === "10" ? (
                 <div className="text-sm space-y-3">
                   <div>
-                    <h5 className="font-semibold mb-1 text-white">
+                    <h5 className="font-semibold mb-1 text-[#f4f1ea]">
                       {translations?.language === 'en' ? 'Motor learning:' : 'Κινητική μάθηση:'}
                     </h5>
-                    <p className="text-white">
+                    <p className="text-[#f4f1ea]">
                       {translations?.language === 'en' ? 'Development of basic motor skills and coordination' : 'Ανάπτυξη βασικών κινητικών δεξιοτήτων και συντονισμού'}
                     </p>
                   </div>
                   <div>
-                    <h5 className="font-semibold mb-1 text-white">
+                    <h5 className="font-semibold mb-1 text-[#f4f1ea]">
                       {translations?.language === 'en' ? 'Motor development:' : 'Κινητική ανάπτυξη:'}
                     </h5>
-                    <p className="text-white">
+                    <p className="text-[#f4f1ea]">
                       {translations?.language === 'en' ? 'Development of specific athletic skills' : 'Ανάπτυξη ειδικών αθλητικών δεξιοτήτων'}
                     </p>
                   </div>
                   <div>
-                    <h5 className="font-semibold mb-1 text-white">
+                    <h5 className="font-semibold mb-1 text-[#f4f1ea]">
                       {translations?.language === 'en' ? 'Motor improvement:' : 'Κινητική βελτίωση:'}
                     </h5>
-                    <p className="text-white">
+                    <p className="text-[#f4f1ea]">
                       {translations?.language === 'en' ? 'Introductory strength techniques' : 'Εισαγωγικές τεχνικές δύναμης'}
                     </p>
                   </div>
@@ -448,30 +448,30 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
               ) : program.id === "11" ? (
                 <div className="text-sm space-y-3">
                   <div>
-                    <h5 className="font-semibold mb-1 text-white">
+                    <h5 className="font-semibold mb-1 text-[#f4f1ea]">
                       {translations?.language === 'en' ? 'Assessment:' : 'Αξιολόγηση:'}
                     </h5>
-                    <p className="text-white">
+                    <p className="text-[#f4f1ea]">
                       {translations?.language === 'en' ? 'Posture and movement' : 'Στάσης και κίνησης'}
                     </p>
                   </div>
                   <div>
-                    <h5 className="font-semibold mb-1 text-white">
+                    <h5 className="font-semibold mb-1 text-[#f4f1ea]">
                       {translations?.language === 'en' ? 'Athletic performance:' : 'Αθλητική απόδοση:'}
                     </h5>
-                    <p className="text-white">
+                    <p className="text-[#f4f1ea]">
                       {translations?.language === 'en' ? 'Load-velocity profile' : 'Προφίλ φορτίου - ταχύτητα'}
                     </p>
-                    <p className="text-white">
+                    <p className="text-[#f4f1ea]">
                       {translations?.language === 'en' ? 'Jump profile' : 'Αλτικό προφίλ'}
                     </p>
-                    <p className="text-white">
+                    <p className="text-[#f4f1ea]">
                       {translations?.language === 'en' ? 'Results monitoring' : 'Παρακολούθηση αποτελεσμάτων'}
                     </p>
                   </div>
                   <div>
-                    <h5 className="font-semibold mb-1 text-white">Online coaching:</h5>
-                    <p className="text-white">
+                    <h5 className="font-semibold mb-1 text-[#f4f1ea]">Online coaching:</h5>
+                    <p className="text-[#f4f1ea]">
                       {translations?.language === 'en' ? 'Remote guidance' : 'Απομακρυσμένη καθοδήγηση'}
                     </p>
                   </div>
@@ -479,14 +479,14 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
               ) : program.id === "13" ? (
                 <div className="text-sm space-y-3">
                   <div>
-                    <h5 className="font-semibold mb-1 text-white">Muay Thai</h5>
-                    <p className="text-white">
+                    <h5 className="font-semibold mb-1 text-[#f4f1ea]">Muay Thai</h5>
+                    <p className="text-[#f4f1ea]">
                       {translations?.language === 'en' ? 'Learning basic techniques' : 'Εκμάθηση βασικών τεχνικών'}
                     </p>
-                    <p className="text-white">
+                    <p className="text-[#f4f1ea]">
                       {translations?.language === 'en' ? 'Tactical training' : 'Προπόνηση τακτικής'}
                     </p>
-                    <p className="text-white">
+                    <p className="text-[#f4f1ea]">
                       {translations?.language === 'en' ? 'Video analysis' : 'Βίντεο ανάλυση'}
                     </p>
                   </div>
