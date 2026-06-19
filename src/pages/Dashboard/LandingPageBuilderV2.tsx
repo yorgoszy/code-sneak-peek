@@ -13,12 +13,17 @@ import {
   updateNode,
   removeNode,
   insertNode,
+  moveNode,
+  createDefaultNode,
+  findParent,
   type Locale,
   type PageNode,
+  type NodeType,
 } from '@/hooks/useLandingTree';
 import { NodeRenderer } from '@/components/landing-builder/NodeRenderer';
-import { LayersPanel } from '@/components/landing-builder/LayersPanel';
+import { LayersPanel, type DropTarget } from '@/components/landing-builder/LayersPanel';
 import { InspectorPanel } from '@/components/landing-builder/InspectorPanel';
+import { PalettePanel } from '@/components/landing-builder/PalettePanel';
 import { toast } from 'sonner';
 
 type Device = 'desktop' | 'tablet' | 'mobile';
@@ -79,15 +84,7 @@ const cloneWithNewIds = (n: PageNode): PageNode => ({
   children: n.children.map(cloneWithNewIds),
 });
 
-// Find parent of node
-const findParent = (root: PageNode, id: string): PageNode | null => {
-  for (const c of root.children) {
-    if (c.id === id) return root;
-    const p = findParent(c, id);
-    if (p) return p;
-  }
-  return null;
-};
+// (findParent comes from useLandingTree)
 
 const LandingPageBuilderV2: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -193,6 +190,17 @@ const LandingPageBuilderV2: React.FC = () => {
     const idx = parent.children.findIndex((c) => c.id === id);
     commit(insertNode(tree, parent.id, copy, idx + 1));
     setSelectedId(copy.id);
+  }, [tree, commit]);
+
+  const handleDropNew = useCallback((type: string, target: DropTarget) => {
+    const node = createDefaultNode(type as NodeType);
+    commit(insertNode(tree, target.parentId, node, target.index));
+    setSelectedId(node.id);
+  }, [tree, commit]);
+
+  const handleDropMove = useCallback((id: string, target: DropTarget) => {
+    if (id === target.parentId) return;
+    commit(moveNode(tree, id, target.parentId, target.index));
   }, [tree, commit]);
 
   const selectedNode = useMemo(
