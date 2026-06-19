@@ -70,6 +70,19 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
         const h = Number(e.data.height);
         if (!Number.isFinite(h)) return;
         setDraft((d) => ({ ...d, extra_data: { ...(d.extra_data ?? {}), logo_height: h } }));
+        return;
+      }
+      if (e.data?.type === 'landing-editor-text' && e.data.sectionKey === draft.section_key) {
+        const { field, lang: msgLang, value: v } = e.data as {
+          field: 'title' | 'subtitle' | 'description' | 'cta_label';
+          lang: 'el' | 'en';
+          value: string;
+        };
+        const key =
+          msgLang === 'en'
+            ? (`${field}_en` as 'title_en' | 'subtitle_en' | 'description_en' | 'cta_label_en')
+            : field;
+        setDraft((d) => ({ ...d, [key]: v } as LandingSection));
       }
     };
     window.addEventListener('message', onMsg);
