@@ -47,7 +47,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   return (
     <section id="home" className="relative pt-16 min-h-screen flex items-center">
       <style>{`
-        .get-started-btn { background-color: white !important; color: black !important; }
+        .get-started-btn { background-color: #f4f1ea !important; color: black !important; }
         .get-started-btn:hover { background-color: #e5e5e5 !important; }
         .contact-btn:hover {
           border-color: #aca097 !important;
