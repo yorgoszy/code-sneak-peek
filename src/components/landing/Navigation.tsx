@@ -38,7 +38,7 @@ const Navigation: React.FC<NavigationProps> = ({
   };
 
   return (
-    <nav className="fixed top-0 w-full bg-[#f4f1ea] z-50">
+    <nav className="fixed top-0 w-full bg-[#ffffff] z-50">
       <style>{`
         .nav-link {
           position: relative;
