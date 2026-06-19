@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { Button } from '@/components/ui/button';
-import { Menu, Monitor, Tablet, Smartphone, Save, Globe, RotateCcw } from 'lucide-react';
+import { Menu, Monitor, Tablet, Smartphone, Save, Globe, RotateCcw, Undo2, Redo2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   useLandingTree,
@@ -9,10 +9,16 @@ import {
   usePublishLandingTree,
   emptyPage,
   newId,
+  findNode,
+  updateNode,
+  removeNode,
+  insertNode,
   type Locale,
   type PageNode,
 } from '@/hooks/useLandingTree';
 import { NodeRenderer } from '@/components/landing-builder/NodeRenderer';
+import { LayersPanel } from '@/components/landing-builder/LayersPanel';
+import { InspectorPanel } from '@/components/landing-builder/InspectorPanel';
 import { toast } from 'sonner';
 
 type Device = 'desktop' | 'tablet' | 'mobile';
@@ -66,6 +72,23 @@ const seedTree = (): PageNode => ({
   ],
 });
 
+// Deep clone with new ids (for duplicate)
+const cloneWithNewIds = (n: PageNode): PageNode => ({
+  ...n,
+  id: newId(n.type.slice(0, 3)),
+  children: n.children.map(cloneWithNewIds),
+});
+
+// Find parent of node
+const findParent = (root: PageNode, id: string): PageNode | null => {
+  for (const c of root.children) {
+    if (c.id === id) return root;
+    const p = findParent(c, id);
+    if (p) return p;
+  }
+  return null;
+};
+
 const LandingPageBuilderV2: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
@@ -77,26 +100,105 @@ const LandingPageBuilderV2: React.FC = () => {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const { data, isLoading } = useLandingTree(locale);
-  const [draft, setDraft] = useState<PageNode | null>(null);
 
-  // Sync draft with fetched tree
-  React.useEffect(() => {
-    if (data?.tree) setDraft(data.tree);
-  }, [data?.tree]);
+  // History stack: past, present, future
+  const [past, setPast] = useState<PageNode[]>([]);
+  const [present, setPresent] = useState<PageNode | null>(null);
+  const [future, setFuture] = useState<PageNode[]>([]);
+  const skipNextSync = useRef(false);
+
+  // Sync from server tree only if no local edits
+  useEffect(() => {
+    if (data?.tree && present === null) {
+      setPresent(data.tree);
+    }
+  }, [data?.tree, present]);
+
+  // when locale changes, reload from server
+  useEffect(() => {
+    skipNextSync.current = true;
+    setPast([]); setFuture([]); setPresent(null);
+  }, [locale]);
 
   const save = useSaveLandingTree();
   const publish = usePublishLandingTree();
 
-  const tree = draft ?? data?.tree ?? emptyPage();
+  const tree = present ?? data?.tree ?? emptyPage();
+
+  const commit = useCallback((next: PageNode) => {
+    setPast((p) => (present ? [...p, present].slice(-50) : p));
+    setFuture([]);
+    setPresent(next);
+  }, [present]);
+
+  const undo = useCallback(() => {
+    setPast((p) => {
+      if (p.length === 0) return p;
+      const prev = p[p.length - 1];
+      setFuture((f) => (present ? [present, ...f].slice(0, 50) : f));
+      setPresent(prev);
+      return p.slice(0, -1);
+    });
+  }, [present]);
+
+  const redo = useCallback(() => {
+    setFuture((f) => {
+      if (f.length === 0) return f;
+      const next = f[0];
+      setPast((p) => (present ? [...p, present].slice(-50) : p));
+      setPresent(next);
+      return f.slice(1);
+    });
+  }, [present]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const meta = e.ctrlKey || e.metaKey;
+      if (!meta) return;
+      if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+      else if ((e.key === 'z' && e.shiftKey) || e.key === 'y') { e.preventDefault(); redo(); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [undo, redo]);
 
   const handleSeed = () => {
-    setDraft(seedTree());
+    commit(seedTree());
     toast.info('Seeded — πάτα Αποθήκευση για να μείνει');
   };
 
   const handleReset = () => {
-    if (data?.tree) setDraft(data.tree);
+    if (data?.tree) {
+      setPast([]); setFuture([]); setPresent(data.tree);
+    }
   };
+
+  const handleNodeChange = useCallback((updater: (n: PageNode) => PageNode) => {
+    if (!selectedId) return;
+    commit(updateNode(tree, selectedId, updater));
+  }, [selectedId, tree, commit]);
+
+  const handleDelete = useCallback((id: string) => {
+    if (id === tree.id) return;
+    commit(removeNode(tree, id));
+    if (selectedId === id) setSelectedId(null);
+  }, [tree, commit, selectedId]);
+
+  const handleDuplicate = useCallback((id: string) => {
+    const orig = findNode(tree, id);
+    const parent = findParent(tree, id);
+    if (!orig || !parent) return;
+    const copy = cloneWithNewIds(orig);
+    const idx = parent.children.findIndex((c) => c.id === id);
+    commit(insertNode(tree, parent.id, copy, idx + 1));
+    setSelectedId(copy.id);
+  }, [tree, commit]);
+
+  const selectedNode = useMemo(
+    () => (selectedId ? findNode(tree, selectedId) : null),
+    [selectedId, tree],
+  );
 
   return (
     <div className="h-screen flex w-full bg-background overflow-hidden">
@@ -123,7 +225,6 @@ const LandingPageBuilderV2: React.FC = () => {
           )}
           <h1 className="text-base font-semibold mr-2">Landing Builder v2</h1>
 
-          {/* Language */}
           <div className="flex border border-border">
             {(['el', 'en'] as const).map((l) => (
               <button
@@ -139,7 +240,6 @@ const LandingPageBuilderV2: React.FC = () => {
             ))}
           </div>
 
-          {/* Device */}
           <div className="flex border border-border ml-2">
             {([
               ['desktop', Monitor],
@@ -160,6 +260,27 @@ const LandingPageBuilderV2: React.FC = () => {
             ))}
           </div>
 
+          <div className="flex border border-border ml-2">
+            <button
+              type="button"
+              onClick={undo}
+              disabled={past.length === 0}
+              className="px-2 py-1 hover:bg-muted disabled:opacity-30"
+              title="Undo (Ctrl+Z)"
+            >
+              <Undo2 className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={redo}
+              disabled={future.length === 0}
+              className="px-2 py-1 hover:bg-muted disabled:opacity-30"
+              title="Redo (Ctrl+Shift+Z)"
+            >
+              <Redo2 className="w-4 h-4" />
+            </button>
+          </div>
+
           <div className="flex-1" />
 
           <Button type="button" variant="outline" size="sm" className="rounded-none" onClick={handleSeed}>
@@ -172,8 +293,8 @@ const LandingPageBuilderV2: React.FC = () => {
             type="button"
             size="sm"
             className="rounded-none"
-            onClick={() => draft && save.mutate({ locale, tree: draft })}
-            disabled={!draft || save.isPending}
+            onClick={() => present && save.mutate({ locale, tree: present })}
+            disabled={!present || save.isPending}
           >
             <Save className="w-4 h-4 mr-1" />
             {save.isPending ? 'Αποθήκευση...' : 'Αποθήκευση'}
@@ -183,29 +304,25 @@ const LandingPageBuilderV2: React.FC = () => {
             variant="default"
             size="sm"
             className="rounded-none bg-primary text-primary-foreground"
-            onClick={() => draft && publish.mutate({ locale, tree: draft })}
-            disabled={!draft || publish.isPending}
+            onClick={() => present && publish.mutate({ locale, tree: present })}
+            disabled={!present || publish.isPending}
           >
             <Globe className="w-4 h-4 mr-1" />
             {publish.isPending ? 'Δημοσίευση...' : 'Δημοσίευση'}
           </Button>
         </div>
 
-        {/* Body — Phase 1: canvas only. Layers + Inspector + Library land in Phase 2/3 */}
         <div className="flex-1 flex min-h-0">
-          {/* Left rail placeholder (Phase 2: layers tree) */}
-          <div className="hidden lg:flex w-56 border-r border-border bg-muted/30 flex-col">
-            <div className="p-3 border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
-              Layers
-            </div>
-            <div className="p-3 text-xs text-muted-foreground">
-              Tree view έρχεται στο Phase 2 — προς το παρόν κάνε κλικ σε στοιχείο στο canvas για να επιλέξεις.
-            </div>
-            {selectedId && (
-              <div className="p-3 text-xs">
-                Selected: <code className="bg-background px-1 py-0.5">{selectedId}</code>
-              </div>
-            )}
+          {/* Layers */}
+          <div className="hidden lg:flex w-60 border-r border-border bg-muted/30 flex-col">
+            <LayersPanel
+              root={tree}
+              locale={locale}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              onDelete={handleDelete}
+              onDuplicate={handleDuplicate}
+            />
           </div>
 
           {/* Canvas */}
@@ -236,22 +353,13 @@ const LandingPageBuilderV2: React.FC = () => {
             )}
           </div>
 
-          {/* Right rail placeholder (Phase 2: inspector) */}
+          {/* Inspector */}
           <div className="hidden lg:flex w-80 border-l border-border bg-background flex-col">
-            <div className="p-3 border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
-              Inspector
-            </div>
-            <div className="p-4 text-xs text-muted-foreground space-y-2">
-              <p>Edit panel έρχεται στο Phase 2.</p>
-              <p>Component library + drag/drop στο Phase 3.</p>
-              <p>Style controls + responsive overrides στο Phase 4.</p>
-              {selectedId && (
-                <div className="mt-4 p-2 bg-muted">
-                  <div className="font-semibold mb-1">Selected node</div>
-                  <code className="text-[10px] break-all">{selectedId}</code>
-                </div>
-              )}
-            </div>
+            <InspectorPanel
+              node={selectedNode}
+              locale={locale}
+              onChange={handleNodeChange}
+            />
           </div>
         </div>
       </div>
