@@ -86,7 +86,8 @@ const Row: React.FC<Props & { node: PageNode; depth: number; parentId: string | 
 
     const newType = e.dataTransfer.getData(DRAG_MIME_NEW);
     if (newType) {
-      onDropNew(newType, target);
+      const cmsKey = e.dataTransfer.getData(DRAG_MIME_CMS) || undefined;
+      onDropNew(newType, target, cmsKey ? { cmsKey } : undefined);
       return;
     }
     const moveId = e.dataTransfer.getData(DRAG_MIME_MOVE);
