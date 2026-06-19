@@ -82,7 +82,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
               className="text-[#f4f1ea]"
             />
           </h1>
-          {(description || isEditorMode()) && (
+          {(description || (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('editor') === '1')) && (
             <EditableText
               as="p"
               sectionKey="hero"
