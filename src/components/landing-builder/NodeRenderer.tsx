@@ -21,7 +21,7 @@ export interface NodeRendererProps {
   onSelect?: (id: string) => void;
   onHover?: (id: string | null) => void;
   breakpoint?: 'desktop' | 'tablet' | 'mobile';
-  onDropNew?: (type: string, target: DropTarget) => void;
+  onDropNew?: (type: string, target: DropTarget, extra?: DropExtra) => void;
   onDropMove?: (id: string, target: DropTarget) => void;
 }
 
