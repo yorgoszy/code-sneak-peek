@@ -105,12 +105,15 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
           <h3 className="font-semibold">{sectionLabel}</h3>
           <p className="text-xs text-muted-foreground">{draft.section_key}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Switch checked={draft.is_visible}
-            onCheckedChange={(v) => setDraft({ ...draft, is_visible: v })} />
-          <span className="text-xs">{draft.is_visible ? (lang==='en'?'Visible':'Ορατό') : (lang==='en'?'Hidden':'Κρυφό')}</span>
-        </div>
+        {draft.section_key !== 'navigation' && (
+          <div className="flex items-center gap-2">
+            <Switch checked={draft.is_visible}
+              onCheckedChange={(v) => setDraft({ ...draft, is_visible: v })} />
+            <span className="text-xs">{draft.is_visible ? (lang==='en'?'Visible':'Ορατό') : (lang==='en'?'Hidden':'Κρυφό')}</span>
+          </div>
+        )}
       </div>
+
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         <Tabs defaultValue={lang} value={lang} className="w-full">
@@ -267,6 +270,37 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
             onClear={() => setStyle({ section_icon_color: '' })}
           />
         </div>
+
+        {/* NAVIGATION ICONS */}
+        {draft.section_key === 'navigation' && (
+          <div className="space-y-3 pt-2">
+            <SectionTitle>{lang === 'en' ? 'Navigation Icons' : 'Εικονίδια Πλοήγησης'}</SectionTitle>
+            <LucideIconPicker
+              value={(draft.extra_data?.lang_icon as string) ?? null}
+              onChange={(name) => setExtra({ lang_icon: name })}
+              label={lang === 'en' ? 'Language (EL/EN)' : 'Γλώσσα (EL/EN)'}
+              color={style.icon_color || undefined}
+            />
+            <LucideIconPicker
+              value={(draft.extra_data?.dashboard_icon as string) ?? null}
+              onChange={(name) => setExtra({ dashboard_icon: name })}
+              label="Dashboard"
+              color={style.icon_color || undefined}
+            />
+            <LucideIconPicker
+              value={(draft.extra_data?.logout_icon as string) ?? null}
+              onChange={(name) => setExtra({ logout_icon: name })}
+              label={lang === 'en' ? 'Logout' : 'Αποσύνδεση'}
+              color={style.icon_color || undefined}
+            />
+            <LucideIconPicker
+              value={(draft.extra_data?.login_icon as string) ?? null}
+              onChange={(name) => setExtra({ login_icon: name })}
+              label={lang === 'en' ? 'Login (button)' : 'Σύνδεση (κουμπί)'}
+              color={style.button_text_color || undefined}
+            />
+          </div>
+        )}
 
         <details>
 
