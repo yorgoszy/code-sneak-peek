@@ -35,6 +35,14 @@ const Index = () => {
   const { data: landingTheme } = useLandingTheme();
   useApplyLandingTheme(landingTheme);
 
+  // Phase 5: render the published landing tree if it exists for this locale.
+  const treeLocale = language === 'en' ? 'en' : 'el';
+  const { data: treeData } = useLandingTree(treeLocale, /* preferPublished */ true);
+  const publishedTree = treeData?.row?.published_tree ?? null;
+  const useLegacy = typeof window !== 'undefined'
+    && new URLSearchParams(window.location.search).get('legacy') === '1';
+  const renderFromTree = !!publishedTree && !useLegacy;
+
   // PWA Auto-redirect to dashboard when logged in
   useEffect(() => {
     if (!isPWA || !isAuthenticated || loading) return;
