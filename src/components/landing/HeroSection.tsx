@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { useLandingSection, localized, backgroundCss, type Lang } from "@/hooks/useLandingConfig";
 import { useTranslations } from "@/hooks/useTranslations";
+import { EditableText } from "./EditableText";
 
 interface HeroSectionProps {
   translations: any;
