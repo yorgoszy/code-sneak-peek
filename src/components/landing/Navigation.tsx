@@ -40,26 +40,51 @@ const Navigation: React.FC<NavigationProps> = ({
   return (
     <nav className="fixed top-0 w-full bg-[#f4f1ea] z-50">
       <style>{`
-        .nav-link:hover {
-          color: #cb8954 !important;
-        }
-        .dashboard-btn:hover {
-          background-color: #f4f1ea !important;
-          border-color: transparent !important;
-        }
-        .logout-btn:hover {
-          background-color: #f4f1ea !important;
-          border-color: transparent !important;
-        }
-        .language-btn:hover {
-          background-color: #f4f1ea !important;
-          border-color: transparent !important;
-        }
-        .language-btn svg, .dashboard-btn svg, .logout-btn svg {
+        .nav-link {
+          position: relative;
           color: #151514 !important;
         }
-        .language-btn:hover svg, .dashboard-btn:hover svg, .logout-btn:hover svg {
-          color: #cb8954 !important;
+        .nav-link::after {
+          content: '';
+          position: absolute;
+          left: 0;
+          bottom: -4px;
+          height: 2px;
+          width: 100%;
+          background-color: #151514;
+          transform: scaleX(0);
+          transform-origin: right;
+          transition: transform 0.3s ease;
+        }
+        .nav-link:hover::after {
+          transform: scaleX(1);
+          transform-origin: left;
+        }
+        .icon-btn {
+          position: relative;
+        }
+        .icon-btn::after {
+          content: '';
+          position: absolute;
+          left: 12px;
+          right: 12px;
+          bottom: 6px;
+          height: 2px;
+          background-color: #151514;
+          transform: scaleX(0);
+          transform-origin: right;
+          transition: transform 0.3s ease;
+        }
+        .icon-btn:hover::after {
+          transform: scaleX(1);
+          transform-origin: left;
+        }
+        .icon-btn:hover {
+          background-color: transparent !important;
+          color: #151514 !important;
+        }
+        .icon-btn svg {
+          color: #151514 !important;
         }
         .login-btn {
           background-color: #151514 !important;
