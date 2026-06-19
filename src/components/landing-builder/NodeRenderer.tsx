@@ -2,8 +2,9 @@ import React, { CSSProperties, useState } from 'react';
 import {
   PageNode, NodeStyle, Locale, getLocalized, isContainerType,
 } from '@/hooks/useLandingTree';
-import { DRAG_MIME_NEW, DRAG_MIME_MOVE } from './PalettePanel';
+import { DRAG_MIME_NEW, DRAG_MIME_MOVE, DRAG_MIME_CMS } from './PalettePanel';
 import type { DropTarget } from './LayersPanel';
+import { CmsSectionRenderer, type CmsSectionKey } from './CmsSectionRenderer';
 
 // ============================================================================
 // NodeRenderer — turns a PageNode tree into actual DOM.
