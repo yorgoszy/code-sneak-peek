@@ -2,6 +2,12 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+export interface CustomFont {
+  name: string;
+  url: string;
+  format?: string;
+}
+
 export interface LandingTheme {
   id: string;
   primary_color: string;
@@ -10,6 +16,17 @@ export interface LandingTheme {
   text_color: string;
   heading_font: string;
   body_font: string;
+  link_color: string;
+  link_hover_color: string;
+  button_bg_color: string;
+  button_text_color: string;
+  button_hover_bg_color: string;
+  button_hover_text_color: string;
+  nav_bg_color: string;
+  nav_text_color: string;
+  nav_hover_color: string;
+  nav_icon_color: string;
+  custom_fonts: CustomFont[];
 }
 
 export interface LandingSection {
@@ -56,7 +73,6 @@ export const SECTION_LABELS: Record<string, { el: string; en: string }> = {
 
 export type Lang = 'el' | 'en';
 
-/** Returns localized field with fallback to EL. */
 export function localized(
   section: LandingSection | null | undefined,
   field: 'title' | 'subtitle' | 'description' | 'cta_label',
@@ -77,7 +93,12 @@ export function useLandingTheme() {
       const { data, error } = await supabase
         .from('landing_page_config' as any).select('*').limit(1).maybeSingle();
       if (error) throw error;
-      return data as unknown as LandingTheme | null;
+      if (!data) return null;
+      const raw = data as any;
+      return {
+        ...raw,
+        custom_fonts: Array.isArray(raw.custom_fonts) ? raw.custom_fonts : [],
+      } as LandingTheme;
     },
     staleTime: 30_000,
   });
@@ -110,33 +131,62 @@ export function useInvalidateLanding() {
   };
 }
 
-const loadedFonts = new Set<string>();
+const loadedGoogleFonts = new Set<string>();
 function loadGoogleFont(name: string) {
-  if (!name || loadedFonts.has(name)) return;
-  loadedFonts.add(name);
+  if (!name || loadedGoogleFonts.has(name)) return;
+  // Skip if it's a custom uploaded font (handled separately)
+  loadedGoogleFonts.add(name);
   const family = name.replace(/\s+/g, '+');
   const link = document.createElement('link');
   link.rel = 'stylesheet';
-  link.href = `https://fonts.googleapis.com/css2?family=${family}:wght@300;400;500;600;700&display=swap`;
+  link.href = `https://fonts.googleapis.com/css2?family=${family}:wght@300;400;500;600;700;800&display=swap`;
   document.head.appendChild(link);
+}
+
+const loadedCustomFonts = new Set<string>();
+function loadCustomFont(font: CustomFont) {
+  const key = `${font.name}::${font.url}`;
+  if (loadedCustomFonts.has(key)) return;
+  loadedCustomFonts.add(key);
+  const fmt = font.format || (font.url.endsWith('.woff2') ? 'woff2' : font.url.endsWith('.woff') ? 'woff' : font.url.endsWith('.otf') ? 'opentype' : 'truetype');
+  const style = document.createElement('style');
+  style.setAttribute('data-custom-font', font.name);
+  style.textContent = `@font-face { font-family: '${font.name}'; src: url('${font.url}') format('${fmt}'); font-display: swap; }`;
+  document.head.appendChild(style);
 }
 
 export function useApplyLandingTheme(theme: LandingTheme | null | undefined) {
   useEffect(() => {
     if (!theme) return;
-    loadGoogleFont(theme.heading_font);
-    loadGoogleFont(theme.body_font);
+    // Load custom fonts first so heading/body refs to them resolve
+    (theme.custom_fonts ?? []).forEach(loadCustomFont);
+    const customNames = new Set((theme.custom_fonts ?? []).map((f) => f.name));
+    if (!customNames.has(theme.heading_font)) loadGoogleFont(theme.heading_font);
+    if (!customNames.has(theme.body_font)) loadGoogleFont(theme.body_font);
+
     const root = document.documentElement;
-    root.style.setProperty('--landing-primary', theme.primary_color);
-    root.style.setProperty('--landing-accent', theme.accent_color);
-    root.style.setProperty('--landing-bg', theme.bg_color);
-    root.style.setProperty('--landing-text', theme.text_color);
-    root.style.setProperty('--landing-font-heading', `'${theme.heading_font}', sans-serif`);
-    root.style.setProperty('--landing-font-body', `'${theme.body_font}', sans-serif`);
+    const set = (k: string, v: string | undefined | null) => {
+      if (v) root.style.setProperty(k, v);
+    };
+    set('--landing-primary', theme.primary_color);
+    set('--landing-accent', theme.accent_color);
+    set('--landing-bg', theme.bg_color);
+    set('--landing-text', theme.text_color);
+    set('--landing-link', theme.link_color);
+    set('--landing-link-hover', theme.link_hover_color);
+    set('--landing-btn-bg', theme.button_bg_color);
+    set('--landing-btn-text', theme.button_text_color);
+    set('--landing-btn-hover-bg', theme.button_hover_bg_color);
+    set('--landing-btn-hover-text', theme.button_hover_text_color);
+    set('--landing-nav-bg', theme.nav_bg_color);
+    set('--landing-nav-text', theme.nav_text_color);
+    set('--landing-nav-hover', theme.nav_hover_color);
+    set('--landing-nav-icon', theme.nav_icon_color);
+    set('--landing-font-heading', `'${theme.heading_font}', sans-serif`);
+    set('--landing-font-body', `'${theme.body_font}', sans-serif`);
   }, [theme]);
 }
 
-/** Build a CSS background string from extra_data.background. */
 export function backgroundCss(extra: Record<string, any> | null | undefined): string | undefined {
   const bg = extra?.background;
   if (!bg) return undefined;
