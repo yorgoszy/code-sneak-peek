@@ -1,25 +1,28 @@
-import React, { CSSProperties } from 'react';
-import { PageNode, NodeStyle, Locale, getLocalized } from '@/hooks/useLandingTree';
+import React, { CSSProperties, useState } from 'react';
+import {
+  PageNode, NodeStyle, Locale, getLocalized, isContainerType,
+} from '@/hooks/useLandingTree';
+import { DRAG_MIME_NEW, DRAG_MIME_MOVE } from './PalettePanel';
+import type { DropTarget } from './LayersPanel';
 
 // ============================================================================
 // NodeRenderer — turns a PageNode tree into actual DOM.
-// Same component is used for both editor preview and production runtime.
+// In editor mode, container nodes accept drops from the palette and from
+// other layer rows for free-form composition.
 // ============================================================================
 
 export interface NodeRendererProps {
   node: PageNode;
   locale: Locale;
-  /** When true, every node is wrapped with select / hover affordances. */
   editorMode?: boolean;
   selectedId?: string | null;
   hoveredId?: string | null;
   onSelect?: (id: string) => void;
   onHover?: (id: string | null) => void;
-  /** Current responsive breakpoint, used to merge style overrides. */
   breakpoint?: 'desktop' | 'tablet' | 'mobile';
+  onDropNew?: (type: string, target: DropTarget) => void;
+  onDropMove?: (id: string, target: DropTarget) => void;
 }
-
-// ----- style helpers --------------------------------------------------------
 
 const RESPONSIVE_KEY: Record<NonNullable<NodeRendererProps['breakpoint']>, 'sm' | 'md' | null> = {
   desktop: null,
@@ -40,40 +43,28 @@ export function nodeStyleToCss(
   return { ...(base as CSSProperties), ...(override as CSSProperties) };
 }
 
-// ----- per-type renderers ---------------------------------------------------
+const renderChildren = (p: NodeRendererProps) =>
+  p.node.children.map((c) => <NodeRenderer key={c.id} {...p} node={c} />);
 
 const Page: React.FC<NodeRendererProps> = (p) => (
   <div style={nodeStyleToCss(p.node.style, p.breakpoint)} data-node-id={p.node.id}>
-    {p.node.children.map((c) => (
-      <NodeRenderer key={c.id} {...p} node={c} />
-    ))}
+    {renderChildren(p)}
   </div>
 );
 
-const Section: React.FC<NodeRendererProps> = (p) => {
-  const css: CSSProperties = {
-    width: '100%',
-    position: 'relative',
-    ...nodeStyleToCss(p.node.style, p.breakpoint),
-  };
-  return (
-    <section
-      id={p.node.props.htmlId ?? p.node.props.sectionKey ?? undefined}
-      style={css}
-      data-node-id={p.node.id}
-    >
-      {p.node.children.map((c) => (
-        <NodeRenderer key={c.id} {...p} node={c} />
-      ))}
-    </section>
-  );
-};
+const Section: React.FC<NodeRendererProps> = (p) => (
+  <section
+    id={p.node.props.htmlId ?? p.node.props.sectionKey ?? undefined}
+    style={{ width: '100%', position: 'relative', ...nodeStyleToCss(p.node.style, p.breakpoint) }}
+    data-node-id={p.node.id}
+  >
+    {renderChildren(p)}
+  </section>
+);
 
 const Container: React.FC<NodeRendererProps> = (p) => (
   <div style={nodeStyleToCss(p.node.style, p.breakpoint)} data-node-id={p.node.id}>
-    {p.node.children.map((c) => (
-      <NodeRenderer key={c.id} {...p} node={c} />
-    ))}
+    {renderChildren(p)}
   </div>
 );
 
@@ -84,13 +75,7 @@ const Columns: React.FC<NodeRendererProps> = (p) => {
     gap: '1rem',
     ...nodeStyleToCss(p.node.style, p.breakpoint),
   };
-  return (
-    <div style={css} data-node-id={p.node.id}>
-      {p.node.children.map((c) => (
-        <NodeRenderer key={c.id} {...p} node={c} />
-      ))}
-    </div>
-  );
+  return <div style={css} data-node-id={p.node.id}>{renderChildren(p)}</div>;
 };
 
 const Heading: React.FC<NodeRendererProps> = (p) => {
@@ -98,8 +83,7 @@ const Heading: React.FC<NodeRendererProps> = (p) => {
   const text = getLocalized(p.node.props.text, p.locale);
   const content = text || (p.editorMode ? '(empty heading)' : '');
   const style = nodeStyleToCss(p.node.style, p.breakpoint);
-  const common = { style, 'data-node-id': p.node.id, children: content } as any;
-  return React.createElement(`h${level}`, common);
+  return React.createElement(`h${level}`, { style, 'data-node-id': p.node.id, children: content });
 };
 
 const Text: React.FC<NodeRendererProps> = (p) => {
@@ -118,13 +102,9 @@ const ImageNode: React.FC<NodeRendererProps> = (p) => {
     return (
       <div
         style={{
-          minHeight: 120,
-          background: 'hsl(var(--muted))',
-          color: 'hsl(var(--muted-foreground))',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 12,
+          minHeight: 120, background: 'hsl(var(--muted))',
+          color: 'hsl(var(--muted-foreground))', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', fontSize: 12,
           ...nodeStyleToCss(p.node.style, p.breakpoint),
         }}
         data-node-id={p.node.id}
@@ -134,12 +114,9 @@ const ImageNode: React.FC<NodeRendererProps> = (p) => {
     );
   }
   return (
-    <img
-      src={src}
-      alt={alt}
+    <img src={src} alt={alt}
       style={{ maxWidth: '100%', ...nodeStyleToCss(p.node.style, p.breakpoint) }}
-      data-node-id={p.node.id}
-    />
+      data-node-id={p.node.id} />
   );
 };
 
@@ -147,13 +124,9 @@ const ButtonNode: React.FC<NodeRendererProps> = (p) => {
   const text = getLocalized(p.node.props.text, p.locale);
   const href = p.node.props.href;
   const css: CSSProperties = {
-    display: 'inline-block',
-    padding: '0.75rem 1.5rem',
-    background: 'hsl(var(--primary))',
-    color: 'hsl(var(--primary-foreground))',
-    textDecoration: 'none',
-    cursor: 'pointer',
-    border: 'none',
+    display: 'inline-block', padding: '0.75rem 1.5rem',
+    background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))',
+    textDecoration: 'none', cursor: 'pointer', border: 'none',
     ...nodeStyleToCss(p.node.style, p.breakpoint),
   };
   if (href && !p.editorMode) {
@@ -163,18 +136,12 @@ const ButtonNode: React.FC<NodeRendererProps> = (p) => {
       </a>
     );
   }
-  return (
-    <button type="button" style={css} data-node-id={p.node.id}>
-      {text || 'Button'}
-    </button>
-  );
+  return <button type="button" style={css} data-node-id={p.node.id}>{text || 'Button'}</button>;
 };
 
 const Spacer: React.FC<NodeRendererProps> = (p) => (
-  <div
-    style={{ height: 40, width: '100%', ...nodeStyleToCss(p.node.style, p.breakpoint) }}
-    data-node-id={p.node.id}
-  />
+  <div style={{ height: 40, width: '100%', ...nodeStyleToCss(p.node.style, p.breakpoint) }}
+    data-node-id={p.node.id} />
 );
 
 const VideoNode: React.FC<NodeRendererProps> = (p) => {
@@ -183,13 +150,8 @@ const VideoNode: React.FC<NodeRendererProps> = (p) => {
     return (
       <div
         style={{
-          minHeight: 200,
-          background: '#000',
-          color: '#666',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 12,
+          minHeight: 200, background: '#000', color: '#666',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12,
           ...nodeStyleToCss(p.node.style, p.breakpoint),
         }}
         data-node-id={p.node.id}
@@ -199,30 +161,19 @@ const VideoNode: React.FC<NodeRendererProps> = (p) => {
     );
   }
   return (
-    <video
-      src={src}
-      poster={poster}
-      autoPlay={autoplay}
-      loop={loop}
-      muted={muted}
-      controls={controls}
-      playsInline
+    <video src={src} poster={poster} autoPlay={autoplay} loop={loop} muted={muted}
+      controls={controls} playsInline
       style={{ width: '100%', ...nodeStyleToCss(p.node.style, p.breakpoint) }}
-      data-node-id={p.node.id}
-    />
+      data-node-id={p.node.id} />
   );
 };
 
-// Placeholder for complex components — full implementations land in Phase 5
 const PlaceholderComponent: React.FC<NodeRendererProps & { label: string }> = (p) => (
   <div
     style={{
-      padding: '2rem',
-      border: '1px dashed hsl(var(--border))',
-      background: 'hsl(var(--muted) / 0.3)',
-      color: 'hsl(var(--muted-foreground))',
-      textAlign: 'center',
-      fontSize: 13,
+      padding: '2rem', border: '1px dashed hsl(var(--border))',
+      background: 'hsl(var(--muted) / 0.3)', color: 'hsl(var(--muted-foreground))',
+      textAlign: 'center', fontSize: 13,
       ...nodeStyleToCss(p.node.style, p.breakpoint),
     }}
     data-node-id={p.node.id}
@@ -230,8 +181,6 @@ const PlaceholderComponent: React.FC<NodeRendererProps & { label: string }> = (p
     {p.label} — full component coming in next phase
   </div>
 );
-
-// ----- dispatcher -----------------------------------------------------------
 
 const RENDERERS: Record<string, React.FC<NodeRendererProps>> = {
   page: Page,
@@ -260,6 +209,61 @@ export const NodeRenderer: React.FC<NodeRendererProps> = (props) => {
 
   const isSelected = props.selectedId === props.node.id;
   const isHovered = props.hoveredId === props.node.id;
+  const [dropZone, setDropZone] = useState<'before' | 'inside' | 'after' | null>(null);
+  const isContainer = isContainerType(props.node.type);
+
+  const computeZone = (e: React.DragEvent): 'before' | 'inside' | 'after' => {
+    const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const y = e.clientY - r.top;
+    const h = r.height;
+    if (!isContainer || props.node.type === 'page') return y < h / 2 ? 'before' : 'after';
+    if (y < h * 0.2) return 'before';
+    if (y > h * 0.8) return 'after';
+    return 'inside';
+  };
+
+  const onDragOver = (e: React.DragEvent) => {
+    if (!props.onDropNew && !props.onDropMove) return;
+    const types = e.dataTransfer.types;
+    if (!types.includes(DRAG_MIME_NEW) && !types.includes(DRAG_MIME_MOVE)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = types.includes(DRAG_MIME_NEW) ? 'copy' : 'move';
+    setDropZone(props.node.type === 'page' ? 'inside' : computeZone(e));
+  };
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const z = dropZone ?? computeZone(e);
+    setDropZone(null);
+
+    // For "before"/"after" we need parent context; we approximate by treating
+    // "before"/"after" on a non-container as drop into its visual neighbor.
+    // The Layers panel handles precise sibling drops; here we keep it simple:
+    // any drop on a node lands inside if container, else inside its parent at end.
+    let target: DropTarget;
+    if (z === 'inside' && isContainer) {
+      target = { parentId: props.node.id, index: props.node.children.length };
+    } else {
+      // fallback: append into nearest container ancestor isn't available here,
+      // so for non-containers we just treat as inside the page-level concept.
+      // Better UX is via Layers; on canvas we accept inside-only drops.
+      if (!isContainer) return;
+      target = { parentId: props.node.id, index: props.node.children.length };
+    }
+
+    const newType = e.dataTransfer.getData(DRAG_MIME_NEW);
+    if (newType && props.onDropNew) {
+      props.onDropNew(newType, target);
+      return;
+    }
+    const moveId = e.dataTransfer.getData(DRAG_MIME_MOVE);
+    if (moveId && moveId !== props.node.id && props.onDropMove) {
+      props.onDropMove(moveId, target);
+    }
+  };
+
   const outlineColor = isSelected
     ? 'hsl(var(--primary))'
     : isHovered
@@ -268,19 +272,23 @@ export const NodeRenderer: React.FC<NodeRendererProps> = (props) => {
 
   return (
     <div
-      style={{ position: 'relative', outline: `2px solid ${outlineColor}`, outlineOffset: -2 }}
-      onClick={(e) => {
+      draggable={props.node.type !== 'page'}
+      onDragStart={(e) => {
         e.stopPropagation();
-        props.onSelect?.(props.node.id);
+        e.dataTransfer.setData(DRAG_MIME_MOVE, props.node.id);
+        e.dataTransfer.effectAllowed = 'move';
       }}
-      onMouseEnter={(e) => {
-        e.stopPropagation();
-        props.onHover?.(props.node.id);
+      onDragOver={onDragOver}
+      onDragLeave={() => setDropZone(null)}
+      onDrop={onDrop}
+      style={{
+        position: 'relative',
+        outline: dropZone === 'inside' ? '2px solid hsl(var(--primary))' : `2px solid ${outlineColor}`,
+        outlineOffset: -2,
       }}
-      onMouseLeave={(e) => {
-        e.stopPropagation();
-        props.onHover?.(null);
-      }}
+      onClick={(e) => { e.stopPropagation(); props.onSelect?.(props.node.id); }}
+      onMouseEnter={(e) => { e.stopPropagation(); props.onHover?.(props.node.id); }}
+      onMouseLeave={(e) => { e.stopPropagation(); props.onHover?.(null); }}
     >
       {inner}
     </div>
