@@ -30,6 +30,8 @@ const Navigation: React.FC<NavigationProps> = ({
 }) => {
   const navSection = useLandingSection('navigation');
   const [liveDraft, setLiveDraft] = React.useState<{ extra?: any; image_url?: string | null } | null>(null);
+  const isEditor = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('editor') === '1';
+  const [dragHeight, setDragHeight] = React.useState<number | null>(null);
 
   React.useEffect(() => {
     const onMsg = (e: MessageEvent) => {
@@ -50,6 +52,33 @@ const Navigation: React.FC<NavigationProps> = ({
   const LogoutIcon = getLucideIcon(extra.logout_icon) ?? LogOut;
   const LoginIcon = getLucideIcon(extra.login_icon) ?? LogIn;
   const showLoginIcon: boolean = !!extra.login_icon;
+  const savedLogoHeight: number = Number(extra.logo_height) || 40;
+  const logoHeight = dragHeight ?? savedLogoHeight;
+
+  const startResize = (e: React.MouseEvent) => {
+    if (!isEditor) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const startY = e.clientY;
+    const startX = e.clientX;
+    const startH = logoHeight;
+    const onMove = (ev: MouseEvent) => {
+      const delta = Math.max(ev.clientY - startY, ev.clientX - startX);
+      const next = Math.max(16, Math.min(160, Math.round(startH + delta)));
+      setDragHeight(next);
+      window.parent?.postMessage({ type: 'landing-editor-logo-resize', height: next, final: false }, '*');
+    };
+    const onUp = (ev: MouseEvent) => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+      const delta = Math.max(ev.clientY - startY, ev.clientX - startX);
+      const next = Math.max(16, Math.min(160, Math.round(startH + delta)));
+      setDragHeight(null);
+      window.parent?.postMessage({ type: 'landing-editor-logo-resize', height: next, final: true }, '*');
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  };
 
 
   const handleNavigationClick = (href: string, event: React.MouseEvent) => {
