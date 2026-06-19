@@ -30,6 +30,13 @@ const Navigation: React.FC<NavigationProps> = ({
 }) => {
   const navSection = useLandingSection('navigation');
   const overrides = getSectionStyleVars(navSection);
+  const extra: any = navSection?.extra_data ?? {};
+  const logoUrl: string = extra.logo_url || navSection?.image_url || headerLogo;
+  const LangIcon = getLucideIcon(extra.lang_icon) ?? Globe;
+  const DashIcon = getLucideIcon(extra.dashboard_icon) ?? LayoutDashboard;
+  const LogoutIcon = getLucideIcon(extra.logout_icon) ?? LogOut;
+  const LoginIcon = getLucideIcon(extra.login_icon) ?? LogIn;
+  const showLoginIcon: boolean = !!extra.login_icon;
 
   const handleNavigationClick = (href: string, event: React.MouseEvent) => {
     if (href.startsWith('#')) {
