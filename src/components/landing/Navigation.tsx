@@ -38,11 +38,16 @@ const Navigation: React.FC<NavigationProps> = ({
   };
 
   return (
-    <nav className="fixed top-0 w-full bg-[#ffffff] z-50">
+    <nav
+      className="fixed top-0 w-full z-50"
+      style={{ backgroundColor: 'var(--landing-nav-bg, #ffffff)' }}
+    >
       <style>{`
         .nav-link {
           position: relative;
-          color: #151514 !important;
+          color: var(--landing-nav-text, #151514) !important;
+          font-family: var(--landing-font-body, inherit);
+          transition: color 0.2s ease;
         }
         .nav-link::after {
           content: '';
@@ -51,10 +56,13 @@ const Navigation: React.FC<NavigationProps> = ({
           bottom: -4px;
           height: 2px;
           width: 100%;
-          background-color: #151514;
+          background-color: var(--landing-nav-hover, #151514);
           transform: scaleX(0);
           transform-origin: right;
           transition: transform 0.3s ease;
+        }
+        .nav-link:hover {
+          color: var(--landing-nav-hover, #151514) !important;
         }
         .nav-link:hover::after {
           transform: scaleX(1);
@@ -70,7 +78,7 @@ const Navigation: React.FC<NavigationProps> = ({
           right: 12px;
           bottom: 6px;
           height: 2px;
-          background-color: #151514;
+          background-color: var(--landing-nav-hover, #151514);
           transform: scaleX(0);
           transform-origin: right;
           transition: transform 0.3s ease;
@@ -81,19 +89,25 @@ const Navigation: React.FC<NavigationProps> = ({
         }
         .icon-btn:hover {
           background-color: transparent !important;
-          color: #151514 !important;
+          color: var(--landing-nav-hover, #151514) !important;
+        }
+        .icon-btn:hover svg {
+          color: var(--landing-nav-hover, #151514) !important;
         }
         .icon-btn svg {
-          color: #151514 !important;
+          color: var(--landing-nav-icon, #151514) !important;
+          transition: color 0.2s ease;
         }
         .login-btn {
-          background-color: #151514 !important;
-          border-color: #151514 !important;
-          color: #f4f1ea !important;
+          background-color: var(--landing-btn-bg, #151514) !important;
+          border-color: var(--landing-btn-bg, #151514) !important;
+          color: var(--landing-btn-text, #f4f1ea) !important;
+          transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
         }
         .login-btn:hover {
-          background-color: #2a2a28 !important;
-          border-color: #2a2a28 !important;
+          background-color: var(--landing-btn-hover-bg, #2a2a28) !important;
+          border-color: var(--landing-btn-hover-bg, #2a2a28) !important;
+          color: var(--landing-btn-hover-text, #ffffff) !important;
         }
       `}</style>
       
@@ -112,7 +126,7 @@ const Navigation: React.FC<NavigationProps> = ({
               <a
                 key={item.name}
                 href={item.href}
-                className="nav-link transition-colors duration-200 text-sm font-medium text-[#151514]"
+                className="nav-link text-sm font-medium"
                 onClick={(e) => handleNavigationClick(item.href, e)}
               >
                 {item.name}
@@ -126,7 +140,7 @@ const Navigation: React.FC<NavigationProps> = ({
                 <div className="flex items-center space-x-0">
                   <Button 
                     variant="ghost" 
-                    className="icon-btn rounded-none bg-transparent text-[#151514] transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className="icon-btn rounded-none bg-transparent transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                     onClick={onToggleLanguage}
                   >
                     <Globe className="h-4 w-4" />
@@ -134,14 +148,14 @@ const Navigation: React.FC<NavigationProps> = ({
                   <Link to="/dashboard">
                     <Button 
                       variant="ghost" 
-                      className="icon-btn rounded-none bg-transparent text-[#151514] transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
+                      className="icon-btn rounded-none bg-transparent transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                     >
                       <LayoutDashboard className="h-4 w-4" />
                     </Button>
                   </Link>
                   <Button 
                     variant="ghost" 
-                    className="icon-btn rounded-none bg-transparent text-[#151514] transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className="icon-btn rounded-none bg-transparent transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                     onClick={onSignOut}
                   >
                     <LogOut className="h-4 w-4" />
@@ -151,13 +165,13 @@ const Navigation: React.FC<NavigationProps> = ({
                 <div className="flex items-center space-x-4">
                   <Button 
                     variant="ghost" 
-                    className="icon-btn rounded-none bg-transparent text-[#151514] transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className="icon-btn rounded-none bg-transparent transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                     onClick={onToggleLanguage}
                   >
                     <Globe className="h-4 w-4" />
                   </Button>
                   <Link to={`/auth?lang=${language}`}>
-                    <Button className="login-btn rounded-none transition-colors duration-200">
+                    <Button className="login-btn rounded-none">
                       {translations.login}
                     </Button>
                   </Link>
@@ -170,5 +184,6 @@ const Navigation: React.FC<NavigationProps> = ({
     </nav>
   );
 };
+
 
 export default Navigation;
