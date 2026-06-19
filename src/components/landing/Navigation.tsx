@@ -126,7 +126,7 @@ const Navigation: React.FC<NavigationProps> = ({
                 <div className="flex items-center space-x-0">
                   <Button 
                     variant="ghost" 
-                    className="language-btn rounded-none bg-transparent text-[#151514] hover:text-[#cb8954] transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className="icon-btn rounded-none bg-transparent text-[#151514] transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                     onClick={onToggleLanguage}
                   >
                     <Globe className="h-4 w-4" />
@@ -134,14 +134,14 @@ const Navigation: React.FC<NavigationProps> = ({
                   <Link to="/dashboard">
                     <Button 
                       variant="ghost" 
-                      className="dashboard-btn rounded-none bg-transparent text-[#151514] hover:text-[#cb8954] transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
+                      className="icon-btn rounded-none bg-transparent text-[#151514] transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                     >
                       <LayoutDashboard className="h-4 w-4" />
                     </Button>
                   </Link>
                   <Button 
                     variant="ghost" 
-                    className="logout-btn rounded-none bg-transparent text-[#151514] hover:text-[#cb8954] transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className="icon-btn rounded-none bg-transparent text-[#151514] transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                     onClick={onSignOut}
                   >
                     <LogOut className="h-4 w-4" />
@@ -151,7 +151,7 @@ const Navigation: React.FC<NavigationProps> = ({
                 <div className="flex items-center space-x-4">
                   <Button 
                     variant="ghost" 
-                    className="language-btn rounded-none bg-transparent text-[#151514] hover:text-[#cb8954] transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className="icon-btn rounded-none bg-transparent text-[#151514] transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                     onClick={onToggleLanguage}
                   >
                     <Globe className="h-4 w-4" />
