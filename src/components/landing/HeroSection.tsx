@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { useLandingSection, localized, backgroundCss, type Lang } from "@/hooks/useLandingConfig";
 import { useTranslations } from "@/hooks/useTranslations";
+import { EditableText } from "./EditableText";
 
 interface HeroSectionProps {
   translations: any;
@@ -70,13 +71,27 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
           </p>
           <h1 className="text-5xl sm:text-7xl lg:text-8xl mb-6 text-[#f4f1ea] tracking-wide"
               style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
-            {title}<br />
-            <span className="text-[#f4f1ea]">{subtitle}</span>
+            <EditableText as="span" sectionKey="hero" field="title" lang={lang} value={title} />
+            <br />
+            <EditableText
+              as="span"
+              sectionKey="hero"
+              field="subtitle"
+              lang={lang}
+              value={subtitle}
+              className="text-[#f4f1ea]"
+            />
           </h1>
-          {description && (
-            <p className="text-[#f4f1ea]/90 text-base sm:text-lg mb-6 max-w-2xl">
-              {description}
-            </p>
+          {(description || (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('editor') === '1')) && (
+            <EditableText
+              as="p"
+              sectionKey="hero"
+              field="description"
+              lang={lang}
+              value={description ?? ''}
+              className="text-[#f4f1ea]/90 text-base sm:text-lg mb-6 max-w-2xl"
+              multiline
+            />
           )}
           <div className="flex flex-wrap gap-4">
             <Button
