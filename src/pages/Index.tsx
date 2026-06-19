@@ -22,6 +22,8 @@ import Footer from "@/components/landing/Footer";
 import LandingChatbot from "@/components/landing/LandingChatbot";
 import { useLandingTheme, useApplyLandingTheme, useLandingSection } from "@/hooks/useLandingConfig";
 import { EditorOverlay } from "@/components/landing/EditorOverlay";
+import { useLandingTree } from "@/hooks/useLandingTree";
+import { NodeRenderer } from "@/components/landing-builder/NodeRenderer";
 
 const Index = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
@@ -32,6 +34,14 @@ const Index = () => {
   const [userRole, setUserRole] = useState<string | null>(null);
   const { data: landingTheme } = useLandingTheme();
   useApplyLandingTheme(landingTheme);
+
+  // Phase 5: render the published landing tree if it exists for this locale.
+  const treeLocale = language === 'en' ? 'en' : 'el';
+  const { data: treeData } = useLandingTree(treeLocale, /* preferPublished */ true);
+  const publishedTree = treeData?.row?.published_tree ?? null;
+  const useLegacy = typeof window !== 'undefined'
+    && new URLSearchParams(window.location.search).get('legacy') === '1';
+  const renderFromTree = !!publishedTree && !useLegacy;
 
   // PWA Auto-redirect to dashboard when logged in
   useEffect(() => {
@@ -148,67 +158,73 @@ const Index = () => {
         translations={correctedTranslations}
       />
 
-      <HeroSection 
-        translations={correctedTranslations}
-        onGetStarted={handleGetStarted}
-      />
+      {renderFromTree && publishedTree ? (
+        <NodeRenderer node={publishedTree} locale={treeLocale} />
+      ) : (
+        <>
+          <HeroSection 
+            translations={correctedTranslations}
+            onGetStarted={handleGetStarted}
+          />
 
-      <LiveMatchesSection translations={{ ...correctedTranslations, language }} />
+          <LiveMatchesSection translations={{ ...correctedTranslations, language }} />
 
-      <ProgramsSection 
-        programs={programs}
-        translations={correctedTranslations}
-      />
+          <ProgramsSection 
+            programs={programs}
+            translations={correctedTranslations}
+          />
 
-      <AboutSection 
-        translations={correctedTranslations}
-        activeAboutSection={activeAboutSection}
-        onSetActiveAboutSection={setActiveAboutSection}
-      />
+          <AboutSection 
+            translations={correctedTranslations}
+            activeAboutSection={activeAboutSection}
+            onSetActiveAboutSection={setActiveAboutSection}
+          />
 
-      <CertificatesSection translations={correctedTranslations} />
+          <CertificatesSection translations={correctedTranslations} />
 
-      <EliteTrainingSection
-        translations={correctedTranslations}
-      />
+          <EliteTrainingSection
+            translations={correctedTranslations}
+          />
 
-      <LiveProgramSection
-        translations={correctedTranslations}
-      />
+          <LiveProgramSection
+            translations={correctedTranslations}
+          />
 
-      <VideoGallerySection translations={{ ...correctedTranslations, language }} />
+          <VideoGallerySection translations={{ ...correctedTranslations, language }} />
 
-      <BlogSection 
-        translations={correctedTranslations}
-      />
+          <BlogSection 
+            translations={correctedTranslations}
+          />
 
-      <ResultsSection 
-        translations={correctedTranslations}
-      />
+          <ResultsSection 
+            translations={correctedTranslations}
+          />
 
-      <GiftCardSection translations={correctedTranslations} />
+          <GiftCardSection translations={correctedTranslations} />
 
-      {/* CTA Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold text-black mb-6">
-            {correctedTranslations.readyQuestion}
-          </h2>
-          <p className="text-xl text-black max-w-3xl mx-auto mb-8">
-            {correctedTranslations.journeyText}
-          </p>
-          <button 
-            className="bg-black px-8 py-4 text-lg font-semibold hover:bg-gray-800 transition-colors text-white"
-            onClick={handleGetStarted}
-          >
-            {correctedTranslations.startNow}
-          </button>
-        </div>
-      </section>
+          {/* CTA Section */}
+          <section className="py-20 bg-white">
+            <div className="container mx-auto px-4 text-center">
+              <h2 className="text-4xl font-bold text-black mb-6">
+                {correctedTranslations.readyQuestion}
+              </h2>
+              <p className="text-xl text-black max-w-3xl mx-auto mb-8">
+                {correctedTranslations.journeyText}
+              </p>
+              <button 
+                className="bg-black px-8 py-4 text-lg font-semibold hover:bg-gray-800 transition-colors text-white"
+                onClick={handleGetStarted}
+              >
+                {correctedTranslations.startNow}
+              </button>
+            </div>
+          </section>
 
-      <Footer 
-        translations={correctedTranslations}
-      />
+          <Footer 
+            translations={correctedTranslations}
+          />
+        </>
+      )}
 
       <LandingChatbot language={language as 'el' | 'en'} />
       {typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('editor') === '1' && (
