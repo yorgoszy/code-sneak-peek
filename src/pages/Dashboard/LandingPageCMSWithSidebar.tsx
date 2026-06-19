@@ -133,24 +133,7 @@ const LandingPageCMSWithSidebar = () => {
 
         {/* Body: 3 panes */}
         <div className="flex-1 flex min-h-0">
-          {/* Left: sections list */}
-          <div className="w-60 border-r border-border bg-background overflow-y-auto p-2">
-            <div className="text-xs uppercase tracking-wide text-muted-foreground px-2 mb-2">
-              {lang === 'en' ? 'Sections' : 'Ενότητες'}
-            </div>
-            <SectionsList
-              sections={sortedSections}
-              selectedId={selectedId}
-              onSelect={setSelectedId}
-              onChange={handleChangeOrder}
-              lang={lang}
-            />
-            <p className="text-[11px] text-muted-foreground px-2 mt-3">
-              {lang === 'en'
-                ? 'Drag to reorder. Click a section in the preview to edit it.'
-                : 'Σύρε για αναδιάταξη. Πάτα σε ενότητα στην προεπισκόπηση για επεξεργασία.'}
-            </p>
-          </div>
+          {/* Sections list removed to save screen space — click sections in the preview to edit. */}
 
           {/* Center: live preview */}
           <div className="flex-1 min-w-0 bg-muted">
