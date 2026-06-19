@@ -38,37 +38,37 @@ const Navigation: React.FC<NavigationProps> = ({
   };
 
   return (
-    <nav className="fixed top-0 w-full bg-black z-50">
+    <nav className="fixed top-0 w-full bg-[#f4f1ea] z-50">
       <style>{`
         .nav-link:hover {
-          color: #aca097 !important;
+          color: #cb8954 !important;
         }
         .dashboard-btn:hover {
-          background-color: black !important;
+          background-color: #f4f1ea !important;
           border-color: transparent !important;
         }
         .logout-btn:hover {
-          background-color: black !important;
+          background-color: #f4f1ea !important;
           border-color: transparent !important;
         }
         .language-btn:hover {
-          background-color: black !important;
+          background-color: #f4f1ea !important;
           border-color: transparent !important;
         }
         .language-btn svg, .dashboard-btn svg, .logout-btn svg {
-          color: white !important;
+          color: #151514 !important;
         }
         .language-btn:hover svg, .dashboard-btn:hover svg, .logout-btn:hover svg {
-          color: #aca097 !important;
+          color: #cb8954 !important;
         }
         .login-btn {
-          background-color: white !important;
-          border-color: white !important;
-          color: black !important;
+          background-color: #151514 !important;
+          border-color: #151514 !important;
+          color: #f4f1ea !important;
         }
         .login-btn:hover {
-          background-color: #e5e5e5 !important;
-          border-color: #e5e5e5 !important;
+          background-color: #2a2a28 !important;
+          border-color: #2a2a28 !important;
         }
       `}</style>
       
