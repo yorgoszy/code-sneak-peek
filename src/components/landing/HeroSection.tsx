@@ -28,7 +28,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   const title = localized(cms, 'title', lang) || translations.heroTitle;
   const subtitle = localized(cms, 'subtitle', lang) || translations.heroSubtitle;
   const description = localized(cms, 'description', lang);
-  const ctaLabel = localized(cms, 'cta_label', lang) || translations.getStarted;
+  const ctaLabel = translations.getStarted;
   const bgImage = cms?.image_url || DEFAULT_HERO_IMAGE;
   const gradient = backgroundCss(cms?.extra_data);
   const onCtaClick = () => {
