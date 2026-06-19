@@ -52,17 +52,25 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
   }, [draft.section_key, draft.extra_data, draft.image_url]);
 
   // Replay current draft when an iframe signals ready (e.g. after reload)
+  // Also handle interactive logo resize from inside the iframe
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
-      if (e.data?.type !== 'landing-editor-ready') return;
-      const payload = {
-        type: 'landing-editor-draft',
-        sectionKey: draft.section_key,
-        style: (draft.extra_data?.style ?? {}) as Record<string, any>,
-        extra: (draft.extra_data ?? {}) as Record<string, any>,
-        image_url: draft.image_url ?? null,
-      };
-      (e.source as Window | null)?.postMessage(payload, '*');
+      if (e.data?.type === 'landing-editor-ready') {
+        const payload = {
+          type: 'landing-editor-draft',
+          sectionKey: draft.section_key,
+          style: (draft.extra_data?.style ?? {}) as Record<string, any>,
+          extra: (draft.extra_data ?? {}) as Record<string, any>,
+          image_url: draft.image_url ?? null,
+        };
+        (e.source as Window | null)?.postMessage(payload, '*');
+        return;
+      }
+      if (e.data?.type === 'landing-editor-logo-resize' && draft.section_key === 'navigation') {
+        const h = Number(e.data.height);
+        if (!Number.isFinite(h)) return;
+        setDraft((d) => ({ ...d, extra_data: { ...(d.extra_data ?? {}), logo_height: h } }));
+      }
     };
     window.addEventListener('message', onMsg);
     return () => window.removeEventListener('message', onMsg);
