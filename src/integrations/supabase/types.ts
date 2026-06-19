@@ -6536,8 +6536,19 @@ export type Database = {
           accent_color: string
           bg_color: string
           body_font: string
+          button_bg_color: string | null
+          button_hover_bg_color: string | null
+          button_hover_text_color: string | null
+          button_text_color: string | null
+          custom_fonts: Json | null
           heading_font: string
           id: string
+          link_color: string | null
+          link_hover_color: string | null
+          nav_bg_color: string | null
+          nav_hover_color: string | null
+          nav_icon_color: string | null
+          nav_text_color: string | null
           primary_color: string
           text_color: string
           updated_at: string
@@ -6546,8 +6557,19 @@ export type Database = {
           accent_color?: string
           bg_color?: string
           body_font?: string
+          button_bg_color?: string | null
+          button_hover_bg_color?: string | null
+          button_hover_text_color?: string | null
+          button_text_color?: string | null
+          custom_fonts?: Json | null
           heading_font?: string
           id?: string
+          link_color?: string | null
+          link_hover_color?: string | null
+          nav_bg_color?: string | null
+          nav_hover_color?: string | null
+          nav_icon_color?: string | null
+          nav_text_color?: string | null
           primary_color?: string
           text_color?: string
           updated_at?: string
@@ -6556,8 +6578,19 @@ export type Database = {
           accent_color?: string
           bg_color?: string
           body_font?: string
+          button_bg_color?: string | null
+          button_hover_bg_color?: string | null
+          button_hover_text_color?: string | null
+          button_text_color?: string | null
+          custom_fonts?: Json | null
           heading_font?: string
           id?: string
+          link_color?: string | null
+          link_hover_color?: string | null
+          nav_bg_color?: string | null
+          nav_hover_color?: string | null
+          nav_icon_color?: string | null
+          nav_text_color?: string | null
           primary_color?: string
           text_color?: string
           updated_at?: string
