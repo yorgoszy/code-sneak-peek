@@ -172,6 +172,28 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
           />
         )}
 
+        {draft.section_key === 'navigation' && (
+          <div>
+            <Label className="text-sm">
+              {lang === 'en' ? 'Logo size (px)' : 'Μέγεθος Logo (px)'} — {Number(draft.extra_data?.logo_height) || 40}px
+            </Label>
+            <input
+              type="range"
+              min={16}
+              max={160}
+              step={1}
+              value={Number(draft.extra_data?.logo_height) || 40}
+              onChange={(e) => setExtra({ logo_height: Number(e.target.value) })}
+              className="w-full"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              {lang === 'en'
+                ? 'Tip: drag the green handle on the logo edge in the preview to resize.'
+                : 'Συμβουλή: σύρε τη πράσινη λαβή στην άκρη του logo στην προεπισκόπηση.'}
+            </p>
+          </div>
+        )}
+
         <div>
           <Label className="text-sm">{lang === 'en' ? 'Background' : 'Φόντο'}</Label>
           <GradientPicker value={background} onChange={(bg) => setExtra({ background: bg })} />
