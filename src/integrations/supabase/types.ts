@@ -12048,6 +12048,21 @@ export type Database = {
           sport: string
         }[]
       }
+      get_public_fight_gallery: {
+        Args: { _limit?: number }
+        Returns: {
+          athlete_avatar_url: string
+          athlete_name: string
+          competition_name: string
+          fight_date: string
+          id: string
+          location: string
+          opponent_name: string
+          our_corner: string
+          user_id: string
+          video_url: string
+        }[]
+      }
       get_suggested_velocity: {
         Args: { athlete_id: string; exercise_id: string; percentage: number }
         Returns: number

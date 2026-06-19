@@ -14,19 +14,14 @@ import {
 interface FightRow {
   id: string;
   user_id: string;
+  athlete_name: string | null;
+  athlete_avatar_url: string | null;
   opponent_name: string | null;
   fight_date: string;
   competition_name: string | null;
   location: string | null;
   video_url: string;
   our_corner: string | null;
-}
-
-interface AppUserLite {
-  id: string;
-  name: string | null;
-  avatar_url: string | null;
-  photo_url: string | null;
 }
 
 const parseYouTubeId = (url: string): string | null => {
@@ -51,7 +46,12 @@ const initials = (name?: string | null) => {
   return ((parts[0]?.[0] || "") + (parts[1]?.[0] || "")).toUpperCase() || "?";
 };
 
-const getAvatar = (u?: AppUserLite | null) => u?.avatar_url || u?.photo_url || undefined;
+const splitName = (name?: string | null): { first: string; last: string } => {
+  if (!name) return { first: "", last: "" };
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return { first: parts[0], last: "" };
+  return { first: parts[0], last: parts.slice(1).join(" ") };
+};
 
 interface Props {
   translations?: any;
@@ -60,32 +60,16 @@ interface Props {
 const VideoGallerySection: React.FC<Props> = ({ translations }) => {
   const navigate = useNavigate();
   const [fights, setFights] = useState<FightRow[]>([]);
-  const [users, setUsers] = useState<Record<string, AppUserLite>>({});
   const [playingId, setPlayingId] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase
-        .from("muaythai_fights")
-        .select("id,user_id,opponent_name,fight_date,competition_name,location,video_url,our_corner")
-        .not("video_url", "is", null)
-        .eq("is_public", true)
-        .order("fight_date", { ascending: false })
-        .limit(12);
-
-      const list = ((data as any[]) || []).filter(f => !!f.video_url) as FightRow[];
-      setFights(list);
-
-      const ids = Array.from(new Set(list.map(f => f.user_id).filter(Boolean)));
-      if (ids.length) {
-        const { data: usersData } = await supabase
-          .from("app_users")
-          .select("id,name,avatar_url,photo_url")
-          .in("id", ids);
-        const map: Record<string, AppUserLite> = {};
-        (usersData || []).forEach((u: any) => { map[u.id] = u; });
-        setUsers(map);
+      const { data, error } = await (supabase as any).rpc("get_public_fight_gallery", { _limit: 12 });
+      if (error) {
+        console.error("Error loading public fight gallery", error);
+        return;
       }
+      setFights(((data as any[]) || []) as FightRow[]);
     };
     load();
   }, []);
@@ -118,8 +102,11 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
               {fights.map((f) => {
                 const thumb = getYouTubeThumb(f.video_url);
                 const isPlaying = playingId === f.id;
-                const athlete = users[f.user_id];
                 const athleteIsRed = (f.our_corner || "red") === "red";
+                const athleteName = f.athlete_name || "";
+                const opponentName = f.opponent_name || "";
+                const a = splitName(athleteName);
+                const o = splitName(opponentName);
                 return (
                   <CarouselItem key={f.id} className="md:basis-1/2 lg:basis-1/3">
                     <div className="bg-black border border-black overflow-hidden h-full">
@@ -130,7 +117,7 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
                             className="absolute inset-0 w-full h-full"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen
-                            title={`${athlete?.name || "Fight"} vs ${f.opponent_name || ""}`}
+                            title={`${athleteName || "Fight"} vs ${opponentName}`}
                           />
                         ) : (
                           <button
@@ -142,7 +129,7 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
                             {thumb ? (
                               <img
                                 src={thumb}
-                                alt={`${athlete?.name || ""} fight`}
+                                alt={`${athleteName} fight`}
                                 className="absolute inset-0 w-full h-full object-cover"
                                 loading="lazy"
                               />
@@ -158,28 +145,31 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
                       <div className="p-3 bg-white">
                         <div className="flex items-center justify-between gap-2 mb-2">
                           <div className="flex items-center gap-2 min-w-0 flex-1">
-                            <Avatar className={`w-8 h-8 border-2 ${athleteIsRed ? "border-red-500" : "border-blue-500"}`}>
-                              <AvatarImage src={getAvatar(athlete)} />
-                              <AvatarFallback className="text-xs">
-                                {initials(athlete?.name)}
+                            <Avatar className={`w-8 h-8 border-2 ${athleteIsRed ? "border-red-500" : "border-blue-500"} shrink-0`}>
+                              <AvatarImage src={f.athlete_avatar_url || undefined} />
+                              <AvatarFallback className="text-[10px]">
+                                {initials(athleteName)}
                               </AvatarFallback>
                             </Avatar>
-                            <span className="text-xs font-semibold text-black truncate">
-                              {athlete?.name || "—"}
-                            </span>
+                            <div className="min-w-0 leading-tight">
+                              <div className="text-[10px] font-semibold text-black truncate uppercase">{a.first || "—"}</div>
+                              <div className="text-[10px] font-semibold text-black truncate uppercase">{a.last}</div>
+                            </div>
                           </div>
-                          <span className="text-xs text-gray-400 font-bold">{vsLabel}</span>
+                          <span className="text-[10px] text-gray-400 font-bold shrink-0">{vsLabel}</span>
                           <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
-                            <span className="text-xs font-semibold text-black truncate text-right">
-                              {f.opponent_name || "—"}
-                            </span>
-                            <Avatar className={`w-8 h-8 border-2 ${athleteIsRed ? "border-blue-500" : "border-red-500"}`}>
-                              <AvatarFallback className="text-xs">
-                                {initials(f.opponent_name)}
+                            <div className="min-w-0 leading-tight text-right">
+                              <div className="text-[10px] font-semibold text-black truncate uppercase">{o.first || "—"}</div>
+                              <div className="text-[10px] font-semibold text-black truncate uppercase">{o.last}</div>
+                            </div>
+                            <Avatar className={`w-8 h-8 border-2 ${athleteIsRed ? "border-blue-500" : "border-red-500"} shrink-0`}>
+                              <AvatarFallback className="text-[10px]">
+                                {initials(opponentName)}
                               </AvatarFallback>
                             </Avatar>
                           </div>
                         </div>
+
 
                         <p className="text-xs text-gray-600 truncate">
                           {f.competition_name || f.location || ""}
