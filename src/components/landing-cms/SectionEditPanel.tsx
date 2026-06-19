@@ -43,11 +43,13 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
       type: 'landing-editor-draft',
       sectionKey: draft.section_key,
       style: (draft.extra_data?.style ?? {}) as Record<string, any>,
+      extra: (draft.extra_data ?? {}) as Record<string, any>,
+      image_url: draft.image_url ?? null,
     };
     document.querySelectorAll('iframe').forEach((f) => {
       try { (f as HTMLIFrameElement).contentWindow?.postMessage(payload, '*'); } catch { /* ignore */ }
     });
-  }, [draft.section_key, draft.extra_data]);
+  }, [draft.section_key, draft.extra_data, draft.image_url]);
 
   // Replay current draft when an iframe signals ready (e.g. after reload)
   useEffect(() => {
@@ -57,12 +59,15 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
         type: 'landing-editor-draft',
         sectionKey: draft.section_key,
         style: (draft.extra_data?.style ?? {}) as Record<string, any>,
+        extra: (draft.extra_data ?? {}) as Record<string, any>,
+        image_url: draft.image_url ?? null,
       };
       (e.source as Window | null)?.postMessage(payload, '*');
     };
     window.addEventListener('message', onMsg);
     return () => window.removeEventListener('message', onMsg);
-  }, [draft.section_key, draft.extra_data]);
+  }, [draft.section_key, draft.extra_data, draft.image_url]);
+
 
   const setExtra = (patch: Record<string, any>) =>
     setDraft({ ...draft, extra_data: { ...(draft.extra_data ?? {}), ...patch } });
