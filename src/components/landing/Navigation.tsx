@@ -38,37 +38,37 @@ const Navigation: React.FC<NavigationProps> = ({
   };
 
   return (
-    <nav className="fixed top-0 w-full bg-black z-50">
+    <nav className="fixed top-0 w-full bg-[#f4f1ea] z-50">
       <style>{`
         .nav-link:hover {
-          color: #aca097 !important;
+          color: #cb8954 !important;
         }
         .dashboard-btn:hover {
-          background-color: black !important;
+          background-color: #f4f1ea !important;
           border-color: transparent !important;
         }
         .logout-btn:hover {
-          background-color: black !important;
+          background-color: #f4f1ea !important;
           border-color: transparent !important;
         }
         .language-btn:hover {
-          background-color: black !important;
+          background-color: #f4f1ea !important;
           border-color: transparent !important;
         }
         .language-btn svg, .dashboard-btn svg, .logout-btn svg {
-          color: white !important;
+          color: #151514 !important;
         }
         .language-btn:hover svg, .dashboard-btn:hover svg, .logout-btn:hover svg {
-          color: #aca097 !important;
+          color: #cb8954 !important;
         }
         .login-btn {
-          background-color: white !important;
-          border-color: white !important;
-          color: black !important;
+          background-color: #151514 !important;
+          border-color: #151514 !important;
+          color: #f4f1ea !important;
         }
         .login-btn:hover {
-          background-color: #e5e5e5 !important;
-          border-color: #e5e5e5 !important;
+          background-color: #2a2a28 !important;
+          border-color: #2a2a28 !important;
         }
       `}</style>
       
@@ -78,7 +78,7 @@ const Navigation: React.FC<NavigationProps> = ({
             <img 
               src={headerLogo} 
               alt="HyperKids Logo" 
-              className="h-10 w-auto"
+              className="h-10 w-auto brightness-0"
             />
           </div>
           
@@ -87,7 +87,7 @@ const Navigation: React.FC<NavigationProps> = ({
               <a
                 key={item.name}
                 href={item.href}
-                className="nav-link transition-colors duration-200 text-sm font-medium text-white"
+                className="nav-link transition-colors duration-200 text-sm font-medium text-[#151514]"
                 onClick={(e) => handleNavigationClick(item.href, e)}
               >
                 {item.name}
@@ -101,7 +101,7 @@ const Navigation: React.FC<NavigationProps> = ({
                 <div className="flex items-center space-x-0">
                   <Button 
                     variant="ghost" 
-                    className="language-btn rounded-none bg-transparent text-white hover:text-black transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className="language-btn rounded-none bg-transparent text-[#151514] hover:text-[#cb8954] transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                     onClick={onToggleLanguage}
                   >
                     <Globe className="h-4 w-4" />
@@ -109,14 +109,14 @@ const Navigation: React.FC<NavigationProps> = ({
                   <Link to="/dashboard">
                     <Button 
                       variant="ghost" 
-                      className="dashboard-btn rounded-none bg-transparent text-white hover:text-black transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
+                      className="dashboard-btn rounded-none bg-transparent text-[#151514] hover:text-[#cb8954] transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                     >
                       <LayoutDashboard className="h-4 w-4" />
                     </Button>
                   </Link>
                   <Button 
                     variant="ghost" 
-                    className="logout-btn rounded-none bg-transparent text-white hover:text-black transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className="logout-btn rounded-none bg-transparent text-[#151514] hover:text-[#cb8954] transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                     onClick={onSignOut}
                   >
                     <LogOut className="h-4 w-4" />
@@ -126,7 +126,7 @@ const Navigation: React.FC<NavigationProps> = ({
                 <div className="flex items-center space-x-4">
                   <Button 
                     variant="ghost" 
-                    className="language-btn rounded-none bg-transparent text-white hover:text-black transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className="language-btn rounded-none bg-transparent text-[#151514] hover:text-[#cb8954] transition-colors duration-200 focus-visible:ring-0 focus-visible:ring-offset-0"
                     onClick={onToggleLanguage}
                   >
                     <Globe className="h-4 w-4" />
