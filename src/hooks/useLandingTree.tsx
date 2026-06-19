@@ -272,3 +272,111 @@ export function insertNode(
 export function newId(prefix = 'n'): string {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
 }
+
+// Returns true if `ancestorId` is the same as or contains `descendantId`.
+export function isAncestor(root: PageNode, ancestorId: string, descendantId: string): boolean {
+  const a = findNode(root, ancestorId);
+  if (!a) return false;
+  if (a.id === descendantId) return true;
+  for (const c of a.children) {
+    if (isAncestor(c, ancestorId === c.id ? c.id : c.id, descendantId)) return true;
+    if (findNode(c, descendantId)) return true;
+  }
+  return false;
+}
+
+export function findParent(root: PageNode, id: string): PageNode | null {
+  for (const c of root.children) {
+    if (c.id === id) return root;
+    const p = findParent(c, id);
+    if (p) return p;
+  }
+  return null;
+}
+
+/** Move a node to a new parent at a given index. No-op if it would create a cycle. */
+export function moveNode(
+  root: PageNode,
+  nodeId: string,
+  newParentId: string,
+  newIndex: number,
+): PageNode {
+  if (nodeId === root.id) return root;
+  // prevent dropping into self / own descendant
+  if (findNode(findNode(root, nodeId) ?? root, newParentId)) return root;
+
+  const node = findNode(root, nodeId);
+  if (!node) return root;
+
+  const parent = findParent(root, nodeId);
+  if (!parent) return root;
+
+  // Compute index correction if moving within same parent and target index is after current index
+  let targetIndex = newIndex;
+  if (parent.id === newParentId) {
+    const currentIndex = parent.children.findIndex((c) => c.id === nodeId);
+    if (currentIndex >= 0 && currentIndex < targetIndex) targetIndex -= 1;
+  }
+
+  const without = removeNode(root, nodeId);
+  return insertNode(without, newParentId, node, targetIndex);
+}
+
+/** Create a fresh node with sensible defaults for a given type. */
+export function createDefaultNode(type: NodeType): PageNode {
+  const id = newId(type.slice(0, 3));
+  switch (type) {
+    case 'section':
+      return {
+        id, type, props: { sectionKey: 'section' },
+        style: { padding: '4rem 1.5rem' },
+        children: [],
+      };
+    case 'container':
+      return { id, type, props: {}, style: { padding: '1rem', maxWidth: '1200px', margin: '0 auto' }, children: [] };
+    case 'columns':
+      return {
+        id, type, props: {},
+        style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0,1fr))', gap: '1rem' },
+        children: [
+          { id: newId('col'), type: 'column', props: {}, style: { padding: '1rem' }, children: [] },
+          { id: newId('col'), type: 'column', props: {}, style: { padding: '1rem' }, children: [] },
+        ],
+      };
+    case 'heading':
+      return {
+        id, type,
+        props: { level: 2, text: { el: 'Επικεφαλίδα', en: 'Heading' } },
+        style: { fontSize: '2rem', fontWeight: 700, margin: '0 0 1rem' },
+        children: [],
+      };
+    case 'text':
+      return {
+        id, type,
+        props: { text: { el: 'Κείμενο παραγράφου.', en: 'Paragraph text.' } },
+        style: { fontSize: '1rem', margin: '0 0 1rem' },
+        children: [],
+      };
+    case 'button':
+      return {
+        id, type,
+        props: { text: { el: 'Κουμπί', en: 'Button' }, href: '#' },
+        style: {},
+        children: [],
+      };
+    case 'image':
+      return { id, type, props: { src: '', alt: { el: '', en: '' } }, style: {}, children: [] };
+    case 'video':
+      return { id, type, props: { src: '', controls: true }, style: {}, children: [] };
+    case 'spacer':
+      return { id, type, props: {}, style: { height: '40px' }, children: [] };
+    default:
+      return { id, type, props: {}, style: {}, children: [] };
+  }
+}
+
+/** Node types that can have children dropped into them. */
+export const CONTAINER_TYPES: NodeType[] = ['page', 'section', 'container', 'columns', 'column'];
+export function isContainerType(t: NodeType): boolean {
+  return CONTAINER_TYPES.includes(t);
+}
