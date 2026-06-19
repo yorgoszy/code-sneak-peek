@@ -271,6 +271,37 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
           />
         </div>
 
+        {/* NAVIGATION ICONS */}
+        {draft.section_key === 'navigation' && (
+          <div className="space-y-3 pt-2">
+            <SectionTitle>{lang === 'en' ? 'Navigation Icons' : 'Εικονίδια Πλοήγησης'}</SectionTitle>
+            <LucideIconPicker
+              value={(draft.extra_data?.lang_icon as string) ?? null}
+              onChange={(name) => setExtra({ lang_icon: name })}
+              label={lang === 'en' ? 'Language (EL/EN)' : 'Γλώσσα (EL/EN)'}
+              color={style.icon_color || undefined}
+            />
+            <LucideIconPicker
+              value={(draft.extra_data?.dashboard_icon as string) ?? null}
+              onChange={(name) => setExtra({ dashboard_icon: name })}
+              label="Dashboard"
+              color={style.icon_color || undefined}
+            />
+            <LucideIconPicker
+              value={(draft.extra_data?.logout_icon as string) ?? null}
+              onChange={(name) => setExtra({ logout_icon: name })}
+              label={lang === 'en' ? 'Logout' : 'Αποσύνδεση'}
+              color={style.icon_color || undefined}
+            />
+            <LucideIconPicker
+              value={(draft.extra_data?.login_icon as string) ?? null}
+              onChange={(name) => setExtra({ login_icon: name })}
+              label={lang === 'en' ? 'Login (button)' : 'Σύνδεση (κουμπί)'}
+              color={style.button_text_color || undefined}
+            />
+          </div>
+        )}
+
         <details>
 
           <summary className="text-xs text-muted-foreground cursor-pointer">Extra data (JSON)</summary>
