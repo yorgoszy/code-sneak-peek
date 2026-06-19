@@ -105,12 +105,13 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
           <h3 className="font-semibold">{sectionLabel}</h3>
           <p className="text-xs text-muted-foreground">{draft.section_key}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Switch checked={draft.is_visible}
-            onCheckedChange={(v) => setDraft({ ...draft, is_visible: v })} />
-          <span className="text-xs">{draft.is_visible ? (lang==='en'?'Visible':'Ορατό') : (lang==='en'?'Hidden':'Κρυφό')}</span>
-        </div>
-      </div>
+        {draft.section_key !== 'navigation' && (
+          <div className="flex items-center gap-2">
+            <Switch checked={draft.is_visible}
+              onCheckedChange={(v) => setDraft({ ...draft, is_visible: v })} />
+            <span className="text-xs">{draft.is_visible ? (lang==='en'?'Visible':'Ορατό') : (lang==='en'?'Hidden':'Κρυφό')}</span>
+          </div>
+        )}
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         <Tabs defaultValue={lang} value={lang} className="w-full">
