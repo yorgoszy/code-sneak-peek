@@ -241,6 +241,13 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
           <TabsContent value="el" className="space-y-3 mt-3">
             <Field label="Τίτλος" value={draft.title} onChange={(v) => setDraft({ ...draft, title: v })} />
             <Field label="Υπότιτλος" value={draft.subtitle} onChange={(v) => setDraft({ ...draft, subtitle: v })} />
+            {draft.section_key === 'hero' && (
+              <Field
+                label="Tagline"
+                value={(draft.extra_data?.tagline as string) ?? 'est. 2024 — thessaloniki'}
+                onChange={(v) => setExtra({ tagline: v })}
+              />
+            )}
             <Field label="Περιγραφή" value={draft.description} onChange={(v) => setDraft({ ...draft, description: v })} multiline />
             <Field label="CTA Label" value={draft.cta_label} onChange={(v) => setDraft({ ...draft, cta_label: v })} />
           </TabsContent>
@@ -248,6 +255,13 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
           <TabsContent value="en" className="space-y-3 mt-3">
             <Field label="Title" value={draft.title_en} onChange={(v) => setDraft({ ...draft, title_en: v })} />
             <Field label="Subtitle" value={draft.subtitle_en} onChange={(v) => setDraft({ ...draft, subtitle_en: v })} />
+            {draft.section_key === 'hero' && (
+              <Field
+                label="Tagline"
+                value={(draft.extra_data?.tagline_en as string) ?? (draft.extra_data?.tagline as string) ?? 'est. 2024 — thessaloniki'}
+                onChange={(v) => setExtra({ tagline_en: v })}
+              />
+            )}
             <Field label="Description" value={draft.description_en} onChange={(v) => setDraft({ ...draft, description_en: v })} multiline />
             <Field label="CTA Label" value={draft.cta_label_en} onChange={(v) => setDraft({ ...draft, cta_label_en: v })} />
           </TabsContent>
