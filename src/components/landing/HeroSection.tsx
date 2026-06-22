@@ -20,6 +20,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   const editor = isHeroEditorMode();
 
   const [active, setActive] = React.useState<null | 'title' | 'subtitle' | 'btn-primary' | 'btn-secondary'>(null);
+  const [localLayout, setLocalLayout] = React.useState<any>(null);
 
   // Click outside hero edit roots → deactivate
   React.useEffect(() => {
@@ -31,6 +32,35 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
     document.addEventListener('mousedown', onDown, true);
     return () => document.removeEventListener('mousedown', onDown, true);
   }, [editor]);
+
+  // Live local patches from drag/resize handles — instant, no parent round-trip
+  React.useEffect(() => {
+    if (!editor) return;
+    const onPatch = (e: Event) => {
+      const patch = (e as CustomEvent).detail ?? {};
+      setLocalLayout((prev: any) => {
+        const cur = prev ?? {};
+        const merged: any = { ...cur };
+        for (const k of Object.keys(patch)) {
+          if (k === 'buttons') {
+            const curB = cur.buttons ?? {};
+            const pB = patch.buttons ?? {};
+            const next: any = { ...curB };
+            for (const id of Object.keys(pB)) next[id] = { ...(curB[id] ?? {}), ...pB[id] };
+            merged.buttons = next;
+          } else {
+            merged[k] = { ...(cur[k] ?? {}), ...patch[k] };
+          }
+        }
+        return merged;
+      });
+    };
+    window.addEventListener('hero-layout-local', onPatch as EventListener);
+    return () => window.removeEventListener('hero-layout-local', onPatch as EventListener);
+  }, [editor]);
+
+  // Reset local override once the saved cms layout catches up
+  React.useEffect(() => { setLocalLayout(null); }, [cms?.extra_data?.hero_layout]);
 
   const handleContactClick = () => {
     const footerSection = document.getElementById('footer');
