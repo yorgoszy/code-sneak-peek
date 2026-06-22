@@ -227,7 +227,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
               field="description"
               lang={lang}
               value={description ?? ''}
-              className="text-[#f4f1ea]/90 text-base sm:text-lg mb-6 max-w-2xl"
+              className="text-white/90 text-base sm:text-lg mb-6 max-w-2xl"
               multiline
             />
           )}
@@ -255,7 +255,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             >
               <Button
                 variant="outline"
-                className="contact-btn rounded-none bg-transparent text-[#f4f1ea] border-[#f4f1ea]"
+                className="contact-btn rounded-none bg-transparent text-white border-[#f4f1ea]"
                 onClick={(e) => { if (editor) { e.preventDefault(); return; } handleContactClick(); }}
               >
                 {translations.contactBtn}
