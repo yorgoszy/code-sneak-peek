@@ -39,8 +39,8 @@ const LandingPageCMSWithSidebar = () => {
   };
 
   const handleSaved = () => {
+    // Stay live — no iframe reload. Draft changes already streamed via postMessage.
     invalidate();
-    setReloadToken((n) => n + 1);
   };
 
   const handleChangeOrder = () => {
@@ -48,8 +48,20 @@ const LandingPageCMSWithSidebar = () => {
     setReloadToken((n) => n + 1);
   };
 
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  React.useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) rootRef.current?.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  };
+
   return (
-    <div className="h-screen flex w-full bg-background overflow-hidden">
+    <div ref={rootRef} className="h-screen flex w-full bg-background overflow-hidden">
       <div className="hidden md:block">
         <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
       </div>
