@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ interface Section {
   id: string;
   name: string;
   description: string | null;
+  available_hours: any;
 }
 
 interface Props {
@@ -31,12 +32,18 @@ const schema = z.object({
   message: z.string().max(500).optional().or(z.literal("")),
 });
 
+const dayKey = (dateStr: string) => {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+};
+
 export const TrialRequestDialog: React.FC<Props> = ({ open, onOpenChange }) => {
   const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(false);
   const [requestId, setRequestId] = useState<string | null>(null);
   const [status, setStatus] = useState<'pending' | 'approved' | 'rejected' | null>(null);
   const [adminResponse, setAdminResponse] = useState<string | null>(null);
+  const [customTime, setCustomTime] = useState(false);
 
   const [form, setForm] = useState({
     name: '', email: '', phone: '',
@@ -45,9 +52,25 @@ export const TrialRequestDialog: React.FC<Props> = ({ open, onOpenChange }) => {
 
   useEffect(() => {
     if (!open) return;
-    supabase.from('booking_sections').select('id,name,description').eq('is_active', true).order('name')
-      .then(({ data }) => setSections(data || []));
+    supabase.from('booking_sections').select('id,name,description,available_hours').eq('is_active', true).order('name')
+      .then(({ data }) => setSections((data || []) as any));
   }, [open]);
+
+  // Auto-populate time slots from selected section + date
+  const availableSlots = useMemo<string[]>(() => {
+    const section = sections.find(s => s.id === form.section_id);
+    if (!section || !form.preferred_date) return [];
+    const day = dayKey(form.preferred_date);
+    const hours = section.available_hours?.[day];
+    return Array.isArray(hours) ? hours : [];
+  }, [sections, form.section_id, form.preferred_date]);
+
+  // When section/date changes, default time to first slot
+  useEffect(() => {
+    if (!customTime && availableSlots.length > 0) {
+      setForm(f => ({ ...f, preferred_time: availableSlots[0] }));
+    }
+  }, [availableSlots, customTime]);
 
   // Poll for admin response
   useEffect(() => {
@@ -61,18 +84,17 @@ export const TrialRequestDialog: React.FC<Props> = ({ open, onOpenChange }) => {
         })
       .subscribe();
 
-    // Also poll every 15s as fallback
     const iv = setInterval(async () => {
       const { data } = await supabase.from('trial_requests').select('status,admin_response').eq('id', requestId).maybeSingle();
       if (data) { setStatus(data.status as any); setAdminResponse(data.admin_response); }
-    }, 15000);
+    }, 10000);
 
     return () => { supabase.removeChannel(channel); clearInterval(iv); };
   }, [requestId]);
 
   const reset = () => {
     setForm({ name: '', email: '', phone: '', section_id: '', preferred_date: '', preferred_time: '', message: '' });
-    setRequestId(null); setStatus(null); setAdminResponse(null);
+    setRequestId(null); setStatus(null); setAdminResponse(null); setCustomTime(false);
   };
 
   const handleClose = (v: boolean) => {
@@ -141,22 +163,39 @@ export const TrialRequestDialog: React.FC<Props> = ({ open, onOpenChange }) => {
             </div>
             <div>
               <Label>Τμήμα *</Label>
-              <Select value={form.section_id} onValueChange={v => setForm({ ...form, section_id: v })}>
+              <Select value={form.section_id} onValueChange={v => setForm({ ...form, section_id: v, preferred_time: '' })}>
                 <SelectTrigger className="rounded-none"><SelectValue placeholder="Επίλεξε τμήμα" /></SelectTrigger>
                 <SelectContent className="rounded-none">
                   {sections.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label>Ημερομηνία *</Label>
-                <Input type="date" min={today} className="rounded-none" value={form.preferred_date} onChange={e => setForm({ ...form, preferred_date: e.target.value })} required />
-              </div>
-              <div>
+            <div>
+              <Label>Ημερομηνία *</Label>
+              <Input type="date" min={today} className="rounded-none" value={form.preferred_date} onChange={e => setForm({ ...form, preferred_date: e.target.value })} required />
+            </div>
+            <div>
+              <div className="flex items-center justify-between">
                 <Label>Ώρα *</Label>
-                <Input type="time" className="rounded-none" value={form.preferred_time} onChange={e => setForm({ ...form, preferred_time: e.target.value })} required />
+                {availableSlots.length > 0 && (
+                  <button type="button" onClick={() => setCustomTime(c => !c)} className="text-xs underline">
+                    {customTime ? 'Επιλογή από διαθέσιμες' : 'Άλλη ώρα'}
+                  </button>
+                )}
               </div>
+              {!customTime && availableSlots.length > 0 ? (
+                <Select value={form.preferred_time} onValueChange={v => setForm({ ...form, preferred_time: v })}>
+                  <SelectTrigger className="rounded-none"><SelectValue placeholder="Επίλεξε ώρα" /></SelectTrigger>
+                  <SelectContent className="rounded-none">
+                    {availableSlots.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input type="time" className="rounded-none" value={form.preferred_time} onChange={e => setForm({ ...form, preferred_time: e.target.value })} required />
+              )}
+              {form.section_id && form.preferred_date && availableSlots.length === 0 && !customTime && (
+                <p className="text-xs text-gray-500 mt-1">Δεν υπάρχουν διαθέσιμες ώρες αυτή τη μέρα — όρισε δική σου.</p>
+              )}
             </div>
             <div>
               <Label>Μήνυμα</Label>
