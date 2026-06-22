@@ -150,7 +150,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
         <div className="absolute inset-0 bg-black bg-opacity-60"></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      <div
+        className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full"
+        style={{
+          paddingLeft: bounds.left != null ? `${bounds.left}px` : undefined,
+          paddingRight: bounds.right != null ? `${bounds.right}px` : undefined,
+        }}
+      >
         <div className="text-left">
           <p className="text-[#f4f1ea]/70 text-xs sm:text-sm uppercase tracking-[0.2em] mb-3 font-medium">
             Est. 2024 — Thessaloniki
