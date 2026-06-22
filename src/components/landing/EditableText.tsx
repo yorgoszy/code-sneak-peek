@@ -3,7 +3,7 @@ import React from 'react';
 interface EditableTextProps {
   as?: string;
   sectionKey: string;
-  field: 'title' | 'subtitle' | 'description' | 'cta_label';
+  field: 'title' | 'subtitle' | 'description' | 'cta_label' | 'tagline';
   lang: 'el' | 'en';
   value: string;
   className?: string;
