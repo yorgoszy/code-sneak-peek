@@ -74,10 +74,21 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
       }
       if (e.data?.type === 'landing-editor-text' && e.data.sectionKey === draft.section_key) {
         const { field, lang: msgLang, value: v } = e.data as {
-          field: 'title' | 'subtitle' | 'description' | 'cta_label';
+          field: 'title' | 'subtitle' | 'description' | 'cta_label' | 'tagline';
           lang: 'el' | 'en';
           value: string;
         };
+        if (field === 'tagline') {
+          const key = msgLang === 'en' ? 'tagline_en' : 'tagline';
+          setDraft((d) => ({
+            ...d,
+            extra_data: {
+              ...(d.extra_data ?? {}),
+              [key]: v,
+            },
+          }));
+          return;
+        }
         const key =
           msgLang === 'en'
             ? (`${field}_en` as 'title_en' | 'subtitle_en' | 'description_en' | 'cta_label_en')
@@ -230,6 +241,13 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
           <TabsContent value="el" className="space-y-3 mt-3">
             <Field label="Τίτλος" value={draft.title} onChange={(v) => setDraft({ ...draft, title: v })} />
             <Field label="Υπότιτλος" value={draft.subtitle} onChange={(v) => setDraft({ ...draft, subtitle: v })} />
+            {draft.section_key === 'hero' && (
+              <Field
+                label="Tagline"
+                value={(draft.extra_data?.tagline as string) ?? 'est. 2024 — thessaloniki'}
+                onChange={(v) => setExtra({ tagline: v })}
+              />
+            )}
             <Field label="Περιγραφή" value={draft.description} onChange={(v) => setDraft({ ...draft, description: v })} multiline />
             <Field label="CTA Label" value={draft.cta_label} onChange={(v) => setDraft({ ...draft, cta_label: v })} />
           </TabsContent>
@@ -237,6 +255,13 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
           <TabsContent value="en" className="space-y-3 mt-3">
             <Field label="Title" value={draft.title_en} onChange={(v) => setDraft({ ...draft, title_en: v })} />
             <Field label="Subtitle" value={draft.subtitle_en} onChange={(v) => setDraft({ ...draft, subtitle_en: v })} />
+            {draft.section_key === 'hero' && (
+              <Field
+                label="Tagline"
+                value={(draft.extra_data?.tagline_en as string) ?? (draft.extra_data?.tagline as string) ?? 'est. 2024 — thessaloniki'}
+                onChange={(v) => setExtra({ tagline_en: v })}
+              />
+            )}
             <Field label="Description" value={draft.description_en} onChange={(v) => setDraft({ ...draft, description_en: v })} multiline />
             <Field label="CTA Label" value={draft.cta_label_en} onChange={(v) => setDraft({ ...draft, cta_label_en: v })} />
           </TabsContent>
@@ -339,6 +364,22 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
                     onChange={(e) => setHL({ subtitle: { size: Number(e.target.value) } })}
                     className="w-full" />
                 </div>
+                <FontSelect
+                  label={lang === 'en' ? 'Tagline Font' : 'Γραμματοσειρά Tagline'}
+                  value={hl.tagline?.font ?? 'UnifrakturMaguntia'}
+                  onChange={(v) => setHL({ tagline: { font: v } })}
+                  customFonts={customFonts}
+                  allowEmpty
+                />
+                <div>
+                  <Label className="text-xs">
+                    {lang === 'en' ? 'Tagline size' : 'Μέγεθος Tagline'} — {hl.tagline?.size ?? 12}
+                  </Label>
+                  <input type="range" min={6} max={48} step={1}
+                    value={hl.tagline?.size ?? 12}
+                    onChange={(e) => setHL({ tagline: { size: Number(e.target.value) } })}
+                    className="w-full" />
+                </div>
               </div>
 
               {(['primary', 'secondary'] as const).map((id) => {
@@ -380,8 +421,8 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
 
               <p className="text-xs text-muted-foreground">
                 {lang === 'en'
-                  ? 'Tip: click title/subtitle/buttons in the preview to resize & drag.'
-                  : 'Συμβουλή: κάνε κλικ σε τίτλο/υπότιτλο/κουμπιά στην προεπισκόπηση για drag & resize.'}
+                  ? 'Tip: click title/subtitle/tagline/buttons in the preview to resize & drag.'
+                  : 'Συμβουλή: κάνε κλικ σε τίτλο/υπότιτλο/tagline/κουμπιά στην προεπισκόπηση για drag & resize.'}
               </p>
             </div>
           );

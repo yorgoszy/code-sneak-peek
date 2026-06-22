@@ -47,7 +47,7 @@ const postPatch = (bp: BP, patch: any, final = false) => {
 };
 
 interface HeroEditableTextProps {
-  kind: 'title' | 'subtitle';
+  kind: 'title' | 'subtitle' | 'tagline';
   font?: string;
   size?: number;
   pos?: { x?: number; y?: number };

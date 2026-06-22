@@ -20,7 +20,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   const editor = isHeroEditorMode();
   const bp = useBP();
 
-  const [active, setActive] = React.useState<null | 'title' | 'subtitle' | 'btn-primary' | 'btn-secondary'>(null);
+  const [active, setActive] = React.useState<null | 'title' | 'subtitle' | 'tagline' | 'btn-primary' | 'btn-secondary'>(null);
   const [localLayout, setLocalLayout] = React.useState<any>(null);
 
   // Click outside hero edit roots → deactivate
@@ -89,15 +89,18 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
 
   if (cms && cms.is_visible === false) return null;
 
+  // Merge: cmsLayout (desktop base) → cmsLayout[bp] override → localLayout (live)
+  const effectiveExtra = draftExtra ?? cms?.extra_data ?? {};
   const title = localized(cms, 'title', lang) || translations.heroTitle;
   const subtitle = localized(cms, 'subtitle', lang) || translations.heroSubtitle;
+  const tagline = lang === 'en'
+    ? (effectiveExtra?.tagline_en || effectiveExtra?.tagline || 'est. 2024 — thessaloniki')
+    : (effectiveExtra?.tagline || 'est. 2024 — thessaloniki');
   const description = localized(cms, 'description', lang);
   const ctaLabel = translations.getStarted;
   const bgImage = cms?.image_url || DEFAULT_HERO_IMAGE;
   const gradient = backgroundCss(cms?.extra_data);
 
-  // Merge: cmsLayout (desktop base) → cmsLayout[bp] override → localLayout (live)
-  const effectiveExtra = draftExtra ?? cms?.extra_data ?? {};
   const cmsLayoutRaw = (effectiveExtra?.hero_layout ?? {}) as any;
   const bounds = (effectiveExtra?.content_bounds ?? {}) as { left?: number; right?: number };
   const merged = deepMerge(cmsLayoutRaw, localLayout ?? {});
@@ -105,6 +108,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   const layout = {
     title: { ...(merged.title ?? {}), ...(bpOverride.title ?? {}) },
     subtitle: { ...(merged.subtitle ?? {}), ...(bpOverride.subtitle ?? {}) },
+    tagline: { ...(merged.tagline ?? {}), ...(bpOverride.tagline ?? {}) },
     buttons: {
       primary: { ...(merged.buttons?.primary ?? {}), ...(bpOverride.buttons?.primary ?? {}) },
       secondary: { ...(merged.buttons?.secondary ?? {}), ...(bpOverride.buttons?.secondary ?? {}) },
@@ -112,6 +116,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   } as {
     title: { font?: string; size?: number; x?: number; y?: number };
     subtitle: { font?: string; size?: number; x?: number; y?: number };
+    tagline: { font?: string; size?: number; x?: number; y?: number };
     buttons: {
       primary: { x?: number; y?: number; scale?: number };
       secondary: { x?: number; y?: number; scale?: number };
@@ -190,20 +195,26 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             }}
           >
             <EditableText as="span" sectionKey="hero" field="subtitle" lang={lang} value={subtitle} />
-            <span
-              style={{
-                fontFamily: "'UnifrakturMaguntia', serif",
-                fontSize: '12px',
-                marginLeft: '12px',
-                opacity: 0.7,
-                textTransform: 'lowercase',
-                letterSpacing: '0.2em',
-                verticalAlign: 'middle',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              est. 2024 — thessaloniki
-            </span>
+          </HeroEditableText>
+
+          <HeroEditableText
+            kind="tagline"
+            font={layout.tagline?.font}
+            size={layout.tagline?.size}
+            pos={{ x: layout.tagline?.x, y: layout.tagline?.y }}
+            active={active === 'tagline'}
+            onActivate={() => setActive('tagline')}
+            className="mb-6 text-[#f4f1ea]"
+            style={{
+              fontFamily: layout.tagline?.font ? `'${layout.tagline.font}', serif` : "'UnifrakturMaguntia', serif",
+              fontSize: `${layout.tagline?.size ?? 12}px`,
+              opacity: 0.7,
+              textTransform: 'lowercase',
+              letterSpacing: '0.2em',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <EditableText as="span" sectionKey="hero" field="tagline" lang={lang} value={tagline} />
           </HeroEditableText>
 
           {(description || editor) && (
