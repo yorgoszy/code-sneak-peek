@@ -14,6 +14,7 @@ interface HeroEditableTextProps {
   kind: 'title' | 'subtitle';
   font?: string;
   size?: number; // px
+  pos?: { x?: number; y?: number };
   children: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
@@ -23,10 +24,10 @@ interface HeroEditableTextProps {
 
 /**
  * Wraps title/subtitle. When active in editor: outline, vertical resize handle on right edge
- * (drag = font-size), and a font selector popover at top-right.
+ * (drag = font-size), drag handle (move icon) for x/y translate, and a font selector popover.
  */
 export const HeroEditableText: React.FC<HeroEditableTextProps> = ({
-  kind, font, size, children, className, style, active, onActivate,
+  kind, font, size, pos, children, className, style, active, onActivate,
 }) => {
   const editor = isHeroEditorMode();
   const ref = React.useRef<HTMLDivElement>(null);
