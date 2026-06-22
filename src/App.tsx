@@ -12,6 +12,7 @@ import { MinimizedBubblesProvider } from "@/contexts/MinimizedBubblesContext";
 import { MultipleWorkoutsProvider } from "@/contexts/MultipleWorkoutsContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AIControlledProgramBuilderDialog } from "@/components/programs/builder/AIControlledProgramBuilderDialog";
+import { AdminGlobalBell } from "@/components/admin/AdminGlobalBell";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { RootRedirect } from "@/components/RootRedirect";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
