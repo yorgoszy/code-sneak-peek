@@ -261,6 +261,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
         </div>
       </div>
       <TrialRequestDialog open={trialOpen} onOpenChange={setTrialOpen} />
+      <PromoVideoDialog open={promoOpen} onOpenChange={setPromoOpen} videoUrl={promoVideoUrl} />
     </section>
   );
 };
