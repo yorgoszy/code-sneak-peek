@@ -49,8 +49,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   const gradient = backgroundCss(cms?.extra_data);
 
   const layout = (cms?.extra_data?.hero_layout ?? {}) as {
-    title?: { font?: string; size?: number };
-    subtitle?: { font?: string; size?: number };
+    title?: { font?: string; size?: number; x?: number; y?: number };
+    subtitle?: { font?: string; size?: number; x?: number; y?: number };
     buttons?: {
       primary?: { x?: number; y?: number; scale?: number };
       secondary?: { x?: number; y?: number; scale?: number };
