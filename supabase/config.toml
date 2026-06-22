@@ -93,3 +93,8 @@ verify_jwt = false
 [functions.send-push-notification]
 verify_jwt = true
 
+[functions.trial-request-notify]
+verify_jwt = false
+
+[functions.trial-request-action]
+verify_jwt = false
