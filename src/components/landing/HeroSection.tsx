@@ -18,6 +18,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   const { language } = useTranslations();
   const lang: Lang = language === 'en' ? 'en' : 'el';
   const editor = isHeroEditorMode();
+  const bp = useBP();
 
   const [active, setActive] = React.useState<null | 'title' | 'subtitle' | 'btn-primary' | 'btn-secondary'>(null);
   const [localLayout, setLocalLayout] = React.useState<any>(null);
