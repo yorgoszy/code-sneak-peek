@@ -74,10 +74,21 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
       }
       if (e.data?.type === 'landing-editor-text' && e.data.sectionKey === draft.section_key) {
         const { field, lang: msgLang, value: v } = e.data as {
-          field: 'title' | 'subtitle' | 'description' | 'cta_label';
+          field: 'title' | 'subtitle' | 'description' | 'cta_label' | 'tagline';
           lang: 'el' | 'en';
           value: string;
         };
+        if (field === 'tagline') {
+          const key = msgLang === 'en' ? 'tagline_en' : 'tagline';
+          setDraft((d) => ({
+            ...d,
+            extra_data: {
+              ...(d.extra_data ?? {}),
+              [key]: v,
+            },
+          }));
+          return;
+        }
         const key =
           msgLang === 'en'
             ? (`${field}_en` as 'title_en' | 'subtitle_en' | 'description_en' | 'cta_label_en')
