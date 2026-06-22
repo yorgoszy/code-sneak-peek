@@ -158,10 +158,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
         }}
       >
         <div className="text-left">
-          <p className="text-[#f4f1ea]/70 text-xs sm:text-sm uppercase tracking-[0.2em] mb-3 font-medium">
-            Est. 2024 — Thessaloniki
-          </p>
-
           <HeroEditableText
             kind="title"
             font={layout.title?.font}
