@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useLandingSection, localized, backgroundCss, type Lang } from "@/hooks/useLandingConfig";
 import { useTranslations } from "@/hooks/useTranslations";
 import { EditableText } from "./EditableText";
+import { HeroEditableText, HeroDraggableButton, isHeroEditorMode } from "./HeroLayoutEditing";
 
 interface HeroSectionProps {
   translations: any;
@@ -16,6 +17,20 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   const cms = useLandingSection('hero');
   const { language } = useTranslations();
   const lang: Lang = language === 'en' ? 'en' : 'el';
+  const editor = isHeroEditorMode();
+
+  const [active, setActive] = React.useState<null | 'title' | 'subtitle' | 'btn-primary' | 'btn-secondary'>(null);
+
+  // Click outside hero edit roots → deactivate
+  React.useEffect(() => {
+    if (!editor) return;
+    const onDown = (e: MouseEvent) => {
+      const t = e.target as HTMLElement;
+      if (!t.closest('[data-hero-edit-root]')) setActive(null);
+    };
+    document.addEventListener('mousedown', onDown, true);
+    return () => document.removeEventListener('mousedown', onDown, true);
+  }, [editor]);
 
   const handleContactClick = () => {
     const footerSection = document.getElementById('footer');
@@ -32,6 +47,16 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   const ctaLabel = translations.getStarted;
   const bgImage = cms?.image_url || DEFAULT_HERO_IMAGE;
   const gradient = backgroundCss(cms?.extra_data);
+
+  const layout = (cms?.extra_data?.hero_layout ?? {}) as {
+    title?: { font?: string; size?: number };
+    subtitle?: { font?: string; size?: number };
+    buttons?: {
+      primary?: { x?: number; y?: number; scale?: number };
+      secondary?: { x?: number; y?: number; scale?: number };
+    };
+  };
+
   const onCtaClick = () => {
     if (cms?.cta_url) {
       if (cms.cta_url.startsWith('#')) {
@@ -69,20 +94,40 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
           <p className="text-[#f4f1ea]/70 text-xs sm:text-sm uppercase tracking-[0.2em] mb-3 font-medium">
             Est. 2024 — Thessaloniki
           </p>
-          <h1 className="text-5xl sm:text-7xl lg:text-8xl mb-6 text-[#f4f1ea] tracking-wide"
-              style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
+
+          <HeroEditableText
+            kind="title"
+            font={layout.title?.font}
+            size={layout.title?.size}
+            active={active === 'title'}
+            onActivate={() => setActive('title')}
+            className="mb-2 text-[#f4f1ea] tracking-wide"
+            style={{
+              fontFamily: layout.title?.font ? `'${layout.title.font}', sans-serif` : "'Bebas Neue', sans-serif",
+              fontSize: layout.title?.size ? `${layout.title.size}px` : undefined,
+            }}
+          >
             <EditableText as="span" sectionKey="hero" field="title" lang={lang} value={title} />
-            <br />
-            <EditableText
-              as="span"
-              sectionKey="hero"
-              field="subtitle"
-              lang={lang}
-              value={subtitle}
-              className="text-[#f4f1ea]"
-            />
-          </h1>
-          {(description || (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('editor') === '1')) && (
+          </HeroEditableText>
+
+          <br />
+
+          <HeroEditableText
+            kind="subtitle"
+            font={layout.subtitle?.font}
+            size={layout.subtitle?.size}
+            active={active === 'subtitle'}
+            onActivate={() => setActive('subtitle')}
+            className="mb-6 text-[#f4f1ea] tracking-wide"
+            style={{
+              fontFamily: layout.subtitle?.font ? `'${layout.subtitle.font}', sans-serif` : "'Bebas Neue', sans-serif",
+              fontSize: layout.subtitle?.size ? `${layout.subtitle.size}px` : undefined,
+            }}
+          >
+            <EditableText as="span" sectionKey="hero" field="subtitle" lang={lang} value={subtitle} />
+          </HeroEditableText>
+
+          {(description || editor) && (
             <EditableText
               as="p"
               sectionKey="hero"
@@ -93,20 +138,36 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
               multiline
             />
           )}
-          <div className="flex flex-wrap gap-4">
-            <Button
-              className="get-started-btn rounded-none transition-colors duration-200"
-              onClick={onCtaClick}
+
+          <div className="flex flex-wrap gap-4 items-start">
+            <HeroDraggableButton
+              id="primary"
+              pos={layout.buttons?.primary}
+              active={active === 'btn-primary'}
+              onActivate={() => setActive('btn-primary')}
             >
-              {ctaLabel}
-            </Button>
-            <Button
-              variant="outline"
-              className="contact-btn rounded-none bg-transparent text-[#f4f1ea] border-[#f4f1ea]"
-              onClick={handleContactClick}
+              <Button
+                className="get-started-btn rounded-none transition-colors duration-200"
+                onClick={(e) => { if (editor) { e.preventDefault(); return; } onCtaClick(); }}
+              >
+                {ctaLabel}
+              </Button>
+            </HeroDraggableButton>
+
+            <HeroDraggableButton
+              id="secondary"
+              pos={layout.buttons?.secondary}
+              active={active === 'btn-secondary'}
+              onActivate={() => setActive('btn-secondary')}
             >
-              {translations.contactBtn}
-            </Button>
+              <Button
+                variant="outline"
+                className="contact-btn rounded-none bg-transparent text-[#f4f1ea] border-[#f4f1ea]"
+                onClick={(e) => { if (editor) { e.preventDefault(); return; } handleContactClick(); }}
+              >
+                {translations.contactBtn}
+              </Button>
+            </HeroDraggableButton>
           </div>
         </div>
       </div>
@@ -115,4 +176,3 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
 };
 
 export default HeroSection;
-
