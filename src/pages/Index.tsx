@@ -31,6 +31,7 @@ const Index = () => {
   const [activeAboutSection, setActiveAboutSection] = useState<number>(1);
   const isPWA = useIsPWA();
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [trialOpen, setTrialOpen] = useState(false);
   const { data: landingTheme } = useLandingTheme();
   useApplyLandingTheme(landingTheme);
 
