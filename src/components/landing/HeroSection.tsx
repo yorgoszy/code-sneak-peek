@@ -60,6 +60,23 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
     return () => window.removeEventListener('hero-layout-local', onPatch as EventListener);
   }, [editor]);
 
+  // Live draft from parent editor (undo, sidebar changes) — replace layout fully without iframe reload
+  const [draftExtra, setDraftExtra] = React.useState<any>(null);
+  React.useEffect(() => {
+    if (!editor) return;
+    const onMsg = (e: MessageEvent) => {
+      if (e.data?.type === 'landing-editor-draft' && e.data.sectionKey === 'hero') {
+        setDraftExtra(e.data.extra ?? {});
+        // overwrite local drag layout with the authoritative one (e.g. undo)
+        if (e.data.extra?.hero_layout) setLocalLayout(e.data.extra.hero_layout);
+      }
+    };
+    window.addEventListener('message', onMsg);
+    try { window.parent?.postMessage({ type: 'landing-editor-ready' }, '*'); } catch { /* ignore */ }
+    return () => window.removeEventListener('message', onMsg);
+  }, [editor]);
+
+
   // Reset local override once the saved cms layout catches up
   React.useEffect(() => { setLocalLayout(null); }, [cms?.extra_data?.hero_layout]);
 
@@ -80,7 +97,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   const gradient = backgroundCss(cms?.extra_data);
 
   // Merge: cmsLayout (desktop base) → cmsLayout[bp] override → localLayout (live)
-  const cmsLayoutRaw = (cms?.extra_data?.hero_layout ?? {}) as any;
+  const effectiveExtra = draftExtra ?? cms?.extra_data ?? {};
+  const cmsLayoutRaw = (effectiveExtra?.hero_layout ?? {}) as any;
+  const bounds = (effectiveExtra?.content_bounds ?? {}) as { left?: number; right?: number };
   const merged = deepMerge(cmsLayoutRaw, localLayout ?? {});
   const bpOverride = bp !== 'desktop' ? (merged?.[bp] ?? {}) : {};
   const layout = {
@@ -131,7 +150,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
         <div className="absolute inset-0 bg-black bg-opacity-60"></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      <div
+        className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full"
+        style={{
+          paddingLeft: bounds.left != null ? `${bounds.left}px` : undefined,
+          paddingRight: bounds.right != null ? `${bounds.right}px` : undefined,
+        }}
+      >
         <div className="text-left">
           <p className="text-[#f4f1ea]/70 text-xs sm:text-sm uppercase tracking-[0.2em] mb-3 font-medium">
             Est. 2024 — Thessaloniki

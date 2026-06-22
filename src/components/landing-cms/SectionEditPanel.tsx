@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Save } from 'lucide-react';
+import { Save, Undo2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { SECTION_LABELS, useLandingTheme, type LandingSection, type Lang } from '@/hooks/useLandingConfig';
@@ -114,6 +114,37 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
   const setExtra = (patch: Record<string, any>) =>
     setDraft({ ...draft, extra_data: { ...(draft.extra_data ?? {}), ...patch } });
 
+  // ===== Undo history (per section) =====
+  const historyRef = React.useRef<LandingSection[]>([]);
+  const lastSnapshotRef = React.useRef<LandingSection>(section);
+  const skipHistoryRef = React.useRef(true);
+  const [historyVersion, setHistoryVersion] = React.useState(0);
+  React.useEffect(() => {
+    historyRef.current = [];
+    lastSnapshotRef.current = section;
+    skipHistoryRef.current = true;
+    setHistoryVersion((v) => v + 1);
+  }, [section.id]);
+  React.useEffect(() => {
+    if (skipHistoryRef.current) { skipHistoryRef.current = false; return; }
+    const t = setTimeout(() => {
+      historyRef.current.push(lastSnapshotRef.current);
+      if (historyRef.current.length > 100) historyRef.current.shift();
+      lastSnapshotRef.current = draft;
+      setHistoryVersion((v) => v + 1);
+    }, 400);
+    return () => clearTimeout(t);
+  }, [draft]);
+  const canUndo = historyVersion >= 0 && historyRef.current.length > 0;
+  const undo = () => {
+    const prev = historyRef.current.pop();
+    if (!prev) return;
+    skipHistoryRef.current = true;
+    lastSnapshotRef.current = prev;
+    setDraft(prev);
+    setHistoryVersion((v) => v + 1);
+  };
+
   const background: BackgroundValue | undefined = draft.extra_data?.background;
 
   const save = async (silent = false) => {
@@ -161,18 +192,31 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-        <div>
-          <h3 className="font-semibold">{sectionLabel}</h3>
-          <p className="text-xs text-muted-foreground">{draft.section_key}</p>
+      <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <h3 className="font-semibold truncate">{sectionLabel}</h3>
+          <p className="text-xs text-muted-foreground truncate">{draft.section_key}</p>
         </div>
-        {draft.section_key !== 'navigation' && (
-          <div className="flex items-center gap-2">
-            <Switch checked={draft.is_visible}
-              onCheckedChange={(v) => setDraft({ ...draft, is_visible: v })} />
-            <span className="text-xs">{draft.is_visible ? (lang==='en'?'Visible':'Ορατό') : (lang==='en'?'Hidden':'Κρυφό')}</span>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="rounded-none h-8 px-2"
+            onClick={undo}
+            disabled={!canUndo}
+            title={lang === 'en' ? 'Undo' : 'Αναίρεση'}
+          >
+            <Undo2 className="w-4 h-4" />
+          </Button>
+          {draft.section_key !== 'navigation' && (
+            <>
+              <Switch checked={draft.is_visible}
+                onCheckedChange={(v) => setDraft({ ...draft, is_visible: v })} />
+              <span className="text-xs">{draft.is_visible ? (lang==='en'?'Visible':'Ορατό') : (lang==='en'?'Hidden':'Κρυφό')}</span>
+            </>
+          )}
+        </div>
       </div>
 
 
@@ -345,10 +389,43 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
 
 
 
+        {/* Content bounds (left/right padding inside the section) */}
+        {(() => {
+          const cb = (draft.extra_data?.content_bounds ?? {}) as { left?: number; right?: number };
+          const setCB = (patch: { left?: number | null; right?: number | null }) => {
+            const next: any = { ...cb };
+            for (const k of Object.keys(patch) as Array<'left'|'right'>) {
+              const v = (patch as any)[k];
+              if (v == null || v === '') delete next[k]; else next[k] = Number(v);
+            }
+            setExtra({ content_bounds: next });
+          };
+          return (
+            <div className="space-y-2 pt-2">
+              <SectionTitle>{lang === 'en' ? 'Content bounds (px)' : 'Όρια Περιεχομένου (px)'}</SectionTitle>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">{lang === 'en' ? 'Start (left)' : 'Αρχή (αριστερά)'}</Label>
+                  <Input type="number" value={cb.left ?? ''} placeholder="—"
+                    onChange={(e) => setCB({ left: e.target.value === '' ? null : Number(e.target.value) })}
+                    className="rounded-none" />
+                </div>
+                <div>
+                  <Label className="text-xs">{lang === 'en' ? 'End (right)' : 'Τέλος (δεξιά)'}</Label>
+                  <Input type="number" value={cb.right ?? ''} placeholder="—"
+                    onChange={(e) => setCB({ right: e.target.value === '' ? null : Number(e.target.value) })}
+                    className="rounded-none" />
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
         <div>
           <Label className="text-sm">{lang === 'en' ? 'Background' : 'Φόντο'}</Label>
           <GradientPicker value={background} onChange={(bg) => setExtra({ background: bg })} />
         </div>
+
 
         <div className="grid grid-cols-2 gap-3">
           <div>

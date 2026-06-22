@@ -29,6 +29,13 @@ export const useBP = (): BP => {
 /** Wrap a patch in the bp namespace (desktop = top-level). */
 const wrapForBP = (bp: BP, patch: any) => (bp === 'desktop' ? patch : { [bp]: patch });
 
+/** Magnetic snap: snap to 0 within 8px, otherwise snap to 8px grid when shift held. */
+const SNAP_THRESHOLD = 8;
+export const snap = (v: number, anchors: number[] = [0]): number => {
+  for (const a of anchors) if (Math.abs(v - a) <= SNAP_THRESHOLD) return a;
+  return v;
+};
+
 const postPatch = (bp: BP, patch: any, final = false) => {
   const wrapped = wrapForBP(bp, patch);
   try {
@@ -79,7 +86,11 @@ export const HeroEditableText: React.FC<HeroEditableTextProps> = ({
     const move = (ev: MouseEvent) => {
       const dx = ev.clientX - startX, dy = ev.clientY - startY;
       if (!moved && Math.hypot(dx, dy) > 3) moved = true;
-      if (active && moved) postPatch(bp, { [kind]: { x: sx + dx, y: sy + dy } });
+      if (active && moved) {
+        const nx = snap(sx + dx);
+        const ny = snap(sy + dy);
+        postPatch(bp, { [kind]: { x: nx, y: ny } });
+      }
     };
     const up = (ev: MouseEvent) => {
       window.removeEventListener('mousemove', move);
@@ -88,7 +99,7 @@ export const HeroEditableText: React.FC<HeroEditableTextProps> = ({
       if (!moved) {
         onActivate();
       } else if (active) {
-        postPatch(bp, { [kind]: { x: sx + dx, y: sy + dy } }, true);
+        postPatch(bp, { [kind]: { x: snap(sx + dx), y: snap(sy + dy) } }, true);
       }
     };
     window.addEventListener('mousemove', move);
@@ -237,7 +248,7 @@ export const HeroDraggableButton: React.FC<HeroDraggableButtonProps> = ({
       const dx = ev.clientX - startX, dy = ev.clientY - startY;
       if (!moved && Math.hypot(dx, dy) > 3) moved = true;
       if (active && moved)
-        postPatch(bp, { buttons: { [id]: { x: sx + dx, y: sy + dy, scale } } });
+        postPatch(bp, { buttons: { [id]: { x: snap(sx + dx), y: snap(sy + dy), scale } } });
     };
     const up = (ev: MouseEvent) => {
       window.removeEventListener('mousemove', move);
@@ -245,7 +256,7 @@ export const HeroDraggableButton: React.FC<HeroDraggableButtonProps> = ({
       const dx = ev.clientX - startX, dy = ev.clientY - startY;
       if (!moved) onActivate();
       else if (active)
-        postPatch(bp, { buttons: { [id]: { x: sx + dx, y: sy + dy, scale } } }, true);
+        postPatch(bp, { buttons: { [id]: { x: snap(sx + dx), y: snap(sy + dy), scale } } }, true);
     };
     window.addEventListener('mousemove', move);
     window.addEventListener('mouseup', up);

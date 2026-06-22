@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { Button } from '@/components/ui/button';
-import { Menu, Monitor, Tablet, Smartphone, ExternalLink, Palette } from 'lucide-react';
+import { Menu, Monitor, Tablet, Smartphone, ExternalLink, Palette, Maximize, Minimize } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
@@ -39,8 +39,8 @@ const LandingPageCMSWithSidebar = () => {
   };
 
   const handleSaved = () => {
+    // Stay live — no iframe reload. Draft changes already streamed via postMessage.
     invalidate();
-    setReloadToken((n) => n + 1);
   };
 
   const handleChangeOrder = () => {
@@ -48,8 +48,20 @@ const LandingPageCMSWithSidebar = () => {
     setReloadToken((n) => n + 1);
   };
 
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  React.useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) rootRef.current?.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  };
+
   return (
-    <div className="h-screen flex w-full bg-background overflow-hidden">
+    <div ref={rootRef} className="h-screen flex w-full bg-background overflow-hidden">
       <div className="hidden md:block">
         <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
       </div>
@@ -110,6 +122,11 @@ const LandingPageCMSWithSidebar = () => {
           </div>
 
           <div className="flex-1" />
+
+          <Button variant="outline" size="sm" className="rounded-none" onClick={toggleFullscreen}>
+            {isFullscreen ? <Minimize className="w-4 h-4 mr-2" /> : <Maximize className="w-4 h-4 mr-2" />}
+            {isFullscreen ? (lang === 'en' ? 'Exit' : 'Έξοδος') : (lang === 'en' ? 'Fullscreen' : 'Πλήρης οθόνη')}
+          </Button>
 
           <Sheet open={showTheme} onOpenChange={setShowTheme}>
             <SheetTrigger asChild>
