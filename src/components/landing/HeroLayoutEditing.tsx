@@ -179,6 +179,9 @@ export const HeroEditableText: React.FC<HeroEditableTextProps> = ({
                 ))}
               </optgroup>
             )}
+            <optgroup label="Project">
+              {PROJECT_FONTS.map((f) => <option key={`p-${f}`} value={f}>{f}</option>)}
+            </optgroup>
             <optgroup label="Google Fonts">
               {GOOGLE_FONTS.map((f) => <option key={f} value={f}>{f}</option>)}
             </optgroup>
