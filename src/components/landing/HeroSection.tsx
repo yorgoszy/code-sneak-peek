@@ -108,6 +108,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   const layout = {
     title: { ...(merged.title ?? {}), ...(bpOverride.title ?? {}) },
     subtitle: { ...(merged.subtitle ?? {}), ...(bpOverride.subtitle ?? {}) },
+    tagline: { ...(merged.tagline ?? {}), ...(bpOverride.tagline ?? {}) },
     buttons: {
       primary: { ...(merged.buttons?.primary ?? {}), ...(bpOverride.buttons?.primary ?? {}) },
       secondary: { ...(merged.buttons?.secondary ?? {}), ...(bpOverride.buttons?.secondary ?? {}) },
@@ -115,6 +116,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   } as {
     title: { font?: string; size?: number; x?: number; y?: number };
     subtitle: { font?: string; size?: number; x?: number; y?: number };
+    tagline: { font?: string; size?: number; x?: number; y?: number };
     buttons: {
       primary: { x?: number; y?: number; scale?: number };
       secondary: { x?: number; y?: number; scale?: number };
@@ -193,20 +195,26 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             }}
           >
             <EditableText as="span" sectionKey="hero" field="subtitle" lang={lang} value={subtitle} />
-            <span
-              style={{
-                fontFamily: "'UnifrakturMaguntia', serif",
-                fontSize: '12px',
-                marginLeft: '12px',
-                opacity: 0.7,
-                textTransform: 'lowercase',
-                letterSpacing: '0.2em',
-                verticalAlign: 'middle',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              est. 2024 — thessaloniki
-            </span>
+          </HeroEditableText>
+
+          <HeroEditableText
+            kind="tagline"
+            font={layout.tagline?.font}
+            size={layout.tagline?.size}
+            pos={{ x: layout.tagline?.x, y: layout.tagline?.y }}
+            active={active === 'tagline'}
+            onActivate={() => setActive('tagline')}
+            className="mb-6 text-[#f4f1ea]"
+            style={{
+              fontFamily: layout.tagline?.font ? `'${layout.tagline.font}', serif` : "'UnifrakturMaguntia', serif",
+              fontSize: `${layout.tagline?.size ?? 12}px`,
+              opacity: 0.7,
+              textTransform: 'lowercase',
+              letterSpacing: '0.2em',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <EditableText as="span" sectionKey="hero" field="tagline" lang={lang} value={tagline} />
           </HeroEditableText>
 
           {(description || editor) && (
