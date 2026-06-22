@@ -193,10 +193,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             <span
               style={{
                 fontFamily: "'UnifrakturMaguntia', serif",
-                fontSize: '0.45em',
-                marginLeft: '0.6em',
-                opacity: 0.85,
+                fontSize: '12px',
+                marginLeft: '12px',
+                opacity: 0.7,
                 textTransform: 'lowercase',
+                letterSpacing: '0.2em',
                 verticalAlign: 'middle',
                 whiteSpace: 'nowrap',
               }}
