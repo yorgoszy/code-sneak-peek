@@ -114,6 +114,23 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
   const setExtra = (patch: Record<string, any>) =>
     setDraft({ ...draft, extra_data: { ...(draft.extra_data ?? {}), ...patch } });
 
+  // ===== Undo history (per section) =====
+  const historyRef = React.useRef<LandingSection[]>([]);
+  const skipHistoryRef = React.useRef(true);
+  React.useEffect(() => { historyRef.current = []; skipHistoryRef.current = true; }, [section.id]);
+  React.useEffect(() => {
+    if (skipHistoryRef.current) { skipHistoryRef.current = false; return; }
+    historyRef.current.push(section);
+    if (historyRef.current.length > 50) historyRef.current.shift();
+  }, [section]);
+  const canUndo = historyRef.current.length > 0;
+  const undo = () => {
+    const prev = historyRef.current.pop();
+    if (!prev) return;
+    skipHistoryRef.current = true;
+    setDraft(prev);
+  };
+
   const background: BackgroundValue | undefined = draft.extra_data?.background;
 
   const save = async (silent = false) => {
