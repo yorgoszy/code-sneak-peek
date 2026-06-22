@@ -257,6 +257,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
           </div>
         </div>
       </div>
+      <TrialRequestDialog open={trialOpen} onOpenChange={setTrialOpen} />
     </section>
   );
 };
