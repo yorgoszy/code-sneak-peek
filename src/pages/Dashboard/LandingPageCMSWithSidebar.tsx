@@ -123,6 +123,11 @@ const LandingPageCMSWithSidebar = () => {
 
           <div className="flex-1" />
 
+          <Button variant="outline" size="sm" className="rounded-none" onClick={toggleFullscreen}>
+            {isFullscreen ? <Minimize className="w-4 h-4 mr-2" /> : <Maximize className="w-4 h-4 mr-2" />}
+            {isFullscreen ? (lang === 'en' ? 'Exit' : 'Έξοδος') : (lang === 'en' ? 'Fullscreen' : 'Πλήρης οθόνη')}
+          </Button>
+
           <Sheet open={showTheme} onOpenChange={setShowTheme}>
             <SheetTrigger asChild>
               <Button variant="outline" size="sm" className="rounded-none">
