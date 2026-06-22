@@ -86,7 +86,11 @@ export const HeroEditableText: React.FC<HeroEditableTextProps> = ({
     const move = (ev: MouseEvent) => {
       const dx = ev.clientX - startX, dy = ev.clientY - startY;
       if (!moved && Math.hypot(dx, dy) > 3) moved = true;
-      if (active && moved) postPatch(bp, { [kind]: { x: sx + dx, y: sy + dy } });
+      if (active && moved) {
+        const nx = snap(sx + dx);
+        const ny = snap(sy + dy);
+        postPatch(bp, { [kind]: { x: nx, y: ny } });
+      }
     };
     const up = (ev: MouseEvent) => {
       window.removeEventListener('mousemove', move);
@@ -95,7 +99,7 @@ export const HeroEditableText: React.FC<HeroEditableTextProps> = ({
       if (!moved) {
         onActivate();
       } else if (active) {
-        postPatch(bp, { [kind]: { x: sx + dx, y: sy + dy } }, true);
+        postPatch(bp, { [kind]: { x: snap(sx + dx), y: snap(sy + dy) } }, true);
       }
     };
     window.addEventListener('mousemove', move);
