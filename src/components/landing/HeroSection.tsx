@@ -190,6 +190,19 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             }}
           >
             <EditableText as="span" sectionKey="hero" field="subtitle" lang={lang} value={subtitle} />
+            <span
+              style={{
+                fontFamily: "'UnifrakturMaguntia', serif",
+                fontSize: '0.45em',
+                marginLeft: '0.6em',
+                opacity: 0.85,
+                textTransform: 'lowercase',
+                verticalAlign: 'middle',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              est. 2024 — thessaloniki
+            </span>
           </HeroEditableText>
 
           {(description || editor) && (
