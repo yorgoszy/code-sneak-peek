@@ -421,8 +421,8 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
 
               <p className="text-xs text-muted-foreground">
                 {lang === 'en'
-                  ? 'Tip: click title/subtitle/buttons in the preview to resize & drag.'
-                  : 'Συμβουλή: κάνε κλικ σε τίτλο/υπότιτλο/κουμπιά στην προεπισκόπηση για drag & resize.'}
+                  ? 'Tip: click title/subtitle/tagline/buttons in the preview to resize & drag.'
+                  : 'Συμβουλή: κάνε κλικ σε τίτλο/υπότιτλο/tagline/κουμπιά στην προεπισκόπηση για drag & resize.'}
               </p>
             </div>
           );
