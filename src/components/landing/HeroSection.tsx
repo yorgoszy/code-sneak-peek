@@ -99,6 +99,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             kind="title"
             font={layout.title?.font}
             size={layout.title?.size}
+            pos={{ x: layout.title?.x, y: layout.title?.y }}
             active={active === 'title'}
             onActivate={() => setActive('title')}
             className="mb-2 text-[#f4f1ea] tracking-wide"
