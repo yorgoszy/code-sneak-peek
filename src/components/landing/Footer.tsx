@@ -9,7 +9,7 @@ interface FooterProps {
 
 const Footer: React.FC<FooterProps> = ({ translations }) => {
   return (
-    <footer id="footer" className="bg-black py-16 text-[#f4f1ea]">
+    <footer id="footer" className="bg-black py-16 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Επικοινωνία */}
