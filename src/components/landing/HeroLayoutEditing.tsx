@@ -248,7 +248,7 @@ export const HeroDraggableButton: React.FC<HeroDraggableButtonProps> = ({
       const dx = ev.clientX - startX, dy = ev.clientY - startY;
       if (!moved && Math.hypot(dx, dy) > 3) moved = true;
       if (active && moved)
-        postPatch(bp, { buttons: { [id]: { x: sx + dx, y: sy + dy, scale } } });
+        postPatch(bp, { buttons: { [id]: { x: snap(sx + dx), y: snap(sy + dy), scale } } });
     };
     const up = (ev: MouseEvent) => {
       window.removeEventListener('mousemove', move);
@@ -256,7 +256,7 @@ export const HeroDraggableButton: React.FC<HeroDraggableButtonProps> = ({
       const dx = ev.clientX - startX, dy = ev.clientY - startY;
       if (!moved) onActivate();
       else if (active)
-        postPatch(bp, { buttons: { [id]: { x: sx + dx, y: sy + dy, scale } } }, true);
+        postPatch(bp, { buttons: { [id]: { x: snap(sx + dx), y: snap(sy + dy), scale } } }, true);
     };
     window.addEventListener('mousemove', move);
     window.addEventListener('mouseup', up);
