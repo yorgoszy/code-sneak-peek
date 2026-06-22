@@ -7,6 +7,7 @@ import { useTranslations } from "@/hooks/useTranslations";
 import { EditableText } from "./EditableText";
 import { HeroEditableText, HeroDraggableButton, isHeroEditorMode, useBP } from "./HeroLayoutEditing";
 import { TrialRequestDialog } from "./TrialRequestDialog";
+import { PromoVideoDialog } from "./PromoVideoDialog";
 
 interface HeroSectionProps {
   translations: any;
@@ -25,6 +26,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   const [active, setActive] = React.useState<null | 'title' | 'subtitle' | 'tagline' | 'btn-primary' | 'btn-secondary'>(null);
   const [localLayout, setLocalLayout] = React.useState<any>(null);
   const [trialOpen, setTrialOpen] = React.useState(false);
+  const [promoOpen, setPromoOpen] = React.useState(false);
 
   // Click outside hero edit roots → deactivate
   React.useEffect(() => {
@@ -84,11 +86,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   React.useEffect(() => { setLocalLayout(null); }, [cms?.extra_data?.hero_layout]);
 
   const handleContactClick = () => {
-    const footerSection = document.getElementById('footer');
-    if (footerSection) {
-      footerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    setPromoOpen(true);
   };
+  const promoVideoUrl = (effectiveExtra?.promo_video_url as string) || '';
 
   if (cms && cms.is_visible === false) return null;
 
