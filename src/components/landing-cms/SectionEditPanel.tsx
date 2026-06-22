@@ -86,22 +86,22 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
       }
       if (e.data?.type === 'landing-editor-hero' && draft.section_key === 'hero') {
         const patch = (e.data.patch ?? {}) as Record<string, any>;
-        setDraft((d) => {
-          const cur = ((d.extra_data?.hero_layout ?? {}) as Record<string, any>);
-          const merged: Record<string, any> = { ...cur };
-          for (const k of Object.keys(patch)) {
-            if (k === 'buttons') {
-              const curBtns = (cur.buttons ?? {}) as Record<string, any>;
-              const patchBtns = (patch.buttons ?? {}) as Record<string, any>;
-              const nextBtns: Record<string, any> = { ...curBtns };
-              for (const id of Object.keys(patchBtns)) {
-                nextBtns[id] = { ...(curBtns[id] ?? {}), ...patchBtns[id] };
-              }
-              merged.buttons = nextBtns;
+        const deepMerge = (a: any, b: any): any => {
+          if (!b || typeof b !== 'object' || Array.isArray(b)) return b ?? a;
+          const out: any = { ...(a ?? {}) };
+          for (const k of Object.keys(b)) {
+            const av = out[k]; const bv = b[k];
+            if (av && bv && typeof av === 'object' && typeof bv === 'object' && !Array.isArray(av) && !Array.isArray(bv)) {
+              out[k] = deepMerge(av, bv);
             } else {
-              merged[k] = { ...(cur[k] ?? {}), ...patch[k] };
+              out[k] = bv;
             }
           }
+          return out;
+        };
+        setDraft((d) => {
+          const cur = ((d.extra_data?.hero_layout ?? {}) as Record<string, any>);
+          const merged = deepMerge(cur, patch);
           return { ...d, extra_data: { ...(d.extra_data ?? {}), hero_layout: merged } };
         });
       }
