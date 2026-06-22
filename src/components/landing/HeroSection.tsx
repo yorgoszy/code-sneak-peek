@@ -78,12 +78,20 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   const bgImage = cms?.image_url || DEFAULT_HERO_IMAGE;
   const gradient = backgroundCss(cms?.extra_data);
 
-  const layout = (cms?.extra_data?.hero_layout ?? {}) as {
-    title?: { font?: string; size?: number; x?: number; y?: number };
-    subtitle?: { font?: string; size?: number; x?: number; y?: number };
-    buttons?: {
-      primary?: { x?: number; y?: number; scale?: number };
-      secondary?: { x?: number; y?: number; scale?: number };
+  const cmsLayout = (cms?.extra_data?.hero_layout ?? {}) as any;
+  const layout = {
+    title: { ...(cmsLayout.title ?? {}), ...(localLayout?.title ?? {}) },
+    subtitle: { ...(cmsLayout.subtitle ?? {}), ...(localLayout?.subtitle ?? {}) },
+    buttons: {
+      primary: { ...(cmsLayout.buttons?.primary ?? {}), ...(localLayout?.buttons?.primary ?? {}) },
+      secondary: { ...(cmsLayout.buttons?.secondary ?? {}), ...(localLayout?.buttons?.secondary ?? {}) },
+    },
+  } as {
+    title: { font?: string; size?: number; x?: number; y?: number };
+    subtitle: { font?: string; size?: number; x?: number; y?: number };
+    buttons: {
+      primary: { x?: number; y?: number; scale?: number };
+      secondary: { x?: number; y?: number; scale?: number };
     };
   };
 
