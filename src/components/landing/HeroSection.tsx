@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useLandingSection, localized, backgroundCss, type Lang } from "@/hooks/useLandingConfig";
 import { useTranslations } from "@/hooks/useTranslations";
 import { EditableText } from "./EditableText";
-import { HeroEditableText, HeroDraggableButton, isHeroEditorMode } from "./HeroLayoutEditing";
+import { HeroEditableText, HeroDraggableButton, isHeroEditorMode, useBP } from "./HeroLayoutEditing";
 
 interface HeroSectionProps {
   translations: any;
