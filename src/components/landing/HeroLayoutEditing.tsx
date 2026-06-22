@@ -1,5 +1,5 @@
 import React from 'react';
-import { GOOGLE_FONTS } from '@/components/landing-cms/shared';
+import { GOOGLE_FONTS, PROJECT_FONTS } from '@/components/landing-cms/shared';
 import { useLandingTheme } from '@/hooks/useLandingConfig';
 
 export const isHeroEditorMode = () =>
@@ -7,7 +7,14 @@ export const isHeroEditorMode = () =>
   new URLSearchParams(window.location.search).get('editor') === '1';
 
 const postPatch = (patch: any, final = false) => {
-  window.parent?.postMessage({ type: 'landing-editor-hero', patch, final }, '*');
+  // Local instant preview — no round-trip to parent
+  try {
+    window.dispatchEvent(new CustomEvent('hero-layout-local', { detail: patch }));
+  } catch { /* ignore */ }
+  // Only persist on final (mouseup / commit) to avoid lag and excessive saves
+  if (final) {
+    window.parent?.postMessage({ type: 'landing-editor-hero', patch, final: true }, '*');
+  }
 };
 
 interface HeroEditableTextProps {
@@ -172,6 +179,9 @@ export const HeroEditableText: React.FC<HeroEditableTextProps> = ({
                 ))}
               </optgroup>
             )}
+            <optgroup label="Project">
+              {PROJECT_FONTS.map((f) => <option key={`p-${f}`} value={f}>{f}</option>)}
+            </optgroup>
             <optgroup label="Google Fonts">
               {GOOGLE_FONTS.map((f) => <option key={f} value={f}>{f}</option>)}
             </optgroup>
