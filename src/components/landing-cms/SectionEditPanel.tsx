@@ -504,7 +504,7 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
       </div>
 
       <div className="p-3 border-t border-border">
-        <Button onClick={save} disabled={saving} className="rounded-none w-full">
+        <Button onClick={() => save(false)} disabled={saving} className="rounded-none w-full">
           <Save className="w-4 h-4 mr-2" />
           {saving ? (lang === 'en' ? 'Saving...' : 'Αποθήκευση...') : (lang === 'en' ? 'Save' : 'Αποθήκευση')}
         </Button>
