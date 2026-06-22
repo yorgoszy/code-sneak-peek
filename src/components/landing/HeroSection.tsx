@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Play } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useLandingSection, localized, backgroundCss, type Lang } from "@/hooks/useLandingConfig";
 import { useTranslations } from "@/hooks/useTranslations";
@@ -251,6 +252,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
                 className="contact-btn rounded-none bg-transparent text-white border-white"
                 onClick={(e) => { if (editor) { e.preventDefault(); return; } handleContactClick(); }}
               >
+                <Play className="w-4 h-4 mr-2" fill="currentColor" />
                 {translations.contactBtn}
               </Button>
             </HeroDraggableButton>
