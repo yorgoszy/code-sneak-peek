@@ -29,6 +29,13 @@ export const useBP = (): BP => {
 /** Wrap a patch in the bp namespace (desktop = top-level). */
 const wrapForBP = (bp: BP, patch: any) => (bp === 'desktop' ? patch : { [bp]: patch });
 
+/** Magnetic snap: snap to 0 within 8px, otherwise snap to 8px grid when shift held. */
+const SNAP_THRESHOLD = 8;
+export const snap = (v: number, anchors: number[] = [0]): number => {
+  for (const a of anchors) if (Math.abs(v - a) <= SNAP_THRESHOLD) return a;
+  return v;
+};
+
 const postPatch = (bp: BP, patch: any, final = false) => {
   const wrapped = wrapForBP(bp, patch);
   try {
