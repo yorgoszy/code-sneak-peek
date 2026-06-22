@@ -88,12 +88,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   const handleContactClick = () => {
     setPromoOpen(true);
   };
-  const promoVideoUrl = (effectiveExtra?.promo_video_url as string) || '';
+  
 
   if (cms && cms.is_visible === false) return null;
 
   // Merge: cmsLayout (desktop base) → cmsLayout[bp] override → localLayout (live)
   const effectiveExtra = draftExtra ?? cms?.extra_data ?? {};
+  const promoVideoUrl = (effectiveExtra?.promo_video_url as string) || '';
   const title = localized(cms, 'title', lang) || translations.heroTitle;
   const subtitle = localized(cms, 'subtitle', lang) || translations.heroSubtitle;
   const tagline = lang === 'en'
