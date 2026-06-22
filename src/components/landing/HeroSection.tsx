@@ -114,9 +114,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
       secondary: { ...(merged.buttons?.secondary ?? {}), ...(bpOverride.buttons?.secondary ?? {}) },
     },
   } as {
-    title: { font?: string; size?: number; x?: number; y?: number };
-    subtitle: { font?: string; size?: number; x?: number; y?: number };
-    tagline: { font?: string; size?: number; x?: number; y?: number };
+    title: { font?: string; size?: number; x?: number; y?: number; color?: string };
+    subtitle: { font?: string; size?: number; x?: number; y?: number; color?: string };
+    tagline: { font?: string; size?: number; x?: number; y?: number; color?: string };
     buttons: {
       primary: { x?: number; y?: number; scale?: number };
       secondary: { x?: number; y?: number; scale?: number };
