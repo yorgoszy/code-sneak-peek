@@ -1,5 +1,6 @@
 import React from 'react';
 import { GOOGLE_FONTS } from '@/components/landing-cms/shared';
+import { useLandingTheme } from '@/hooks/useLandingConfig';
 
 export const isHeroEditorMode = () =>
   typeof window !== 'undefined' &&
