@@ -190,7 +190,7 @@ const Index = () => {
           <GiftCardSection translations={correctedTranslations} />
 
           {/* CTA Section */}
-          <section className="py-20 bg-[#f4f1ea]">
+          <section className="py-20 bg-white">
             <div className="container mx-auto px-4 text-center">
               <h2 className="text-4xl font-bold text-black mb-6">
                 {correctedTranslations.readyQuestion}

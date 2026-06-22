@@ -116,11 +116,11 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
     <section id="live-matches" className="py-20 bg-black">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-red-600 text-[#f4f1ea] text-sm font-semibold mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-red-600 text-white text-sm font-semibold mb-4">
             <Radio className="w-4 h-4 animate-pulse" />
             LIVE
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-[#f4f1ea] mb-4">{sectionTitle}</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">{sectionTitle}</h2>
         </div>
 
         {events.map((event) => {
@@ -137,7 +137,7 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
           return (
             <div key={event.id} className="mb-12">
               <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold text-[#f4f1ea]">{event.title}</h3>
+                <h3 className="text-2xl font-bold text-white">{event.title}</h3>
                 {event.description && <p className="text-gray-400 mt-1">{event.description}</p>}
               </div>
               <div className={`grid gap-4 ${cols}`}>

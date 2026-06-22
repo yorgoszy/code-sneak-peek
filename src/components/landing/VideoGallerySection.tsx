@@ -85,7 +85,7 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
   const vsLabel = "VS";
 
   return (
-    <section id="video-gallery-section" className="py-20 bg-[#f4f1ea]">
+    <section id="video-gallery-section" className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-black text-[#f4f1ea] text-sm font-semibold mb-4">

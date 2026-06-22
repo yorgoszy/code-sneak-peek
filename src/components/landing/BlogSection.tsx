@@ -62,7 +62,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
     <section id="blog" className="pt-32 pb-28 bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-16">
-          <h2 className="text-4xl font-bold mb-4 text-[#f4f1ea]" style={{ fontFamily: 'Robert, sans-serif' }}>
+          <h2 className="text-4xl font-bold mb-4 text-white" style={{ fontFamily: 'Robert, sans-serif' }}>
             {translations.blogSection}
           </h2>
         </div>
@@ -76,9 +76,9 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
           >
             {/* Navigation buttons positioned absolutely in top right */}
             <div className="absolute -top-16 right-0 flex gap-2 z-10">
-              <CarouselPrevious className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none hover:bg-transparent rounded-none text-[#f4f1ea] hover:text-[#aca097]">
+              <CarouselPrevious className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none hover:bg-transparent rounded-none text-white hover:text-[#aca097]">
               </CarouselPrevious>
-              <CarouselNext className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none hover:bg-transparent rounded-none text-[#f4f1ea] hover:text-[#aca097]">
+              <CarouselNext className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none hover:bg-transparent rounded-none text-white hover:text-[#aca097]">
               </CarouselNext>
             </div>
 

@@ -55,9 +55,9 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
 
             {/* Text */}
             <div className="flex-1 text-center md:text-left">
-              <h2 className="text-3xl md:text-4xl font-bold text-[#f4f1ea] mb-4 font-['Roobert_Pro',sans-serif]">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 font-['Roobert_Pro',sans-serif]">
                 {t.titleLine1}<br />
-                <span className="text-[#f4f1ea]">{t.titleLine2}</span>
+                <span className="text-white">{t.titleLine2}</span>
               </h2>
               <p className="text-gray-400 mb-6 text-lg font-['Roobert_Pro',sans-serif]">
                 {t.description}

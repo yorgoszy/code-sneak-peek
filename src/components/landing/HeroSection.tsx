@@ -139,7 +139,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   return (
     <section id="home" className="relative pt-16 min-h-screen flex items-center">
       <style>{`
-        .get-started-btn { background-color: #f4f1ea !important; color: black !important; }
+        .get-started-btn { background-color: #FFFFFF !important; color: black !important; }
         .get-started-btn:hover { background-color: #e5e5e5 !important; }
         .contact-btn:hover {
           border-color: #aca097 !important;
@@ -174,7 +174,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             style={{
               fontFamily: layout.title?.font ? `'${layout.title.font}', sans-serif` : "'Bebas Neue', sans-serif",
               fontSize: layout.title?.size ? `${layout.title.size}px` : undefined,
-              color: layout.title?.color ?? '#f4f1ea',
+              color: layout.title?.color ?? '#FFFFFF',
             }}
           >
             <EditableText as="span" sectionKey="hero" field="title" lang={lang} value={title} />
@@ -193,7 +193,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             style={{
               fontFamily: layout.subtitle?.font ? `'${layout.subtitle.font}', sans-serif` : "'Bebas Neue', sans-serif",
               fontSize: layout.subtitle?.size ? `${layout.subtitle.size}px` : undefined,
-              color: layout.subtitle?.color ?? '#f4f1ea',
+              color: layout.subtitle?.color ?? '#FFFFFF',
             }}
           >
             <EditableText as="span" sectionKey="hero" field="subtitle" lang={lang} value={subtitle} />
@@ -210,7 +210,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             style={{
               fontFamily: layout.tagline?.font ? `'${layout.tagline.font}', serif` : "'UnifrakturMaguntia', serif",
               fontSize: `${layout.tagline?.size ?? 12}px`,
-              color: layout.tagline?.color ?? '#f4f1ea',
+              color: layout.tagline?.color ?? '#FFFFFF',
               opacity: 0.7,
               textTransform: 'lowercase',
               letterSpacing: '0.2em',
@@ -227,7 +227,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
               field="description"
               lang={lang}
               value={description ?? ''}
-              className="text-[#f4f1ea]/90 text-base sm:text-lg mb-6 max-w-2xl"
+              className="text-white/90 text-base sm:text-lg mb-6 max-w-2xl"
               multiline
             />
           )}
@@ -255,7 +255,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             >
               <Button
                 variant="outline"
-                className="contact-btn rounded-none bg-transparent text-[#f4f1ea] border-[#f4f1ea]"
+                className="contact-btn rounded-none bg-transparent text-white border-white"
                 onClick={(e) => { if (editor) { e.preventDefault(); return; } handleContactClick(); }}
               >
                 {translations.contactBtn}
