@@ -21,15 +21,15 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article, onReadMore, translat
       </div>
       <div className="p-6 flex flex-col flex-grow">
         <div className="text-sm mb-2" style={{ color: '#aca097' }}>{article.date}</div>
-        <h3 className="text-xl font-bold mb-3 text-[#f4f1ea]" style={{ fontFamily: 'Robert, sans-serif' }}>
+        <h3 className="text-xl font-bold mb-3 text-white" style={{ fontFamily: 'Robert, sans-serif' }}>
           {article.title}
         </h3>
-        <p className="mb-4 line-clamp-3 flex-grow text-[#f4f1ea]">
+        <p className="mb-4 line-clamp-3 flex-grow text-white">
           {article.excerpt}
         </p>
         <button 
           onClick={() => onReadMore(article)}
-          className="font-semibold transition-colors mt-auto text-left text-[#aca097] hover:text-[#f4f1ea]"
+          className="font-semibold transition-colors mt-auto text-left text-[#aca097] hover:text-white"
         >
           {translations.blog?.readMore || (translations.language === 'en' ? 'Read more →' : 'Διαβάστε περισσότερα →')}
         </button>

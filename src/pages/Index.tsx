@@ -19,6 +19,7 @@ import ResultsSection from "@/components/landing/ResultsSection";
 import GiftCardSection from "@/components/landing/GiftCardSection";
 
 import Footer from "@/components/landing/Footer";
+import { TrialRequestDialog } from "@/components/landing/TrialRequestDialog";
 import LandingChatbot from "@/components/landing/LandingChatbot";
 import { useLandingTheme, useApplyLandingTheme, useLandingSection } from "@/hooks/useLandingConfig";
 import { EditorOverlay } from "@/components/landing/EditorOverlay";
@@ -30,6 +31,7 @@ const Index = () => {
   const [activeAboutSection, setActiveAboutSection] = useState<number>(1);
   const isPWA = useIsPWA();
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [trialOpen, setTrialOpen] = useState(false);
   const { data: landingTheme } = useLandingTheme();
   useApplyLandingTheme(landingTheme);
 
@@ -199,13 +201,15 @@ const Index = () => {
                 {correctedTranslations.journeyText}
               </p>
               <button 
-                className="bg-black px-8 py-4 text-lg font-semibold hover:bg-gray-800 transition-colors text-[#f4f1ea]"
-                onClick={handleGetStarted}
+                className="bg-black px-8 py-4 text-lg font-semibold hover:bg-gray-800 transition-colors text-white"
+                onClick={() => setTrialOpen(true)}
               >
                 {correctedTranslations.startNow}
               </button>
             </div>
           </section>
+
+          <TrialRequestDialog open={trialOpen} onOpenChange={setTrialOpen} />
 
           <Footer 
             translations={correctedTranslations}
