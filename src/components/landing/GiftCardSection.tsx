@@ -78,7 +78,7 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
               </ul>
               <button
                 onClick={() => setPurchaseOpen(true)}
-                className="bg-[#f4f1ea] text-black px-8 py-4 text-lg font-semibold hover:bg-gray-200 transition-colors inline-flex items-center gap-2 font-['Roobert_Pro',sans-serif]"
+                className="bg-white text-black px-8 py-4 text-lg font-semibold hover:bg-gray-200 transition-colors inline-flex items-center gap-2 font-['Roobert_Pro',sans-serif]"
               >
                 {t.cta}
                 <ArrowRight className="h-5 w-5" />
