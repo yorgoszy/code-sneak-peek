@@ -1,5 +1,6 @@
 import React from 'react';
 import { GOOGLE_FONTS } from '@/components/landing-cms/shared';
+import { useLandingTheme } from '@/hooks/useLandingConfig';
 
 export const isHeroEditorMode = () =>
   typeof window !== 'undefined' &&
@@ -13,6 +14,7 @@ interface HeroEditableTextProps {
   kind: 'title' | 'subtitle';
   font?: string;
   size?: number; // px
+  pos?: { x?: number; y?: number };
   children: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
@@ -22,13 +24,18 @@ interface HeroEditableTextProps {
 
 /**
  * Wraps title/subtitle. When active in editor: outline, vertical resize handle on right edge
- * (drag = font-size), and a font selector popover at top-right.
+ * (drag = font-size), drag handle (move icon) for x/y translate, and a font selector popover.
  */
 export const HeroEditableText: React.FC<HeroEditableTextProps> = ({
-  kind, font, size, children, className, style, active, onActivate,
+  kind, font, size, pos, children, className, style, active, onActivate,
 }) => {
   const editor = isHeroEditorMode();
   const ref = React.useRef<HTMLDivElement>(null);
+  const { data: theme } = useLandingTheme();
+  const customFonts = theme?.custom_fonts ?? [];
+
+  const x = pos?.x ?? 0;
+  const y = pos?.y ?? 0;
 
   const onResizeDown = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -51,6 +58,23 @@ export const HeroEditableText: React.FC<HeroEditableTextProps> = ({
     window.addEventListener('mouseup', up);
   };
 
+  const onMoveDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const startX = e.clientX, startY = e.clientY;
+    const sx = x, sy = y;
+    const move = (ev: MouseEvent) => {
+      postPatch({ [kind]: { x: sx + (ev.clientX - startX), y: sy + (ev.clientY - startY) } });
+    };
+    const up = (ev: MouseEvent) => {
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
+      postPatch({ [kind]: { x: sx + (ev.clientX - startX), y: sy + (ev.clientY - startY) } }, true);
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  };
+
   const styleMerged: React.CSSProperties = {
     ...style,
     fontFamily: font ? `'${font}', sans-serif` : style?.fontFamily,
@@ -58,6 +82,7 @@ export const HeroEditableText: React.FC<HeroEditableTextProps> = ({
     lineHeight: 1.05,
     position: 'relative',
     display: 'inline-block',
+    transform: (x || y) ? `translate(${x}px, ${y}px)` : style?.transform,
     outline: editor && active ? '2px dashed #00ffba' : undefined,
     outlineOffset: 6,
     cursor: editor ? 'pointer' : undefined,
@@ -96,6 +121,29 @@ export const HeroEditableText: React.FC<HeroEditableTextProps> = ({
               zIndex: 60,
             }}
           />
+          {/* Move handle — drag to translate x/y */}
+          <div
+            onMouseDown={onMoveDown}
+            title="Drag to move"
+            style={{
+              position: 'absolute',
+              left: -28,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: 22,
+              height: 22,
+              background: '#00ffba',
+              border: '1px solid #000',
+              color: '#000',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 14,
+              cursor: 'move',
+              zIndex: 60,
+              userSelect: 'none',
+            }}
+          >✥</div>
           {/* Font picker */}
           <select
             value={font ?? ''}
@@ -113,16 +161,27 @@ export const HeroEditableText: React.FC<HeroEditableTextProps> = ({
               fontSize: 11,
               padding: '2px 4px',
               zIndex: 60,
+              maxWidth: 220,
             }}
           >
             <option value="">— font —</option>
-            {GOOGLE_FONTS.map((f) => <option key={f} value={f}>{f}</option>)}
+            {customFonts.length > 0 && (
+              <optgroup label="Custom">
+                {customFonts.map((f) => (
+                  <option key={`c-${f.name}`} value={f.name}>{f.name}</option>
+                ))}
+              </optgroup>
+            )}
+            <optgroup label="Google Fonts">
+              {GOOGLE_FONTS.map((f) => <option key={f} value={f}>{f}</option>)}
+            </optgroup>
           </select>
         </>
       )}
     </div>
   );
 };
+
 
 interface HeroDraggableButtonProps {
   id: 'primary' | 'secondary';

@@ -116,7 +116,7 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
 
   const background: BackgroundValue | undefined = draft.extra_data?.background;
 
-  const save = async () => {
+  const save = async (silent = false) => {
     setSaving(true);
     try {
       const { error } = await supabase.from('landing_sections' as any).update({
@@ -136,12 +136,26 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
         extra_data: draft.extra_data ?? {},
       }).eq('id', draft.id);
       if (error) throw error;
-      toast.success(lang === 'en' ? 'Saved' : 'Αποθηκεύτηκε');
+      if (!silent) toast.success(lang === 'en' ? 'Saved' : 'Αποθηκεύτηκε');
       onSaved();
     } catch (e: any) {
-      toast.error('Error: ' + (e?.message ?? String(e)));
+      if (!silent) toast.error('Error: ' + (e?.message ?? String(e)));
     } finally { setSaving(false); }
   };
+
+  // Auto-save (live) — debounced. Skip first render after section change.
+  const skipAutoSave = React.useRef(true);
+  useEffect(() => { skipAutoSave.current = true; }, [section.id]);
+  useEffect(() => {
+    if (skipAutoSave.current) { skipAutoSave.current = false; return; }
+    const t = setTimeout(() => { save(true); }, 600);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    draft.is_visible, draft.title, draft.subtitle, draft.description, draft.cta_label,
+    draft.title_en, draft.subtitle_en, draft.description_en, draft.cta_label_en,
+    draft.cta_url, draft.image_url, draft.bg_color, draft.text_color, draft.extra_data,
+  ]);
 
   const sectionLabel = SECTION_LABELS[draft.section_key]?.[lang] ?? draft.section_key;
 
@@ -490,7 +504,7 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
       </div>
 
       <div className="p-3 border-t border-border">
-        <Button onClick={save} disabled={saving} className="rounded-none w-full">
+        <Button onClick={() => save(false)} disabled={saving} className="rounded-none w-full">
           <Save className="w-4 h-4 mr-2" />
           {saving ? (lang === 'en' ? 'Saving...' : 'Αποθήκευση...') : (lang === 'en' ? 'Save' : 'Αποθήκευση')}
         </Button>
