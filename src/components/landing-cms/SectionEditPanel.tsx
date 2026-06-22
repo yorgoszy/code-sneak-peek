@@ -116,19 +116,33 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
 
   // ===== Undo history (per section) =====
   const historyRef = React.useRef<LandingSection[]>([]);
+  const lastSnapshotRef = React.useRef<LandingSection>(section);
   const skipHistoryRef = React.useRef(true);
-  React.useEffect(() => { historyRef.current = []; skipHistoryRef.current = true; }, [section.id]);
+  const [historyVersion, setHistoryVersion] = React.useState(0);
+  React.useEffect(() => {
+    historyRef.current = [];
+    lastSnapshotRef.current = section;
+    skipHistoryRef.current = true;
+    setHistoryVersion((v) => v + 1);
+  }, [section.id]);
   React.useEffect(() => {
     if (skipHistoryRef.current) { skipHistoryRef.current = false; return; }
-    historyRef.current.push(section);
-    if (historyRef.current.length > 50) historyRef.current.shift();
-  }, [section]);
-  const canUndo = historyRef.current.length > 0;
+    const t = setTimeout(() => {
+      historyRef.current.push(lastSnapshotRef.current);
+      if (historyRef.current.length > 100) historyRef.current.shift();
+      lastSnapshotRef.current = draft;
+      setHistoryVersion((v) => v + 1);
+    }, 400);
+    return () => clearTimeout(t);
+  }, [draft]);
+  const canUndo = historyVersion >= 0 && historyRef.current.length > 0;
   const undo = () => {
     const prev = historyRef.current.pop();
     if (!prev) return;
     skipHistoryRef.current = true;
+    lastSnapshotRef.current = prev;
     setDraft(prev);
+    setHistoryVersion((v) => v + 1);
   };
 
   const background: BackgroundValue | undefined = draft.extra_data?.background;
