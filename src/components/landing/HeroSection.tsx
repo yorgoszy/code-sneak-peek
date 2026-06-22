@@ -34,27 +34,27 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
     return () => document.removeEventListener('mousedown', onDown, true);
   }, [editor]);
 
+  // Deep-merge helper for hero_layout patches (handles nested bp namespaces)
+  const deepMerge = (a: any, b: any): any => {
+    if (!b || typeof b !== 'object' || Array.isArray(b)) return b ?? a;
+    const out: any = { ...(a ?? {}) };
+    for (const k of Object.keys(b)) {
+      const av = out[k]; const bv = b[k];
+      if (av && bv && typeof av === 'object' && typeof bv === 'object' && !Array.isArray(av) && !Array.isArray(bv)) {
+        out[k] = deepMerge(av, bv);
+      } else {
+        out[k] = bv;
+      }
+    }
+    return out;
+  };
+
   // Live local patches from drag/resize handles — instant, no parent round-trip
   React.useEffect(() => {
     if (!editor) return;
     const onPatch = (e: Event) => {
       const patch = (e as CustomEvent).detail ?? {};
-      setLocalLayout((prev: any) => {
-        const cur = prev ?? {};
-        const merged: any = { ...cur };
-        for (const k of Object.keys(patch)) {
-          if (k === 'buttons') {
-            const curB = cur.buttons ?? {};
-            const pB = patch.buttons ?? {};
-            const next: any = { ...curB };
-            for (const id of Object.keys(pB)) next[id] = { ...(curB[id] ?? {}), ...pB[id] };
-            merged.buttons = next;
-          } else {
-            merged[k] = { ...(cur[k] ?? {}), ...patch[k] };
-          }
-        }
-        return merged;
-      });
+      setLocalLayout((prev: any) => deepMerge(prev ?? {}, patch));
     };
     window.addEventListener('hero-layout-local', onPatch as EventListener);
     return () => window.removeEventListener('hero-layout-local', onPatch as EventListener);
@@ -79,13 +79,16 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   const bgImage = cms?.image_url || DEFAULT_HERO_IMAGE;
   const gradient = backgroundCss(cms?.extra_data);
 
-  const cmsLayout = (cms?.extra_data?.hero_layout ?? {}) as any;
+  // Merge: cmsLayout (desktop base) → cmsLayout[bp] override → localLayout (live)
+  const cmsLayoutRaw = (cms?.extra_data?.hero_layout ?? {}) as any;
+  const merged = deepMerge(cmsLayoutRaw, localLayout ?? {});
+  const bpOverride = bp !== 'desktop' ? (merged?.[bp] ?? {}) : {};
   const layout = {
-    title: { ...(cmsLayout.title ?? {}), ...(localLayout?.title ?? {}) },
-    subtitle: { ...(cmsLayout.subtitle ?? {}), ...(localLayout?.subtitle ?? {}) },
+    title: { ...(merged.title ?? {}), ...(bpOverride.title ?? {}) },
+    subtitle: { ...(merged.subtitle ?? {}), ...(bpOverride.subtitle ?? {}) },
     buttons: {
-      primary: { ...(cmsLayout.buttons?.primary ?? {}), ...(localLayout?.buttons?.primary ?? {}) },
-      secondary: { ...(cmsLayout.buttons?.secondary ?? {}), ...(localLayout?.buttons?.secondary ?? {}) },
+      primary: { ...(merged.buttons?.primary ?? {}), ...(bpOverride.buttons?.primary ?? {}) },
+      secondary: { ...(merged.buttons?.secondary ?? {}), ...(bpOverride.buttons?.secondary ?? {}) },
     },
   } as {
     title: { font?: string; size?: number; x?: number; y?: number };
