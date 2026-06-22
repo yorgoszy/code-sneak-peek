@@ -89,6 +89,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
 
   if (cms && cms.is_visible === false) return null;
 
+  // Merge: cmsLayout (desktop base) → cmsLayout[bp] override → localLayout (live)
+  const effectiveExtra = draftExtra ?? cms?.extra_data ?? {};
   const title = localized(cms, 'title', lang) || translations.heroTitle;
   const subtitle = localized(cms, 'subtitle', lang) || translations.heroSubtitle;
   const tagline = lang === 'en'
@@ -99,8 +101,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   const bgImage = cms?.image_url || DEFAULT_HERO_IMAGE;
   const gradient = backgroundCss(cms?.extra_data);
 
-  // Merge: cmsLayout (desktop base) → cmsLayout[bp] override → localLayout (live)
-  const effectiveExtra = draftExtra ?? cms?.extra_data ?? {};
   const cmsLayoutRaw = (effectiveExtra?.hero_layout ?? {}) as any;
   const bounds = (effectiveExtra?.content_bounds ?? {}) as { left?: number; right?: number };
   const merged = deepMerge(cmsLayoutRaw, localLayout ?? {});
