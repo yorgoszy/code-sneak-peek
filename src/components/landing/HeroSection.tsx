@@ -97,7 +97,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   const gradient = backgroundCss(cms?.extra_data);
 
   // Merge: cmsLayout (desktop base) → cmsLayout[bp] override → localLayout (live)
-  const cmsLayoutRaw = (cms?.extra_data?.hero_layout ?? {}) as any;
+  const effectiveExtra = draftExtra ?? cms?.extra_data ?? {};
+  const cmsLayoutRaw = (effectiveExtra?.hero_layout ?? {}) as any;
+  const bounds = (effectiveExtra?.content_bounds ?? {}) as { left?: number; right?: number };
   const merged = deepMerge(cmsLayoutRaw, localLayout ?? {});
   const bpOverride = bp !== 'desktop' ? (merged?.[bp] ?? {}) : {};
   const layout = {
