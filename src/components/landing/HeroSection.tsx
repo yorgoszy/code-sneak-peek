@@ -60,6 +60,23 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
     return () => window.removeEventListener('hero-layout-local', onPatch as EventListener);
   }, [editor]);
 
+  // Live draft from parent editor (undo, sidebar changes) — replace layout fully without iframe reload
+  const [draftExtra, setDraftExtra] = React.useState<any>(null);
+  React.useEffect(() => {
+    if (!editor) return;
+    const onMsg = (e: MessageEvent) => {
+      if (e.data?.type === 'landing-editor-draft' && e.data.sectionKey === 'hero') {
+        setDraftExtra(e.data.extra ?? {});
+        // overwrite local drag layout with the authoritative one (e.g. undo)
+        if (e.data.extra?.hero_layout) setLocalLayout(e.data.extra.hero_layout);
+      }
+    };
+    window.addEventListener('message', onMsg);
+    try { window.parent?.postMessage({ type: 'landing-editor-ready' }, '*'); } catch { /* ignore */ }
+    return () => window.removeEventListener('message', onMsg);
+  }, [editor]);
+
+
   // Reset local override once the saved cms layout catches up
   React.useEffect(() => { setLocalLayout(null); }, [cms?.extra_data?.hero_layout]);
 
