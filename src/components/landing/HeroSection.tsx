@@ -20,7 +20,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   const editor = isHeroEditorMode();
   const bp = useBP();
 
-  const [active, setActive] = React.useState<null | 'title' | 'subtitle' | 'btn-primary' | 'btn-secondary'>(null);
+  const [active, setActive] = React.useState<null | 'title' | 'subtitle' | 'tagline' | 'btn-primary' | 'btn-secondary'>(null);
   const [localLayout, setLocalLayout] = React.useState<any>(null);
 
   // Click outside hero edit roots → deactivate
@@ -91,6 +91,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
 
   const title = localized(cms, 'title', lang) || translations.heroTitle;
   const subtitle = localized(cms, 'subtitle', lang) || translations.heroSubtitle;
+  const tagline = lang === 'en'
+    ? (effectiveExtra?.tagline_en || effectiveExtra?.tagline || 'est. 2024 — thessaloniki')
+    : (effectiveExtra?.tagline || 'est. 2024 — thessaloniki');
   const description = localized(cms, 'description', lang);
   const ctaLabel = translations.getStarted;
   const bgImage = cms?.image_url || DEFAULT_HERO_IMAGE;
