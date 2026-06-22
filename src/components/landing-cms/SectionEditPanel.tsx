@@ -228,6 +228,109 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
           </div>
         )}
 
+        {draft.section_key === 'hero' && (() => {
+          const hl = (draft.extra_data?.hero_layout ?? {}) as any;
+          const setHL = (patch: any) => {
+            const cur = hl;
+            const merged = { ...cur };
+            for (const k of Object.keys(patch)) {
+              if (k === 'buttons') {
+                merged.buttons = { ...(cur.buttons ?? {}) };
+                for (const id of Object.keys(patch.buttons)) {
+                  merged.buttons[id] = { ...(cur.buttons?.[id] ?? {}), ...patch.buttons[id] };
+                }
+              } else {
+                merged[k] = { ...(cur[k] ?? {}), ...patch[k] };
+              }
+            }
+            setExtra({ hero_layout: merged });
+          };
+          return (
+            <div className="space-y-3 pt-2">
+              <SectionTitle>{lang === 'en' ? 'Hero Layout' : 'Διάταξη Hero'}</SectionTitle>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <FontSelect
+                  label={lang === 'en' ? 'Title Font' : 'Γραμματοσειρά Τίτλου'}
+                  value={hl.title?.font ?? ''}
+                  onChange={(v) => setHL({ title: { font: v } })}
+                  customFonts={customFonts}
+                  allowEmpty
+                />
+                <div>
+                  <Label className="text-xs">
+                    {lang === 'en' ? 'Title size' : 'Μέγεθος Τίτλου'} — {hl.title?.size ?? 'auto'}
+                  </Label>
+                  <input type="range" min={24} max={200} step={1}
+                    value={hl.title?.size ?? 80}
+                    onChange={(e) => setHL({ title: { size: Number(e.target.value) } })}
+                    className="w-full" />
+                </div>
+                <FontSelect
+                  label={lang === 'en' ? 'Subtitle Font' : 'Γραμματοσειρά Υπότιτλου'}
+                  value={hl.subtitle?.font ?? ''}
+                  onChange={(v) => setHL({ subtitle: { font: v } })}
+                  customFonts={customFonts}
+                  allowEmpty
+                />
+                <div>
+                  <Label className="text-xs">
+                    {lang === 'en' ? 'Subtitle size' : 'Μέγεθος Υπότιτλου'} — {hl.subtitle?.size ?? 'auto'}
+                  </Label>
+                  <input type="range" min={20} max={180} step={1}
+                    value={hl.subtitle?.size ?? 64}
+                    onChange={(e) => setHL({ subtitle: { size: Number(e.target.value) } })}
+                    className="w-full" />
+                </div>
+              </div>
+
+              {(['primary', 'secondary'] as const).map((id) => {
+                const b = hl.buttons?.[id] ?? {};
+                const label = id === 'primary'
+                  ? (lang === 'en' ? 'Primary button' : 'Κύριο κουμπί')
+                  : (lang === 'en' ? 'Secondary button' : 'Δευτερεύον κουμπί');
+                return (
+                  <div key={id} className="border border-border p-2 space-y-2">
+                    <div className="text-xs font-semibold">{label}</div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <Label className="text-[10px]">X</Label>
+                        <Input type="number" value={b.x ?? 0}
+                          onChange={(e) => setHL({ buttons: { [id]: { x: Number(e.target.value) } } })}
+                          className="rounded-none h-8" />
+                      </div>
+                      <div>
+                        <Label className="text-[10px]">Y</Label>
+                        <Input type="number" value={b.y ?? 0}
+                          onChange={(e) => setHL({ buttons: { [id]: { y: Number(e.target.value) } } })}
+                          className="rounded-none h-8" />
+                      </div>
+                      <div>
+                        <Label className="text-[10px]">{lang === 'en' ? 'Scale' : 'Μέγεθος'}</Label>
+                        <Input type="number" step="0.05" value={b.scale ?? 1}
+                          onChange={(e) => setHL({ buttons: { [id]: { scale: Number(e.target.value) } } })}
+                          className="rounded-none h-8" />
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setHL({ buttons: { [id]: { x: 0, y: 0, scale: 1 } } })}
+                      className="text-[10px] uppercase tracking-wider text-muted-foreground hover:text-foreground"
+                    >reset</button>
+                  </div>
+                );
+              })}
+
+              <p className="text-xs text-muted-foreground">
+                {lang === 'en'
+                  ? 'Tip: click title/subtitle/buttons in the preview to resize & drag.'
+                  : 'Συμβουλή: κάνε κλικ σε τίτλο/υπότιτλο/κουμπιά στην προεπισκόπηση για drag & resize.'}
+              </p>
+            </div>
+          );
+        })()}
+
+
+
         <div>
           <Label className="text-sm">{lang === 'en' ? 'Background' : 'Φόντο'}</Label>
           <GradientPicker value={background} onChange={(bg) => setExtra({ background: bg })} />
