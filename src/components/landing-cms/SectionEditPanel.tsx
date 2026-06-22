@@ -84,6 +84,27 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
             : field;
         setDraft((d) => ({ ...d, [key]: v } as LandingSection));
       }
+      if (e.data?.type === 'landing-editor-hero' && draft.section_key === 'hero') {
+        const patch = (e.data.patch ?? {}) as Record<string, any>;
+        setDraft((d) => {
+          const cur = ((d.extra_data?.hero_layout ?? {}) as Record<string, any>);
+          const merged: Record<string, any> = { ...cur };
+          for (const k of Object.keys(patch)) {
+            if (k === 'buttons') {
+              const curBtns = (cur.buttons ?? {}) as Record<string, any>;
+              const patchBtns = (patch.buttons ?? {}) as Record<string, any>;
+              const nextBtns: Record<string, any> = { ...curBtns };
+              for (const id of Object.keys(patchBtns)) {
+                nextBtns[id] = { ...(curBtns[id] ?? {}), ...patchBtns[id] };
+              }
+              merged.buttons = nextBtns;
+            } else {
+              merged[k] = { ...(cur[k] ?? {}), ...patch[k] };
+            }
+          }
+          return { ...d, extra_data: { ...(d.extra_data ?? {}), hero_layout: merged } };
+        });
+      }
     };
     window.addEventListener('message', onMsg);
     return () => window.removeEventListener('message', onMsg);
