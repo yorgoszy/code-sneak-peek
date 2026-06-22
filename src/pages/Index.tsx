@@ -201,13 +201,15 @@ const Index = () => {
                 {correctedTranslations.journeyText}
               </p>
               <button 
-                className="bg-black px-8 py-4 text-lg font-semibold hover:bg-gray-800 transition-colors text-[#f4f1ea]"
-                onClick={handleGetStarted}
+                className="bg-black px-8 py-4 text-lg font-semibold hover:bg-gray-800 transition-colors text-white"
+                onClick={() => setTrialOpen(true)}
               >
                 {correctedTranslations.startNow}
               </button>
             </div>
           </section>
+
+          <TrialRequestDialog open={trialOpen} onOpenChange={setTrialOpen} />
 
           <Footer 
             translations={correctedTranslations}
