@@ -178,18 +178,31 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-        <div>
-          <h3 className="font-semibold">{sectionLabel}</h3>
-          <p className="text-xs text-muted-foreground">{draft.section_key}</p>
+      <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <h3 className="font-semibold truncate">{sectionLabel}</h3>
+          <p className="text-xs text-muted-foreground truncate">{draft.section_key}</p>
         </div>
-        {draft.section_key !== 'navigation' && (
-          <div className="flex items-center gap-2">
-            <Switch checked={draft.is_visible}
-              onCheckedChange={(v) => setDraft({ ...draft, is_visible: v })} />
-            <span className="text-xs">{draft.is_visible ? (lang==='en'?'Visible':'Ορατό') : (lang==='en'?'Hidden':'Κρυφό')}</span>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="rounded-none h-8 px-2"
+            onClick={undo}
+            disabled={!canUndo}
+            title={lang === 'en' ? 'Undo' : 'Αναίρεση'}
+          >
+            <Undo2 className="w-4 h-4" />
+          </Button>
+          {draft.section_key !== 'navigation' && (
+            <>
+              <Switch checked={draft.is_visible}
+                onCheckedChange={(v) => setDraft({ ...draft, is_visible: v })} />
+              <span className="text-xs">{draft.is_visible ? (lang==='en'?'Visible':'Ορατό') : (lang==='en'?'Hidden':'Κρυφό')}</span>
+            </>
+          )}
+        </div>
       </div>
 
 
