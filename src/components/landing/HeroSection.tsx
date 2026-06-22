@@ -5,6 +5,7 @@ import { useLandingSection, localized, backgroundCss, type Lang } from "@/hooks/
 import { useTranslations } from "@/hooks/useTranslations";
 import { EditableText } from "./EditableText";
 import { HeroEditableText, HeroDraggableButton, isHeroEditorMode, useBP } from "./HeroLayoutEditing";
+import { TrialRequestDialog } from "./TrialRequestDialog";
 
 interface HeroSectionProps {
   translations: any;
@@ -22,6 +23,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
 
   const [active, setActive] = React.useState<null | 'title' | 'subtitle' | 'tagline' | 'btn-primary' | 'btn-secondary'>(null);
   const [localLayout, setLocalLayout] = React.useState<any>(null);
+  const [trialOpen, setTrialOpen] = React.useState(false);
 
   // Click outside hero edit roots → deactivate
   React.useEffect(() => {
@@ -124,16 +126,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   };
 
   const onCtaClick = () => {
-    if (cms?.cta_url) {
-      if (cms.cta_url.startsWith('#')) {
-        const el = document.querySelector(cms.cta_url);
-        el?.scrollIntoView({ behavior: 'smooth' });
-      } else {
-        window.location.href = cms.cta_url;
-      }
-    } else {
-      onGetStarted();
-    }
+    setTrialOpen(true);
   };
 
   return (
