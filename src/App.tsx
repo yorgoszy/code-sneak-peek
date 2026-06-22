@@ -164,6 +164,7 @@ function App() {
                     <Toaster />
                     <AIControlledProgramBuilderDialog />
                     <NotificationPermissionPrompt />
+                    <AdminGlobalBell />
                     <Suspense fallback={<CustomLoadingScreen />}>
                       <Routes>
                       {/* Public routes */}
