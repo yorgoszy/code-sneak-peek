@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { Button } from '@/components/ui/button';
-import { Menu, Monitor, Tablet, Smartphone, ExternalLink, Palette } from 'lucide-react';
+import { Menu, Monitor, Tablet, Smartphone, ExternalLink, Palette, Maximize, Minimize } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
