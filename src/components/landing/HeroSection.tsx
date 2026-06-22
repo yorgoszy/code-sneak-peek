@@ -114,9 +114,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
       secondary: { ...(merged.buttons?.secondary ?? {}), ...(bpOverride.buttons?.secondary ?? {}) },
     },
   } as {
-    title: { font?: string; size?: number; x?: number; y?: number };
-    subtitle: { font?: string; size?: number; x?: number; y?: number };
-    tagline: { font?: string; size?: number; x?: number; y?: number };
+    title: { font?: string; size?: number; x?: number; y?: number; color?: string };
+    subtitle: { font?: string; size?: number; x?: number; y?: number; color?: string };
+    tagline: { font?: string; size?: number; x?: number; y?: number; color?: string };
     buttons: {
       primary: { x?: number; y?: number; scale?: number };
       secondary: { x?: number; y?: number; scale?: number };
@@ -170,10 +170,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             pos={{ x: layout.title?.x, y: layout.title?.y }}
             active={active === 'title'}
             onActivate={() => setActive('title')}
-            className="mb-2 text-[#f4f1ea] tracking-wide"
+            className="mb-2 tracking-wide"
             style={{
               fontFamily: layout.title?.font ? `'${layout.title.font}', sans-serif` : "'Bebas Neue', sans-serif",
               fontSize: layout.title?.size ? `${layout.title.size}px` : undefined,
+              color: layout.title?.color ?? '#f4f1ea',
             }}
           >
             <EditableText as="span" sectionKey="hero" field="title" lang={lang} value={title} />
@@ -188,10 +189,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             pos={{ x: layout.subtitle?.x, y: layout.subtitle?.y }}
             active={active === 'subtitle'}
             onActivate={() => setActive('subtitle')}
-            className="mb-6 text-[#f4f1ea] tracking-wide"
+            className="mb-6 tracking-wide"
             style={{
               fontFamily: layout.subtitle?.font ? `'${layout.subtitle.font}', sans-serif` : "'Bebas Neue', sans-serif",
               fontSize: layout.subtitle?.size ? `${layout.subtitle.size}px` : undefined,
+              color: layout.subtitle?.color ?? '#f4f1ea',
             }}
           >
             <EditableText as="span" sectionKey="hero" field="subtitle" lang={lang} value={subtitle} />
@@ -204,10 +206,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             pos={{ x: layout.tagline?.x, y: layout.tagline?.y }}
             active={active === 'tagline'}
             onActivate={() => setActive('tagline')}
-            className="mb-6 text-[#f4f1ea]"
+            className="mb-6"
             style={{
               fontFamily: layout.tagline?.font ? `'${layout.tagline.font}', serif` : "'UnifrakturMaguntia', serif",
               fontSize: `${layout.tagline?.size ?? 12}px`,
+              color: layout.tagline?.color ?? '#f4f1ea',
               opacity: 0.7,
               textTransform: 'lowercase',
               letterSpacing: '0.2em',

@@ -348,6 +348,17 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
                     onChange={(e) => setHL({ title: { size: Number(e.target.value) } })}
                     className="w-full" />
                 </div>
+                <div>
+                  <Label className="text-xs">{lang === 'en' ? 'Title color' : 'Χρώμα Τίτλου'}</Label>
+                  <div className="flex items-center gap-2">
+                    <input type="color" value={hl.title?.color ?? '#f4f1ea'}
+                      onChange={(e) => setHL({ title: { color: e.target.value } })}
+                      className="h-8 w-12 rounded-none border border-border bg-transparent" />
+                    <Input value={hl.title?.color ?? ''} placeholder="#f4f1ea"
+                      onChange={(e) => setHL({ title: { color: e.target.value } })}
+                      className="rounded-none h-8" />
+                  </div>
+                </div>
                 <FontSelect
                   label={lang === 'en' ? 'Subtitle Font' : 'Γραμματοσειρά Υπότιτλου'}
                   value={hl.subtitle?.font ?? ''}
@@ -364,6 +375,17 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
                     onChange={(e) => setHL({ subtitle: { size: Number(e.target.value) } })}
                     className="w-full" />
                 </div>
+                <div>
+                  <Label className="text-xs">{lang === 'en' ? 'Subtitle color' : 'Χρώμα Υπότιτλου'}</Label>
+                  <div className="flex items-center gap-2">
+                    <input type="color" value={hl.subtitle?.color ?? '#f4f1ea'}
+                      onChange={(e) => setHL({ subtitle: { color: e.target.value } })}
+                      className="h-8 w-12 rounded-none border border-border bg-transparent" />
+                    <Input value={hl.subtitle?.color ?? ''} placeholder="#f4f1ea"
+                      onChange={(e) => setHL({ subtitle: { color: e.target.value } })}
+                      className="rounded-none h-8" />
+                  </div>
+                </div>
                 <FontSelect
                   label={lang === 'en' ? 'Tagline Font' : 'Γραμματοσειρά Tagline'}
                   value={hl.tagline?.font ?? 'UnifrakturMaguntia'}
@@ -379,6 +401,17 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
                     value={hl.tagline?.size ?? 12}
                     onChange={(e) => setHL({ tagline: { size: Number(e.target.value) } })}
                     className="w-full" />
+                </div>
+                <div>
+                  <Label className="text-xs">{lang === 'en' ? 'Tagline color' : 'Χρώμα Tagline'}</Label>
+                  <div className="flex items-center gap-2">
+                    <input type="color" value={hl.tagline?.color ?? '#f4f1ea'}
+                      onChange={(e) => setHL({ tagline: { color: e.target.value } })}
+                      className="h-8 w-12 rounded-none border border-border bg-transparent" />
+                    <Input value={hl.tagline?.color ?? ''} placeholder="#f4f1ea"
+                      onChange={(e) => setHL({ tagline: { color: e.target.value } })}
+                      className="rounded-none h-8" />
+                  </div>
                 </div>
               </div>
 
