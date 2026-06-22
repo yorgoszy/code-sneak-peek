@@ -117,6 +117,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             kind="subtitle"
             font={layout.subtitle?.font}
             size={layout.subtitle?.size}
+            pos={{ x: layout.subtitle?.x, y: layout.subtitle?.y }}
             active={active === 'subtitle'}
             onActivate={() => setActive('subtitle')}
             className="mb-6 text-[#f4f1ea] tracking-wide"
