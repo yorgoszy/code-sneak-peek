@@ -99,7 +99,7 @@ export const UserProfileContent = ({
   const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const { isAdmin } = useRoleCheck();
   const isCoachManagedUser = useIsCoachManagedUser(userProfile);
-  const { hasActiveSubscription } = useUserSubscriptionStatus(userProfile?.id);
+  const { hasActiveSubscription, loading: subLoading } = useUserSubscriptionStatus(userProfile?.id);
   
   const hasSubscription = isAdmin() || hasActiveSubscription;
   
@@ -113,12 +113,13 @@ export const UserProfileContent = ({
     }
   }, [activeTab]);
 
-  // Redirect to shop if no subscription and restricted tab
+  // Redirect to shop if no subscription and restricted tab — μόνο μετά την αρχική φόρτωση
   useEffect(() => {
+    if (subLoading) return;
     if (!hasSubscription && !allowedWithoutSubscription.includes(activeTab) && setActiveTab) {
       setActiveTab('shop');
     }
-  }, [hasSubscription, activeTab]);
+  }, [hasSubscription, activeTab, subLoading]);
 
   // Το βελάκι εμφανίζεται μόνο σε admin mode
   const BackButton = () => (
