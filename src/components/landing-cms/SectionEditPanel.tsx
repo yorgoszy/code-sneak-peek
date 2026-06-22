@@ -375,10 +375,43 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
 
 
 
+        {/* Content bounds (left/right padding inside the section) */}
+        {(() => {
+          const cb = (draft.extra_data?.content_bounds ?? {}) as { left?: number; right?: number };
+          const setCB = (patch: { left?: number | null; right?: number | null }) => {
+            const next: any = { ...cb };
+            for (const k of Object.keys(patch) as Array<'left'|'right'>) {
+              const v = (patch as any)[k];
+              if (v == null || v === '') delete next[k]; else next[k] = Number(v);
+            }
+            setExtra({ content_bounds: next });
+          };
+          return (
+            <div className="space-y-2 pt-2">
+              <SectionTitle>{lang === 'en' ? 'Content bounds (px)' : 'Όρια Περιεχομένου (px)'}</SectionTitle>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">{lang === 'en' ? 'Start (left)' : 'Αρχή (αριστερά)'}</Label>
+                  <Input type="number" value={cb.left ?? ''} placeholder="—"
+                    onChange={(e) => setCB({ left: e.target.value === '' ? null : Number(e.target.value) })}
+                    className="rounded-none" />
+                </div>
+                <div>
+                  <Label className="text-xs">{lang === 'en' ? 'End (right)' : 'Τέλος (δεξιά)'}</Label>
+                  <Input type="number" value={cb.right ?? ''} placeholder="—"
+                    onChange={(e) => setCB({ right: e.target.value === '' ? null : Number(e.target.value) })}
+                    className="rounded-none" />
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
         <div>
           <Label className="text-sm">{lang === 'en' ? 'Background' : 'Φόντο'}</Label>
           <GradientPicker value={background} onChange={(bg) => setExtra({ background: bg })} />
         </div>
+
 
         <div className="grid grid-cols-2 gap-3">
           <div>
