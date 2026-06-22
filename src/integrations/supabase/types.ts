@@ -10635,6 +10635,7 @@ export type Database = {
       }
       trial_requests: {
         Row: {
+          action_token: string
           admin_response: string | null
           created_at: string
           email: string
@@ -10650,6 +10651,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          action_token?: string
           admin_response?: string | null
           created_at?: string
           email: string
@@ -10665,6 +10667,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          action_token?: string
           admin_response?: string | null
           created_at?: string
           email?: string
