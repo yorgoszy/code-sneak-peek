@@ -92,8 +92,6 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
             <Video className="w-4 h-4" />
             GALLERY
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-black mb-4">{sectionTitle}</h2>
-          <p className="text-gray-600">{subtitle}</p>
         </div>
 
         <div className="max-w-6xl mx-auto mb-8">
