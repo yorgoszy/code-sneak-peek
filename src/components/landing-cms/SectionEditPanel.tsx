@@ -364,6 +364,22 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
                     onChange={(e) => setHL({ subtitle: { size: Number(e.target.value) } })}
                     className="w-full" />
                 </div>
+                <FontSelect
+                  label={lang === 'en' ? 'Tagline Font' : 'Γραμματοσειρά Tagline'}
+                  value={hl.tagline?.font ?? 'UnifrakturMaguntia'}
+                  onChange={(v) => setHL({ tagline: { font: v } })}
+                  customFonts={customFonts}
+                  allowEmpty
+                />
+                <div>
+                  <Label className="text-xs">
+                    {lang === 'en' ? 'Tagline size' : 'Μέγεθος Tagline'} — {hl.tagline?.size ?? 12}
+                  </Label>
+                  <input type="range" min={6} max={48} step={1}
+                    value={hl.tagline?.size ?? 12}
+                    onChange={(e) => setHL({ tagline: { size: Number(e.target.value) } })}
+                    className="w-full" />
+                </div>
               </div>
 
               {(['primary', 'secondary'] as const).map((id) => {
