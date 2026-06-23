@@ -29,8 +29,11 @@ export const PromoVideoUploader: React.FC<Props> = ({ value, onChange }) => {
         .from('promo-video')
         .upload(path, file, { cacheControl: '3600', upsert: false, contentType: file.type });
       if (error) throw error;
-      const { data } = supabase.storage.from('promo-video').getPublicUrl(path);
-      onChange(data.publicUrl);
+      const { data, error: signErr } = await supabase.storage
+        .from('promo-video')
+        .createSignedUrl(path, 60 * 60 * 24 * 365 * 10); // 10 years
+      if (signErr || !data?.signedUrl) throw signErr || new Error('Signed URL failed');
+      onChange(data.signedUrl);
       toast.success('Το βίντεο ανέβηκε!');
     } catch (e: any) {
       console.error(e);
