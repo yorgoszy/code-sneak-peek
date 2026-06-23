@@ -294,6 +294,8 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
           <PromoVideoUploader
             value={(draft.extra_data?.promo_video_url as string) ?? ''}
             onChange={(url) => setExtra({ promo_video_url: url })}
+            valueMobile={(draft.extra_data?.promo_video_url_mobile as string) ?? ''}
+            onChangeMobile={(url) => setExtra({ promo_video_url_mobile: url })}
           />
         )}
 
