@@ -94,7 +94,17 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
 
   // Merge: cmsLayout (desktop base) → cmsLayout[bp] override → localLayout (live)
   const effectiveExtra = draftExtra ?? cms?.extra_data ?? {};
-  const promoVideoUrl = (effectiveExtra?.promo_video_url as string) || '';
+  const promoVideoUrlDesktop = (effectiveExtra?.promo_video_url as string) || '';
+  const promoVideoUrlMobile = (effectiveExtra?.promo_video_url_mobile as string) || '';
+  const [isMobile, setIsMobile] = React.useState<boolean>(() => typeof window !== 'undefined' && window.innerWidth < 768);
+  React.useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  const promoVideoUrl = isMobile
+    ? (promoVideoUrlMobile || promoVideoUrlDesktop)
+    : (promoVideoUrlDesktop || promoVideoUrlMobile);
   const title = localized(cms, 'title', lang) || translations.heroTitle;
   const subtitle = localized(cms, 'subtitle', lang) || translations.heroSubtitle;
   const tagline = lang === 'en'
