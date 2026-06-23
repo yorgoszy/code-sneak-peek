@@ -6,32 +6,39 @@ import { Upload, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-interface Props {
+interface SingleProps {
+  label: string;
+  placeholder: string;
   value: string;
   onChange: (url: string) => void;
 }
 
-export const PromoVideoUploader: React.FC<Props> = ({ value, onChange }) => {
+const SingleUploader: React.FC<SingleProps> = ({ label, placeholder, value, onChange }) => {
   const [uploading, setUploading] = React.useState(false);
+  const [progress, setProgress] = React.useState(0);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   const handleFile = async (file: File) => {
     if (!file) return;
-    if (file.size > 200 * 1024 * 1024) {
-      toast.error('Μέγιστο μέγεθος 200MB');
-      return;
-    }
     setUploading(true);
+    setProgress(0);
     try {
       const ext = file.name.split('.').pop() || 'mp4';
       const path = `promo-${Date.now()}.${ext}`;
-      const { error } = await supabase.storage
-        .from('promo-video')
-        .upload(path, file, { cacheControl: '3600', upsert: false, contentType: file.type });
-      if (error) throw error;
+
+      // Use resumable upload (tus) for large files (no 50MB edge limit)
+      const { uploadToSupabaseResumable } = await import('@/utils/supabaseResumableUpload');
+      await uploadToSupabaseResumable({
+        bucket: 'promo-video',
+        objectName: path,
+        file,
+        upsert: false,
+        onProgress: (p) => setProgress(p),
+      });
+
       const { data, error: signErr } = await supabase.storage
         .from('promo-video')
-        .createSignedUrl(path, 60 * 60 * 24 * 365 * 10); // 10 years
+        .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
       if (signErr || !data?.signedUrl) throw signErr || new Error('Signed URL failed');
       onChange(data.signedUrl);
       toast.success('Το βίντεο ανέβηκε!');
@@ -40,19 +47,20 @@ export const PromoVideoUploader: React.FC<Props> = ({ value, onChange }) => {
       toast.error(e.message || 'Σφάλμα ανεβάσματος');
     } finally {
       setUploading(false);
+      setProgress(0);
     }
   };
 
   return (
-    <div className="space-y-2">
-      <Label className="text-sm">Promo Video (YouTube URL ή ανέβασμα αρχείου)</Label>
+    <div className="space-y-2 border border-border p-3">
+      <Label className="text-sm font-medium">{label}</Label>
       <Input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="https://youtube.com/... ή URL αρχείου"
+        placeholder={placeholder}
         className="rounded-none"
       />
-      <div className="flex gap-2">
+      <div className="flex gap-2 items-center">
         <input
           ref={inputRef}
           type="file"
@@ -69,16 +77,43 @@ export const PromoVideoUploader: React.FC<Props> = ({ value, onChange }) => {
           onClick={() => inputRef.current?.click()}
         >
           {uploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
-          {uploading ? 'Ανέβασμα...' : 'Ανέβασε MP4'}
+          {uploading ? `Ανέβασμα... ${progress}%` : 'Ανέβασε βίντεο'}
         </Button>
-        {value && (
+        {value && !uploading && (
           <Button type="button" variant="ghost" size="sm" className="rounded-none" onClick={() => onChange('')}>
             Καθάρισμα
           </Button>
         )}
       </div>
+    </div>
+  );
+};
+
+interface Props {
+  value: string;
+  onChange: (url: string) => void;
+  valueMobile: string;
+  onChangeMobile: (url: string) => void;
+}
+
+export const PromoVideoUploader: React.FC<Props> = ({ value, onChange, valueMobile, onChangeMobile }) => {
+  return (
+    <div className="space-y-3">
+      <Label className="text-sm font-semibold">Promo Videos</Label>
+      <SingleUploader
+        label="🖥️ Desktop (οριζόντιο)"
+        placeholder="YouTube URL ή ανέβασε αρχείο"
+        value={value}
+        onChange={onChange}
+      />
+      <SingleUploader
+        label="📱 Mobile (κάθετο)"
+        placeholder="YouTube URL ή ανέβασε αρχείο"
+        value={valueMobile}
+        onChange={onChangeMobile}
+      />
       <p className="text-xs text-muted-foreground">
-        Μπορείς να βάλεις YouTube link ή να ανεβάσεις απευθείας ένα MP4 (έως 200MB).
+        Το desktop βίντεο εμφανίζεται σε υπολογιστές/tablets, το mobile σε κινητά. YouTube ή απευθείας αρχείο (resumable upload, χωρίς όριο μεγέθους).
       </p>
     </div>
   );
