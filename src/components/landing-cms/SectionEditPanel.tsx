@@ -13,6 +13,7 @@ import { LandingImageUploader } from './LandingImageUploader';
 import { GradientPicker, type BackgroundValue } from './GradientPicker';
 import { ColorField, FontSelect, SectionTitle } from './shared';
 import { LucideIconPicker } from './LucideIconPicker';
+import { PromoVideoUploader } from './PromoVideoUploader';
 
 
 interface Props {
@@ -286,6 +287,13 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
             onChange={(url) => setExtra({ logo_url: url })}
             label="Logo"
             pathPrefix={`landing/${draft.section_key}/logo`}
+          />
+        )}
+
+        {draft.section_key === 'hero' && (
+          <PromoVideoUploader
+            value={(draft.extra_data?.promo_video_url as string) ?? ''}
+            onChange={(url) => setExtra({ promo_video_url: url })}
           />
         )}
 
