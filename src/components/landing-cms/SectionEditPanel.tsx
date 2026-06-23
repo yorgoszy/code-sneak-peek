@@ -13,6 +13,7 @@ import { LandingImageUploader } from './LandingImageUploader';
 import { GradientPicker, type BackgroundValue } from './GradientPicker';
 import { ColorField, FontSelect, SectionTitle } from './shared';
 import { LucideIconPicker } from './LucideIconPicker';
+import { PromoVideoUploader } from './PromoVideoUploader';
 
 
 interface Props {
