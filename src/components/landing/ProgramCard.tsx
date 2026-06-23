@@ -489,6 +489,15 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
                     <p className="text-[#f4f1ea]">
                       {translations?.language === 'en' ? 'Video analysis' : 'Βίντεο ανάλυση'}
                     </p>
+                    <p className="text-[#f4f1ea]">
+                      {translations?.language === 'en' ? 'Strength/Power training' : 'Προπόνηση δύναμης/ισχύος'}
+                    </p>
+                    <p className="text-[#f4f1ea]">
+                      {translations?.language === 'en' ? 'Endurance training' : 'Προπόνηση αντοχής'}
+                    </p>
+                    <p className="text-[#f4f1ea]">
+                      {translations?.language === 'en' ? 'Recovery training' : 'Προπόνηση αποκατάστασης'}
+                    </p>
                   </div>
                 </div>
               ) : program.id === "12" ? (
@@ -497,6 +506,9 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
                     <p className="text-gray-700">Εκμάθηση βασικών τεχνικών</p>
                     <p className="text-gray-700">Προπόνηση τακτικής</p>
                     <p className="text-gray-700">Βίντεο ανάλυση</p>
+                    <p className="text-gray-700">Προπόνηση δύναμης/ισχύος</p>
+                    <p className="text-gray-700">Προπόνηση αντοχής</p>
+                    <p className="text-gray-700">Προπόνηση αποκατάστασης</p>
                   </div>
                 </div>
               ) : (
