@@ -32,6 +32,7 @@ import {
   Compass,
   Heart,
   HeartPulse,
+  IdCard,
   Gift,
   ShieldAlert,
   Radio,
@@ -501,6 +502,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       label: "Κάρτες Υγείας",
       path: "/dashboard/health-cards",
       badge: expiringHealthCards > 0 ? expiringHealthCards.toString() : null
+    },
+    {
+      icon: IdCard,
+      label: "Δελτία Αθλητή",
+      path: "/dashboard/athlete-cards",
+      badge: null
     },
     {
       icon: ShoppingCart,

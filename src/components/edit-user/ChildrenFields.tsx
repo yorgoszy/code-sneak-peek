@@ -2,19 +2,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { Plus, X } from "lucide-react";
 
 interface Child {
   id?: string;
   name: string;
   birth_date: string;
+  is_athlete?: boolean;
+  card_number?: string;
 }
 
 interface ChildrenFieldsProps {
   children: Child[];
   addChild: () => void;
   removeChild: (index: number) => void;
-  updateChild: (index: number, field: keyof Child, value: string) => void;
+  updateChild: (index: number, field: keyof Child, value: any) => void;
   loading: boolean;
 }
 
@@ -23,7 +26,7 @@ export const ChildrenFields = ({
   addChild,
   removeChild,
   updateChild,
-  loading
+  loading,
 }: ChildrenFieldsProps) => {
   return (
     <div className="space-y-4">
@@ -63,33 +66,50 @@ export const ChildrenFields = ({
               </Button>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor={`child-name-${index}`} className="text-sm">
-                Όνομα Παιδιού
-              </Label>
-              <Input
-                id={`child-name-${index}`}
-                value={child.name}
-                onChange={(e) => updateChild(index, 'name', e.target.value)}
-                placeholder="Εισάγετε το όνομα του παιδιού"
-                className="rounded-none"
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs">Όνομα</Label>
+                <Input
+                  value={child.name}
+                  onChange={(e) => updateChild(index, "name", e.target.value)}
+                  placeholder="Όνομα παιδιού"
+                  className="rounded-none h-9"
+                  disabled={loading}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Ημ. Γέννησης</Label>
+                <Input
+                  type="date"
+                  value={child.birth_date}
+                  onChange={(e) => updateChild(index, "birth_date", e.target.value)}
+                  className="rounded-none h-9"
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-1">
+              <Label className="text-sm">Είναι αθλητής;</Label>
+              <Switch
+                checked={!!child.is_athlete}
+                onCheckedChange={(v) => updateChild(index, "is_athlete", v)}
                 disabled={loading}
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor={`child-birth-date-${index}`} className="text-sm">
-                Ημερομηνία Γέννησης
-              </Label>
-              <Input
-                id={`child-birth-date-${index}`}
-                type="date"
-                value={child.birth_date}
-                onChange={(e) => updateChild(index, 'birth_date', e.target.value)}
-                className="rounded-none"
-                disabled={loading}
-              />
-            </div>
+            {child.is_athlete && (
+              <div className="space-y-1">
+                <Label className="text-xs">Αριθμός Δελτίου</Label>
+                <Input
+                  value={child.card_number || ""}
+                  onChange={(e) => updateChild(index, "card_number", e.target.value)}
+                  placeholder="π.χ. 12345"
+                  className="rounded-none h-9"
+                  disabled={loading}
+                />
+              </div>
+            )}
           </div>
         </Card>
       ))}

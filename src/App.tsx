@@ -118,6 +118,7 @@ import BarVelocityPage from "@/pages/Dashboard/BarVelocityPage";
 import HRVPage from "@/pages/Dashboard/HRVPage";
 import GiftCardsWithSidebar from "@/pages/Dashboard/GiftCardsWithSidebar";
 import HealthCardsPage from "@/pages/Dashboard/HealthCardsPage";
+import AthleteCardsPage from "@/pages/Dashboard/AthleteCardsPage";
 import CoachCompetitionsPage from "@/pages/Dashboard/CoachCompetitionsPage";
 const CoachBracketsScopedPage = React.lazy(() => import("@/pages/coach/CoachBracketsScopedPage"));
 const CoachLiveScopedPage = React.lazy(() => import("@/pages/coach/CoachLiveScopedPage"));
@@ -236,6 +237,7 @@ function App() {
                       <Route path="/dashboard/bar-velocity" element={<ProtectedRoute><BarVelocityPage /></ProtectedRoute>} />
                       <Route path="/dashboard/hrv" element={<ProtectedRoute><HRVPage /></ProtectedRoute>} />
                       <Route path="/dashboard/health-cards" element={<ProtectedRoute><HealthCardsPage /></ProtectedRoute>} />
+                      <Route path="/dashboard/athlete-cards" element={<ProtectedRoute><AthleteCardsPage /></ProtectedRoute>} />
                       <Route path="/dashboard/coach-competitions" element={<ProtectedRoute><CoachCompetitionsPage /></ProtectedRoute>} />
                       {/* Coach-scoped competition pages (replace old /dashboard/coach-brackets, /dashboard/coach-live, /dashboard/weigh-in) */}
                       <Route path="/coach/:coachId/brackets" element={<ProtectedRoute><CoachBracketsScopedPage /></ProtectedRoute>} />
