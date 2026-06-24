@@ -44,6 +44,7 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
         setGender(user.gender || "");
         setBirthDate(user.birth_date || "");
         setPhotoUrl(user.photo_url || "");
+        setCardNumber(user.card_number || "");
 
         // Fetch children if role is parent
         if (user.role === 'parent') {
