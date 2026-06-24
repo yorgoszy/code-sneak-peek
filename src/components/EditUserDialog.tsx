@@ -29,6 +29,7 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
     gender, setGender,
     birthDate, setBirthDate,
     photoUrl, setPhotoUrl,
+    cardNumber, setCardNumber,
     loading,
     handleSubmit,
     children,
