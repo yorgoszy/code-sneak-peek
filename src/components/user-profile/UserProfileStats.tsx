@@ -9,6 +9,7 @@ import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { useTranslation } from 'react-i18next';
 import { HealthCardWidget } from "./HealthCardWidget";
+import { CardNumberWidget } from "./CardNumberWidget";
 import { useUserSubscriptionStatus } from "@/hooks/useUserSubscriptionStatus";
 
 interface UserProfileStatsProps {
@@ -1215,6 +1216,11 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             <div className={isWidgetDisabled('health') ? disabledClass : ''}>
               <HealthCardWidget userId={user.id} />
             </div>
+          )}
+
+          {/* Αριθμός Δελτίου - Μόνο για αθλητές */}
+          {(user.is_athlete || user.role === 'athlete') && (
+            <CardNumberWidget userId={user.id} />
           )}
 
           {/* Προφίλ */}

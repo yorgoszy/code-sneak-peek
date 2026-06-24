@@ -43,7 +43,7 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
         setCategory(user.category || "");
         setGender(user.gender || "");
         setBirthDate(user.birth_date || "");
-        setPhotoUrl(user.photo_url || "");
+        setPhotoUrl(user.photo_url || user.avatar_url || "");
         setCardNumber(user.card_number || "");
 
         // Fetch children if role is parent
@@ -103,6 +103,7 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
         gender: gender || null,
         birth_date: birthDate || null,
         photo_url: photoUrl || null,
+        avatar_url: photoUrl || null,
         card_number: cardNumber.trim() || null,
         updated_at: new Date().toISOString(),
       };
