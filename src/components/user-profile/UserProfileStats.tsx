@@ -1218,6 +1218,11 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </div>
           )}
 
+          {/* Αριθμός Δελτίου - Μόνο για αθλητές */}
+          {(user.is_athlete || user.role === 'athlete') && (
+            <CardNumberWidget userId={user.id} />
+          )}
+
           {/* Προφίλ */}
           <button 
             onClick={() => {
