@@ -68,6 +68,7 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
         setGender("");
         setBirthDate("");
         setPhotoUrl("");
+        setCardNumber("");
         setChildren([]);
       }
     };
