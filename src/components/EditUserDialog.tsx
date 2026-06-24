@@ -106,6 +106,7 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
                   <SelectItem value="general">General</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
           </div>
 
           <div className="space-y-1">
@@ -113,8 +114,6 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
             <Input id="cardNumber" value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} placeholder="π.χ. 12345" className="rounded-none h-9" disabled={loading} />
           </div>
 
-
-          </div>
 
           {role === "parent" && (
             <ChildrenFields
