@@ -1303,6 +1303,7 @@ export type Database = {
           auth_user_id: string | null
           avatar_url: string | null
           birth_date: string | null
+          card_number: string | null
           category: string | null
           child_birth_date: string | null
           coach_id: string | null
@@ -1327,6 +1328,7 @@ export type Database = {
           auth_user_id?: string | null
           avatar_url?: string | null
           birth_date?: string | null
+          card_number?: string | null
           category?: string | null
           child_birth_date?: string | null
           coach_id?: string | null
@@ -1351,6 +1353,7 @@ export type Database = {
           auth_user_id?: string | null
           avatar_url?: string | null
           birth_date?: string | null
+          card_number?: string | null
           category?: string | null
           child_birth_date?: string | null
           coach_id?: string | null

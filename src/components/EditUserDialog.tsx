@@ -29,6 +29,7 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
     gender, setGender,
     birthDate, setBirthDate,
     photoUrl, setPhotoUrl,
+    cardNumber, setCardNumber,
     loading,
     handleSubmit,
     children,
@@ -107,6 +108,12 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
               </Select>
             </div>
           </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="cardNumber" className="text-xs">Αριθμός Δελτίου</Label>
+            <Input id="cardNumber" value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} placeholder="π.χ. 12345" className="rounded-none h-9" disabled={loading} />
+          </div>
+
 
           {role === "parent" && (
             <ChildrenFields

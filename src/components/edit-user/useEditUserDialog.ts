@@ -29,6 +29,7 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
   const [gender, setGender] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [children, setChildren] = useState<Child[]>([]);
 
@@ -43,6 +44,7 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
         setGender(user.gender || "");
         setBirthDate(user.birth_date || "");
         setPhotoUrl(user.photo_url || "");
+        setCardNumber(user.card_number || "");
 
         // Fetch children if role is parent
         if (user.role === 'parent') {
@@ -66,6 +68,7 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
         setGender("");
         setBirthDate("");
         setPhotoUrl("");
+        setCardNumber("");
         setChildren([]);
       }
     };
@@ -100,6 +103,7 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
         gender: gender || null,
         birth_date: birthDate || null,
         photo_url: photoUrl || null,
+        card_number: cardNumber.trim() || null,
         updated_at: new Date().toISOString(),
       };
 
@@ -198,6 +202,7 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
     gender, setGender,
     birthDate, setBirthDate,
     photoUrl, setPhotoUrl,
+    cardNumber, setCardNumber,
     loading,
     handleSubmit,
     children,
