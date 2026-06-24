@@ -103,6 +103,7 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
         gender: gender || null,
         birth_date: birthDate || null,
         photo_url: photoUrl || null,
+        card_number: cardNumber.trim() || null,
         updated_at: new Date().toISOString(),
       };
 
