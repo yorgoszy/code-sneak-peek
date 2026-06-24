@@ -9,6 +9,7 @@ import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { useTranslation } from 'react-i18next';
 import { HealthCardWidget } from "./HealthCardWidget";
+import { CardNumberWidget } from "./CardNumberWidget";
 import { useUserSubscriptionStatus } from "@/hooks/useUserSubscriptionStatus";
 
 interface UserProfileStatsProps {
