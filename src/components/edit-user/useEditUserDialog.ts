@@ -29,6 +29,7 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
   const [gender, setGender] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [children, setChildren] = useState<Child[]>([]);
 
