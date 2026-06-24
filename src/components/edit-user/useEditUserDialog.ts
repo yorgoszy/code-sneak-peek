@@ -202,6 +202,7 @@ export const useEditUserDialog = (user: any, isOpen: boolean) => {
     gender, setGender,
     birthDate, setBirthDate,
     photoUrl, setPhotoUrl,
+    cardNumber, setCardNumber,
     loading,
     handleSubmit,
     children,
