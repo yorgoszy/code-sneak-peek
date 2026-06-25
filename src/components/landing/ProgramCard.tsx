@@ -368,13 +368,19 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
                program.image}
         />
         {/* Centered service icon for HyperKids, HyperGym, HyperAthletes */}
-        {(program.id === "10" || program.id === "11" || program.id === "13") && (
+        {program.id === "10" && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <img 
-              src={serviceIconUrl} 
-              alt="" 
-              className="w-24 h-24 object-contain opacity-90"
-            />
+            <img src={hyperkidsIconUrl} alt="" className="w-24 h-24 object-contain opacity-90" />
+          </div>
+        )}
+        {program.id === "11" && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <img src={hypergymIconUrl} alt="" className="w-24 h-24 object-contain opacity-90" />
+          </div>
+        )}
+        {program.id === "13" && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <img src={hyperathletesIconUrl} alt="" className="w-24 h-24 object-contain opacity-90" />
           </div>
         )}
       </div>
