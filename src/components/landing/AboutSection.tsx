@@ -84,23 +84,22 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                 <div className="w-full min-h-[50vh] grid grid-cols-[40%_60%]">
                   {slide.id === 1 ? (
                     <div
-                      className="relative bg-black"
+                      className="relative bg-white"
                       style={{
                         backgroundImage: `url(${coachPhoto.url})`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                       }}
                     >
-                      <div className="absolute inset-0 bg-black/60" />
+                      <div className="absolute inset-0 bg-white/60" />
                       <img
                         src={iconBlack}
                         alt=""
-                        className="absolute top-4 right-4 w-16 h-16 z-10"
-                        style={{ filter: 'brightness(0) invert(1)' }}
+                        className="absolute top-4 left-4 w-16 h-16 z-10"
                       />
                       <div className="absolute inset-0 flex items-end justify-center pb-8 z-10">
                         <span
-                          className="text-white lowercase"
+                          className="text-black lowercase"
                           style={{
                             fontFamily: '"UnifrakturMaguntia", cursive',
                             fontSize: '1.75rem',
@@ -111,7 +110,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-black" />
+                    <div className="bg-white" />
                   )}
                   <div className="bg-white" />
                 </div>
