@@ -358,7 +358,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
   return (
     <div className="bg-[#f4f1ea] rounded-none overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-[780px] flex flex-col">
       {/* Header Image */}
-      <div className={`relative h-[460px] overflow-hidden flex-shrink-0 ${program.id === "10" ? "mt-0" : ""}`}>
+      <div className={`relative h-[460px] overflow-hidden flex-shrink-0 ${program.id === "10" || program.id === "11" ? "mt-0" : ""}`}>
         {/* HYPER KIDS logo — top-left, transparent background */}
         {program.id === "10" && (
           <div className="absolute top-3 left-3 z-20">
@@ -367,6 +367,18 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
               alt="HYPER KIDS"
               className="object-contain"
               style={{ width: "100px", height: "auto" }}
+              loading="lazy"
+            />
+          </div>
+        )}
+        {/* HYPER GYM logo — top-left, transparent background */}
+        {program.id === "11" && (
+          <div className="absolute top-3 left-3 z-20">
+            <img
+              src={hypergymLogoUrl}
+              alt="HYPER GYM"
+              className="object-contain"
+              style={{ width: "120px", height: "auto" }}
               loading="lazy"
             />
           </div>
