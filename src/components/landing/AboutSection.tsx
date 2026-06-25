@@ -35,7 +35,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
       label: "the vision",
       title: translations.ourVision,
       description: translations.visionDescription,
-      image: "/lovable-uploads/cc86deac-b92b-4ae6-8f5d-1e5f2bd096c2.png",
+      image: theVisionBg.url,
       cards: [
         { title: translations.moreThanPhysical, description: translations.moreThanPhysicalDesc },
         { title: translations.buildingCharacter, description: translations.buildingCharacterDesc },
