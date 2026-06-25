@@ -115,7 +115,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                   )}
                   {slide.id === 1 ? (
                     <div
-                      className="relative flex flex-col justify-center px-8"
+                      className="relative flex flex-col justify-center px-8 bg-black"
                       style={{
                         backgroundImage: `url(${coachGridBg.url})`,
                         backgroundSize: 'cover',
@@ -147,7 +147,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-white" />
+                    <div className="bg-black" />
                   )}
                 </div>
               </div>
