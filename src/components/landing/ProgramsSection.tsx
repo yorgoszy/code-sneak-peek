@@ -63,7 +63,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
       <div className="relative w-full overflow-hidden flex items-center justify-center" style={{ height: '10vw' }}>
         <div
           className="absolute inset-0 bg-cover"
-          style={{ backgroundImage: `url(${whatWeDoBg.url})`, opacity: 0.6, backgroundPosition: 'center -30px' }}
+          style={{ backgroundImage: `url(${whatWeDoBg.url})`, opacity: 0.6, backgroundPosition: 'center -20px' }}
         />
         <div className="absolute inset-0 bg-black/30" />
         <h3
