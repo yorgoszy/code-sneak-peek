@@ -8,6 +8,8 @@ const hypergymImage = hypergymAsset.url;
 import hyperathletesAsset from '@/assets/methodoi-service-v2.png.asset.json';
 const hyperathletesImage = hyperathletesAsset.url;
 const hyperkidsImage = hyperkidsAsset.url;
+import serviceIconAsset from '@/assets/service-icon-transparent.png.asset.json';
+const serviceIconUrl = serviceIconAsset.url;
 
 interface Program {
   id: string;
