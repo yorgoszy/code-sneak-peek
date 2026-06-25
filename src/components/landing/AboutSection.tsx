@@ -24,53 +24,33 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
       id: 1,
       label: "the coach",
       title: translations.headCoach,
-      description: translations.coachDescription,
+      description: translations.language === 'en'
+        ? "Georgios Zygouris — graduate of Physical Education & Sport Science (Aristotle University, 2023), professional Muay Thai athlete and certified coach since 2024. A training environment where children, teenagers and adults discover their strengths, build character through sport, and find their unique place in the athletic world."
+        : "Γεώργιος Ζυγούρης — απόφοιτος ΤΕΦΑΑ ΑΠΘ (2023), επαγγελματίας αθλητής Muay Thai και πιστοποιημένος προπονητής από το 2024. Ένα προπονητικό περιβάλλον όπου παιδιά, έφηβοι και ενήλικες ανακαλύπτουν τις δυνάμεις τους, χτίζουν χαρακτήρα μέσω του αθλητισμού και βρίσκουν τη μοναδική τους θέση στον αθλητικό κόσμο.",
       image: theCoachBg.url,
       contentImage: coachContentBg.url,
-      cards: [
-        { title: translations.academicBackground, description: translations.academicDescription },
-        { title: translations.professionalAthlete, description: translations.professionalDescription },
-        { title: translations.coreValues, description: translations.coreValuesDescription },
-      ]
     },
     {
       id: 2,
       label: "the vision",
       title: translations.ourVision,
-      description: translations.visionDescription,
+      description: translations.language === 'en'
+        ? "Combining scientific knowledge with real-world experience, we apply skill development and performance-focused training tailored to each age and stage. Movement is more than physical — it is self-expression, confidence and the power to grow through challenge."
+        : "Συνδυάζοντας επιστημονική γνώση με πραγματική εμπειρία, εφαρμόζουμε ανάπτυξη δεξιοτήτων και προπόνηση εστιασμένη στην απόδοση, προσαρμοσμένη σε κάθε ηλικία. Η κίνηση είναι κάτι περισσότερο από φυσικό — είναι αυτοέκφραση, αυτοπεποίθηση και η δύναμη να μεγαλώνουμε μέσα από την πρόκληση.",
       image: theVisionBg.url,
       contentImage: visionContentBg.url,
-      cards: [
-        { title: translations.moreThanPhysical, description: translations.moreThanPhysicalDesc },
-        { title: translations.buildingCharacter, description: translations.buildingCharacterDesc },
-        { title: translations.trustTheProcess, description: translations.trustTheProcessDesc },
-      ]
     },
     {
       id: 3,
       label: "the method",
       title: translations.trainingMethodology,
-      description: translations.trainingMethodologyDescription,
+      description: translations.language === 'en'
+        ? "Progressive skill development and reinforcement of proper movement patterns tailored to each individual. Through comprehensive assessment we establish clear objectives, create a structured timeline and design a personalised training plan built exclusively for you."
+        : "Προοδευτική ανάπτυξη δεξιοτήτων και ενίσχυση σωστών κινητικών προτύπων προσαρμοσμένη στο κάθε άτομο. Μέσω ολοκληρωμένης αξιολόγησης καθορίζουμε σαφείς στόχους, δημιουργούμε δομημένο χρονοδιάγραμμα και σχεδιάζουμε εξατομικευμένο πρόγραμμα προπόνησης.",
       image: theMethodBg.url,
       contentImage: methodContentBg.url,
-      cards: [
-        { title: translations.movementSkills, description: translations.language === 'en' ? 'Athletic Skills Development\nAge Appropriate\nThrowing & Catching, Climbing Skills, Jumping & Landing, Agility, Running, Coordination' : 'Ανάπτυξη Αθλητικών Δεξιοτήτων\nΚατάλληλα για την Ηλικία\nΡίψεις & Πιασίματα, Δεξιότητες Αναρρίχησης, Άλματα & Προσγειώσεις, Ευκινησία, Τρέξιμο, Συντονισμός' },
-        { title: translations.assessment, description: translations.language === 'en' ? 'Movement & Posture\nLoad-velocity profile\nJump profile\nEndurance' : 'Κίνηση & Στάση\nΠροφίλ φορτίου - ταχύτητας\nΠροφίλ άλματος\nΑντοχή' },
-        { title: translations.resultsFocused, description: translations.language === 'en' ? 'Results Tracking\nPerformance Guidance\nCustomized Program Development' : 'Παρακολούθηση Αποτελεσμάτων\nΚαθοδήγηση Απόδοσης\nΑνάπτυξη Προσαρμοσμένου Προγράμματος' },
-      ]
     },
   ];
-
-  const renderCardDescription = (desc: string) => {
-    const lines = desc.split('\n');
-    return (
-      <div className="text-sm text-white">
-        {lines.map((line, i) => (
-          <p key={i} className={i < lines.length - 1 ? 'mb-2' : ''}>• {line}</p>
-        ))}
-      </div>
-    );
-  };
 
   return (
     <section id="about" className="pb-20 bg-white relative overflow-hidden">
@@ -85,7 +65,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
         <CarouselContent>
           {slides.map((slide) => (
             <CarouselItem key={slide.id} className="basis-full">
-              {/* Banner with background + who we are */}
+              {/* Banner */}
               <div className="relative w-full overflow-hidden flex items-center justify-center" style={{ height: 'calc(10vw - 1px)' }}>
                 <div
                   className="absolute inset-0 bg-cover"
@@ -93,7 +73,6 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                 />
                 <div className="absolute inset-0 bg-black/30" />
 
-                {/* Left arrow */}
                 <button
                   onClick={() => api?.scrollPrev()}
                   className="absolute left-4 top-1/2 -translate-y-1/2 z-20 text-white p-2 hover:border hover:border-white transition-colors"
@@ -108,7 +87,6 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                   {slide.label}
                 </h3>
 
-                {/* Right arrow */}
                 <button
                   onClick={() => api?.scrollNext()}
                   className="absolute right-4 top-1/2 -translate-y-1/2 z-20 text-white p-2 hover:border hover:border-white transition-colors"
@@ -117,47 +95,28 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                 </button>
               </div>
 
-              {/* Content area */}
+              {/* Split Content: image left, text right */}
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
-                <div className="relative">
-                  <div className="relative flex flex-col" style={{ paddingTop: '80px' }}>
-                    <div className="relative mb-8">
-                      <img
-                        src={(slide as any).contentImage || slide.image}
-                        alt={slide.title}
-                        className={`w-full h-auto object-contain ${(slide as any).contentImage ? '' : 'filter grayscale'}`}
-                        style={{ opacity: 0.6 }}
-                      />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                  {/* Left — image */}
+                  <div className="relative">
+                    <img
+                      src={slide.contentImage || slide.image}
+                      alt={slide.title}
+                      className="w-full h-auto object-contain"
+                    />
+                  </div>
 
-                      {/* White gradient from right to left */}
-                      <div className="absolute inset-0 bg-gradient-to-l from-white/80 via-white/40 to-transparent pointer-events-none" />
-
-                      {/* Content overlay */}
-                      <div className="absolute inset-0 p-8 flex flex-col justify-center">
-                        <h3 className="text-xl font-bold mb-4 text-white">{slide.title}</h3>
-                        <p className="text-sm leading-relaxed text-white mb-6">{slide.description}</p>
-
-                        {/* Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          {slide.cards.map((card, index) => (
-                            <div key={index} className="p-4 border-2 rounded-none bg-transparent border-white">
-                              <h4 className="font-bold mb-2 text-white">{card.title}</h4>
-                              {typeof card.description === 'string' && card.description.includes('\n')
-                                ? renderCardDescription(card.description)
-                                : <p className="text-sm text-white">{card.description}</p>
-                              }
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
+                  {/* Right — text */}
+                  <div className="flex flex-col justify-center">
+                    <h3 className="text-2xl font-bold mb-4 text-black">{slide.title}</h3>
+                    <p className="text-sm leading-relaxed text-black">{slide.description}</p>
                   </div>
                 </div>
               </div>
             </CarouselItem>
           ))}
         </CarouselContent>
-
       </Carousel>
     </section>
   );
