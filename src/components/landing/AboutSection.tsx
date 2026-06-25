@@ -78,9 +78,11 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
               </div>
 
               {/* 40/60 Grid */}
-              <div className="w-full min-h-[50vh] grid grid-cols-[40%_60%] pt-20 pb-20">
-                <div className="bg-black" />
-                <div className="bg-white" />
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-20">
+                <div className="w-full min-h-[50vh] grid grid-cols-[40%_60%]">
+                  <div className="bg-black" />
+                  <div className="bg-white" />
+                </div>
               </div>
             </CarouselItem>
           ))}
