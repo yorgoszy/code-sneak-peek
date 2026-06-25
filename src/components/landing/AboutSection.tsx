@@ -135,15 +135,15 @@ const AboutSection: React.FC<AboutSectionProps> = ({
 
   if (isMobile) {
     return (
-      <section id="about" className="py-20 bg-black relative overflow-hidden" onClick={handleScreenClick}>
+      <section id="about" className="py-20 bg-white relative overflow-hidden" onClick={handleScreenClick}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
-            <p className="text-sm font-medium mb-4 text-white">
+            <p className="text-sm font-medium mb-4 text-black">
               {translations.aboutSection.toUpperCase()}
             </p>
-            <h2 className="text-4xl font-bold text-white leading-tight">
-              <span className="text-white">{translations.supportingYour}</span><br />
-              <span className="text-white">{translations.athleticJourney}</span>
+            <h2 className="text-4xl font-bold text-black leading-tight">
+              <span className="text-black">{translations.supportingYour}</span><br />
+              <span className="text-black">{translations.athleticJourney}</span>
             </h2>
           </div>
 
@@ -158,10 +158,10 @@ const AboutSection: React.FC<AboutSectionProps> = ({
             >
               {/* Navigation buttons */}
               <div className="absolute -top-16 right-0 flex gap-2 z-10">
-                <CarouselPrevious className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-white hover:text-[#00ffba] hover:bg-transparent rounded-none">
+                <CarouselPrevious className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-black hover:text-[#00ffba] hover:bg-transparent rounded-none">
                   <ChevronLeft className="h-6 w-6" />
                 </CarouselPrevious>
-                <CarouselNext className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-white hover:text-[#00ffba] hover:bg-transparent rounded-none">
+                <CarouselNext className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-black hover:text-[#00ffba] hover:bg-transparent rounded-none">
                   <ChevronRight className="h-6 w-6" />
                 </CarouselNext>
               </div>
@@ -178,10 +178,10 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                     <div className="space-y-6">
                       {/* Section Header */}
                       <div className="flex items-center mb-6">
-                        <span className="text-2xl font-bold mr-6 text-white">
+                        <span className="text-2xl font-bold mr-6 text-black">
                           {section.id.toString().padStart(2, '0')}
                         </span>
-                        <h3 className="text-xl text-white font-bold">{section.title}</h3>
+                        <h3 className="text-xl text-black font-bold">{section.title}</h3>
                       </div>
 
                       {/* Image */}
@@ -192,11 +192,11 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                           className="w-full h-[300px] object-cover filter grayscale rounded-none"
                         />
                         <div className="absolute flex items-center" style={{ bottom: '20px', left: '20px', right: '20px' }}>
-                          <span className="text-2xl font-bold mr-4 text-white">
+                          <span className="text-2xl font-bold mr-4 text-black">
                             {section.id.toString().padStart(2, '0')}
                           </span>
                           <div 
-                            className="flex-1 bg-[#f4f1ea]"
+                            className="flex-1 bg-black"
                             style={{ height: '1px' }}
                           ></div>
                         </div>
@@ -204,7 +204,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
 
                       {/* Description */}
                       <div className="mb-6">
-                        <p className="text-sm leading-relaxed text-white">
+                        <p className="text-sm leading-relaxed text-black">
                           {section.description}
                         </p>
                       </div>
@@ -214,13 +214,13 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                         {section.cards.map((card, index) => (
                           <div 
                             key={index}
-                            className="p-4 border-l-2 rounded-none bg-[#f4f1ea]/10 border-[#f4f1ea]"
+                            className="p-4 border-l-2 rounded-none bg-black/5 border-black"
                           >
-                            <h4 className="font-bold mb-2 text-white">{card.title}</h4>
+                            <h4 className="font-bold mb-2 text-black">{card.title}</h4>
                             {typeof card.description === 'string' ? (
-                              <p className="text-sm text-white">{card.description}</p>
+                              <p className="text-sm text-black">{card.description}</p>
                             ) : (
-                              <div className="text-white">{card.description}</div>
+                              <div className="text-black">{card.description}</div>
                             )}
                           </div>
                         ))}
@@ -238,7 +238,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({
 
   // Desktop version - keep existing sidebar style
   return (
-    <section id="about" className="py-20 bg-black relative overflow-hidden">
+    <section id="about" className="py-20 bg-white relative overflow-hidden">
       <style>{`
         .about-nav-item {
           cursor: pointer;
@@ -261,12 +261,12 @@ const AboutSection: React.FC<AboutSectionProps> = ({
         <div className="flex flex-col lg:flex-row min-h-[56vh]">
           <div className="lg:w-2/5 flex flex-col" style={{ paddingTop: '80px' }}>
             <div className="mb-12">
-              <p className="text-sm font-medium mb-4 text-white">
+              <p className="text-sm font-medium mb-4 text-black">
                 {translations.aboutSection.toUpperCase()}
               </p>
-              <h2 className="text-4xl lg:text-5xl font-bold text-white leading-tight">
-                <span className="text-white">{translations.supportingYour}</span><br />
-                <span className="text-white">{translations.athleticJourney}</span>
+              <h2 className="text-4xl lg:text-5xl font-bold text-black leading-tight">
+                <span className="text-black">{translations.supportingYour}</span><br />
+                <span className="text-black">{translations.athleticJourney}</span>
               </h2>
             </div>
 
@@ -275,22 +275,22 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                 className={`flex items-center about-nav-item ${activeAboutSection === 1 ? 'active' : ''}`}
                 onClick={() => onSetActiveAboutSection(1)}
               >
-                <span className="text-2xl font-bold mr-6 text-white">01</span>
-                <h3 className={`text-xl about-nav-title text-white ${activeAboutSection === 1 ? 'font-bold' : ''}`}>{translations.headCoach}</h3>
+                <span className="text-2xl font-bold mr-6 text-black">01</span>
+                <h3 className={`text-xl about-nav-title text-black ${activeAboutSection === 1 ? 'font-bold' : ''}`}>{translations.headCoach}</h3>
               </div>
               <div 
                 className={`flex items-center about-nav-item ${activeAboutSection === 2 ? 'active' : ''}`}
                 onClick={() => onSetActiveAboutSection(2)}
               >
-                <span className="text-2xl font-bold mr-6 text-white">02</span>
-                <h3 className={`text-xl about-nav-title text-white ${activeAboutSection === 2 ? 'font-bold' : ''}`}>{translations.ourVision}</h3>
+                <span className="text-2xl font-bold mr-6 text-black">02</span>
+                <h3 className={`text-xl about-nav-title text-black ${activeAboutSection === 2 ? 'font-bold' : ''}`}>{translations.ourVision}</h3>
               </div>
               <div 
                 className={`flex items-center about-nav-item ${activeAboutSection === 3 ? 'active' : ''}`}
                 onClick={() => onSetActiveAboutSection(3)}
               >
-                <span className="text-2xl font-bold mr-6 text-white">03</span>
-                <h3 className={`text-xl about-nav-title text-white ${activeAboutSection === 3 ? 'font-bold' : ''}`}>{translations.trainingMethodology}</h3>
+                <span className="text-2xl font-bold mr-6 text-black">03</span>
+                <h3 className={`text-xl about-nav-title text-black ${activeAboutSection === 3 ? 'font-bold' : ''}`}>{translations.trainingMethodology}</h3>
               </div>
             </div>
           </div>
@@ -313,18 +313,18 @@ const AboutSection: React.FC<AboutSectionProps> = ({
               />
               
               {/* Gradient overlays */}
-              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent"></div>
-              <div className="absolute top-0 bottom-0 left-0 w-16 bg-gradient-to-r from-black to-transparent"></div>
-              <div className="absolute top-0 bottom-0 right-0 w-16 bg-gradient-to-l from-black to-transparent"></div>
+              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent"></div>
+              <div className="absolute top-0 bottom-0 left-0 w-16 bg-gradient-to-r from-white to-transparent"></div>
+              <div className="absolute top-0 bottom-0 right-0 w-16 bg-gradient-to-l from-white to-transparent"></div>
               
               {/* Content overlay for all sections */}
               <div className="absolute inset-0 p-8 flex flex-col justify-center">
-                <h3 className="text-xl font-bold mb-4 text-white">
+                <h3 className="text-xl font-bold mb-4 text-black">
                   {activeAboutSection === 1 && translations.headCoach}
                   {activeAboutSection === 2 && translations.ourVision}
                   {activeAboutSection === 3 && translations.trainingMethodology}
                 </h3>
-                <p className="text-sm leading-relaxed text-white mb-6">
+                <p className="text-sm leading-relaxed text-black mb-6">
                   {activeAboutSection === 1 && translations.coachDescription}
                   {activeAboutSection === 2 && translations.visionDescription}
                   {activeAboutSection === 3 && translations.trainingMethodologyDescription}
@@ -334,26 +334,26 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                 {activeAboutSection === 1 && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div 
-                      className="p-4 border-2 rounded-md bg-transparent border-[#f4f1ea]"
+                      className="p-4 border-2 rounded-md bg-transparent border-black"
                     >
-                      <h4 className="font-bold mb-2 text-white">{translations.academicBackground}</h4>
-                      <p className="text-sm text-white">
+                      <h4 className="font-bold mb-2 text-black">{translations.academicBackground}</h4>
+                      <p className="text-sm text-black">
                         {translations.academicDescription}
                       </p>
                     </div>
                     <div 
-                      className="p-4 border-2 rounded-md bg-transparent border-[#f4f1ea]"
+                      className="p-4 border-2 rounded-md bg-transparent border-black"
                     >
-                      <h4 className="font-bold mb-2 text-white">{translations.professionalAthlete}</h4>
-                      <p className="text-sm text-white">
+                      <h4 className="font-bold mb-2 text-black">{translations.professionalAthlete}</h4>
+                      <p className="text-sm text-black">
                         {translations.professionalDescription}
                       </p>
                     </div>
                     <div 
-                      className="p-4 border-2 rounded-md bg-transparent border-[#f4f1ea]"
+                      className="p-4 border-2 rounded-md bg-transparent border-black"
                     >
-                      <h4 className="font-bold mb-2 text-white">{translations.coreValues}</h4>
-                      <p className="text-sm text-white">
+                      <h4 className="font-bold mb-2 text-black">{translations.coreValues}</h4>
+                      <p className="text-sm text-black">
                         {translations.coreValuesDescription}
                       </p>
                     </div>
@@ -364,26 +364,26 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                 {activeAboutSection === 2 && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div 
-                      className="p-4 border-2 rounded-md bg-transparent border-[#f4f1ea]"
+                      className="p-4 border-2 rounded-md bg-transparent border-black"
                     >
-                      <h4 className="font-bold mb-2 text-white">{translations.moreThanPhysical}</h4>
-                      <p className="text-sm text-white">
+                      <h4 className="font-bold mb-2 text-black">{translations.moreThanPhysical}</h4>
+                      <p className="text-sm text-black">
                         {translations.moreThanPhysicalDesc}
                       </p>
                     </div>
                     <div 
-                      className="p-4 border-2 rounded-md bg-transparent border-[#f4f1ea]"
+                      className="p-4 border-2 rounded-md bg-transparent border-black"
                     >
-                      <h4 className="font-bold mb-2 text-white">{translations.buildingCharacter}</h4>
-                      <p className="text-sm text-white">
+                      <h4 className="font-bold mb-2 text-black">{translations.buildingCharacter}</h4>
+                      <p className="text-sm text-black">
                         {translations.buildingCharacterDesc}
                       </p>
                     </div>
                     <div 
-                      className="p-4 border-2 rounded-md bg-transparent border-[#f4f1ea]"
+                      className="p-4 border-2 rounded-md bg-transparent border-black"
                     >
-                      <h4 className="font-bold mb-2 text-white">{translations.trustTheProcess}</h4>
-                      <p className="text-sm text-white">
+                      <h4 className="font-bold mb-2 text-black">{translations.trustTheProcess}</h4>
+                      <p className="text-sm text-black">
                         {translations.trustTheProcessDesc}
                       </p>
                     </div>
@@ -394,20 +394,20 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                 {activeAboutSection === 3 && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div 
-                      className="p-4 border-2 rounded-md bg-transparent border-[#f4f1ea]"
+                      className="p-4 border-2 rounded-md bg-transparent border-black"
                     >
-                      <h4 className="font-bold mb-2 text-white">{translations.movementSkills}</h4>
-                      <div className="text-sm text-white">
+                      <h4 className="font-bold mb-2 text-black">{translations.movementSkills}</h4>
+                      <div className="text-sm text-black">
                         <p className="mb-2">• {translations.language === 'en' ? 'Athletic Skills Development' : 'Ανάπτυξη Αθλητικών Δεξιοτήτων'}</p>
                         <p className="mb-2">• {translations.language === 'en' ? 'Age Appropriate' : 'Κατάλληλα για την Ηλικία'}</p>
                         <p>• {translations.language === 'en' ? 'Throwing & Catching, Climbing Skills, Jumping & Landing, Agility, Running, Coordination' : 'Ρίψεις & Πιασίματα, Δεξιότητες Αναρρίχησης, Άλματα & Προσγειώσεις, Ευκινησία, Τρέξιμο, Συντονισμός'}</p>
                       </div>
                     </div>
                     <div 
-                      className="p-4 border-2 rounded-md bg-transparent border-[#f4f1ea]"
+                      className="p-4 border-2 rounded-md bg-transparent border-black"
                     >
-                      <h4 className="font-bold mb-2 text-white">{translations.assessment}</h4>
-                      <div className="text-sm text-white">
+                      <h4 className="font-bold mb-2 text-black">{translations.assessment}</h4>
+                      <div className="text-sm text-black">
                         <p className="mb-2">• {translations.language === 'en' ? 'Movement & Posture' : 'Κίνηση & Στάση'}</p>
                         <p className="mb-2">• {translations.language === 'en' ? 'Load-velocity profile' : 'Προφίλ φορτίου - ταχύτητας'}</p>
                         <p className="mb-2">• {translations.language === 'en' ? 'Jump profile' : 'Προφίλ άλματος'}</p>
@@ -415,10 +415,10 @@ const AboutSection: React.FC<AboutSectionProps> = ({
                       </div>
                     </div>
                     <div 
-                      className="p-4 border-2 rounded-md bg-transparent border-[#f4f1ea]"
+                      className="p-4 border-2 rounded-md bg-transparent border-black"
                     >
-                      <h4 className="font-bold mb-2 text-white">{translations.resultsFocused}</h4>
-                      <div className="text-sm text-white">
+                      <h4 className="font-bold mb-2 text-black">{translations.resultsFocused}</h4>
+                      <div className="text-sm text-black">
                         <p className="mb-2">• {translations.language === 'en' ? 'Results Tracking' : 'Παρακολούθηση Αποτελεσμάτων'}</p>
                         <p className="mb-2">• {translations.language === 'en' ? 'Performance Guidance' : 'Καθοδήγηση Απόδοσης'}</p>
                         <p>• {translations.language === 'en' ? 'Customized Program Development' : 'Ανάπτυξη Προσαρμοσμένου Προγράμματος'}</p>
