@@ -3,6 +3,22 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Roobert Pro';
+  src: url('/__l5e/assets-v1/33958dbb-e67a-44e7-9d7e-1b3b944fbc86/RoobertPRO-Medium.ttf') format('truetype');
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Roobert Pro';
+  src: url('/__l5e/assets-v1/9aee6d3a-dfc1-42ae-b436-bfd7ec28b1da/RoobertPRO-Bold.ttf') format('truetype');
+  font-weight: 600 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+
 /* Prevent horizontal scrolling */
 html, body {
   overflow-x: hidden;
