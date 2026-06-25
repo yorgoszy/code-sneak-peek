@@ -89,7 +89,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                   className="relative z-10 text-white text-center px-4"
                   style={{ fontFamily: '"Roobert Pro", sans-serif', fontWeight: 500, fontSize: '15.6vw', lineHeight: 1 }}
                 >
-                  who we are
+                  {slide.label}
                 </h3>
               </div>
 
