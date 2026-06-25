@@ -35,7 +35,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
   ];
 
   return (
-    <section id="about" className="pb-20 bg-white relative overflow-hidden">
+    <section id="about" className="bg-white relative overflow-hidden">
       <Carousel
         setApi={setApi}
         opts={{
