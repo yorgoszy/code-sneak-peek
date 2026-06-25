@@ -153,6 +153,8 @@ const AboutSection: React.FC<AboutSectionProps> = ({
   if (isMobile) {
     return (
       <section id="about" className="pb-20 bg-white relative overflow-hidden" onClick={handleScreenClick}>
+        <WhoWeAreBanner />
+        <div className="h-12" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
             <p className="text-sm font-medium mb-4 text-black">
