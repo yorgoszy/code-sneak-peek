@@ -258,6 +258,8 @@ const AboutSection: React.FC<AboutSectionProps> = ({
   // Desktop version - keep existing sidebar style
   return (
     <section id="about" className="pb-20 bg-white relative overflow-hidden">
+      <WhoWeAreBanner />
+      <div className="h-12" />
       <style>{`
         .about-nav-item {
           cursor: pointer;
