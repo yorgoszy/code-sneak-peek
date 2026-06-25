@@ -6,6 +6,7 @@ import coachPhoto from '@/assets/coa3.png.asset.json';
 import coachGridBg from '@/assets/coa4.png.asset.json';
 import visionPhoto from '@/assets/vis3.png.asset.json';
 import visionGridBg from '@/assets/vis4.png.asset.json';
+import methodPhoto from '@/assets/meth3.png.asset.json';
 import { iconBlack } from '@/assets/iconBlack';
 import {
   Carousel,
