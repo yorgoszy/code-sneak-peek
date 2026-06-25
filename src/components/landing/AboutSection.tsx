@@ -125,14 +125,9 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                         style={{ opacity: (slide as any).contentImage ? 1 : 0.4 }}
                       />
 
-                      {/* Gradient overlays */}
-                      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent" />
-                      <div className="absolute top-0 bottom-0 left-0 w-16 bg-gradient-to-r from-white to-transparent" />
-                      <div className="absolute top-0 bottom-0 right-0 w-16 bg-gradient-to-l from-white to-transparent" />
-
                       {/* Content overlay */}
                       <div className="absolute inset-0 p-8 flex flex-col justify-center">
-                        <h3 className="text-xl font-bold mb-4 text-black">{slide.title}</h3>
+                        <h3 className="text-xl font-bold mb-4 text-white">{slide.title}</h3>
                         <p className="text-sm leading-relaxed text-black mb-6">{slide.description}</p>
 
                         {/* Cards */}
