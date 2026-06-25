@@ -113,7 +113,18 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                   ) : (
                     <div className="bg-white" />
                   )}
-                  <div className="bg-white" />
+                  {slide.id === 1 ? (
+                    <div
+                      className="relative"
+                      style={{
+                        backgroundImage: `url(${coachGridBg.url})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                      }}
+                    />
+                  ) : (
+                    <div className="bg-white" />
+                  )}
                 </div>
               </div>
             </CarouselItem>
