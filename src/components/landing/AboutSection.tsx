@@ -147,7 +147,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                       </div>
                     </div>
                   ) : (
-                    <div className="bg-white" />
+                    <div className="bg-black" />
                   )}
                 </div>
               </div>
