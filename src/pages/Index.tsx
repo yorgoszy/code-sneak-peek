@@ -29,7 +29,7 @@ const Index = () => {
   const { user, loading, signOut, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { language, translations, toggleLanguage } = useTranslations();
-  const [activeAboutSection, setActiveAboutSection] = useState<number>(1);
+  
   const isPWA = useIsPWA();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [trialOpen, setTrialOpen] = useState(false);
