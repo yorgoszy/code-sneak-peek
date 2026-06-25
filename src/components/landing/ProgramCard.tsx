@@ -5,7 +5,8 @@ import { ProgramScheduleSection } from './program-details/ProgramScheduleSection
 import hyperkidsAsset from '@/assets/hyperkis-e.png.asset.json';
 import hypergymAsset from '@/assets/hypergym-service-new.png.asset.json';
 const hypergymImage = hypergymAsset.url;
-import hyperathletesImage from '@/assets/hyperathletes-service.png';
+import hyperathletesAsset from '@/assets/hyperathletes-service-new.png.asset.json';
+const hyperathletesImage = hyperathletesAsset.url;
 const hyperkidsImage = hyperkidsAsset.url;
 
 interface Program {
@@ -357,7 +358,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
            className={`w-full h-full object-cover transition-all duration-500 ${
              program.id === "10" ? "object-[center_50%] grayscale hover:grayscale-0" :
              program.id === "11" ? "object-[center_50%] grayscale hover:grayscale-0" :
-             program.id === "13" ? "object-[center_50%]" : ""
+             program.id === "13" ? "object-[center_50%] grayscale hover:grayscale-0" : ""
            }`}
           key={program.id === "10" ? currentImageIndex : 
                program.id === "11" ? currentImageIndex : 
