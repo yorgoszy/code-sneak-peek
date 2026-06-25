@@ -60,7 +60,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
   const renderCardDescription = (desc: string) => {
     const lines = desc.split('\n');
     return (
-      <div className="text-sm" style={{ color: 'black' }}>
+      <div className="text-sm text-white">
         {lines.map((line, i) => (
           <p key={i} className={i < lines.length - 1 ? 'mb-2' : ''}>• {line}</p>
         ))}
