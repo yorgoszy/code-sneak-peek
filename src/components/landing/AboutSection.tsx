@@ -129,6 +129,9 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                         style={{ opacity: 0.6 }}
                       />
 
+                      {/* White gradient from right to left */}
+                      <div className="absolute inset-0 bg-gradient-to-l from-white/80 via-white/40 to-transparent pointer-events-none" />
+
                       {/* Content overlay */}
                       <div className="absolute inset-0 p-8 flex flex-col justify-center">
                         <h3 className="text-xl font-bold mb-4 text-white">{slide.title}</h3>
