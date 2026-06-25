@@ -355,7 +355,33 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
     <div className="bg-[#f4f1ea] rounded-none overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-[780px] flex flex-col">
       {/* Header Image */}
       <div className={`relative h-[460px] overflow-hidden flex-shrink-0 ${program.id === "10" ? "mt-0" : ""}`}>
-        <img 
+        {/* HYPER KIDS label — top-left, small, Fugaz One, icon replaces E */}
+        {program.id === "10" && (
+          <div
+            className="absolute top-3 left-3 z-20 text-white leading-none"
+            style={{ fontFamily: "'Fugaz One', sans-serif", fontSize: "14px" }}
+          >
+            <div className="flex items-center gap-0">
+              <span>H</span>
+              <span>Y</span>
+              <span>P</span>
+              <img
+                src={hyperkidsIconUrl}
+                alt=""
+                className="inline-block mx-[1px]"
+                style={{ width: "12px", height: "12px", objectFit: "contain" }}
+              />
+              <span>R</span>
+            </div>
+            <div className="flex items-center gap-0">
+              <span>K</span>
+              <span>I</span>
+              <span>D</span>
+              <span>S</span>
+            </div>
+          </div>
+        )}
+        <img
           src={program.id === "10" ? hyperkidsImages[currentImageIndex] : 
                program.id === "11" ? hypergymImages[currentImageIndex] : 
                program.id === "13" ? hyperathletesImages[currentImageIndex] :
