@@ -60,7 +60,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
   return (
     <section id="programs" className="bg-white text-black" onClick={handleScreenClick}>
       {/* What We Do Banner */}
-      <div className="relative w-full overflow-hidden flex items-center justify-center" style={{ height: 'clamp(200px, 30vw, 420px)' }}>
+      <div className="relative w-full overflow-hidden flex items-center justify-center" style={{ height: 'clamp(120px, 18vw, 252px)' }}>
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${whatWeDoBg.url})`, opacity: 0.6 }}
@@ -68,7 +68,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
         <div className="absolute inset-0 bg-black/30" />
         <h3
           className="relative z-10 font-bold tracking-tight text-white text-center px-4"
-          style={{ fontFamily: 'Robert, sans-serif', fontSize: 'clamp(48px, 12vw, 178px)', lineHeight: 1 }}
+          style={{ fontFamily: '"Roobert Pro", sans-serif', fontSize: 'clamp(48px, 12vw, 178px)', lineHeight: 1 }}
         >
           what we do
         </h3>
