@@ -35,7 +35,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
   ];
 
   return (
-    <section id="about" className="pb-20 bg-white relative overflow-hidden">
+    <section id="about" className="bg-white relative overflow-hidden">
       <Carousel
         setApi={setApi}
         opts={{
@@ -78,7 +78,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
               </div>
 
               {/* 40/60 Grid */}
-              <div className="w-full min-h-[50vh] grid grid-cols-[40%_60%]">
+              <div className="w-full min-h-[50vh] grid grid-cols-[40%_60%] pt-20 pb-20">
                 <div className="bg-black" />
                 <div className="bg-white" />
               </div>
