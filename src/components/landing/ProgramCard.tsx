@@ -18,6 +18,8 @@ import hyperkidsLogoTransparentAsset from '@/assets/hyperkids-logo-transparent.p
 const hyperkidsLogoTransparentUrl = hyperkidsLogoTransparentAsset.url;
 import hypergymLogoTransparentAsset from '@/assets/hypergym-logo-transparent.png.asset.json';
 const hypergymLogoTransparentUrl = hypergymLogoTransparentAsset.url;
+import hyperathletesLogoTransparentAsset from '@/assets/hyperathletes-logo-transparent.png.asset.json';
+const hyperathletesLogoTransparentUrl = hyperathletesLogoTransparentAsset.url;
 
 interface Program {
   id: string;
