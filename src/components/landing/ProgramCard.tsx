@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProgramBenefitsSection } from './program-details/ProgramBenefitsSection';
 import { ProgramScheduleSection } from './program-details/ProgramScheduleSection';
 import hyperkidsAsset from '@/assets/hyperkis-e.png.asset.json';
-import hypergymAsset from '@/assets/hypergym-service.png.asset.json';
+import hypergymAsset from '@/assets/hypergym-service-v6.png.asset.json';
 const hypergymImage = hypergymAsset.url;
 import hyperathletesAsset from '@/assets/methodoi-service-v2.png.asset.json';
 const hyperathletesImage = hyperathletesAsset.url;
@@ -381,7 +381,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
             <img 
               src={hyperkidsLogoTransparentUrl} 
               alt="HyperKids" 
-              className="w-[112px] h-auto object-contain"
+              className="w-[100px] h-auto object-contain"
             />
           </div>
         )}
@@ -391,7 +391,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
             <img 
               src={hypergymLogoTransparentUrl} 
               alt="HyperGym" 
-              className="w-[112px] h-auto object-contain"
+              className="w-[100px] h-auto object-contain"
             />
           </div>
         )}
@@ -401,7 +401,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
             <img 
               src={hyperathletesLogoTransparentUrl} 
               alt="HyperAthletes" 
-              className="w-[112px] h-auto object-contain"
+              className="w-[100px] h-auto object-contain"
             />
           </div>
         )}
