@@ -5,7 +5,7 @@ import { ProgramScheduleSection } from './program-details/ProgramScheduleSection
 import hyperkidsAsset from '@/assets/hyperkis-e.png.asset.json';
 import hypergymAsset from '@/assets/hypergym-service-v2.png.asset.json';
 const hypergymImage = hypergymAsset.url;
-import hyperathletesAsset from '@/assets/hyperathletes-service-new.png.asset.json';
+import hyperathletesAsset from '@/assets/hyperathletes-service-v3.png.asset.json';
 const hyperathletesImage = hyperathletesAsset.url;
 const hyperkidsImage = hyperkidsAsset.url;
 
