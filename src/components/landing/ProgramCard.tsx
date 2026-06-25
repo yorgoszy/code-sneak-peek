@@ -372,17 +372,17 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
         {/* Centered service icon for HyperKids, HyperGym, HyperAthletes */}
         {program.id === "10" && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-            <img src={hyperkidsIconUrl} alt="" className="w-24 h-24 object-contain opacity-90" />
+            <img src={hyperkidsIconUrl} alt="" className="w-[76px] h-[76px] object-contain opacity-90" />
           </div>
         )}
         {program.id === "11" && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-            <img src={hypergymIconUrl} alt="" className="w-24 h-24 object-contain opacity-90" />
+            <img src={hypergymIconUrl} alt="" className="w-[76px] h-[76px] object-contain opacity-90" />
           </div>
         )}
         {program.id === "13" && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-            <img src={hyperathletesIconUrl} alt="" className="w-24 h-24 object-contain opacity-90" />
+            <img src={hyperathletesIconUrl} alt="" className="w-[76px] h-[76px] object-contain opacity-90" />
           </div>
         )}
         {/* Tagline */}
