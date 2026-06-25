@@ -122,7 +122,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                         backgroundPosition: 'center',
                       }}
                     >
-                      <div className="absolute inset-0 bg-black/40" />
+                      <div className="absolute inset-0 bg-black/50" />
                       <div className="relative z-10">
                         <h4
                           className="text-white mb-4"
