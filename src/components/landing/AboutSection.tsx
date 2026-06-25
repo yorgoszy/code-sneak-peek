@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import theCoachBg from '@/assets/the-coach-bg.png.asset.json';
 import theVisionBg from '@/assets/the-vision-bg.png.asset.json';
+import theMethodBg from '@/assets/the-method-bg.png.asset.json';
 import {
   Carousel,
   CarouselContent,
@@ -47,7 +48,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
       label: "the method",
       title: translations.trainingMethodology,
       description: translations.trainingMethodologyDescription,
-      image: "/lovable-uploads/9aed48c1-1ec9-4f35-9648-0329d5152c4a.png",
+      image: theMethodBg.url,
       cards: [
         { title: translations.movementSkills, description: translations.language === 'en' ? 'Athletic Skills Development\nAge Appropriate\nThrowing & Catching, Climbing Skills, Jumping & Landing, Agility, Running, Coordination' : 'Ανάπτυξη Αθλητικών Δεξιοτήτων\nΚατάλληλα για την Ηλικία\nΡίψεις & Πιασίματα, Δεξιότητες Αναρρίχησης, Άλματα & Προσγειώσεις, Ευκινησία, Τρέξιμο, Συντονισμός' },
         { title: translations.assessment, description: translations.language === 'en' ? 'Movement & Posture\nLoad-velocity profile\nJump profile\nEndurance' : 'Κίνηση & Στάση\nΠροφίλ φορτίου - ταχύτητας\nΠροφίλ άλματος\nΑντοχή' },
