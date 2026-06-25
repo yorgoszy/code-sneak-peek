@@ -373,7 +373,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
         <div className="absolute inset-0 bg-black/50 z-10" />
         {/* HyperKids logo top-left */}
         {program.id === "10" && (
-          <div className="absolute top-[11px] left-4 z-30 pointer-events-none">
+          <div className="absolute top-4 left-4 z-30 pointer-events-none">
             <img 
               src={hyperkidsLogoTransparentUrl} 
               alt="HyperKids" 
