@@ -18,6 +18,8 @@ import hyperkidsLogoTransparentAsset from '@/assets/hyperkids-logo-transparent.p
 const hyperkidsLogoTransparentUrl = hyperkidsLogoTransparentAsset.url;
 import hypergymLogoTransparentAsset from '@/assets/hypergym-logo-transparent.png.asset.json';
 const hypergymLogoTransparentUrl = hypergymLogoTransparentAsset.url;
+import hyperathletesLogoTransparentAsset from '@/assets/hyperathletes-logo-transparent.png.asset.json';
+const hyperathletesLogoTransparentUrl = hyperathletesLogoTransparentAsset.url;
 
 interface Program {
   id: string;
@@ -389,6 +391,16 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
             <img 
               src={hypergymLogoTransparentUrl} 
               alt="HyperGym" 
+              className="w-[140px] h-auto object-contain"
+            />
+          </div>
+        )}
+        {/* HyperAthletes logo top-left */}
+        {program.id === "13" && (
+          <div className="absolute top-[11px] left-4 z-30 pointer-events-none">
+            <img 
+              src={hyperathletesLogoTransparentUrl} 
+              alt="HyperAthletes" 
               className="w-[140px] h-auto object-contain"
             />
           </div>
