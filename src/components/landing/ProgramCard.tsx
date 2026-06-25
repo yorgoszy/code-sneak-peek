@@ -378,7 +378,6 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
               src={hyperkidsLogoTransparentUrl} 
               alt="HyperKids" 
               className="w-[140px] h-auto object-contain"
-              style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
             />
           </div>
         )}
