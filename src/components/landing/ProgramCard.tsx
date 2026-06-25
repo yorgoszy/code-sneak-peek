@@ -359,7 +359,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
         {program.id === "10" && (
           <div
             className="absolute top-3 left-3 z-20 text-white leading-none"
-            style={{ fontFamily: "'Fugaz One', sans-serif", fontSize: "14px" }}
+            style={{ fontFamily: "'Fugaz One', sans-serif", fontSize: "18px" }}
           >
             <div className="flex items-center gap-0">
               <span>H</span>
@@ -369,7 +369,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
                 src={hyperkidsIconUrl}
                 alt=""
                 className="inline-block mx-[1px]"
-                style={{ width: "12px", height: "12px", objectFit: "contain" }}
+                style={{ width: "15px", height: "15px", objectFit: "contain" }}
               />
               <span>R</span>
             </div>
