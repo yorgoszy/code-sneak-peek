@@ -121,7 +121,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                       <img
                         src={(slide as any).contentImage || slide.image}
                         alt={slide.title}
-                        className={`w-full h-[500px] object-cover ${(slide as any).contentImage ? '' : 'filter grayscale'}`}
+                        className={`w-full h-auto object-contain ${(slide as any).contentImage ? '' : 'filter grayscale'}`}
                         style={{ opacity: 0.6 }}
                       />
 
