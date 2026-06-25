@@ -113,31 +113,8 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
 
               {/* Content area */}
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
-                <div className="flex flex-col lg:flex-row min-h-[56vh]">
-                  {/* Left sidebar label */}
-                  <div className="lg:w-2/5 flex flex-col" style={{ paddingTop: '80px' }}>
-                    <div className="mb-12">
-                      <p className="text-sm font-medium mb-4 text-black">
-                        {translations.aboutSection?.toUpperCase?.() || 'ABOUT'}
-                      </p>
-                      <h2 className="text-4xl lg:text-5xl font-bold text-black leading-tight">
-                        <span className="text-black">{translations.supportingYour}</span><br />
-                        <span className="text-black">{translations.athleticJourney}</span>
-                      </h2>
-                    </div>
-
-                    <div className="flex items-center">
-                      <span className="text-2xl font-bold mr-6 text-black">
-                        {slide.id.toString().padStart(2, '0')}
-                      </span>
-                      <h3 className="text-xl font-bold text-black border-b-2 border-black pb-1">
-                        {slide.label}
-                      </h3>
-                    </div>
-                  </div>
-
-                  {/* Right content */}
-                  <div className="lg:w-3/5 relative flex flex-col" style={{ paddingTop: '80px' }}>
+                <div className="relative">
+                  <div className="relative flex flex-col" style={{ paddingTop: '80px' }}>
                     <div className="relative mb-8">
                       <img
                         src={slide.image}
