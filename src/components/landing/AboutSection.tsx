@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import theCoachBg from '@/assets/the-coach-bg.png.asset.json';
 import {
   Carousel,
   CarouselContent,
@@ -21,7 +22,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
       label: "the coach",
       title: translations.headCoach,
       description: translations.coachDescription,
-      image: "/lovable-uploads/b715161c-3987-4d67-a2d3-54c3faf97d12.png",
+      image: theCoachBg.url,
       cards: [
         { title: translations.academicBackground, description: translations.academicDescription },
         { title: translations.professionalAthlete, description: translations.professionalDescription },
