@@ -6,8 +6,6 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -88,12 +86,29 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                   style={{ backgroundImage: `url(${slide.image})`, opacity: 0.6, backgroundPosition: 'center center' }}
                 />
                 <div className="absolute inset-0 bg-black/30" />
+
+                {/* Left arrow */}
+                <button
+                  onClick={() => api?.scrollPrev()}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 z-20 text-white p-2 hover:border hover:border-white transition-colors"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </button>
+
                 <h3
                   className="relative z-10 text-white text-center px-4"
                   style={{ fontFamily: '"Roobert Pro", sans-serif', fontWeight: 500, fontSize: '15.6vw', lineHeight: 1 }}
                 >
                   {slide.label}
                 </h3>
+
+                {/* Right arrow */}
+                <button
+                  onClick={() => api?.scrollNext()}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 z-20 text-white p-2 hover:border hover:border-white transition-colors"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </button>
               </div>
 
               {/* Content area */}
@@ -162,15 +177,6 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
           ))}
         </CarouselContent>
 
-        {/* Navigation arrows */}
-        <div className="absolute top-[calc(10vw+20px)] right-8 flex gap-2 z-20">
-          <CarouselPrevious className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-black hover:text-[#00ffba] hover:bg-transparent rounded-none">
-            <ChevronLeft className="h-6 w-6" />
-          </CarouselPrevious>
-          <CarouselNext className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-black hover:text-[#00ffba] hover:bg-transparent rounded-none">
-            <ChevronRight className="h-6 w-6" />
-          </CarouselNext>
-        </div>
       </Carousel>
     </section>
   );
