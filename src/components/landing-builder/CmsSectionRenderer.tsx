@@ -58,7 +58,7 @@ export const CmsSectionRenderer: React.FC<Props> = ({ sectionKey, editorMode }) 
       case 'programs':
         return <ProgramsSection programs={[] as any} translations={t} />;
       case 'about':
-        return <AboutSection translations={t} activeAboutSection={1} onSetActiveAboutSection={noop} />;
+        return <AboutSection translations={t} />;
       case 'certificates':
         return <CertificatesSection translations={t} />;
       case 'elite':
