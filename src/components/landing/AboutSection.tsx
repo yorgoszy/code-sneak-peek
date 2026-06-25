@@ -122,7 +122,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                         src={(slide as any).contentImage || slide.image}
                         alt={slide.title}
                         className={`w-full h-[500px] object-cover ${(slide as any).contentImage ? '' : 'filter grayscale'}`}
-                        style={{ opacity: (slide as any).contentImage ? 1 : 0.4 }}
+                        style={{ opacity: 0.6 }}
                       />
 
                       {/* Content overlay */}
