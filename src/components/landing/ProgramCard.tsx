@@ -391,7 +391,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
             <img 
               src={hypergymLogoTransparentUrl} 
               alt="HyperGym" 
-              className="w-[140px] h-auto object-contain"
+              className="w-[112px] h-auto object-contain"
             />
           </div>
         )}
@@ -401,7 +401,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
             <img 
               src={hyperathletesLogoTransparentUrl} 
               alt="HyperAthletes" 
-              className="w-[140px] h-auto object-contain"
+              className="w-[112px] h-auto object-contain"
             />
           </div>
         )}
