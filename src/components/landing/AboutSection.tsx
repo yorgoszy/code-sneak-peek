@@ -99,7 +99,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                       />
                       <div className="absolute inset-0 flex items-end justify-center pb-8 z-10">
                         <span
-                          className="text-black lowercase"
+                          className="text-white lowercase"
                           style={{
                             fontFamily: '"UnifrakturMaguntia", cursive',
                             fontSize: '1.75rem',
