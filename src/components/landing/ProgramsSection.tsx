@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { ProgramCard } from './ProgramCard';
+import { ServiceDialog } from './ServiceDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Carousel,
@@ -28,7 +28,16 @@ interface ProgramsSectionProps {
 const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translations }) => {
   const [api, setApi] = useState<any>();
   const [isAutoplayPaused, setIsAutoplayPaused] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const isMobile = useIsMobile();
+
+  const handleCardClick = (programId: string) => {
+    if (programId === "10" || programId === "11" || programId === "13") {
+      setSelectedServiceId(programId);
+      setDialogOpen(true);
+    }
+  };
 
   // Auto-rotate carousel on mobile
   useEffect(() => {
@@ -99,7 +108,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                     key={program.id} 
                     className="pl-4 basis-full"
                   >
-                    <ProgramCard program={program} translations={translations} />
+                    <ProgramCard program={program} translations={translations} onClick={() => handleCardClick(program.id)} />
                   </CarouselItem>
                 ))}
               </CarouselContent>
@@ -109,7 +118,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
           {/* Desktop: Grid Layout */}
           <div className="hidden lg:grid grid-cols-3 gap-6">
             {programs.map((program) => (
-              <ProgramCard key={program.id} program={program} translations={translations} />
+              <ProgramCard key={program.id} program={program} translations={translations} onClick={() => handleCardClick(program.id)} />
             ))}
           </div>
         </div>
