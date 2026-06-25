@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import theCoachBg from '@/assets/the-coach-bg.png.asset.json';
 import theVisionBg from '@/assets/the-vision-bg.png.asset.json';
 import theMethodBg from '@/assets/the-method-bg.png.asset.json';
+import coachContentBg from '@/assets/coach-content-bg.png.asset.json';
 import {
   Carousel,
   CarouselContent,
@@ -23,6 +24,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
       title: translations.headCoach,
       description: translations.coachDescription,
       image: theCoachBg.url,
+      contentImage: coachContentBg.url,
       cards: [
         { title: translations.academicBackground, description: translations.academicDescription },
         { title: translations.professionalAthlete, description: translations.professionalDescription },
@@ -117,10 +119,10 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                   <div className="relative flex flex-col" style={{ paddingTop: '80px' }}>
                     <div className="relative mb-8">
                       <img
-                        src={slide.image}
+                        src={(slide as any).contentImage || slide.image}
                         alt={slide.title}
-                        className="w-full h-[500px] object-cover filter grayscale"
-                        style={{ opacity: 0.4 }}
+                        className={`w-full h-[500px] object-cover ${(slide as any).contentImage ? '' : 'filter grayscale'}`}
+                        style={{ opacity: (slide as any).contentImage ? 1 : 0.4 }}
                       />
 
                       {/* Gradient overlays */}
