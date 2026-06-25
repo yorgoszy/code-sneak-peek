@@ -119,10 +119,10 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                   <div className="relative flex flex-col" style={{ paddingTop: '80px' }}>
                     <div className="relative mb-8">
                       <img
-                        src={slide.image}
+                        src={(slide as any).contentImage || slide.image}
                         alt={slide.title}
-                        className="w-full h-[500px] object-cover filter grayscale"
-                        style={{ opacity: 0.4 }}
+                        className={`w-full h-[500px] object-cover ${(slide as any).contentImage ? '' : 'filter grayscale'}`}
+                        style={{ opacity: (slide as any).contentImage ? 1 : 0.4 }}
                       />
 
                       {/* Gradient overlays */}
