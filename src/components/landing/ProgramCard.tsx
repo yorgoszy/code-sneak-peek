@@ -14,12 +14,6 @@ import hypergymIconAsset from '@/assets/service-icon-hypergym.png.asset.json';
 const hypergymIconUrl = hypergymIconAsset.url;
 import hyperathletesIconAsset from '@/assets/service-icon-hyperathletes.png.asset.json';
 const hyperathletesIconUrl = hyperathletesIconAsset.url;
-import hyperkidsLogoAsset from '@/assets/hyperkids-logo-nobg.png.asset.json';
-const hyperkidsLogoUrl = hyperkidsLogoAsset.url;
-import hypergymLogoAsset from '@/assets/hypergym-logo-nobg.png.asset.json';
-const hypergymLogoUrl = hypergymLogoAsset.url;
-import hyperathletesLogoAsset from '@/assets/hyperathletes-logo.png.asset.json';
-const hyperathletesLogoUrl = hyperathletesLogoAsset.url;
 
 interface Program {
   id: string;
@@ -361,40 +355,35 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
     <div className="bg-[#f4f1ea] rounded-none overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-[780px] flex flex-col">
       {/* Header Image */}
       <div className={`relative h-[460px] overflow-hidden flex-shrink-0 ${program.id === "10" || program.id === "11" ? "mt-0" : ""}`}>
-        {/* HYPER KIDS logo — top-left, transparent background */}
+        {/* Service brand label — top-left */}
         {program.id === "10" && (
-          <div className="absolute top-3 left-3 z-20">
-            <img
-              src={hyperkidsLogoUrl}
-              alt="HYPER KIDS"
-              className="object-contain"
-              style={{ width: "120px", height: "auto" }}
-              loading="lazy"
-            />
+          <div className="absolute top-3 left-3 z-20" style={{ fontFamily: "'Fugaz One', sans-serif", lineHeight: 1.05 }}>
+            <div className="flex items-center text-[18px] tracking-wide" style={{ color: '#00ffba' }}>
+              <span>HYP</span>
+              <img src={hyperkidsIconUrl} alt="" className="mx-[1px] w-[15px] h-[15px] object-contain" />
+              <span>R</span>
+            </div>
+            <div className="text-[18px] tracking-wide" style={{ color: '#00ffba' }}>KIDS</div>
           </div>
         )}
-        {/* HYPER GYM logo — top-left, transparent background */}
         {program.id === "11" && (
-          <div className="absolute top-3 left-3 z-20">
-            <img
-              src={hypergymLogoUrl}
-              alt="HYPER GYM"
-              className="object-contain"
-              style={{ width: "120px", height: "auto" }}
-              loading="lazy"
-            />
+          <div className="absolute top-3 left-3 z-20" style={{ fontFamily: "'Fugaz One', sans-serif", lineHeight: 1.05 }}>
+            <div className="flex items-center text-[18px] tracking-wide" style={{ color: '#cb8954' }}>
+              <span>HYP</span>
+              <img src={hypergymIconUrl} alt="" className="mx-[1px] w-[15px] h-[15px] object-contain" />
+              <span>R</span>
+            </div>
+            <div className="text-[18px] tracking-wide" style={{ color: '#cb8954' }}>GYM</div>
           </div>
         )}
-        {/* HYPER ATHLETES logo — top-left, transparent background */}
         {program.id === "13" && (
-          <div className="absolute top-3 left-3 z-20">
-            <img
-              src={hyperathletesLogoUrl}
-              alt="HYPER ATHLETES"
-              className="object-contain"
-              style={{ width: "120px", height: "auto" }}
-              loading="lazy"
-            />
+          <div className="absolute top-3 left-3 z-20" style={{ fontFamily: "'Fugaz One', sans-serif", lineHeight: 1.05 }}>
+            <div className="flex items-center text-[18px] tracking-wide" style={{ color: '#f84536' }}>
+              <span>HYP</span>
+              <img src={hyperathletesIconUrl} alt="" className="mx-[1px] w-[15px] h-[15px] object-contain" />
+              <span>R</span>
+            </div>
+            <div className="text-[18px] tracking-wide" style={{ color: '#f84536' }}>ATHLETES</div>
           </div>
         )}
         <img
