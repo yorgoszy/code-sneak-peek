@@ -157,6 +157,8 @@ const Index = () => {
             onGetStarted={handleGetStarted}
           />
 
+          <CertificatesSection translations={correctedTranslations} />
+
           <LiveMatchesSection translations={{ ...correctedTranslations, language }} />
 
           <ProgramsSection 
@@ -169,8 +171,6 @@ const Index = () => {
             activeAboutSection={activeAboutSection}
             onSetActiveAboutSection={setActiveAboutSection}
           />
-
-          <CertificatesSection translations={correctedTranslations} />
 
           <EliteTrainingSection
             translations={correctedTranslations}

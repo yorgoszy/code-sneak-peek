@@ -29,12 +29,8 @@ const certificates = [
 
 const CertificatesSection: React.FC<CertificatesSectionProps> = ({ translations }) => {
   return (
-    <section className="py-16 bg-white">
+    <section className="py-10 bg-white">
       <div className="container mx-auto px-4">
-        <h3 className="text-2xl md:text-3xl font-bold text-center text-gray-900 mb-12">
-          {translations.language === 'el' ? 'Πιστοποιήσεις' : 'Certifications'}
-        </h3>
-        
         <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-8 items-center justify-items-center">
           {certificates.map((cert) => (
             <div 
