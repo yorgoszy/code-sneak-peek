@@ -4,6 +4,7 @@ import theVisionBg from '@/assets/the-vision-bg.png.asset.json';
 import theMethodBg from '@/assets/the-method-bg.png.asset.json';
 import coachContentBg from '@/assets/coach-content-bg.png.asset.json';
 import methodContentBg from '@/assets/method-content-bg.png.asset.json';
+import visionContentBg from '@/assets/vis2.png.asset.json';
 import {
   Carousel,
   CarouselContent,
