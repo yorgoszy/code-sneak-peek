@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProgramBenefitsSection } from './program-details/ProgramBenefitsSection';
 import { ProgramScheduleSection } from './program-details/ProgramScheduleSection';
 import hyperkidsAsset from '@/assets/hyperkis-e.png.asset.json';
-import hypergymAsset from '@/assets/hypergym-service-v5.png.asset.json';
+import hypergymAsset from '@/assets/hypergym-service-v6.png.asset.json';
 const hypergymImage = hypergymAsset.url;
 import hyperathletesAsset from '@/assets/methodoi-service-v2.png.asset.json';
 const hyperathletesImage = hyperathletesAsset.url;
