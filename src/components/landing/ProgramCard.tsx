@@ -388,22 +388,25 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
         {/* Tagline */}
         {program.id === "10" && (
           <div className="absolute bottom-6 left-0 right-0 text-center z-20 pointer-events-none">
-            <span style={{ fontFamily: "'UnifrakturMaguntia', serif", color: "#00ffba", fontSize: "1.75rem" }}>
-              trust the process
+            <span style={{ fontFamily: "'UnifrakturMaguntia', serif", fontSize: "1.75rem" }}>
+              <span style={{ color: "#ffffff" }}>trust the </span>
+              <span style={{ color: "#00ffba" }}>process</span>
             </span>
           </div>
         )}
         {program.id === "11" && (
           <div className="absolute bottom-6 left-0 right-0 text-center z-20 pointer-events-none">
-            <span style={{ fontFamily: "'UnifrakturMaguntia', serif", color: "#cb8954", fontSize: "1.75rem" }}>
-              go the extra mile
+            <span style={{ fontFamily: "'UnifrakturMaguntia', serif", fontSize: "1.75rem" }}>
+              <span style={{ color: "#ffffff" }}>go the </span>
+              <span style={{ color: "#cb8954" }}>extra mile</span>
             </span>
           </div>
         )}
         {program.id === "13" && (
           <div className="absolute bottom-6 left-0 right-0 text-center z-20 pointer-events-none">
-            <span style={{ fontFamily: "'UnifrakturMaguntia', serif", color: "#f84536", fontSize: "1.75rem" }}>
-              go the limit
+            <span style={{ fontFamily: "'UnifrakturMaguntia', serif", fontSize: "1.75rem" }}>
+              <span style={{ color: "#ffffff" }}>go the </span>
+              <span style={{ color: "#f84536" }}>limit</span>
             </span>
           </div>
         )}
