@@ -358,32 +358,32 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
         {/* Service brand label — top-left */}
         {program.id === "10" && (
           <div className="absolute top-3 left-3 z-20" style={{ fontFamily: "'Fugaz One', sans-serif", lineHeight: 1.05 }}>
-            <div className="flex items-center text-lg tracking-wide" style={{ color: '#00ffba' }}>
+            <div className="flex items-center text-[18px] tracking-wide" style={{ color: '#00ffba' }}>
               <span>HYP</span>
-              <img src={hyperkidsIconUrl} alt="" className="mx-[1px] w-[10px] h-[10px] object-contain" />
+              <img src={hyperkidsIconUrl} alt="" className="mx-[1px] w-[15px] h-[15px] object-contain" />
               <span>R</span>
             </div>
-            <div className="text-lg tracking-wide" style={{ color: '#00ffba' }}>KIDS</div>
+            <div className="text-[18px] tracking-wide" style={{ color: '#00ffba' }}>KIDS</div>
           </div>
         )}
         {program.id === "11" && (
           <div className="absolute top-3 left-3 z-20" style={{ fontFamily: "'Fugaz One', sans-serif", lineHeight: 1.05 }}>
-            <div className="flex items-center text-lg tracking-wide" style={{ color: '#cb8954' }}>
+            <div className="flex items-center text-[18px] tracking-wide" style={{ color: '#cb8954' }}>
               <span>HYP</span>
-              <img src={hypergymIconUrl} alt="" className="mx-[1px] w-[10px] h-[10px] object-contain" />
+              <img src={hypergymIconUrl} alt="" className="mx-[1px] w-[15px] h-[15px] object-contain" />
               <span>R</span>
             </div>
-            <div className="text-lg tracking-wide" style={{ color: '#cb8954' }}>GYM</div>
+            <div className="text-[18px] tracking-wide" style={{ color: '#cb8954' }}>GYM</div>
           </div>
         )}
         {program.id === "13" && (
           <div className="absolute top-3 left-3 z-20" style={{ fontFamily: "'Fugaz One', sans-serif", lineHeight: 1.05 }}>
-            <div className="flex items-center text-lg tracking-wide" style={{ color: '#f84536' }}>
+            <div className="flex items-center text-[18px] tracking-wide" style={{ color: '#f84536' }}>
               <span>HYP</span>
-              <img src={hyperathletesIconUrl} alt="" className="mx-[1px] w-[10px] h-[10px] object-contain" />
+              <img src={hyperathletesIconUrl} alt="" className="mx-[1px] w-[15px] h-[15px] object-contain" />
               <span>R</span>
             </div>
-            <div className="text-lg tracking-wide" style={{ color: '#f84536' }}>ATHLETES</div>
+            <div className="text-[18px] tracking-wide" style={{ color: '#f84536' }}>ATHLETES</div>
           </div>
         )}
         <img
