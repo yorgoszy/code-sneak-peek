@@ -3,6 +3,7 @@ import theCoachBg from '@/assets/the-coach-bg.png.asset.json';
 import theVisionBg from '@/assets/the-vision-bg.png.asset.json';
 import theMethodBg from '@/assets/the-method-bg.png.asset.json';
 import coachPhoto from '@/assets/coa3.png.asset.json';
+import coachGridBg from '@/assets/coa4.png.asset.json';
 import { iconBlack } from '@/assets/iconBlack';
 import {
   Carousel,
@@ -112,7 +113,18 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                   ) : (
                     <div className="bg-white" />
                   )}
-                  <div className="bg-white" />
+                  {slide.id === 1 ? (
+                    <div
+                      className="relative"
+                      style={{
+                        backgroundImage: `url(${coachGridBg.url})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                      }}
+                    />
+                  ) : (
+                    <div className="bg-white" />
+                  )}
                 </div>
               </div>
             </CarouselItem>
