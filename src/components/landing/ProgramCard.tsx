@@ -368,7 +368,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
               src={hyperkidsLogoUrl}
               alt="HYPER KIDS"
               className="object-contain"
-              style={{ width: "100px", height: "auto" }}
+              style={{ width: "120px", height: "auto" }}
               loading="lazy"
             />
           </div>
