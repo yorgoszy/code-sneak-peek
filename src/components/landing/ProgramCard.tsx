@@ -14,6 +14,8 @@ import hypergymIconAsset from '@/assets/service-icon-hypergym.png.asset.json';
 const hypergymIconUrl = hypergymIconAsset.url;
 import hyperathletesIconAsset from '@/assets/service-icon-hyperathletes.png.asset.json';
 const hyperathletesIconUrl = hyperathletesIconAsset.url;
+import hyperkidsLogoTransparentAsset from '@/assets/hyperkids-logo-transparent.png.asset.json';
+const hyperkidsLogoTransparentUrl = hyperkidsLogoTransparentAsset.url;
 
 interface Program {
   id: string;
