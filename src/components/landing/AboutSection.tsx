@@ -115,13 +115,37 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                   )}
                   {slide.id === 1 ? (
                     <div
-                      className="relative"
+                      className="relative flex flex-col justify-center px-8"
                       style={{
                         backgroundImage: `url(${coachGridBg.url})`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                       }}
-                    />
+                    >
+                      <div className="absolute inset-0 bg-black/40" />
+                      <div className="relative z-10">
+                        <h4
+                          className="text-white mb-4"
+                          style={{
+                            fontFamily: '"Roobert Pro", sans-serif',
+                            fontWeight: 600,
+                            fontSize: '1.5rem',
+                          }}
+                        >
+                          Κύριος προπονητής
+                        </h4>
+                        <p
+                          className="text-white leading-relaxed"
+                          style={{
+                            fontFamily: '"Roobert Pro", sans-serif',
+                            fontSize: '1rem',
+                            lineHeight: 1.7,
+                          }}
+                        >
+                          Ονομάζομαι Γεώργιος Ζυγούρης, είμαι απόφοιτος της Σχολής Φυσικής Αγωγής και Αθλητισμού του Αριστοτελείου Πανεπιστημίου Θεσσαλονίκης (2023). Είμαι επαγγελματίας αθλητής Muay Thai και πιστοποιημένος προπονητής από το 2024. Μέσω της διπλής μου προοπτικής ως αθλητής και εκπαιδευτικός, έχω δημιουργήσει ένα προπονητικό περιβάλλον όπου παιδιά, εφηβοι, και ενήλικες δεν μαθαίνουν απλώς ένα σπορ—ανακαλύπτουν τις δυνάμεις τους, χτίζουν χαρακτήρα μέσω του αθλητισμού, και βρίσκουν τη μοναδική τους θέση στον αθλητικό κόσμο.
+                        </p>
+                      </div>
+                    </div>
                   ) : (
                     <div className="bg-white" />
                   )}
