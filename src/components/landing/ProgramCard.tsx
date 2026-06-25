@@ -361,7 +361,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
                program.id === "13" ? hyperathletesImages[currentImageIndex] :
                program.image}
           alt={program.title}
-           className="w-full h-full object-cover transition-all duration-500 object-[center_50%] grayscale hover:grayscale-0"
+          className="w-full h-full object-cover transition-all duration-500 object-[center_50%] grayscale group-hover:grayscale-0"
           key={program.id === "10" ? currentImageIndex : 
                program.id === "11" ? currentImageIndex : 
                program.id === "13" ? currentImageIndex :
