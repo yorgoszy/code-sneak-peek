@@ -60,7 +60,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
   return (
     <section id="programs" className="bg-white text-black" onClick={handleScreenClick}>
       {/* What We Do Banner */}
-      <div className="relative w-full overflow-hidden flex items-center justify-center" style={{ height: '12vw' }}>
+      <div className="relative w-full overflow-hidden flex items-center justify-center" style={{ height: '11vw' }}>
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${whatWeDoBg.url})`, opacity: 0.6 }}
