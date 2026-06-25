@@ -95,11 +95,11 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                       <img
                         src={iconBlack}
                         alt=""
-                        className="absolute top-4 left-4 w-16 h-16 z-10"
+                        className="absolute top-4 left-4 w-16 h-16 z-10 brightness-0 invert"
                       />
                       <div className="absolute inset-0 flex items-end justify-center pb-8 z-10">
                         <span
-                          className="text-black lowercase"
+                          className="text-white lowercase"
                           style={{
                             fontFamily: '"UnifrakturMaguntia", cursive',
                             fontSize: '1.75rem',
