@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import theCoachBg from '@/assets/the-coach-bg.png.asset.json';
 import theVisionBg from '@/assets/the-vision-bg.png.asset.json';
 import theMethodBg from '@/assets/the-method-bg.png.asset.json';
+import coachPhoto from '@/assets/coa3.png.asset.json';
+import { iconBlack } from '@/assets/iconBlack';
 import {
   Carousel,
   CarouselContent,
@@ -80,7 +82,37 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
               {/* 40/60 Grid */}
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-20">
                 <div className="w-full min-h-[50vh] grid grid-cols-[40%_60%]">
-                  <div className="bg-black" />
+                  {slide.id === 1 ? (
+                    <div
+                      className="relative bg-black"
+                      style={{
+                        backgroundImage: `url(${coachPhoto.url})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                      }}
+                    >
+                      <div className="absolute inset-0 bg-black/60" />
+                      <img
+                        src={iconBlack}
+                        alt=""
+                        className="absolute top-4 right-4 w-16 h-16 z-10"
+                        style={{ filter: 'brightness(0) invert(1)' }}
+                      />
+                      <div className="absolute inset-0 flex items-end justify-center pb-8 z-10">
+                        <span
+                          className="text-white lowercase"
+                          style={{
+                            fontFamily: '"UnifrakturMaguntia", cursive',
+                            fontSize: '1.75rem',
+                          }}
+                        >
+                          our coach
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-black" />
+                  )}
                   <div className="bg-white" />
                 </div>
               </div>
