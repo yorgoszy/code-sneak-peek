@@ -371,6 +371,17 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
         />
         {/* Black overlay */}
         <div className="absolute inset-0 bg-black/50 z-10" />
+        {/* HyperKids logo top-left */}
+        {program.id === "10" && (
+          <div className="absolute top-4 left-4 z-30 pointer-events-none">
+            <img 
+              src={hyperkidsLogoTransparentUrl} 
+              alt="HyperKids" 
+              className="w-[140px] h-auto object-contain"
+              style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}
+            />
+          </div>
+        )}
         {/* Centered service icon for HyperKids, HyperGym, HyperAthletes */}
         {program.id === "10" && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
