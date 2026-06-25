@@ -363,7 +363,16 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
                program.id === "13" ? currentImageIndex :
                program.image}
         />
-        {/* Removed dark overlay for full opacity images */}
+        {/* Centered service icon for HyperKids, HyperGym, HyperAthletes */}
+        {(program.id === "10" || program.id === "11" || program.id === "13") && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <img 
+              src={serviceIconUrl} 
+              alt="" 
+              className="w-24 h-24 object-contain opacity-90"
+            />
+          </div>
+        )}
       </div>
 
       {/* Program Title */}
