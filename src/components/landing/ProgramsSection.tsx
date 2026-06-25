@@ -68,7 +68,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
         <div className="absolute inset-0 bg-black/30" />
         <h3
           className="relative z-10 font-bold tracking-tight text-white text-center px-4"
-          style={{ fontFamily: '"Roobert Pro", sans-serif', fontSize: 'clamp(48px, 12vw, 178px)', lineHeight: 1 }}
+          style={{ fontFamily: '"Roobert Pro", sans-serif', fontSize: 'clamp(62px, 15.6vw, 231px)', lineHeight: 1 }}
         >
           what we do
         </h3>
