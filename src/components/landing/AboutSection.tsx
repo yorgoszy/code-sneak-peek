@@ -128,7 +128,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                       {/* Content overlay */}
                       <div className="absolute inset-0 p-8 flex flex-col justify-center">
                         <h3 className="text-xl font-bold mb-4 text-white">{slide.title}</h3>
-                        <p className="text-sm leading-relaxed text-black mb-6">{slide.description}</p>
+                        <p className="text-sm leading-relaxed text-white mb-6">{slide.description}</p>
 
                         {/* Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
