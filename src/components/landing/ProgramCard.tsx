@@ -355,37 +355,6 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
     <div className="bg-[#f4f1ea] rounded-none overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-[780px] flex flex-col">
       {/* Header Image */}
       <div className={`relative h-[460px] overflow-hidden flex-shrink-0 ${program.id === "10" || program.id === "11" ? "mt-0" : ""}`}>
-        {/* Service brand label — top-left */}
-        {program.id === "10" && (
-          <div className="absolute top-3 left-3 z-20" style={{ fontFamily: "'Fugaz One', sans-serif", lineHeight: 1.05 }}>
-            <div className="flex items-center text-[18px] tracking-wide text-white">
-              <span>HYP</span>
-              <img src={hyperkidsIconUrl} alt="" className="mx-[1px] w-[15px] h-[15px] object-contain" />
-              <span>R</span>
-            </div>
-            <div className="text-[18px] tracking-wide text-white">KIDS</div>
-          </div>
-        )}
-        {program.id === "11" && (
-          <div className="absolute top-3 left-3 z-20" style={{ fontFamily: "'Fugaz One', sans-serif", lineHeight: 1.05 }}>
-            <div className="flex items-center text-[18px] tracking-wide text-white">
-              <span>HYP</span>
-              <img src={hypergymIconUrl} alt="" className="mx-[1px] w-[15px] h-[15px] object-contain" />
-              <span>R</span>
-            </div>
-            <div className="text-[18px] tracking-wide text-white">GYM</div>
-          </div>
-        )}
-        {program.id === "13" && (
-          <div className="absolute top-3 left-3 z-20" style={{ fontFamily: "'Fugaz One', sans-serif", lineHeight: 1.05 }}>
-            <div className="flex items-center text-[18px] tracking-wide text-white">
-              <span>HYP</span>
-              <img src={hyperathletesIconUrl} alt="" className="mx-[1px] w-[15px] h-[15px] object-contain" />
-              <span>R</span>
-            </div>
-            <div className="text-[18px] tracking-wide text-white">ATHLETES</div>
-          </div>
-        )}
         <img
           src={program.id === "10" ? hyperkidsImages[currentImageIndex] : 
                program.id === "11" ? hypergymImages[currentImageIndex] : 
