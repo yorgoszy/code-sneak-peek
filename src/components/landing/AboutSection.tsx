@@ -5,6 +5,7 @@ import theMethodBg from '@/assets/the-method-bg.png.asset.json';
 import coachPhoto from '@/assets/coa3.png.asset.json';
 import coachGridBg from '@/assets/coa4.png.asset.json';
 import visionPhoto from '@/assets/vis3.png.asset.json';
+import visionGridBg from '@/assets/vis4.png.asset.json';
 import { iconBlack } from '@/assets/iconBlack';
 import {
   Carousel,
@@ -36,7 +37,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
       label: "the vision",
       image: theVisionBg.url,
       leftPhoto: visionPhoto.url,
-      rightPhoto: theVisionBg.url,
+      rightPhoto: visionGridBg.url,
       tagline: "our vision",
       title: "Το όραμά μας",
       body: "",
