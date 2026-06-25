@@ -69,7 +69,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
         <div className="text-sm mb-2" style={{ color: '#aca097' }}>
           {format(new Date(result.result_date), 'dd MMM yyyy')}
         </div>
-        <h3 className="text-xl font-bold mb-3 text-white" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
+        <h3 className="text-xl font-bold mb-3 text-white" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
           {translations?.language === 'en' && result.title_en ? result.title_en : result.title_el}
         </h3>
         <p className="mb-4 flex-grow text-white">
@@ -98,7 +98,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
       <section id="results" className="py-8 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div>
-            <h2 className="text-4xl font-bold mb-4" style={{ fontFamily: 'Robert Pro, sans-serif', color: '#aca097' }}>
+            <h2 className="text-4xl font-bold mb-4" style={{ fontFamily: 'Roobert Pro, sans-serif', color: '#aca097' }}>
               Αποτελέσματα
             </h2>
             <div style={{ color: '#aca097' }}>Φόρτωση...</div>
@@ -112,7 +112,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
     <section id="results" className="py-8 bg-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-16">
-          <h2 className="text-4xl font-bold mb-4 text-white" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
+          <h2 className="text-4xl font-bold mb-4 text-white" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
             {translations?.language === 'en' ? 'Results' : 'Αποτελέσματα'}
           </h2>
         </div>

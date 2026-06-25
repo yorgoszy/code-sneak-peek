@@ -14,7 +14,7 @@ const Footer: React.FC<FooterProps> = ({ translations }) => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Επικοινωνία */}
           <div>
-            <h3 className="text-xl font-bold mb-6 text-white" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
+            <h3 className="text-xl font-bold mb-6 text-white" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
               {translations.contactTitle}
             </h3>
             <div className="space-y-4">
@@ -92,7 +92,7 @@ const Footer: React.FC<FooterProps> = ({ translations }) => {
 
           {/* Ώρες */}
           <div className="md:ml-auto">
-            <h3 className="text-xl font-bold mb-6 text-white" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
+            <h3 className="text-xl font-bold mb-6 text-white" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
               {translations.hoursTitle}
             </h3>
             <div className="space-y-2 text-white">

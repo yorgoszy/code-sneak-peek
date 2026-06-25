@@ -134,11 +134,11 @@ const Index = () => {
 
   return (
     <div
-      className="min-h-screen font-robert"
+      className="min-h-screen font-roobert"
       style={{
         backgroundColor: landingTheme?.bg_color ?? '#f4f1ea',
         color: landingTheme?.text_color ?? '#0a0a0a',
-        fontFamily: landingTheme ? `'${landingTheme.body_font}', sans-serif` : undefined,
+        fontFamily: landingTheme ? `'${landingTheme.body_font === 'Robert Pro' || landingTheme.body_font === 'Roobert' ? 'Roobert Pro' : landingTheme.body_font}', sans-serif` : undefined,
       }}
     >
       <Navigation

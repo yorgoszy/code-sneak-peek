@@ -20,10 +20,10 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				'robert': ['Robert Pro', 'sans-serif'],
-				'roobert': ['Roobert', 'sans-serif'],
-				'roobert-light': ['Roobert', 'sans-serif'],
-				'sans': ['Robert Pro', 'sans-serif'],
+				'robert': ['Roobert Pro', 'sans-serif'],
+				'roobert': ['Roobert Pro', 'sans-serif'],
+				'roobert-light': ['Roobert Pro', 'sans-serif'],
+				'sans': ['Roobert Pro', 'sans-serif'],
 			},
 			fontWeight: {
 				'light': '300',

@@ -5,8 +5,7 @@ import type { CustomFont } from '@/hooks/useLandingConfig';
 
 // Fonts loaded statically by the project (index.html / src/index.css)
 export const PROJECT_FONTS = [
-  'Roobert Pro', 'Roobert', 'Robert Pro',
-  'Fugaz One', 'UnifrakturMaguntia', 'Bebas Neue',
+  'Roobert Pro', 'Fugaz One', 'UnifrakturMaguntia', 'Bebas Neue',
 ];
 
 export const GOOGLE_FONTS = [
