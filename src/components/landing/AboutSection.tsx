@@ -47,7 +47,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
       id: 3,
       label: "the method",
       image: theMethodBg.url,
-      leftPhoto: theMethodBg.url,
+      leftPhoto: methodPhoto.url,
       rightPhoto: theMethodBg.url,
       tagline: "our method",
       title: "Η μεθοδολογία μας",
