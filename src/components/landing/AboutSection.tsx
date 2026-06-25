@@ -77,24 +77,10 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                 </button>
               </div>
 
-              {/* Split Content: image left, text right */}
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                  {/* Left — image */}
-                  <div className="relative">
-                    <img
-                      src={slide.contentImage || slide.image}
-                      alt={slide.title}
-                      className="w-full h-auto object-contain"
-                    />
-                  </div>
-
-                  {/* Right — text */}
-                  <div className="flex flex-col justify-center">
-                    <h3 className="text-2xl font-bold mb-4 text-black">{slide.title}</h3>
-                    <p className="text-sm leading-relaxed text-black">{slide.description}</p>
-                  </div>
-                </div>
+              {/* 40/60 Grid */}
+              <div className="w-full min-h-[50vh] grid grid-cols-[40%_60%]">
+                <div className="bg-black" />
+                <div className="bg-white" />
               </div>
             </CarouselItem>
           ))}
