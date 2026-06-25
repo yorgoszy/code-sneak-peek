@@ -414,20 +414,20 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
 
       {/* Program Title */}
       {program.id === "10" ? (
-        <div className="p-4 pb-2 bg-black">
-          <p className="text-xs leading-relaxed text-[#f4f1ea]">
+        <div className="p-4 pb-2 bg-white">
+          <p className="text-xs leading-relaxed text-black">
             {translations?.language === 'en' ? 'Building multi-sport athletic fundamentals' : 'Χτίζοντας αθλητικές βάσεις για όλα τα σπορ'}
           </p>
         </div>
       ) : program.id === "11" ? (
-        <div className="p-4 pb-2 bg-black">
-          <p className="text-xs leading-relaxed text-[#f4f1ea]">
+        <div className="p-4 pb-2 bg-white">
+          <p className="text-xs leading-relaxed text-black">
             {translations?.language === 'en' ? 'Assessment based training plans' : 'Προπονητικά πλάνα βασισμένα στην αξιολόγηση'}
           </p>
         </div>
       ) : program.id === "13" ? (
-        <div className="p-4 pb-2 bg-black">
-          <p className="text-xs leading-relaxed text-[#f4f1ea]">
+        <div className="p-4 pb-2 bg-white">
+          <p className="text-xs leading-relaxed text-black">
             {translations?.language === 'en' ? 'New generation training methods' : 'Μέθοδοι Προπόνησης Νέας Γενιάς'}
           </p>
         </div>
@@ -450,13 +450,13 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
       )}
 
       {/* Tabs */}
-      <div className={`px-4 pb-4 flex-1 overflow-hidden ${program.id === "10" || program.id === "11" || program.id === "13" ? "bg-black" : ""}`}>
+      <div className={`px-4 pb-4 flex-1 overflow-hidden ${program.id === "10" || program.id === "11" || program.id === "13" ? "bg-white" : ""}`}>
         <Tabs defaultValue="details" className="w-full">
           <TabsList className={`grid w-full ${program.id === "10" || program.id === "11" || program.id === "13" ? "grid-cols-1" : "grid-cols-3"} rounded-none bg-transparent ${program.id === "10" || program.id === "11" || program.id === "13" ? "" : "border-b border-gray-200"} px-0 gap-0`}>
             <TabsTrigger 
               value="details" 
               className={`rounded-none text-xs bg-transparent border-b-2 border-transparent ${program.id === "10" || program.id === "11" || program.id === "13" ? "" : "data-[state=active]:border-[#00ffba]"} data-[state=active]:bg-transparent hover:bg-gray-50 px-0`}
-              style={program.id === "10" || program.id === "11" || program.id === "13" ? { color: '#aca097' } : {}}
+              style={program.id === "10" || program.id === "11" || program.id === "13" ? { color: 'black' } : {}}
             >
               {program.id === "10" || program.id === "11" || program.id === "13" ? "" : "Λεπτομέρειες"}
             </TabsTrigger>
@@ -464,7 +464,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
           </TabsList>
 
           <TabsContent value="details" className={`${program.id === "10" || program.id === "11" || program.id === "13" ? "mt-[-20px]" : "mt-4"} h-[140px]`}>
-            <div className={`${program.id === "10" || program.id === "11" || program.id === "13" ? "bg-black" : "bg-[#f4f1ea]"} p-3 rounded-none h-full`}>
+            <div className={`${program.id === "10" || program.id === "11" || program.id === "13" ? "bg-white" : "bg-[#f4f1ea]"} p-3 rounded-none h-full`}>
               {program.id === "10" ? (
                 <div className="text-sm space-y-3">
                   <div>
