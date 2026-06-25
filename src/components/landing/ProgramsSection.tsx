@@ -123,6 +123,12 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
           </div>
         </div>
       </div>
+
+      <ServiceDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        programId={selectedServiceId}
+      />
     </section>
   );
 };
