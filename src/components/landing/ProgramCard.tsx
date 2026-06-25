@@ -354,14 +354,14 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
   return (
     <div className="bg-[#f4f1ea] rounded-none overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-[780px] flex flex-col">
       {/* Header Image */}
-      <div className={`relative h-[460px] overflow-hidden flex-shrink-0 ${program.id === "10" || program.id === "11" ? "mt-0" : ""}`}>
+      <div className={`group relative h-[460px] overflow-hidden flex-shrink-0 ${program.id === "10" || program.id === "11" ? "mt-0" : ""}`}>
         <img
           src={program.id === "10" ? hyperkidsImages[currentImageIndex] : 
                program.id === "11" ? hypergymImages[currentImageIndex] : 
                program.id === "13" ? hyperathletesImages[currentImageIndex] :
                program.image}
           alt={program.title}
-           className="w-full h-full object-cover transition-all duration-500 object-[center_50%] grayscale hover:grayscale-0"
+          className="w-full h-full object-cover transition-all duration-500 object-[center_50%] grayscale group-hover:grayscale-0"
           key={program.id === "10" ? currentImageIndex : 
                program.id === "11" ? currentImageIndex : 
                program.id === "13" ? currentImageIndex :
