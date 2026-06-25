@@ -10,6 +10,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import whatWeDoBg from '@/assets/what-we-do-bg.png.asset.json';
 
 interface Program {
   id: string;
@@ -57,28 +58,24 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
   };
 
   return (
-    <section id="programs" className="py-20 bg-white text-black" onClick={handleScreenClick}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="programs" className="bg-white text-black" onClick={handleScreenClick}>
+      {/* What We Do Banner */}
+      <div className="relative w-full overflow-hidden flex items-center justify-center" style={{ height: 'clamp(200px, 30vw, 420px)' }}>
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${whatWeDoBg.url})`, opacity: 0.6 }}
+        />
+        <div className="absolute inset-0 bg-black/30" />
+        <h3
+          className="relative z-10 font-bold tracking-tight text-white text-center px-4"
+          style={{ fontFamily: 'Robert, sans-serif', fontSize: 'clamp(48px, 12vw, 178px)', lineHeight: 1 }}
+        >
+          what we do
+        </h3>
+      </div>
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="relative">
-          {/* Header with navigation */}
-          <div className="flex justify-between items-center mb-8">
-            <div className="text-left">
-              {translations.language === 'en' ? (
-                <>
-                  <h3 className="text-3xl font-bold mb-2 text-black" style={{ fontFamily: 'Robert, sans-serif' }}>
-                    what we do
-                  </h3>
-                </>
-              ) : (
-                <>
-                   <h3 className="text-3xl font-bold mb-2 text-black" style={{ fontFamily: 'Robert, sans-serif' }}>
-                     {translations?.whatWeDo || 'what we do'}
-                   </h3>
-                </>
-              )}
-            </div>
-          </div>
 
           {/* Mobile & Tablet: Carousel */}
           <div className="lg:hidden">
