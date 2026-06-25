@@ -3,7 +3,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProgramBenefitsSection } from './program-details/ProgramBenefitsSection';
 import { ProgramScheduleSection } from './program-details/ProgramScheduleSection';
 import hyperkidsAsset from '@/assets/hyperkis-e.png.asset.json';
-import hypergymImage from '@/assets/hypergym-service.png';
+import hypergymAsset from '@/assets/hypergym-service-new.png.asset.json';
+const hypergymImage = hypergymAsset.url;
 import hyperathletesImage from '@/assets/hyperathletes-service.png';
 const hyperkidsImage = hyperkidsAsset.url;
 
@@ -355,7 +356,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
           alt={program.title}
            className={`w-full h-full object-cover transition-all duration-500 ${
              program.id === "10" ? "object-[center_50%] grayscale hover:grayscale-0" :
-             program.id === "11" ? "object-[center_50%]" :
+             program.id === "11" ? "object-[center_50%] grayscale hover:grayscale-0" :
              program.id === "13" ? "object-[center_50%]" : ""
            }`}
           key={program.id === "10" ? currentImageIndex : 
