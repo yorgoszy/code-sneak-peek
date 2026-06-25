@@ -8,8 +8,12 @@ const hypergymImage = hypergymAsset.url;
 import hyperathletesAsset from '@/assets/methodoi-service-v2.png.asset.json';
 const hyperathletesImage = hyperathletesAsset.url;
 const hyperkidsImage = hyperkidsAsset.url;
-import serviceIconAsset from '@/assets/service-icon-transparent.png.asset.json';
-const serviceIconUrl = serviceIconAsset.url;
+import hyperkidsIconAsset from '@/assets/service-icon-hyperkids.png.asset.json';
+const hyperkidsIconUrl = hyperkidsIconAsset.url;
+import hypergymIconAsset from '@/assets/service-icon-hypergym.png.asset.json';
+const hypergymIconUrl = hypergymIconAsset.url;
+import hyperathletesIconAsset from '@/assets/service-icon-hyperathletes.png.asset.json';
+const hyperathletesIconUrl = hyperathletesIconAsset.url;
 
 interface Program {
   id: string;
@@ -364,13 +368,19 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
                program.image}
         />
         {/* Centered service icon for HyperKids, HyperGym, HyperAthletes */}
-        {(program.id === "10" || program.id === "11" || program.id === "13") && (
+        {program.id === "10" && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <img 
-              src={serviceIconUrl} 
-              alt="" 
-              className="w-24 h-24 object-contain opacity-90"
-            />
+            <img src={hyperkidsIconUrl} alt="" className="w-24 h-24 object-contain opacity-90" />
+          </div>
+        )}
+        {program.id === "11" && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <img src={hypergymIconUrl} alt="" className="w-24 h-24 object-contain opacity-90" />
+          </div>
+        )}
+        {program.id === "13" && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <img src={hyperathletesIconUrl} alt="" className="w-24 h-24 object-contain opacity-90" />
           </div>
         )}
       </div>
