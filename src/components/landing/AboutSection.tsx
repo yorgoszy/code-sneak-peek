@@ -4,6 +4,7 @@ import theVisionBg from '@/assets/the-vision-bg.png.asset.json';
 import theMethodBg from '@/assets/the-method-bg.png.asset.json';
 import coachContentBg from '@/assets/coach-content-bg.png.asset.json';
 import methodContentBg from '@/assets/method-content-bg.png.asset.json';
+import visionContentBg from '@/assets/vis2.png.asset.json';
 import {
   Carousel,
   CarouselContent,
@@ -38,6 +39,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
       title: translations.ourVision,
       description: translations.visionDescription,
       image: theVisionBg.url,
+      contentImage: visionContentBg.url,
       cards: [
         { title: translations.moreThanPhysical, description: translations.moreThanPhysicalDesc },
         { title: translations.buildingCharacter, description: translations.buildingCharacterDesc },
