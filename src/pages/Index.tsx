@@ -168,8 +168,6 @@ const Index = () => {
 
           <AboutSection 
             translations={correctedTranslations}
-            activeAboutSection={activeAboutSection}
-            onSetActiveAboutSection={setActiveAboutSection}
           />
 
           <EliteTrainingSection
