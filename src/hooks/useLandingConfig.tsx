@@ -132,8 +132,15 @@ export function useInvalidateLanding() {
 }
 
 const loadedGoogleFonts = new Set<string>();
+const PROJECT_FONT_NAMES = new Set(['Roobert Pro', 'Roobert', 'Robert Pro', 'RoobertPRO', 'Roobert PRO']);
+
+function normalizeProjectFont(name: string | null | undefined) {
+  if (!name) return 'Roobert Pro';
+  return PROJECT_FONT_NAMES.has(name) ? 'Roobert Pro' : name;
+}
+
 function loadGoogleFont(name: string) {
-  if (!name || loadedGoogleFonts.has(name)) return;
+  if (!name || PROJECT_FONT_NAMES.has(name) || loadedGoogleFonts.has(name)) return;
   // Skip if it's a custom uploaded font (handled separately)
   loadedGoogleFonts.add(name);
   const family = name.replace(/\s+/g, '+');
@@ -161,8 +168,10 @@ export function useApplyLandingTheme(theme: LandingTheme | null | undefined) {
     // Load custom fonts first so heading/body refs to them resolve
     (theme.custom_fonts ?? []).forEach(loadCustomFont);
     const customNames = new Set((theme.custom_fonts ?? []).map((f) => f.name));
-    if (!customNames.has(theme.heading_font)) loadGoogleFont(theme.heading_font);
-    if (!customNames.has(theme.body_font)) loadGoogleFont(theme.body_font);
+    const headingFont = normalizeProjectFont(theme.heading_font);
+    const bodyFont = normalizeProjectFont(theme.body_font);
+    if (!customNames.has(headingFont)) loadGoogleFont(headingFont);
+    if (!customNames.has(bodyFont)) loadGoogleFont(bodyFont);
 
     const root = document.documentElement;
     const set = (k: string, v: string | undefined | null) => {
@@ -182,8 +191,8 @@ export function useApplyLandingTheme(theme: LandingTheme | null | undefined) {
     set('--landing-nav-text', theme.nav_text_color);
     set('--landing-nav-hover', theme.nav_hover_color);
     set('--landing-nav-icon', theme.nav_icon_color);
-    set('--landing-font-heading', `'${theme.heading_font}', sans-serif`);
-    set('--landing-font-body', `'${theme.body_font}', sans-serif`);
+    set('--landing-font-heading', `'${headingFont}', sans-serif`);
+    set('--landing-font-body', `'${bodyFont}', sans-serif`);
   }, [theme]);
 }
 

@@ -8,7 +8,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLandingTheme, useInvalidateLanding, type LandingTheme, type CustomFont } from '@/hooks/useLandingConfig';
 import { toast } from 'sonner';
 
-// Curated set of free Google Fonts
+// Project fonts + curated set of free Google Fonts
+const PROJECT_FONTS = ['Roobert Pro', 'Fugaz One', 'UnifrakturMaguntia', 'Bebas Neue'];
+
 const GOOGLE_FONTS = [
   'Inter', 'Roboto', 'Roboto Condensed', 'Roboto Slab', 'Open Sans', 'Lato',
   'Montserrat', 'Poppins', 'Raleway', 'Oswald', 'Bebas Neue', 'Playfair Display',
@@ -67,6 +69,11 @@ const FontSelect: React.FC<{
           ))}
         </optgroup>
       )}
+      <optgroup label="Project">
+        {PROJECT_FONTS.map((f) => (
+          <option key={`p-${f}`} value={f} style={{ fontFamily: f }}>{f}</option>
+        ))}
+      </optgroup>
       <optgroup label="Google Fonts">
         {GOOGLE_FONTS.map((f) => (
           <option key={f} value={f} style={{ fontFamily: f }}>{f}</option>

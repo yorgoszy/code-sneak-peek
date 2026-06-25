@@ -13,7 +13,7 @@ const EliteTrainingSection: React.FC<EliteTrainingSectionProps> = ({ translation
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
           <div>
-            <h2 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
+            <h2 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
               {translations.eliteTrainingMethodology}
             </h2>
             <div className="w-16 h-1 bg-[#f4f1ea] mb-8"></div>
@@ -55,7 +55,7 @@ const EliteTrainingSection: React.FC<EliteTrainingSectionProps> = ({ translation
               style={{ marginTop: '0px', marginBottom: '0px' }}
             />
             <div className="absolute bottom-2 -left-4 bg-white text-black p-6 max-w-xs -ml-4">
-              <h3 className="font-bold text-lg mb-2" style={{ fontFamily: 'Robert Pro, sans-serif' }}>
+              <h3 className="font-bold text-lg mb-2" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
                 {translations.advancedTechnology}
               </h3>
               <p className="text-sm">
