@@ -133,11 +133,11 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                         {/* Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           {slide.cards.map((card, index) => (
-                            <div key={index} className="p-4 border-2 rounded-none bg-transparent border-black">
-                              <h4 className="font-bold mb-2 text-black">{card.title}</h4>
+                            <div key={index} className="p-4 border-2 rounded-none bg-transparent border-white">
+                              <h4 className="font-bold mb-2 text-white">{card.title}</h4>
                               {typeof card.description === 'string' && card.description.includes('\n')
                                 ? renderCardDescription(card.description)
-                                : <p className="text-sm text-black">{card.description}</p>
+                                : <p className="text-sm text-white">{card.description}</p>
                               }
                             </div>
                           ))}
