@@ -385,6 +385,28 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
             <img src={hyperathletesIconUrl} alt="" className="w-24 h-24 object-contain opacity-90" />
           </div>
         )}
+        {/* Tagline */}
+        {program.id === "10" && (
+          <div className="absolute bottom-6 left-0 right-0 text-center z-20 pointer-events-none">
+            <span style={{ fontFamily: "'UnifrakturMaguntia', serif", color: "#00ffba", fontSize: "1.75rem" }}>
+              trust the process
+            </span>
+          </div>
+        )}
+        {program.id === "11" && (
+          <div className="absolute bottom-6 left-0 right-0 text-center z-20 pointer-events-none">
+            <span style={{ fontFamily: "'UnifrakturMaguntia', serif", color: "#cb8954", fontSize: "1.75rem" }}>
+              go the extra mile
+            </span>
+          </div>
+        )}
+        {program.id === "13" && (
+          <div className="absolute bottom-6 left-0 right-0 text-center z-20 pointer-events-none">
+            <span style={{ fontFamily: "'UnifrakturMaguntia', serif", color: "#f84536", fontSize: "1.75rem" }}>
+              go the limit
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Program Title */}
