@@ -39,6 +39,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
       title: translations.ourVision,
       description: translations.visionDescription,
       image: theVisionBg.url,
+      contentImage: visionContentBg.url,
       cards: [
         { title: translations.moreThanPhysical, description: translations.moreThanPhysicalDesc },
         { title: translations.buildingCharacter, description: translations.buildingCharacterDesc },
