@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProgramBenefitsSection } from './program-details/ProgramBenefitsSection';
 import { ProgramScheduleSection } from './program-details/ProgramScheduleSection';
-import hyperkidsAsset from '@/assets/hyperkids1.png.asset.json';
+import hyperkidsAsset from '@/assets/hyperkis-e.png.asset.json';
 import hypergymImage from '@/assets/hypergym-service.png';
 import hyperathletesImage from '@/assets/hyperathletes-service.png';
 const hyperkidsImage = hyperkidsAsset.url;
