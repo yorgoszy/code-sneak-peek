@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import hypergymImage from '@/assets/hypergym-service.png';
+import hyperkidsImage from '@/assets/hyperkids1.png.asset.json';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslations } from "@/hooks/useTranslations";
@@ -112,7 +113,7 @@ const Index = () => {
       id: "10",
       title: translations.hyperkids,
       description: "Χτίζοντας αθλητικές βάσεις για όλα τα σπορ",
-      image: "/lovable-uploads/d049bee3-9df6-4a4b-8aff-88a05957d3ba.png",
+      image: hyperkidsImage.url,
       color: "#00ffba"
     },
     {
