@@ -177,15 +177,6 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
           ))}
         </CarouselContent>
 
-        {/* Navigation arrows */}
-        <div className="absolute top-[calc(10vw+20px)] right-8 flex gap-2 z-20">
-          <CarouselPrevious className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-black hover:text-[#00ffba] hover:bg-transparent rounded-none">
-            <ChevronLeft className="h-6 w-6" />
-          </CarouselPrevious>
-          <CarouselNext className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none text-black hover:text-[#00ffba] hover:bg-transparent rounded-none">
-            <ChevronRight className="h-6 w-6" />
-          </CarouselNext>
-        </div>
       </Carousel>
     </section>
   );
