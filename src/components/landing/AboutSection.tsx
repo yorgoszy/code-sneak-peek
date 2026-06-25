@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import theCoachBg from '@/assets/the-coach-bg.png.asset.json';
 import {
   Carousel,
   CarouselContent,
