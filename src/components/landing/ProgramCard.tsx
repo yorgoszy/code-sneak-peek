@@ -381,7 +381,7 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
             <img 
               src={hyperkidsLogoTransparentUrl} 
               alt="HyperKids" 
-              className="w-[140px] h-auto object-contain"
+              className="w-[112px] h-auto object-contain"
             />
           </div>
         )}
