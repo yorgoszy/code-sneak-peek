@@ -8,6 +8,23 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import whatWeDoBg from '@/assets/what-we-do-bg.png.asset.json';
+
+const WhoWeAreBanner: React.FC = () => (
+  <div className="relative w-full overflow-hidden flex items-center justify-center" style={{ height: 'calc(10vw - 1px)' }}>
+    <div
+      className="absolute inset-0 bg-cover"
+      style={{ backgroundImage: `url(${whatWeDoBg.url})`, opacity: 0.6, backgroundPosition: 'center -45px' }}
+    />
+    <div className="absolute inset-0 bg-black/30" />
+    <h3
+      className="relative z-10 text-white text-center px-4"
+      style={{ fontFamily: '"Roobert Pro", sans-serif', fontWeight: 500, fontSize: '15.6vw', lineHeight: 1 }}
+    >
+      who we are
+    </h3>
+  </div>
+);
 
 interface AboutSectionProps {
   translations: any;
