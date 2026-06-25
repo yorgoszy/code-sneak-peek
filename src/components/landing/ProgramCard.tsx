@@ -32,9 +32,10 @@ interface Program {
 interface ProgramCardProps {
   program: Program;
   translations?: any;
+  onClick?: () => void;
 }
 
-export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations }) => {
+export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations, onClick }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   const hyperkidsImages = [
@@ -358,7 +359,10 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program, translations 
   const programData = getProgramData();
 
   return (
-    <div className="bg-[#f4f1ea] rounded-none overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-[780px] flex flex-col">
+    <div 
+      className={`bg-[#f4f1ea] rounded-none overflow-hidden shadow-lg hover:shadow-xl transition-shadow h-[780px] flex flex-col ${program.id === "10" || program.id === "11" || program.id === "13" ? 'cursor-pointer' : ''}`}
+      onClick={onClick}
+    >
       {/* Header Image */}
       <div className={`group relative h-[460px] overflow-hidden flex-shrink-0 ${program.id === "10" || program.id === "11" ? "mt-0" : ""}`}>
         <img
