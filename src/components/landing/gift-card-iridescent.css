@@ -4,16 +4,11 @@
   background: linear-gradient(
     135deg,
     #0a0a0a 0%,
-    #1a1a2e 20%,
-    #16213e 35%,
-    #0f3460 50%,
-    #533483 65%,
-    #e94560 80%,
-    #cb8954 90%,
-    #00ffba 100%
+    #111111 40%,
+    #1a1a1a 55%,
+    #141414 70%,
+    #0f0f0f 100%
   );
-  background-size: 300% 300%;
-  animation: iridescentShift 6s ease infinite;
 }
 
 .gift-card-iridescent::before {
@@ -21,49 +16,44 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    45deg,
-    transparent 30%,
-    rgba(255,255,255,0.15) 45%,
-    rgba(255,255,255,0.35) 50%,
-    rgba(255,255,255,0.15) 55%,
-    transparent 70%
+    135deg,
+    rgba(0, 255, 186, 0.04) 0%,
+    rgba(203, 137, 84, 0.03) 25%,
+    rgba(0, 255, 186, 0.02) 50%,
+    rgba(203, 137, 84, 0.03) 75%,
+    rgba(0, 255, 186, 0.04) 100%
   );
-  background-size: 200% 200%;
-  animation: sheenSweep 4s ease-in-out infinite;
+  background-size: 400% 400%;
+  animation: subtleShift 10s ease-in-out infinite;
   pointer-events: none;
-  z-index: 5;
+  z-index: 1;
 }
 
 .gift-card-iridescent::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: repeating-conic-gradient(
-    from 0deg at 50% 50%,
-    rgba(0,255,186,0.08) 0deg 10deg,
-    rgba(203,137,84,0.08) 10deg 20deg,
-    rgba(233,69,96,0.08) 20deg 30deg,
-    rgba(83,52,131,0.08) 30deg 40deg,
-    transparent 40deg 60deg
+  background: linear-gradient(
+    45deg,
+    transparent 40%,
+    rgba(255,255,255,0.03) 48%,
+    rgba(255,255,255,0.06) 50%,
+    rgba(255,255,255,0.03) 52%,
+    transparent 60%
   );
-  mix-blend-mode: overlay;
-  animation: conicSpin 12s linear infinite;
+  background-size: 250% 250%;
+  animation: sheenSweep 7s ease-in-out infinite;
   pointer-events: none;
-  z-index: 4;
+  z-index: 2;
 }
 
-@keyframes iridescentShift {
+@keyframes subtleShift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
 
 @keyframes sheenSweep {
-  0% { background-position: 200% 200%; }
-  100% { background-position: -200% -200%; }
-}
-
-@keyframes conicSpin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% { background-position: 250% 250%; }
+  100% { background-position: -250% -250%; }
 }
