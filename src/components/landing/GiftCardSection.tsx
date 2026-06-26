@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRight } from "lucide-react";
+import './gift-card-iridescent.css';
 import headerLogo from '@/assets/header-logo.png';
 import sloganLogo from '@/assets/trust-the-process.png';
 import { GiftCardPurchaseDialog } from '@/components/gift-cards/GiftCardPurchaseDialog';
@@ -32,7 +33,7 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
           <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-12">
             {/* Gift Card Visual */}
             <div className="flex-1 w-full">
-              <div className="relative w-full aspect-[16/10] bg-black border border-white/20 p-6 md:p-8 flex flex-col justify-between shadow-2xl">
+              <div className="gift-card-iridescent relative w-full aspect-[16/10] border border-white/20 p-6 md:p-8 flex flex-col justify-between shadow-2xl">
                 <div className="relative z-10">
                   <div>
                     <img src={headerLogo} alt="HyperKids Logo" className="h-8 w-auto mb-2 brightness-0 invert" />
