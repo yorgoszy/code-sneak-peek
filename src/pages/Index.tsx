@@ -82,7 +82,7 @@ const Index = () => {
   // Override some translations with corrected capitalization
   const correctedTranslations = {
     ...translations,
-    readyQuestion: "are you ready",
+    readyQuestion: "you are ready",
     heroTitle: language === 'el' ? 'Το ταξίδι του πρωταθλητή' : 'The champion\'s journey',
     heroSubtitle: language === 'el' ? 'Ξεκινάει εδώ' : 'Starts here',
     explorePrograms: language === 'el' ? 'Εξερεύνηση όλων των προγραμμάτων' : 'Explore all programs',
