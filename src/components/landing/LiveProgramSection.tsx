@@ -107,7 +107,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
     const isDayClosed = isDateClosed(selectedDateStr);
 
     return (
-      <section className="py-16 bg-black">
+      <section className="py-16 bg-black" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold mb-2 text-white" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
