@@ -11,7 +11,7 @@ export const useTranslations = () => {
       programs: "Υπηρεσίες",
       blog: "Άρθρα",
       about: "Σχετικά με εμάς",
-      results: "Αποτελέσματα",
+      results: "Νέα",
       contact: "Επικοινωνία",
       login: "Σύνδεση",
       dashboard: "Dashboard",
