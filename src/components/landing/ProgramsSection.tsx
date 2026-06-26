@@ -108,7 +108,7 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
                     key={program.id} 
                     className="pl-4 basis-full"
                   >
-                    <ProgramCard program={program} translations={translations} onClick={() => handleCardClick(program.id)} />
+                    <ProgramCard program={program} translations={translations} />
                   </CarouselItem>
                 ))}
               </CarouselContent>
@@ -118,17 +118,11 @@ const ProgramsSection: React.FC<ProgramsSectionProps> = ({ programs, translation
           {/* Desktop: Grid Layout */}
           <div className="hidden lg:grid grid-cols-3 gap-6">
             {programs.map((program) => (
-              <ProgramCard key={program.id} program={program} translations={translations} onClick={() => handleCardClick(program.id)} />
+              <ProgramCard key={program.id} program={program} translations={translations} />
             ))}
           </div>
         </div>
       </div>
-
-      <ServiceDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        programId={selectedServiceId}
-      />
     </section>
   );
 };

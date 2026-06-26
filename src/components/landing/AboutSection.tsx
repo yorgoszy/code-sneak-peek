@@ -67,7 +67,9 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
           {slides.map((slide) => (
             <CarouselItem key={slide.id} className="basis-full">
               {/* Banner */}
-              <div className="relative w-full overflow-hidden flex items-center justify-center" style={{ height: 'calc(10vw - 1px)' }}>
+              <div
+                className="relative w-full overflow-hidden flex items-center justify-center h-[18vw] min-h-[90px] md:h-[12vw] lg:h-[calc(10vw-1px)]"
+              >
                 <div
                   className="absolute inset-0 bg-cover"
                   style={{ backgroundImage: `url(${slide.image})`, opacity: 0.6, backgroundPosition: 'center center' }}
@@ -76,32 +78,34 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
 
                 <button
                   onClick={() => api?.scrollPrev()}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-20 text-white p-2 hover:border hover:border-white transition-colors"
+                  aria-label="Previous slide"
+                  className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 text-white p-2 hover:border hover:border-white transition-colors"
                 >
-                  <ChevronLeft className="h-6 w-6" />
+                  <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
                 </button>
 
                 <h3
-                  className="relative z-10 text-white text-center px-4"
-                  style={{ fontFamily: '"Roobert Pro", sans-serif', fontWeight: 500, fontSize: '15.6vw', lineHeight: 1 }}
+                  className="relative z-10 text-white text-center px-4 text-[14vw] md:text-[14vw] lg:text-[15.6vw] leading-none"
+                  style={{ fontFamily: '"Roobert Pro", sans-serif', fontWeight: 500 }}
                 >
                   {slide.label}
                 </h3>
 
                 <button
                   onClick={() => api?.scrollNext()}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-20 text-white p-2 hover:border hover:border-white transition-colors"
+                  aria-label="Next slide"
+                  className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 text-white p-2 hover:border hover:border-white transition-colors"
                 >
-                  <ChevronRight className="h-6 w-6" />
+                  <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
                 </button>
               </div>
 
-              {/* 40/60 Grid */}
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-20">
-                <div className="w-full min-h-[50vh] grid grid-cols-[40%_60%]">
-                  {/* Left 40% — photo + icon + tagline */}
+              {/* Responsive Grid: stacked on mobile, 40/60 on desktop */}
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 md:pt-16 lg:pt-20 pb-10 md:pb-16 lg:pb-20">
+                <div className="w-full min-h-[40vh] md:min-h-[50vh] grid grid-cols-1 md:grid-cols-[40%_60%]">
+                  {/* Left — photo + icon */}
                   <div
-                    className="relative bg-white"
+                    className="relative bg-white h-48 md:h-auto"
                     style={{
                       backgroundImage: `url(${slide.leftPhoto})`,
                       backgroundSize: 'cover',
@@ -112,13 +116,13 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                     <img
                       src={iconBlack}
                       alt=""
-                      className="absolute top-4 left-4 w-16 h-16 z-10 brightness-0 invert"
+                      className="absolute top-3 left-3 md:top-4 md:left-4 w-12 h-12 md:w-16 md:h-16 z-10 brightness-0 invert"
                     />
                   </div>
 
-                  {/* Right 60% — text over photo */}
+                  {/* Right — text over photo */}
                   <div
-                    className="relative flex flex-col justify-center px-8 bg-black"
+                    className="relative flex flex-col justify-center px-5 py-8 sm:px-6 md:px-8 md:py-0 bg-black"
                     style={{
                       backgroundImage: `url(${slide.rightPhoto})`,
                       backgroundSize: 'cover',
@@ -128,20 +132,18 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                     <div className="absolute inset-0 bg-black/70" />
                     <div className="relative z-10">
                       <h4
-                        className="text-white mb-4"
+                        className="text-white mb-3 md:mb-4 text-xl md:text-2xl"
                         style={{
                           fontFamily: '"Roobert Pro", sans-serif',
                           fontWeight: 600,
-                          fontSize: '1.5rem',
                         }}
                       >
                         {translations[slide.titleKey]}
                       </h4>
                       <p
-                        className="text-white leading-relaxed whitespace-pre-line"
+                        className="text-white leading-relaxed whitespace-pre-line text-sm md:text-base"
                         style={{
                           fontFamily: '"Roobert Pro", sans-serif',
-                          fontSize: '1rem',
                           lineHeight: 1.7,
                         }}
                       >
