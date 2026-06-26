@@ -209,7 +209,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
 
   // Desktop View
   return (
-    <section className="py-20 bg-black">
+    <section className="py-20 bg-black" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold mb-4 text-white" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>Live Program</h2>
