@@ -108,7 +108,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                     style={{
                       backgroundImage: `url(${slide.leftPhoto})`,
                       backgroundSize: 'cover',
-                      backgroundPosition: 'center',
+                      backgroundPosition: 'center calc(50% - 20px)',
                     }}
                   >
                     <div className="absolute inset-0 bg-white/60" />
