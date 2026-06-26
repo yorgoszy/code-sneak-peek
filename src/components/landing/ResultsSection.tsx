@@ -95,24 +95,24 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
 
   if (loading) {
     return (
-      <section id="results" className="py-8 bg-transparent relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div>
-            <h2 className="text-4xl font-bold mb-4" style={{ fontFamily: 'Roobert Pro, sans-serif', color: '#aca097' }}>
-              Αποτελέσματα
-            </h2>
-            <div style={{ color: '#aca097' }}>Φόρτωση...</div>
-          </div>
+    <section id="results" className="py-8 bg-white relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div>
+          <h2 className="text-4xl font-bold mb-4" style={{ fontFamily: 'Roobert Pro, sans-serif', color: '#000000' }}>
+            Αποτελέσματα
+          </h2>
+          <div style={{ color: '#000000' }}>Φόρτωση...</div>
         </div>
-      </section>
+      </div>
+    </section>
     );
   }
 
   return (
-    <section id="results" className="py-8 bg-transparent relative z-10">
+    <section id="results" className="py-8 bg-white relative z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-16">
-          <h2 className="text-4xl font-bold mb-4 text-white" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
+          <h2 className="text-4xl font-bold mb-4 text-black" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
             {translations?.language === 'en' ? 'Results' : 'Αποτελέσματα'}
           </h2>
         </div>
