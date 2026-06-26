@@ -192,7 +192,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                             <div className="flex-1 h-1.5 bg-gray-200 rounded-none overflow-hidden">
                               <div className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`} style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }} />
                             </div>
-                            <span className="text-[9px] text-[#aca097] font-medium">{currentBookings}/{capacity}</span>
+                            <span className="text-[9px] text-gray-300 font-medium">{currentBookings}/{capacity}</span>
                           </div>
                         </div>
                       );
@@ -242,13 +242,13 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                   )}
                   <div className={cn(
                     "font-medium text-[10px]", 
-                    isClosed ? "text-red-400" : isToday ? "text-black" : "text-[#aca097]"
+                    isClosed ? "text-red-400" : isToday ? "text-white" : "text-gray-300"
                   )}>
                     {dayNames[day.getDay() === 0 ? 6 : day.getDay() - 1]}
                   </div>
                   <div className={cn(
                     "text-xs font-bold", 
-                    isClosed ? "text-red-400" : isToday ? "text-black" : "text-[#aca097]"
+                    isClosed ? "text-red-400" : isToday ? "text-white" : "text-gray-300"
                   )}>
                     {format(day, 'dd/MM')}
                   </div>
@@ -265,7 +265,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
             return (
               <div key={time} className="grid grid-cols-8 gap-0.5 min-w-0">
                 <div className="bg-black/60 border border-[#aca097]/30 rounded-none p-1 flex items-center justify-center">
-                  <span className={cn("text-[10px] font-medium", isCurrentSlot ? "text-black" : "text-[#aca097]")}>{time}</span>
+                  <span className={cn("text-[10px] font-medium", isCurrentSlot ? "text-white" : "text-gray-300")}>{time}</span>
                 </div>
 
                 {weekDays.map((day) => {
