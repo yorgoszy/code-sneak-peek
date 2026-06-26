@@ -20,6 +20,7 @@ import ResultsSection from "@/components/landing/ResultsSection";
 import GiftCardSection from "@/components/landing/GiftCardSection";
 import articlesResultsGiftBg from "@/assets/articles-results-gift-bg.jpg.asset.json";
 import newsBg from '@/assets/news-bg.jpg.asset.json';
+import ctaBoxing from '@/assets/cta-boxing.jpg.asset.json';
 
 import Footer from "@/components/landing/Footer";
 import { TrialRequestDialog } from "@/components/landing/TrialRequestDialog";
@@ -201,7 +202,7 @@ const Index = () => {
             <div className="relative w-full overflow-hidden flex flex-col items-center justify-center" style={{ height: 'calc(31.2vw - 1px)' }}>
               <div
                 className="absolute inset-0 bg-cover pointer-events-none"
-                style={{ backgroundImage: `url(${newsBg.url})`, opacity: 0.6, backgroundPosition: 'center calc(50% + 200px)' }}
+                style={{ backgroundImage: `url(${ctaBoxing.url})`, opacity: 0.6, backgroundSize: 'cover', backgroundPosition: 'center' }}
                 aria-hidden="true"
               />
               <div className="absolute inset-0 bg-black/30" />
