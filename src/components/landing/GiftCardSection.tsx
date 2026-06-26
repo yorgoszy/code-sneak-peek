@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRight } from "lucide-react";
+import './gift-card-iridescent.css';
 import headerLogo from '@/assets/header-logo.png';
 import sloganLogo from '@/assets/trust-the-process.png';
 import { GiftCardPurchaseDialog } from '@/components/gift-cards/GiftCardPurchaseDialog';
