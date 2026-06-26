@@ -10,7 +10,7 @@ interface ArticleCardProps {
 
 const ArticleCard: React.FC<ArticleCardProps> = ({ article, onReadMore, translations }) => {
   return (
-    <article className="bg-black rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow flex flex-col h-full">
+    <article className="bg-transparent border border-white/20 rounded-none overflow-hidden flex flex-col h-full">
       <div className="relative">
         <img 
           src={article.image} 
