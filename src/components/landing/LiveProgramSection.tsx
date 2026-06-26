@@ -264,7 +264,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
 
             return (
               <div key={time} className="grid grid-cols-8 gap-0.5 min-w-0">
-                <div className="bg-white border border-[#aca097]/30 rounded-none p-1 flex items-center justify-center">
+                <div className="bg-black/60 border border-[#aca097]/30 rounded-none p-1 flex items-center justify-center">
                   <span className={cn("text-[10px] font-medium", isCurrentSlot ? "text-black" : "text-[#aca097]")}>{time}</span>
                 </div>
 
@@ -283,11 +283,11 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                   }
 
                   if (sectionsForSlot.length === 0) {
-                    return <div key={dateStr} className="bg-[#aca097]/5 border border-[#aca097]/10 rounded-none p-0.5" />;
+                    return <div key={dateStr} className="bg-black/60 border border-[#aca097]/10 rounded-none p-0.5" />;
                   }
 
                   return (
-                    <div key={dateStr} className="border border-[#aca097]/30 rounded-none bg-[#aca097]/10 p-0.5 space-y-0.5">
+                    <div key={dateStr} className="border border-[#aca097]/30 rounded-none bg-black/60 p-0.5 space-y-0.5">
                       {sectionsForSlot.map((section) => {
                         const currentBookings = section.active_users;
                         const capacity = section.max_capacity;
@@ -296,16 +296,16 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                         return (
                           <div 
                             key={section.id} 
-                            className={cn("space-y-0.5 p-0.5 rounded-none transition-all cursor-pointer", isHovered ? 'bg-[#f4f1ea]/20 border border-[#f4f1ea]' : 'bg-[#aca097]/20 border border-[#aca097]/30 hover:bg-[#f4f1ea]/20 hover:border-[#f4f1ea]')}
+                            className={cn("space-y-0.5 p-0.5 rounded-none transition-all cursor-pointer", isHovered ? 'bg-white/20 border border-white' : 'bg-white/10 border border-white/20 hover:bg-white/20 hover:border-white')}
                             onMouseEnter={() => setHoveredSection(section.id)}
                             onMouseLeave={() => setHoveredSection(null)}
                           >
-                            <div className={cn("text-[8px] font-medium truncate", isHovered ? 'text-black' : 'text-[#aca097]')}>{section.name}</div>
+                            <div className={cn("text-[8px] font-medium truncate", isHovered ? 'text-white' : 'text-gray-300')}>{section.name}</div>
                             <div className="flex items-center gap-0.5">
                               <div className="flex-1 h-1 bg-gray-200 rounded-none overflow-hidden">
                                 <div className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`} style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }} />
                               </div>
-                              <span className="text-[8px] flex-shrink-0 text-[#aca097]">{currentBookings}/{capacity}</span>
+                              <span className="text-[8px] flex-shrink-0 text-gray-300">{currentBookings}/{capacity}</span>
                             </div>
                           </div>
                         );
