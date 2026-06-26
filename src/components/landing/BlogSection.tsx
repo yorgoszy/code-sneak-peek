@@ -82,7 +82,6 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
             fontFamily: '"Roobert Pro", sans-serif',
             fontWeight: 500,
             color: 'white',
-            textShadow: '0 2px 10px rgba(0,0,0,0.6)',
           }}
         >
           articles
