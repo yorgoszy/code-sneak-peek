@@ -102,10 +102,10 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
 
               {/* Responsive Grid: stacked on mobile, 40/60 on desktop */}
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 md:pt-16 lg:pt-20 pb-10 md:pb-16 lg:pb-20">
-                <div className="w-full min-h-[40vh] md:min-h-[50vh] grid grid-cols-1 md:grid-cols-[40%_60%]">
+                <div className="w-full h-[420px] sm:h-[480px] md:h-[580px] lg:h-[620px] grid grid-cols-1 md:grid-cols-[40%_60%]">
                   {/* Left — photo + icon */}
                   <div
-                    className="relative bg-white h-48 md:h-auto"
+                    className="relative bg-white h-48 md:h-full"
                     style={{
                       backgroundImage: `url(${slide.leftPhoto})`,
                       backgroundSize: 'cover',
