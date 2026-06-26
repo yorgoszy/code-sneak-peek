@@ -9,7 +9,7 @@ interface EliteTrainingSectionProps {
 
 const EliteTrainingSection: React.FC<EliteTrainingSectionProps> = ({ translations }) => {
   return (
-    <section className="relative py-24 bg-black" style={{ fontFamily: '"Roobert Pro", sans-serif' }}>
+    <section className="relative py-24 bg-white" style={{ fontFamily: '"Roobert Pro", sans-serif' }}>
       <div
         className="absolute inset-0 bg-cover bg-center opacity-30"
         style={{ backgroundImage: `url(${eliteTrainingBg.url})` }}
