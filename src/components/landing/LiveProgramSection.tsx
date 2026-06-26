@@ -185,14 +185,14 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                       const capacity = section.max_capacity;
 
                       return (
-                        <div key={section.id} className="flex items-center gap-2 px-2 py-1.5 rounded-none bg-[#aca097]/10 border border-[#aca097]/30">
-                          <span className={cn("text-[10px] font-semibold w-10 flex-shrink-0", isCurrentSlot ? "text-black" : "text-[#aca097]")}>{time}</span>
-                          <span className="text-[10px] font-medium text-[#aca097] truncate flex-1 min-w-0">{section.name}</span>
+                        <div key={section.id} className="flex items-center gap-2 px-2 py-1.5 rounded-none bg-black/60 border border-white/20">
+                          <span className={cn("text-[10px] font-semibold w-10 flex-shrink-0", isCurrentSlot ? "text-white" : "text-gray-300")}>{time}</span>
+                          <span className="text-[10px] font-medium text-gray-300 truncate flex-1 min-w-0">{section.name}</span>
                           <div className="flex items-center gap-1 flex-shrink-0 w-20">
                             <div className="flex-1 h-1.5 bg-gray-200 rounded-none overflow-hidden">
                               <div className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`} style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }} />
                             </div>
-                            <span className="text-[9px] text-[#aca097] font-medium">{currentBookings}/{capacity}</span>
+                            <span className="text-[9px] text-gray-300 font-medium">{currentBookings}/{capacity}</span>
                           </div>
                         </div>
                       );
@@ -225,13 +225,13 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
               const isClosed = isDateClosed(dateStr);
               
               return (
-                <div 
+                  <div 
                   key={dateStr} 
                   className={cn(
                     "text-center p-1 border rounded-none",
                     isClosed 
                       ? "bg-red-500/20 border-red-500/50"
-                      : "bg-white border-[#aca097]/30"
+                      : "bg-black/60 border-[#aca097]/30"
                   )}
                 >
                   {isClosed && (
@@ -242,13 +242,13 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                   )}
                   <div className={cn(
                     "font-medium text-[10px]", 
-                    isClosed ? "text-red-400" : isToday ? "text-black" : "text-[#aca097]"
+                    isClosed ? "text-red-400" : isToday ? "text-white" : "text-gray-300"
                   )}>
                     {dayNames[day.getDay() === 0 ? 6 : day.getDay() - 1]}
                   </div>
                   <div className={cn(
                     "text-xs font-bold", 
-                    isClosed ? "text-red-400" : isToday ? "text-black" : "text-[#aca097]"
+                    isClosed ? "text-red-400" : isToday ? "text-white" : "text-gray-300"
                   )}>
                     {format(day, 'dd/MM')}
                   </div>
@@ -264,8 +264,8 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
 
             return (
               <div key={time} className="grid grid-cols-8 gap-0.5 min-w-0">
-                <div className="bg-white border border-[#aca097]/30 rounded-none p-1 flex items-center justify-center">
-                  <span className={cn("text-[10px] font-medium", isCurrentSlot ? "text-black" : "text-[#aca097]")}>{time}</span>
+                <div className="bg-black/60 border border-[#aca097]/30 rounded-none p-1 flex items-center justify-center">
+                  <span className={cn("text-[10px] font-medium", isCurrentSlot ? "text-white" : "text-gray-300")}>{time}</span>
                 </div>
 
                 {weekDays.map((day) => {
@@ -283,11 +283,11 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                   }
 
                   if (sectionsForSlot.length === 0) {
-                    return <div key={dateStr} className="bg-[#aca097]/5 border border-[#aca097]/10 rounded-none p-0.5" />;
+                    return <div key={dateStr} className="bg-black/60 border border-[#aca097]/10 rounded-none p-0.5" />;
                   }
 
                   return (
-                    <div key={dateStr} className="border border-[#aca097]/30 rounded-none bg-[#aca097]/10 p-0.5 space-y-0.5">
+                    <div key={dateStr} className="border border-[#aca097]/30 rounded-none bg-black/60 p-0.5 space-y-0.5">
                       {sectionsForSlot.map((section) => {
                         const currentBookings = section.active_users;
                         const capacity = section.max_capacity;
@@ -296,16 +296,16 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                         return (
                           <div 
                             key={section.id} 
-                            className={cn("space-y-0.5 p-0.5 rounded-none transition-all cursor-pointer", isHovered ? 'bg-[#f4f1ea]/20 border border-[#f4f1ea]' : 'bg-[#aca097]/20 border border-[#aca097]/30 hover:bg-[#f4f1ea]/20 hover:border-[#f4f1ea]')}
+                            className={cn("space-y-0.5 p-0.5 rounded-none transition-all cursor-pointer", isHovered ? 'bg-white/20 border border-white' : 'bg-white/10 border border-white/20 hover:bg-white/20 hover:border-white')}
                             onMouseEnter={() => setHoveredSection(section.id)}
                             onMouseLeave={() => setHoveredSection(null)}
                           >
-                            <div className={cn("text-[8px] font-medium truncate", isHovered ? 'text-black' : 'text-[#aca097]')}>{section.name}</div>
+                            <div className={cn("text-[8px] font-medium truncate", isHovered ? 'text-white' : 'text-gray-300')}>{section.name}</div>
                             <div className="flex items-center gap-0.5">
                               <div className="flex-1 h-1 bg-gray-200 rounded-none overflow-hidden">
                                 <div className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`} style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }} />
                               </div>
-                              <span className="text-[8px] flex-shrink-0 text-[#aca097]">{currentBookings}/{capacity}</span>
+                              <span className="text-[8px] flex-shrink-0 text-gray-300">{currentBookings}/{capacity}</span>
                             </div>
                           </div>
                         );
