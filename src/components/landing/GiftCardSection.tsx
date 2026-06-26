@@ -32,23 +32,23 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
           <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-12">
             {/* Gift Card Visual */}
             <div className="flex-1 w-full">
-              <div className="relative w-full aspect-[16/10] bg-white border border-gray-300 p-6 md:p-8 flex flex-col justify-between shadow-2xl">
+              <div className="relative w-full aspect-[16/10] bg-black border border-white/20 p-6 md:p-8 flex flex-col justify-between shadow-2xl">
                 <div className="relative z-10">
                   <div>
-                    <img src={headerLogo} alt="HyperKids Logo" className="h-8 w-auto mb-2" />
+                    <img src={headerLogo} alt="HyperKids Logo" className="h-8 w-auto mb-2 invert" />
                   </div>
                 </div>
 
                 <div className="flex-1 flex items-center justify-center relative z-10">
-                  <p className="text-gray-400 text-sm tracking-[0.3em] font-mono font-['Roobert_Pro',sans-serif]">XXXX-XXXX-XXXX</p>
+                  <p className="text-gray-500 text-sm tracking-[0.3em] font-mono font-['Roobert_Pro',sans-serif]">XXXX-XXXX-XXXX</p>
                 </div>
 
                 <div className="flex justify-between items-end relative z-10">
                   <div>
-                    <p className="text-gray-400 text-xs mb-1 font-['Roobert_Pro',sans-serif]">GIFT CARD</p>
-                    <p className="text-gray-600 text-xs font-['Roobert_Pro',sans-serif]">{t.cardTagline}</p>
+                    <p className="text-gray-500 text-xs mb-1 font-['Roobert_Pro',sans-serif]">GIFT CARD</p>
+                    <p className="text-gray-400 text-xs font-['Roobert_Pro',sans-serif]">{t.cardTagline}</p>
                   </div>
-                  <img src={sloganLogo} alt="Trust The Process" className="h-8 w-auto" />
+                  <img src={sloganLogo} alt="Trust The Process" className="h-8 w-auto invert" />
                 </div>
               </div>
             </div>
