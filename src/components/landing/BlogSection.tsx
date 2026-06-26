@@ -5,6 +5,7 @@ import ArticleCard from './blog/ArticleCard';
 import ArticleModal from './blog/ArticleModal';
 import { supabase } from '@/integrations/supabase/client';
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import articlesBg from '@/assets/articles-bg.jpg.asset.json';
 import {
   Carousel,
   CarouselContent,
@@ -62,6 +63,11 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
     <section id="blog" className="pt-32 pb-28 bg-white relative z-10">
       {/* Banner — styled like About section */}
       <div className="relative w-full overflow-hidden flex items-center justify-center h-[18vw] min-h-[90px] md:h-[12vw] lg:h-[calc(10vw-1px)] bg-white">
+        <div
+          className="absolute inset-0 bg-cover bg-center pointer-events-none"
+          style={{ backgroundImage: `url(${articlesBg.url})`, opacity: 0.5 }}
+          aria-hidden="true"
+        />
         <button
           onClick={() => api?.scrollPrev()}
           aria-label="Previous slide"
