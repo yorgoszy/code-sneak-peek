@@ -122,7 +122,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
 
                   {/* Right — text over photo */}
                   <div
-                    className="relative flex flex-col justify-center px-5 py-8 sm:px-6 md:px-8 md:py-0 bg-black"
+                    className="relative flex flex-col justify-start px-5 py-8 sm:px-6 md:px-8 md:pt-10 md:pb-8 bg-black"
                     style={{
                       backgroundImage: `url(${slide.rightPhoto})`,
                       backgroundSize: 'cover',
@@ -130,7 +130,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                     }}
                   >
                     <div className="absolute inset-0 bg-black/70" />
-                    <div className="relative z-10">
+                    <div className="relative z-10 w-full">
                       <h4
                         className="text-white mb-3 md:mb-4 text-xl md:text-2xl"
                         style={{
