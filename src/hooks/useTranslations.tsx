@@ -174,7 +174,7 @@ export const useTranslations = () => {
       language: 'en',
       home: "Home",
       programs: "Services",
-      blog: "articles",
+      blog: "Articles",
       about: "About Us",
       results: "News",
       contact: "Contact",
