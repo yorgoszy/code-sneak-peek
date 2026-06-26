@@ -231,7 +231,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                     "text-center p-1 border rounded-none",
                     isClosed 
                       ? "bg-red-500/20 border-red-500/50"
-                      : "bg-black border-[#aca097]/30"
+                      : "bg-white border-[#aca097]/30"
                   )}
                 >
                   {isClosed && (
