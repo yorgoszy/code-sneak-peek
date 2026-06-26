@@ -199,7 +199,7 @@ const Index = () => {
           {/* CTA Section */}
           <section id="cta">
             {/* Banner */}
-            <div className="relative w-full overflow-hidden flex flex-col items-center justify-center" style={{ height: 'calc(31.2vw - 21px)' }}>
+            <div className="relative w-full overflow-hidden flex flex-col items-center justify-center gap-2 sm:gap-3 md:gap-4 px-4 py-6 sm:py-8 md:py-10 lg:py-0 lg:h-[calc(31.2vw-21px)]">
               <div
                 className="absolute inset-0 bg-cover pointer-events-none"
                 style={{ backgroundImage: `url(${ctaBoxing.url})`, opacity: 0.6, backgroundSize: 'cover', backgroundPosition: 'center' }}
@@ -207,7 +207,7 @@ const Index = () => {
               />
               <div className="absolute inset-0 bg-black/30" />
               <h2
-                className="relative z-10 text-center px-4 text-[14vw] md:text-[14vw] lg:text-[15.6vw] leading-none whitespace-nowrap"
+                className="relative z-10 text-center px-2 sm:px-4 text-[9vw] sm:text-[11vw] md:text-[12vw] lg:text-[15.6vw] leading-none whitespace-nowrap"
                 style={{
                   fontFamily: '"Roobert Pro", sans-serif',
                   fontWeight: 500,
@@ -218,7 +218,7 @@ const Index = () => {
               </h2>
 
               <button
-                className="relative z-10 bg-white px-8 py-4 text-lg font-semibold hover:bg-gray-200 transition-colors text-black"
+                className="relative z-10 bg-white px-4 py-2 text-sm font-semibold hover:bg-gray-200 transition-colors text-black sm:px-6 sm:py-3 sm:text-base md:px-8 md:py-4 md:text-lg"
                 onClick={() => setTrialOpen(true)}
               >
                 {correctedTranslations.startNow}
