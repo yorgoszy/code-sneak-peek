@@ -59,7 +59,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
   }, [currentLanguage]);
 
   return (
-    <section id="blog" className="pt-32 pb-28 bg-transparent relative z-10">
+    <section id="blog" className="pt-32 pb-28 bg-white relative z-10">
       {/* Banner — styled like About section */}
       <div className="relative w-full overflow-hidden flex items-center justify-center h-[18vw] min-h-[90px] md:h-[12vw] lg:h-[calc(10vw-1px)] bg-white">
         <button

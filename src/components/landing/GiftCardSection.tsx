@@ -27,7 +27,7 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
 
   return (
     <>
-      <section className="py-20 bg-transparent relative z-10 overflow-hidden">
+      <section className="py-20 bg-white relative z-10 overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-12">
             {/* Gift Card Visual */}
@@ -55,24 +55,16 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
 
             {/* Text */}
             <div className="flex-1 text-center md:text-left">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 font-['Roobert_Pro',sans-serif]">
+              <h2 className="text-3xl md:text-4xl font-bold text-black mb-4 font-['Roobert_Pro',sans-serif]">
                 {t.titleLine1}<br />
-                <span className="text-white">{t.titleLine2}</span>
+                <span className="text-black">{t.titleLine2}</span>
               </h2>
-              <p className="text-gray-400 mb-6 text-lg font-['Roobert_Pro',sans-serif]">
+              <p className="text-gray-600 mb-6 text-lg font-['Roobert_Pro',sans-serif]">
                 {t.description}
               </p>
-              <ul className="text-gray-300 space-y-2 mb-8 text-sm font-['Roobert_Pro',sans-serif]">
+              <ul className="text-gray-700 space-y-2 mb-8 text-sm font-['Roobert_Pro',sans-serif]">
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-[#f4f1ea] rounded-full" />
-                  {t.feature1}
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-[#f4f1ea] rounded-full" />
-                  {t.feature2}
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-[#f4f1ea] rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-black rounded-full" />
                   {t.feature3}
                 </li>
               </ul>

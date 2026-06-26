@@ -10,26 +10,26 @@ interface ArticleCardProps {
 
 const ArticleCard: React.FC<ArticleCardProps> = ({ article, onReadMore, translations }) => {
   return (
-    <article className="bg-transparent border border-white/20 rounded-none overflow-hidden flex flex-col h-full">
+    <article className="bg-white border border-black/10 rounded-none overflow-hidden flex flex-col h-full">
       <div className="relative">
         <img 
           src={article.image} 
           alt={article.title}
           className="w-full h-48 object-cover"
         />
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black to-transparent"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/60 to-transparent"></div>
       </div>
       <div className="p-6 flex flex-col flex-grow">
         <div className="text-sm mb-2" style={{ color: '#aca097' }}>{article.date}</div>
-        <h3 className="text-xl font-bold mb-3 text-white" style={{ fontFamily: 'Robert, sans-serif' }}>
+        <h3 className="text-xl font-bold mb-3 text-black" style={{ fontFamily: 'Robert, sans-serif' }}>
           {article.title}
         </h3>
-        <p className="mb-4 line-clamp-3 flex-grow text-white">
+        <p className="mb-4 line-clamp-3 flex-grow text-black">
           {article.excerpt}
         </p>
         <button 
           onClick={() => onReadMore(article)}
-          className="font-semibold transition-colors mt-auto text-left text-[#aca097] hover:text-white"
+          className="font-semibold transition-colors mt-auto text-left text-[#aca097] hover:text-black"
         >
           {translations.blog?.readMore || (translations.language === 'en' ? 'Read more →' : 'Διαβάστε περισσότερα →')}
         </button>
