@@ -46,7 +46,7 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
                 <div className="flex justify-between items-end relative z-10">
                   <div>
                     <p className="text-white text-xs mb-1 font-['Roobert_Pro',sans-serif]">GIFT CARD</p>
-                    <p className="text-gray-400 text-xs font-['Roobert_Pro',sans-serif]">{t.cardTagline}</p>
+                    <p className="text-white text-xs font-['Roobert_Pro',sans-serif]">{t.cardTagline}</p>
                   </div>
                   <img src={sloganLogo} alt="Trust The Process" className="h-8 w-auto brightness-0 invert" />
                 </div>
