@@ -20,7 +20,7 @@ import ResultsSection from "@/components/landing/ResultsSection";
 import GiftCardSection from "@/components/landing/GiftCardSection";
 import articlesResultsGiftBg from "@/assets/articles-results-gift-bg.jpg.asset.json";
 import newsBg from '@/assets/news-bg.jpg.asset.json';
-import ctaBoxing from '@/assets/cta-boxing.jpg.asset.json';
+import ctaBoxing from '@/assets/cta-banner-bg.png.asset.json';
 
 import Footer from "@/components/landing/Footer";
 import { TrialRequestDialog } from "@/components/landing/TrialRequestDialog";
