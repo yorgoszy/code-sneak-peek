@@ -110,11 +110,11 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
       <section className="py-16 bg-white" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold mb-2 text-white" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
+            <h2 className="text-3xl font-bold mb-2 text-black" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
               Live Program
             </h2>
-            <div className="w-16 h-1 mx-auto mb-4 bg-[#f4f1ea]"></div>
-            <p className="text-sm text-white">
+            <div className="w-16 h-1 mx-auto mb-4 bg-black"></div>
+            <p className="text-sm text-black">
               {format(weekStart, 'dd/MM')} - {format(weekDays[6], 'dd/MM')}
             </p>
           </div>
