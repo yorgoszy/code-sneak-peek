@@ -98,7 +98,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
       <div className="relative w-full overflow-hidden flex items-center justify-center" style={{ height: 'calc(10vw - 1px)' }}>
         <div
           className="absolute inset-0 bg-cover pointer-events-none"
-          style={{ backgroundImage: `url(${newsBg.url})`, opacity: 0.6, backgroundPosition: 'center calc(50% + 50px)' }}
+          style={{ backgroundImage: `url(${newsBg.url})`, opacity: 0.6, backgroundPosition: 'center calc(50% + 100px)' }}
           aria-hidden="true"
         />
         <div className="absolute inset-0 bg-black/30" />
