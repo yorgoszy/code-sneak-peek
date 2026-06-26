@@ -18,6 +18,7 @@ import VideoGallerySection from "@/components/landing/VideoGallerySection";
 import BlogSection from "@/components/landing/BlogSection";
 import ResultsSection from "@/components/landing/ResultsSection";
 import GiftCardSection from "@/components/landing/GiftCardSection";
+import articlesResultsGiftBg from "@/assets/articles-results-gift-bg.jpg.asset.json";
 
 import Footer from "@/components/landing/Footer";
 import { TrialRequestDialog } from "@/components/landing/TrialRequestDialog";
