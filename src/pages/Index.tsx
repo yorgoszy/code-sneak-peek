@@ -213,7 +213,7 @@ const Index = () => {
                   color: 'white',
                 }}
               >
-                Are you ready?
+                {correctedTranslations.readyQuestion}
               </h2>
             </div>
 
