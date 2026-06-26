@@ -49,7 +49,7 @@ const Footer: React.FC<FooterProps> = ({ translations }) => {
             <img
               src={footerIcon}
               alt="Hyperkids Icon"
-              className="w-16 h-16 mb-6"
+              className="w-16 h-16 mb-6 brightness-0"
             />
             {/* Social Media Icons */}
             <div className="flex justify-center gap-6">
