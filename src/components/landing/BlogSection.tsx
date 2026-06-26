@@ -59,7 +59,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
   }, [currentLanguage]);
 
   return (
-    <section id="blog" className="pt-32 pb-28 bg-black">
+    <section id="blog" className="pt-32 pb-28 bg-transparent relative z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-16">
           <h2 className="text-4xl font-bold mb-4 text-white" style={{ fontFamily: 'Robert, sans-serif' }}>
