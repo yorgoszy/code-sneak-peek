@@ -180,39 +180,54 @@ const Index = () => {
 
           <VideoGallerySection translations={{ ...correctedTranslations, language }} />
 
-          <BlogSection 
-            translations={correctedTranslations}
-          />
+          <div
+            className="relative bg-black [&_section]:!bg-transparent [&>footer]:!bg-transparent"
+            style={{
+              backgroundImage: `url(${splitBgAsset.url})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              backgroundAttachment: 'fixed',
+            }}
+          >
+            <div className="absolute inset-0 bg-black/50 pointer-events-none" aria-hidden />
+            <div className="relative">
+              <BlogSection 
+                translations={correctedTranslations}
+              />
 
-          <ResultsSection 
-            translations={correctedTranslations}
-          />
+              <ResultsSection 
+                translations={correctedTranslations}
+              />
 
-          <GiftCardSection translations={correctedTranslations} />
+              <GiftCardSection translations={correctedTranslations} />
 
-          {/* CTA Section */}
-          <section className="py-20 bg-white">
-            <div className="container mx-auto px-4 text-center">
-              <h2 className="text-4xl font-bold text-black mb-6">
-                {correctedTranslations.readyQuestion}
-              </h2>
-              <p className="text-xl text-black max-w-3xl mx-auto mb-8">
-                {correctedTranslations.journeyText}
-              </p>
-              <button 
-                className="bg-black px-8 py-4 text-lg font-semibold hover:bg-gray-800 transition-colors text-white"
-                onClick={() => setTrialOpen(true)}
-              >
-                {correctedTranslations.startNow}
-              </button>
+              {/* CTA Section */}
+              <section className="py-20">
+                <div className="container mx-auto px-4 text-center">
+                  <h2 className="text-4xl font-bold text-white mb-6">
+                    {correctedTranslations.readyQuestion}
+                  </h2>
+                  <p className="text-xl text-white max-w-3xl mx-auto mb-8">
+                    {correctedTranslations.journeyText}
+                  </p>
+                  <button 
+                    className="bg-white px-8 py-4 text-lg font-semibold hover:bg-gray-200 transition-colors text-black"
+                    onClick={() => setTrialOpen(true)}
+                  >
+                    {correctedTranslations.startNow}
+                  </button>
+                </div>
+              </section>
+
+              <TrialRequestDialog open={trialOpen} onOpenChange={setTrialOpen} />
+
+              <Footer 
+                translations={correctedTranslations}
+              />
             </div>
-          </section>
+          </div>
 
-          <TrialRequestDialog open={trialOpen} onOpenChange={setTrialOpen} />
-
-          <Footer 
-            translations={correctedTranslations}
-          />
       </>
 
       <LandingChatbot language={language as 'el' | 'en'} />
