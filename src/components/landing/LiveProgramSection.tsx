@@ -300,9 +300,9 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                             onMouseEnter={() => setHoveredSection(section.id)}
                             onMouseLeave={() => setHoveredSection(null)}
                           >
-                            <div className={cn("text-[8px] font-medium truncate", isHovered ? 'text-white' : 'text-[#aca097]')}>{section.name}</div>
+                            <div className={cn("text-[8px] font-medium truncate", isHovered ? 'text-black' : 'text-[#aca097]')}>{section.name}</div>
                             <div className="flex items-center gap-0.5">
-                              <div className="flex-1 h-1 bg-black rounded-none overflow-hidden">
+                              <div className="flex-1 h-1 bg-gray-200 rounded-none overflow-hidden">
                                 <div className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`} style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }} />
                               </div>
                               <span className="text-[8px] flex-shrink-0 text-[#aca097]">{currentBookings}/{capacity}</span>
