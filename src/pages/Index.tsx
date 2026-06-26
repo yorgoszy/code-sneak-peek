@@ -199,7 +199,7 @@ const Index = () => {
           {/* CTA Section */}
           <section id="cta">
             {/* Banner */}
-            <div className="relative w-full overflow-hidden flex flex-col items-center justify-center" style={{ height: 'calc(31.2vw - 1px)' }}>
+            <div className="relative w-full overflow-hidden flex flex-col items-center justify-center" style={{ height: 'calc(31.2vw - 21px)' }}>
               <div
                 className="absolute inset-0 bg-cover pointer-events-none"
                 style={{ backgroundImage: `url(${ctaBoxing.url})`, opacity: 0.6, backgroundSize: 'cover', backgroundPosition: 'center' }}
