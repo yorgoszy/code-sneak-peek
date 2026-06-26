@@ -64,8 +64,8 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
       {/* Banner — styled like ProgramsSection */}
       <div className="relative w-full overflow-hidden flex items-center justify-center" style={{ height: 'calc(10vw - 1px)' }}>
         <div
-          className="absolute inset-0 bg-cover bg-center pointer-events-none"
-          style={{ backgroundImage: `url(${articlesBg.url})`, opacity: 0.6 }}
+          className="absolute inset-0 bg-cover pointer-events-none"
+          style={{ backgroundImage: `url(${articlesBg.url})`, opacity: 0.6, backgroundPosition: 'center calc(50% - 50px)' }}
           aria-hidden="true"
         />
         <div className="absolute inset-0 bg-black/30" />
