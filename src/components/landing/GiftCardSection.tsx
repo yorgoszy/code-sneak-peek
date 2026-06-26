@@ -64,15 +64,7 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
               </p>
               <ul className="text-gray-700 space-y-2 mb-8 text-sm font-['Roobert_Pro',sans-serif]">
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-[#f4f1ea] rounded-full" />
-                  {t.feature1}
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-[#f4f1ea] rounded-full" />
-                  {t.feature2}
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-[#f4f1ea] rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-black rounded-full" />
                   {t.feature3}
                 </li>
               </ul>
