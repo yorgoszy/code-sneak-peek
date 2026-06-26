@@ -264,8 +264,8 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
 
             return (
               <div key={time} className="grid grid-cols-8 gap-0.5 min-w-0">
-                <div className="bg-black border border-[#aca097]/30 rounded-none p-1 flex items-center justify-center">
-                  <span className={cn("text-[10px] font-medium", isCurrentSlot ? "text-white" : "text-[#aca097]")}>{time}</span>
+                <div className="bg-white border border-[#aca097]/30 rounded-none p-1 flex items-center justify-center">
+                  <span className={cn("text-[10px] font-medium", isCurrentSlot ? "text-black" : "text-[#aca097]")}>{time}</span>
                 </div>
 
                 {weekDays.map((day) => {
