@@ -68,7 +68,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
             <CarouselItem key={slide.id} className="basis-full">
               {/* Banner */}
               <div
-                className="relative w-full overflow-hidden flex items-start justify-start h-[18vw] min-h-[90px] md:h-[12vw] lg:h-[calc(10vw-1px)]"
+                className="relative w-full overflow-hidden flex items-center justify-center h-[18vw] min-h-[90px] md:h-[12vw] lg:h-[calc(10vw-1px)]"
               >
                 <div
                   className="absolute inset-0 bg-cover"
@@ -85,10 +85,10 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                 </button>
 
                 <h3
-                  className="relative z-10 text-white text-left px-4 pt-3 text-[14vw] md:text-[14vw] lg:text-[15.6vw] leading-none"
+                  className="relative z-10 text-white text-center px-4 text-[14vw] md:text-[14vw] lg:text-[15.6vw] leading-none"
                   style={{ fontFamily: '"Roobert Pro", sans-serif', fontWeight: 500 }}
                 >
-                  {translations[slide.titleKey]}
+                  {slide.label}
                 </h3>
 
                 <button
