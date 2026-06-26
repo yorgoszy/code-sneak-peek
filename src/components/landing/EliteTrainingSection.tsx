@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Check } from 'lucide-react';
-import eliteTrainingBg from '@/assets/elite-training-bg.png.asset.json';
 
 interface EliteTrainingSectionProps {
   translations: any;
@@ -10,10 +9,6 @@ interface EliteTrainingSectionProps {
 const EliteTrainingSection: React.FC<EliteTrainingSectionProps> = ({ translations }) => {
   return (
     <section className="relative py-24 bg-black" style={{ fontFamily: '"Roobert Pro", sans-serif' }}>
-      <div
-        className="absolute inset-0 bg-cover bg-center opacity-30"
-        style={{ backgroundImage: `url(${eliteTrainingBg.url})` }}
-      />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
