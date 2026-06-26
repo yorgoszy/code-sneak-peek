@@ -14,7 +14,6 @@ const EliteTrainingSection: React.FC<EliteTrainingSectionProps> = ({ translation
         className="absolute inset-0 bg-cover bg-center opacity-30"
         style={{ backgroundImage: `url(${eliteTrainingBg.url})` }}
       />
-      <div className="absolute inset-0 bg-black/30" />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
@@ -22,7 +21,7 @@ const EliteTrainingSection: React.FC<EliteTrainingSectionProps> = ({ translation
             <h2 className="text-4xl font-bold text-white mb-4">
               {translations.eliteTrainingMethodology}
             </h2>
-            <div className="w-16 h-1 bg-white/30 mb-8"></div>
+            <div className="w-16 h-1 bg-[#f4f1ea] mb-8"></div>
             
             <p className="text-lg text-white mb-8">
               {translations.eliteTrainingDesc}
@@ -60,7 +59,7 @@ const EliteTrainingSection: React.FC<EliteTrainingSectionProps> = ({ translation
               className="w-full h-auto rounded-lg grayscale"
               style={{ marginTop: '0px', marginBottom: '0px' }}
             />
-            <div className="absolute bottom-2 -left-4 bg-black/80 text-white p-6 max-w-xs -ml-4">
+            <div className="absolute bottom-2 -left-4 bg-white text-black p-6 max-w-xs -ml-4">
               <h3 className="font-bold text-lg mb-2" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
                 {translations.advancedTechnology}
               </h3>
