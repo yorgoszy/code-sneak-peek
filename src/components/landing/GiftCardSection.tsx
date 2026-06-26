@@ -27,12 +27,12 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
 
   return (
     <>
-      <section className="py-20 bg-black relative z-10 overflow-hidden">
+      <section className="py-20 bg-white relative z-10 overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-12">
             {/* Gift Card Visual */}
             <div className="flex-1 w-full">
-              <div className="relative w-full aspect-[16/10] bg-gradient-to-br from-gray-900 via-gray-800 to-black border border-gray-700 p-6 md:p-8 flex flex-col justify-between shadow-2xl">
+              <div className="relative w-full aspect-[16/10] bg-white border border-gray-300 p-6 md:p-8 flex flex-col justify-between shadow-2xl">
                 <div className="relative z-10">
                   <div>
                     <img src={headerLogo} alt="HyperKids Logo" className="h-8 w-auto mb-2" />
@@ -40,13 +40,13 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
                 </div>
 
                 <div className="flex-1 flex items-center justify-center relative z-10">
-                  <p className="text-gray-500 text-sm tracking-[0.3em] font-mono font-['Roobert_Pro',sans-serif]">XXXX-XXXX-XXXX</p>
+                  <p className="text-gray-400 text-sm tracking-[0.3em] font-mono font-['Roobert_Pro',sans-serif]">XXXX-XXXX-XXXX</p>
                 </div>
 
                 <div className="flex justify-between items-end relative z-10">
                   <div>
-                    <p className="text-gray-500 text-xs mb-1 font-['Roobert_Pro',sans-serif]">GIFT CARD</p>
-                    <p className="text-gray-400 text-xs font-['Roobert_Pro',sans-serif]">{t.cardTagline}</p>
+                    <p className="text-gray-400 text-xs mb-1 font-['Roobert_Pro',sans-serif]">GIFT CARD</p>
+                    <p className="text-gray-600 text-xs font-['Roobert_Pro',sans-serif]">{t.cardTagline}</p>
                   </div>
                   <img src={sloganLogo} alt="Trust The Process" className="h-8 w-auto" />
                 </div>
@@ -55,22 +55,22 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
 
             {/* Text */}
             <div className="flex-1 text-center md:text-left">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 font-['Roobert_Pro',sans-serif]">
+              <h2 className="text-3xl md:text-4xl font-bold text-black mb-4 font-['Roobert_Pro',sans-serif]">
                 {t.titleLine1}<br />
-                <span className="text-white">{t.titleLine2}</span>
+                <span className="text-black">{t.titleLine2}</span>
               </h2>
-              <p className="text-gray-300 mb-6 text-lg font-['Roobert_Pro',sans-serif]">
+              <p className="text-gray-600 mb-6 text-lg font-['Roobert_Pro',sans-serif]">
                 {t.description}
               </p>
-              <ul className="text-gray-400 space-y-2 mb-8 text-sm font-['Roobert_Pro',sans-serif]">
+              <ul className="text-gray-500 space-y-2 mb-8 text-sm font-['Roobert_Pro',sans-serif]">
                 <li className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-white rounded-full" />
+                  <span className="w-1.5 h-1.5 bg-black rounded-full" />
                   {t.feature3}
                 </li>
               </ul>
               <button
                 onClick={() => setPurchaseOpen(true)}
-                className="bg-transparent border border-white text-white px-8 py-4 text-lg font-semibold hover:bg-white hover:text-black transition-colors inline-flex items-center gap-2 font-['Roobert_Pro',sans-serif]"
+                className="bg-transparent border border-black text-black px-8 py-4 text-lg font-semibold hover:bg-black hover:text-white transition-colors inline-flex items-center gap-2 font-['Roobert_Pro',sans-serif]"
               >
                 {t.cta}
                 <ArrowRight className="h-5 w-5" />
