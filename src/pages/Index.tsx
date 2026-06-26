@@ -19,6 +19,7 @@ import BlogSection from "@/components/landing/BlogSection";
 import ResultsSection from "@/components/landing/ResultsSection";
 import GiftCardSection from "@/components/landing/GiftCardSection";
 import articlesResultsGiftBg from "@/assets/articles-results-gift-bg.jpg.asset.json";
+import newsBg from '@/assets/news-bg.jpg.asset.json';
 
 import Footer from "@/components/landing/Footer";
 import { TrialRequestDialog } from "@/components/landing/TrialRequestDialog";
@@ -194,15 +195,32 @@ const Index = () => {
           </div>
 
           {/* CTA Section */}
-          <section className="py-20 bg-white">
-            <div className="container mx-auto px-4 text-center">
-              <h2 className="text-4xl font-bold text-black mb-6">
+          <section id="cta" className="bg-white">
+            {/* Banner */}
+            <div className="relative w-full overflow-hidden flex items-center justify-center" style={{ height: 'calc(10vw - 1px)' }}>
+              <div
+                className="absolute inset-0 bg-cover pointer-events-none"
+                style={{ backgroundImage: `url(${newsBg.url})`, opacity: 0.6, backgroundPosition: 'center calc(50% + 200px)' }}
+                aria-hidden="true"
+              />
+              <div className="absolute inset-0 bg-black/30" />
+              <h2
+                className="relative z-10 text-center px-4 text-[5vw] sm:text-[6vw] md:text-[7vw] lg:text-[8vw] leading-none whitespace-nowrap"
+                style={{
+                  fontFamily: '"Roobert Pro", sans-serif',
+                  fontWeight: 500,
+                  color: 'white',
+                }}
+              >
                 {correctedTranslations.readyQuestion}
               </h2>
+            </div>
+
+            <div className="container mx-auto px-4 text-center py-16">
               <p className="text-xl text-black max-w-3xl mx-auto mb-8">
                 {correctedTranslations.journeyText}
               </p>
-              <button 
+              <button
                 className="bg-black px-8 py-4 text-lg font-semibold hover:bg-gray-800 transition-colors text-white"
                 onClick={() => setTrialOpen(true)}
               >
