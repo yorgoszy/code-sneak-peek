@@ -211,7 +211,7 @@ const Index = () => {
           ]).map((slice, i) => (
             <div
               key={i}
-              className="relative bg-black [&_section]:!bg-transparent [&_footer]:!bg-transparent [&_*]:!text-white"
+              className="relative bg-black text-white [&_section]:!bg-transparent [&_footer]:!bg-transparent"
               style={{
                 backgroundImage: `url(${slice.img})`,
                 backgroundSize: 'cover',
