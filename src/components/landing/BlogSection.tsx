@@ -71,7 +71,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
         <button
           onClick={() => api?.scrollPrev()}
           aria-label="Previous slide"
-          className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 text-black p-2 hover:border hover:border-black transition-colors"
+          className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 text-white p-2 hover:border hover:border-white transition-colors"
         >
           <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
         </button>
@@ -90,7 +90,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
         <button
           onClick={() => api?.scrollNext()}
           aria-label="Next slide"
-          className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 text-black p-2 hover:border hover:border-black transition-colors"
+          className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 text-white p-2 hover:border hover:border-white transition-colors"
         >
           <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
         </button>
