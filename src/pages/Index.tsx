@@ -180,15 +180,23 @@ const Index = () => {
 
           <VideoGallerySection translations={{ ...correctedTranslations, language }} />
 
-          <BlogSection 
-            translations={correctedTranslations}
-          />
+          <div className="relative bg-white">
+            <img
+              src={articlesResultsGiftBg.url}
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 w-full h-full object-cover opacity-50 select-none"
+            />
+            <BlogSection 
+              translations={correctedTranslations}
+            />
 
-          <ResultsSection 
-            translations={correctedTranslations}
-          />
+            <ResultsSection 
+              translations={correctedTranslations}
+            />
 
-          <GiftCardSection translations={correctedTranslations} />
+            <GiftCardSection translations={correctedTranslations} />
+          </div>
 
           {/* CTA Section */}
           <section className="py-20 bg-white">
