@@ -6,10 +6,9 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import newsBg from '@/assets/news-bg.jpg.asset.json';
 
 interface ResultsSectionProps {
   translations: any;
@@ -30,7 +29,7 @@ interface Result {
 const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
   const [results, setResults] = useState<Result[]>([]);
   const [loading, setLoading] = useState(true);
-  
+  const [api, setApi] = useState<any>();
 
   useEffect(() => {
     fetchResults();
@@ -51,6 +50,11 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const parseHashtags = (hashtagsString: string) => {
+    if (!hashtagsString) return [];
+    return hashtagsString.split(' ').filter(tag => tag.startsWith('#'));
   };
 
   const renderCard = (result: Result) => (
@@ -88,51 +92,53 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
     </article>
   );
 
-  const parseHashtags = (hashtagsString: string) => {
-    if (!hashtagsString) return [];
-    return hashtagsString.split(' ').filter(tag => tag.startsWith('#'));
-  };
-
-  if (loading) {
-    return (
-    <section id="results" className="py-8 bg-white relative z-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div>
-          <h2 className="text-4xl font-bold mb-4" style={{ fontFamily: 'Roobert Pro, sans-serif', color: '#000000' }}>
-            Αποτελέσματα
-          </h2>
-          <div style={{ color: '#000000' }}>Φόρτωση...</div>
-        </div>
-      </div>
-    </section>
-    );
-  }
-
   return (
-    <section id="results" className="py-8 bg-white relative z-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-16">
-          <h2 className="text-4xl font-bold mb-4 text-black" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
-            {translations?.language === 'en' ? 'Results' : 'Αποτελέσματα'}
-          </h2>
-        </div>
-        
-        {results.length === 0 ? (
-          <div style={{ color: '#aca097' }}>
-            Δεν υπάρχουν αποτελέσματα προς εμφάνιση
-          </div>
-        ) : (
-          <div className="relative">
-            <Carousel opts={{ align: "start" }} className="w-full">
-              <div className="absolute -top-16 right-0 flex gap-2 z-10">
-              <CarouselPrevious className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none hover:bg-transparent rounded-none text-black hover:text-[#aca097]">
-                  <ChevronLeft className="h-6 w-6" />
-                </CarouselPrevious>
-                <CarouselNext className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none hover:bg-transparent rounded-none text-black hover:text-[#aca097]">
-                  <ChevronRight className="h-6 w-6" />
-                </CarouselNext>
-              </div>
+    <section id="results" className="pt-32 pb-28 bg-white relative z-10">
+      {/* Banner — styled like Blog section */}
+      <div className="relative w-full overflow-hidden flex items-center justify-center h-[18vw] min-h-[90px] md:h-[12vw] lg:h-[calc(10vw-1px)] bg-white">
+        <div
+          className="absolute inset-0 bg-cover bg-center pointer-events-none"
+          style={{ backgroundImage: `url(${newsBg.url})`, opacity: 0.5 }}
+          aria-hidden="true"
+        />
+        <button
+          onClick={() => api?.scrollPrev()}
+          aria-label="Previous slide"
+          className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 text-white p-2 hover:border hover:border-white transition-colors"
+        >
+          <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+        </button>
 
+        <h3
+          className="relative z-10 text-center px-4 text-[14vw] md:text-[14vw] lg:text-[15.6vw] leading-none"
+          style={{
+            fontFamily: '"Roobert Pro", sans-serif',
+            fontWeight: 500,
+            color: 'white',
+          }}
+        >
+          news
+        </h3>
+
+        <button
+          onClick={() => api?.scrollNext()}
+          aria-label="Next slide"
+          className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 text-white p-2 hover:border hover:border-white transition-colors"
+        >
+          <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
+        </button>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative mt-16">
+          {loading ? (
+            <div style={{ color: '#000000' }}>Φόρτωση...</div>
+          ) : results.length === 0 ? (
+            <div style={{ color: '#aca097' }}>
+              Δεν υπάρχουν αποτελέσματα προς εμφάνιση
+            </div>
+          ) : (
+            <Carousel setApi={setApi} opts={{ align: "start" }} className="w-full">
               <CarouselContent>
                 {results.map((result) => (
                   <CarouselItem key={result.id} className="basis-full md:basis-1/2 lg:basis-1/3">
@@ -141,8 +147,8 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
                 ))}
               </CarouselContent>
             </Carousel>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </section>
   );
