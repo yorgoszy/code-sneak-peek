@@ -14,7 +14,7 @@ interface HeroSectionProps {
   onGetStarted: () => void;
 }
 
-const DEFAULT_HERO_IMAGE = '/lovable-uploads/7d78ce26-3ce9-488f-9948-1cb90eac5b9e.png';
+const DEFAULT_HERO_IMAGE = '/__l5e/assets-v1/f0493bba-c150-42e6-9eac-7eb4fce10ddc/hero-background.jpg';
 
 const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted }) => {
   const cms = useLandingSection('hero');
