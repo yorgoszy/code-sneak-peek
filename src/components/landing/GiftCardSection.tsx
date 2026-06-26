@@ -35,7 +35,7 @@ const GiftCardSection: React.FC<GiftCardSectionProps> = ({ translations }) => {
               <div className="relative w-full aspect-[16/10] bg-black border border-white/20 p-6 md:p-8 flex flex-col justify-between shadow-2xl">
                 <div className="relative z-10">
                   <div>
-                    <img src={headerLogo} alt="HyperKids Logo" className="h-8 w-auto mb-2 invert" />
+                    <img src={headerLogo} alt="HyperKids Logo" className="h-8 w-auto mb-2 brightness-0 invert" />
                   </div>
                 </div>
 
