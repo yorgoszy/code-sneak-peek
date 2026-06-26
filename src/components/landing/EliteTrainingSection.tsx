@@ -8,12 +8,12 @@ interface EliteTrainingSectionProps {
 
 const EliteTrainingSection: React.FC<EliteTrainingSectionProps> = ({ translations }) => {
   return (
-    <section className="py-24 bg-black">
+    <section className="py-24 bg-black/50" style={{ fontFamily: '"Roobert Pro", sans-serif' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
           <div>
-            <h2 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
+            <h2 className="text-4xl font-bold text-white mb-4">
               {translations.eliteTrainingMethodology}
             </h2>
             <div className="w-16 h-1 bg-[#f4f1ea] mb-8"></div>
