@@ -107,14 +107,14 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
     const isDayClosed = isDateClosed(selectedDateStr);
 
     return (
-      <section className="py-16 bg-black" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
+      <section className="py-16 bg-white" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold mb-2 text-white" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
+            <h2 className="text-3xl font-bold mb-2 text-black" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
               Live Program
             </h2>
-            <div className="w-16 h-1 mx-auto mb-4 bg-[#f4f1ea]"></div>
-            <p className="text-sm text-white">
+            <div className="w-16 h-1 mx-auto mb-4 bg-black"></div>
+            <p className="text-sm text-black">
               {format(weekStart, 'dd/MM')} - {format(weekDays[6], 'dd/MM')}
             </p>
           </div>
@@ -144,13 +144,13 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                   )}
                   <div className={cn(
                     "text-[9px] font-medium", 
-                    isClosed ? "text-red-400" : isToday ? "text-white" : "text-[#aca097]"
+                    isClosed ? "text-red-400" : isToday ? "text-black" : "text-[#aca097]"
                   )}>
                     {dayNames[index]}
                   </div>
                   <div className={cn(
                     "text-[11px] font-bold", 
-                    isClosed ? "text-red-400" : isToday ? "text-white" : "text-[#aca097]"
+                    isClosed ? "text-red-400" : isToday ? "text-black" : "text-[#aca097]"
                   )}>
                     {format(day, 'dd')}
                   </div>
@@ -186,10 +186,10 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
 
                       return (
                         <div key={section.id} className="flex items-center gap-2 px-2 py-1.5 rounded-none bg-[#aca097]/10 border border-[#aca097]/30">
-                          <span className={cn("text-[10px] font-semibold w-10 flex-shrink-0", isCurrentSlot ? "text-white" : "text-[#aca097]")}>{time}</span>
+                          <span className={cn("text-[10px] font-semibold w-10 flex-shrink-0", isCurrentSlot ? "text-black" : "text-[#aca097]")}>{time}</span>
                           <span className="text-[10px] font-medium text-[#aca097] truncate flex-1 min-w-0">{section.name}</span>
                           <div className="flex items-center gap-1 flex-shrink-0 w-20">
-                            <div className="flex-1 h-1.5 bg-black rounded-none overflow-hidden">
+                            <div className="flex-1 h-1.5 bg-gray-200 rounded-none overflow-hidden">
                               <div className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`} style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }} />
                             </div>
                             <span className="text-[9px] text-[#aca097] font-medium">{currentBookings}/{capacity}</span>
@@ -207,14 +207,13 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
     );
   }
 
-  // Desktop View
   return (
-    <section className="py-20 bg-black" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
+    <section className="py-20 bg-white" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4 text-white" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>Live Program</h2>
-          <div className="w-16 h-1 mx-auto mb-4 bg-[#f4f1ea]"></div>
-          <p className="text-white">{format(weekStart, 'dd/MM')} - {format(weekDays[6], 'dd/MM')}</p>
+          <h2 className="text-4xl font-bold mb-4 text-black" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>Live Program</h2>
+          <div className="w-16 h-1 mx-auto mb-4 bg-black"></div>
+          <p className="text-black">{format(weekStart, 'dd/MM')} - {format(weekDays[6], 'dd/MM')}</p>
         </div>
 
         <div className="space-y-0.5 overflow-x-auto">
@@ -232,7 +231,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                     "text-center p-1 border rounded-none",
                     isClosed 
                       ? "bg-red-500/20 border-red-500/50"
-                      : "bg-black border-[#aca097]/30"
+                      : "bg-white border-[#aca097]/30"
                   )}
                 >
                   {isClosed && (
@@ -243,13 +242,13 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                   )}
                   <div className={cn(
                     "font-medium text-[10px]", 
-                    isClosed ? "text-red-400" : isToday ? "text-white" : "text-[#aca097]"
+                    isClosed ? "text-red-400" : isToday ? "text-black" : "text-[#aca097]"
                   )}>
                     {dayNames[day.getDay() === 0 ? 6 : day.getDay() - 1]}
                   </div>
                   <div className={cn(
                     "text-xs font-bold", 
-                    isClosed ? "text-red-400" : isToday ? "text-white" : "text-[#aca097]"
+                    isClosed ? "text-red-400" : isToday ? "text-black" : "text-[#aca097]"
                   )}>
                     {format(day, 'dd/MM')}
                   </div>
@@ -265,8 +264,8 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
 
             return (
               <div key={time} className="grid grid-cols-8 gap-0.5 min-w-0">
-                <div className="bg-black border border-[#aca097]/30 rounded-none p-1 flex items-center justify-center">
-                  <span className={cn("text-[10px] font-medium", isCurrentSlot ? "text-white" : "text-[#aca097]")}>{time}</span>
+                <div className="bg-white border border-[#aca097]/30 rounded-none p-1 flex items-center justify-center">
+                  <span className={cn("text-[10px] font-medium", isCurrentSlot ? "text-black" : "text-[#aca097]")}>{time}</span>
                 </div>
 
                 {weekDays.map((day) => {
@@ -301,9 +300,9 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                             onMouseEnter={() => setHoveredSection(section.id)}
                             onMouseLeave={() => setHoveredSection(null)}
                           >
-                            <div className={cn("text-[8px] font-medium truncate", isHovered ? 'text-white' : 'text-[#aca097]')}>{section.name}</div>
+                            <div className={cn("text-[8px] font-medium truncate", isHovered ? 'text-black' : 'text-[#aca097]')}>{section.name}</div>
                             <div className="flex items-center gap-0.5">
-                              <div className="flex-1 h-1 bg-black rounded-none overflow-hidden">
+                              <div className="flex-1 h-1 bg-gray-200 rounded-none overflow-hidden">
                                 <div className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`} style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }} />
                               </div>
                               <span className="text-[8px] flex-shrink-0 text-[#aca097]">{currentBookings}/{capacity}</span>
