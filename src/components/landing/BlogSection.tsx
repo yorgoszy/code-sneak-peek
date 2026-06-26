@@ -5,7 +5,7 @@ import ArticleCard from './blog/ArticleCard';
 import ArticleModal from './blog/ArticleModal';
 import { supabase } from '@/integrations/supabase/client';
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import articlesBg from '@/assets/articles-bg.jpg.asset.json';
+import articlesBg from '@/assets/articles-bg.png.asset.json';
 import {
   Carousel,
   CarouselContent,
