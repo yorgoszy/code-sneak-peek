@@ -185,9 +185,9 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                       const capacity = section.max_capacity;
 
                       return (
-                        <div key={section.id} className="flex items-center gap-2 px-2 py-1.5 rounded-none bg-[#aca097]/10 border border-[#aca097]/30">
-                          <span className={cn("text-[10px] font-semibold w-10 flex-shrink-0", isCurrentSlot ? "text-black" : "text-[#aca097]")}>{time}</span>
-                          <span className="text-[10px] font-medium text-[#aca097] truncate flex-1 min-w-0">{section.name}</span>
+                        <div key={section.id} className="flex items-center gap-2 px-2 py-1.5 rounded-none bg-black/60 border border-white/20">
+                          <span className={cn("text-[10px] font-semibold w-10 flex-shrink-0", isCurrentSlot ? "text-white" : "text-gray-300")}>{time}</span>
+                          <span className="text-[10px] font-medium text-gray-300 truncate flex-1 min-w-0">{section.name}</span>
                           <div className="flex items-center gap-1 flex-shrink-0 w-20">
                             <div className="flex-1 h-1.5 bg-gray-200 rounded-none overflow-hidden">
                               <div className={`h-full transition-all ${getLoadingBarColor(currentBookings, capacity)}`} style={{ width: `${capacity > 0 ? (currentBookings / capacity) * 100 : 0}%` }} />
