@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Mail, Phone, Instagram, Youtube, MapPin, Facebook } from 'lucide-react';
+import { Mail, Phone, Instagram, Youtube, MapPin } from 'lucide-react';
 import footerIcon from '@/assets/footer-icon.png';
 
 interface FooterProps {
@@ -53,14 +53,6 @@ const Footer: React.FC<FooterProps> = ({ translations }) => {
             />
             {/* Social Media Icons */}
             <div className="flex justify-center gap-6">
-              <a
-                href="https://www.facebook.com/profile.php?id=61561366923734"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:opacity-80 transition-colors text-black"
-              >
-                <Facebook className="w-6 h-6" />
-              </a>
               <a
                 href="https://www.instagram.com/hyperkids.gr/"
                 target="_blank"
