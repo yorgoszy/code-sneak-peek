@@ -4,18 +4,18 @@ import { BlogSectionProps, Article } from './blog/types';
 import ArticleCard from './blog/ArticleCard';
 import ArticleModal from './blog/ArticleModal';
 import { supabase } from '@/integrations/supabase/client';
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
 
 const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+  const [api, setApi] = useState<any>();
 
   const currentLanguage = translations.language || 'el';
 
@@ -30,7 +30,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
           .order('published_date', { ascending: false });
 
         if (error) throw error;
-        
+
         // Transform data to match Article interface
         const transformedArticles = (data || []).map(article => ({
           id: parseInt(article.id.substring(0, 8), 16), // Convert UUID to number for compatibility
@@ -45,7 +45,7 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
           content: currentLanguage === 'el' ? article.content_el : (article.content_en || article.content_el),
           bibliography: article.bibliography || ''
         }));
-        
+
         setArticles(transformedArticles);
       } catch (error) {
         console.error('Error fetching articles:', error);
@@ -60,28 +60,43 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
 
   return (
     <section id="blog" className="pt-32 pb-28 bg-transparent relative z-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-16">
-          <h2 className="text-4xl font-bold mb-4 text-white" style={{ fontFamily: 'Robert, sans-serif' }}>
-            {translations.blogSection}
-          </h2>
-        </div>
+      {/* Banner — styled like About section */}
+      <div className="relative w-full overflow-hidden flex items-center justify-center h-[18vw] min-h-[90px] md:h-[12vw] lg:h-[calc(10vw-1px)] bg-[#aca097]">
+        <div className="absolute inset-0 bg-black/30" />
 
-        <div className="relative mb-16">
+        <button
+          onClick={() => api?.scrollPrev()}
+          aria-label="Previous slide"
+          className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 text-white p-2 hover:border hover:border-white transition-colors"
+        >
+          <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+        </button>
+
+        <h3
+          className="relative z-10 text-white text-center px-4 text-[14vw] md:text-[14vw] lg:text-[15.6vw] leading-none"
+          style={{ fontFamily: '"Roobert Pro", sans-serif', fontWeight: 500 }}
+        >
+          articles
+        </h3>
+
+        <button
+          onClick={() => api?.scrollNext()}
+          aria-label="Next slide"
+          className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 text-white p-2 hover:border hover:border-white transition-colors"
+        >
+          <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
+        </button>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative mb-16 mt-16">
           <Carousel
+            setApi={setApi}
             opts={{
               align: "start",
             }}
             className="w-full"
           >
-            {/* Navigation buttons positioned absolutely in top right */}
-            <div className="absolute -top-16 right-0 flex gap-2 z-10">
-              <CarouselPrevious className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none hover:bg-transparent rounded-none text-white hover:text-[#aca097]">
-              </CarouselPrevious>
-              <CarouselNext className="relative inset-auto translate-x-0 translate-y-0 h-10 w-10 bg-transparent border-none hover:bg-transparent rounded-none text-white hover:text-[#aca097]">
-              </CarouselNext>
-            </div>
-
             <CarouselContent className="-ml-4">
               {loading ? (
                 <div className="flex items-center justify-center w-full p-8">
@@ -93,8 +108,8 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
                 </div>
               ) : (
                 articles.map((article) => (
-                  <CarouselItem 
-                    key={article.id} 
+                  <CarouselItem
+                    key={article.id}
                     className="pl-4 basis-full md:basis-1/2 lg:basis-1/3"
                   >
                     <ArticleCard
