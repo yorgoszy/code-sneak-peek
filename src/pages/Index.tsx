@@ -216,9 +216,6 @@ const Index = () => {
                 {correctedTranslations.readyQuestion}
               </h2>
 
-              <p className="relative z-10 text-xl text-white max-w-3xl mx-auto mb-4 mt-2 text-center px-4">
-                {correctedTranslations.journeyText}
-              </p>
               <button
                 className="relative z-10 bg-white px-8 py-4 text-lg font-semibold hover:bg-gray-200 transition-colors text-black"
                 onClick={() => setTrialOpen(true)}
