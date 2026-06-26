@@ -155,7 +155,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
 
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={gradient ? { background: gradient, opacity: 0.3 } : { backgroundImage: `url('${bgImage}')`, opacity: 0.3 }}
+        style={gradient ? { background: gradient, opacity: 0.5 } : { backgroundImage: `url('${bgImage}')`, opacity: 0.5 }}
       />
 
 
