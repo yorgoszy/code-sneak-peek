@@ -94,13 +94,14 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
 
   return (
     <section id="results" className="pt-32 pb-28 bg-white relative z-10">
-      {/* Banner — styled like Blog section */}
-      <div className="relative w-full overflow-hidden flex items-center justify-center h-[18vw] min-h-[90px] md:h-[12vw] lg:h-[calc(10vw-1px)] bg-white">
+      {/* Banner — styled like ProgramsSection */}
+      <div className="relative w-full overflow-hidden flex items-center justify-center" style={{ height: 'calc(10vw - 1px)' }}>
         <div
           className="absolute inset-0 bg-cover pointer-events-none"
-          style={{ backgroundImage: `url(${newsBg.url})`, opacity: 0.5, backgroundPosition: 'center calc(50% + 50px)' }}
+          style={{ backgroundImage: `url(${newsBg.url})`, opacity: 0.6, backgroundPosition: 'center calc(50% + 50px)' }}
           aria-hidden="true"
         />
+        <div className="absolute inset-0 bg-black/30" />
         <button
           onClick={() => api?.scrollPrev()}
           aria-label="Previous slide"
