@@ -102,7 +102,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
 
               {/* Responsive Grid: stacked on mobile, 40/60 on desktop */}
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 md:pt-16 lg:pt-20 pb-10 md:pb-16 lg:pb-20">
-                <div className="w-full grid grid-cols-1 md:grid-cols-[40%_60%] md:h-[480px]">
+                <div className="w-full h-[420px] sm:h-[480px] md:h-[580px] lg:h-[620px] grid grid-cols-1 md:grid-cols-[40%_60%]">
                   {/* Left — photo + icon */}
                   <div
                     className="relative bg-white h-48 md:h-full"
@@ -122,7 +122,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
 
                   {/* Right — text over photo */}
                   <div
-                    className="relative flex flex-col justify-start px-5 py-8 sm:px-6 md:px-8 md:pt-10 md:pb-8 bg-black h-[440px] md:h-full"
+                    className="relative flex flex-col justify-start px-5 py-8 sm:px-6 md:px-8 md:pt-10 md:pb-8 bg-black"
                     style={{
                       backgroundImage: `url(${slide.rightPhoto})`,
                       backgroundSize: 'cover',
@@ -130,7 +130,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
                     }}
                   >
                     <div className="absolute inset-0 bg-black/70" />
-                    <div className="relative z-10 w-full h-full overflow-y-auto">
+                    <div className="relative z-10 w-full">
                       <h4
                         className="text-white mb-3 md:mb-4 text-xl md:text-2xl"
                         style={{
