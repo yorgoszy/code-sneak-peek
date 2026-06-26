@@ -97,8 +97,8 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
       {/* Banner — styled like Blog section */}
       <div className="relative w-full overflow-hidden flex items-center justify-center h-[18vw] min-h-[90px] md:h-[12vw] lg:h-[calc(10vw-1px)] bg-white">
         <div
-          className="absolute inset-0 bg-cover bg-center pointer-events-none"
-          style={{ backgroundImage: `url(${newsBg.url})`, opacity: 0.5 }}
+          className="absolute inset-0 bg-cover pointer-events-none"
+          style={{ backgroundImage: `url(${newsBg.url})`, opacity: 0.5, backgroundPosition: 'center calc(50% + 50px)' }}
           aria-hidden="true"
         />
         <button
