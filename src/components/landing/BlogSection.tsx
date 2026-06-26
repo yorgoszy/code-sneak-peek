@@ -73,8 +73,13 @@ const BlogSection: React.FC<BlogSectionProps> = ({ translations }) => {
         </button>
 
         <h3
-          className="relative z-10 text-white text-center px-4 text-[14vw] md:text-[14vw] lg:text-[15.6vw] leading-none drop-shadow-lg"
-          style={{ fontFamily: '"Roobert Pro", sans-serif', fontWeight: 500 }}
+          className="relative z-10 text-center px-4 text-[14vw] md:text-[14vw] lg:text-[15.6vw] leading-none drop-shadow-lg"
+          style={{
+            fontFamily: '"Roobert Pro", sans-serif',
+            fontWeight: 500,
+            WebkitTextFillColor: 'transparent',
+            WebkitTextStroke: '1px white',
+          }}
         >
           articles
         </h3>
