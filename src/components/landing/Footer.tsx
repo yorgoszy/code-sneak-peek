@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Mail, Phone, Instagram, Youtube, MapPin, Facebook } from 'lucide-react';
+import { Mail, Phone, Instagram, Youtube, MapPin } from 'lucide-react';
 import footerIcon from '@/assets/footer-icon.png';
 
 interface FooterProps {
