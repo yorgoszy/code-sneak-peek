@@ -142,7 +142,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   };
 
   return (
-    <section id="home" className="relative pt-16 min-h-screen flex items-center bg-[#aca097]">
+    <section id="home" className="relative pt-16 min-h-screen flex items-center bg-black">
       <style>{`
         .get-started-btn { background-color: #FFFFFF !important; color: black !important; }
         .get-started-btn:hover { background-color: #e5e5e5 !important; }
@@ -155,7 +155,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
 
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={gradient ? { background: gradient, opacity: 0.3 } : { backgroundImage: `url('${bgImage}')`, opacity: 0.3 }}
+        style={gradient ? { background: gradient, opacity: 0.5 } : { backgroundImage: `url('${bgImage}')`, opacity: 0.5 }}
       />
 
 
