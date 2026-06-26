@@ -225,13 +225,13 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
               const isClosed = isDateClosed(dateStr);
               
               return (
-                <div 
+                  <div 
                   key={dateStr} 
                   className={cn(
                     "text-center p-1 border rounded-none",
                     isClosed 
                       ? "bg-red-500/20 border-red-500/50"
-                      : "bg-white border-[#aca097]/30"
+                      : "bg-black/60 border-[#aca097]/30"
                   )}
                 >
                   {isClosed && (
