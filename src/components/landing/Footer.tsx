@@ -54,14 +54,6 @@ const Footer: React.FC<FooterProps> = ({ translations }) => {
             {/* Social Media Icons */}
             <div className="flex justify-center gap-6">
               <a
-                href="https://www.facebook.com/profile.php?id=61561366923734"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:opacity-80 transition-colors text-black"
-              >
-                <Facebook className="w-6 h-6" />
-              </a>
-              <a
                 href="https://www.instagram.com/hyperkids.gr/"
                 target="_blank"
                 rel="noopener noreferrer"
