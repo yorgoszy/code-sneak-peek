@@ -95,7 +95,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
 
   if (loading) {
     return (
-      <section id="results" className="py-8 bg-black">
+      <section id="results" className="py-8 bg-transparent relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div>
             <h2 className="text-4xl font-bold mb-4" style={{ fontFamily: 'Roobert Pro, sans-serif', color: '#aca097' }}>
@@ -109,7 +109,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
   }
 
   return (
-    <section id="results" className="py-8 bg-black">
+    <section id="results" className="py-8 bg-transparent relative z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-16">
           <h2 className="text-4xl font-bold mb-4 text-white" style={{ fontFamily: 'Roobert Pro, sans-serif' }}>
