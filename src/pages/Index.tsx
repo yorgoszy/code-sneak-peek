@@ -196,9 +196,9 @@ const Index = () => {
           </div>
 
           {/* CTA Section */}
-          <section id="cta" className="bg-white">
+          <section id="cta">
             {/* Banner */}
-            <div className="relative w-full overflow-hidden flex items-center justify-center" style={{ height: 'calc(10vw - 1px)' }}>
+            <div className="relative w-full overflow-hidden flex flex-col items-center justify-center" style={{ height: 'calc(20vw - 1px)' }}>
               <div
                 className="absolute inset-0 bg-cover pointer-events-none"
                 style={{ backgroundImage: `url(${newsBg.url})`, opacity: 0.6, backgroundPosition: 'center calc(50% + 200px)' }}
@@ -215,14 +215,12 @@ const Index = () => {
               >
                 {correctedTranslations.readyQuestion}
               </h2>
-            </div>
 
-            <div className="container mx-auto px-4 text-center py-16">
-              <p className="text-xl text-black max-w-3xl mx-auto mb-8">
+              <p className="relative z-10 text-xl text-white max-w-3xl mx-auto mb-4 mt-2 text-center px-4">
                 {correctedTranslations.journeyText}
               </p>
               <button
-                className="bg-black px-8 py-4 text-lg font-semibold hover:bg-gray-800 transition-colors text-white"
+                className="relative z-10 bg-white px-8 py-4 text-lg font-semibold hover:bg-gray-200 transition-colors text-black"
                 onClick={() => setTrialOpen(true)}
               >
                 {correctedTranslations.startNow}
