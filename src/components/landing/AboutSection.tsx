@@ -7,6 +7,7 @@ import coachGridBg from '@/assets/coa4.png.asset.json';
 import visionPhoto from '@/assets/vis3.png.asset.json';
 import visionGridBg from '@/assets/vis4.png.asset.json';
 import methodPhoto from '@/assets/meth3.png.asset.json';
+import methodGridBg from '@/assets/meth4.png.asset.json';
 import { iconBlack } from '@/assets/iconBlack';
 import {
   Carousel,
@@ -48,7 +49,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
       label: "the method",
       image: theMethodBg.url,
       leftPhoto: methodPhoto.url,
-      rightPhoto: theMethodBg.url,
+      rightPhoto: methodGridBg.url,
       tagline: "our method",
       title: "Η μεθοδολογία μας",
       body: "Η μεθοδολογία προπόνησής μας εστιάζει στην προοδευτική ανάπτυξη δεξιοτήτων και την ενίσχυση των σωστών κινητικών προτύπων προσαρμοσμένο στις ανάγκες και στόχους κάθε ατόμου. Μέσω ολοκληρωμένης αξιολόγησης, κατανοούμε τις τρέχουσες ικανότητες και αδυναμίες σας, καθορίζουμε σαφείς στόχους προπόνησης, δημιουργούμε ένα δομημένο χρονοδιάγραμμα για την επίτευξη και σχεδιάζουμε ένα αποκλειστικό πρόγραμμα προπόνησης ειδικά για εσάς.",
