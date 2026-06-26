@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import hypergymImage from '@/assets/hypergym-service.png';
+import splitBgAsset from '@/assets/split-bg.jpg.asset.json';
 import hyperkidsImage from '@/assets/hyperkids1.png.asset.json';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
