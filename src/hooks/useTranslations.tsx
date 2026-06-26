@@ -243,7 +243,7 @@ export const useTranslations = () => {
       buildingCharacterDesc: "We teach respect, discipline, perseverance and cooperation. Our goal is to create a school of life where children learn to stand upright physically, mentally and morally.",
       trustTheProcess: "Trust the Process",
       trustTheProcessDesc: "For us, tomorrow starts today. Step by step. With trust in the process. With the courage to go further. With the will to push the limits.",
-      trainingMethodologyDescription: "Our training methodology focuses on progressive skill development and reinforcement of proper movement patterns tailored to each individual's needs and goals. Through comprehensive assessment, we understand your current abilities and weaknesses, establish clear training objectives, create a structured timeline for achievement, and design an exclusive personalized training plan specifically for you.",
+      trainingMethodologyDescription: "Our training methodology focuses on progressive skill development and the reinforcement of proper movement patterns, adapted to the needs and goals of each individual. Through comprehensive assessment, we understand your current abilities and weaknesses, establish clear training objectives, create a structured timeline for achievement, and design an exclusive training program specifically for you.\n\nGuided strength training based on assessment data for focused results.",
       movementSkills: "Movement Skills",
       movementSkillsDesc: "Athletic Skills Development\n• Age Appropriate\n• Throwing & Catching, Climbing Skills, Jumping & Landing, Agility Running, Coordination",
       assessment: "Assessment",
