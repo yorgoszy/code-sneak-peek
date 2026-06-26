@@ -176,7 +176,7 @@ export const useTranslations = () => {
       programs: "Services",
       blog: "Blog",
       about: "About Us",
-      results: "Results",
+      results: "News",
       contact: "Contact",
       login: "Login",
       dashboard: "Dashboard",
