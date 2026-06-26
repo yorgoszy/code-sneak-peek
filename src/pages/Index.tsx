@@ -82,6 +82,7 @@ const Index = () => {
   // Override some translations with corrected capitalization
   const correctedTranslations = {
     ...translations,
+    readyQuestion: "Are you ready?",
     heroTitle: language === 'el' ? 'Το ταξίδι του πρωταθλητή' : 'The champion\'s journey',
     heroSubtitle: language === 'el' ? 'Ξεκινάει εδώ' : 'Starts here',
     explorePrograms: language === 'el' ? 'Εξερεύνηση όλων των προγραμμάτων' : 'Explore all programs',
@@ -205,14 +206,14 @@ const Index = () => {
               />
               <div className="absolute inset-0 bg-black/30" />
               <h2
-                className="relative z-10 text-center px-4 text-[5vw] sm:text-[6vw] md:text-[7vw] lg:text-[8vw] leading-none whitespace-nowrap"
+                className="relative z-10 text-center px-4 text-[14vw] md:text-[14vw] lg:text-[15.6vw] leading-none whitespace-nowrap"
                 style={{
                   fontFamily: '"Roobert Pro", sans-serif',
                   fontWeight: 500,
                   color: 'white',
                 }}
               >
-                {correctedTranslations.readyQuestion}
+                Are you ready?
               </h2>
             </div>
 
