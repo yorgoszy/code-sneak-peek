@@ -11,11 +11,11 @@ const Footer: React.FC<FooterProps> = ({ translations }) => {
   return (
     <footer id="footer" className="bg-white py-16 text-black">
       <style>{`
-        .footer-link {
+        .footer-link-text {
           position: relative;
-          transition: color 0.2s ease;
+          display: inline;
         }
-        .footer-link::after {
+        .footer-link-text::after {
           content: '';
           position: absolute;
           left: 0;
@@ -27,7 +27,7 @@ const Footer: React.FC<FooterProps> = ({ translations }) => {
           transform-origin: right;
           transition: transform 0.3s ease;
         }
-        .footer-link:hover::after {
+        .footer-link:hover .footer-link-text::after {
           transform: scaleX(1);
           transform-origin: left;
         }
@@ -67,21 +67,21 @@ const Footer: React.FC<FooterProps> = ({ translations }) => {
                 className="footer-link flex items-center gap-3 transition-colors"
               >
                 <MapPin className="w-5 h-5 text-black" />
-                <span>an.georgiou 46, thessaloniki 54627</span>
+                <span className="footer-link-text">an.georgiou 46, thessaloniki 54627</span>
               </a>
               <a
                 href="tel:+302310529104"
                 className="footer-link flex items-center gap-3 transition-colors"
               >
                 <Phone className="w-5 h-5 text-black" />
-                <span>+30 2310 529104</span>
+                <span className="footer-link-text">+30 2310 529104</span>
               </a>
               <a
                 href="mailto:info@hyperkids.gr"
                 className="footer-link flex items-center gap-3 transition-colors"
               >
                 <Mail className="w-5 h-5 text-black" />
-                <span>info@hyperkids.gr</span>
+                <span className="footer-link-text">info@hyperkids.gr</span>
               </a>
             </div>
           </div>
