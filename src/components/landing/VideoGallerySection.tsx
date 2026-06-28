@@ -187,7 +187,7 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
         <div className="text-center">
           <button
             onClick={() => navigate("/video-gallery")}
-            className="bg-black text-white px-8 py-4 text-lg font-semibold hover:bg-gray-800 transition-colors"
+            className="bg-white text-black border border-black px-8 py-4 text-lg font-semibold hover:bg-black hover:text-white transition-colors rounded-none"
           >
             {viewAll}
           </button>
