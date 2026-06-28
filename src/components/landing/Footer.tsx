@@ -67,21 +67,21 @@ const Footer: React.FC<FooterProps> = ({ translations }) => {
                 className="footer-link flex items-center gap-3 transition-colors"
               >
                 <MapPin className="w-5 h-5 text-black" />
-                <span>an.georgiou 46, thessaloniki 54627</span>
+                <span className="footer-link-text">an.georgiou 46, thessaloniki 54627</span>
               </a>
               <a
                 href="tel:+302310529104"
                 className="footer-link flex items-center gap-3 transition-colors"
               >
                 <Phone className="w-5 h-5 text-black" />
-                <span>+30 2310 529104</span>
+                <span className="footer-link-text">+30 2310 529104</span>
               </a>
               <a
                 href="mailto:info@hyperkids.gr"
                 className="footer-link flex items-center gap-3 transition-colors"
               >
                 <Mail className="w-5 h-5 text-black" />
-                <span>info@hyperkids.gr</span>
+                <span className="footer-link-text">info@hyperkids.gr</span>
               </a>
             </div>
           </div>
