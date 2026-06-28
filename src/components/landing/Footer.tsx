@@ -64,21 +64,21 @@ const Footer: React.FC<FooterProps> = ({ translations }) => {
                 href="https://maps.app.goo.gl/itvAmRgdT8qAG2ZL9"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 hover:opacity-80 transition-colors"
+                className="footer-link flex items-center gap-3 transition-colors"
               >
                 <MapPin className="w-5 h-5 text-black" />
                 <span>an.georgiou 46, thessaloniki 54627</span>
               </a>
               <a
                 href="tel:+302310529104"
-                className="flex items-center gap-3 hover:opacity-80 transition-colors"
+                className="footer-link flex items-center gap-3 transition-colors"
               >
                 <Phone className="w-5 h-5 text-black" />
                 <span>+30 2310 529104</span>
               </a>
               <a
                 href="mailto:info@hyperkids.gr"
-                className="flex items-center gap-3 hover:opacity-80 transition-colors"
+                className="footer-link flex items-center gap-3 transition-colors"
               >
                 <Mail className="w-5 h-5 text-black" />
                 <span>info@hyperkids.gr</span>
