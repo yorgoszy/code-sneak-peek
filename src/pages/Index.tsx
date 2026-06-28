@@ -218,7 +218,7 @@ const Index = () => {
               </h2>
 
               <button
-                className="relative z-10 bg-white px-4 py-2 text-sm font-semibold hover:bg-gray-200 transition-colors text-black sm:px-6 sm:py-3 sm:text-base md:px-8 md:py-4 md:text-lg"
+                className="relative z-10 bg-white px-4 py-2 text-sm font-semibold transition-colors text-black sm:px-6 sm:py-3 sm:text-base md:px-8 md:py-4 md:text-lg hover:bg-black hover:text-white"
                 onClick={() => setTrialOpen(true)}
               >
                 {correctedTranslations.startNow}
