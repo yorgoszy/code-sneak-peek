@@ -10,6 +10,48 @@ interface FooterProps {
 const Footer: React.FC<FooterProps> = ({ translations }) => {
   return (
     <footer id="footer" className="bg-white py-16 text-black">
+      <style>{`
+        .footer-link {
+          position: relative;
+          transition: color 0.2s ease;
+        }
+        .footer-link::after {
+          content: '';
+          position: absolute;
+          left: 0;
+          bottom: -2px;
+          height: 2px;
+          width: 100%;
+          background-color: currentColor;
+          transform: scaleX(0);
+          transform-origin: right;
+          transition: transform 0.3s ease;
+        }
+        .footer-link:hover::after {
+          transform: scaleX(1);
+          transform-origin: left;
+        }
+        .footer-icon-link {
+          position: relative;
+          display: inline-flex;
+        }
+        .footer-icon-link::after {
+          content: '';
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: -4px;
+          height: 2px;
+          background-color: currentColor;
+          transform: scaleX(0);
+          transform-origin: right;
+          transition: transform 0.3s ease;
+        }
+        .footer-icon-link:hover::after {
+          transform: scaleX(1);
+          transform-origin: left;
+        }
+      `}</style>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Επικοινωνία */}
