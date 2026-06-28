@@ -544,7 +544,9 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                 const thumb = hasVideo ? getVideoThumbnail(row.videoUrl!) : null;
                 const usedEntry = row.exerciseId ? (usedByExerciseKg[row.exerciseId] || { byKg: {}, byPct: {} }) : { byKg: {} as Record<number, number>, byPct: {} as Record<number, number> };
                 const totalUsed = Object.values(usedEntry.byPct).reduce((a: number, b: number) => a + b, 0) || Object.values(usedEntry.byKg).reduce((a: number, b: number) => a + b, 0);
-                const totalReq = row.nlPerWeek[weekInMonth] ?? 0;
+                // Total required = άθροισμα των zone NL που εμφανίζονται (συνεπές με τα chips),
+                // αντί για το mainNlPerWeek που μπορεί να διαφέρει αν MAIN % ≠ Σ(zone% × variant%).
+                const totalReq = sets.reduce((a, p) => a + p.nl, 0);
                 const totalRemain = Math.max(0, totalReq - totalUsed);
                 return (
                   <div
