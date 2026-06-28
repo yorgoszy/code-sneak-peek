@@ -107,7 +107,7 @@ const VideoGallery: React.FC = () => {
           <div className="mb-8 flex flex-wrap gap-2">
             <Button
               variant={selectedAthleteId === "all" ? "default" : "outline"}
-              className="rounded-none bg-blue-900 hover:bg-blue-800 text-white border-blue-900"
+              className="rounded-none bg-white hover:bg-black text-black hover:text-white border-black"
               onClick={() => setSelectedAthleteId("all")}
             >
               Όλοι ({athleteList.length})
@@ -116,7 +116,7 @@ const VideoGallery: React.FC = () => {
               <Button
                 key={a.id}
                 variant={selectedAthleteId === a.id ? "default" : "outline"}
-                className="rounded-none flex items-center gap-2 bg-blue-900 hover:bg-blue-800 text-white border-blue-900"
+                className="rounded-none flex items-center gap-2 bg-white hover:bg-black text-black hover:text-white border-black"
                 onClick={() => setSelectedAthleteId(a.id)}
               >
                 <img
