@@ -106,11 +106,9 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
               onDragStart={(e) => {
                 e.stopPropagation();
                 e.dataTransfer.effectAllowed = 'move';
-                e.dataTransfer.setData(
-                  'application/x-bubble',
-                  JSON.stringify({ assignmentId: program.assignmentId, date: program.date, userName: program.userName })
-                );
-                window.dispatchEvent(new CustomEvent('bubble-drag-start'));
+                const payload = { assignmentId: program.assignmentId, date: program.date, userName: program.userName };
+                e.dataTransfer.setData('application/x-bubble', JSON.stringify(payload));
+                window.dispatchEvent(new CustomEvent('bubble-drag-start', { detail: payload }));
               }}
               onDragEnd={() => {
                 window.dispatchEvent(new CustomEvent('bubble-drag-end'));
