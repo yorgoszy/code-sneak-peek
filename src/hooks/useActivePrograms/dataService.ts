@@ -1,6 +1,8 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import type { EnrichedAssignment } from "./types";
+import { recalculateWeeksForUser } from "@/components/programs/builder/services/perUserRecalculation";
+
 
 export const testSupabaseConnection = async (): Promise<boolean> => {
   try {
