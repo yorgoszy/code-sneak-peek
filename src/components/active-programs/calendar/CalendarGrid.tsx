@@ -42,6 +42,9 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   const [selectedDialogDate, setSelectedDialogDate] = useState<Date | null>(null);
   const [calendarView, setCalendarView] = useState<'monthly' | 'weekly' | 'daily'>('monthly');
   const [internalRealtimeKey, setInternalRealtimeKey] = useState(0);
+  const [hiddenBubbles, setHiddenBubbles] = useState<Set<string>>(new Set());
+
+  const bubbleKey = (assignmentId: string, date: string) => `${assignmentId}|${date}`;
 
   // Enhanced real-time subscription με άμεση ανανέωση
   useEffect(() => {
