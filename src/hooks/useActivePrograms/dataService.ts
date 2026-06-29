@@ -1,6 +1,8 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import type { EnrichedAssignment } from "./types";
+import { recalculateWeeksForUser } from "@/components/programs/builder/services/perUserRecalculation";
+
 
 export const testSupabaseConnection = async (): Promise<boolean> => {
   try {
@@ -96,11 +98,26 @@ export const enrichAssignmentWithProgramData = async (assignment: any): Promise<
       console.error('❌ Error fetching user data for assignment:', userError);
     }
 
+    // Refresh kg/velocity from the user's latest 1RM + velocity tests
+    let refreshedProgram = programData as any;
+    try {
+      if (programData && assignment.user_id) {
+        const refreshedWeeks = await recalculateWeeksForUser(
+          (programData as any).program_weeks || [],
+          assignment.user_id
+        );
+        refreshedProgram = { ...(programData as any), program_weeks: refreshedWeeks };
+      }
+    } catch (e) {
+      console.warn('⚠️ Could not refresh kg from latest tests:', e);
+    }
+
     return {
       ...assignment,
-      programs: programData,
+      programs: refreshedProgram,
       app_users: userData || null
     };
+
   } catch (error) {
     console.error('❌ Unexpected error enriching assignment:', error);
     return assignment;
@@ -299,8 +316,25 @@ export const fetchActivePrograms = async (): Promise<EnrichedAssignment[]> => {
       };
     });
 
+    // Refresh kg/velocity per assignment from each user's latest 1RM + velocity tests
+    await Promise.all(
+      enrichedAssignments.map(async (ea) => {
+        if (!ea.programs || !ea.user_id) return;
+        try {
+          const refreshedWeeks = await recalculateWeeksForUser(
+            (ea.programs as any).program_weeks || [],
+            ea.user_id
+          );
+          (ea.programs as any).program_weeks = refreshedWeeks;
+        } catch (e) {
+          console.warn('⚠️ Could not refresh kg for assignment', ea.id, e);
+        }
+      })
+    );
+
     console.log('✅ Final enriched assignments:', enrichedAssignments);
     return enrichedAssignments;
+
   } catch (error) {
     console.error('❌ Unexpected error fetching active programs:', error);
     throw error;
