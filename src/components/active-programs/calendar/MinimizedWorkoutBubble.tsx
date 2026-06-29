@@ -14,6 +14,12 @@ interface MinimizedWorkoutBubbleProps {
   size?: 'sm' | 'lg';
   /** Whether the workout is completed */
   isCompleted?: boolean;
+  /** When provided, the bubble can be dragged to the global drop zone */
+  dragPayload?: {
+    assignmentId: string;
+    date: string;
+    userName: string;
+  };
 }
 
 export const MinimizedWorkoutBubble: React.FC<MinimizedWorkoutBubbleProps> = ({
@@ -25,11 +31,14 @@ export const MinimizedWorkoutBubble: React.FC<MinimizedWorkoutBubbleProps> = ({
   standalone = false,
   size = 'sm',
   isCompleted = false,
+  dragPayload,
 }) => {
   const [position, setPosition] = useState({ x: 16, y: typeof window !== 'undefined' ? window.innerHeight - 80 : 600 });
   const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const dragRef = useRef<{ startX: number; startY: number; startPosX: number; startPosY: number } | null>(null);
   const hasMoved = useRef(false);
+  const suppressClickRef = useRef(false);
 
   const initials = athleteName
     .split(' ')
@@ -45,9 +54,12 @@ export const MinimizedWorkoutBubble: React.FC<MinimizedWorkoutBubbleProps> = ({
   };
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    if (!standalone) return;
+    if (!standalone && !dragPayload) return;
+    e.preventDefault();
+    e.stopPropagation();
     setIsDragging(true);
     hasMoved.current = false;
+    suppressClickRef.current = false;
     dragRef.current = {
       startX: e.clientX,
       startY: e.clientY,
@@ -55,27 +67,67 @@ export const MinimizedWorkoutBubble: React.FC<MinimizedWorkoutBubbleProps> = ({
       startPosY: position.y,
     };
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-  }, [position, standalone]);
+
+    if (dragPayload) {
+      window.dispatchEvent(new CustomEvent('bubble-drag-start', { detail: dragPayload }));
+    }
+  }, [dragPayload, position, standalone]);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (!isDragging || !dragRef.current) return;
+    e.preventDefault();
+    e.stopPropagation();
     const dx = e.clientX - dragRef.current.startX;
     const dy = e.clientY - dragRef.current.startY;
     if (Math.abs(dx) > 5 || Math.abs(dy) > 5) hasMoved.current = true;
-    setPosition({
-      x: Math.max(0, Math.min(window.innerWidth - 60, dragRef.current.startPosX + dx)),
-      y: Math.max(0, Math.min(window.innerHeight - 60, dragRef.current.startPosY + dy)),
-    });
-  }, [isDragging]);
+    if (standalone) {
+      setPosition({
+        x: Math.max(0, Math.min(window.innerWidth - 60, dragRef.current.startPosX + dx)),
+        y: Math.max(0, Math.min(window.innerHeight - 60, dragRef.current.startPosY + dy)),
+      });
+    } else {
+      setDragOffset({ x: dx, y: dy });
+    }
 
-  const handlePointerUp = useCallback(() => {
-    if (!standalone) return;
+    if (dragPayload) {
+      window.dispatchEvent(new CustomEvent('bubble-drag-move', {
+        detail: { ...dragPayload, clientX: e.clientX, clientY: e.clientY }
+      }));
+    }
+  }, [dragPayload, isDragging, standalone]);
+
+  const handlePointerUp = useCallback((e: React.PointerEvent) => {
+    if (!standalone && !dragPayload) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const wasMoved = hasMoved.current;
     setIsDragging(false);
-    if (!hasMoved.current) onRestore();
-    dragRef.current = null;
-  }, [onRestore, standalone]);
+    setDragOffset({ x: 0, y: 0 });
 
-  const handleClick = () => {
+    if (dragPayload) {
+      window.dispatchEvent(new CustomEvent('bubble-drag-end', {
+        detail: { ...dragPayload, clientX: e.clientX, clientY: e.clientY }
+      }));
+    }
+
+    if (wasMoved) {
+      suppressClickRef.current = true;
+      window.setTimeout(() => {
+        suppressClickRef.current = false;
+      }, 0);
+    } else {
+      onRestore();
+    }
+    dragRef.current = null;
+  }, [dragPayload, onRestore, standalone]);
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (suppressClickRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      suppressClickRef.current = false;
+      return;
+    }
     if (!standalone) onRestore();
   };
 
@@ -83,7 +135,12 @@ export const MinimizedWorkoutBubble: React.FC<MinimizedWorkoutBubbleProps> = ({
 
   const bubble = (
     <div
-      className="relative cursor-pointer group"
+      className={`relative cursor-pointer group select-none touch-none ${dragPayload ? 'cursor-grab active:cursor-grabbing' : ''}`}
+      style={!standalone && isDragging ? { transform: `translate(${dragOffset.x}px, ${dragOffset.y}px)`, zIndex: 10000 } : undefined}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
       onClick={handleClick}
       title={athleteName}
     >
@@ -121,9 +178,6 @@ export const MinimizedWorkoutBubble: React.FC<MinimizedWorkoutBubbleProps> = ({
       <div
         className="fixed z-[9999] select-none touch-none"
         style={{ left: position.x, top: position.y }}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
       >
         {bubble}
       </div>
