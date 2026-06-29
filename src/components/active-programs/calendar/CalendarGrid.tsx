@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 import { MonthlyView } from './MonthlyView';
 import { MobileMonthlyView } from './MobileMonthlyView';
+import { BubbleTrashDropZone } from './BubbleTrashDropZone';
 
 interface CalendarGridProps {
   currentMonth: Date;
