@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDateToLocalString } from '@/utils/dateUtils';
 import type { EnrichedAssignment } from './useActivePrograms/types';
+import { recalculateWeeksForUser } from '@/components/programs/builder/services/perUserRecalculation';
 
 /**
  * Hook για fetch ενεργών προγραμμάτων
