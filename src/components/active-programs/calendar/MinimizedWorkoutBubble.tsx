@@ -115,7 +115,7 @@ export const MinimizedWorkoutBubble: React.FC<MinimizedWorkoutBubbleProps> = ({
       window.setTimeout(() => {
         suppressClickRef.current = false;
       }, 0);
-    } else {
+    } else if (standalone) {
       onRestore();
     }
     dragRef.current = null;
