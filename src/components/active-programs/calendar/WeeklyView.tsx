@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { el } from "date-fns/locale";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ProgramBubbleItem } from './ProgramBubbleItem';
 
 interface ProgramData {
   date: string;
@@ -126,15 +125,19 @@ export const WeeklyView: React.FC<WeeklyViewProps> = ({
               {/* User Names - Much smaller on mobile */}
               <div className="space-y-0.5 md:space-y-1">
                 {dateProgramsWithStatus.slice(0, 6).map((program, i) => (
-                  <ProgramBubbleItem
+                  <div 
                     key={`${program.assignmentId}-${i}-${realtimeKey}`}
-                    program={program}
-                    label={program.userName.split(' ')[0]}
-                    containerClassName="text-xs"
-                    nameClassName={getNameColor(program.status, program.date)}
-                    rpeClassName={`text-[8px] text-white px-0.5 rounded-none font-bold ${getRpeColor(program.rpeScore || 0)} flex-shrink-0`}
-                    onNameClick={(e) => onUserNameClick(program, e)}
-                  />
+                    className={`text-xs cursor-pointer hover:underline flex items-center gap-0.5 ${getNameColor(program.status, program.date)}`}
+                    onClick={(e) => onUserNameClick(program, e)}
+                    style={{ fontSize: '10px', lineHeight: '12px' }}
+                  >
+                    <span className="truncate">{program.userName.split(' ')[0]}</span>
+                    {program.status === 'completed' && program.rpeScore && (
+                      <span className={`text-[8px] text-white px-0.5 rounded-none font-bold ${getRpeColor(program.rpeScore)} flex-shrink-0`}>
+                        {program.rpeScore}
+                      </span>
+                    )}
+                  </div>
                 ))}
                 {dateProgramsWithStatus.length > 6 && (
                   <Popover>

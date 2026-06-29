@@ -62,6 +62,7 @@ export const BubbleTrashDropZone: React.FC<Props> = ({ onHide }) => {
           : false;
 
       if (drop && (overRef.current || insideByPoint)) {
+        window.dispatchEvent(new CustomEvent('bubble-drop-zone-hide', { detail: drop }));
         onHide?.(drop);
       }
       setActive(false);
