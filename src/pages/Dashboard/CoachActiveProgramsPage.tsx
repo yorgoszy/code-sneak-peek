@@ -147,15 +147,31 @@ const CoachActiveProgramsContent = () => {
   const dayToShowStr = format(dayToShow, 'yyyy-MM-dd');
   const todayStr = format(new Date(), 'yyyy-MM-dd');
 
-  const programsForSelectedDate = activePrograms.filter(assignment => {
+  // Για completed assignments, κρατάμε μόνο τις ημέρες που έχουν πραγματικά ολοκληρωθεί
+  // (workoutCompletion με status='completed'). Έτσι μετά το "Force Complete",
+  // οι μη-πραγματοποιημένες ημέρες (παρελθόν ή μέλλον) εξαφανίζονται από το calendar.
+  const visiblePrograms = React.useMemo(() => {
+    return activePrograms.map(assignment => {
+      if (assignment.status !== 'completed') return assignment;
+      const completedDates = new Set(
+        workoutCompletions
+          .filter(c => c.assignment_id === assignment.id && c.status === 'completed')
+          .map(c => c.scheduled_date)
+      );
+      return {
+        ...assignment,
+        training_dates: (assignment.training_dates || []).filter(d => completedDates.has(d)),
+      };
+    }).filter(a => (a.training_dates || []).length > 0);
+  }, [activePrograms, workoutCompletions]);
+
+  const programsForSelectedDate = visiblePrograms.filter(assignment => {
     if (!assignment.training_dates) return false;
-    const hasDateScheduled = assignment.training_dates.includes(dayToShowStr);
-    if (assignment.status === 'completed' && dayToShowStr > todayStr) return false;
-    return hasDateScheduled;
+    return assignment.training_dates.includes(dayToShowStr);
   });
 
   // Σημερινά προγράμματα - πάντα βάσει σημερινής ημερομηνίας για τα bubbles
-  const programsForToday = activePrograms.filter(assignment => {
+  const programsForToday = visiblePrograms.filter(assignment => {
     if (!assignment.training_dates) return false;
     return assignment.training_dates.includes(todayStr);
   });
@@ -211,7 +227,7 @@ const CoachActiveProgramsContent = () => {
         setCurrentMonth={setCurrentMonth}
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
-        activePrograms={activePrograms}
+        activePrograms={visiblePrograms}
         workoutCompletions={workoutCompletions}
         realtimeKey={realtimeKey}
         onNameClick={handleProgramClick}
