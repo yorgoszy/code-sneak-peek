@@ -237,6 +237,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         </CardContent>
       </Card>
 
+      <BubbleTrashDropZone onDeleted={() => { setInternalRealtimeKey(Date.now()); onRefresh?.(); }} />
     </>
   );
 };
