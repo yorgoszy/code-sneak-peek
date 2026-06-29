@@ -8,7 +8,7 @@ import { usePrograms } from "@/hooks/usePrograms";
 import { useProgramsData } from "@/hooks/useProgramsData";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
-import { Menu, LogOut, Trash2, Pencil } from "lucide-react";
+import { Menu, LogOut, Trash2, Pencil, Copy } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
@@ -384,6 +384,23 @@ const Programs = () => {
                             <Button size="sm" variant="outline" className="rounded-none h-7 w-7 p-0"
                               onClick={() => navigate(`/plan-strong?id=${first.id}`)}>
                               <Pencil className="h-3 w-3" />
+                            </Button>
+                            <Button size="sm" variant="outline" className="rounded-none h-7 w-7 p-0"
+                              title="Δημιουργία αντιγράφου"
+                              onClick={async () => {
+                                const newName = `${name} (αντίγραφο)`;
+                                const { data: full, error: fetchErr } = await supabase
+                                  .from('plan_strong_drafts')
+                                  .select('user_id, coach_id, created_by, status, data')
+                                  .in('id', items.map(i => i.id));
+                                if (fetchErr || !full) { toast.error(fetchErr?.message || 'Σφάλμα'); return; }
+                                const rows = full.map(r => ({ ...r, name: newName }));
+                                const { error } = await supabase.from('plan_strong_drafts').insert(rows);
+                                if (error) { toast.error(error.message); return; }
+                                toast.success('Δημιουργήθηκε αντίγραφο');
+                                loadPlanStrongDrafts();
+                              }}>
+                              <Copy className="h-3 w-3" />
                             </Button>
                             <Button size="sm" variant="outline" className="rounded-none h-7 w-7 p-0 text-destructive"
                               onClick={async () => {
