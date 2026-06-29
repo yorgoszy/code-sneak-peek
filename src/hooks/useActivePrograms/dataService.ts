@@ -98,11 +98,26 @@ export const enrichAssignmentWithProgramData = async (assignment: any): Promise<
       console.error('❌ Error fetching user data for assignment:', userError);
     }
 
+    // Refresh kg/velocity from the user's latest 1RM + velocity tests
+    let refreshedProgram = programData as any;
+    try {
+      if (programData && assignment.user_id) {
+        const refreshedWeeks = await recalculateWeeksForUser(
+          (programData as any).program_weeks || [],
+          assignment.user_id
+        );
+        refreshedProgram = { ...(programData as any), program_weeks: refreshedWeeks };
+      }
+    } catch (e) {
+      console.warn('⚠️ Could not refresh kg from latest tests:', e);
+    }
+
     return {
       ...assignment,
-      programs: programData,
+      programs: refreshedProgram,
       app_users: userData || null
     };
+
   } catch (error) {
     console.error('❌ Unexpected error enriching assignment:', error);
     return assignment;
