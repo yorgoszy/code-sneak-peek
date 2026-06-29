@@ -42,10 +42,12 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
     startY: number;
     moved: boolean;
   } | null>(null);
+  const suppressNextClickRef = React.useRef(false);
 
   const emitBubbleDragEnd = React.useCallback(() => {
     const state = dragStateRef.current;
     if (!state) return;
+    suppressNextClickRef.current = state.moved;
     window.dispatchEvent(new CustomEvent('bubble-drag-end', {
       detail: {
         ...state.payload,
@@ -54,6 +56,11 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
       }
     }));
     dragStateRef.current = null;
+    if (state.moved) {
+      window.setTimeout(() => {
+        suppressNextClickRef.current = false;
+      }, 0);
+    }
   }, []);
 
   const startBubbleDrag = React.useCallback((
@@ -162,8 +169,9 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
               className={`text-[10px] leading-tight cursor-grab active:cursor-grabbing hover:underline truncate w-full text-left flex items-center gap-0.5 select-none touch-none ${colorClass}`}
               onClick={(e) => {
                 e.stopPropagation();
-                if (dragStateRef.current?.moved) {
+                if (suppressNextClickRef.current) {
                   e.preventDefault();
+                  suppressNextClickRef.current = false;
                   return;
                 }
                 onUserNameClick(program, e);
