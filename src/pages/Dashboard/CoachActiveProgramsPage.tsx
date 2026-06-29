@@ -227,7 +227,7 @@ const CoachActiveProgramsContent = () => {
         setCurrentMonth={setCurrentMonth}
         selectedDate={selectedDate}
         setSelectedDate={setSelectedDate}
-        activePrograms={activePrograms}
+        activePrograms={visiblePrograms}
         workoutCompletions={workoutCompletions}
         realtimeKey={realtimeKey}
         onNameClick={handleProgramClick}
