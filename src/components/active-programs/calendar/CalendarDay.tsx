@@ -1,6 +1,7 @@
 import React from 'react';
 import { format, isSameMonth, isToday } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ProgramBubbleItem } from './ProgramBubbleItem';
 
 interface ProgramData {
   date: string;
@@ -36,65 +37,6 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   const isCurrentMonth = isSameMonth(date, currentMonth);
   const isSelected = selectedDate && format(selectedDate, 'yyyy-MM-dd') === dateStr;
   const isTodayDate = isToday(date);
-  const dragStateRef = React.useRef<{
-    payload: { assignmentId: string; date: string; userName: string };
-    startX: number;
-    startY: number;
-    moved: boolean;
-  } | null>(null);
-  const suppressNextClickRef = React.useRef(false);
-
-  const emitBubbleDragEnd = React.useCallback(() => {
-    const state = dragStateRef.current;
-    if (!state) return;
-    suppressNextClickRef.current = state.moved;
-    window.dispatchEvent(new CustomEvent('bubble-drag-end', {
-      detail: {
-        ...state.payload,
-        clientX: state.startX,
-        clientY: state.startY,
-      }
-    }));
-    dragStateRef.current = null;
-    if (state.moved) {
-      window.setTimeout(() => {
-        suppressNextClickRef.current = false;
-      }, 0);
-    }
-  }, []);
-
-  const startBubbleDrag = React.useCallback((
-    payload: { assignmentId: string; date: string; userName: string },
-    clientX: number,
-    clientY: number
-  ) => {
-    dragStateRef.current = { payload, startX: clientX, startY: clientY, moved: false };
-    window.dispatchEvent(new CustomEvent('bubble-drag-start', { detail: payload }));
-  }, []);
-
-  const moveBubbleDrag = React.useCallback((clientX: number, clientY: number) => {
-    const state = dragStateRef.current;
-    if (!state) return;
-    state.startX = clientX;
-    state.startY = clientY;
-    state.moved = true;
-    window.dispatchEvent(new CustomEvent('bubble-drag-move', {
-      detail: { ...state.payload, clientX, clientY }
-    }));
-  }, []);
-
-  React.useEffect(() => {
-    const handlePointerMove = (e: PointerEvent) => moveBubbleDrag(e.clientX, e.clientY);
-    const handlePointerUp = () => emitBubbleDragEnd();
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
-    window.addEventListener('pointercancel', handlePointerUp);
-    return () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
-      window.removeEventListener('pointercancel', handlePointerUp);
-    };
-  }, [emitBubbleDragEnd, moveBubbleDrag]);
 
   const getNameColor = (status: string, workoutDate: string) => {
     const today = new Date();
@@ -159,31 +101,17 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
           const userKey = `${program.assignmentId}-${i}-${realtimeKey}-${program.status}-${Date.now()}`;
           const colorClass = getNameColor(program.status, program.date);
           return (
-            <div 
+            <ProgramBubbleItem
               key={userKey}
-              onPointerDown={(e) => {
-                e.stopPropagation();
-                const payload = { assignmentId: program.assignmentId, date: program.date, userName: program.userName };
-                startBubbleDrag(payload, e.clientX, e.clientY);
-              }}
-              className={`text-[10px] leading-tight cursor-grab active:cursor-grabbing hover:underline truncate w-full text-left flex items-center gap-0.5 select-none touch-none ${colorClass}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (suppressNextClickRef.current) {
-                  e.preventDefault();
-                  suppressNextClickRef.current = false;
-                  return;
-                }
+              program={program}
+              label={program.userName.split(' ')[0]}
+              containerClassName="w-full text-[10px] leading-tight"
+              nameClassName={`${colorClass}`}
+              rpeClassName={`text-[10px] text-white px-1 rounded-none ${getRpeColor(program.rpeScore || 0)}`}
+              onNameClick={(e) => {
                 onUserNameClick(program, e);
               }}
-            >
-              <span className="truncate">{program.userName.split(' ')[0]}</span>
-              {program.status === 'completed' && program.rpeScore && (
-                <span className={`text-[10px] text-white px-1 rounded-none ${getRpeColor(program.rpeScore)}`}>
-                  {program.rpeScore}
-                </span>
-              )}
-            </div>
+            />
           );
         })}
         {programsForDate.length > 3 && (
