@@ -159,6 +159,19 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 
   const handleDateClick = (date: Date) => {
     setSelectedDate(date);
+    // Επαναφορά τυχόν κρυμμένων bubbles για την ημέρα που πάτησε ο χρήστης
+    const dateStr = format(date, 'yyyy-MM-dd');
+    setHiddenBubbles(prev => {
+      let changed = false;
+      const next = new Set(prev);
+      for (const k of prev) {
+        if (k.endsWith(`|${dateStr}`)) {
+          next.delete(k);
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
   };
 
   const handleUserNameClick = (programData: any, event: React.MouseEvent) => {
