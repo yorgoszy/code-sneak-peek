@@ -36,6 +36,58 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
   const isCurrentMonth = isSameMonth(date, currentMonth);
   const isSelected = selectedDate && format(selectedDate, 'yyyy-MM-dd') === dateStr;
   const isTodayDate = isToday(date);
+  const dragStateRef = React.useRef<{
+    payload: { assignmentId: string; date: string; userName: string };
+    startX: number;
+    startY: number;
+    moved: boolean;
+  } | null>(null);
+
+  const emitBubbleDragEnd = React.useCallback(() => {
+    const state = dragStateRef.current;
+    if (!state) return;
+    window.dispatchEvent(new CustomEvent('bubble-drag-end', {
+      detail: {
+        ...state.payload,
+        clientX: state.startX,
+        clientY: state.startY,
+      }
+    }));
+    dragStateRef.current = null;
+  }, []);
+
+  const startBubbleDrag = React.useCallback((
+    payload: { assignmentId: string; date: string; userName: string },
+    clientX: number,
+    clientY: number
+  ) => {
+    dragStateRef.current = { payload, startX: clientX, startY: clientY, moved: false };
+    window.dispatchEvent(new CustomEvent('bubble-drag-start', { detail: payload }));
+  }, []);
+
+  const moveBubbleDrag = React.useCallback((clientX: number, clientY: number) => {
+    const state = dragStateRef.current;
+    if (!state) return;
+    state.startX = clientX;
+    state.startY = clientY;
+    state.moved = true;
+    window.dispatchEvent(new CustomEvent('bubble-drag-move', {
+      detail: { ...state.payload, clientX, clientY }
+    }));
+  }, []);
+
+  React.useEffect(() => {
+    const handlePointerMove = (e: PointerEvent) => moveBubbleDrag(e.clientX, e.clientY);
+    const handlePointerUp = () => emitBubbleDragEnd();
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointercancel', handlePointerUp);
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerUp);
+    };
+  }, [emitBubbleDragEnd, moveBubbleDrag]);
 
   const getNameColor = (status: string, workoutDate: string) => {
     const today = new Date();
@@ -102,20 +154,18 @@ export const CalendarDay: React.FC<CalendarDayProps> = ({
           return (
             <div 
               key={userKey}
-              draggable
-              onDragStart={(e) => {
+              onPointerDown={(e) => {
                 e.stopPropagation();
-                e.dataTransfer.effectAllowed = 'move';
                 const payload = { assignmentId: program.assignmentId, date: program.date, userName: program.userName };
-                e.dataTransfer.setData('application/x-bubble', JSON.stringify(payload));
-                window.dispatchEvent(new CustomEvent('bubble-drag-start', { detail: payload }));
+                startBubbleDrag(payload, e.clientX, e.clientY);
               }}
-              onDragEnd={() => {
-                window.dispatchEvent(new CustomEvent('bubble-drag-end'));
-              }}
-              className={`text-[10px] leading-tight cursor-pointer hover:underline truncate w-full text-left flex items-center gap-0.5 ${colorClass}`}
+              className={`text-[10px] leading-tight cursor-grab active:cursor-grabbing hover:underline truncate w-full text-left flex items-center gap-0.5 select-none touch-none ${colorClass}`}
               onClick={(e) => {
                 e.stopPropagation();
+                if (dragStateRef.current?.moved) {
+                  e.preventDefault();
+                  return;
+                }
                 onUserNameClick(program, e);
               }}
             >
