@@ -3,7 +3,6 @@ import { format, addDays, subDays, isToday } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { el } from "date-fns/locale";
-import { ProgramBubbleItem } from './ProgramBubbleItem';
 
 interface ProgramData {
   date: string;
@@ -111,21 +110,24 @@ export const DailyView: React.FC<DailyViewProps> = ({
         ) : (
           <div className="space-y-1">
             {dateProgramsWithStatus.map((program, i) => (
-              <ProgramBubbleItem
+              <div
                 key={`daily-${program.assignmentId}-${i}-${realtimeKey}`}
-                program={program}
-                label={program.userName}
-                containerClassName={`
-                  text-sm p-2 rounded-none border-l-4
+                className={`
+                  text-sm cursor-pointer hover:underline p-2 rounded-none border-l-4 flex items-center gap-2
                   ${program.status === 'completed' ? 'border-[#00ffba] bg-[#00ffba]/5' : 
                     program.status === 'missed' ? 'border-red-500 bg-red-50' : 
                     'border-blue-500 bg-blue-50'}
+                  ${getNameColor(program.status, program.date)}
                 `}
-                nameClassName={getNameColor(program.status, program.date)}
-                rpeClassName={`text-[10px] text-white px-1.5 py-0.5 rounded-none font-bold ${getRpeColor(program.rpeScore || 0)}`}
-                rpePrefix="RPE "
-                onNameClick={(e) => onUserNameClick(program, e)}
-              />
+                onClick={(e) => onUserNameClick(program, e)}
+              >
+                <span>{program.userName}</span>
+                {program.status === 'completed' && program.rpeScore && (
+                  <span className={`text-[10px] text-white px-1.5 py-0.5 rounded-none font-bold ${getRpeColor(program.rpeScore)}`}>
+                    RPE {program.rpeScore}
+                  </span>
+                )}
+              </div>
             ))}
           </div>
         )}
