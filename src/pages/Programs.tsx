@@ -47,6 +47,10 @@ const Programs = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewProgram, setPreviewProgram] = useState<Program | null>(null);
 
+  // Plan Strong delete confirmation dialog
+  const [psDeleteTarget, setPsDeleteTarget] = useState<{ name: string; ids: string[] } | null>(null);
+
+
   const { users, exercises } = useProgramsData();
   const { loading, fetchProgramsWithAssignments, saveProgram, deleteProgram, duplicateProgram } = usePrograms();
   
