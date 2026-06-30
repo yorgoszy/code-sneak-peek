@@ -402,7 +402,9 @@ const Programs = () => {
                             <Button size="sm" variant="outline" className="rounded-none h-7 w-7 p-0"
                               title="Δημιουργία αντιγράφου"
                               onClick={async () => {
-                                const newName = `${name} (αντίγραφο)`;
+                                // Strip any trailing " (αντίγραφο)" so we don't double the name on repeated clones
+                                const baseName = name.replace(/(\s*\(αντίγραφο\))+\s*$/u, '');
+                                const newName = `${baseName} (αντίγραφο)`;
                                 const { data: full, error: fetchErr } = await supabase
                                   .from('plan_strong_drafts')
                                   .select('user_id, coach_id, created_by, status, data')
@@ -417,15 +419,10 @@ const Programs = () => {
                               <Copy className="h-3 w-3" />
                             </Button>
                             <Button size="sm" variant="outline" className="rounded-none h-7 w-7 p-0 text-destructive"
-                              onClick={async () => {
-                                if (!confirm(`Διαγραφή Plan Strong "${name}" (${items.length} ${items.length > 1 ? 'πρόχειρα' : 'πρόχειρο'});`)) return;
-                                const { error } = await supabase.from('plan_strong_drafts').delete().in('id', items.map(i => i.id));
-                                if (error) { toast.error(error.message); return; }
-                                toast.success('Διαγράφηκε');
-                                loadPlanStrongDrafts();
-                              }}>
+                              onClick={() => setPsDeleteTarget({ name, ids: items.map(i => i.id) })}>
                               <Trash2 className="h-3 w-3" />
                             </Button>
+
                           </div>
                         </div>
                       );
