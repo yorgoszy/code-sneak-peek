@@ -434,7 +434,47 @@ const Programs = () => {
           </Tabs>
         </div>
       </div>
+
+      <AlertDialog open={!!psDeleteTarget} onOpenChange={(o) => !o && setPsDeleteTarget(null)}>
+        <AlertDialogContent className="rounded-none">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Διαγραφή Plan Strong</AlertDialogTitle>
+            <AlertDialogDescription>
+              {psDeleteTarget && (
+                <>
+                  Πρόκειται να διαγράψεις το <strong>"{psDeleteTarget.name}"</strong>
+                  {psDeleteTarget.ids.length > 1
+                    ? ` μαζί με τις ${psDeleteTarget.ids.length} αναθέσεις του.`
+                    : '.'}
+                  <br />
+                  Η ενέργεια είναι μόνιμη και δεν μπορεί να αναιρεθεί.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
+            <AlertDialogAction
+              className="rounded-none bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+              onClick={async () => {
+                if (!psDeleteTarget) return;
+                const { error } = await supabase
+                  .from('plan_strong_drafts')
+                  .delete()
+                  .in('id', psDeleteTarget.ids);
+                if (error) { toast.error(error.message); return; }
+                toast.success('Διαγράφηκε');
+                setPsDeleteTarget(null);
+                loadPlanStrongDrafts();
+              }}
+            >
+              Διαγραφή
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
+
   );
 };
 
