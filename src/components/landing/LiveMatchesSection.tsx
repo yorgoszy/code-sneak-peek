@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Radio } from "lucide-react";
 import { parseYouTubeId } from "@/utils/youtubeIframeApi";
+import { useLandingSection } from "@/hooks/useLandingConfig";
 
 const normalizeEmbedUrl = (url: string, startSec?: number | null, endSec?: number | null): string => {
   if (!url) return url;
@@ -80,6 +81,8 @@ interface Props {
 const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
   const [events, setEvents] = useState<LiveEvent[]>([]);
   const [ringsByEvent, setRingsByEvent] = useState<Record<string, LiveRing[]>>({});
+  const section = useLandingSection("live_matches");
+  const [draftExtra, setDraftExtra] = useState<Record<string, any>>({});
 
   useEffect(() => {
     const load = async () => {
@@ -106,21 +109,46 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
     load();
   }, []);
 
-  if (events.length === 0) return null;
+  useEffect(() => {
+    setDraftExtra((section?.extra_data ?? {}) as Record<string, any>);
+  }, [section?.extra_data]);
+
+  useEffect(() => {
+    const onMessage = (e: MessageEvent) => {
+      const data = e.data;
+      if (data?.type === "landing-editor-draft" && data.sectionKey === "live_matches") {
+        setDraftExtra((data.extra ?? {}) as Record<string, any>);
+      }
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
 
   const lang = translations?.language || "el";
   const sectionTitle = lang === "en" ? "Live Matches" : "Live Αγώνες";
   const ringLabel = lang === "en" ? "Ring" : "Ρινγκ";
+  const sponsors = Array.isArray(draftExtra?.sponsor_logos)
+    ? draftExtra.sponsor_logos.filter(Boolean)
+    : [];
+  const sponsorsCaption = lang === "en"
+    ? (draftExtra?.sponsor_caption_en || draftExtra?.sponsor_caption || "Our sponsors")
+    : (draftExtra?.sponsor_caption || "Οι χορηγοί μας");
+
+  if (events.length === 0 && sponsors.length === 0) return null;
 
   return (
-    <section id="live-matches" className="py-20 bg-black">
+    <section
+      id="live-matches"
+      className="py-20"
+      style={{ backgroundColor: "#ffffff", color: "#000000" }}
+    >
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-red-600 text-white text-sm font-semibold mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 text-sm font-semibold mb-4" style={{ backgroundColor: "#dc2626", color: "#ffffff" }}>
             <Radio className="w-4 h-4 animate-pulse" />
             LIVE
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">{sectionTitle}</h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">{sectionTitle}</h2>
         </div>
 
         {events.map((event) => {
@@ -137,13 +165,13 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
           return (
             <div key={event.id} className="mb-12">
               <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold text-white">{event.title}</h3>
-                {event.description && <p className="text-gray-400 mt-1">{event.description}</p>}
+                <h3 className="text-2xl font-bold">{event.title}</h3>
+                {event.description && <p className="text-muted-foreground mt-1">{event.description}</p>}
               </div>
               <div className={`grid gap-4 ${cols}`}>
                 {rings.map((r) => (
-                  <div key={r.id} className="bg-gray-900 border border-gray-800">
-                    <div className="px-4 py-2 bg-[#f4f1ea] text-black font-bold flex items-center justify-between">
+                  <div key={r.id} className="border border-border bg-background">
+                    <div className="px-4 py-2 font-bold flex items-center justify-between" style={{ backgroundColor: "#f4f1ea", color: "#000000" }}>
                       <span>{ringLabel} {r.ring_name}</span>
                       <Radio className="w-4 h-4" />
                     </div>
@@ -167,6 +195,25 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
             </div>
           );
         })}
+
+        {sponsors.length > 0 && (
+          <div className="mt-10 border-y border-border py-6">
+            <div className="mb-5 text-center text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              {sponsorsCaption}
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
+              {sponsors.map((logo: string, index: number) => (
+                <img
+                  key={`${logo}-${index}`}
+                  src={logo}
+                  alt={`${sponsorsCaption} ${index + 1}`}
+                  className="h-12 max-w-[160px] object-contain md:h-16"
+                  loading="lazy"
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

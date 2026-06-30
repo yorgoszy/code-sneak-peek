@@ -81,8 +81,13 @@ export default function PlanStrongPage() {
       const map: Record<string, string> = {};
       list.forEach((s: any) => { map[s.user_id] = s.id; });
       setDraftIdByUser(map);
-      setUserId(row.user_id);
-      setUserIds(list.map((s: any) => s.user_id));
+      if ((loaded as any).cloned_without_users === true) {
+        setUserId('');
+        setUserIds([]);
+      } else {
+        setUserId(row.user_id);
+        setUserIds(list.map((s: any) => s.user_id));
+      }
     })();
   }, [editId]);
 

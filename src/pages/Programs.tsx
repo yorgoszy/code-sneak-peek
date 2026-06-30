@@ -31,7 +31,7 @@ const Programs = () => {
   const { user, signOut } = useAuth();
   const { userProfile: dashboardUserProfile } = useDashboard();
   const { isAdmin } = useRoleCheck();
-  const [planStrongDrafts, setPlanStrongDrafts] = useState<Array<{ id: string; name: string; status: string; user_id: string; created_at: string; userName?: string }>>([]);
+  const [planStrongDrafts, setPlanStrongDrafts] = useState<Array<{ id: string; name: string; status: string; user_id: string; created_at: string; data?: any; userName?: string }>>([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const isMobile = useIsMobile();
@@ -83,7 +83,7 @@ const Programs = () => {
     if (!user?.id) return;
     const { data, error } = await supabase
       .from('plan_strong_drafts')
-      .select('id, name, status, user_id, created_at')
+        .select('id, name, status, user_id, created_at, data')
       .eq('coach_id', user.id)
       .order('created_at', { ascending: false });
     if (error) { console.error('plan_strong_drafts load error', error); return; }
@@ -381,7 +381,10 @@ const Programs = () => {
                     });
                     return Array.from(groups.entries()).map(([name, items]) => {
                       const first = items[0];
-                      const names = items.map(i => i.userName || i.user_id.slice(0, 6)).join(', ');
+                      const isEmptyCopy = items.every(i => i.data?.cloned_without_users === true);
+                      const names = isEmptyCopy
+                        ? 'χωρίς χρήστες'
+                        : items.map(i => i.userName || i.user_id.slice(0, 6)).join(', ');
                       return (
                         <div key={first.id} className="flex items-center justify-between px-3 py-2 hover:bg-muted/30">
                           <button
@@ -402,18 +405,30 @@ const Programs = () => {
                             <Button size="sm" variant="outline" className="rounded-none h-7 w-7 p-0"
                               title="Δημιουργία αντιγράφου"
                               onClick={async () => {
-                                // Strip any trailing " (αντίγραφο)" so we don't double the name on repeated clones
-                                const baseName = name.replace(/(\s*\(αντίγραφο\))+\s*$/u, '');
-                                const newName = `${baseName} (αντίγραφο)`;
+                                // Strip trailing copy suffixes and create one clean, unassigned copy.
+                                const baseName = name.replace(/\s*\(αντίγραφο(?:\s+\d+)?\)\s*$/u, '');
+                                const existingNames = new Set(planStrongDrafts.map(d => d.name));
+                                let newName = `${baseName} (αντίγραφο)`;
+                                let copyNo = 2;
+                                while (existingNames.has(newName)) {
+                                  newName = `${baseName} (αντίγραφο ${copyNo})`;
+                                  copyNo += 1;
+                                }
                                 const { data: full, error: fetchErr } = await supabase
                                   .from('plan_strong_drafts')
                                   .select('user_id, coach_id, created_by, status, data')
-                                  .in('id', items.map(i => i.id));
+                                  .eq('id', first.id)
+                                  .maybeSingle();
                                 if (fetchErr || !full) { toast.error(fetchErr?.message || 'Σφάλμα'); return; }
-                                const rows = full.map(r => ({ ...r, name: newName }));
-                                const { error } = await supabase.from('plan_strong_drafts').insert(rows);
+                                const row = {
+                                  ...full,
+                                  name: newName,
+                                  status: 'draft',
+                                  data: { ...((full as any).data ?? {}), cloned_without_users: true },
+                                };
+                                const { error } = await supabase.from('plan_strong_drafts').insert(row);
                                 if (error) { toast.error(error.message); return; }
-                                toast.success('Δημιουργήθηκε αντίγραφο');
+                                toast.success('Δημιουργήθηκε αντίγραφο χωρίς χρήστες');
                                 loadPlanStrongDrafts();
                               }}>
                               <Copy className="h-3 w-3" />
