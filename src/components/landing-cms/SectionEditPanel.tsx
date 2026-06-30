@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Save, Undo2 } from 'lucide-react';
+import { Plus, Save, Trash2, Undo2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { SECTION_LABELS, useLandingTheme, type LandingSection, type Lang } from '@/hooks/useLandingConfig';
@@ -298,6 +298,63 @@ export const SectionEditPanel: React.FC<Props> = ({ section, lang, onSaved }) =>
             onChangeMobile={(url) => setExtra({ promo_video_url_mobile: url })}
           />
         )}
+
+        {draft.section_key === 'live_matches' && (() => {
+          const sponsors = Array.isArray(draft.extra_data?.sponsor_logos)
+            ? (draft.extra_data?.sponsor_logos as string[])
+            : [];
+          const setSponsors = (next: string[]) => setExtra({ sponsor_logos: next.filter(Boolean) });
+          return (
+            <div className="space-y-3 border border-border p-3">
+              <SectionTitle>{lang === 'en' ? 'Sponsors banner' : 'Μπάνερ χορηγών'}</SectionTitle>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <Field
+                  label={lang === 'en' ? 'Greek caption' : 'Λεζάντα Ελληνικά'}
+                  value={(draft.extra_data?.sponsor_caption as string) ?? 'Οι χορηγοί μας'}
+                  onChange={(v) => setExtra({ sponsor_caption: v })}
+                />
+                <Field
+                  label={lang === 'en' ? 'English caption' : 'Λεζάντα English'}
+                  value={(draft.extra_data?.sponsor_caption_en as string) ?? 'Our sponsors'}
+                  onChange={(v) => setExtra({ sponsor_caption_en: v })}
+                />
+              </div>
+              <div className="space-y-3">
+                {sponsors.map((logo, index) => (
+                  <div key={index} className="border border-border p-2 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-semibold">Sponsor {index + 1}</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="rounded-none h-7 w-7 p-0 text-destructive"
+                        onClick={() => setSponsors(sponsors.filter((_, i) => i !== index))}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    <LandingImageUploader
+                      value={logo}
+                      onChange={(url) => setSponsors(sponsors.map((item, i) => (i === index ? (url ?? '') : item)))}
+                      label={lang === 'en' ? 'Sponsor logo' : 'Λογότυπο χορηγού'}
+                      pathPrefix={`landing/${draft.section_key}/sponsors`}
+                    />
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="rounded-none w-full"
+                  onClick={() => setExtra({ sponsor_logos: [...sponsors, ''] })}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  {lang === 'en' ? 'Add sponsor logo' : 'Προσθήκη λογότυπου χορηγού'}
+                </Button>
+              </div>
+            </div>
+          );
+        })()}
 
         {draft.section_key === 'navigation' && (
           <div>
