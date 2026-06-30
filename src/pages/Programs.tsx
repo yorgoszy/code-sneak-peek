@@ -15,6 +15,16 @@ import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Programs = () => {
   const navigate = useNavigate();
@@ -36,6 +46,10 @@ const Programs = () => {
   // Preview dialog state
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewProgram, setPreviewProgram] = useState<Program | null>(null);
+
+  // Plan Strong delete confirmation dialog
+  const [psDeleteTarget, setPsDeleteTarget] = useState<{ name: string; ids: string[] } | null>(null);
+
 
   const { users, exercises } = useProgramsData();
   const { loading, fetchProgramsWithAssignments, saveProgram, deleteProgram, duplicateProgram } = usePrograms();
@@ -388,7 +402,9 @@ const Programs = () => {
                             <Button size="sm" variant="outline" className="rounded-none h-7 w-7 p-0"
                               title="Δημιουργία αντιγράφου"
                               onClick={async () => {
-                                const newName = `${name} (αντίγραφο)`;
+                                // Strip any trailing " (αντίγραφο)" so we don't double the name on repeated clones
+                                const baseName = name.replace(/(\s*\(αντίγραφο\))+\s*$/u, '');
+                                const newName = `${baseName} (αντίγραφο)`;
                                 const { data: full, error: fetchErr } = await supabase
                                   .from('plan_strong_drafts')
                                   .select('user_id, coach_id, created_by, status, data')
@@ -403,15 +419,10 @@ const Programs = () => {
                               <Copy className="h-3 w-3" />
                             </Button>
                             <Button size="sm" variant="outline" className="rounded-none h-7 w-7 p-0 text-destructive"
-                              onClick={async () => {
-                                if (!confirm(`Διαγραφή Plan Strong "${name}" (${items.length} ${items.length > 1 ? 'πρόχειρα' : 'πρόχειρο'});`)) return;
-                                const { error } = await supabase.from('plan_strong_drafts').delete().in('id', items.map(i => i.id));
-                                if (error) { toast.error(error.message); return; }
-                                toast.success('Διαγράφηκε');
-                                loadPlanStrongDrafts();
-                              }}>
+                              onClick={() => setPsDeleteTarget({ name, ids: items.map(i => i.id) })}>
                               <Trash2 className="h-3 w-3" />
                             </Button>
+
                           </div>
                         </div>
                       );
@@ -423,7 +434,47 @@ const Programs = () => {
           </Tabs>
         </div>
       </div>
+
+      <AlertDialog open={!!psDeleteTarget} onOpenChange={(o) => !o && setPsDeleteTarget(null)}>
+        <AlertDialogContent className="rounded-none">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Διαγραφή Plan Strong</AlertDialogTitle>
+            <AlertDialogDescription>
+              {psDeleteTarget && (
+                <>
+                  Πρόκειται να διαγράψεις το <strong>"{psDeleteTarget.name}"</strong>
+                  {psDeleteTarget.ids.length > 1
+                    ? ` μαζί με τις ${psDeleteTarget.ids.length} αναθέσεις του.`
+                    : '.'}
+                  <br />
+                  Η ενέργεια είναι μόνιμη και δεν μπορεί να αναιρεθεί.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
+            <AlertDialogAction
+              className="rounded-none bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+              onClick={async () => {
+                if (!psDeleteTarget) return;
+                const { error } = await supabase
+                  .from('plan_strong_drafts')
+                  .delete()
+                  .in('id', psDeleteTarget.ids);
+                if (error) { toast.error(error.message); return; }
+                toast.success('Διαγράφηκε');
+                setPsDeleteTarget(null);
+                loadPlanStrongDrafts();
+              }}
+            >
+              Διαγραφή
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
+
   );
 };
 
