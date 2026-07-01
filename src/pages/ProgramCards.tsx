@@ -260,30 +260,19 @@ const ProgramCards = () => {
     }
   };
 
-  // Realtime subscriptions for immediate updates
-  useRealtimePrograms({
-    onProgramsChange: () => {
-      console.log('📡 ProgramCards: Programs changed - refetching...');
-      completionsCache.clearCache();
-      setRealtimeKey(prev => prev + 1);
-      refetch();
-    },
-    onAssignmentsChange: async () => {
-      console.log('📡 ProgramCards: Assignments changed - refetching...');
-      completionsCache.clearCache();
-      setRealtimeKey(prev => prev + 1);
-      
-      // Έλεγχος για αυτόματη ολοκλήρωση προγραμμάτων
-      try {
-        const { programCompletionService } = await import('@/hooks/useWorkoutCompletions/programCompletionService');
-        await programCompletionService.checkAndCompleteProgramAssignments();
-      } catch (error) {
-        console.error('Error checking program completions:', error);
-      }
-      
-      refetch();
-    }
-  });
+  // Realtime auto-refresh disabled - only manual refresh
+  // useRealtimePrograms({
+  //   onProgramsChange: () => {
+  //     completionsCache.clearCache();
+  //     setRealtimeKey(prev => prev + 1);
+  //     refetch();
+  //   },
+  //   onAssignmentsChange: async () => {
+  //     completionsCache.clearCache();
+  //     setRealtimeKey(prev => prev + 1);
+  //     refetch();
+  //   }
+  // });
 
   // Admin βλέπει μόνο assignments χρηστών που δημιουργήθηκαν από admin (coach_id = admin ID)
   const ADMIN_ID = 'c6d44641-3b95-46bd-8270-e5ed72de25ad';
