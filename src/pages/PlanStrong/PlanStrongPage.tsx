@@ -275,21 +275,27 @@ export default function PlanStrongPage() {
       return;
     }
 
-    // NEW — one row per user
-    const rows = userIds.map(uid => ({
-      name, user_id: uid, status,
-      coach_id: user?.id, created_by: user?.id,
-      data: dataToSave,
-    }));
+    // NEW — one row per user (or a single userless row for drafts without users)
+    const rows = userIds.length > 0
+      ? userIds.map(uid => ({
+          name, user_id: uid, status,
+          coach_id: user?.id, created_by: user?.id,
+          data: dataToSave,
+        }))
+      : [{
+          name, user_id: null as any, status,
+          coach_id: user?.id, created_by: user?.id,
+          data: dataToSave,
+        }];
     const { data: inserted, error } = await supabase.from('plan_strong_drafts').insert(rows).select();
     setSaving(false);
     if (error) { toast.error(error.message); return; }
     if (inserted && inserted.length > 0) {
       const map: Record<string, string> = {};
-      inserted.forEach((r: any) => { map[r.user_id] = r.id; });
+      inserted.forEach((r: any) => { if (r.user_id) map[r.user_id] = r.id; });
       setDraftIdByUser(map);
       setDraftId(inserted[0].id);
-      setUserId(inserted[0].user_id);
+      if (inserted[0].user_id) setUserId(inserted[0].user_id);
     }
     toast.success(status === 'draft'
       ? `Αποθηκεύτηκαν ${rows.length} πρόχειρα`
