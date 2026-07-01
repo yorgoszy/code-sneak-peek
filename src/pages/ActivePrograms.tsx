@@ -169,20 +169,20 @@ const ActivePrograms = () => {
     }
   }, [activePrograms.length, loadCompletions]);
 
-  // Enhanced real-time subscription via shared hook
-  useRealtimePrograms({
-    onProgramsChange: () => {
-      console.log('🔄 Admin ActivePrograms: Programs changed');
-      refetch();
-    },
-    onAssignmentsChange: async () => {
-      console.log('🔄 Admin ActivePrograms: Assignments/completions changed');
-      setRealtimeKey(Date.now() + Math.random());
-      completionsCache.clearCache();
-      await loadCompletions();
-      refetch();
-    },
-  });
+  // Realtime auto-refresh disabled by user request — refresh happens only via manual action.
+  // useRealtimePrograms({
+  //   onProgramsChange: () => {
+  //     console.log('🔄 Admin ActivePrograms: Programs changed');
+  //     refetch();
+  //   },
+  //   onAssignmentsChange: async () => {
+  //     console.log('🔄 Admin ActivePrograms: Assignments/completions changed');
+  //     setRealtimeKey(Date.now() + Math.random());
+  //     completionsCache.clearCache();
+  //     await loadCompletions();
+  //     refetch();
+  //   },
+  // });
 
   // Χειρισμός κλικ σε πρόγραμμα - always show the clicked one
   const handleProgramClick = (assignment: EnrichedAssignment, date?: Date) => {

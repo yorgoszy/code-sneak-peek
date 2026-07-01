@@ -114,18 +114,18 @@ const CoachActiveProgramsContent = () => {
     }
   }, []);
 
-  // Realtime subscriptions for live updates
-  useRealtimePrograms({
-    onProgramsChange: () => {
-      console.log('📡 CoachActivePrograms: Programs changed - refetching...');
-      fetchCoachPrograms();
-    },
-    onAssignmentsChange: () => {
-      console.log('📡 CoachActivePrograms: Assignments/completions changed - refreshing...');
-      loadCompletions();
-      setRealtimeKey(Date.now() + Math.random());
-    },
-  });
+  // Realtime auto-refresh disabled by user request — refresh happens only via manual action.
+  // useRealtimePrograms({
+  //   onProgramsChange: () => {
+  //     console.log('📡 CoachActivePrograms: Programs changed - refetching...');
+  //     fetchCoachPrograms();
+  //   },
+  //   onAssignmentsChange: () => {
+  //     console.log('📡 CoachActivePrograms: Assignments/completions changed - refreshing...');
+  //     loadCompletions();
+  //     setRealtimeKey(Date.now() + Math.random());
+  //   },
+  // });
 
   useEffect(() => {
     workoutStatusService.markMissedWorkoutsForPastDates().catch(console.error);
