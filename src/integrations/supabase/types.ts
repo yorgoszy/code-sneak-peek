@@ -8506,7 +8506,7 @@ export type Database = {
           name: string
           status: string
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           coach_id?: string | null
@@ -8517,7 +8517,7 @@ export type Database = {
           name?: string
           status?: string
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           coach_id?: string | null
@@ -8528,7 +8528,7 @@ export type Database = {
           name?: string
           status?: string
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
