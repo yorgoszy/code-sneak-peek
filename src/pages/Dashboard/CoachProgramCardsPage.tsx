@@ -270,18 +270,19 @@ const CoachProgramCardsContent = () => {
     }
   };
 
-  useRealtimePrograms({
-    onProgramsChange: () => {
-      completionsCache.clearCache();
-      setRealtimeKey(prev => prev + 1);
-      fetchCoachPrograms();
-    },
-    onAssignmentsChange: async () => {
-      completionsCache.clearCache();
-      setRealtimeKey(prev => prev + 1);
-      fetchCoachPrograms();
-    }
-  });
+  // Realtime auto-refresh disabled - only manual refresh
+  // useRealtimePrograms({
+  //   onProgramsChange: () => {
+  //     completionsCache.clearCache();
+  //     setRealtimeKey(prev => prev + 1);
+  //     fetchCoachPrograms();
+  //   },
+  //   onAssignmentsChange: async () => {
+  //     completionsCache.clearCache();
+  //     setRealtimeKey(prev => prev + 1);
+  //     fetchCoachPrograms();
+  //   }
+  // });
 
   const programsWithStats = activePrograms.map(assignment => ({
     assignment,
