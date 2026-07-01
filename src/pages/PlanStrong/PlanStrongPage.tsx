@@ -209,7 +209,7 @@ export default function PlanStrongPage() {
   };
 
   const save = async (status: 'draft' | 'assigned') => {
-    if (userIds.length === 0) { toast.error('Επίλεξε τουλάχιστον έναν χρήστη'); return; }
+    if (status === 'assigned' && userIds.length === 0) { toast.error('Επίλεξε τουλάχιστον έναν χρήστη'); return; }
     setSaving(true);
     const weekDifficulties = computeWeekDifficulties(data.side.mainPct || []);
     const dataToSave: any = { ...data, weekDifficulties };
