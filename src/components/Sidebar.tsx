@@ -222,31 +222,58 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     
     try {
       // Φορτώνουμε όλες τις κρατήσεις γυμναστηρίου
-      const { data: allBookings, error } = await supabase
-        .from('booking_sessions')
-        .select('id')
-        .eq('booking_type', 'gym_visit');
+      const pageSize = 1000;
+      let bookingsFrom = 0;
+      let allBookings: { id: string }[] = [];
 
-      if (error) throw error;
+      while (true) {
+        const { data, error } = await supabase
+          .from('booking_sessions')
+          .select('id')
+          .eq('booking_type', 'gym_visit')
+          .order('created_at', { ascending: true })
+          .range(bookingsFrom, bookingsFrom + pageSize - 1);
+
+        if (error) throw error;
+
+        const page = data || [];
+        allBookings = [...allBookings, ...page];
+
+        if (page.length < pageSize) break;
+        bookingsFrom += pageSize;
+      }
       
       // Φορτώνουμε τα acknowledged bookings από τη βάση δεδομένων
-      const { data: acknowledgedBookings, error: ackError } = await supabase
-        .from('acknowledged_gym_bookings')
-        .select('booking_id')
-        .eq('admin_user_id', userProfile.id);
+      let acknowledgedFrom = 0;
+      let acknowledgedBookings: { booking_id: string }[] = [];
 
-      if (ackError) throw ackError;
+      while (true) {
+        const { data, error: ackError } = await supabase
+          .from('acknowledged_gym_bookings')
+          .select('booking_id')
+          .eq('admin_user_id', userProfile.id)
+          .order('created_at', { ascending: true })
+          .range(acknowledgedFrom, acknowledgedFrom + pageSize - 1);
+
+        if (ackError) throw ackError;
+
+        const page = data || [];
+        acknowledgedBookings = [...acknowledgedBookings, ...page];
+
+        if (page.length < pageSize) break;
+        acknowledgedFrom += pageSize;
+      }
 
       const acknowledgedBookingIds = new Set(
-        acknowledgedBookings?.map(ack => ack.booking_id) || []
+        acknowledgedBookings.map(ack => ack.booking_id)
       );
 
       // Υπολογίζουμε τα νέα bookings (όσα δεν έχουν επισημανθεί ως "ενημερώθηκα")
-      const newBookingsCount = (allBookings || []).filter(booking => 
+      const newBookingsCount = allBookings.filter(booking => 
         !acknowledgedBookingIds.has(booking.id)
       ).length;
       
-      console.log('Total gym bookings:', allBookings?.length || 0, 'Acknowledged:', acknowledgedBookings?.length || 0, 'New:', newBookingsCount, 'Admin ID:', userProfile.id);
+      console.log('Total gym bookings:', allBookings.length, 'Acknowledged:', acknowledgedBookings.length, 'New:', newBookingsCount, 'Admin ID:', userProfile.id);
       setNewGymBookings(newBookingsCount);
     } catch (error) {
       console.error('Error loading new gym bookings:', error);
