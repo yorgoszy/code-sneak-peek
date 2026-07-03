@@ -192,7 +192,7 @@ export const GymBookingsOverview = () => {
       if (acknowledgeRecords.length > 0) {
         const { error } = await supabase
           .from('acknowledged_gym_bookings')
-          .upsert(acknowledgeRecords, { onConflict: 'booking_id,admin_user_id' });
+          .upsert(acknowledgeRecords, { onConflict: 'booking_id,admin_user_id', ignoreDuplicates: true });
 
         if (error) throw error;
       }
