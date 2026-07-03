@@ -415,16 +415,20 @@ const ChangeDirectionPage = () => {
     setJoinCode('');
   };
 
-  // Cleanup
+  // Cleanup — unmount only. Do NOT depend on stream/motionDetector,
+  // otherwise every camera (re)start would tear down the broadcast channel
+  // and drop the sensor/display connection.
+  const streamRef = useRef<MediaStream | null>(null);
+  useEffect(() => { streamRef.current = stream; }, [stream]);
   useEffect(() => {
     return () => {
-      if (stream) stopCamera(stream);
-      if (motionDetector) motionDetector.stop();
+      if (streamRef.current) stopCamera(streamRef.current);
+      if (motionDetectorRef.current) motionDetectorRef.current.stop();
       if (broadcastChannelRef.current) {
         supabase.removeChannel(broadcastChannelRef.current);
       }
     };
-  }, [stream, motionDetector]);
+  }, []);
 
   // === UI COMPONENTS ===
 
