@@ -63,14 +63,28 @@ export const GymBookingsOverview = () => {
     if (!userProfileId) return;
     
     try {
-      const { data, error } = await supabase
-        .from('acknowledged_gym_bookings')
-        .select('booking_id')
-        .eq('admin_user_id', userProfileId);
+      const pageSize = 1000;
+      let from = 0;
+      let allAcknowledged: { booking_id: string }[] = [];
+
+      while (true) {
+        const { data, error } = await supabase
+          .from('acknowledged_gym_bookings')
+          .select('booking_id')
+          .eq('admin_user_id', userProfileId)
+          .order('created_at', { ascending: true })
+          .range(from, from + pageSize - 1);
+        
+        if (error) throw error;
+
+        const page = data || [];
+        allAcknowledged = [...allAcknowledged, ...page];
+
+        if (page.length < pageSize) break;
+        from += pageSize;
+      }
       
-      if (error) throw error;
-      
-      setAcknowledgedBookingIds(new Set(data?.map(item => item.booking_id) || []));
+      setAcknowledgedBookingIds(new Set(allAcknowledged.map(item => item.booking_id)));
     } catch (error) {
       console.error('Error loading acknowledged bookings:', error);
     }
