@@ -134,22 +134,36 @@ export const GymBookingsOverview = () => {
 
   const fetchBookings = async () => {
     try {
-      const { data, error } = await supabase
-        .from('booking_sessions')
-        .select(`
-          *,
-          section:booking_sections(name, description),
-          app_users(name, email)
-        `)
-        .eq('booking_type', 'gym_visit')
-        .order('booking_date', { ascending: true })
-        .order('booking_time', { ascending: true });
-
       // Also mark any past bookings as missed
       await supabase.rpc('mark_past_bookings_as_missed');
 
-      if (error) throw error;
-      setBookings((data as any) || []);
+      const pageSize = 1000;
+      let from = 0;
+      let allBookings: GymBooking[] = [];
+
+      while (true) {
+        const { data, error } = await supabase
+          .from('booking_sessions')
+          .select(`
+            *,
+            section:booking_sections(name, description),
+            app_users(name, email)
+          `)
+          .eq('booking_type', 'gym_visit')
+          .order('booking_date', { ascending: true })
+          .order('booking_time', { ascending: true })
+          .range(from, from + pageSize - 1);
+
+        if (error) throw error;
+
+        const page = (data as any as GymBooking[]) || [];
+        allBookings = [...allBookings, ...page];
+
+        if (page.length < pageSize) break;
+        from += pageSize;
+      }
+
+      setBookings(allBookings);
     } catch (error) {
       console.error('Error fetching gym bookings:', error);
     } finally {
