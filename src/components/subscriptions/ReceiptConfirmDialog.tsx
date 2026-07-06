@@ -255,24 +255,44 @@ export const ReceiptConfirmDialog: React.FC<ReceiptConfirmDialogProps> = ({
 
           <div className="flex justify-center gap-2 flex-wrap">
             {fullyCovered ? (
-              <Button
-                onClick={() => submit(true)}
-                disabled={isSubmitting}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none px-6"
-              >
-                Ολοκλήρωση Εξαργύρωσης
-              </Button>
+              hasLeftover ? (
+                <>
+                  <Button
+                    onClick={() => submit(true, true)}
+                    disabled={isSubmitting}
+                    className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none px-4"
+                  >
+                    Ολοκλήρωση με πίστωση (+{fmt(leftoverFromCard)})
+                  </Button>
+                  <Button
+                    onClick={() => submit(true, false)}
+                    disabled={isSubmitting}
+                    variant="outline"
+                    className="rounded-none px-4"
+                  >
+                    Ολοκλήρωση χωρίς πίστωση
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  onClick={() => submit(true, true)}
+                  disabled={isSubmitting}
+                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none px-6"
+                >
+                  Ολοκλήρωση Εξαργύρωσης
+                </Button>
+              )
             ) : (
               <>
                 <Button
-                  onClick={() => submit(true)}
+                  onClick={() => submit(true, true)}
                   disabled={isSubmitting}
                   className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none px-6"
                 >
                   Πληρωμή {fmt(remaining)}
                 </Button>
                 <Button
-                  onClick={() => submit(false)}
+                  onClick={() => submit(false, true)}
                   disabled={isSubmitting}
                   variant="outline"
                   className="rounded-none px-6 border-red-300 text-red-600 hover:bg-red-50"
