@@ -121,8 +121,7 @@ export const GiftCardManagement: React.FC = () => {
 
   const handleCreate = async () => {
     try {
-      const code = await generateCode();
-      
+      const qty = Math.max(1, Math.min(100, parseInt(quantity) || 1));
       const { data: currentUser } = await supabase
         .from('app_users')
         .select('id')
@@ -132,43 +131,52 @@ export const GiftCardManagement: React.FC = () => {
       const expiresAt = new Date();
       expiresAt.setMonth(expiresAt.getMonth() + parseInt(expiryMonths));
 
-      const newCard: any = {
-        code,
-        card_type: cardType,
-        sender_name: senderName || null,
-        sender_email: senderEmail || null,
-        recipient_name: recipientName || null,
-        recipient_email: recipientEmail || null,
-        message: message || null,
-        status: 'active',
-        purchase_method: 'manual',
-        created_by: currentUser?.id,
-        expires_at: expiresAt.toISOString(),
-      };
-
-      if (cardType === 'amount') {
-        newCard.amount = parseFloat(amount);
-      } else {
-        newCard.subscription_type_id = subscriptionTypeId;
-        const sub = subscriptionTypes.find(s => s.id === subscriptionTypeId);
-        if (sub) newCard.amount = sub.price;
+      const created: GiftCard[] = [];
+      for (let i = 0; i < qty; i++) {
+        const code = await generateCode();
+        const newCard: any = {
+          code,
+          card_type: cardType,
+          sender_name: senderName || null,
+          sender_email: senderEmail || null,
+          recipient_name: qty === 1 ? (recipientName || null) : null,
+          recipient_email: qty === 1 ? (recipientEmail || null) : null,
+          message: message || null,
+          status: 'active',
+          purchase_method: 'manual',
+          created_by: currentUser?.id,
+          expires_at: expiresAt.toISOString(),
+        };
+        if (cardType === 'amount') {
+          newCard.amount = parseFloat(amount);
+        } else {
+          newCard.subscription_type_id = subscriptionTypeId;
+          const sub = subscriptionTypes.find(s => s.id === subscriptionTypeId);
+          if (sub) newCard.amount = sub.price;
+        }
+        const { data, error } = await supabase
+          .from('gift_cards')
+          .insert(newCard)
+          .select()
+          .single();
+        if (error) throw error;
+        if (data) created.push(data as GiftCard);
       }
 
-      const { data, error } = await supabase
-        .from('gift_cards')
-        .insert(newCard)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      toast.success(`Gift Card δημιουργήθηκε: ${code}`);
+      toast.success(qty === 1 ? `Gift Card δημιουργήθηκε: ${created[0].code}` : `${qty} Gift Cards δημιουργήθηκαν`);
       setCreateOpen(false);
       resetForm();
       fetchGiftCards();
 
-      // Show PDF dialog
-      if (data) setPdfCard(data);
+      if (qty === 1 && created[0]) {
+        setPdfCard(created[0]);
+      } else if (created.length > 1) {
+        setLastBatch(created);
+        // Trigger bulk PDF for these new cards
+        setTimeout(() => {
+          newBulkPdfRef.current?.triggerDownload(created);
+        }, 100);
+      }
     } catch (error) {
       console.error('Error creating gift card:', error);
       toast.error('Σφάλμα δημιουργίας gift card');
