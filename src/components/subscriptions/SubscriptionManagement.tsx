@@ -1123,10 +1123,22 @@ export const SubscriptionManagement: React.FC = () => {
     }
   };
 
-  const handleRenewSubscription = async (isPaid: boolean) => {
+  const handleRenewSubscription = async (isPaid: boolean, giftCardCode?: string) => {
     if (!pendingSubscriptionData || !pendingSubscriptionData.isRenewal) return;
 
     const { subscriptionId, userData, subscriptionType, newStartDate, newEndDate } = pendingSubscriptionData;
+
+    // Validate & redeem gift card first if provided
+    if (giftCardCode) {
+      const result = await validateAndRedeemGiftCard(giftCardCode, userData.id, subscriptionType.id);
+      if (!result.ok) {
+        toast({ variant: 'destructive', title: 'Σφάλμα δωροκάρτας', description: result.error });
+        setShowReceiptDialog(false);
+        setPendingSubscriptionData(null);
+        return;
+      }
+      isPaid = true;
+    }
 
     try {
       // Use the database function to create renewal properly
