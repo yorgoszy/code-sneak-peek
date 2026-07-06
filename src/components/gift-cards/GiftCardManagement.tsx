@@ -303,7 +303,6 @@ export const GiftCardManagement: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
-        <div className="flex items-center gap-2">
           {selectedIds.size > 0 && (
             <Button onClick={downloadSelected} variant="outline" className="rounded-none">
               <FileDown className="h-4 w-4 mr-2" />
