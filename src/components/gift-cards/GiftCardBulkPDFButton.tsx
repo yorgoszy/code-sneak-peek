@@ -209,4 +209,6 @@ export const GiftCardBulkPDFButton = forwardRef<GiftCardBulkPDFButtonHandle, Pro
       )}
     </>
   );
-};
+});
+
+GiftCardBulkPDFButton.displayName = 'GiftCardBulkPDFButton';
