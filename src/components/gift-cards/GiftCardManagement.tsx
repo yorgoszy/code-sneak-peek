@@ -372,8 +372,25 @@ export const GiftCardManagement: React.FC = () => {
                 </Select>
               </div>
 
+              <div>
+                <Label>Ποσότητα (μαζική δημιουργία)</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={quantity}
+                  onChange={e => setQuantity(e.target.value)}
+                  className="rounded-none"
+                />
+                {parseInt(quantity) > 1 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Θα δημιουργηθούν {quantity} κάρτες και θα κατέβει ένα ενιαίο PDF με όλες.
+                  </p>
+                )}
+              </div>
+
               <Button onClick={handleCreate} className="w-full bg-black text-white hover:bg-gray-800 rounded-none">
-                Δημιουργία Gift Card
+                {parseInt(quantity) > 1 ? `Δημιουργία ${quantity} Gift Cards` : 'Δημιουργία Gift Card'}
               </Button>
             </div>
           </DialogContent>
