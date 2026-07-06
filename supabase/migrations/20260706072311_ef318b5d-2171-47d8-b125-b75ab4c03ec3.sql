@@ -1,0 +1,1 @@
+CREATE POLICY "Staff can delete gift cards" ON public.gift_cards FOR DELETE USING (is_coach_user(auth.uid()));
