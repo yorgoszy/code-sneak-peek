@@ -24,7 +24,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { GiftCardPDFDialog } from './GiftCardPDFDialog';
 import { GiftCardEditDialog } from './GiftCardEditDialog';
-import { GiftCardBulkPDFButton } from './GiftCardBulkPDFButton';
+import { GiftCardBulkPDFButton, type GiftCardBulkPDFButtonHandle } from './GiftCardBulkPDFButton';
 
 interface GiftCard {
   id: string;
