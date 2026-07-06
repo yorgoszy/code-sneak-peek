@@ -455,6 +455,12 @@ export const GiftCardManagement: React.FC = () => {
                   <TableCell>€{gc.amount || 0}</TableCell>
                   <TableCell>
                     <div className="text-sm">
+                      <div>{gc.sender_name || '-'}</div>
+                      <div className="text-muted-foreground text-xs">{gc.sender_email || ''}</div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm">
                       <div>{gc.recipient_name || '-'}</div>
                       <div className="text-muted-foreground text-xs">{gc.recipient_email || ''}</div>
                     </div>
