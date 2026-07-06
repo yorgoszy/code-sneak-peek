@@ -145,7 +145,7 @@ export const GiftCardBulkPDFButton = forwardRef<GiftCardBulkPDFButtonHandle, Pro
       }
 
       pdf.save(`gift-cards-${new Date().toISOString().slice(0, 10)}.pdf`);
-      toast.success(`Δημιουργήθηκε PDF με ${giftCards.length} gift cards`, { id: toastId });
+      toast.success(`Δημιουργήθηκε PDF με ${_giftCards.length} gift cards`, { id: toastId });
     } catch (err) {
       console.error('Bulk PDF error:', err);
       toast.error('Σφάλμα δημιουργίας PDF', { id: toastId });
