@@ -7,7 +7,7 @@ import { defineMcp } from "npm:@lovable.dev/mcp-js@0.20.0";
 
 // src/lib/mcp/tools/ping.ts
 import { defineTool } from "npm:@lovable.dev/mcp-js@0.20.0";
-import { z } from "npm:zod@^3.23.8";
+import { z } from "npm:zod@^4.4.3";
 var ping_default = defineTool({
   name: "ping",
   title: "Ping",
