@@ -111,7 +111,7 @@ export const ReceiptConfirmDialog: React.FC<ReceiptConfirmDialogProps> = ({
     }
   };
 
-  const submit = (isPaid: boolean) => {
+  const submit = (isPaid: boolean, storeCredit: boolean = true) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
     onConfirm({
@@ -119,7 +119,7 @@ export const ReceiptConfirmDialog: React.FC<ReceiptConfirmDialogProps> = ({
       giftCardId: validatedCard?.id,
       giftCardAmount: validatedCard?.amount,
       appliedCredit: appliedCredit > 0 ? appliedCredit : undefined,
-      newCreditToStore: leftoverFromCard > 0 ? leftoverFromCard : undefined,
+      newCreditToStore: storeCredit && leftoverFromCard > 0 ? leftoverFromCard : undefined,
       amountToPay: remaining,
     });
     onClose();
@@ -127,6 +127,7 @@ export const ReceiptConfirmDialog: React.FC<ReceiptConfirmDialogProps> = ({
 
   const fmt = (n: number) => `€${n.toFixed(2)}`;
   const fullyCovered = remaining === 0 && (giftAmount > 0 || appliedCredit > 0);
+  const hasLeftover = leftoverFromCard > 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -254,24 +255,44 @@ export const ReceiptConfirmDialog: React.FC<ReceiptConfirmDialogProps> = ({
 
           <div className="flex justify-center gap-2 flex-wrap">
             {fullyCovered ? (
-              <Button
-                onClick={() => submit(true)}
-                disabled={isSubmitting}
-                className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none px-6"
-              >
-                Ολοκλήρωση Εξαργύρωσης
-              </Button>
+              hasLeftover ? (
+                <>
+                  <Button
+                    onClick={() => submit(true, true)}
+                    disabled={isSubmitting}
+                    className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none px-4"
+                  >
+                    Ολοκλήρωση με πίστωση (+{fmt(leftoverFromCard)})
+                  </Button>
+                  <Button
+                    onClick={() => submit(true, false)}
+                    disabled={isSubmitting}
+                    variant="outline"
+                    className="rounded-none px-4"
+                  >
+                    Ολοκλήρωση χωρίς πίστωση
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  onClick={() => submit(true, true)}
+                  disabled={isSubmitting}
+                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none px-6"
+                >
+                  Ολοκλήρωση Εξαργύρωσης
+                </Button>
+              )
             ) : (
               <>
                 <Button
-                  onClick={() => submit(true)}
+                  onClick={() => submit(true, true)}
                   disabled={isSubmitting}
                   className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none px-6"
                 >
                   Πληρωμή {fmt(remaining)}
                 </Button>
                 <Button
-                  onClick={() => submit(false)}
+                  onClick={() => submit(false, true)}
                   disabled={isSubmitting}
                   variant="outline"
                   className="rounded-none px-6 border-red-300 text-red-600 hover:bg-red-50"

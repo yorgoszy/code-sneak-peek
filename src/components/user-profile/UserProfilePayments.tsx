@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
 import { ReceiptPreviewDialog } from "@/components/analytics/ReceiptPreviewDialog";
+import { UserCreditsWidget } from "@/components/user-profile/UserCreditsWidget";
 
 interface UserProfilePaymentsProps {
   payments: any[];
@@ -529,6 +530,11 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
 
   return (
     <>
+      {userProfile?.id && (
+        <div className="mb-4">
+          <UserCreditsWidget userId={userProfile.id} />
+        </div>
+      )}
       {isCoachUser ? (
         // Για coach-created users, δείχνουμε μόνο αποδείξεις (χωρίς tabs)
         <Card className="rounded-none">
