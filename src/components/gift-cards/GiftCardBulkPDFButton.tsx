@@ -61,7 +61,43 @@ export const GiftCardBulkPDFButton = forwardRef<GiftCardBulkPDFButtonHandle, Pro
       });
   }, [renderList]);
 
-  const handleDownloadAll = async () => {
+  const handleDownloadAll = async (override?: GiftCard[]) => {
+    const cards = override && override.length ? override : giftCards;
+    const _giftCards = cards;
+    if (_giftCards.length === 0) {
+      toast.error('Δεν υπάρχουν gift cards');
+      return;
+    }
+    setGenerating(true);
+    const subscriptionIds = Array.from(
+      new Set(
+        _giftCards
+          .filter(g => g.card_type === 'subscription' && g.subscription_type_id)
+          .map(g => g.subscription_type_id as string)
+      )
+    );
+    if (subscriptionIds.length > 0) {
+      const { data } = await supabase
+        .from('subscription_types')
+        .select('id, name')
+        .in('id', subscriptionIds);
+      const map: Record<string, string> = {};
+      (data || []).forEach((row: any) => { map[row.id] = row.name; });
+      setSubscriptionNames(map);
+    }
+    const [trustImage, amountImages] = await Promise.all([
+      createTrustMarkImage(),
+      Promise.all(_giftCards.map(async gc => [gc.id, await createAmountImage(gc.amount)] as const)),
+    ]);
+    setTrustMarkImage(trustImage);
+    setRenderAssets(Object.fromEntries(amountImages.map(([id, amountImage]) => [id, { amountImage }])));
+    setRenderList(_giftCards);
+    const toastId = toast.loading(`Προετοιμασία ${_giftCards.length} gift cards...`);
+    // continue below
+    return _runGeneration(_giftCards, toastId);
+  };
+
+  const _runGeneration = async (_giftCards: GiftCard[], toastId: string | number) => {
     if (giftCards.length === 0) {
       toast.error('Δεν υπάρχουν gift cards');
       return;
