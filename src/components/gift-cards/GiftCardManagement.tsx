@@ -489,7 +489,10 @@ export const GiftCardManagement: React.FC = () => {
             </TableHeader>
             <TableBody>
               {filtered.map(gc => (
-                <TableRow key={gc.id}>
+                <TableRow key={gc.id} data-state={selectedIds.has(gc.id) ? 'selected' : undefined}>
+                  <TableCell>
+                    <Checkbox checked={selectedIds.has(gc.id)} onCheckedChange={() => toggleSelect(gc.id)} />
+                  </TableCell>
                   <TableCell>
                     <button onClick={() => copyCode(gc.code)} className="flex items-center gap-1 font-mono text-sm hover:text-[#00ffba]">
                       {gc.code}
