@@ -1761,14 +1761,25 @@ export const SubscriptionManagement: React.FC = () => {
             setShowReceiptDialog(false);
             setPendingSubscriptionData(null);
           }}
-          onConfirm={(isPaid, giftCardCode) => {
+          userId={
+            pendingSubscriptionData?.isRenewal
+              ? pendingSubscriptionData?.userData?.id
+              : pendingSubscriptionData?.selectedUserData?.id
+          }
+          subscriptionName={pendingSubscriptionData?.subscriptionType?.name}
+          subscriptionPrice={
+            (pendingSubscriptionData?.subscriptionType?.price || 0) *
+            (pendingSubscriptionData?.durationMultiplier || 1)
+          }
+          onConfirm={(result) => {
             if (pendingSubscriptionData?.isRenewal) {
-              handleRenewSubscription(isPaid, giftCardCode);
+              handleRenewSubscription(result);
             } else {
-              handleCreateSubscription(isPaid, giftCardCode);
+              handleCreateSubscription(result);
             }
           }}
         />
+
 
         {/* Subscription Delete Dialog */}
         <SubscriptionDeleteDialog
