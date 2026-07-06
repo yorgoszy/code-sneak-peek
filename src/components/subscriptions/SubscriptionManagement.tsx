@@ -1124,13 +1124,19 @@ export const SubscriptionManagement: React.FC = () => {
   };
 
   const handleRenewSubscription = async (isPaid: boolean, giftCardCode?: string) => {
-    if (!pendingSubscriptionData || !pendingSubscriptionData.isRenewal) return;
+    console.log('🎁 handleRenewSubscription called', { isPaid, giftCardCode, pendingSubscriptionData });
+    if (!pendingSubscriptionData || !pendingSubscriptionData.isRenewal) {
+      console.warn('🎁 aborted: no pendingSubscriptionData or not renewal');
+      return;
+    }
 
     const { subscriptionId, userData, subscriptionType, newStartDate, newEndDate } = pendingSubscriptionData;
 
     // Validate & redeem gift card first if provided
     if (giftCardCode) {
+      console.log('🎁 Validating gift card', giftCardCode, 'for user', userData.id, 'sub', subscriptionType.id);
       const result = await validateAndRedeemGiftCard(giftCardCode, userData.id, subscriptionType.id);
+      console.log('🎁 Redeem result', result);
       if (!result.ok) {
         toast({ variant: 'destructive', title: 'Σφάλμα δωροκάρτας', description: result.error });
         setShowReceiptDialog(false);
