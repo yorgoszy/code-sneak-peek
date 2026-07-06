@@ -31,7 +31,7 @@ interface Props {
   giftCards: GiftCard[];
 }
 
-export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
+export const GiftCardBulkPDFButton = forwardRef<GiftCardBulkPDFButtonHandle, Props>(({ giftCards }, ref) => {
   const [generating, setGenerating] = useState(false);
   const [renderList, setRenderList] = useState<GiftCard[]>([]);
   const [subscriptionNames, setSubscriptionNames] = useState<Record<string, string>>({});
