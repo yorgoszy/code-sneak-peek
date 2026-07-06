@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
 import { ReceiptPreviewDialog } from "@/components/analytics/ReceiptPreviewDialog";
+import { UserCreditsWidget } from "@/components/user-profile/UserCreditsWidget";
 
 interface UserProfilePaymentsProps {
   payments: any[];
