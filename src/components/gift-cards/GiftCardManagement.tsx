@@ -8,7 +8,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Gift, Plus, Copy, Eye, Ban, Search, Pencil } from "lucide-react";
+import { Gift, Plus, Copy, Eye, Ban, Search, Pencil, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -49,6 +59,7 @@ export const GiftCardManagement: React.FC = () => {
   const [selectedCard, setSelectedCard] = useState<GiftCard | null>(null);
   const [pdfCard, setPdfCard] = useState<GiftCard | null>(null);
   const [editCard, setEditCard] = useState<GiftCard | null>(null);
+  const [deleteCard, setDeleteCard] = useState<GiftCard | null>(null);
 
   // Form state
   const [cardType, setCardType] = useState<'amount' | 'subscription'>('amount');
@@ -157,6 +168,24 @@ export const GiftCardManagement: React.FC = () => {
     } catch (error) {
       console.error('Error creating gift card:', error);
       toast.error('Σφάλμα δημιουργίας gift card');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteCard) return;
+    try {
+      const { error } = await supabase
+        .from('gift_cards')
+        .delete()
+        .eq('id', deleteCard.id);
+
+      if (error) throw error;
+      toast.success('Gift Card διαγράφηκε');
+      setDeleteCard(null);
+      fetchGiftCards();
+    } catch (error) {
+      console.error('Error deleting gift card:', error);
+      toast.error('Σφάλμα διαγραφής');
     }
   };
 
@@ -414,6 +443,9 @@ export const GiftCardManagement: React.FC = () => {
                           <Ban className="h-4 w-4 text-red-500" />
                         </Button>
                       )}
+                      <Button variant="ghost" size="sm" onClick={() => setDeleteCard(gc)} title="Διαγραφή">
+                        <Trash2 className="h-4 w-4 text-red-600" />
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -447,6 +479,26 @@ export const GiftCardManagement: React.FC = () => {
         onSaved={fetchGiftCards}
         subscriptionTypes={subscriptionTypes}
       />
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteCard} onOpenChange={(open) => !open && setDeleteCard(null)}>
+        <AlertDialogContent className="rounded-none">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Διαγραφή Gift Card</AlertDialogTitle>
+            <AlertDialogDescription>
+              Είστε σίγουροι ότι θέλετε να διαγράψετε τη δωροκάρτα{' '}
+              <span className="font-mono font-semibold">{deleteCard?.code}</span>;
+              Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90 rounded-none">
+              Διαγραφή
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
