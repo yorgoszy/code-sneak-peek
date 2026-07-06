@@ -1148,28 +1148,11 @@ export const SubscriptionManagement: React.FC = () => {
     }
   };
 
-  const handleRenewSubscription = async (isPaid: boolean, giftCardCode?: string) => {
-    console.log('🎁 handleRenewSubscription called', { isPaid, giftCardCode, pendingSubscriptionData });
-    if (!pendingSubscriptionData || !pendingSubscriptionData.isRenewal) {
-      console.warn('🎁 aborted: no pendingSubscriptionData or not renewal');
-      return;
-    }
+  const handleRenewSubscription = async (result: ReceiptConfirmResult) => {
+    if (!pendingSubscriptionData || !pendingSubscriptionData.isRenewal) return;
+    const { isPaid } = result;
 
     const { subscriptionId, userData, subscriptionType, newStartDate, newEndDate } = pendingSubscriptionData;
-
-    // Validate & redeem gift card first if provided
-    if (giftCardCode) {
-      console.log('🎁 Validating gift card', giftCardCode, 'for user', userData.id, 'sub', subscriptionType.id);
-      const result = await validateAndRedeemGiftCard(giftCardCode, userData.id, subscriptionType.id);
-      console.log('🎁 Redeem result', result);
-      if (!result.ok) {
-        toast({ variant: 'destructive', title: 'Σφάλμα δωροκάρτας', description: result.error });
-        setShowReceiptDialog(false);
-        setPendingSubscriptionData(null);
-        return;
-      }
-      isPaid = true;
-    }
 
     try {
       // Use the database function to create renewal properly
@@ -1186,6 +1169,9 @@ export const SubscriptionManagement: React.FC = () => {
           .update({ is_paid: isPaid })
           .eq('id', newSubscriptionId);
 
+        // Εφαρμογή δωροκάρτας / πίστωσης
+        await applyReceiptResult(userData.id, result, newSubscriptionId as string);
+
         // Διαγραφή παλιάς συνδρομής μετά την επιτυχή ανανέωση
         const { error: deleteError } = await supabase
           .from('user_subscriptions')
@@ -1193,6 +1179,7 @@ export const SubscriptionManagement: React.FC = () => {
           .eq('id', subscriptionId);
         if (deleteError) console.error('Error deleting old subscription:', deleteError);
       }
+
 
       // Δημιουργία απόδειξης πάντα
       await createReceiptForSubscription(userData, subscriptionType, newStartDate, newEndDate);
