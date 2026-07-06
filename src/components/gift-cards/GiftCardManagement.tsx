@@ -435,6 +435,7 @@ export const GiftCardManagement: React.FC = () => {
                 <TableHead>Κωδικός</TableHead>
                 <TableHead>Τύπος</TableHead>
                 <TableHead>Αξία</TableHead>
+                <TableHead>Αποστολέας</TableHead>
                 <TableHead>Παραλήπτης</TableHead>
                 <TableHead>Κατάσταση</TableHead>
                 <TableHead>Ημ/νία</TableHead>
