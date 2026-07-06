@@ -12,7 +12,9 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   plugins: [
+    mcpPlugin(),
     react(),
+
     VitePWA({
       registerType: 'autoUpdate',
       selfDestroying: false,
