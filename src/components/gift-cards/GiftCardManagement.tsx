@@ -71,6 +71,10 @@ export const GiftCardManagement: React.FC = () => {
   const [recipientEmail, setRecipientEmail] = useState('');
   const [message, setMessage] = useState('');
   const [expiryMonths, setExpiryMonths] = useState('12');
+  const [quantity, setQuantity] = useState('1');
+  const bulkPdfRef = React.useRef<GiftCardBulkPDFButtonHandle>(null);
+  const newBulkPdfRef = React.useRef<GiftCardBulkPDFButtonHandle>(null);
+  const [lastBatch, setLastBatch] = useState<GiftCard[]>([]);
 
   useEffect(() => {
     fetchGiftCards();
