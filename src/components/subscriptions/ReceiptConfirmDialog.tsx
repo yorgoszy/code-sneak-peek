@@ -111,7 +111,7 @@ export const ReceiptConfirmDialog: React.FC<ReceiptConfirmDialogProps> = ({
     }
   };
 
-  const submit = (isPaid: boolean) => {
+  const submit = (isPaid: boolean, storeCredit: boolean = true) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
     onConfirm({
@@ -119,7 +119,7 @@ export const ReceiptConfirmDialog: React.FC<ReceiptConfirmDialogProps> = ({
       giftCardId: validatedCard?.id,
       giftCardAmount: validatedCard?.amount,
       appliedCredit: appliedCredit > 0 ? appliedCredit : undefined,
-      newCreditToStore: leftoverFromCard > 0 ? leftoverFromCard : undefined,
+      newCreditToStore: storeCredit && leftoverFromCard > 0 ? leftoverFromCard : undefined,
       amountToPay: remaining,
     });
     onClose();
@@ -127,6 +127,7 @@ export const ReceiptConfirmDialog: React.FC<ReceiptConfirmDialogProps> = ({
 
   const fmt = (n: number) => `€${n.toFixed(2)}`;
   const fullyCovered = remaining === 0 && (giftAmount > 0 || appliedCredit > 0);
+  const hasLeftover = leftoverFromCard > 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
