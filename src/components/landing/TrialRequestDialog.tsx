@@ -106,7 +106,7 @@ export const TrialRequestDialog: React.FC<Props> = ({ open, onOpenChange }) => {
     e.preventDefault();
     const parsed = schema.safeParse(form);
     if (!parsed.success) {
-      toast.error(parsed.error.errors[0].message);
+      toast.error(parsed.error.issues[0].message);
       return;
     }
     setLoading(true);
