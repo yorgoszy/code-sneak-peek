@@ -128,7 +128,7 @@ export const GiftCardBulkPDFButton = forwardRef<GiftCardBulkPDFButtonHandle, Pro
 
       for (let i = 0; i < cardEls.length; i++) {
         const el = cardEls[i];
-        toast.loading(`Δημιουργία PDF... ${Math.floor(i / 2) + 1}/${giftCards.length}`, { id: toastId });
+        toast.loading(`Δημιουργία PDF... ${Math.floor(i / 2) + 1}/${_giftCards.length}`, { id: toastId });
 
         const canvas = await html2canvas(el, {
           scale: 2,
