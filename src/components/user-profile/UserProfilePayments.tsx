@@ -529,6 +529,11 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
 
   return (
     <>
+      {userProfile?.id && (
+        <div className="mb-4">
+          <UserCreditsWidget userId={userProfile.id} />
+        </div>
+      )}
       {isCoachUser ? (
         // Για coach-created users, δείχνουμε μόνο αποδείξεις (χωρίς tabs)
         <Card className="rounded-none">
