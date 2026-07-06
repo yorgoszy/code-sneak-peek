@@ -76,6 +76,38 @@ export const GiftCardManagement: React.FC = () => {
   const bulkPdfRef = React.useRef<GiftCardBulkPDFButtonHandle>(null);
   const newBulkPdfRef = React.useRef<GiftCardBulkPDFButtonHandle>(null);
   const [lastBatch, setLastBatch] = useState<GiftCard[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const selectedBulkRef = React.useRef<GiftCardBulkPDFButtonHandle>(null);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = (cards: GiftCard[]) => {
+    setSelectedIds(prev => {
+      if (cards.every(c => prev.has(c.id))) {
+        const next = new Set(prev);
+        cards.forEach(c => next.delete(c.id));
+        return next;
+      }
+      const next = new Set(prev);
+      cards.forEach(c => next.add(c.id));
+      return next;
+    });
+  };
+
+  const downloadSelected = () => {
+    const cards = giftCards.filter(g => selectedIds.has(g.id));
+    if (cards.length === 0) {
+      toast.error('Δεν έχετε επιλέξει καμία κάρτα');
+      return;
+    }
+    selectedBulkRef.current?.triggerDownload(cards);
+  };
 
   useEffect(() => {
     fetchGiftCards();
