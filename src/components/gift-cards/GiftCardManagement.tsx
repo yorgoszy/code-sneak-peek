@@ -462,7 +462,7 @@ export const GiftCardManagement: React.FC = () => {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Αναζήτηση κωδικού, ονόματος, email..."
+          placeholder="Αναζήτηση: κωδικός, αποστολέας, παραλήπτης, ημ/νία, τύπος συνδρομής..."
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
           className="pl-10 rounded-none"
