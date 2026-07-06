@@ -443,6 +443,9 @@ export const GiftCardManagement: React.FC = () => {
                           <Ban className="h-4 w-4 text-red-500" />
                         </Button>
                       )}
+                      <Button variant="ghost" size="sm" onClick={() => setDeleteCard(gc)} title="Διαγραφή">
+                        <Trash2 className="h-4 w-4 text-red-600" />
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
