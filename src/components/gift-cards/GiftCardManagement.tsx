@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Gift, Plus, Copy, Eye, Ban, Search, Pencil, Trash2 } from "lucide-react";
+import { Gift, Plus, Copy, Eye, Ban, Search, Pencil, Trash2, FileDown } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -75,6 +76,38 @@ export const GiftCardManagement: React.FC = () => {
   const bulkPdfRef = React.useRef<GiftCardBulkPDFButtonHandle>(null);
   const newBulkPdfRef = React.useRef<GiftCardBulkPDFButtonHandle>(null);
   const [lastBatch, setLastBatch] = useState<GiftCard[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const selectedBulkRef = React.useRef<GiftCardBulkPDFButtonHandle>(null);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = (cards: GiftCard[]) => {
+    setSelectedIds(prev => {
+      if (cards.every(c => prev.has(c.id))) {
+        const next = new Set(prev);
+        cards.forEach(c => next.delete(c.id));
+        return next;
+      }
+      const next = new Set(prev);
+      cards.forEach(c => next.add(c.id));
+      return next;
+    });
+  };
+
+  const downloadSelected = () => {
+    const cards = giftCards.filter(g => selectedIds.has(g.id));
+    if (cards.length === 0) {
+      toast.error('Δεν έχετε επιλέξει καμία κάρτα');
+      return;
+    }
+    selectedBulkRef.current?.triggerDownload(cards);
+  };
 
   useEffect(() => {
     fetchGiftCards();
@@ -270,6 +303,12 @@ export const GiftCardManagement: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <Button onClick={downloadSelected} variant="outline" className="rounded-none">
+              <FileDown className="h-4 w-4 mr-2" />
+              Λήψη επιλεγμένων ({selectedIds.size})
+            </Button>
+          )}
           <GiftCardBulkPDFButton ref={bulkPdfRef} giftCards={filtered} />
           <Dialog open={createOpen} onOpenChange={setCreateOpen}>
             <DialogTrigger asChild>
@@ -432,6 +471,12 @@ export const GiftCardManagement: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10">
+                  <Checkbox
+                    checked={filtered.length > 0 && filtered.every(c => selectedIds.has(c.id))}
+                    onCheckedChange={() => toggleSelectAll(filtered)}
+                  />
+                </TableHead>
                 <TableHead>Κωδικός</TableHead>
                 <TableHead>Τύπος</TableHead>
                 <TableHead>Αξία</TableHead>
@@ -444,7 +489,10 @@ export const GiftCardManagement: React.FC = () => {
             </TableHeader>
             <TableBody>
               {filtered.map(gc => (
-                <TableRow key={gc.id}>
+                <TableRow key={gc.id} data-state={selectedIds.has(gc.id) ? 'selected' : undefined}>
+                  <TableCell>
+                    <Checkbox checked={selectedIds.has(gc.id)} onCheckedChange={() => toggleSelect(gc.id)} />
+                  </TableCell>
                   <TableCell>
                     <button onClick={() => copyCode(gc.code)} className="flex items-center gap-1 font-mono text-sm hover:text-[#00ffba]">
                       {gc.code}
@@ -489,7 +537,7 @@ export const GiftCardManagement: React.FC = () => {
               ))}
               {filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                     Δεν βρέθηκαν gift cards
                   </TableCell>
                 </TableRow>
@@ -540,6 +588,7 @@ export const GiftCardManagement: React.FC = () => {
       {/* Hidden bulk PDF trigger for newly created batch */}
       <div style={{ position: 'fixed', left: '-10000px', top: 0, pointerEvents: 'none', opacity: 0 }} aria-hidden>
         <GiftCardBulkPDFButton ref={newBulkPdfRef} giftCards={lastBatch} />
+        <GiftCardBulkPDFButton ref={selectedBulkRef} giftCards={[]} />
       </div>
     </div>
   );
