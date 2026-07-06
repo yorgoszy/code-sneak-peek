@@ -1680,11 +1680,11 @@ export const SubscriptionManagement: React.FC = () => {
             setShowReceiptDialog(false);
             setPendingSubscriptionData(null);
           }}
-          onConfirm={(isPaid) => {
+          onConfirm={(isPaid, giftCardCode) => {
             if (pendingSubscriptionData?.isRenewal) {
-              handleRenewSubscription(isPaid);
+              handleRenewSubscription(isPaid, giftCardCode);
             } else {
-              handleCreateSubscription(isPaid);
+              handleCreateSubscription(isPaid, giftCardCode);
             }
           }}
         />
