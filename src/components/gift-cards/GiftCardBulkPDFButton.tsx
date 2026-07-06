@@ -1,6 +1,10 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Button } from "@/components/ui/button";
 import { FileDown, Loader2 } from "lucide-react";
+
+export interface GiftCardBulkPDFButtonHandle {
+  triggerDownload: (cards?: GiftCard[]) => Promise<void>;
+}
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { supabase } from "@/integrations/supabase/client";
