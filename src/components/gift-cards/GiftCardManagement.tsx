@@ -471,6 +471,12 @@ export const GiftCardManagement: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10">
+                  <Checkbox
+                    checked={filtered.length > 0 && filtered.every(c => selectedIds.has(c.id))}
+                    onCheckedChange={() => toggleSelectAll(filtered)}
+                  />
+                </TableHead>
                 <TableHead>Κωδικός</TableHead>
                 <TableHead>Τύπος</TableHead>
                 <TableHead>Αξία</TableHead>
