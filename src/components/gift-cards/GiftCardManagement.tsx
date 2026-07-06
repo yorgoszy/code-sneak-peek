@@ -479,6 +479,26 @@ export const GiftCardManagement: React.FC = () => {
         onSaved={fetchGiftCards}
         subscriptionTypes={subscriptionTypes}
       />
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteCard} onOpenChange={(open) => !open && setDeleteCard(null)}>
+        <AlertDialogContent className="rounded-none">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Διαγραφή Gift Card</AlertDialogTitle>
+            <AlertDialogDescription>
+              Είστε σίγουροι ότι θέλετε να διαγράψετε τη δωροκάρτα{' '}
+              <span className="font-mono font-semibold">{deleteCard?.code}</span>;
+              Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90 rounded-none">
+              Διαγραφή
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
