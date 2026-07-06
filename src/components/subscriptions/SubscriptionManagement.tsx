@@ -705,60 +705,79 @@ export const SubscriptionManagement: React.FC = () => {
   };
 
 
-  const validateAndRedeemGiftCard = async (
-    rawCode: string,
-    userId: string,
-    subscriptionTypeId: string
+  const redeemGiftCardById = async (
+    giftCardId: string,
+    userId: string
   ): Promise<{ ok: boolean; error?: string }> => {
-    const code = rawCode.trim().toUpperCase();
-    if (!code) return { ok: false, error: 'Κενός κωδικός' };
-
-    const { data: gc, error: e1 } = await supabase
-      .from('gift_cards')
-      .select('*')
-      .eq('code', code)
-      .maybeSingle();
-
-    if (e1 || !gc) return { ok: false, error: 'Η δωροκάρτα δεν βρέθηκε' };
-    if (gc.status !== 'active') {
-      return { ok: false, error: gc.status === 'redeemed' ? 'Η δωροκάρτα έχει ήδη εξαργυρωθεί' : 'Η δωροκάρτα δεν είναι ενεργή' };
-    }
-    if (gc.expires_at && new Date(gc.expires_at) < new Date()) {
-      return { ok: false, error: 'Η δωροκάρτα έχει λήξει' };
-    }
-    if (gc.subscription_type_id && gc.subscription_type_id !== subscriptionTypeId) {
-      return { ok: false, error: 'Η δωροκάρτα δεν αντιστοιχεί στον επιλεγμένο τύπο συνδρομής' };
-    }
-
-    const { error: updErr } = await supabase
+    const { error } = await supabase
       .from('gift_cards')
       .update({
         status: 'redeemed',
         redeemed_by: userId,
         redeemed_at: new Date().toISOString(),
       })
-      .eq('id', gc.id);
-
-    if (updErr) return { ok: false, error: updErr.message };
+      .eq('id', giftCardId)
+      .eq('status', 'active'); // guard against double redemption
+    if (error) return { ok: false, error: error.message };
     return { ok: true };
   };
 
-  const handleCreateSubscription = async (isPaid: boolean, giftCardCode?: string) => {
+  const insertCreditRow = async (payload: {
+    user_id: string;
+    amount: number;
+    source: 'gift_card' | 'subscription_use';
+    gift_card_id?: string;
+    subscription_id?: string;
+    notes?: string;
+  }) => {
+    const { error } = await supabase.from('user_credits').insert(payload as any);
+    if (error) console.error('user_credits insert failed:', error);
+  };
+
+  const applyReceiptResult = async (
+    userId: string,
+    result: {
+      giftCardId?: string;
+      giftCardAmount?: number;
+      appliedCredit?: number;
+      newCreditToStore?: number;
+    },
+    subscriptionId?: string
+  ): Promise<{ ok: boolean; error?: string }> => {
+    // 1. Redeem the gift card if present
+    if (result.giftCardId) {
+      const r = await redeemGiftCardById(result.giftCardId, userId);
+      if (!r.ok) return r;
+    }
+    // 2. Deduct credit usage
+    if (result.appliedCredit && result.appliedCredit > 0) {
+      await insertCreditRow({
+        user_id: userId,
+        amount: -Math.abs(result.appliedCredit),
+        source: 'subscription_use',
+        subscription_id: subscriptionId,
+        notes: 'Χρήση πίστωσης σε συνδρομή',
+      });
+    }
+    // 3. Store leftover as new credit
+    if (result.newCreditToStore && result.newCreditToStore > 0) {
+      await insertCreditRow({
+        user_id: userId,
+        amount: Math.abs(result.newCreditToStore),
+        source: 'gift_card',
+        gift_card_id: result.giftCardId,
+        notes: 'Υπόλοιπο από εξαργύρωση δωροκάρτας',
+      });
+    }
+    return { ok: true };
+  };
+
+  const handleCreateSubscription = async (result: ReceiptConfirmResult) => {
     if (!pendingSubscriptionData) return;
+    const { isPaid } = result;
 
     const { subscriptionType, selectedUserData, subscriptionStartDate, endDate } = pendingSubscriptionData;
 
-    // Validate & redeem gift card first if provided
-    if (giftCardCode) {
-      const result = await validateAndRedeemGiftCard(giftCardCode, selectedUser, selectedSubscriptionType);
-      if (!result.ok) {
-        toast({ variant: 'destructive', title: 'Σφάλμα δωροκάρτας', description: result.error });
-        setShowReceiptDialog(false);
-        setPendingSubscriptionData(null);
-        return;
-      }
-      isPaid = true;
-    }
 
 
     try {
