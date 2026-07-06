@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { matchesSearchTerm } from "@/lib/utils";
 import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown, Receipt, Pause, Play, RotateCcw, Trash2, UserCheck, CreditCard, Users, FileText, AlertTriangle } from "lucide-react";
 import { ReceiptPreviewDialog } from "@/components/analytics/ReceiptPreviewDialog";
-import { ReceiptConfirmDialog } from './ReceiptConfirmDialog';
+import { ReceiptConfirmDialog, type ReceiptConfirmResult } from './ReceiptConfirmDialog';
 import { SubscriptionDeleteDialog } from './SubscriptionDeleteDialog';
 import { SectionAssignmentDialog } from './SectionAssignmentDialog';
 import { format } from 'date-fns';
