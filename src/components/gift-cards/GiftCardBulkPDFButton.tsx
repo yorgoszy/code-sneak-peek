@@ -164,7 +164,7 @@ export const GiftCardBulkPDFButton = forwardRef<GiftCardBulkPDFButtonHandle, Pro
   return (
     <>
       <Button
-        onClick={handleDownloadAll}
+        onClick={() => handleDownloadAll()}
         disabled={generating || giftCards.length === 0}
         variant="outline"
         className="rounded-none"
