@@ -782,7 +782,7 @@ export const SubscriptionManagement: React.FC = () => {
 
     try {
       // Δημιουργία νέας συνδρομής
-      const { error: subscriptionError } = await supabase
+      const { data: newSub, error: subscriptionError } = await supabase
         .from('user_subscriptions')
         .insert({
           user_id: selectedUser,
@@ -792,9 +792,14 @@ export const SubscriptionManagement: React.FC = () => {
           status: 'active',
           notes: notes,
           is_paid: isPaid
-        });
+        })
+        .select('id')
+        .single();
 
       if (subscriptionError) throw subscriptionError;
+
+      // Εφαρμογή δωροκάρτας / πίστωσης
+      await applyReceiptResult(selectedUser, result, newSub?.id);
 
       // Ενημέρωση status χρήστη
       const { error: userError } = await supabase
@@ -803,6 +808,7 @@ export const SubscriptionManagement: React.FC = () => {
         .eq('id', selectedUser);
 
       if (userError) throw userError;
+
 
       // Δημιουργία visit package αν είναι visit-based subscription
       // Ο πολλαπλασιαστής εφαρμόζεται στις επισκέψεις, τη διάρκεια και την τιμή
