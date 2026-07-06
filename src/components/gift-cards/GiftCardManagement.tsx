@@ -588,6 +588,7 @@ export const GiftCardManagement: React.FC = () => {
       {/* Hidden bulk PDF trigger for newly created batch */}
       <div style={{ position: 'fixed', left: '-10000px', top: 0, pointerEvents: 'none', opacity: 0 }} aria-hidden>
         <GiftCardBulkPDFButton ref={newBulkPdfRef} giftCards={lastBatch} />
+        <GiftCardBulkPDFButton ref={selectedBulkRef} giftCards={[]} />
       </div>
     </div>
   );
