@@ -705,10 +705,61 @@ export const SubscriptionManagement: React.FC = () => {
   };
 
 
-  const handleCreateSubscription = async (isPaid: boolean) => {
+  const validateAndRedeemGiftCard = async (
+    rawCode: string,
+    userId: string,
+    subscriptionTypeId: string
+  ): Promise<{ ok: boolean; error?: string }> => {
+    const code = rawCode.trim().toUpperCase();
+    if (!code) return { ok: false, error: 'Κενός κωδικός' };
+
+    const { data: gc, error: e1 } = await supabase
+      .from('gift_cards')
+      .select('*')
+      .eq('code', code)
+      .maybeSingle();
+
+    if (e1 || !gc) return { ok: false, error: 'Η δωροκάρτα δεν βρέθηκε' };
+    if (gc.status !== 'active') {
+      return { ok: false, error: gc.status === 'redeemed' ? 'Η δωροκάρτα έχει ήδη εξαργυρωθεί' : 'Η δωροκάρτα δεν είναι ενεργή' };
+    }
+    if (gc.expires_at && new Date(gc.expires_at) < new Date()) {
+      return { ok: false, error: 'Η δωροκάρτα έχει λήξει' };
+    }
+    if (gc.subscription_type_id && gc.subscription_type_id !== subscriptionTypeId) {
+      return { ok: false, error: 'Η δωροκάρτα δεν αντιστοιχεί στον επιλεγμένο τύπο συνδρομής' };
+    }
+
+    const { error: updErr } = await supabase
+      .from('gift_cards')
+      .update({
+        status: 'redeemed',
+        redeemed_by: userId,
+        redeemed_at: new Date().toISOString(),
+      })
+      .eq('id', gc.id);
+
+    if (updErr) return { ok: false, error: updErr.message };
+    return { ok: true };
+  };
+
+  const handleCreateSubscription = async (isPaid: boolean, giftCardCode?: string) => {
     if (!pendingSubscriptionData) return;
 
     const { subscriptionType, selectedUserData, subscriptionStartDate, endDate } = pendingSubscriptionData;
+
+    // Validate & redeem gift card first if provided
+    if (giftCardCode) {
+      const result = await validateAndRedeemGiftCard(giftCardCode, selectedUser, selectedSubscriptionType);
+      if (!result.ok) {
+        toast({ variant: 'destructive', title: 'Σφάλμα δωροκάρτας', description: result.error });
+        setShowReceiptDialog(false);
+        setPendingSubscriptionData(null);
+        return;
+      }
+      isPaid = true;
+    }
+
 
     try {
       // Δημιουργία νέας συνδρομής
