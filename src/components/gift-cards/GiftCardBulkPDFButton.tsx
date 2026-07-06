@@ -1,6 +1,10 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Button } from "@/components/ui/button";
 import { FileDown, Loader2 } from "lucide-react";
+
+export interface GiftCardBulkPDFButtonHandle {
+  triggerDownload: (cards?: GiftCard[]) => Promise<void>;
+}
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { supabase } from "@/integrations/supabase/client";
@@ -27,7 +31,7 @@ interface Props {
   giftCards: GiftCard[];
 }
 
-export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
+export const GiftCardBulkPDFButton = forwardRef<GiftCardBulkPDFButtonHandle, Props>(({ giftCards }, ref) => {
   const [generating, setGenerating] = useState(false);
   const [renderList, setRenderList] = useState<GiftCard[]>([]);
   const [subscriptionNames, setSubscriptionNames] = useState<Record<string, string>>({});
@@ -57,15 +61,17 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
       });
   }, [renderList]);
 
-  const handleDownloadAll = async () => {
-    if (giftCards.length === 0) {
+  const handleDownloadAll = async (override?: GiftCard[]) => {
+    const cards = override && override.length ? override : giftCards;
+    const _giftCards = cards;
+    if (_giftCards.length === 0) {
       toast.error('Δεν υπάρχουν gift cards');
       return;
     }
     setGenerating(true);
     const subscriptionIds = Array.from(
       new Set(
-        giftCards
+        _giftCards
           .filter(g => g.card_type === 'subscription' && g.subscription_type_id)
           .map(g => g.subscription_type_id as string)
       )
@@ -81,12 +87,17 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
     }
     const [trustImage, amountImages] = await Promise.all([
       createTrustMarkImage(),
-      Promise.all(giftCards.map(async gc => [gc.id, await createAmountImage(gc.amount)] as const)),
+      Promise.all(_giftCards.map(async gc => [gc.id, await createAmountImage(gc.amount)] as const)),
     ]);
     setTrustMarkImage(trustImage);
     setRenderAssets(Object.fromEntries(amountImages.map(([id, amountImage]) => [id, { amountImage }])));
-    setRenderList(giftCards);
-    const toastId = toast.loading(`Προετοιμασία ${giftCards.length} gift cards...`);
+    setRenderList(_giftCards);
+    const toastId = toast.loading(`Προετοιμασία ${_giftCards.length} gift cards...`);
+    // continue below
+    return _runGeneration(_giftCards, toastId);
+  };
+
+  const _runGeneration = async (_giftCards: GiftCard[], toastId: string | number) => {
 
     try {
       // Wait for React to mount the offscreen tree
@@ -117,7 +128,7 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
 
       for (let i = 0; i < cardEls.length; i++) {
         const el = cardEls[i];
-        toast.loading(`Δημιουργία PDF... ${Math.floor(i / 2) + 1}/${giftCards.length}`, { id: toastId });
+        toast.loading(`Δημιουργία PDF... ${Math.floor(i / 2) + 1}/${_giftCards.length}`, { id: toastId });
 
         const canvas = await html2canvas(el, {
           scale: 2,
@@ -134,7 +145,7 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
       }
 
       pdf.save(`gift-cards-${new Date().toISOString().slice(0, 10)}.pdf`);
-      toast.success(`Δημιουργήθηκε PDF με ${giftCards.length} gift cards`, { id: toastId });
+      toast.success(`Δημιουργήθηκε PDF με ${_giftCards.length} gift cards`, { id: toastId });
     } catch (err) {
       console.error('Bulk PDF error:', err);
       toast.error('Σφάλμα δημιουργίας PDF', { id: toastId });
@@ -146,10 +157,14 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
     }
   };
 
+  useImperativeHandle(ref, () => ({
+    triggerDownload: (cards?: GiftCard[]) => handleDownloadAll(cards),
+  }));
+
   return (
     <>
       <Button
-        onClick={handleDownloadAll}
+        onClick={() => handleDownloadAll()}
         disabled={generating || giftCards.length === 0}
         variant="outline"
         className="rounded-none"
@@ -194,4 +209,6 @@ export const GiftCardBulkPDFButton: React.FC<Props> = ({ giftCards }) => {
       )}
     </>
   );
-};
+});
+
+GiftCardBulkPDFButton.displayName = 'GiftCardBulkPDFButton';

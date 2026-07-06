@@ -24,7 +24,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { GiftCardPDFDialog } from './GiftCardPDFDialog';
 import { GiftCardEditDialog } from './GiftCardEditDialog';
-import { GiftCardBulkPDFButton } from './GiftCardBulkPDFButton';
+import { GiftCardBulkPDFButton, type GiftCardBulkPDFButtonHandle } from './GiftCardBulkPDFButton';
 
 interface GiftCard {
   id: string;
@@ -71,6 +71,10 @@ export const GiftCardManagement: React.FC = () => {
   const [recipientEmail, setRecipientEmail] = useState('');
   const [message, setMessage] = useState('');
   const [expiryMonths, setExpiryMonths] = useState('12');
+  const [quantity, setQuantity] = useState('1');
+  const bulkPdfRef = React.useRef<GiftCardBulkPDFButtonHandle>(null);
+  const newBulkPdfRef = React.useRef<GiftCardBulkPDFButtonHandle>(null);
+  const [lastBatch, setLastBatch] = useState<GiftCard[]>([]);
 
   useEffect(() => {
     fetchGiftCards();
@@ -117,8 +121,7 @@ export const GiftCardManagement: React.FC = () => {
 
   const handleCreate = async () => {
     try {
-      const code = await generateCode();
-      
+      const qty = Math.max(1, Math.min(100, parseInt(quantity) || 1));
       const { data: currentUser } = await supabase
         .from('app_users')
         .select('id')
@@ -128,43 +131,52 @@ export const GiftCardManagement: React.FC = () => {
       const expiresAt = new Date();
       expiresAt.setMonth(expiresAt.getMonth() + parseInt(expiryMonths));
 
-      const newCard: any = {
-        code,
-        card_type: cardType,
-        sender_name: senderName || null,
-        sender_email: senderEmail || null,
-        recipient_name: recipientName || null,
-        recipient_email: recipientEmail || null,
-        message: message || null,
-        status: 'active',
-        purchase_method: 'manual',
-        created_by: currentUser?.id,
-        expires_at: expiresAt.toISOString(),
-      };
-
-      if (cardType === 'amount') {
-        newCard.amount = parseFloat(amount);
-      } else {
-        newCard.subscription_type_id = subscriptionTypeId;
-        const sub = subscriptionTypes.find(s => s.id === subscriptionTypeId);
-        if (sub) newCard.amount = sub.price;
+      const created: GiftCard[] = [];
+      for (let i = 0; i < qty; i++) {
+        const code = await generateCode();
+        const newCard: any = {
+          code,
+          card_type: cardType,
+          sender_name: senderName || null,
+          sender_email: senderEmail || null,
+          recipient_name: qty === 1 ? (recipientName || null) : null,
+          recipient_email: qty === 1 ? (recipientEmail || null) : null,
+          message: message || null,
+          status: 'active',
+          purchase_method: 'manual',
+          created_by: currentUser?.id,
+          expires_at: expiresAt.toISOString(),
+        };
+        if (cardType === 'amount') {
+          newCard.amount = parseFloat(amount);
+        } else {
+          newCard.subscription_type_id = subscriptionTypeId;
+          const sub = subscriptionTypes.find(s => s.id === subscriptionTypeId);
+          if (sub) newCard.amount = sub.price;
+        }
+        const { data, error } = await supabase
+          .from('gift_cards')
+          .insert(newCard)
+          .select()
+          .single();
+        if (error) throw error;
+        if (data) created.push(data as GiftCard);
       }
 
-      const { data, error } = await supabase
-        .from('gift_cards')
-        .insert(newCard)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      toast.success(`Gift Card δημιουργήθηκε: ${code}`);
+      toast.success(qty === 1 ? `Gift Card δημιουργήθηκε: ${created[0].code}` : `${qty} Gift Cards δημιουργήθηκαν`);
       setCreateOpen(false);
       resetForm();
       fetchGiftCards();
 
-      // Show PDF dialog
-      if (data) setPdfCard(data);
+      if (qty === 1 && created[0]) {
+        setPdfCard(created[0]);
+      } else if (created.length > 1) {
+        setLastBatch(created);
+        // Trigger bulk PDF for these new cards
+        setTimeout(() => {
+          newBulkPdfRef.current?.triggerDownload(created);
+        }, 100);
+      }
     } catch (error) {
       console.error('Error creating gift card:', error);
       toast.error('Σφάλμα δημιουργίας gift card');
@@ -220,6 +232,7 @@ export const GiftCardManagement: React.FC = () => {
     setRecipientEmail('');
     setMessage('');
     setExpiryMonths('12');
+    setQuantity('1');
   };
 
   const getStatusBadge = (status: string) => {
@@ -257,7 +270,7 @@ export const GiftCardManagement: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <GiftCardBulkPDFButton giftCards={filtered} />
+          <GiftCardBulkPDFButton ref={bulkPdfRef} giftCards={filtered} />
           <Dialog open={createOpen} onOpenChange={setCreateOpen}>
             <DialogTrigger asChild>
               <Button className="bg-black text-white hover:bg-gray-800 rounded-none">
@@ -359,8 +372,25 @@ export const GiftCardManagement: React.FC = () => {
                 </Select>
               </div>
 
+              <div>
+                <Label>Ποσότητα (μαζική δημιουργία)</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={quantity}
+                  onChange={e => setQuantity(e.target.value)}
+                  className="rounded-none"
+                />
+                {parseInt(quantity) > 1 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Θα δημιουργηθούν {quantity} κάρτες και θα κατέβει ένα ενιαίο PDF με όλες.
+                  </p>
+                )}
+              </div>
+
               <Button onClick={handleCreate} className="w-full bg-black text-white hover:bg-gray-800 rounded-none">
-                Δημιουργία Gift Card
+                {parseInt(quantity) > 1 ? `Δημιουργία ${quantity} Gift Cards` : 'Δημιουργία Gift Card'}
               </Button>
             </div>
           </DialogContent>
@@ -405,6 +435,7 @@ export const GiftCardManagement: React.FC = () => {
                 <TableHead>Κωδικός</TableHead>
                 <TableHead>Τύπος</TableHead>
                 <TableHead>Αξία</TableHead>
+                <TableHead>Αποστολέας</TableHead>
                 <TableHead>Παραλήπτης</TableHead>
                 <TableHead>Κατάσταση</TableHead>
                 <TableHead>Ημ/νία</TableHead>
@@ -422,6 +453,12 @@ export const GiftCardManagement: React.FC = () => {
                   </TableCell>
                   <TableCell>{gc.card_type === 'amount' ? 'Ποσό' : 'Συνδρομή'}</TableCell>
                   <TableCell>€{gc.amount || 0}</TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      <div>{gc.sender_name || '-'}</div>
+                      <div className="text-muted-foreground text-xs">{gc.sender_email || ''}</div>
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <div className="text-sm">
                       <div>{gc.recipient_name || '-'}</div>
@@ -452,7 +489,7 @@ export const GiftCardManagement: React.FC = () => {
               ))}
               {filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                     Δεν βρέθηκαν gift cards
                   </TableCell>
                 </TableRow>
@@ -499,6 +536,11 @@ export const GiftCardManagement: React.FC = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Hidden bulk PDF trigger for newly created batch */}
+      <div style={{ position: 'fixed', left: '-10000px', top: 0, pointerEvents: 'none', opacity: 0 }} aria-hidden>
+        <GiftCardBulkPDFButton ref={newBulkPdfRef} giftCards={lastBatch} />
+      </div>
     </div>
   );
 };
