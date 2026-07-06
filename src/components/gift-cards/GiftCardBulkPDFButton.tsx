@@ -157,6 +157,10 @@ export const GiftCardBulkPDFButton = forwardRef<GiftCardBulkPDFButtonHandle, Pro
     }
   };
 
+  useImperativeHandle(ref, () => ({
+    triggerDownload: (cards?: GiftCard[]) => handleDownloadAll(cards),
+  }));
+
   return (
     <>
       <Button
