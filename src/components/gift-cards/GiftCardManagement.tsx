@@ -284,11 +284,32 @@ export const GiftCardManagement: React.FC = () => {
     return <Badge className={`rounded-none ${variants[status] || ''}`}>{labels[status] || status}</Badge>;
   };
 
-  const filtered = giftCards.filter(gc =>
-    gc.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    gc.recipient_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    gc.recipient_email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const normalize = (s: string) =>
+    (s || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+
+  const filtered = giftCards.filter(gc => {
+    const q = normalize(searchTerm.trim());
+    if (!q) return true;
+    const subName = gc.subscription_type_id
+      ? subscriptionTypes.find(s => s.id === gc.subscription_type_id)?.name || ''
+      : '';
+    const typeLabel = gc.card_type === 'amount' ? 'ποσό amount' : 'συνδρομή subscription';
+    const created = gc.created_at ? format(new Date(gc.created_at), 'dd/MM/yyyy') : '';
+    const expires = gc.expires_at ? format(new Date(gc.expires_at), 'dd/MM/yyyy') : '';
+    const haystack = normalize([
+      gc.code,
+      gc.sender_name, gc.sender_email,
+      gc.recipient_name, gc.recipient_email,
+      subName, typeLabel,
+      created, expires,
+      gc.amount != null ? `€${gc.amount}` : '',
+      gc.status,
+    ].filter(Boolean).join(' '));
+    return haystack.includes(q);
+  });
 
   return (
     <div className="space-y-6">
@@ -441,7 +462,7 @@ export const GiftCardManagement: React.FC = () => {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Αναζήτηση κωδικού, ονόματος, email..."
+          placeholder="Αναζήτηση: κωδικός, αποστολέας, παραλήπτης, ημ/νία, τύπος συνδρομής..."
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
           className="pl-10 rounded-none"
