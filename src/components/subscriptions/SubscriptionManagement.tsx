@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { matchesSearchTerm } from "@/lib/utils";
 import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown, Receipt, Pause, Play, RotateCcw, Trash2, UserCheck, CreditCard, Users, FileText, AlertTriangle } from "lucide-react";
 import { ReceiptPreviewDialog } from "@/components/analytics/ReceiptPreviewDialog";
-import { ReceiptConfirmDialog } from './ReceiptConfirmDialog';
+import { ReceiptConfirmDialog, type ReceiptConfirmResult } from './ReceiptConfirmDialog';
 import { SubscriptionDeleteDialog } from './SubscriptionDeleteDialog';
 import { SectionAssignmentDialog } from './SectionAssignmentDialog';
 import { format } from 'date-fns';
@@ -705,65 +705,84 @@ export const SubscriptionManagement: React.FC = () => {
   };
 
 
-  const validateAndRedeemGiftCard = async (
-    rawCode: string,
-    userId: string,
-    subscriptionTypeId: string
+  const redeemGiftCardById = async (
+    giftCardId: string,
+    userId: string
   ): Promise<{ ok: boolean; error?: string }> => {
-    const code = rawCode.trim().toUpperCase();
-    if (!code) return { ok: false, error: 'Κενός κωδικός' };
-
-    const { data: gc, error: e1 } = await supabase
-      .from('gift_cards')
-      .select('*')
-      .eq('code', code)
-      .maybeSingle();
-
-    if (e1 || !gc) return { ok: false, error: 'Η δωροκάρτα δεν βρέθηκε' };
-    if (gc.status !== 'active') {
-      return { ok: false, error: gc.status === 'redeemed' ? 'Η δωροκάρτα έχει ήδη εξαργυρωθεί' : 'Η δωροκάρτα δεν είναι ενεργή' };
-    }
-    if (gc.expires_at && new Date(gc.expires_at) < new Date()) {
-      return { ok: false, error: 'Η δωροκάρτα έχει λήξει' };
-    }
-    if (gc.subscription_type_id && gc.subscription_type_id !== subscriptionTypeId) {
-      return { ok: false, error: 'Η δωροκάρτα δεν αντιστοιχεί στον επιλεγμένο τύπο συνδρομής' };
-    }
-
-    const { error: updErr } = await supabase
+    const { error } = await supabase
       .from('gift_cards')
       .update({
         status: 'redeemed',
         redeemed_by: userId,
         redeemed_at: new Date().toISOString(),
       })
-      .eq('id', gc.id);
-
-    if (updErr) return { ok: false, error: updErr.message };
+      .eq('id', giftCardId)
+      .eq('status', 'active'); // guard against double redemption
+    if (error) return { ok: false, error: error.message };
     return { ok: true };
   };
 
-  const handleCreateSubscription = async (isPaid: boolean, giftCardCode?: string) => {
+  const insertCreditRow = async (payload: {
+    user_id: string;
+    amount: number;
+    source: 'gift_card' | 'subscription_use';
+    gift_card_id?: string;
+    subscription_id?: string;
+    notes?: string;
+  }) => {
+    const { error } = await supabase.from('user_credits').insert(payload as any);
+    if (error) console.error('user_credits insert failed:', error);
+  };
+
+  const applyReceiptResult = async (
+    userId: string,
+    result: {
+      giftCardId?: string;
+      giftCardAmount?: number;
+      appliedCredit?: number;
+      newCreditToStore?: number;
+    },
+    subscriptionId?: string
+  ): Promise<{ ok: boolean; error?: string }> => {
+    // 1. Redeem the gift card if present
+    if (result.giftCardId) {
+      const r = await redeemGiftCardById(result.giftCardId, userId);
+      if (!r.ok) return r;
+    }
+    // 2. Deduct credit usage
+    if (result.appliedCredit && result.appliedCredit > 0) {
+      await insertCreditRow({
+        user_id: userId,
+        amount: -Math.abs(result.appliedCredit),
+        source: 'subscription_use',
+        subscription_id: subscriptionId,
+        notes: 'Χρήση πίστωσης σε συνδρομή',
+      });
+    }
+    // 3. Store leftover as new credit
+    if (result.newCreditToStore && result.newCreditToStore > 0) {
+      await insertCreditRow({
+        user_id: userId,
+        amount: Math.abs(result.newCreditToStore),
+        source: 'gift_card',
+        gift_card_id: result.giftCardId,
+        notes: 'Υπόλοιπο από εξαργύρωση δωροκάρτας',
+      });
+    }
+    return { ok: true };
+  };
+
+  const handleCreateSubscription = async (result: ReceiptConfirmResult) => {
     if (!pendingSubscriptionData) return;
+    const { isPaid } = result;
 
     const { subscriptionType, selectedUserData, subscriptionStartDate, endDate } = pendingSubscriptionData;
 
-    // Validate & redeem gift card first if provided
-    if (giftCardCode) {
-      const result = await validateAndRedeemGiftCard(giftCardCode, selectedUser, selectedSubscriptionType);
-      if (!result.ok) {
-        toast({ variant: 'destructive', title: 'Σφάλμα δωροκάρτας', description: result.error });
-        setShowReceiptDialog(false);
-        setPendingSubscriptionData(null);
-        return;
-      }
-      isPaid = true;
-    }
 
 
     try {
       // Δημιουργία νέας συνδρομής
-      const { error: subscriptionError } = await supabase
+      const { data: newSub, error: subscriptionError } = await supabase
         .from('user_subscriptions')
         .insert({
           user_id: selectedUser,
@@ -773,9 +792,14 @@ export const SubscriptionManagement: React.FC = () => {
           status: 'active',
           notes: notes,
           is_paid: isPaid
-        });
+        })
+        .select('id')
+        .single();
 
       if (subscriptionError) throw subscriptionError;
+
+      // Εφαρμογή δωροκάρτας / πίστωσης
+      await applyReceiptResult(selectedUser, result, newSub?.id);
 
       // Ενημέρωση status χρήστη
       const { error: userError } = await supabase
@@ -784,6 +808,7 @@ export const SubscriptionManagement: React.FC = () => {
         .eq('id', selectedUser);
 
       if (userError) throw userError;
+
 
       // Δημιουργία visit package αν είναι visit-based subscription
       // Ο πολλαπλασιαστής εφαρμόζεται στις επισκέψεις, τη διάρκεια και την τιμή
@@ -1123,28 +1148,11 @@ export const SubscriptionManagement: React.FC = () => {
     }
   };
 
-  const handleRenewSubscription = async (isPaid: boolean, giftCardCode?: string) => {
-    console.log('🎁 handleRenewSubscription called', { isPaid, giftCardCode, pendingSubscriptionData });
-    if (!pendingSubscriptionData || !pendingSubscriptionData.isRenewal) {
-      console.warn('🎁 aborted: no pendingSubscriptionData or not renewal');
-      return;
-    }
+  const handleRenewSubscription = async (result: ReceiptConfirmResult) => {
+    if (!pendingSubscriptionData || !pendingSubscriptionData.isRenewal) return;
+    const { isPaid } = result;
 
     const { subscriptionId, userData, subscriptionType, newStartDate, newEndDate } = pendingSubscriptionData;
-
-    // Validate & redeem gift card first if provided
-    if (giftCardCode) {
-      console.log('🎁 Validating gift card', giftCardCode, 'for user', userData.id, 'sub', subscriptionType.id);
-      const result = await validateAndRedeemGiftCard(giftCardCode, userData.id, subscriptionType.id);
-      console.log('🎁 Redeem result', result);
-      if (!result.ok) {
-        toast({ variant: 'destructive', title: 'Σφάλμα δωροκάρτας', description: result.error });
-        setShowReceiptDialog(false);
-        setPendingSubscriptionData(null);
-        return;
-      }
-      isPaid = true;
-    }
 
     try {
       // Use the database function to create renewal properly
@@ -1161,6 +1169,9 @@ export const SubscriptionManagement: React.FC = () => {
           .update({ is_paid: isPaid })
           .eq('id', newSubscriptionId);
 
+        // Εφαρμογή δωροκάρτας / πίστωσης
+        await applyReceiptResult(userData.id, result, newSubscriptionId as string);
+
         // Διαγραφή παλιάς συνδρομής μετά την επιτυχή ανανέωση
         const { error: deleteError } = await supabase
           .from('user_subscriptions')
@@ -1168,6 +1179,7 @@ export const SubscriptionManagement: React.FC = () => {
           .eq('id', subscriptionId);
         if (deleteError) console.error('Error deleting old subscription:', deleteError);
       }
+
 
       // Δημιουργία απόδειξης πάντα
       await createReceiptForSubscription(userData, subscriptionType, newStartDate, newEndDate);
@@ -1749,14 +1761,25 @@ export const SubscriptionManagement: React.FC = () => {
             setShowReceiptDialog(false);
             setPendingSubscriptionData(null);
           }}
-          onConfirm={(isPaid, giftCardCode) => {
+          userId={
+            pendingSubscriptionData?.isRenewal
+              ? pendingSubscriptionData?.userData?.id
+              : pendingSubscriptionData?.selectedUserData?.id
+          }
+          subscriptionName={pendingSubscriptionData?.subscriptionType?.name}
+          subscriptionPrice={
+            (pendingSubscriptionData?.subscriptionType?.price || 0) *
+            (pendingSubscriptionData?.durationMultiplier || 1)
+          }
+          onConfirm={(result) => {
             if (pendingSubscriptionData?.isRenewal) {
-              handleRenewSubscription(isPaid, giftCardCode);
+              handleRenewSubscription(result);
             } else {
-              handleCreateSubscription(isPaid, giftCardCode);
+              handleCreateSubscription(result);
             }
           }}
         />
+
 
         {/* Subscription Delete Dialog */}
         <SubscriptionDeleteDialog
