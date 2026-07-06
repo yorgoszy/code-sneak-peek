@@ -171,6 +171,24 @@ export const GiftCardManagement: React.FC = () => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!deleteCard) return;
+    try {
+      const { error } = await supabase
+        .from('gift_cards')
+        .delete()
+        .eq('id', deleteCard.id);
+
+      if (error) throw error;
+      toast.success('Gift Card διαγράφηκε');
+      setDeleteCard(null);
+      fetchGiftCards();
+    } catch (error) {
+      console.error('Error deleting gift card:', error);
+      toast.error('Σφάλμα διαγραφής');
+    }
+  };
+
   const handleCancel = async (id: string) => {
     try {
       const { error } = await supabase
