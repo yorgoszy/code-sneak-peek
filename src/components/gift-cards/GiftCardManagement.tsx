@@ -232,6 +232,7 @@ export const GiftCardManagement: React.FC = () => {
     setRecipientEmail('');
     setMessage('');
     setExpiryMonths('12');
+    setQuantity('1');
   };
 
   const getStatusBadge = (status: string) => {
