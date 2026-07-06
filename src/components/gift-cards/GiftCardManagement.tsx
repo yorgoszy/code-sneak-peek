@@ -270,7 +270,7 @@ export const GiftCardManagement: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <GiftCardBulkPDFButton giftCards={filtered} />
+          <GiftCardBulkPDFButton ref={bulkPdfRef} giftCards={filtered} />
           <Dialog open={createOpen} onOpenChange={setCreateOpen}>
             <DialogTrigger asChild>
               <Button className="bg-black text-white hover:bg-gray-800 rounded-none">
