@@ -102,13 +102,6 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
           aria-hidden="true"
         />
         <div className="absolute inset-0 bg-black/30" />
-        <button
-          onClick={() => api?.scrollPrev()}
-          aria-label="Previous slide"
-          className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 text-white p-2 hover:border hover:border-white transition-colors"
-        >
-          <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
-        </button>
 
         <h3
           className="relative z-10 text-center px-4 text-[14vw] md:text-[14vw] lg:text-[15.6vw] leading-none"
@@ -120,18 +113,24 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
         >
           news
         </h3>
-
-        <button
-          onClick={() => api?.scrollNext()}
-          aria-label="Next slide"
-          className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 text-white p-2 hover:border hover:border-white transition-colors"
-        >
-          <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
-        </button>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative mt-16">
+          <button
+            onClick={() => api?.scrollPrev()}
+            aria-label="Previous slide"
+            className="absolute -left-2 sm:-left-8 top-1/2 -translate-y-1/2 z-20 text-black p-2 hover:border hover:border-black transition-colors"
+          >
+            <ChevronLeft className="h-6 w-6 sm:h-8 sm:w-8" />
+          </button>
+          <button
+            onClick={() => api?.scrollNext()}
+            aria-label="Next slide"
+            className="absolute -right-2 sm:-right-8 top-1/2 -translate-y-1/2 z-20 text-black p-2 hover:border hover:border-black transition-colors"
+          >
+            <ChevronRight className="h-6 w-6 sm:h-8 sm:w-8" />
+          </button>
           {loading ? (
             <div style={{ color: '#000000' }}>Φόρτωση...</div>
           ) : results.length === 0 ? (
