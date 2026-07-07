@@ -100,9 +100,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(newSession?.user ?? null);
         setLoading(false);
 
-        if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') && newSession?.user?.id) {
-          // Re-fetch roles on sign in / token refresh / profile update
+        if (event === 'SIGNED_IN' && newSession?.user?.id) {
+          // Only show loading on fresh sign in
           setRolesLoading(true);
+          fetchUserRole(newSession.user.id);
+        } else if ((event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') && newSession?.user?.id) {
+          // Silent re-fetch — DO NOT toggle rolesLoading, otherwise pages
+          // that gate rendering on rolesLoading will unmount and appear to "reload"
+          // every time Supabase auto-refreshes the token.
           fetchUserRole(newSession.user.id);
         } else if (event === 'SIGNED_OUT') {
           setUserRoles([]);
