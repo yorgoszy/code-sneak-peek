@@ -305,15 +305,6 @@ export const UserProfileSidebar = forwardRef<
       disabled: false
     },
     {
-      icon: Swords,
-      label: 'Αγώνες',
-      key: "fights",
-      badge: null,
-      // Athletes & parents see their fights menu
-      visible: (userProfile?.role === 'athlete' || userProfile?.role === 'parent' || isAdmin),
-      disabled: !hasSubscription
-    },
-    {
       icon: ShieldAlert,
       label: t('sidebar.safety'),
       key: "safety",
