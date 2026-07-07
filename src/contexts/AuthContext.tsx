@@ -137,13 +137,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           filter: `auth_user_id=eq.${user.id}`,
         },
         () => {
-          setRolesLoading(true);
+          // Silent re-fetch on app_users row change
           fetchUserRole(user.id);
         }
       )
       .subscribe();
 
     const handleWindowFocus = () => {
+      // Silent re-fetch on focus — do not toggle rolesLoading
       fetchUserRole(user.id);
     };
 
