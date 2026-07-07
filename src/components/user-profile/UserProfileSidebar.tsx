@@ -15,11 +15,7 @@ import {
   History,
   BookOpen,
   Download,
-  Utensils,
-  Shuffle,
-  Radio,
   ShieldAlert,
-  Swords,
   Droplet
 
 } from "lucide-react";
@@ -236,14 +232,6 @@ export const UserProfileSidebar = forwardRef<
       visible: true,
       disabled: !hasSubscription
     },
-    {
-      icon: Utensils,
-      label: t('sidebar.nutrition'),
-      key: "nutrition",
-      badge: null,
-      visible: true,
-      disabled: !hasSubscription
-    },
     { 
       icon: Calendar, 
       label: t('sidebar.calendar'), 
@@ -315,15 +303,6 @@ export const UserProfileSidebar = forwardRef<
       badge: null,
       visible: true,
       disabled: false
-    },
-    {
-      icon: Swords,
-      label: 'Αγώνες',
-      key: "fights",
-      badge: null,
-      // Athletes & parents see their fights menu
-      visible: (userProfile?.role === 'athlete' || userProfile?.role === 'parent' || isAdmin),
-      disabled: !hasSubscription
     },
     {
       icon: ShieldAlert,
@@ -404,27 +383,6 @@ export const UserProfileSidebar = forwardRef<
           </button>
         );
       })}
-      
-      {/* Κλήρωση/Live/Ranking/Ζύγιση - νέα role-scoped URLs ανά χρήστη */}
-      {userProfile?.coach_id && (
-        <>
-          <div className="my-2 h-px bg-border" />
-          <button
-            onClick={() => navigate(`/user/${userProfile.id}/brackets`)}
-            className="w-full flex items-center space-x-3 px-3 py-2 md:py-2 text-sm font-medium text-foreground/70 transition-colors hover:bg-muted rounded-none"
-          >
-            <Shuffle className="h-5 w-5 flex-shrink-0" />
-            {(!isCollapsed || isMobile) && <span className="truncate">{t('sidebar.draw', 'Κλήρωση')}</span>}
-          </button>
-          <button
-            onClick={() => navigate(`/user/${userProfile.id}/live`)}
-            className="w-full flex items-center space-x-3 px-3 py-2 md:py-2 text-sm font-medium text-foreground/70 transition-colors hover:bg-muted rounded-none"
-          >
-            <Radio className="h-5 w-5 flex-shrink-0" />
-            {(!isCollapsed || isMobile) && <span className="truncate">{t('sidebar.live', 'Live')}</span>}
-          </button>
-        </>
-      )}
 
       {/* Κατέβασε την Εφαρμογή Button */}
       <button
