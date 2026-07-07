@@ -232,14 +232,6 @@ export const UserProfileSidebar = forwardRef<
       visible: true,
       disabled: !hasSubscription
     },
-    {
-      icon: Utensils,
-      label: t('sidebar.nutrition'),
-      key: "nutrition",
-      badge: null,
-      visible: true,
-      disabled: !hasSubscription
-    },
     { 
       icon: Calendar, 
       label: t('sidebar.calendar'), 
