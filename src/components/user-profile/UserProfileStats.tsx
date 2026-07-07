@@ -1,6 +1,6 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin, Video, ShoppingBag, Tag, Pause, FileText, User, MessageCircle, Gift, Hand, MousePointer, MousePointer2, Pointer, Fingerprint, TrendingUp, History, BookOpen, Trophy, Utensils, Droplet } from "lucide-react";
+import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin, Video, ShoppingBag, Tag, Pause, FileText, User, MessageCircle, Gift, Hand, MousePointer, MousePointer2, Pointer, Fingerprint, TrendingUp, History, BookOpen, Trophy, Droplet } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,7 +38,6 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
   const [upcomingTests, setUpcomingTests] = useState<{count: number, daysLeft: number} | null>(null);
   const [upcomingCompetitions, setUpcomingCompetitions] = useState<{count: number, daysLeft: number} | null>(null);
   const [upcomingWorkouts, setUpcomingWorkouts] = useState<number>(0);
-  const [hasActiveNutrition, setHasActiveNutrition] = useState<boolean>(false);
   const [hasTests, setHasTests] = useState<boolean>(false);
   
   const { data: allActivePrograms } = useActivePrograms();
@@ -56,23 +55,6 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
   const enabledWithoutSub = new Set(['shop', 'edit-profile']);
   const isWidgetDisabled = (tabKey: string) => !hasActiveSubscription && !enabledWithoutSub.has(tabKey);
   const disabledClass = 'opacity-40 pointer-events-none cursor-not-allowed';
-
-  // Fetch active nutrition assignment
-  useEffect(() => {
-    const fetchNutrition = async () => {
-      if (!user?.id) return;
-      const today = new Date().toISOString().split('T')[0];
-      const { data } = await supabase
-        .from('nutrition_assignments')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .gte('end_date', today)
-        .limit(1);
-      setHasActiveNutrition((data?.length || 0) > 0);
-    };
-    fetchNutrition();
-  }, [user?.id]);
 
   // Check if user has any tests
   useEffect(() => {
@@ -915,30 +897,6 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </div>
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               {(user.role === 'trainer' || user.role === 'admin') ? t('overview.programs') : t('overview.trainingDays')}
-            </div>
-          </button>
-
-          {/* Διατροφή Widget - αχνό αν δεν υπάρχει ενεργό διατροφικό πρόγραμμα */}
-          <button 
-            onClick={() => {
-              if (!hasActiveNutrition && !isWidgetDisabled('nutrition')) return;
-              if (setActiveTab) {
-                setActiveTab('nutrition');
-              } else {
-                navigate(`/dashboard/user-profile/${user.id}?tab=nutrition`);
-              }
-            }}
-            disabled={isWidgetDisabled('nutrition')}
-            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${isWidgetDisabled('nutrition') ? disabledClass : ''}`}
-          >
-            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-              <Utensils className={`${(!hasActiveNutrition || isWidgetDisabled('nutrition')) ? 'text-gray-400' : 'text-black'} ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
-            </div>
-            <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
-              <span className="text-black"> </span>
-            </div>
-            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              {t('overview.nutrition')}
             </div>
           </button>
 
