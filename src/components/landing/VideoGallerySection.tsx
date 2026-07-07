@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Play, Video } from "lucide-react";
+import { Play, Video, ChevronLeft, ChevronRight } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
 
 interface FightRow {
@@ -61,6 +59,7 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
   const navigate = useNavigate();
   const [fights, setFights] = useState<FightRow[]>([]);
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const [api, setApi] = useState<any>();
 
   useEffect(() => {
     const load = async () => {
@@ -94,8 +93,22 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto mb-8">
-          <Carousel opts={{ align: "start", loop: true }} className="w-full">
+        <div className="max-w-6xl mx-auto mb-8 relative">
+          <button
+            onClick={() => api?.scrollPrev()}
+            aria-label="Previous slide"
+            className="absolute -left-6 sm:-left-14 top-1/2 -translate-y-1/2 z-20 text-black p-2 hover:border hover:border-black transition-colors"
+          >
+            <ChevronLeft className="h-6 w-6 sm:h-8 sm:w-8" />
+          </button>
+          <button
+            onClick={() => api?.scrollNext()}
+            aria-label="Next slide"
+            className="absolute -right-6 sm:-right-14 top-1/2 -translate-y-1/2 z-20 text-black p-2 hover:border hover:border-black transition-colors"
+          >
+            <ChevronRight className="h-6 w-6 sm:h-8 sm:w-8" />
+          </button>
+          <Carousel setApi={setApi} opts={{ align: "start", loop: true }} className="w-full">
             <CarouselContent>
               {fights.map((f) => {
                 const thumb = getYouTubeThumb(f.video_url);
@@ -179,8 +192,6 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
                 );
               })}
             </CarouselContent>
-            <CarouselPrevious className="rounded-none" />
-            <CarouselNext className="rounded-none" />
           </Carousel>
         </div>
 
