@@ -88,10 +88,10 @@ const VideoGallery: React.FC = () => {
     : athleteList.filter(a => a.id === selectedAthleteId);
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <header className="border-b border-white/10 bg-black sticky top-0 z-30">
+    <div className="min-h-screen bg-white text-black">
+      <header className="border-b border-black/10 bg-white sticky top-0 z-30">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-white/80 hover:text-white">
+          <Link to="/" className="flex items-center gap-2 text-black/80 hover:text-black">
             <ArrowLeft className="w-4 h-4" /> Αρχική
           </Link>
           <div className="flex items-center gap-2">
@@ -107,7 +107,7 @@ const VideoGallery: React.FC = () => {
           <div className="mb-8 flex flex-wrap gap-2">
             <Button
               variant={selectedAthleteId === "all" ? "default" : "outline"}
-              className="rounded-none bg-white hover:bg-black text-black hover:text-white border-black"
+              className={`rounded-none ${selectedAthleteId === "all" ? "bg-black text-white hover:bg-black/90 border-black" : "bg-white text-black hover:bg-black hover:text-white border-black"}`}
               onClick={() => setSelectedAthleteId("all")}
             >
               Όλοι ({athleteList.length})
@@ -116,7 +116,7 @@ const VideoGallery: React.FC = () => {
               <Button
                 key={a.id}
                 variant={selectedAthleteId === a.id ? "default" : "outline"}
-                className="rounded-none flex items-center gap-2 bg-white hover:bg-black text-black hover:text-white border-black"
+                className={`rounded-none flex items-center gap-2 ${selectedAthleteId === a.id ? "bg-black text-white hover:bg-black/90 border-black" : "bg-white text-black hover:bg-black hover:text-white border-black"}`}
                 onClick={() => setSelectedAthleteId(a.id)}
               >
                 <img
@@ -130,24 +130,24 @@ const VideoGallery: React.FC = () => {
           </div>
         )}
 
-        {loading && <p className="text-center text-white/60">Φόρτωση...</p>}
+        {loading && <p className="text-center text-black/60">Φόρτωση...</p>}
         {!loading && athleteList.length === 0 && (
-          <p className="text-center text-white/60 py-20">Δεν υπάρχουν βίντεο ακόμη.</p>
+          <p className="text-center text-black/60 py-20">Δεν υπάρχουν βίντεο ακόμη.</p>
         )}
 
         {visibleAthletes.map(athlete => {
           const list = grouped[athlete.id] || [];
           return (
             <section key={athlete.id} className="mb-12">
-              <div className="flex items-center gap-3 mb-4 pb-3 border-b border-white/10">
+              <div className="flex items-center gap-3 mb-4 pb-3 border-b border-black/10">
                 <img
                   src={athlete.photo_url || athlete.avatar_url || "/placeholder.svg"}
                   alt={athlete.name}
-                  className="w-12 h-12 rounded-full object-cover border border-white/20"
+                  className="w-12 h-12 rounded-full object-cover border border-black/20"
                 />
                 <div>
                   <h2 className="text-2xl font-bold">{athlete.name}</h2>
-                  <p className="text-sm text-white/60">{list.length} βίντεο αγώνων</p>
+                  <p className="text-sm text-black/60">{list.length} βίντεο αγώνων</p>
                 </div>
               </div>
 
@@ -157,8 +157,8 @@ const VideoGallery: React.FC = () => {
                   const redName = isRed ? athlete.name : (f.opponent_name || "—");
                   const blueName = isRed ? (f.opponent_name || "—") : athlete.name;
                   return (
-                    <article key={f.id} className="bg-gray-900 border border-white/10">
-                      <div className="px-3 py-2 bg-blue-900 text-white flex items-center justify-between">
+                    <article key={f.id} className="bg-white border border-black/10">
+                      <div className="px-3 py-2 bg-black text-white flex items-center justify-between">
                         <span className="font-semibold text-sm truncate">
                           {redName} vs {blueName}
                         </span>
@@ -174,20 +174,20 @@ const VideoGallery: React.FC = () => {
                         />
                       </div>
                       <div className="p-3 text-sm space-y-1">
-                        <div className="flex items-center gap-2 text-white/80">
+                        <div className="flex items-center gap-2 text-black/80">
                           <span className="text-red-500 font-semibold">{redName}</span>
                           <span>vs</span>
                           <span className="text-blue-500 font-semibold">{blueName}</span>
                         </div>
                         {(f.competition_name || f.fight_date) && (
-                          <div className="flex items-center gap-1 text-xs text-white/60">
+                          <div className="flex items-center gap-1 text-xs text-black/60">
                             <Calendar className="w-3 h-3" />
                             {f.fight_date && <span>{new Date(f.fight_date).toLocaleDateString("el-GR")}</span>}
                             {f.competition_name && <span>· {f.competition_name}</span>}
                           </div>
                         )}
                         {f.weight_class && (
-                          <div className="text-xs text-white/60">{f.weight_class}</div>
+                          <div className="text-xs text-black/60">{f.weight_class}</div>
                         )}
                       </div>
                     </article>
