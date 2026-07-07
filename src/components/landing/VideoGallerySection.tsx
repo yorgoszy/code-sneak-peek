@@ -59,6 +59,7 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
   const navigate = useNavigate();
   const [fights, setFights] = useState<FightRow[]>([]);
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const [api, setApi] = useState<any>();
 
   useEffect(() => {
     const load = async () => {
