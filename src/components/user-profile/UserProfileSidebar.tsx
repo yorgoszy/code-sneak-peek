@@ -15,11 +15,7 @@ import {
   History,
   BookOpen,
   Download,
-  Utensils,
-  Shuffle,
-  Radio,
   ShieldAlert,
-  Swords,
   Droplet
 
 } from "lucide-react";
