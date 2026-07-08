@@ -12,7 +12,6 @@ import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { workoutStatusService } from "@/hooks/useWorkoutCompletions/workoutStatusService";
 import { supabase } from "@/integrations/supabase/client";
-import { useRealtimePrograms } from "@/hooks/useRealtimePrograms";
 import { useLiveWorkoutData } from "@/hooks/useLiveWorkoutData";
 import { useAuth } from "@/hooks/useAuth";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
@@ -350,6 +349,7 @@ const ActivePrograms = () => {
               realtimeKey={realtimeKey}
               onNameClick={handleProgramClick}
               onRefresh={handleCalendarRefresh}
+              enableRealtime={false}
             />
           </div>
 
