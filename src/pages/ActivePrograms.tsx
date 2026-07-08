@@ -12,7 +12,6 @@ import { useActivePrograms } from "@/hooks/useActivePrograms";
 import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { workoutStatusService } from "@/hooks/useWorkoutCompletions/workoutStatusService";
 import { supabase } from "@/integrations/supabase/client";
-import { useLiveWorkoutData } from "@/hooks/useLiveWorkoutData";
 import { useAuth } from "@/hooks/useAuth";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { CustomLoadingScreen } from "@/components/ui/custom-loading";
@@ -129,10 +128,6 @@ const ActivePrograms = () => {
     if (!assignment.training_dates) return false;
     return assignment.training_dates.includes(todayStr);
   });
-
-  // Live workout data from DB for cross-device visibility
-  const todayAssignmentIds = React.useMemo(() => programsForToday.map(a => a.id), [programsForToday]);
-  const { liveWorkouts } = useLiveWorkoutData(todayAssignmentIds);
 
   // Φόρτωση workout completions - χρησιμοποιούμε ref για σταθερή αναφορά
   const activeProgramsRef = React.useRef(activePrograms);
@@ -367,7 +362,6 @@ const ActivePrograms = () => {
             onBubbleMinimize={(workoutId) => {
               setActiveWorkoutId(prev => prev === workoutId ? null : prev);
             }}
-            liveWorkouts={liveWorkouts}
           />
         </div>
       </div>
