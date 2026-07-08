@@ -24,6 +24,7 @@ interface CalendarGridProps {
   realtimeKey: number;
   onNameClick: (assignment: EnrichedAssignment, date: Date) => void;
   onRefresh?: () => void;
+  enableRealtime?: boolean;
 }
 
 export const CalendarGrid: React.FC<CalendarGridProps> = ({
@@ -35,7 +36,8 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   workoutCompletions,
   realtimeKey,
   onNameClick,
-  onRefresh
+  onRefresh,
+  enableRealtime = true
 }) => {
   const [dayProgramDialogOpen, setDayProgramDialogOpen] = useState(false);
   const [selectedProgramForDay, setSelectedProgramForDay] = useState<EnrichedAssignment | null>(null);
@@ -46,8 +48,10 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 
   const bubbleKey = (assignmentId: string, date: string) => `${assignmentId}|${date}`;
 
-  // Enhanced real-time subscription με άμεση ανανέωση
+  // Optional realtime subscription. Disabled on Active Programs tablet view by request.
   useEffect(() => {
+    if (!enableRealtime) return;
+
     console.log('🔄 CalendarGrid: Setting up ENHANCED real-time subscription...');
     
     const channelName = `calendar-updates-${Date.now()}-${Math.random()}`;
@@ -94,7 +98,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
       console.log('🔌 CalendarGrid: Cleaning up ENHANCED real-time subscription');
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [enableRealtime]);
 
   // Force re-render όταν αλλάζουν τα δεδομένα
   useEffect(() => {
