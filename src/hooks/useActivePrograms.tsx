@@ -218,8 +218,11 @@ export const useActivePrograms = (coachId?: string | null, isAdmin: boolean = fa
         throw error;
       }
     },
-    staleTime: 0, // Force fresh data
+    staleTime: 1000 * 60 * 10,
     gcTime: 1000 * 60 * 10, // 10 minutes (was cacheTime)
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchInterval: false,
   });
 };
 
