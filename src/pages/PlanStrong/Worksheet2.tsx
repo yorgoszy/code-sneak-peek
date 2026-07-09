@@ -258,6 +258,26 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
   const [currentProgram, setCurrentProgram] = useState<PlanStrongWS2Program | null>(ws2Programs[0] ?? null);
   const addFromNLRef = useRef<((weekIdx: number, exerciseId: string, exerciseName: string, kg: number, pct: number, velocity: number, blockId?: string) => void) | null>(null);
   const { getOneRM, getVelocityForPercentage } = useUserExerciseDataCacheContext();
+  const { exercises: allExercises } = useExercises();
+
+  // Per-chip exercise override: key = `${row.exerciseId}|${pct}`
+  const [chipOverrides, setChipOverrides] = useState<Record<string, { exerciseId: string; exerciseName: string }>>({});
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerCtx, setPickerCtx] = useState<{ key: string; originalName: string; pct: number } | null>(null);
+  const [pickerSearch, setPickerSearch] = useState('');
+
+  const filteredPickerExercises = useMemo(() => {
+    const q = normalize(pickerSearch.trim());
+    if (!q) return (allExercises || []).slice(0, 50);
+    return (allExercises || []).filter((e: any) => normalize(e.name).includes(q)).slice(0, 50);
+  }, [allExercises, pickerSearch]);
+
+  const openPicker = (rowExerciseId: string, rowName: string, pct: number) => {
+    const key = `${rowExerciseId}|${pct}`;
+    setPickerCtx({ key, originalName: rowName, pct });
+    setPickerSearch('');
+    setPickerOpen(true);
+  };
 
   // Listen for drag-and-drop drops onto blocks
   const isMultiUser = (assignUsers?.length || 0) > 1;
