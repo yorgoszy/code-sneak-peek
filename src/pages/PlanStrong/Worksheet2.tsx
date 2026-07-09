@@ -12,6 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { formatDateForStorage } from '@/utils/dateUtils';
 import { programService } from '@/components/programs/builder/services/programService';
@@ -20,6 +22,14 @@ import { workoutCompletionService } from '@/components/programs/builder/services
 import { recalculateWeeksForUser } from '@/components/programs/builder/services/perUserRecalculation';
 import { computeWeekDifficulties } from './planStrongCalc';
 import { cn } from '@/lib/utils';
+
+// Greek-aware normalization for search
+const normalize = (s: string) =>
+  (s || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[ςσ]/g, 's');
 
 export interface PlanStrongWS2Program {
   weeks: any[];
@@ -248,6 +258,26 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
   const [currentProgram, setCurrentProgram] = useState<PlanStrongWS2Program | null>(ws2Programs[0] ?? null);
   const addFromNLRef = useRef<((weekIdx: number, exerciseId: string, exerciseName: string, kg: number, pct: number, velocity: number, blockId?: string) => void) | null>(null);
   const { getOneRM, getVelocityForPercentage } = useUserExerciseDataCacheContext();
+  const { exercises: allExercises } = useExercises();
+
+  // Per-chip exercise override: key = `${row.exerciseId}|${pct}`
+  const [chipOverrides, setChipOverrides] = useState<Record<string, { exerciseId: string; exerciseName: string }>>({});
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerCtx, setPickerCtx] = useState<{ key: string; originalName: string; pct: number } | null>(null);
+  const [pickerSearch, setPickerSearch] = useState('');
+
+  const filteredPickerExercises = useMemo(() => {
+    const q = normalize(pickerSearch.trim());
+    if (!q) return (allExercises || []).slice(0, 50);
+    return (allExercises || []).filter((e: any) => normalize(e.name).includes(q)).slice(0, 50);
+  }, [allExercises, pickerSearch]);
+
+  const openPicker = (rowExerciseId: string, rowName: string, pct: number) => {
+    const key = `${rowExerciseId}|${pct}`;
+    setPickerCtx({ key, originalName: rowName, pct });
+    setPickerSearch('');
+    setPickerOpen(true);
+  };
 
   // Listen for drag-and-drop drops onto blocks
   const isMultiUser = (assignUsers?.length || 0) > 1;
@@ -573,6 +603,8 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                         const remain = p.nl - used;
                         const over = used > p.nl;
                         const done = used >= p.nl && !over;
+                        const overrideKey = row.exerciseId ? `${row.exerciseId}|${p.pct}` : '';
+                        const override = overrideKey ? chipOverrides[overrideKey] : undefined;
                         return (
                           <div
                             key={idx}
@@ -580,8 +612,8 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                             onDragStart={(e) => {
                               if (!row.exerciseId) return;
                               const payload = {
-                                exerciseId: row.exerciseId,
-                                exerciseName: row.name,
+                                exerciseId: override?.exerciseId || row.exerciseId,
+                                exerciseName: override?.exerciseName || row.name,
                                 kg: p.kg,
                                 pct: p.pct,
                                 weekIdx: safeW,
@@ -589,15 +621,30 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                               e.dataTransfer.setData('application/x-planstrong-nl', JSON.stringify(payload));
                               e.dataTransfer.effectAllowed = 'copy';
                             }}
+                            onContextMenu={(e) => {
+                              if (!row.exerciseId) return;
+                              e.preventDefault();
+                              openPicker(row.exerciseId, row.name, p.pct);
+                            }}
+                            onDoubleClick={(e) => {
+                              if (!row.exerciseId) return;
+                              e.stopPropagation();
+                              openPicker(row.exerciseId, row.name, p.pct);
+                            }}
                             className={cn(
-                              "inline-flex flex-col items-center border px-1 py-0.5 tabular-nums leading-tight cursor-grab active:cursor-grabbing hover:bg-foreground/10",
+                              "inline-flex flex-col items-center border px-1 py-0.5 tabular-nums leading-tight cursor-grab active:cursor-grabbing hover:bg-foreground/10 relative",
                               over
                                 ? "border-destructive bg-destructive/10 text-destructive"
                                 : done
                                   ? "border-[#00ffba] bg-[#00ffba]/10"
-                                  : "border-border"
+                                  : "border-border",
+                              override && "ring-1 ring-[#cb8954]"
                             )}
-                            title={`Σύρε σε ένα block · Χρησιμοποιημένα: ${used} / ${p.nl}`}
+                            title={
+                              override
+                                ? `Αντικατάσταση: ${override.exerciseName} · ${used}/${p.nl} (δεξί κλικ / διπλό tap για αλλαγή)`
+                                : `Σύρε σε ένα block · ${used}/${p.nl} · δεξί κλικ ή διπλό tap για αλλαγή άσκησης`
+                            }
                           >
                             <span className="font-medium">
                               {p.pct}<span className="text-[9px] text-muted-foreground">%</span>
@@ -606,6 +653,9 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                               <span className="font-medium">{remain}</span>
                               <span className="text-[9px] text-muted-foreground">/{p.nl}</span>
                             </span>
+                            {override && (
+                              <span className="absolute -top-1 -right-1 bg-[#cb8954] text-white text-[7px] px-0.5 leading-none rounded-none" title={override.exerciseName}>↻</span>
+                            )}
                           </div>
                         );
                       })}
@@ -638,6 +688,67 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
           />
         </PlanStrongZoneKgProvider>
       </div>
+
+      <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
+        <DialogContent className="rounded-none max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-sm">
+              Αντικατάσταση άσκησης · {pickerCtx?.originalName} @ {pickerCtx?.pct}%
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Input
+              autoFocus
+              placeholder="Αναζήτηση άσκησης..."
+              value={pickerSearch}
+              onChange={(e) => setPickerSearch(e.target.value)}
+              className="rounded-none h-8 text-xs"
+            />
+            {pickerCtx && chipOverrides[pickerCtx.key] && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-none w-full h-7 text-xs"
+                onClick={() => {
+                  setChipOverrides(prev => {
+                    const next = { ...prev };
+                    delete next[pickerCtx.key];
+                    return next;
+                  });
+                  setPickerOpen(false);
+                  toast.success('Επαναφορά αρχικής άσκησης');
+                }}
+              >
+                Επαναφορά αρχικής ({pickerCtx.originalName})
+              </Button>
+            )}
+            <div className="max-h-[50vh] overflow-y-auto border border-border">
+              {filteredPickerExercises.length === 0 ? (
+                <div className="p-3 text-xs text-muted-foreground text-center">Καμία άσκηση</div>
+              ) : (
+                filteredPickerExercises.map((ex: any) => (
+                  <button
+                    key={ex.id}
+                    type="button"
+                    onClick={() => {
+                      if (!pickerCtx) return;
+                      setChipOverrides(prev => ({
+                        ...prev,
+                        [pickerCtx.key]: { exerciseId: ex.id, exerciseName: ex.name },
+                      }));
+                      setPickerOpen(false);
+                      toast.success(`Αντικατάσταση: ${ex.name} @ ${pickerCtx.pct}%`);
+                    }}
+                    className="w-full text-left px-2 py-1.5 text-xs border-b border-border last:border-0 hover:bg-foreground/5"
+                  >
+                    {ex.name}
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
