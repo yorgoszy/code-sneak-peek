@@ -603,6 +603,8 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                         const remain = p.nl - used;
                         const over = used > p.nl;
                         const done = used >= p.nl && !over;
+                        const overrideKey = row.exerciseId ? `${row.exerciseId}|${p.pct}` : '';
+                        const override = overrideKey ? chipOverrides[overrideKey] : undefined;
                         return (
                           <div
                             key={idx}
@@ -610,8 +612,8 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                             onDragStart={(e) => {
                               if (!row.exerciseId) return;
                               const payload = {
-                                exerciseId: row.exerciseId,
-                                exerciseName: row.name,
+                                exerciseId: override?.exerciseId || row.exerciseId,
+                                exerciseName: override?.exerciseName || row.name,
                                 kg: p.kg,
                                 pct: p.pct,
                                 weekIdx: safeW,
@@ -619,15 +621,30 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                               e.dataTransfer.setData('application/x-planstrong-nl', JSON.stringify(payload));
                               e.dataTransfer.effectAllowed = 'copy';
                             }}
+                            onContextMenu={(e) => {
+                              if (!row.exerciseId) return;
+                              e.preventDefault();
+                              openPicker(row.exerciseId, row.name, p.pct);
+                            }}
+                            onDoubleClick={(e) => {
+                              if (!row.exerciseId) return;
+                              e.stopPropagation();
+                              openPicker(row.exerciseId, row.name, p.pct);
+                            }}
                             className={cn(
-                              "inline-flex flex-col items-center border px-1 py-0.5 tabular-nums leading-tight cursor-grab active:cursor-grabbing hover:bg-foreground/10",
+                              "inline-flex flex-col items-center border px-1 py-0.5 tabular-nums leading-tight cursor-grab active:cursor-grabbing hover:bg-foreground/10 relative",
                               over
                                 ? "border-destructive bg-destructive/10 text-destructive"
                                 : done
                                   ? "border-[#00ffba] bg-[#00ffba]/10"
-                                  : "border-border"
+                                  : "border-border",
+                              override && "ring-1 ring-[#cb8954]"
                             )}
-                            title={`Σύρε σε ένα block · Χρησιμοποιημένα: ${used} / ${p.nl}`}
+                            title={
+                              override
+                                ? `Αντικατάσταση: ${override.exerciseName} · ${used}/${p.nl} (δεξί κλικ / διπλό tap για αλλαγή)`
+                                : `Σύρε σε ένα block · ${used}/${p.nl} · δεξί κλικ ή διπλό tap για αλλαγή άσκησης`
+                            }
                           >
                             <span className="font-medium">
                               {p.pct}<span className="text-[9px] text-muted-foreground">%</span>
@@ -636,6 +653,9 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
                               <span className="font-medium">{remain}</span>
                               <span className="text-[9px] text-muted-foreground">/{p.nl}</span>
                             </span>
+                            {override && (
+                              <span className="absolute -top-1 -right-1 bg-[#cb8954] text-white text-[7px] px-0.5 leading-none rounded-none" title={override.exerciseName}>↻</span>
+                            )}
                           </div>
                         );
                       })}
