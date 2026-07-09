@@ -6,6 +6,7 @@ import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { useProgramBuilderState } from '@/components/programs/builder/hooks/useProgramBuilderState';
 import { useProgramBuilderActions } from '@/components/programs/builder/hooks/useProgramBuilderActions';
 import { TrainingWeeks } from '@/components/programs/builder/TrainingWeeks';
+import { SimpleExerciseSelectionDialog } from '@/components/programs/builder/SimpleExerciseSelectionDialog';
 import { PlanStrongZoneKgProvider } from '@/contexts/PlanStrongZoneKgContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
