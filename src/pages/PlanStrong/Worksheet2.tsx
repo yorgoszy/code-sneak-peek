@@ -12,6 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { formatDateForStorage } from '@/utils/dateUtils';
 import { programService } from '@/components/programs/builder/services/programService';
@@ -20,6 +22,14 @@ import { workoutCompletionService } from '@/components/programs/builder/services
 import { recalculateWeeksForUser } from '@/components/programs/builder/services/perUserRecalculation';
 import { computeWeekDifficulties } from './planStrongCalc';
 import { cn } from '@/lib/utils';
+
+// Greek-aware normalization for search
+const normalize = (s: string) =>
+  (s || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[ςσ]/g, 's');
 
 export interface PlanStrongWS2Program {
   weeks: any[];
