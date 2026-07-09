@@ -6,6 +6,7 @@ import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
 import { useProgramBuilderState } from '@/components/programs/builder/hooks/useProgramBuilderState';
 import { useProgramBuilderActions } from '@/components/programs/builder/hooks/useProgramBuilderActions';
 import { TrainingWeeks } from '@/components/programs/builder/TrainingWeeks';
+import { SimpleExerciseSelectionDialog } from '@/components/programs/builder/SimpleExerciseSelectionDialog';
 import { PlanStrongZoneKgProvider } from '@/contexts/PlanStrongZoneKgContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -689,66 +690,33 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
         </PlanStrongZoneKgProvider>
       </div>
 
-      <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
-        <DialogContent className="rounded-none max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-sm">
-              Αντικατάσταση άσκησης · {pickerCtx?.originalName} @ {pickerCtx?.pct}%
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-2">
-            <Input
-              autoFocus
-              placeholder="Αναζήτηση άσκησης..."
-              value={pickerSearch}
-              onChange={(e) => setPickerSearch(e.target.value)}
-              className="rounded-none h-8 text-xs"
-            />
-            {pickerCtx && chipOverrides[pickerCtx.key] && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-none w-full h-7 text-xs"
-                onClick={() => {
-                  setChipOverrides(prev => {
-                    const next = { ...prev };
-                    delete next[pickerCtx.key];
-                    return next;
-                  });
-                  setPickerOpen(false);
-                  toast.success('Επαναφορά αρχικής άσκησης');
-                }}
-              >
-                Επαναφορά αρχικής ({pickerCtx.originalName})
-              </Button>
-            )}
-            <div className="max-h-[50vh] overflow-y-auto border border-border">
-              {filteredPickerExercises.length === 0 ? (
-                <div className="p-3 text-xs text-muted-foreground text-center">Καμία άσκηση</div>
-              ) : (
-                filteredPickerExercises.map((ex: any) => (
-                  <button
-                    key={ex.id}
-                    type="button"
-                    onClick={() => {
-                      if (!pickerCtx) return;
-                      setChipOverrides(prev => ({
-                        ...prev,
-                        [pickerCtx.key]: { exerciseId: ex.id, exerciseName: ex.name },
-                      }));
-                      setPickerOpen(false);
-                      toast.success(`Αντικατάσταση: ${ex.name} @ ${pickerCtx.pct}%`);
-                    }}
-                    className="w-full text-left px-2 py-1.5 text-xs border-b border-border last:border-0 hover:bg-foreground/5"
-                  >
-                    {ex.name}
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <SimpleExerciseSelectionDialog
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        exercises={(allExercises || []) as any}
+        onSelectExercise={(exerciseId) => {
+          if (!pickerCtx) return;
+          const ex = (allExercises || []).find((e: any) => e.id === exerciseId);
+          if (!ex) return;
+          // Selecting the original exercise clears the override
+          const originalId = pickerCtx.key.split('|')[0];
+          if (ex.id === originalId) {
+            setChipOverrides(prev => {
+              const next = { ...prev };
+              delete next[pickerCtx.key];
+              return next;
+            });
+            toast.success('Επαναφορά αρχικής άσκησης');
+          } else {
+            setChipOverrides(prev => ({
+              ...prev,
+              [pickerCtx.key]: { exerciseId: ex.id, exerciseName: ex.name },
+            }));
+            toast.success(`Αντικατάσταση: ${ex.name} @ ${pickerCtx.pct}%`);
+          }
+          setPickerOpen(false);
+        }}
+      />
     </div>
   );
 };
