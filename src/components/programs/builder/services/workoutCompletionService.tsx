@@ -31,21 +31,32 @@ export const workoutCompletionService = {
       });
     });
 
-    const totalDaysInProgram = program.weeks?.reduce((total, week) => total + (week.program_days?.length || 0), 0) || 1;
-    
+    // Build a flat list of (weekNumber, dayNumber) pairs based on the actual
+    // program structure so day_number stays an integer even when weeks have
+    // different day counts.
+    const slots: Array<{ weekNumber: number; dayNumber: number }> = [];
+    (program.weeks || []).forEach((week: any, wIdx: number) => {
+      const days = week.program_days || week.days || [];
+      days.forEach((_: any, dIdx: number) => {
+        slots.push({ weekNumber: wIdx + 1, dayNumber: dIdx + 1 });
+      });
+    });
+
     const workoutCompletions = trainingDatesStrings.map((date, index) => {
-      const weekNumber = Math.floor(index / (totalDaysInProgram / (program.weeks?.length || 1))) + 1;
-      const dayNumber = (index % (totalDaysInProgram / (program.weeks?.length || 1))) + 1;
+      const slot = slots[index] || {
+        weekNumber: Math.floor(index / Math.max(slots.length / ((program.weeks?.length) || 1), 1)) + 1,
+        dayNumber: (index % Math.max(Math.round(slots.length / ((program.weeks?.length) || 1)), 1)) + 1,
+      };
 
       return {
         assignment_id: assignment.id,
         user_id: userId,
         program_id: savedProgram.id,
-        week_number: weekNumber,
-        day_number: dayNumber,
+        week_number: slot.weekNumber,
+        day_number: slot.dayNumber,
         scheduled_date: date,
-        completed_date: null, // Null για μη ολοκληρωμένες προπονήσεις
-        status: 'pending', // Χρησιμοποιούμε 'pending' αντί για 'scheduled'
+        completed_date: null,
+        status: 'pending',
         status_color: 'blue'
       };
     });
