@@ -1,3 +1,4 @@
+import { sanitizeSetsForDb } from '@/utils/setsSanitize';
 
 import { supabase } from '@/integrations/supabase/client';
 import { formatDateToLocalString } from '@/utils/dateUtils';
