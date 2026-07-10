@@ -76,17 +76,21 @@ export default function PlanStrongPage() {
         .from('plan_strong_drafts')
         .select('id, user_id')
         .eq('coach_id', row.coach_id)
-        .eq('name', row.name);
+        .eq('name', row.name)
+        .order('updated_at', { ascending: false, nullsFirst: false });
       const list = siblings && siblings.length > 0 ? siblings : [{ id: row.id, user_id: row.user_id }];
       const map: Record<string, string> = {};
-      list.forEach((s: any) => { map[s.user_id] = s.id; });
+      list.forEach((s: any) => {
+        if (s.user_id && !map[s.user_id]) map[s.user_id] = s.id;
+      });
+      const uniqueLoadedUserIds = Array.from(new Set(list.map((s: any) => s.user_id).filter(Boolean)));
       setDraftIdByUser(map);
       if ((loaded as any).cloned_without_users === true) {
         setUserId('');
         setUserIds([]);
       } else {
         setUserId(row.user_id);
-        setUserIds(list.map((s: any) => s.user_id));
+        setUserIds(uniqueLoadedUserIds);
       }
     })();
   }, [editId]);
@@ -94,14 +98,19 @@ export default function PlanStrongPage() {
   // Fetch profile data for chip display
   useEffect(() => {
     (async () => {
+      const uniqueUserIds = Array.from(new Set(userIds.filter(Boolean)));
+      if (uniqueUserIds.length !== userIds.length) {
+        setUserIds(uniqueUserIds);
+        return;
+      }
       if (userIds.length === 0) { setSelectedUsers([]); return; }
       const { data } = await supabase
         .from('app_users')
         .select('id, name, email, avatar_url, photo_url')
-        .in('id', userIds);
+        .in('id', uniqueUserIds);
       const usersById = new Map((data || []).map((u: any) => [u.id, u]));
-      setSelectedUsers(userIds.map(id => usersById.get(id)).filter(Boolean) as any);
-      setPreviewUserId(prev => (prev && userIds.includes(prev)) ? prev : (userIds[0] || ''));
+      setSelectedUsers(uniqueUserIds.map(id => usersById.get(id)).filter(Boolean) as any);
+      setPreviewUserId(prev => (prev && uniqueUserIds.includes(prev)) ? prev : (uniqueUserIds[0] || ''));
     })();
   }, [userIds]);
 
@@ -209,7 +218,9 @@ export default function PlanStrongPage() {
   };
 
   const save = async (status: 'draft' | 'assigned') => {
-    if (status === 'assigned' && userIds.length === 0) { toast.error('Επίλεξε τουλάχιστον έναν χρήστη'); return; }
+    const uniqueUserIds = Array.from(new Set(userIds.filter(Boolean)));
+    if (uniqueUserIds.length !== userIds.length) setUserIds(uniqueUserIds);
+    if (status === 'assigned' && uniqueUserIds.length === 0) { toast.error('Επίλεξε τουλάχιστον έναν χρήστη'); return; }
     setSaving(true);
     const weekDifficulties = computeWeekDifficulties(data.side.mainPct || []);
     const dataToSave: any = { ...data, weekDifficulties };
@@ -220,7 +231,7 @@ export default function PlanStrongPage() {
       const toInsert: any[] = [];
       const newMap: Record<string, string> = {};
 
-      userIds.forEach(uid => {
+      uniqueUserIds.forEach(uid => {
         const existingId = draftIdByUser[uid];
         if (existingId) {
           newMap[uid] = existingId;
@@ -242,7 +253,7 @@ export default function PlanStrongPage() {
 
       // Removed users → delete their sibling rows
       const removedIds = Object.entries(draftIdByUser)
-        .filter(([uid]) => !userIds.includes(uid))
+        .filter(([uid]) => !uniqueUserIds.includes(uid))
         .map(([, id]) => id);
 
       const ops: any[] = [...updates];
@@ -264,20 +275,20 @@ export default function PlanStrongPage() {
       if (firstError) { toast.error(firstError.message); return; }
       setDraftIdByUser(newMap);
       // Keep primary draftId pointing to a still-existing row
-      if (!userIds.includes(userId) || !newMap[userId]) {
-        const firstUid = userIds[0];
+      if (!uniqueUserIds.includes(userId) || !newMap[userId]) {
+        const firstUid = uniqueUserIds[0];
         setUserId(firstUid);
         if (newMap[firstUid]) setDraftId(newMap[firstUid]);
       }
       toast.success(status === 'draft'
-        ? `Αποθηκεύτηκαν ${userIds.length} πρόχειρα`
-        : `Ανατέθηκε σε ${userIds.length} χρήστες`);
+        ? `Αποθηκεύτηκαν ${uniqueUserIds.length} πρόχειρα`
+        : `Ανατέθηκε σε ${uniqueUserIds.length} χρήστες`);
       return;
     }
 
     // NEW — one row per user (or a single userless row for drafts without users)
-    const rows = userIds.length > 0
-      ? userIds.map(uid => ({
+    const rows = uniqueUserIds.length > 0
+      ? uniqueUserIds.map(uid => ({
           name, user_id: uid, status,
           coach_id: user?.id, created_by: user?.id,
           data: dataToSave,
