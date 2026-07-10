@@ -1,3 +1,4 @@
+import { sanitizeSetsForDb } from '@/utils/setsSanitize';
 
 import { supabase } from '@/integrations/supabase/client';
 import { formatDateToLocalString } from '@/utils/dateUtils';
@@ -389,7 +390,7 @@ export const assignmentService = {
                     const insertData = {
                       block_id: blockData.id,
                       exercise_id: exercise.exercise_id,
-                      sets: exercise.sets || 1,
+                      sets: sanitizeSetsForDb(exercise.sets),
                       reps: exercise.reps || '',
                       reps_mode: exercise.reps_mode || 'reps',
                       kg: exercise.kg || '',
