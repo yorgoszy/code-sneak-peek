@@ -295,7 +295,7 @@ export const coachAssignmentService = {
                     const insertData = {
                       block_id: blockData.id,
                       exercise_id: exercise.exercise_id,
-                      sets: exercise.sets || 1,
+                      sets: sanitizeSetsForDb(exercise.sets),
                       reps: exercise.reps || '',
                       reps_mode: exercise.reps_mode || 'reps',
                       kg: exercise.kg || '',

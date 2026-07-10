@@ -229,7 +229,7 @@ export const useProgramCrud = () => {
             program_exercises: (block.program_exercises || []).map(exercise => ({
               id: crypto.randomUUID(),
               exercise_id: exercise.exercise_id,
-              sets: exercise.sets,
+              sets: sanitizeSetsForDb(exercise.sets),
               reps: exercise.reps,
               reps_mode: exercise.reps_mode,
               kg: exercise.kg,
