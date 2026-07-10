@@ -428,7 +428,11 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
   const [assigning, setAssigning] = useState(false);
 
   const handleAssign = async () => {
-    if (!assignUsers || assignUsers.length === 0) {
+    const uniqueAssignUsers = Array.from(
+      new Map((assignUsers || []).filter(u => u?.id).map(u => [u.id, u])).values()
+    );
+
+    if (uniqueAssignUsers.length === 0) {
       toast.error('Δεν υπάρχουν χρήστες — πρόσθεσε από το Worksheet #1');
       return;
     }
@@ -447,7 +451,7 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
         .sort((a, b) => a.getTime() - b.getTime())
         .map(d => formatDateForStorage(d));
 
-      for (const u of assignUsers) {
+      for (const u of uniqueAssignUsers) {
         // 🔄 Per-user personalization: compute kg/m/s based on this user's 1RM
         const userWeeks = await recalculateWeeksForUser(weeksForAssign, u.id);
 
@@ -474,7 +478,7 @@ export const Worksheet2: React.FC<Worksheet2Props> = ({ monthsCount, ws2Programs
           );
         }
       }
-      toast.success(`Ανατέθηκε σε ${assignUsers.length} χρήστες`);
+      toast.success(`Ανατέθηκε σε ${uniqueAssignUsers.length} χρήστες`);
       setAssignOpen(false);
     } catch (e: any) {
       console.error(e);
