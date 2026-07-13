@@ -201,7 +201,7 @@ export const useActivePrograms = (coachId?: string | null, isAdmin: boolean = fa
 
         // Refresh kg/velocity per assignment from each user's latest 1RM + velocity tests
         await Promise.all(
-          enrichedAssignments.map(async (ea) => {
+          filteredAssignments.map(async (ea) => {
             if (!ea.programs || !ea.user_id) return;
             try {
               const refreshedWeeks = await recalculateWeeksForUser(
@@ -215,8 +215,8 @@ export const useActivePrograms = (coachId?: string | null, isAdmin: boolean = fa
           })
         );
 
-        console.log('✅ Enriched assignments:', enrichedAssignments);
-        return enrichedAssignments;
+        console.log('✅ Enriched assignments:', filteredAssignments);
+        return filteredAssignments;
       } catch (error) {
         console.error('❌ Unexpected error fetching active programs:', error);
         throw error;
