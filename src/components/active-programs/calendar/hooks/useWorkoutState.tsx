@@ -602,7 +602,7 @@ export const useWorkoutState = (
   }, [getCurrentDayProgram, exerciseData]);
 
   const handleCompleteWorkout = useCallback(async (rpeScore?: number) => {
-    if (!program || !selectedDate || !currentWorkout) return;
+    if (!program || !selectedDate) return;
 
     try {
       console.log('✅ ΟΛΟΚΛΗΡΩΣΗ ΠΡΟΠΟΝΗΣΗΣ για:', program.app_users?.name, 'RPE:', rpeScore);
