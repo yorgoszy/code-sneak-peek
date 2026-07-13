@@ -25,8 +25,7 @@ export const useActivePrograms = (coachId?: string | null, isAdmin: boolean = fa
 
         // Φιλτράρισμα με βάση το coach_id
         if (isAdmin && !coachId) {
-          // Admin χωρίς coachId: φέρνει μόνο assignments χωρίς coach_id
-          query = query.is('coach_id', null);
+          // Admin χωρίς coachId: φέρνει ΟΛΑ τα assignments (χωρίς φίλτρο coach_id)
         } else if (coachId) {
           // Coach ή Admin με συγκεκριμένο coachId
           query = query.eq('coach_id', coachId);
