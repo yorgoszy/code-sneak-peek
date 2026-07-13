@@ -24,9 +24,8 @@ export const DashboardContent = ({ isAdmin, userProfile }: DashboardContentProps
   const [selectedProgram, setSelectedProgram] = useState<any>(null);
   const [isDayDialogOpen, setIsDayDialogOpen] = useState(false);
   
-  // Για Admin: περνάμε null ώστε να φέρει assignments χωρίς coach_id
-  // Για Coach: περνάμε το userProfile.id ώστε να φέρει μόνο τα δικά του
-  const coachIdFilter = isAdmin ? null : userProfile?.id;
+  // Για Admin/Coach: περνάμε το userProfile.id ώστε το dashboard να δείχνει μόνο τα δικά του σημερινά προγράμματα
+  const coachIdFilter = userProfile?.id ?? null;
   const { data: activePrograms = [], refetch } = useActivePrograms(coachIdFilter, isAdmin);
   const { getWorkoutCompletions } = useWorkoutCompletions();
   

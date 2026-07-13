@@ -23,12 +23,12 @@ export const useActivePrograms = (coachId?: string | null, isAdmin: boolean = fa
           .select('*')
           .in('status', ['active', 'completed']);
 
-        // Φιλτράρισμα με βάση το coach_id
+        // Φιλτράρισμα με βάση τον ιδιοκτήτη/coach του assignment
         if (isAdmin && !coachId) {
-          // Admin χωρίς coachId: φέρνει ΟΛΑ τα assignments (χωρίς φίλτρο coach_id)
+          // Admin χωρίς context: φέρνει ΟΛΑ τα assignments και φιλτράρει παρακάτω από app_users.coach_id
         } else if (coachId) {
-          // Coach ή Admin με συγκεκριμένο coachId
-          query = query.eq('coach_id', coachId);
+          // Coach ή Admin dashboard: φέρνει assignments που ανήκουν στον ίδιο, είτε από coach_id είτε από assigned_by
+          query = query.or(`coach_id.eq.${coachId},assigned_by.eq.${coachId}`);
         }
         
         const { data: assignments, error: assignmentsError } = await query;
