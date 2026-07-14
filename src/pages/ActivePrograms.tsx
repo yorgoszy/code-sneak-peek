@@ -181,8 +181,9 @@ const ActivePrograms = () => {
 
   // Χειρισμός κλικ σε πρόγραμμα - always show the clicked one
   const handleProgramClick = (assignment: EnrichedAssignment, date?: Date) => {
-    openWorkout(assignment, date || dayToShow);
-    setActiveWorkoutId(assignment.id);
+    const targetDate = date || dayToShow;
+    openWorkout(assignment, targetDate);
+    setActiveWorkoutId(makeWorkoutId(assignment.id, targetDate));
   };
 
   const handleDialogClose = (workoutId?: string) => {
