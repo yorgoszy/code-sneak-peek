@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { format } from 'date-fns';
 import { CheckCircle } from "lucide-react";
 import { useMinimizedBubbles } from '@/contexts/MinimizedBubblesContext';
 import { MinimizedWorkoutBubble } from '@/components/active-programs/calendar/MinimizedWorkoutBubble';
 import { useMultipleWorkouts } from '@/hooks/useMultipleWorkouts';
+import { makeWorkoutId } from '@/contexts/MultipleWorkoutsContext';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 import type { LiveWorkoutData } from '@/hooks/useLiveWorkoutData';
 
@@ -18,6 +19,17 @@ interface TodaysBubblesProps {
   liveWorkouts?: LiveWorkoutData[];
 }
 
+// Bubble id format: `bubble-${assignmentId}__${yyyy-MM-dd}`
+const parseBubbleId = (bubbleId: string): { assignmentId: string; date: string } => {
+  const rest = bubbleId.startsWith('bubble-') ? bubbleId.slice(7) : bubbleId;
+  const idx = rest.lastIndexOf('__');
+  if (idx === -1) return { assignmentId: rest, date: '' };
+  return { assignmentId: rest.slice(0, idx), date: rest.slice(idx + 2) };
+};
+
+const makeBubbleId = (assignmentId: string, date: string) => `bubble-${assignmentId}__${date}`;
+const makeHideKey = (assignmentId: string, date: string) => `${assignmentId}__${date}`;
+
 export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
   programsForToday,
   workoutCompletions,
@@ -30,10 +42,10 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
 }) => {
   const { bubbles, setSuppressRender, removeBubble } = useMinimizedBubbles();
   const { activeWorkouts } = useMultipleWorkouts();
-  const [hiddenAssignmentIds, setHiddenAssignmentIds] = useState<Set<string>>(new Set());
-  
+  const [hiddenKeys, setHiddenKeys] = useState<Set<string>>(new Set());
+
   // Timer for live elapsed time computation
-  const [tick, setTick] = useState(0);
+  const [, setTick] = useState(0);
   useEffect(() => {
     if (liveWorkouts.length === 0) return;
     const interval = setInterval(() => setTick(t => t + 1), 1000);
@@ -48,23 +60,26 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
 
   useEffect(() => {
     const handleDropZoneHide = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { assignmentId?: string } | undefined;
+      const detail = (e as CustomEvent).detail as { assignmentId?: string; date?: string } | undefined;
       if (!detail?.assignmentId) return;
-
-      setHiddenAssignmentIds(prev => new Set(prev).add(detail.assignmentId!));
-      removeBubble(`bubble-${detail.assignmentId}`);
+      const date = detail.date || todayStr;
+      const key = makeHideKey(detail.assignmentId, date);
+      setHiddenKeys(prev => new Set(prev).add(key));
+      removeBubble(makeBubbleId(detail.assignmentId, date));
     };
 
     window.addEventListener('bubble-drop-zone-hide', handleDropZoneHide as EventListener);
     return () => window.removeEventListener('bubble-drop-zone-hide', handleDropZoneHide as EventListener);
-  }, [removeBubble]);
+  }, [removeBubble, todayStr]);
 
+  // When a workout dialog re-opens, un-hide its bubble entry
   useEffect(() => {
     if (openWorkoutIds.size === 0) return;
-    setHiddenAssignmentIds(prev => {
+    setHiddenKeys(prev => {
       let changed = false;
       const next = new Set(prev);
       openWorkoutIds.forEach(id => {
+        // openWorkoutIds are composite workoutIds already
         if (next.delete(id)) changed = true;
       });
       return changed ? next : prev;
@@ -83,21 +98,21 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
     return currentStatus;
   };
 
-  // ONE bubble per assignment (per user). No splitting by date anymore.
-  // Today programs that don't yet have a bubble:
-  const extractAssignmentId = (bubbleId: string) => bubbleId.replace('bubble-', '');
-
+  // Today programs that don't yet have a bubble for TODAY:
   const todayProgramsFiltered = programsForToday.filter(a => {
-    const bubbleId = `bubble-${a.id}`;
-    return !hiddenAssignmentIds.has(a.id) && !bubbles.some(b => b.id === bubbleId);
+    const key = makeHideKey(a.id, todayStr);
+    const bubbleId = makeBubbleId(a.id, todayStr);
+    return !hiddenKeys.has(key) && !bubbles.some(b => b.id === bubbleId);
   });
 
-  // Active workouts opened for non-today dates (no bubble yet, not in today list)
+  // Active workouts για μη-σημερινές ημέρες που δεν έχουν ήδη bubble
   const otherDayActive = activeWorkouts.filter(w => {
-    const bubbleId = `bubble-${w.assignment.id}`;
-    if (hiddenAssignmentIds.has(w.assignment.id)) return false;
+    const dateStr = format(w.selectedDate, 'yyyy-MM-dd');
+    if (dateStr === todayStr) return false; // σημερινά καλύπτονται από todayProgramsFiltered
+    const key = makeHideKey(w.assignment.id, dateStr);
+    if (hiddenKeys.has(key)) return false;
+    const bubbleId = makeBubbleId(w.assignment.id, dateStr);
     if (bubbles.some(b => b.id === bubbleId)) return false;
-    if (programsForToday.some(p => p.id === w.assignment.id)) return false;
     return true;
   });
 
@@ -105,10 +120,9 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
     return null;
   }
 
-  // Helper to check if a workout's dialog is currently open (workoutId = assignment.id)
-  const isDialogOpen = (assignmentId: string) => openWorkoutIds.has(assignmentId);
+  // Helper: openWorkoutIds είναι composite workout ids
+  const isDialogOpen = (workoutId: string) => openWorkoutIds.has(workoutId);
 
-  // Build items: existing bubbles + today's pending programs + other-day active, stable sort
   const items: Array<
     | { type: 'bubble'; data: typeof bubbles[0] }
     | { type: 'today'; data: EnrichedAssignment }
@@ -119,18 +133,29 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
     ...otherDayActive.map(w => ({ type: 'other' as const, data: w })),
   ];
   items.sort((a, b) => {
-    const idA = a.type === 'today' ? a.data.id : a.type === 'other' ? a.data.assignment.id : extractAssignmentId(a.data.id);
-    const idB = b.type === 'today' ? b.data.id : b.type === 'other' ? b.data.assignment.id : extractAssignmentId(b.data.id);
+    const idA = a.type === 'today'
+      ? a.data.id
+      : a.type === 'other'
+      ? a.data.assignment.id
+      : parseBubbleId(a.data.id).assignmentId;
+    const idB = b.type === 'today'
+      ? b.data.id
+      : b.type === 'other'
+      ? b.data.assignment.id
+      : parseBubbleId(b.data.id).assignmentId;
     return idA.localeCompare(idB);
   });
 
   const renderBubbleItem = (bubble: typeof bubbles[0]) => {
-    const assignmentId = extractAssignmentId(bubble.id);
-    if (hiddenAssignmentIds.has(assignmentId)) return null;
-    const isActive = isDialogOpen(assignmentId);
+    const { assignmentId, date } = parseBubbleId(bubble.id);
+    const key = makeHideKey(assignmentId, date);
+    if (hiddenKeys.has(key)) return null;
+    const workoutId = makeWorkoutId(assignmentId, date);
+    const isActive = isDialogOpen(workoutId);
     const bubbleAssignment = programsForToday.find(a => a.id === assignmentId);
-    const bubbleCompleted = bubbleAssignment ? getWorkoutStatus(bubbleAssignment) === 'completed' : false;
-    const dragDate = activeWorkouts.find(w => w.assignment.id === assignmentId)?.selectedDate;
+    const bubbleCompleted = bubbleAssignment && date === todayStr
+      ? getWorkoutStatus(bubbleAssignment) === 'completed'
+      : false;
 
     return (
       <MinimizedWorkoutBubble
@@ -143,17 +168,17 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
         isCompleted={bubbleCompleted}
         dragPayload={{
           assignmentId,
-          date: dragDate ? dragDate.toISOString().slice(0, 10) : todayStr,
+          date: date || todayStr,
           userName: bubble.athleteName,
         }}
         onRestore={() => {
           if (isActive) {
-            onBubbleMinimize?.(assignmentId);
+            onBubbleMinimize?.(workoutId);
             return;
           }
           bubble.onRestore();
           removeBubble(bubble.id);
-          onBubbleRestore?.(assignmentId);
+          onBubbleRestore?.(workoutId);
         }}
       />
     );
@@ -168,18 +193,22 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
 
             const assignment: EnrichedAssignment =
               item.type === 'today' ? item.data : item.data.assignment;
+            const dateStr = item.type === 'other'
+              ? format(item.data.selectedDate, 'yyyy-MM-dd')
+              : todayStr;
+            const workoutId = makeWorkoutId(assignment.id, dateStr);
             const status = getWorkoutStatus(assignment);
             const name = assignment.app_users?.name || 'Άγνωστος';
             const avatarUrl = assignment.app_users?.photo_url || assignment.app_users?.avatar_url;
-            const isCompleted = status === 'completed';
-            const isActive = isDialogOpen(assignment.id);
+            const isCompleted = dateStr === todayStr && status === 'completed';
+            const isActive = isDialogOpen(workoutId);
 
-            const activeWorkout = activeWorkouts.find(w => w.id === assignment.id);
+            const activeWorkout = activeWorkouts.find(w => w.id === workoutId);
             let isInProgress = activeWorkout?.workoutInProgress || false;
             let elapsedTime = activeWorkout?.elapsedTime || 0;
 
             const liveWorkout = liveWorkouts.find(
-              lw => lw.assignment_id === assignment.id && lw.scheduled_date === todayStr
+              lw => lw.assignment_id === assignment.id && lw.scheduled_date === dateStr
             );
             if (liveWorkout && liveWorkout.start_time && !isInProgress) {
               isInProgress = true;
@@ -188,7 +217,7 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
 
             return (
               <MinimizedWorkoutBubble
-                key={assignment.id}
+                key={workoutId}
                 athleteName={name}
                 avatarUrl={avatarUrl}
                 workoutInProgress={isInProgress}
@@ -197,12 +226,12 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
                 isCompleted={isCompleted}
                 dragPayload={{
                   assignmentId: assignment.id,
-                  date: item.type === 'other' ? item.data.selectedDate.toISOString().slice(0, 10) : todayStr,
+                  date: dateStr,
                   userName: name,
                 }}
                 onRestore={() => {
                   if (isActive) {
-                    onBubbleMinimize?.(assignment.id);
+                    onBubbleMinimize?.(workoutId);
                   } else {
                     onProgramClick(assignment);
                   }
