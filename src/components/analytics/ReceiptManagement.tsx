@@ -13,7 +13,11 @@ import {
   ExternalLink,
   RefreshCw,
   AlertTriangle,
+  Download,
 } from "lucide-react";
+import { exportReceiptsToPDF } from "@/utils/receiptsMonthlyExport";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -339,6 +343,58 @@ export const ReceiptManagement: React.FC = () => {
 
   const receiptsWithoutMark = receipts.filter(r => !r.invoiceMark);
 
+  const currentYear = new Date().getFullYear();
+  const [exportYear, setExportYear] = useState<number>(currentYear);
+  const [exportMonths, setExportMonths] = useState<number[]>([4, 5, 6]);
+  const [exporting, setExporting] = useState(false);
+
+  const monthLabels = ['Ιαν','Φεβ','Μάρ','Απρ','Μάι','Ιούν','Ιούλ','Αύγ','Σεπ','Οκτ','Νοέ','Δεκ'];
+
+  const toggleMonth = (m: number) => {
+    setExportMonths(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m]);
+  };
+
+  const handleExportPDF = async () => {
+    if (exportMonths.length === 0) {
+      toast.error('Επιλέξτε τουλάχιστον έναν μήνα');
+      return;
+    }
+    const filtered = receipts.filter(r => {
+      if (!r.date) return false;
+      const d = new Date(r.date);
+      if (isNaN(d.getTime())) return false;
+      return d.getFullYear() === exportYear && exportMonths.includes(d.getMonth() + 1);
+    });
+    if (filtered.length === 0) {
+      toast.error('Δεν βρέθηκαν αποδείξεις για τους επιλεγμένους μήνες');
+      return;
+    }
+    setExporting(true);
+    try {
+      const sorted = [...filtered].sort((a, b) => a.date.localeCompare(b.date));
+      await exportReceiptsToPDF(
+        sorted.map(r => ({
+          receiptNumber: r.receiptNumber,
+          customerName: r.customerName,
+          customerVat: r.customerVat,
+          date: r.date,
+          subtotal: r.subtotal,
+          vat: r.vat,
+          total: r.total,
+          invoiceMark: r.invoiceMark,
+        })),
+        exportMonths,
+        exportYear
+      );
+      toast.success('Το PDF δημιουργήθηκε');
+    } catch (e) {
+      console.error(e);
+      toast.error('Σφάλμα δημιουργίας PDF');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="p-4 sm:p-6">
       <Card className="rounded-none">
@@ -358,6 +414,58 @@ export const ReceiptManagement: React.FC = () => {
             <TabsContent value="history" className="mt-4 sm:mt-6">
               <div className="space-y-4">
                 <h4 className="font-semibold text-sm sm:text-base">Ιστορικό Αποδείξεων</h4>
+
+                {/* PDF Export */}
+                <div className="border border-gray-200 p-3 rounded-none bg-gray-50 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Download className="h-4 w-4" />
+                    <h5 className="font-semibold text-sm">Λήψη PDF ανά μήνες</h5>
+                  </div>
+                  <div className="flex flex-wrap items-end gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Έτος</Label>
+                      <Select value={String(exportYear)} onValueChange={(v) => setExportYear(Number(v))}>
+                        <SelectTrigger className="rounded-none h-9 w-28">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: 6 }).map((_, i) => {
+                            const y = currentYear - i;
+                            return <SelectItem key={y} value={String(y)}>{y}</SelectItem>;
+                          })}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1 flex-1 min-w-[280px]">
+                      <Label className="text-xs">Μήνες</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {monthLabels.map((lbl, idx) => {
+                          const m = idx + 1;
+                          const checked = exportMonths.includes(m);
+                          return (
+                            <button
+                              key={m}
+                              type="button"
+                              onClick={() => toggleMonth(m)}
+                              className={`px-2 py-1 text-xs border rounded-none ${checked ? 'bg-[#00ffba] border-[#00ffba] text-black' : 'bg-white border-gray-300 text-gray-700'}`}
+                            >
+                              {m}. {lbl}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <Button
+                      onClick={handleExportPDF}
+                      disabled={exporting}
+                      className="rounded-none bg-black text-white hover:bg-black/90"
+                    >
+                      {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
+                      Λήψη PDF
+                    </Button>
+                  </div>
+                </div>
+                
                 
                 {/* Warning for receipts without MARK */}
                 {receiptsWithoutMark.length > 0 && (
