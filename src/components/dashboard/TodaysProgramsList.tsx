@@ -82,8 +82,19 @@ export const TodaysProgramsList: React.FC<TodaysProgramsListProps> = ({
                     </span>
                   )}
                 </div>
-                <div className="text-[10px] text-gray-600 truncate">
-                  {assignment.programs?.name}
+                <div className="text-[10px] text-gray-600 truncate flex items-center gap-1">
+                  <span className="truncate">{assignment.programs?.name}</span>
+                  <span
+                    className={`text-[9px] px-1 py-0.5 rounded-none font-medium flex-shrink-0 ${
+                      isCompleted
+                        ? 'bg-[#00ffba] text-black'
+                        : isMissed
+                        ? 'bg-red-100 text-red-600'
+                        : 'bg-blue-100 text-blue-600'
+                    }`}
+                  >
+                    {isCompleted ? 'Ολοκληρωμένη' : isMissed ? 'Χαμένη' : 'Προγραμματισμένη'}
+                  </span>
                 </div>
               </div>
             </div>
