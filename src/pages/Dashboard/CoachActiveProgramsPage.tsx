@@ -6,7 +6,7 @@ import { CalendarGrid } from "@/components/active-programs/calendar/CalendarGrid
 import { ActiveProgramsHeader } from "@/components/active-programs/ActiveProgramsHeader";
 import { TodaysBubbles } from "@/components/active-programs/TodaysBubbles";
 import { useMultipleWorkouts } from "@/hooks/useMultipleWorkouts";
-import { makeWorkoutId } from "@/contexts/MultipleWorkoutsContext";
+import { getWorkoutUserKey, makeWorkoutId } from "@/contexts/MultipleWorkoutsContext";
 import { useMinimizedBubbles } from "@/contexts/MinimizedBubblesContext";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
 import { useRealtimePrograms } from "@/hooks/useRealtimePrograms";
@@ -31,7 +31,7 @@ const CoachActiveProgramsContent = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [activeWorkoutId, setActiveWorkoutId] = useState<string | null>(null);
-  const { removeBubblesByAssignment } = useMinimizedBubbles();
+  const { removeBubblesByAssignment, removeBubblesByUser } = useMinimizedBubbles();
 
   const completionsCache = useWorkoutCompletionsCache();
   
@@ -191,6 +191,7 @@ const CoachActiveProgramsContent = () => {
   // Χειρισμός κλικ σε πρόγραμμα
   const handleProgramClick = (assignment: EnrichedAssignment, date?: Date) => {
     const targetDate = date || dayToShow;
+    removeBubblesByUser(getWorkoutUserKey(assignment));
     removeBubblesByAssignment(assignment.id);
     openWorkout(assignment, targetDate);
     setActiveWorkoutId(makeWorkoutId(assignment.id, targetDate));

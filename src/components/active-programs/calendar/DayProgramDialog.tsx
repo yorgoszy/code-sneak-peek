@@ -126,6 +126,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
       setIsMinimized(true);
       addBubble({
         id,
+        userId: program.user_id || program.app_users?.id,
         athleteName: program.app_users?.name || 'Αθλητής',
         avatarUrl: program.app_users?.avatar_url,
         photoUrl: program.app_users?.photo_url,
@@ -281,6 +282,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     setIsMinimized(true);
     addBubble({
       id,
+      userId: program.user_id || program.app_users?.id,
       athleteName: program.app_users?.name || 'Αθλητής',
       avatarUrl: program.app_users?.avatar_url,
       photoUrl: program.app_users?.photo_url,
