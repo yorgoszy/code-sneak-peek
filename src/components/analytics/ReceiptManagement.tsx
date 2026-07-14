@@ -343,6 +343,58 @@ export const ReceiptManagement: React.FC = () => {
 
   const receiptsWithoutMark = receipts.filter(r => !r.invoiceMark);
 
+  const currentYear = new Date().getFullYear();
+  const [exportYear, setExportYear] = useState<number>(currentYear);
+  const [exportMonths, setExportMonths] = useState<number[]>([4, 5, 6]);
+  const [exporting, setExporting] = useState(false);
+
+  const monthLabels = ['Ιαν','Φεβ','Μάρ','Απρ','Μάι','Ιούν','Ιούλ','Αύγ','Σεπ','Οκτ','Νοέ','Δεκ'];
+
+  const toggleMonth = (m: number) => {
+    setExportMonths(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m]);
+  };
+
+  const handleExportPDF = async () => {
+    if (exportMonths.length === 0) {
+      toast.error('Επιλέξτε τουλάχιστον έναν μήνα');
+      return;
+    }
+    const filtered = receipts.filter(r => {
+      if (!r.date) return false;
+      const d = new Date(r.date);
+      if (isNaN(d.getTime())) return false;
+      return d.getFullYear() === exportYear && exportMonths.includes(d.getMonth() + 1);
+    });
+    if (filtered.length === 0) {
+      toast.error('Δεν βρέθηκαν αποδείξεις για τους επιλεγμένους μήνες');
+      return;
+    }
+    setExporting(true);
+    try {
+      const sorted = [...filtered].sort((a, b) => a.date.localeCompare(b.date));
+      await exportReceiptsToPDF(
+        sorted.map(r => ({
+          receiptNumber: r.receiptNumber,
+          customerName: r.customerName,
+          customerVat: r.customerVat,
+          date: r.date,
+          subtotal: r.subtotal,
+          vat: r.vat,
+          total: r.total,
+          invoiceMark: r.invoiceMark,
+        })),
+        exportMonths,
+        exportYear
+      );
+      toast.success('Το PDF δημιουργήθηκε');
+    } catch (e) {
+      console.error(e);
+      toast.error('Σφάλμα δημιουργίας PDF');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="p-4 sm:p-6">
       <Card className="rounded-none">
