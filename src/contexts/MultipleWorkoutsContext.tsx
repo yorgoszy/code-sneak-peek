@@ -71,21 +71,15 @@ export const MultipleWorkoutsProvider: React.FC<{ children: React.ReactNode }> =
   }, [activeWorkouts.some(w => w.workoutInProgress)]);
 
   /** Add workout for tracking/viewing only - does NOT start timer.
-   * ONE workout per assignment (per user). Opening a different date updates the existing one. */
+   * ΕΝΑ workout ανά (assignment, ημερομηνία). Διαφορετική ημέρα = ξεχωριστό bubble. */
   const openWorkout = useCallback((assignment: EnrichedAssignment, selectedDate: Date) => {
-    const workoutId = assignment.id;
+    const workoutId = makeWorkoutId(assignment.id, selectedDate);
 
     setActiveWorkouts(prev => {
       const existing = prev.find(w => w.id === workoutId);
       if (existing) {
-        // If a workout is already in progress, keep its original selectedDate
-        // so the bubble always restores to the day the workout was started on.
-        const keepDate = existing.workoutInProgress;
-        return prev.map(w =>
-          w.id === workoutId
-            ? { ...w, selectedDate: keepDate ? (w.startedDate || w.selectedDate) : selectedDate, assignment }
-            : w
-        );
+        // Ίδιο (assignment, ημερομηνία): κρατάμε το υπάρχον, μόνο refresh το assignment ref
+        return prev.map(w => (w.id === workoutId ? { ...w, assignment } : w));
       }
 
       return [...prev, {
@@ -101,7 +95,7 @@ export const MultipleWorkoutsProvider: React.FC<{ children: React.ReactNode }> =
 
   /** Actually start the workout timer */
   const startWorkout = useCallback((assignment: EnrichedAssignment, selectedDate: Date) => {
-    const workoutId = assignment.id;
+    const workoutId = makeWorkoutId(assignment.id, selectedDate);
 
     setActiveWorkouts(prev => {
       const existing = prev.find(w => w.id === workoutId);
