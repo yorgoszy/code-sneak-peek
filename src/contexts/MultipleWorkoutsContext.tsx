@@ -1,6 +1,21 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+import { format } from 'date-fns';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
+
+/** Composite workout id: `${assignment.id}__${yyyy-MM-dd}`.
+ *  Επιτρέπει διαφορετικό bubble για κάθε (assignment, ημερομηνία). */
+export const makeWorkoutId = (assignmentId: string, date: Date | string): string => {
+  const dateKey =
+    typeof date === 'string' ? date.slice(0, 10) : format(date, 'yyyy-MM-dd');
+  return `${assignmentId}__${dateKey}`;
+};
+
+export const parseWorkoutId = (workoutId: string): { assignmentId: string; date: string } => {
+  const idx = workoutId.lastIndexOf('__');
+  if (idx === -1) return { assignmentId: workoutId, date: '' };
+  return { assignmentId: workoutId.slice(0, idx), date: workoutId.slice(idx + 2) };
+};
 
 export interface ActiveWorkout {
   id: string;
