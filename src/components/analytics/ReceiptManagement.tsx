@@ -414,6 +414,58 @@ export const ReceiptManagement: React.FC = () => {
             <TabsContent value="history" className="mt-4 sm:mt-6">
               <div className="space-y-4">
                 <h4 className="font-semibold text-sm sm:text-base">Ιστορικό Αποδείξεων</h4>
+
+                {/* PDF Export */}
+                <div className="border border-gray-200 p-3 rounded-none bg-gray-50 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Download className="h-4 w-4" />
+                    <h5 className="font-semibold text-sm">Λήψη PDF ανά μήνες</h5>
+                  </div>
+                  <div className="flex flex-wrap items-end gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Έτος</Label>
+                      <Select value={String(exportYear)} onValueChange={(v) => setExportYear(Number(v))}>
+                        <SelectTrigger className="rounded-none h-9 w-28">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: 6 }).map((_, i) => {
+                            const y = currentYear - i;
+                            return <SelectItem key={y} value={String(y)}>{y}</SelectItem>;
+                          })}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1 flex-1 min-w-[280px]">
+                      <Label className="text-xs">Μήνες</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {monthLabels.map((lbl, idx) => {
+                          const m = idx + 1;
+                          const checked = exportMonths.includes(m);
+                          return (
+                            <button
+                              key={m}
+                              type="button"
+                              onClick={() => toggleMonth(m)}
+                              className={`px-2 py-1 text-xs border rounded-none ${checked ? 'bg-[#00ffba] border-[#00ffba] text-black' : 'bg-white border-gray-300 text-gray-700'}`}
+                            >
+                              {m}. {lbl}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <Button
+                      onClick={handleExportPDF}
+                      disabled={exporting}
+                      className="rounded-none bg-black text-white hover:bg-black/90"
+                    >
+                      {exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
+                      Λήψη PDF
+                    </Button>
+                  </div>
+                </div>
+                
                 
                 {/* Warning for receipts without MARK */}
                 {receiptsWithoutMark.length > 0 && (
