@@ -371,9 +371,8 @@ export const ReceiptManagement: React.FC = () => {
     }
     setExporting(true);
     try {
-      const sorted = [...filtered].sort((a, b) => a.date.localeCompare(b.date));
       await exportReceiptsToPDF(
-        sorted.map(r => ({
+        filtered.map(r => ({
           receiptNumber: r.receiptNumber,
           customerName: r.customerName,
           customerVat: r.customerVat,

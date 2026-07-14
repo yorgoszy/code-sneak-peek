@@ -17,6 +17,15 @@ const monthNames = [
   'Ιούλιος', 'Αύγουστος', 'Σεπτέμβριος', 'Οκτώβριος', 'Νοέμβριος', 'Δεκέμβριος'
 ];
 
+function parseReceiptNumber(receiptNumber: string): { series: string; number: number } {
+  const match = receiptNumber.match(/^([A-ZΑ-Ωa-zα-ω]+)[\s\-_]?(\d+)$/);
+  if (match) {
+    return { series: match[1].toUpperCase(), number: parseInt(match[2], 10) };
+  }
+  const digits = receiptNumber.match(/(\d+)$/);
+  return { series: receiptNumber, number: digits ? parseInt(digits[1], 10) : 0 };
+}
+
 export async function exportReceiptsToPDF(
   receipts: ExportReceipt[],
   months: number[],
@@ -27,9 +36,18 @@ export async function exportReceiptsToPDF(
     .map(m => monthNames[m - 1])
     .join(', ');
 
-  const totalSum = receipts.reduce((s, r) => s + r.total, 0);
-  const netSum = receipts.reduce((s, r) => s + r.subtotal, 0);
-  const vatSum = receipts.reduce((s, r) => s + r.vat, 0);
+  const sortedReceipts = [...receipts].sort((a, b) => {
+    const parsedA = parseReceiptNumber(a.receiptNumber);
+    const parsedB = parseReceiptNumber(b.receiptNumber);
+    if (parsedA.series !== parsedB.series) {
+      return parsedA.series.localeCompare(parsedB.series);
+    }
+    return parsedA.number - parsedB.number;
+  });
+
+  const totalSum = sortedReceipts.reduce((s, r) => s + r.total, 0);
+  const netSum = sortedReceipts.reduce((s, r) => s + r.subtotal, 0);
+  const vatSum = sortedReceipts.reduce((s, r) => s + r.vat, 0);
 
   // Build container off-screen
   const container = document.createElement('div');
@@ -43,7 +61,7 @@ export async function exportReceiptsToPDF(
   container.style.fontFamily = 'Arial, Helvetica, sans-serif';
   container.style.fontSize = '12px';
 
-  const rowsHtml = receipts.map(r => `
+  const rowsHtml = sortedReceipts.map(r => `
     <tr>
       <td style="padding:6px;border:1px solid #ddd;">${escapeHtml(r.receiptNumber)}</td>
       <td style="padding:6px;border:1px solid #ddd;">${formatDateGreek(r.date)}</td>
@@ -59,7 +77,7 @@ export async function exportReceiptsToPDF(
     <div style="margin-bottom:16px;">
       <h1 style="font-size:20px;margin:0 0 4px 0;">Ιστορικό Αποδείξεων</h1>
       <p style="margin:0;font-size:13px;color:#333;">Μήνες: ${monthsLabel} ${year}</p>
-      <p style="margin:0;font-size:12px;color:#666;">Σύνολο αποδείξεων: ${receipts.length}</p>
+      <p style="margin:0;font-size:12px;color:#666;">Σύνολο αποδείξεων: ${sortedReceipts.length}</p>
     </div>
     <table style="width:100%;border-collapse:collapse;font-size:11px;">
       <thead>
