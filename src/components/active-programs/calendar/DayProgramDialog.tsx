@@ -58,6 +58,27 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     exerciseCompletion
   } = useWorkoutState(program, selectedDate, onRefresh, onClose);
 
+  // ⚡ Lazy refresh kg/velocity από τα latest 1RM + velocity tests του χρήστη
+  // (τρέχει μόνο όταν ανοίγει το πρόγραμμα, όχι για όλη τη λίστα).
+  useEffect(() => {
+    if (!isOpen || !program?.programs || !program.user_id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const refreshed = await recalculateWeeksForUser(
+          (program.programs as any).program_weeks || [],
+          program.user_id!
+        );
+        if (!cancelled) {
+          (program.programs as any).program_weeks = refreshed;
+        }
+      } catch (e) {
+        console.warn('⚠️ Lazy kg refresh failed:', e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [isOpen, program?.id, program?.user_id]);
+
   // Fetch RPE score for completed workout
   useEffect(() => {
     const fetchRpeScore = async () => {
