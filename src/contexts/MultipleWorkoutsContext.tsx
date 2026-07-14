@@ -132,18 +132,14 @@ export const MultipleWorkoutsProvider: React.FC<{ children: React.ReactNode }> =
   }, []);
 
   const updateWorkoutDate = useCallback((workoutId: string, newDate: Date) => {
-    setActiveWorkouts(prev =>
-      prev.reduce<ActiveWorkout[]>((acc, workout) => {
-        if (workout.id !== workoutId) {
-          acc.push(workout);
-          return acc;
-        }
+    setActiveWorkouts(prev => {
+      const existing = prev.find(workout => workout.id === workoutId);
+      if (!existing) return prev;
 
-        const nextId = makeWorkoutId(workout.assignment.id, newDate);
-        const updated = { ...workout, id: nextId, selectedDate: newDate };
-        return [...acc.filter(w => w.assignment.id !== workout.assignment.id), updated];
-      }, [])
-    );
+      const nextId = makeWorkoutId(existing.assignment.id, newDate);
+      const updated = { ...existing, id: nextId, selectedDate: newDate };
+      return [...prev.filter(w => w.assignment.id !== existing.assignment.id), updated];
+    });
   }, []);
 
   const resetWorkoutToStartedDate = useCallback((workoutId: string) => {
