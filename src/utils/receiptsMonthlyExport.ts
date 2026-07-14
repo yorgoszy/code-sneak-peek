@@ -17,6 +17,15 @@ const monthNames = [
   'Ιούλιος', 'Αύγουστος', 'Σεπτέμβριος', 'Οκτώβριος', 'Νοέμβριος', 'Δεκέμβριος'
 ];
 
+function parseReceiptNumber(receiptNumber: string): { series: string; number: number } {
+  const match = receiptNumber.match(/^([A-ZΑ-Ωa-zα-ω]+)[\s\-_]?(\d+)$/);
+  if (match) {
+    return { series: match[1].toUpperCase(), number: parseInt(match[2], 10) };
+  }
+  const digits = receiptNumber.match(/(\d+)$/);
+  return { series: receiptNumber, number: digits ? parseInt(digits[1], 10) : 0 };
+}
+
 export async function exportReceiptsToPDF(
   receipts: ExportReceipt[],
   months: number[],
@@ -27,9 +36,18 @@ export async function exportReceiptsToPDF(
     .map(m => monthNames[m - 1])
     .join(', ');
 
-  const totalSum = receipts.reduce((s, r) => s + r.total, 0);
-  const netSum = receipts.reduce((s, r) => s + r.subtotal, 0);
-  const vatSum = receipts.reduce((s, r) => s + r.vat, 0);
+  const sortedReceipts = [...receipts].sort((a, b) => {
+    const parsedA = parseReceiptNumber(a.receiptNumber);
+    const parsedB = parseReceiptNumber(b.receiptNumber);
+    if (parsedA.series !== parsedB.series) {
+      return parsedA.series.localeCompare(parsedB.series);
+    }
+    return parsedA.number - parsedB.number;
+  });
+
+  const totalSum = sortedReceipts.reduce((s, r) => s + r.total, 0);
+  const netSum = sortedReceipts.reduce((s, r) => s + r.subtotal, 0);
+  const vatSum = sortedReceipts.reduce((s, r) => s + r.vat, 0);
 
   // Build container off-screen
   const container = document.createElement('div');
