@@ -6,6 +6,7 @@ import { CalendarGrid } from "@/components/active-programs/calendar/CalendarGrid
 import { ActiveProgramsHeader } from "@/components/active-programs/ActiveProgramsHeader";
 import { TodaysBubbles } from "@/components/active-programs/TodaysBubbles";
 import { useMultipleWorkouts } from "@/hooks/useMultipleWorkouts";
+import { makeWorkoutId } from "@/contexts/MultipleWorkoutsContext";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
 import { useRealtimePrograms } from "@/hooks/useRealtimePrograms";
 import { useLiveWorkoutData } from "@/hooks/useLiveWorkoutData";
