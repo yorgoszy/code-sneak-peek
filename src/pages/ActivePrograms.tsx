@@ -6,7 +6,7 @@ import { CalendarGrid } from "@/components/active-programs/calendar/CalendarGrid
 import { ActiveProgramsHeader } from "@/components/active-programs/ActiveProgramsHeader";
 import { TodaysBubbles } from "@/components/active-programs/TodaysBubbles";
 import { useMultipleWorkouts } from "@/hooks/useMultipleWorkouts";
-import { makeWorkoutId, parseWorkoutId } from "@/contexts/MultipleWorkoutsContext";
+import { makeWorkoutId } from "@/contexts/MultipleWorkoutsContext";
 import { useMinimizedBubbles } from "@/contexts/MinimizedBubblesContext";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
@@ -37,7 +37,7 @@ const ActivePrograms = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [activeWorkoutId, setActiveWorkoutId] = useState<string | null>(null);
-  const { bubbles, removeBubble } = useMinimizedBubbles();
+  const { removeBubblesByAssignment } = useMinimizedBubbles();
 
   // Authentication and redirect logic
   useEffect(() => {
@@ -77,15 +77,6 @@ const ActivePrograms = () => {
     getWorkout,
     formatTime
   } = useMultipleWorkouts();
-
-  const removeBubblesForAssignment = useCallback((assignmentId: string) => {
-    bubbles.forEach(bubble => {
-      const rawId = bubble.id.startsWith('bubble-') ? bubble.id.slice(7) : bubble.id;
-      if (parseWorkoutId(rawId).assignmentId === assignmentId) {
-        removeBubble(bubble.id);
-      }
-    });
-  }, [bubbles, removeBubble]);
 
   // Check for missed workouts on component mount
   useEffect(() => {
@@ -193,7 +184,7 @@ const ActivePrograms = () => {
   // Χειρισμός κλικ σε πρόγραμμα - always show the clicked one
   const handleProgramClick = (assignment: EnrichedAssignment, date?: Date) => {
     const targetDate = date || dayToShow;
-    removeBubblesForAssignment(assignment.id);
+    removeBubblesByAssignment(assignment.id);
     openWorkout(assignment, targetDate);
     setActiveWorkoutId(makeWorkoutId(assignment.id, targetDate));
   };

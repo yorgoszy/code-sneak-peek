@@ -14,6 +14,7 @@ interface MinimizedBubble {
 interface MinimizedBubblesContextType {
   addBubble: (bubble: MinimizedBubble) => void;
   removeBubble: (id: string) => void;
+  removeBubblesByAssignment: (assignmentId: string) => void;
   updateBubble: (id: string, updates: Partial<MinimizedBubble>) => void;
   bubbles: MinimizedBubble[];
   setSuppressRender: (suppress: boolean) => void;
@@ -34,6 +35,7 @@ export const useMinimizedBubbles = () => {
     return {
       addBubble: () => {},
       removeBubble: () => {},
+      removeBubblesByAssignment: () => {},
       updateBubble: () => {},
       bubbles: [],
       setSuppressRender: () => {},
@@ -60,12 +62,16 @@ export const MinimizedBubblesProvider: React.FC<{ children: React.ReactNode }> =
     setBubbles(prev => prev.filter(b => b.id !== id));
   }, []);
 
+  const removeBubblesByAssignment = useCallback((assignmentId: string) => {
+    setBubbles(prev => prev.filter(b => getAssignmentKeyFromBubbleId(b.id) !== assignmentId));
+  }, []);
+
   const updateBubble = useCallback((id: string, updates: Partial<MinimizedBubble>) => {
     setBubbles(prev => prev.map(b => b.id === id ? { ...b, ...updates } : b));
   }, []);
 
   return (
-    <MinimizedBubblesContext.Provider value={{ addBubble, removeBubble, updateBubble, bubbles, setSuppressRender }}>
+    <MinimizedBubblesContext.Provider value={{ addBubble, removeBubble, removeBubblesByAssignment, updateBubble, bubbles, setSuppressRender }}>
       {children}
       {/* Render only when not suppressed by external renderer */}
       {!suppressRender && bubbles.length > 0 && (
