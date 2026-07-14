@@ -4,7 +4,7 @@ import { CheckCircle } from "lucide-react";
 import { useMinimizedBubbles } from '@/contexts/MinimizedBubblesContext';
 import { MinimizedWorkoutBubble } from '@/components/active-programs/calendar/MinimizedWorkoutBubble';
 import { useMultipleWorkouts } from '@/hooks/useMultipleWorkouts';
-import { makeWorkoutId } from '@/contexts/MultipleWorkoutsContext';
+import { getWorkoutUserKey, makeWorkoutId } from '@/contexts/MultipleWorkoutsContext';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 import type { LiveWorkoutData } from '@/hooks/useLiveWorkoutData';
 
@@ -12,7 +12,7 @@ interface TodaysBubblesProps {
   programsForToday: EnrichedAssignment[];
   workoutCompletions: any[];
   todayStr: string;
-  onProgramClick: (assignment: EnrichedAssignment) => void;
+  onProgramClick: (assignment: EnrichedAssignment, date?: Date) => void;
   openWorkoutIds?: Set<string>;
   onBubbleRestore?: (workoutId: string) => void;
   onBubbleMinimize?: (workoutId: string) => void;
@@ -29,6 +29,10 @@ const parseBubbleId = (bubbleId: string): { assignmentId: string; date: string }
 
 const makeBubbleId = (assignmentId: string, date: string) => `bubble-${assignmentId}__${date}`;
 const makeHideKey = (assignmentId: string, date: string) => `${assignmentId}__${date}`;
+const dateFromKey = (date: string) => {
+  const [year, month, day] = date.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
 
 export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
   programsForToday,
@@ -98,11 +102,24 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
     return currentStatus;
   };
 
+  const bubbleAssignmentIds = new Set(
+    bubbles.map(b => parseBubbleId(b.id).assignmentId)
+  );
+  const bubbleUserIds = new Set(
+    bubbles.map(b => b.userId).filter(Boolean)
+  );
+  const activeDateByUser = new Map(
+    activeWorkouts.map(w => [getWorkoutUserKey(w.assignment), format(w.selectedDate, 'yyyy-MM-dd')])
+  );
+
   // Today programs that don't yet have a bubble for TODAY:
   const todayProgramsFiltered = programsForToday.filter(a => {
     const key = makeHideKey(a.id, todayStr);
-    const bubbleId = makeBubbleId(a.id, todayStr);
-    return !hiddenKeys.has(key) && !bubbles.some(b => b.id === bubbleId);
+    const userKey = getWorkoutUserKey(a);
+    const activeDate = activeDateByUser.get(userKey);
+    if (bubbleAssignmentIds.has(a.id) || bubbleUserIds.has(userKey)) return false;
+    if (activeDate && activeDate !== todayStr) return false;
+    return !hiddenKeys.has(key);
   });
 
   // Active workouts για μη-σημερινές ημέρες που δεν έχουν ήδη bubble
@@ -111,6 +128,7 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
     if (dateStr === todayStr) return false; // σημερινά καλύπτονται από todayProgramsFiltered
     const key = makeHideKey(w.assignment.id, dateStr);
     if (hiddenKeys.has(key)) return false;
+    if (bubbleAssignmentIds.has(w.assignment.id) || bubbleUserIds.has(getWorkoutUserKey(w.assignment))) return false;
     const bubbleId = makeBubbleId(w.assignment.id, dateStr);
     if (bubbles.some(b => b.id === bubbleId)) return false;
     return true;
@@ -233,7 +251,7 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
                   if (isActive) {
                     onBubbleMinimize?.(workoutId);
                   } else {
-                    onProgramClick(assignment);
+                    onProgramClick(assignment, dateFromKey(dateStr));
                   }
                 }}
               />

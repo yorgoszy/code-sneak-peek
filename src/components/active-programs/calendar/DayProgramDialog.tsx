@@ -126,6 +126,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
       setIsMinimized(true);
       addBubble({
         id,
+        userId: program.user_id || program.app_users?.id,
         athleteName: program.app_users?.name || 'Αθλητής',
         avatarUrl: program.app_users?.avatar_url,
         photoUrl: program.app_users?.photo_url,
@@ -276,11 +277,12 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     if (scrollContainerRef.current) {
       scrollPositionRef.current = scrollContainerRef.current.scrollTop;
     }
-    const id = `bubble-${program.id}`;
+    const id = `bubble-${program.id}__${format(selectedDate, 'yyyy-MM-dd')}`;
     bubbleIdRef.current = id;
     setIsMinimized(true);
     addBubble({
       id,
+      userId: program.user_id || program.app_users?.id,
       athleteName: program.app_users?.name || 'Αθλητής',
       avatarUrl: program.app_users?.avatar_url,
       photoUrl: program.app_users?.photo_url,

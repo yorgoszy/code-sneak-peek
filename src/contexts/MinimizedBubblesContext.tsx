@@ -3,6 +3,7 @@ import { MinimizedWorkoutBubble } from '@/components/active-programs/calendar/Mi
 
 interface MinimizedBubble {
   id: string;
+  userId?: string | null;
   athleteName: string;
   avatarUrl?: string | null;
   photoUrl?: string | null;
@@ -14,10 +15,18 @@ interface MinimizedBubble {
 interface MinimizedBubblesContextType {
   addBubble: (bubble: MinimizedBubble) => void;
   removeBubble: (id: string) => void;
+  removeBubblesByAssignment: (assignmentId: string) => void;
+  removeBubblesByUser: (userId: string) => void;
   updateBubble: (id: string, updates: Partial<MinimizedBubble>) => void;
   bubbles: MinimizedBubble[];
   setSuppressRender: (suppress: boolean) => void;
 }
+
+const getAssignmentKeyFromBubbleId = (id: string) => {
+  const rest = id.startsWith('bubble-') ? id.slice(7) : id;
+  const idx = rest.lastIndexOf('__');
+  return idx === -1 ? rest : rest.slice(0, idx);
+};
 
 const MinimizedBubblesContext = createContext<MinimizedBubblesContextType | null>(null);
 
@@ -28,6 +37,8 @@ export const useMinimizedBubbles = () => {
     return {
       addBubble: () => {},
       removeBubble: () => {},
+      removeBubblesByAssignment: () => {},
+      removeBubblesByUser: () => {},
       updateBubble: () => {},
       bubbles: [],
       setSuppressRender: () => {},
@@ -42,8 +53,15 @@ export const MinimizedBubblesProvider: React.FC<{ children: React.ReactNode }> =
 
   const addBubble = useCallback((bubble: MinimizedBubble) => {
     setBubbles(prev => {
-      if (prev.some(b => b.id === bubble.id)) return prev;
-      return [...prev, bubble];
+      if (bubble.userId) {
+        return [...prev.filter(b => b.userId !== bubble.userId), bubble];
+      }
+
+      const assignmentKey = getAssignmentKeyFromBubbleId(bubble.id);
+      const withoutSameAssignment = prev.filter(
+        b => getAssignmentKeyFromBubbleId(b.id) !== assignmentKey
+      );
+      return [...withoutSameAssignment, bubble];
     });
   }, []);
 
@@ -51,12 +69,20 @@ export const MinimizedBubblesProvider: React.FC<{ children: React.ReactNode }> =
     setBubbles(prev => prev.filter(b => b.id !== id));
   }, []);
 
+  const removeBubblesByAssignment = useCallback((assignmentId: string) => {
+    setBubbles(prev => prev.filter(b => getAssignmentKeyFromBubbleId(b.id) !== assignmentId));
+  }, []);
+
+  const removeBubblesByUser = useCallback((userId: string) => {
+    setBubbles(prev => prev.filter(b => b.userId !== userId));
+  }, []);
+
   const updateBubble = useCallback((id: string, updates: Partial<MinimizedBubble>) => {
     setBubbles(prev => prev.map(b => b.id === id ? { ...b, ...updates } : b));
   }, []);
 
   return (
-    <MinimizedBubblesContext.Provider value={{ addBubble, removeBubble, updateBubble, bubbles, setSuppressRender }}>
+    <MinimizedBubblesContext.Provider value={{ addBubble, removeBubble, removeBubblesByAssignment, removeBubblesByUser, updateBubble, bubbles, setSuppressRender }}>
       {children}
       {/* Render only when not suppressed by external renderer */}
       {!suppressRender && bubbles.length > 0 && (
