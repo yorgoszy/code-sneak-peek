@@ -46,7 +46,7 @@ export async function exportReceiptsToPDF(
   const rowsHtml = receipts.map(r => `
     <tr>
       <td style="padding:6px;border:1px solid #ddd;">${escapeHtml(r.receiptNumber)}</td>
-      <td style="padding:6px;border:1px solid #ddd;">${escapeHtml(r.date)}</td>
+      <td style="padding:6px;border:1px solid #ddd;">${formatDateGreek(r.date)}</td>
       <td style="padding:6px;border:1px solid #ddd;">${escapeHtml(r.customerName || '')}${r.customerVat ? `<br/><span style="font-size:10px;color:#666;">ΑΦΜ: ${escapeHtml(r.customerVat)}</span>` : ''}</td>
       <td style="padding:6px;border:1px solid #ddd;text-align:right;">€${r.subtotal.toFixed(2)}</td>
       <td style="padding:6px;border:1px solid #ddd;text-align:right;">€${r.vat.toFixed(2)}</td>
