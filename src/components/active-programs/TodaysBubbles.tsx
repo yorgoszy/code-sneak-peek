@@ -102,11 +102,20 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
     return currentStatus;
   };
 
+  const bubbleAssignmentIds = new Set(
+    bubbles.map(b => parseBubbleId(b.id).assignmentId)
+  );
+  const activeDateByAssignment = new Map(
+    activeWorkouts.map(w => [w.assignment.id, format(w.selectedDate, 'yyyy-MM-dd')])
+  );
+
   // Today programs that don't yet have a bubble for TODAY:
   const todayProgramsFiltered = programsForToday.filter(a => {
     const key = makeHideKey(a.id, todayStr);
-    const bubbleId = makeBubbleId(a.id, todayStr);
-    return !hiddenKeys.has(key) && !bubbles.some(b => b.id === bubbleId);
+    const activeDate = activeDateByAssignment.get(a.id);
+    if (bubbleAssignmentIds.has(a.id)) return false;
+    if (activeDate && activeDate !== todayStr) return false;
+    return !hiddenKeys.has(key);
   });
 
   // Active workouts για μη-σημερινές ημέρες που δεν έχουν ήδη bubble
@@ -115,6 +124,7 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
     if (dateStr === todayStr) return false; // σημερινά καλύπτονται από todayProgramsFiltered
     const key = makeHideKey(w.assignment.id, dateStr);
     if (hiddenKeys.has(key)) return false;
+    if (bubbleAssignmentIds.has(w.assignment.id)) return false;
     const bubbleId = makeBubbleId(w.assignment.id, dateStr);
     if (bubbles.some(b => b.id === bubbleId)) return false;
     return true;
