@@ -6,6 +6,7 @@ import { CalendarGrid } from "@/components/active-programs/calendar/CalendarGrid
 import { ActiveProgramsHeader } from "@/components/active-programs/ActiveProgramsHeader";
 import { TodaysBubbles } from "@/components/active-programs/TodaysBubbles";
 import { useMultipleWorkouts } from "@/hooks/useMultipleWorkouts";
+import { makeWorkoutId } from "@/contexts/MultipleWorkoutsContext";
 import { DayProgramDialog } from "@/components/active-programs/calendar/DayProgramDialog";
 import { useActivePrograms } from "@/hooks/useActivePrograms";
 
@@ -180,8 +181,9 @@ const ActivePrograms = () => {
 
   // Χειρισμός κλικ σε πρόγραμμα - always show the clicked one
   const handleProgramClick = (assignment: EnrichedAssignment, date?: Date) => {
-    openWorkout(assignment, date || dayToShow);
-    setActiveWorkoutId(assignment.id);
+    const targetDate = date || dayToShow;
+    openWorkout(assignment, targetDate);
+    setActiveWorkoutId(makeWorkoutId(assignment.id, targetDate));
   };
 
   const handleDialogClose = (workoutId?: string) => {

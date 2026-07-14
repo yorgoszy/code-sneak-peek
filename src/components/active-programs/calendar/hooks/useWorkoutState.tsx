@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { format } from 'date-fns';
 import { useWorkoutCompletions } from '@/hooks/useWorkoutCompletions';
 import { useMultipleWorkouts } from '@/hooks/useMultipleWorkouts';
+import { makeWorkoutId } from '@/contexts/MultipleWorkoutsContext';
 import { useSharedExerciseNotes } from '@/hooks/useSharedExerciseNotes';
 import { useBlockTimer } from '@/contexts/BlockTimerContext';
 import { toast } from 'sonner';
@@ -79,8 +80,8 @@ export const useWorkoutState = (
     return null;
   }, [program]);
 
-  // Unique ID per assignment (one workout per user, matches MultipleWorkoutsContext)
-  const workoutId = program ? program.id : null;
+  // Unique ID ανά (assignment, ημερομηνία) — επιτρέπει πολλά bubbles για ίδιο assignment σε διαφορετικές μέρες
+  const workoutId = program && selectedDate ? makeWorkoutId(program.id, selectedDate) : null;
 
   // Παίρνουμε τα στοιχεία της προπόνησης από το multi-workout manager
   const currentWorkout = workoutId ? getWorkout(workoutId) : null;
