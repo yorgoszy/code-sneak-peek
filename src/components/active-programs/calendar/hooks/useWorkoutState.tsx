@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { format } from 'date-fns';
 import { useWorkoutCompletions } from '@/hooks/useWorkoutCompletions';
 import { useMultipleWorkouts } from '@/hooks/useMultipleWorkouts';
+import { makeWorkoutId } from '@/contexts/MultipleWorkoutsContext';
 import { useSharedExerciseNotes } from '@/hooks/useSharedExerciseNotes';
 import { useBlockTimer } from '@/contexts/BlockTimerContext';
 import { toast } from 'sonner';
