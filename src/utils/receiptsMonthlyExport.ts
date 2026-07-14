@@ -61,7 +61,7 @@ export async function exportReceiptsToPDF(
   container.style.fontFamily = 'Arial, Helvetica, sans-serif';
   container.style.fontSize = '12px';
 
-  const rowsHtml = receipts.map(r => `
+  const rowsHtml = sortedReceipts.map(r => `
     <tr>
       <td style="padding:6px;border:1px solid #ddd;">${escapeHtml(r.receiptNumber)}</td>
       <td style="padding:6px;border:1px solid #ddd;">${formatDateGreek(r.date)}</td>
