@@ -4,7 +4,7 @@ import { CheckCircle } from "lucide-react";
 import { useMinimizedBubbles } from '@/contexts/MinimizedBubblesContext';
 import { MinimizedWorkoutBubble } from '@/components/active-programs/calendar/MinimizedWorkoutBubble';
 import { useMultipleWorkouts } from '@/hooks/useMultipleWorkouts';
-import { makeWorkoutId } from '@/contexts/MultipleWorkoutsContext';
+import { getWorkoutUserKey, makeWorkoutId } from '@/contexts/MultipleWorkoutsContext';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 import type { LiveWorkoutData } from '@/hooks/useLiveWorkoutData';
 
@@ -105,15 +105,19 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
   const bubbleAssignmentIds = new Set(
     bubbles.map(b => parseBubbleId(b.id).assignmentId)
   );
-  const activeDateByAssignment = new Map(
-    activeWorkouts.map(w => [w.assignment.id, format(w.selectedDate, 'yyyy-MM-dd')])
+  const bubbleUserIds = new Set(
+    bubbles.map(b => b.userId).filter(Boolean)
+  );
+  const activeDateByUser = new Map(
+    activeWorkouts.map(w => [getWorkoutUserKey(w.assignment), format(w.selectedDate, 'yyyy-MM-dd')])
   );
 
   // Today programs that don't yet have a bubble for TODAY:
   const todayProgramsFiltered = programsForToday.filter(a => {
     const key = makeHideKey(a.id, todayStr);
-    const activeDate = activeDateByAssignment.get(a.id);
-    if (bubbleAssignmentIds.has(a.id)) return false;
+    const userKey = getWorkoutUserKey(a);
+    const activeDate = activeDateByUser.get(userKey);
+    if (bubbleAssignmentIds.has(a.id) || bubbleUserIds.has(userKey)) return false;
     if (activeDate && activeDate !== todayStr) return false;
     return !hiddenKeys.has(key);
   });
@@ -124,7 +128,7 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
     if (dateStr === todayStr) return false; // σημερινά καλύπτονται από todayProgramsFiltered
     const key = makeHideKey(w.assignment.id, dateStr);
     if (hiddenKeys.has(key)) return false;
-    if (bubbleAssignmentIds.has(w.assignment.id)) return false;
+    if (bubbleAssignmentIds.has(w.assignment.id) || bubbleUserIds.has(getWorkoutUserKey(w.assignment))) return false;
     const bubbleId = makeBubbleId(w.assignment.id, dateStr);
     if (bubbles.some(b => b.id === bubbleId)) return false;
     return true;
