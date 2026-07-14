@@ -77,7 +77,7 @@ export async function exportReceiptsToPDF(
     <div style="margin-bottom:16px;">
       <h1 style="font-size:20px;margin:0 0 4px 0;">Ιστορικό Αποδείξεων</h1>
       <p style="margin:0;font-size:13px;color:#333;">Μήνες: ${monthsLabel} ${year}</p>
-      <p style="margin:0;font-size:12px;color:#666;">Σύνολο αποδείξεων: ${receipts.length}</p>
+      <p style="margin:0;font-size:12px;color:#666;">Σύνολο αποδείξεων: ${sortedReceipts.length}</p>
     </div>
     <table style="width:100%;border-collapse:collapse;font-size:11px;">
       <thead>
