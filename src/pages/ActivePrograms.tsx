@@ -70,7 +70,6 @@ const ActivePrograms = () => {
     openWorkout,
     updateElapsedTime,
     updateWorkoutDate,
-    resetWorkoutToStartedDate,
     completeWorkout,
     cancelWorkout,
     removeWorkout,
@@ -361,7 +360,6 @@ const ActivePrograms = () => {
             onProgramClick={handleProgramClick}
             openWorkoutIds={activeWorkoutId ? new Set([activeWorkoutId]) : new Set()}
             onBubbleRestore={(workoutId) => {
-              resetWorkoutToStartedDate(workoutId);
               setActiveWorkoutId(workoutId);
             }}
             onBubbleMinimize={(workoutId) => {
