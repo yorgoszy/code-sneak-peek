@@ -12,6 +12,7 @@ import { ProgramBlocks } from './ProgramBlocks';
 import { RpeScoreDialog } from './RpeScoreDialog';
 import { useMinimizedBubbles } from '@/contexts/MinimizedBubblesContext';
 import { UserExerciseDataCacheProvider } from '@/hooks/useUserExerciseDataCache';
+import { recalculateWeeksForUser } from '@/components/programs/builder/services/perUserRecalculation';
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface DayProgramDialogProps {
