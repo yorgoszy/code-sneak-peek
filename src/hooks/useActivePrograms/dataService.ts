@@ -316,21 +316,9 @@ export const fetchActivePrograms = async (): Promise<EnrichedAssignment[]> => {
       };
     });
 
-    // Refresh kg/velocity per assignment from each user's latest 1RM + velocity tests
-    await Promise.all(
-      enrichedAssignments.map(async (ea) => {
-        if (!ea.programs || !ea.user_id) return;
-        try {
-          const refreshedWeeks = await recalculateWeeksForUser(
-            (ea.programs as any).program_weeks || [],
-            ea.user_id
-          );
-          (ea.programs as any).program_weeks = refreshedWeeks;
-        } catch (e) {
-          console.warn('⚠️ Could not refresh kg for assignment', ea.id, e);
-        }
-      })
-    );
+    // ⚡ Performance: kg/velocity refresh τρέχει lazy (μόνο όταν ανοίγει το πρόγραμμα),
+    // όχι εδώ για όλα τα assignments της λίστας.
+
 
     console.log('✅ Final enriched assignments:', enrichedAssignments);
     return enrichedAssignments;
