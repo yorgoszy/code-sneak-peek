@@ -121,7 +121,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
       if (scrollContainerRef.current) {
         scrollPositionRef.current = scrollContainerRef.current.scrollTop;
       }
-      const id = `bubble-${program.id}`;
+      const id = `bubble-${program.id}__${format(selectedDate, 'yyyy-MM-dd')}`;
       bubbleIdRef.current = id;
       setIsMinimized(true);
       addBubble({
