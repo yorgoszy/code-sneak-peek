@@ -71,15 +71,18 @@ export const MultipleWorkoutsProvider: React.FC<{ children: React.ReactNode }> =
   }, [activeWorkouts.some(w => w.workoutInProgress)]);
 
   /** Add workout for tracking/viewing only - does NOT start timer.
-   * ΕΝΑ workout ανά (assignment, ημερομηνία). Διαφορετική ημέρα = ξεχωριστό bubble. */
+   * ΕΝΑ workout ανά assignment/user. Αν πατηθεί άλλη ημερομηνία, αλλάζει το ίδιο bubble. */
   const openWorkout = useCallback((assignment: EnrichedAssignment, selectedDate: Date) => {
     const workoutId = makeWorkoutId(assignment.id, selectedDate);
 
     setActiveWorkouts(prev => {
-      const existing = prev.find(w => w.id === workoutId);
+      const existing = prev.find(w => w.assignment.id === assignment.id);
       if (existing) {
-        // Ίδιο (assignment, ημερομηνία): κρατάμε το υπάρχον, μόνο refresh το assignment ref
-        return prev.map(w => (w.id === workoutId ? { ...w, assignment } : w));
+        // Ίδιος χρήστης/assignment: κρατάμε ένα bubble και αλλάζουμε ημερομηνία/id
+        return [
+          ...prev.filter(w => w.assignment.id !== assignment.id),
+          { ...existing, id: workoutId, assignment, selectedDate }
+        ];
       }
 
       return [...prev, {
@@ -98,14 +101,12 @@ export const MultipleWorkoutsProvider: React.FC<{ children: React.ReactNode }> =
     const workoutId = makeWorkoutId(assignment.id, selectedDate);
 
     setActiveWorkouts(prev => {
-      const existing = prev.find(w => w.id === workoutId);
+      const existing = prev.find(w => w.assignment.id === assignment.id);
       if (existing) {
-        if (existing.workoutInProgress) return prev;
-        return prev.map(w =>
-          w.id === workoutId
-            ? { ...w, workoutInProgress: true, startTime: new Date(), elapsedTime: 0, selectedDate, startedDate: selectedDate }
-            : w
-        );
+        const updated = existing.workoutInProgress
+          ? { ...existing, id: workoutId, assignment, selectedDate }
+          : { ...existing, id: workoutId, assignment, workoutInProgress: true, startTime: new Date(), elapsedTime: 0, selectedDate, startedDate: selectedDate };
+        return [...prev.filter(w => w.assignment.id !== assignment.id), updated];
       }
 
       return [...prev, {
@@ -132,11 +133,16 @@ export const MultipleWorkoutsProvider: React.FC<{ children: React.ReactNode }> =
 
   const updateWorkoutDate = useCallback((workoutId: string, newDate: Date) => {
     setActiveWorkouts(prev =>
-      prev.map(workout =>
-        workout.id === workoutId
-          ? { ...workout, selectedDate: newDate }
-          : workout
-      )
+      prev.reduce<ActiveWorkout[]>((acc, workout) => {
+        if (workout.id !== workoutId) {
+          acc.push(workout);
+          return acc;
+        }
+
+        const nextId = makeWorkoutId(workout.assignment.id, newDate);
+        const updated = { ...workout, id: nextId, selectedDate: newDate };
+        return [...acc.filter(w => w.assignment.id !== workout.assignment.id), updated];
+      }, [])
     );
   }, []);
 

@@ -19,6 +19,12 @@ interface MinimizedBubblesContextType {
   setSuppressRender: (suppress: boolean) => void;
 }
 
+const getAssignmentKeyFromBubbleId = (id: string) => {
+  const rest = id.startsWith('bubble-') ? id.slice(7) : id;
+  const idx = rest.lastIndexOf('__');
+  return idx === -1 ? rest : rest.slice(0, idx);
+};
+
 const MinimizedBubblesContext = createContext<MinimizedBubblesContextType | null>(null);
 
 export const useMinimizedBubbles = () => {
@@ -42,8 +48,11 @@ export const MinimizedBubblesProvider: React.FC<{ children: React.ReactNode }> =
 
   const addBubble = useCallback((bubble: MinimizedBubble) => {
     setBubbles(prev => {
-      if (prev.some(b => b.id === bubble.id)) return prev;
-      return [...prev, bubble];
+      const assignmentKey = getAssignmentKeyFromBubbleId(bubble.id);
+      const withoutSameAssignment = prev.filter(
+        b => getAssignmentKeyFromBubbleId(b.id) !== assignmentKey
+      );
+      return [...withoutSameAssignment, bubble];
     });
   }, []);
 

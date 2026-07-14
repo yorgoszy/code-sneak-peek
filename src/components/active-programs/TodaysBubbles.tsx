@@ -12,7 +12,7 @@ interface TodaysBubblesProps {
   programsForToday: EnrichedAssignment[];
   workoutCompletions: any[];
   todayStr: string;
-  onProgramClick: (assignment: EnrichedAssignment) => void;
+  onProgramClick: (assignment: EnrichedAssignment, date?: Date) => void;
   openWorkoutIds?: Set<string>;
   onBubbleRestore?: (workoutId: string) => void;
   onBubbleMinimize?: (workoutId: string) => void;
@@ -29,6 +29,10 @@ const parseBubbleId = (bubbleId: string): { assignmentId: string; date: string }
 
 const makeBubbleId = (assignmentId: string, date: string) => `bubble-${assignmentId}__${date}`;
 const makeHideKey = (assignmentId: string, date: string) => `${assignmentId}__${date}`;
+const dateFromKey = (date: string) => {
+  const [year, month, day] = date.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
 
 export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
   programsForToday,
@@ -233,7 +237,7 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
                   if (isActive) {
                     onBubbleMinimize?.(workoutId);
                   } else {
-                    onProgramClick(assignment);
+                    onProgramClick(assignment, dateFromKey(dateStr));
                   }
                 }}
               />
