@@ -195,7 +195,9 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     }
   };
 
-  // Helper function to get current day number based on selected date
+  // Helper function to get current day number based on selected date.
+  // Επιστρέφει τον αριθμό ημέρας ΑΝΑ ΕΒΔΟΜΑΔΑ (π.χ. 1..N), ώστε σημειώσεις
+  // που γράφονται σε μια ημέρα να μεταφέρονται στην ίδια ημέρα των επόμενων εβδομάδων.
   const getDayNumber = (exerciseId: string) => {
     if (!program?.training_dates || !selectedDate) return 1;
 
@@ -210,8 +212,12 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
         (w.program_days || []).slice().sort((a: any, b: any) => (a.day_number || 0) - (b.day_number || 0))
       );
 
-    const cycleLength = allProgramDays.length || 1;
-    return (dateIndex % cycleLength) + 1;
+    if (allProgramDays.length === 0) return 1;
+
+    const idx = dateIndex % allProgramDays.length;
+    const dayProgram: any = allProgramDays[idx];
+    // Το day_number είναι per-week (1..N) — ίδιο σε κάθε εβδομάδα για την ίδια ημέρα.
+    return (dayProgram?.day_number as number) || (idx + 1);
   };
 
   const getActualExerciseId = (exercise: any) => {
