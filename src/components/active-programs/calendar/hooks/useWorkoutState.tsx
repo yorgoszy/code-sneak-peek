@@ -85,9 +85,18 @@ export const useWorkoutState = (
 
   // Παίρνουμε τα στοιχεία της προπόνησης από το multi-workout manager
   const currentWorkout = workoutId ? getWorkout(workoutId) : null;
-  const localInProgress = currentWorkout?.workoutInProgress || false;
+  // Το local "in progress" ισχύει ΜΟΝΟ για την ημερομηνία που ξεκίνησε πραγματικά η προπόνηση.
+  // Αν ο χρήστης αλλάξει ημέρα μέσα στο dialog, οι άλλες μέρες δεν πρέπει να φαίνονται σε εξέλιξη.
+  const startedDateStr = currentWorkout?.startedDate ? format(currentWorkout.startedDate, 'yyyy-MM-dd') : null;
+  const selectedDateStrForCheck = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null;
+  const localInProgress = !!(
+    currentWorkout?.workoutInProgress &&
+    startedDateStr &&
+    selectedDateStrForCheck &&
+    startedDateStr === selectedDateStrForCheck
+  );
   const localElapsedTime = currentWorkout?.elapsedTime || 0;
-  
+
   // Combine local and remote state: workout is in progress if either local or remote says so
   const workoutInProgress = localInProgress || remoteInProgress;
   const elapsedTime = localInProgress ? localElapsedTime : remoteElapsedTime;
