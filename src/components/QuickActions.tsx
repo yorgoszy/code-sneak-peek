@@ -110,13 +110,17 @@ export const QuickActions = ({ onProgramCreated }: QuickActionsProps) => {
         </CardContent>
       </Card>
 
-      <ProgramBuilderDialog
-        isOpen={programDialogOpen}
-        onOpenChange={() => setProgramDialogOpen(false)}
-        users={users}
-        exercises={exercises}
-        onCreateProgram={handleCreateProgram}
-      />
+      {programDialogOpen && (
+        <Suspense fallback={null}>
+          <ProgramBuilderDialog
+            isOpen={programDialogOpen}
+            onOpenChange={() => setProgramDialogOpen(false)}
+            users={users}
+            exercises={exercises}
+            onCreateProgram={handleCreateProgram}
+          />
+        </Suspense>
+      )}
 
       <AddExerciseDialog
         open={exerciseDialogOpen}
