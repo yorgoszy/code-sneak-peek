@@ -202,15 +202,17 @@ const CoachProgramsContent = () => {
       </div>
 
       {builderOpen && coachId && (
-        <CoachProgramBuilderDialog
-          users={coachAthletes}
-          exercises={allExercises.length > 0 ? allExercises : exercises}
-          onCreateProgram={handleCreateProgram}
-          editingProgram={editingProgram}
-          isOpen={builderOpen}
-          onOpenChange={handleBuilderClose}
-          coachId={coachId}
-        />
+        <Suspense fallback={null}>
+          <CoachProgramBuilderDialog
+            users={coachAthletes}
+            exercises={allExercises.length > 0 ? allExercises : exercises}
+            onCreateProgram={handleCreateProgram}
+            editingProgram={editingProgram}
+            isOpen={builderOpen}
+            onOpenChange={handleBuilderClose}
+            coachId={coachId}
+          />
+        </Suspense>
       )}
     </div>
   );
