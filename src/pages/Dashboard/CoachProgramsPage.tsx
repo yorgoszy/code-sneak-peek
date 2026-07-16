@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Program } from "@/components/programs/types";
 import { usePrograms } from "@/hooks/usePrograms";
 import { useProgramsData } from "@/hooks/useProgramsData";
