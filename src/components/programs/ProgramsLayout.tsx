@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { ProgramBuilderDialog } from './ProgramBuilderDialog';
+import React, { Suspense, lazy } from 'react';
+const ProgramBuilderDialog = lazy(() => import('./ProgramBuilderDialog').then(m => ({ default: m.ProgramBuilderDialog })));
 import { ProgramsList } from './ProgramsList';
 import { ProgramBuilderTrigger } from './builder/ProgramBuilderTrigger';
 import { Program, User, Exercise } from './types';
