@@ -83,15 +83,17 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
       </div>
 
       {builderDialogOpen && (
-        <ProgramBuilderDialog
-          users={users}
-          exercises={exercises}
-          onCreateProgram={onCreateProgram}
-          editingProgram={editingProgram}
-          isOpen={builderDialogOpen}
-          onOpenChange={onBuilderDialogClose}
-          coachId={coachId}
-        />
+        <Suspense fallback={null}>
+          <ProgramBuilderDialog
+            users={users}
+            exercises={exercises}
+            onCreateProgram={onCreateProgram}
+            editingProgram={editingProgram}
+            isOpen={builderDialogOpen}
+            onOpenChange={onBuilderDialogClose}
+            coachId={coachId}
+          />
+        </Suspense>
       )}
     </div>
   );
