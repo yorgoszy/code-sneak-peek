@@ -1,8 +1,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { ProgramBuilderDialog } from "@/components/programs/ProgramBuilderDialog";
+import { useState, Suspense, lazy } from "react";
+const ProgramBuilderDialog = lazy(() => import("@/components/programs/ProgramBuilderDialog").then(m => ({ default: m.ProgramBuilderDialog })));
 import { AddExerciseDialog } from "@/components/AddExerciseDialog";
 import { NewUserDialog } from "@/components/NewUserDialog";
 import { useProgramsData } from "@/hooks/useProgramsData";
