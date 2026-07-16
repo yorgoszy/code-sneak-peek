@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { ProgramBuilderDialog } from './ProgramBuilderDialog';
+import React, { Suspense, lazy } from 'react';
+const ProgramBuilderDialog = lazy(() => import('./ProgramBuilderDialog').then(m => ({ default: m.ProgramBuilderDialog })));
 import { ProgramsList } from './ProgramsList';
 import { ProgramBuilderTrigger } from './builder/ProgramBuilderTrigger';
 import { Program, User, Exercise } from './types';
@@ -83,15 +83,17 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
       </div>
 
       {builderDialogOpen && (
-        <ProgramBuilderDialog
-          users={users}
-          exercises={exercises}
-          onCreateProgram={onCreateProgram}
-          editingProgram={editingProgram}
-          isOpen={builderDialogOpen}
-          onOpenChange={onBuilderDialogClose}
-          coachId={coachId}
-        />
+        <Suspense fallback={null}>
+          <ProgramBuilderDialog
+            users={users}
+            exercises={exercises}
+            onCreateProgram={onCreateProgram}
+            editingProgram={editingProgram}
+            isOpen={builderDialogOpen}
+            onOpenChange={onBuilderDialogClose}
+            coachId={coachId}
+          />
+        </Suspense>
       )}
     </div>
   );

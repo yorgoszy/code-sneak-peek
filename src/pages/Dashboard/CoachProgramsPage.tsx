@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Program } from "@/components/programs/types";
 import { usePrograms } from "@/hooks/usePrograms";
 import { useProgramsData } from "@/hooks/useProgramsData";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { ProgramsList } from "@/components/programs/ProgramsList";
-import { CoachProgramBuilderDialog } from "@/components/programs/builder/CoachProgramBuilderDialog";
+const CoachProgramBuilderDialog = lazy(() => import("@/components/programs/builder/CoachProgramBuilderDialog").then(m => ({ default: m.CoachProgramBuilderDialog })));
 import { ProgramBuilderTrigger } from "@/components/programs/builder/ProgramBuilderTrigger";
 import { CoachLayout } from "@/components/layouts/CoachLayout";
 import { useCoachContext } from "@/contexts/CoachContext";
@@ -202,15 +202,17 @@ const CoachProgramsContent = () => {
       </div>
 
       {builderOpen && coachId && (
-        <CoachProgramBuilderDialog
-          users={coachAthletes}
-          exercises={allExercises.length > 0 ? allExercises : exercises}
-          onCreateProgram={handleCreateProgram}
-          editingProgram={editingProgram}
-          isOpen={builderOpen}
-          onOpenChange={handleBuilderClose}
-          coachId={coachId}
-        />
+        <Suspense fallback={null}>
+          <CoachProgramBuilderDialog
+            users={coachAthletes}
+            exercises={allExercises.length > 0 ? allExercises : exercises}
+            onCreateProgram={handleCreateProgram}
+            editingProgram={editingProgram}
+            isOpen={builderOpen}
+            onOpenChange={handleBuilderClose}
+            coachId={coachId}
+          />
+        </Suspense>
       )}
     </div>
   );
