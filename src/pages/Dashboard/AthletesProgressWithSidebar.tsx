@@ -30,63 +30,61 @@ export const AthletesProgressWithSidebar = () => {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      
-      // Φέρνουμε χρήστες που έχουν τουλάχιστον ένα test session
-      const { data: strengthUsers } = await supabase
-        .from('strength_test_sessions')
-        .select('user_id')
-        .not('user_id', 'is', null);
 
-      const { data: anthropometricUsers } = await supabase
-        .from('anthropometric_test_sessions')
-        .select('user_id')
-        .not('user_id', 'is', null);
-
-      const { data: enduranceUsers } = await supabase
-        .from('endurance_test_sessions')
-        .select('user_id')
-        .not('user_id', 'is', null);
-
-      const { data: jumpUsers } = await supabase
-        .from('jump_test_sessions')
-        .select('user_id')
-        .not('user_id', 'is', null);
-
-      const { data: functionalUsers } = await supabase
-        .from('functional_test_sessions')
-        .select('user_id')
-        .not('user_id', 'is', null);
-
-      // Συλλέγουμε όλα τα unique user IDs
-      const userIdsWithTests = new Set([
-        ...(strengthUsers?.map(u => u.user_id) || []),
-        ...(anthropometricUsers?.map(u => u.user_id) || []),
-        ...(enduranceUsers?.map(u => u.user_id) || []),
-        ...(jumpUsers?.map(u => u.user_id) || []),
-        ...(functionalUsers?.map(u => u.user_id) || [])
+      const [{ data: strengthUsers }, { data: anthropometricUsers }, { data: enduranceUsers }, { data: jumpUsers }, { data: functionalUsers }] = await Promise.all([
+        supabase.from('strength_test_sessions').select('user_id, test_date').not('user_id', 'is', null),
+        supabase.from('anthropometric_test_sessions').select('user_id, test_date').not('user_id', 'is', null),
+        supabase.from('endurance_test_sessions').select('user_id, test_date').not('user_id', 'is', null),
+        supabase.from('jump_test_sessions').select('user_id, test_date').not('user_id', 'is', null),
+        supabase.from('functional_test_sessions').select('user_id, test_date').not('user_id', 'is', null)
       ]);
 
-      if (userIdsWithTests.size === 0) {
+      const latestTestDateByUser = new Map<string, Date>();
+      const addSession = (session: any) => {
+        if (!session?.user_id || !session.test_date) return;
+        const current = latestTestDateByUser.get(session.user_id);
+        const date = new Date(session.test_date);
+        if (!current || date > current) latestTestDateByUser.set(session.user_id, date);
+      };
+
+      [
+        ...(strengthUsers || []),
+        ...(anthropometricUsers || []),
+        ...(enduranceUsers || []),
+        ...(jumpUsers || []),
+        ...(functionalUsers || [])
+      ].forEach(addSession);
+
+      const userIdsWithTests = Array.from(latestTestDateByUser.keys());
+
+      if (userIdsWithTests.length === 0) {
         setUsers([]);
         setLoading(false);
         return;
       }
 
-      // Φέρνουμε τα στοιχεία των χρηστών που έχουν tests
       const { data, error } = await supabase
         .from('app_users')
         .select('id, name, email, photo_url')
-        .in('id', Array.from(userIdsWithTests))
-        .order('name', { ascending: true });
+        .in('id', userIdsWithTests);
 
       if (error) throw error;
-      setUsers(data || []);
+
+      const sortedUsers = (data || []).sort((a, b) => {
+        const dateA = latestTestDateByUser.get(a.id) || new Date(0);
+        const dateB = latestTestDateByUser.get(b.id) || new Date(0);
+        if (dateB.getTime() !== dateA.getTime()) return dateB.getTime() - dateA.getTime();
+        return (a.name || '').localeCompare(b.name || '', 'el');
+      });
+
+      setUsers(sortedUsers);
     } catch (error) {
       console.error('Error loading users:', error);
     } finally {
       setLoading(false);
     }
   };
+
 
   const userOptions = useMemo(() => 
     (users || []).map(user => ({ 
