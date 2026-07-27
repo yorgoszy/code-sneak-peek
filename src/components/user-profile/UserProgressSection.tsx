@@ -403,8 +403,8 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
           date: sessionOneRM.date
         });
       }
-      // Αντιστρέφουμε για να είναι από παλαιότερη (1η) σε νεότερη (2η)
-      history.reverse();
+      // Κρατάμε τη σειρά από την αμέσως προηγούμενη session προς τις παλαιότερες
+
       
       oneRMs[exerciseId] = {
         weight: latestOneRM.weight,
