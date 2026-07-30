@@ -457,7 +457,7 @@ const LiveEventsManagement: React.FC = () => {
 
         {/* Event Dialog */}
         <Dialog open={eventDialog} onOpenChange={setEventDialog}>
-          <DialogContent className="rounded-none">
+          <DialogContent className="rounded-none max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingEvent ? "Επεξεργασία Event" : "Νέο Event"}</DialogTitle>
             </DialogHeader>
@@ -470,6 +470,48 @@ const LiveEventsManagement: React.FC = () => {
                 <Label>Περιγραφή (προαιρετικό)</Label>
                 <Textarea className="rounded-none" value={eventForm.description} onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })} />
               </div>
+
+              <div className="border border-border p-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="font-semibold">Χορηγοί</Label>
+                  <Button type="button" size="sm" variant="outline" className="rounded-none" onClick={addSponsor}>
+                    <Plus className="h-4 w-4 mr-1" /> Προσθήκη Χορηγού
+                  </Button>
+                </div>
+                {eventForm.sponsors.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">Δεν έχουν οριστεί χορηγοί.</p>
+                ) : (
+                  eventForm.sponsors.map((s, i) => (
+                    <div key={i} className="border border-border p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold">Χορηγός {i + 1}</span>
+                        <Button type="button" variant="ghost" size="sm" className="rounded-none h-7 w-7 p-0" onClick={() => removeSponsor(i)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                      <Input
+                        className="rounded-none h-8"
+                        value={s.name}
+                        placeholder="Όνομα χορηγού (προαιρετικό)"
+                        onChange={(e) => updateSponsor(i, { name: e.target.value })}
+                      />
+                      <LandingImageUploader
+                        label="Λογότυπο"
+                        pathPrefix="live-sponsors"
+                        value={s.logo_url || null}
+                        onChange={(url) => updateSponsor(i, { logo_url: url || "" })}
+                      />
+                      <Input
+                        className="rounded-none h-8"
+                        value={s.link_url}
+                        placeholder="https://site-χορηγού.gr"
+                        onChange={(e) => updateSponsor(i, { link_url: e.target.value })}
+                      />
+                    </div>
+                  ))
+                )}
+              </div>
+
               <div className="flex items-center justify-between">
                 <Label>Ενεργό (εμφάνιση στο landing)</Label>
                 <Switch checked={eventForm.is_active} onCheckedChange={(v) => setEventForm({ ...eventForm, is_active: v })} />
