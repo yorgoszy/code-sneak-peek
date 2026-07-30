@@ -162,6 +162,9 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
   const sponsorsCaption = lang === "en"
     ? (draftExtra?.sponsor_caption_en || draftExtra?.sponsor_caption || "Our sponsors")
     : (draftExtra?.sponsor_caption || "Οι χορηγοί μας");
+  const anyEventHasActiveLink = events.some((event) =>
+    (ringsByEvent[event.id] || []).some((r) => pickActiveEmbed(r).url)
+  );
 
   if (events.length === 0 && sponsors.length === 0) return null;
 
@@ -193,6 +196,7 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
             const [y, m, d] = iso.split("-");
             return `${d}/${m}/${y}`;
           };
+          const hasAnyActiveLink = rings.some((r) => pickActiveEmbed(r).url);
           const cols =
             rings.length === 1
               ? "grid-cols-1"
@@ -207,48 +211,62 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
                 <h3 className="text-2xl font-bold">{event.title}</h3>
                 {event.description && <p className="text-muted-foreground mt-1">{event.description}</p>}
               </div>
-              <div className={`grid gap-4 ${cols}`}>
-                {rings.map((r) => (
-                  <div key={r.id} className="border border-border bg-background">
-                    <div className="px-4 py-2 font-bold flex items-center justify-between" style={{ backgroundColor: "#f4f1ea", color: "#000000" }}>
-                      <span>{ringLabel} {r.ring_name}</span>
-                      <Radio className="w-4 h-4" />
-                    </div>
-                    <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-                      {(() => {
-                        const active = pickActiveEmbed(r);
-                        if (!active.url) {
-                          const ringDates = getRingDays(r).map((d) => d.date).filter((d): d is string => !!d).sort();
-                          const ringStart = ringDates[0] || startDate;
-                          return (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black text-center px-4">
-                              <span className="text-lg md:text-xl font-bold uppercase tracking-widest text-white">
-                                {lang === "en" ? "Coming soon" : "Coming soon"}
-                              </span>
-                              {ringStart && (
-                                <span className="text-sm text-white/70">
-                                  {lang === "en" ? "Starts" : "Έναρξη"}: {formatDate(ringStart)}
-                                </span>
-                              )}
-                            </div>
-                          );
-                        }
-                        return (
-                          <iframe
-                            src={normalizeEmbedUrl(active.url, active.start, active.end)}
-                            className="absolute inset-0 w-full h-full"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                            title={`${event.title} - ${ringLabel} ${r.ring_name}`}
-                          />
-                        );
-                      })()}
-                    </div>
-                  </div>
-                ))}
-              </div>
 
-              {eventSponsors.length > 0 && (
+              {!hasAnyActiveLink ? (
+                <div className="bg-white border border-border p-12 text-center">
+                  <span className="text-lg md:text-xl font-bold uppercase tracking-widest text-black">
+                    {lang === "en" ? "Coming soon" : "COMING SOON"}
+                  </span>
+                  {startDate && (
+                    <div className="mt-2 text-sm text-black/70">
+                      {lang === "en" ? "Starts" : "Έναρξη"}: {formatDate(startDate)}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className={`grid gap-4 ${cols}`}>
+                  {rings.map((r) => (
+                    <div key={r.id} className="border border-border bg-background">
+                      <div className="px-4 py-2 font-bold flex items-center justify-between" style={{ backgroundColor: "#f4f1ea", color: "#000000" }}>
+                        <span>{ringLabel} {r.ring_name}</span>
+                        <Radio className="w-4 h-4" />
+                      </div>
+                      <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+                        {(() => {
+                          const active = pickActiveEmbed(r);
+                          if (!active.url) {
+                            const ringDates = getRingDays(r).map((d) => d.date).filter((d): d is string => !!d).sort();
+                            const ringStart = ringDates[0] || startDate;
+                            return (
+                              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black text-center px-4">
+                                <span className="text-lg md:text-xl font-bold uppercase tracking-widest text-white">
+                                  {lang === "en" ? "Coming soon" : "Coming soon"}
+                                </span>
+                                {ringStart && (
+                                  <span className="text-sm text-white/70">
+                                    {lang === "en" ? "Starts" : "Έναρξη"}: {formatDate(ringStart)}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          }
+                          return (
+                            <iframe
+                              src={normalizeEmbedUrl(active.url, active.start, active.end)}
+                              className="absolute inset-0 w-full h-full"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              title={`${event.title} - ${ringLabel} ${r.ring_name}`}
+                            />
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {hasAnyActiveLink && eventSponsors.length > 0 && (
                 <div className="mt-6 border-t border-border pt-5">
                   <div className="mb-4 text-center text-xs font-bold uppercase tracking-widest text-muted-foreground">
                     {sponsorsCaption}
@@ -284,7 +302,7 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
           );
         })}
 
-        {sponsors.length > 0 && (
+        {anyEventHasActiveLink && sponsors.length > 0 && (
           <div className="mt-10 border-y border-border py-6">
             <div className="mb-5 text-center text-xs font-bold uppercase tracking-widest text-muted-foreground">
               {sponsorsCaption}
