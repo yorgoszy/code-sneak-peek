@@ -184,6 +184,15 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
           const rings = ringsByEvent[event.id] || [];
           const eventSponsors = (event.sponsors || []).filter((s) => s?.logo_url);
           if (rings.length === 0 && eventSponsors.length === 0) return null;
+          const allDates = rings
+            .flatMap((r) => getRingDays(r).map((d) => d.date))
+            .filter((d): d is string => !!d)
+            .sort();
+          const startDate = allDates[0] || null;
+          const formatDate = (iso: string) => {
+            const [y, m, d] = iso.split("-");
+            return `${d}/${m}/${y}`;
+          };
           const cols =
             rings.length === 1
               ? "grid-cols-1"
@@ -209,9 +218,18 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
                       {(() => {
                         const active = pickActiveEmbed(r);
                         if (!active.url) {
+                          const ringDates = getRingDays(r).map((d) => d.date).filter((d): d is string => !!d).sort();
+                          const ringStart = ringDates[0] || startDate;
                           return (
-                            <div className="absolute inset-0 flex items-center justify-center bg-black text-sm text-white/60">
-                              {lang === "en" ? "No stream" : "Χωρίς link"}
+                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black text-center px-4">
+                              <span className="text-lg md:text-xl font-bold uppercase tracking-widest text-white">
+                                {lang === "en" ? "Coming soon" : "Coming soon"}
+                              </span>
+                              {ringStart && (
+                                <span className="text-sm text-white/70">
+                                  {lang === "en" ? "Starts" : "Έναρξη"}: {formatDate(ringStart)}
+                                </span>
+                              )}
                             </div>
                           );
                         }
