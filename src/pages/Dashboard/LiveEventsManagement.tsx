@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { parseYouTubeId } from "@/utils/youtubeIframeApi";
+import { LandingImageUploader } from "@/components/landing-cms/LandingImageUploader";
 
 const normalizeEmbedUrl = (url: string): string => {
   if (!url) return url;
