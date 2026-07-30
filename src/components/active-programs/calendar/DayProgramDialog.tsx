@@ -155,7 +155,27 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     wasOpenRef.current = isOpen;
   }, [isOpen]);
 
+  // Επαναφορά scroll position όταν ο διάλογος ξανα-ανοίγει από minimize
+  useEffect(() => {
+    if (isMinimized || !isOpen) return;
+    const target = scrollPositionRef.current;
+    if (!target) return;
+    let frames = 0;
+    let raf = 0;
+    const tick = () => {
+      const el = scrollContainerRef.current;
+      if (el && el.scrollHeight - el.clientHeight >= target) {
+        el.scrollTop = target;
+        return;
+      }
+      if (++frames < 40) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [isMinimized, isOpen]);
+
   if (!program || !selectedDate) return null;
+
 
   // Prev/Next day navigation
   const sortedTrainingDates = [...(program.training_dates || [])].sort();
