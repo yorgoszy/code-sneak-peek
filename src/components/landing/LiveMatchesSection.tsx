@@ -95,11 +95,14 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
     const load = async () => {
       const { data: ev } = await supabase
         .from("live_events")
-        .select("id,title,description")
+        .select("id,title,description,sponsors")
         .eq("is_active", true)
         .order("created_at", { ascending: false });
       if (!ev || ev.length === 0) { setEvents([]); return; }
-      setEvents(ev);
+      setEvents(((ev || []) as any[]).map((e) => ({
+        ...e,
+        sponsors: Array.isArray(e.sponsors) ? (e.sponsors as EventSponsor[]) : [],
+      })) as LiveEvent[]);
       const ids = ev.map((e) => e.id);
       const { data: rg } = await supabase
         .from("live_event_rings")
