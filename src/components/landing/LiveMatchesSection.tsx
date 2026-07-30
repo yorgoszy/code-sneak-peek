@@ -47,6 +47,13 @@ interface LiveEvent {
   sponsors?: EventSponsor[] | null;
 }
 
+interface RingDay {
+  date: string | null;
+  embed_url: string;
+  start_seconds: number | null;
+  end_seconds: number | null;
+}
+
 interface LiveRing {
   id: string;
   event_id: string;
@@ -61,6 +68,7 @@ interface LiveRing {
   day1_end_seconds: number | null;
   day2_start_seconds: number | null;
   day2_end_seconds: number | null;
+  days?: RingDay[] | null;
 }
 
 const todayStr = () => {
@@ -68,16 +76,25 @@ const todayStr = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 
+const getRingDays = (r: LiveRing): RingDay[] => {
+  const fromJson = Array.isArray(r.days) ? r.days : [];
+  if (fromJson.length > 0) return fromJson;
+  const legacy: RingDay[] = [];
+  if (r.day1_date || r.embed_url_day1) {
+    legacy.push({ date: r.day1_date, embed_url: r.embed_url_day1 || "", start_seconds: r.day1_start_seconds, end_seconds: r.day1_end_seconds });
+  }
+  if (r.day2_date || r.embed_url_day2) {
+    legacy.push({ date: r.day2_date, embed_url: r.embed_url_day2 || "", start_seconds: r.day2_start_seconds, end_seconds: r.day2_end_seconds });
+  }
+  return legacy;
+};
+
 const pickActiveEmbed = (r: LiveRing): { url: string; start: number | null; end: number | null } => {
   const today = todayStr();
-  if (r.day1_date && r.embed_url_day1 && r.day1_date === today) {
-    return { url: r.embed_url_day1, start: r.day1_start_seconds, end: r.day1_end_seconds };
-  }
-  if (r.day2_date && r.embed_url_day2 && r.day2_date === today) {
-    return { url: r.embed_url_day2, start: r.day2_start_seconds, end: r.day2_end_seconds };
-  }
-  if (r.embed_url_day1) return { url: r.embed_url_day1, start: r.day1_start_seconds, end: r.day1_end_seconds };
-  if (r.embed_url_day2) return { url: r.embed_url_day2, start: r.day2_start_seconds, end: r.day2_end_seconds };
+  const days = getRingDays(r);
+  const match = days.find((d) => d.date === today && d.embed_url);
+  const chosen = match || days.find((d) => d.embed_url);
+  if (chosen) return { url: chosen.embed_url, start: chosen.start_seconds, end: chosen.end_seconds };
   return { url: r.embed_url || "", start: null, end: null };
 };
 
