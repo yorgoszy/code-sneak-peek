@@ -162,14 +162,34 @@ const LiveEventsManagement: React.FC = () => {
 
   const openCreateEvent = () => {
     setEditingEvent(null);
-    setEventForm({ title: "", description: "", is_active: true });
+    setEventForm({ title: "", description: "", is_active: true, sponsors: [] });
     setEventDialog(true);
   };
 
   const openEditEvent = (e: LiveEvent) => {
     setEditingEvent(e);
-    setEventForm({ title: e.title, description: e.description || "", is_active: e.is_active });
+    setEventForm({
+      title: e.title,
+      description: e.description || "",
+      is_active: e.is_active,
+      sponsors: Array.isArray(e.sponsors) ? e.sponsors : [],
+    });
     setEventDialog(true);
+  };
+
+  const updateSponsor = (index: number, patch: Partial<Sponsor>) => {
+    setEventForm((prev) => ({
+      ...prev,
+      sponsors: prev.sponsors.map((s, i) => (i === index ? { ...s, ...patch } : s)),
+    }));
+  };
+
+  const addSponsor = () => {
+    setEventForm((prev) => ({ ...prev, sponsors: [...prev.sponsors, { name: "", logo_url: "", link_url: "" }] }));
+  };
+
+  const removeSponsor = (index: number) => {
+    setEventForm((prev) => ({ ...prev, sponsors: prev.sponsors.filter((_, i) => i !== index) }));
   };
 
   const saveEvent = async () => {
@@ -177,12 +197,18 @@ const LiveEventsManagement: React.FC = () => {
       toast.error("Συμπληρώστε τίτλο");
       return;
     }
+    const payload = {
+      title: eventForm.title,
+      description: eventForm.description,
+      is_active: eventForm.is_active,
+      sponsors: eventForm.sponsors.filter((s) => s.logo_url?.trim()) as any,
+    };
     if (editingEvent) {
-      const { error } = await supabase.from("live_events").update(eventForm).eq("id", editingEvent.id);
+      const { error } = await supabase.from("live_events").update(payload).eq("id", editingEvent.id);
       if (error) { toast.error(error.message); return; }
       toast.success("Ενημερώθηκε");
     } else {
-      const { error } = await supabase.from("live_events").insert(eventForm);
+      const { error } = await supabase.from("live_events").insert(payload);
       if (error) { toast.error(error.message); return; }
       toast.success("Δημιουργήθηκε");
     }
