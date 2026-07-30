@@ -278,14 +278,7 @@ const LiveEventsManagement: React.FC = () => {
       ring_name: "",
       embed_url: "",
       display_order: rings[eventId]?.length || 0,
-      embed_url_day1: "",
-      embed_url_day2: "",
-      day1_date: "",
-      day2_date: "",
-      day1_start: "",
-      day1_end: "",
-      day2_start: "",
-      day2_end: "",
+      days: [{ date: todayStr(), embed_url: "", start: "", end: "" }],
     });
     setRingDialog(true);
   };
@@ -297,14 +290,12 @@ const LiveEventsManagement: React.FC = () => {
       ring_name: r.ring_name,
       embed_url: r.embed_url,
       display_order: r.display_order,
-      embed_url_day1: r.embed_url_day1 || "",
-      embed_url_day2: r.embed_url_day2 || "",
-      day1_date: r.day1_date || "",
-      day2_date: r.day2_date || "",
-      day1_start: secondsToTime(r.day1_start_seconds),
-      day1_end: secondsToTime(r.day1_end_seconds),
-      day2_start: secondsToTime(r.day2_start_seconds),
-      day2_end: secondsToTime(r.day2_end_seconds),
+      days: getRingDays(r).map((d) => ({
+        date: d.date || "",
+        embed_url: d.embed_url || "",
+        start: secondsToTime(d.start_seconds),
+        end: secondsToTime(d.end_seconds),
+      })),
     });
     setRingDialog(true);
   };
@@ -314,22 +305,36 @@ const LiveEventsManagement: React.FC = () => {
       toast.error("Συμπληρώστε όνομα ρινγκ");
       return;
     }
-    if (!ringForm.embed_url_day1.trim() && !ringForm.embed_url_day2.trim() && !ringForm.embed_url.trim()) {
+    const cleanDays = ringForm.days
+      .filter((d) => d.embed_url.trim() || d.date)
+      .map((d) => ({
+        date: d.date || null,
+        embed_url: d.embed_url.trim(),
+        start_seconds: parseTimeToSeconds(d.start),
+        end_seconds: parseTimeToSeconds(d.end),
+      }));
+
+    if (cleanDays.every((d) => !d.embed_url) && !ringForm.embed_url.trim()) {
       toast.error("Συμπληρώστε τουλάχιστον ένα link");
       return;
     }
+
+    const d1 = cleanDays[0];
+    const d2 = cleanDays[1];
     const payload = {
       ring_name: ringForm.ring_name,
-      embed_url: ringForm.embed_url || ringForm.embed_url_day1 || ringForm.embed_url_day2,
+      embed_url: ringForm.embed_url || d1?.embed_url || "",
       display_order: ringForm.display_order,
-      embed_url_day1: ringForm.embed_url_day1 || null,
-      embed_url_day2: ringForm.embed_url_day2 || null,
-      day1_date: ringForm.day1_date || null,
-      day2_date: ringForm.day2_date || null,
-      day1_start_seconds: parseTimeToSeconds(ringForm.day1_start),
-      day1_end_seconds: parseTimeToSeconds(ringForm.day1_end),
-      day2_start_seconds: parseTimeToSeconds(ringForm.day2_start),
-      day2_end_seconds: parseTimeToSeconds(ringForm.day2_end),
+      days: cleanDays as any,
+      // legacy columns kept in sync for backwards compatibility
+      embed_url_day1: d1?.embed_url || null,
+      embed_url_day2: d2?.embed_url || null,
+      day1_date: d1?.date || null,
+      day2_date: d2?.date || null,
+      day1_start_seconds: d1?.start_seconds ?? null,
+      day1_end_seconds: d1?.end_seconds ?? null,
+      day2_start_seconds: d2?.start_seconds ?? null,
+      day2_end_seconds: d2?.end_seconds ?? null,
     };
     if (editingRing) {
       const { error } = await supabase.from("live_event_rings").update(payload).eq("id", editingRing.id);
@@ -342,6 +347,7 @@ const LiveEventsManagement: React.FC = () => {
     setRingDialog(false);
     fetchData();
   };
+
 
   const deleteRing = async () => {
     if (!deleteRingId) return;
