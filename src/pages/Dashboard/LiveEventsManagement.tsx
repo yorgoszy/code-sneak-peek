@@ -354,6 +354,7 @@ const LiveEventsManagement: React.FC = () => {
                         </Button>
                       </div>
                     </CardHeader>
+                    {!collapsedEvents.has(event.id) && (
                     <CardContent>
                       <div className="flex items-center justify-between mb-3">
                         <h3 className="font-semibold text-sm">Ρινγκ ({rings[event.id]?.length || 0})</h3>
