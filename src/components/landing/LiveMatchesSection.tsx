@@ -259,7 +259,7 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
                         <img
                           src={s.logo_url}
                           alt={s.name || `${sponsorsCaption} ${i + 1}`}
-                          className="h-12 max-w-[160px] object-contain md:h-16 transition-opacity hover:opacity-70"
+                          className="h-12 max-w-[160px] object-contain md:h-16 grayscale transition-all duration-300 hover:grayscale-0"
                           loading="lazy"
                         />
                       );
@@ -295,7 +295,7 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
                   key={`${logo}-${index}`}
                   src={logo}
                   alt={`${sponsorsCaption} ${index + 1}`}
-                  className="h-12 max-w-[160px] object-contain md:h-16"
+                  className="h-12 max-w-[160px] object-contain md:h-16 grayscale transition-all duration-300 hover:grayscale-0"
                   loading="lazy"
                 />
               ))}
