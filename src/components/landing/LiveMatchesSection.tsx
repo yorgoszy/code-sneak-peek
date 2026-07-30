@@ -95,6 +95,7 @@ const pickActiveEmbed = (r: LiveRing): { url: string; start: number | null; end:
   const match = days.find((d) => d.date === today && d.embed_url);
   const chosen = match || days.find((d) => d.embed_url);
   if (chosen) return { url: chosen.embed_url, start: chosen.start_seconds, end: chosen.end_seconds };
+  if (days.length > 0) return { url: "", start: null, end: null };
   return { url: r.embed_url || "", start: null, end: null };
 };
 

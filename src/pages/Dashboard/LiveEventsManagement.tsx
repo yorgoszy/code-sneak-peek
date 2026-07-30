@@ -123,7 +123,9 @@ const pickActiveEmbed = (r: LiveRing): string => {
   const match = days.find((d) => d.date === today && d.embed_url);
   if (match) return match.embed_url;
   const first = days.find((d) => d.embed_url);
-  return first?.embed_url || r.embed_url || "";
+  if (first?.embed_url) return first.embed_url;
+  if (days.length > 0) return "";
+  return r.embed_url || "";
 };
 
 const LiveEventsManagement: React.FC = () => {
@@ -335,7 +337,7 @@ const LiveEventsManagement: React.FC = () => {
     const d2 = cleanDays[1];
     const payload = {
       ring_name: ringForm.ring_name,
-      embed_url: ringForm.embed_url || d1?.embed_url || "",
+      embed_url: d1?.embed_url || "",
       display_order: ringForm.display_order,
       days: cleanDays as any,
       // legacy columns kept in sync for backwards compatibility
