@@ -6750,6 +6750,7 @@ export type Database = {
           day2_date: string | null
           day2_end_seconds: number | null
           day2_start_seconds: number | null
+          days: Json
           display_order: number
           embed_url: string
           embed_url_day1: string | null
@@ -6767,6 +6768,7 @@ export type Database = {
           day2_date?: string | null
           day2_end_seconds?: number | null
           day2_start_seconds?: number | null
+          days?: Json
           display_order?: number
           embed_url: string
           embed_url_day1?: string | null
@@ -6784,6 +6786,7 @@ export type Database = {
           day2_date?: string | null
           day2_end_seconds?: number | null
           day2_start_seconds?: number | null
+          days?: Json
           display_order?: number
           embed_url?: string
           embed_url_day1?: string | null
