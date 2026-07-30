@@ -594,29 +594,38 @@ const LiveEventsManagement: React.FC = () => {
                 </div>
               </div>
 
-              <div className="border border-border p-2 space-y-2">
-                <Label className="font-semibold text-xs">Ημέρα 1</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  <Input type="date" className="rounded-none h-8 col-span-1" value={ringForm.day1_date} onChange={(e) => setRingForm({ ...ringForm, day1_date: e.target.value })} />
-                  <Input className="rounded-none h-8 col-span-2" value={ringForm.embed_url_day1} onChange={(e) => setRingForm({ ...ringForm, embed_url_day1: e.target.value })} placeholder="Embed URL" />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Input className="rounded-none h-8" value={ringForm.day1_start} onChange={(e) => setRingForm({ ...ringForm, day1_start: e.target.value })} placeholder="Από (ωω:λλ:δδ)" />
-                  <Input className="rounded-none h-8" value={ringForm.day1_end} onChange={(e) => setRingForm({ ...ringForm, day1_end: e.target.value })} placeholder="Έως (ωω:λλ:δδ)" />
-                </div>
+              <div className="flex items-center justify-between">
+                <Label className="font-semibold text-xs">Ημέρες ({ringForm.days.length})</Label>
+                <Button type="button" size="sm" variant="outline" className="rounded-none" onClick={addRingDay}>
+                  <Plus className="h-4 w-4 mr-1" /> Προσθήκη Ημέρας
+                </Button>
               </div>
 
-              <div className="border border-border p-2 space-y-2">
-                <Label className="font-semibold text-xs">Ημέρα 2</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  <Input type="date" className="rounded-none h-8 col-span-1" value={ringForm.day2_date} onChange={(e) => setRingForm({ ...ringForm, day2_date: e.target.value })} />
-                  <Input className="rounded-none h-8 col-span-2" value={ringForm.embed_url_day2} onChange={(e) => setRingForm({ ...ringForm, embed_url_day2: e.target.value })} placeholder="Embed URL" />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Input className="rounded-none h-8" value={ringForm.day2_start} onChange={(e) => setRingForm({ ...ringForm, day2_start: e.target.value })} placeholder="Από (ωω:λλ:δδ)" />
-                  <Input className="rounded-none h-8" value={ringForm.day2_end} onChange={(e) => setRingForm({ ...ringForm, day2_end: e.target.value })} placeholder="Έως (ωω:λλ:δδ)" />
-                </div>
+              <div className="space-y-2 max-h-[45vh] overflow-y-auto pr-1">
+                {ringForm.days.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">Δεν έχουν οριστεί ημέρες.</p>
+                ) : (
+                  ringForm.days.map((d, i) => (
+                    <div key={i} className="border border-border p-2 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="font-semibold text-xs">Ημέρα {i + 1}</Label>
+                        <Button type="button" variant="ghost" size="sm" className="rounded-none h-7 w-7 p-0" onClick={() => removeRingDay(i)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <Input type="date" className="rounded-none h-8 col-span-1" value={d.date} onChange={(e) => updateRingDay(i, { date: e.target.value })} />
+                        <Input className="rounded-none h-8 col-span-2" value={d.embed_url} onChange={(e) => updateRingDay(i, { embed_url: e.target.value })} placeholder="Embed URL" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input className="rounded-none h-8" value={d.start} onChange={(e) => updateRingDay(i, { start: e.target.value })} placeholder="Από (ωω:λλ:δδ)" />
+                        <Input className="rounded-none h-8" value={d.end} onChange={(e) => updateRingDay(i, { end: e.target.value })} placeholder="Έως (ωω:λλ:δδ)" />
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
+
 
               <p className="text-xs text-muted-foreground">Εμφανίζεται αυτόματα το link που ταιριάζει με τη σημερινή ημερομηνία.</p>
             </div>
