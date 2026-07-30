@@ -6810,6 +6810,7 @@ export type Database = {
           description: string | null
           id: string
           is_active: boolean
+          sponsors: Json
           title: string
           updated_at: string
         }
@@ -6819,6 +6820,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          sponsors?: Json
           title: string
           updated_at?: string
         }
@@ -6828,6 +6830,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          sponsors?: Json
           title?: string
           updated_at?: string
         }

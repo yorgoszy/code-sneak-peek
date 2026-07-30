@@ -1,0 +1,1 @@
+ALTER TABLE public.live_events ADD COLUMN IF NOT EXISTS sponsors jsonb NOT NULL DEFAULT '[]'::jsonb;
