@@ -579,7 +579,7 @@ const LiveEventsManagement: React.FC = () => {
 
         {/* Ring Dialog */}
         <Dialog open={ringDialog} onOpenChange={setRingDialog}>
-          <DialogContent className="rounded-none">
+          <DialogContent className="rounded-none max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingRing ? "Επεξεργασία Ρινγκ" : "Νέο Ρινγκ"}</DialogTitle>
             </DialogHeader>
