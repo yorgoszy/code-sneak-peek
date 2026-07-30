@@ -328,6 +328,15 @@ const LiveEventsManagement: React.FC = () => {
                         {event.description && <p className="text-sm text-muted-foreground mt-1">{event.description}</p>}
                       </div>
                       <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-none"
+                          title={collapsedEvents.has(event.id) ? "Άνοιγμα" : "Ελαχιστοποίηση"}
+                          onClick={() => toggleCollapse(event.id)}
+                        >
+                          {collapsedEvents.has(event.id) ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+                        </Button>
                         <Button variant="outline" size="sm" className="rounded-none" onClick={() => openEditEvent(event)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
