@@ -119,7 +119,7 @@ const LiveEventsManagement: React.FC = () => {
 
   const [eventDialog, setEventDialog] = useState(false);
   const [editingEvent, setEditingEvent] = useState<LiveEvent | null>(null);
-  const [eventForm, setEventForm] = useState({ title: "", description: "", is_active: true });
+  const [eventForm, setEventForm] = useState<{ title: string; description: string; is_active: boolean; sponsors: Sponsor[] }>({ title: "", description: "", is_active: true, sponsors: [] });
 
   const [ringDialog, setRingDialog] = useState(false);
   const [activeEventForRing, setActiveEventForRing] = useState<string | null>(null);
