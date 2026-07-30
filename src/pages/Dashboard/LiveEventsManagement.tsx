@@ -119,10 +119,11 @@ const todayStr = () => {
 
 const pickActiveEmbed = (r: LiveRing): string => {
   const today = todayStr();
-  if (r.day1_date && r.embed_url_day1 && r.day1_date === today) return r.embed_url_day1;
-  if (r.day2_date && r.embed_url_day2 && r.day2_date === today) return r.embed_url_day2;
-  // Fallback: first available
-  return r.embed_url_day1 || r.embed_url_day2 || r.embed_url || "";
+  const days = getRingDays(r);
+  const match = days.find((d) => d.date === today && d.embed_url);
+  if (match) return match.embed_url;
+  const first = days.find((d) => d.embed_url);
+  return first?.embed_url || r.embed_url || "";
 };
 
 const LiveEventsManagement: React.FC = () => {
