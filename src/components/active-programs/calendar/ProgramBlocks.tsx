@@ -30,7 +30,13 @@ interface ProgramBlocksProps {
   getVelocity: (exerciseId: string) => string;
   selectedDate: Date;
   program: any;
+  /** Κλειδί για να διατηρείται η κατάσταση των collapsed blocks σε minimize/restore */
+  persistKey?: string;
 }
+
+// Module-level cache ώστε τα collapsed blocks να θυμούνται την κατάστασή τους
+// ακόμα και όταν το component ξανα-mountάρει (minimize → restore).
+const collapsedStateCache = new Map<string, Record<string, boolean>>();
 
 export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
   blocks,
@@ -39,14 +45,21 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
   onSetClick,
   onVideoClick,
   program,
+  persistKey,
 }) => {
   const [openBlocks, setOpenBlocks] = useState<Record<string, boolean>>(() => {
+    const cached = persistKey ? collapsedStateCache.get(persistKey) : undefined;
     const initial: Record<string, boolean> = {};
     blocks?.forEach(block => {
-      initial[block.id] = true;
+      initial[block.id] = cached?.[block.id] ?? true;
     });
     return initial;
   });
+
+  React.useEffect(() => {
+    if (persistKey) collapsedStateCache.set(persistKey, openBlocks);
+  }, [persistKey, openBlocks]);
+
 
   const handleToggleCheck = useCallback((exerciseId: string) => {
     if (workoutInProgress && onSetClick) {
