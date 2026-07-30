@@ -35,11 +35,18 @@ const formatDateGR = (iso: string): string => {
   return `${d}/${m}/${y}`;
 };
 
+interface Sponsor {
+  name: string;
+  logo_url: string;
+  link_url: string;
+}
+
 interface LiveEvent {
   id: string;
   title: string;
   description: string | null;
   is_active: boolean;
+  sponsors?: Sponsor[] | null;
 }
 
 interface LiveRing {
