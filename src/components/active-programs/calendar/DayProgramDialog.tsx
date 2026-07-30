@@ -155,7 +155,27 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     wasOpenRef.current = isOpen;
   }, [isOpen]);
 
+  // Επαναφορά scroll position όταν ο διάλογος ξανα-ανοίγει από minimize
+  useEffect(() => {
+    if (isMinimized || !isOpen) return;
+    const target = scrollPositionRef.current;
+    if (!target) return;
+    let frames = 0;
+    let raf = 0;
+    const tick = () => {
+      const el = scrollContainerRef.current;
+      if (el && el.scrollHeight - el.clientHeight >= target) {
+        el.scrollTop = target;
+        return;
+      }
+      if (++frames < 40) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [isMinimized, isOpen]);
+
   if (!program || !selectedDate) return null;
+
 
   // Prev/Next day navigation
   const sortedTrainingDates = [...(program.training_dates || [])].sort();
@@ -382,7 +402,11 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             }}
           />
 
-          <div ref={scrollContainerRef} className="pt-12 pb-2 overflow-y-auto flex-1 space-y-2">
+          <div
+            ref={scrollContainerRef}
+            onScroll={(e) => { scrollPositionRef.current = (e.currentTarget as HTMLDivElement).scrollTop; }}
+            className="pt-12 pb-2 overflow-y-auto flex-1 space-y-2"
+          >
             {dayProgram ? (
               <div className="space-y-2">
                 <h4 className="text-sm font-medium text-gray-900 flex items-center space-x-2">
@@ -469,6 +493,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
                         getVelocity={exerciseCompletion.getVelocity}
                         selectedDate={selectedDate}
                         program={program}
+                        persistKey={`${program.id}__${format(selectedDate, 'yyyy-MM-dd')}`}
                       />
                     </ExerciseInteractionHandler>
                   </UserExerciseDataCacheProvider>
