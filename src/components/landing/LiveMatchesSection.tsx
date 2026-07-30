@@ -162,6 +162,9 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
   const sponsorsCaption = lang === "en"
     ? (draftExtra?.sponsor_caption_en || draftExtra?.sponsor_caption || "Our sponsors")
     : (draftExtra?.sponsor_caption || "Οι χορηγοί μας");
+  const anyEventHasActiveLink = events.some((event) =>
+    (ringsByEvent[event.id] || []).some((r) => pickActiveEmbed(r).url)
+  );
 
   if (events.length === 0 && sponsors.length === 0) return null;
 
