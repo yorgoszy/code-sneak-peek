@@ -34,10 +34,17 @@ const normalizeEmbedUrl = (url: string, startSec?: number | null, endSec?: numbe
   return url;
 };
 
+interface EventSponsor {
+  name?: string;
+  logo_url: string;
+  link_url?: string;
+}
+
 interface LiveEvent {
   id: string;
   title: string;
   description: string | null;
+  sponsors?: EventSponsor[] | null;
 }
 
 interface LiveRing {
