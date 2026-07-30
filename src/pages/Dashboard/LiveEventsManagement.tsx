@@ -328,10 +328,8 @@ const LiveEventsManagement: React.FC = () => {
         end_seconds: parseTimeToSeconds(d.end),
       }));
 
-    if (cleanDays.every((d) => !d.embed_url) && !ringForm.embed_url.trim()) {
-      toast.error("Συμπληρώστε τουλάχιστον ένα link");
-      return;
-    }
+
+
 
     const d1 = cleanDays[0];
     const d2 = cleanDays[1];
