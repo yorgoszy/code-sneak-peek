@@ -402,7 +402,11 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             }}
           />
 
-          <div ref={scrollContainerRef} className="pt-12 pb-2 overflow-y-auto flex-1 space-y-2">
+          <div
+            ref={scrollContainerRef}
+            onScroll={(e) => { scrollPositionRef.current = (e.currentTarget as HTMLDivElement).scrollTop; }}
+            className="pt-12 pb-2 overflow-y-auto flex-1 space-y-2"
+          >
             {dayProgram ? (
               <div className="space-y-2">
                 <h4 className="text-sm font-medium text-gray-900 flex items-center space-x-2">
@@ -489,6 +493,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
                         getVelocity={exerciseCompletion.getVelocity}
                         selectedDate={selectedDate}
                         program={program}
+                        persistKey={`${program.id}__${format(selectedDate, 'yyyy-MM-dd')}`}
                       />
                     </ExerciseInteractionHandler>
                   </UserExerciseDataCacheProvider>
