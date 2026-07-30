@@ -163,7 +163,8 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
 
         {events.map((event) => {
           const rings = ringsByEvent[event.id] || [];
-          if (rings.length === 0) return null;
+          const eventSponsors = (event.sponsors || []).filter((s) => s?.logo_url);
+          if (rings.length === 0 && eventSponsors.length === 0) return null;
           const cols =
             rings.length === 1
               ? "grid-cols-1"
@@ -202,6 +203,39 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
                   </div>
                 ))}
               </div>
+
+              {eventSponsors.length > 0 && (
+                <div className="mt-6 border-t border-border pt-5">
+                  <div className="mb-4 text-center text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                    {sponsorsCaption}
+                  </div>
+                  <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
+                    {eventSponsors.map((s, i) => {
+                      const img = (
+                        <img
+                          src={s.logo_url}
+                          alt={s.name || `${sponsorsCaption} ${i + 1}`}
+                          className="h-12 max-w-[160px] object-contain md:h-16 transition-opacity hover:opacity-70"
+                          loading="lazy"
+                        />
+                      );
+                      return s.link_url ? (
+                        <a
+                          key={`${s.logo_url}-${i}`}
+                          href={s.link_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={s.name || undefined}
+                        >
+                          {img}
+                        </a>
+                      ) : (
+                        <span key={`${s.logo_url}-${i}`}>{img}</span>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}
