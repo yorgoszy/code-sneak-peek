@@ -56,15 +56,61 @@ export const NewRecordTab: React.FC<NewRecordTabProps> = ({ users, exercises, on
       terminalVelocity: ''
     }
   ]);
+  const [lastTestDates, setLastTestDates] = useState<Map<string, Date>>(new Map());
 
-  const userOptions = useMemo(() => 
-    (users || []).map(user => ({ 
-      value: user.id, 
+  // Fetch latest strength test date per user to sort dropdown by recency
+  useEffect(() => {
+    const fetchLatestTestDates = async () => {
+      if (!users?.length) {
+        setLastTestDates(new Map());
+        return;
+      }
+
+      const userIds = users.map(u => u.id).filter(Boolean);
+      if (userIds.length === 0) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('strength_test_sessions')
+          .select('user_id, test_date')
+          .in('user_id', userIds)
+          .not('user_id', 'is', null);
+
+        if (error) throw error;
+
+        const dateMap = new Map<string, Date>();
+        (data || []).forEach((session: any) => {
+          if (!session?.user_id || !session.test_date) return;
+          const current = dateMap.get(session.user_id);
+          const date = new Date(session.test_date);
+          if (!current || date > current) {
+            dateMap.set(session.user_id, date);
+          }
+        });
+
+        setLastTestDates(dateMap);
+      } catch (error) {
+        console.error('Error fetching latest test dates:', error);
+      }
+    };
+
+    fetchLatestTestDates();
+  }, [users]);
+
+  const userOptions = useMemo(() => {
+    const options = (users || []).map(user => ({
+      value: user.id,
       label: user.name,
       searchTerms: `${user.name} ${user.email || ''}`
-    })),
-    [users]
-  );
+    }));
+
+    return options.sort((a, b) => {
+      const dateA = lastTestDates.get(a.value)?.getTime() || 0;
+      const dateB = lastTestDates.get(b.value)?.getTime() || 0;
+      if (dateB !== dateA) return dateB - dateA;
+      return (a.label || '').localeCompare(b.label || '', 'el');
+    });
+  }, [users, lastTestDates]);
 
   const exerciseOptions = useMemo(() => 
     (exercises || []).map(exercise => ({ value: exercise.id, label: exercise.name })),
