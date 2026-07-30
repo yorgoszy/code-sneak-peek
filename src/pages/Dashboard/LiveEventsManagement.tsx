@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Plus, Trash2, Pencil, Radio, ChevronDown, ChevronUp } from "lucide-react";
+import { Menu, Plus, Trash2, Pencil, Radio, ChevronDown, ChevronUp, X, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { parseYouTubeId } from "@/utils/youtubeIframeApi";
-import { LandingImageUploader } from "@/components/landing-cms/LandingImageUploader";
+
 
 const normalizeEmbedUrl = (url: string): string => {
   if (!url) return url;
@@ -546,34 +546,89 @@ const LiveEventsManagement: React.FC = () => {
                 {eventForm.sponsors.length === 0 ? (
                   <p className="text-xs text-muted-foreground">Δεν έχουν οριστεί χορηγοί.</p>
                 ) : (
-                  eventForm.sponsors.map((s, i) => (
-                    <div key={i} className="border border-border p-3 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold">Χορηγός {i + 1}</span>
-                        <Button type="button" variant="ghost" size="sm" className="rounded-none h-7 w-7 p-0" onClick={() => removeSponsor(i)}>
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
+                  <div className="space-y-2">
+                    {eventForm.sponsors.map((s, i) => (
+                      <div key={i} className="border border-border p-2">
+                        <div className="flex items-start gap-2">
+                          {s.logo_url ? (
+                            <div className="relative shrink-0 w-14 h-14 border border-border bg-white flex items-center justify-center overflow-hidden">
+                              <img src={s.logo_url} alt="" className="object-contain w-full h-full p-1" />
+                              <button
+                                type="button"
+                                onClick={() => updateSponsor(i, { logo_url: "" })}
+                                className="absolute top-0 right-0 bg-black/70 text-white p-0.5"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="shrink-0 w-14 h-14 border border-border bg-muted flex items-center justify-center">
+                              <Upload className="w-5 h-5 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0 space-y-1.5">
+                            <div className="flex items-center justify-between gap-2">
+                              <Input
+                                className="rounded-none h-7 text-sm"
+                                value={s.name}
+                                placeholder={`Χορηγός ${i + 1}`}
+                                onChange={(e) => updateSponsor(i, { name: e.target.value })}
+                              />
+                              <Button type="button" variant="ghost" size="sm" className="rounded-none h-7 w-7 p-0 shrink-0" onClick={() => removeSponsor(i)}>
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                            <div className="flex gap-1.5">
+                              <Input
+                                type="text"
+                                className="rounded-none h-7 text-xs"
+                                value={s.logo_url || ""}
+                                placeholder="URL λογότυπου"
+                                onChange={(e) => updateSponsor(i, { logo_url: e.target.value })}
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="rounded-none h-7 px-2 shrink-0"
+                                onClick={() => document.getElementById(`sponsor-file-${i}`)?.click()}
+                              >
+                                <Upload className="w-3.5 h-3.5" />
+                              </Button>
+                              <input
+                                id={`sponsor-file-${i}`}
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={async (e) => {
+                                  const f = e.target.files?.[0];
+                                  if (!f) return;
+                                  try {
+                                    const ext = f.name.split('.').pop() || 'jpg';
+                                    const filename = `live-sponsors/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+                                    const { error } = await supabase.storage.from('uploads').upload(filename, f, { cacheControl: '3600', upsert: false });
+                                    if (error) throw error;
+                                    const { data } = supabase.storage.from('uploads').getPublicUrl(filename);
+                                    updateSponsor(i, { logo_url: data.publicUrl });
+                                    toast.success('Το λογότυπο ανέβηκε');
+                                  } catch (e: any) {
+                                    toast.error('Σφάλμα ανεβάσματος: ' + (e?.message ?? String(e)));
+                                  }
+                                  e.target.value = '';
+                                }}
+                              />
+                            </div>
+                            <Input
+                              className="rounded-none h-7 text-xs"
+                              value={s.link_url}
+                              placeholder="https://site-χορηγού.gr"
+                              onChange={(e) => updateSponsor(i, { link_url: e.target.value })}
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <Input
-                        className="rounded-none h-8"
-                        value={s.name}
-                        placeholder="Όνομα χορηγού (προαιρετικό)"
-                        onChange={(e) => updateSponsor(i, { name: e.target.value })}
-                      />
-                      <LandingImageUploader
-                        label="Λογότυπο"
-                        pathPrefix="live-sponsors"
-                        value={s.logo_url || null}
-                        onChange={(url) => updateSponsor(i, { logo_url: url || "" })}
-                      />
-                      <Input
-                        className="rounded-none h-8"
-                        value={s.link_url}
-                        placeholder="https://site-χορηγού.gr"
-                        onChange={(e) => updateSponsor(i, { link_url: e.target.value })}
-                      />
-                    </div>
-                  ))
+                    ))}
+                  </div>
                 )}
               </div>
 
