@@ -132,15 +132,29 @@ const LiveEventsManagement: React.FC = () => {
   const [events, setEvents] = useState<LiveEvent[]>([]);
   const [rings, setRings] = useState<Record<string, LiveRing[]>>({});
   const [loading, setLoading] = useState(true);
-  const [collapsedEvents, setCollapsedEvents] = useState<Set<string>>(new Set());
+  const COLLAPSED_KEY = "live-events-collapsed";
+  const [collapsedEvents, setCollapsedEvents] = useState<Set<string>>(() => {
+    try {
+      const raw = localStorage.getItem(COLLAPSED_KEY);
+      return new Set<string>(raw ? JSON.parse(raw) : []);
+    } catch {
+      return new Set<string>();
+    }
+  });
 
   const toggleCollapse = (id: string) => {
     setCollapsedEvents((prev) => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
+      try {
+        localStorage.setItem(COLLAPSED_KEY, JSON.stringify(Array.from(next)));
+      } catch {
+        // ignore storage errors
+      }
       return next;
     });
   };
+
 
   const [eventDialog, setEventDialog] = useState(false);
   const [editingEvent, setEditingEvent] = useState<LiveEvent | null>(null);
