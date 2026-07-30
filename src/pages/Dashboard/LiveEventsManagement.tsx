@@ -174,9 +174,10 @@ const LiveEventsManagement: React.FC = () => {
       sponsors: Array.isArray(e.sponsors) ? (e.sponsors as Sponsor[]) : [],
     })) as LiveEvent[]);
     const grouped: Record<string, LiveRing[]> = {};
-    (rg || []).forEach((r) => {
-      if (!grouped[r.event_id]) grouped[r.event_id] = [];
-      grouped[r.event_id].push(r);
+    ((rg || []) as any[]).forEach((r) => {
+      const ring = { ...r, days: Array.isArray(r.days) ? (r.days as RingDay[]) : [] } as LiveRing;
+      if (!grouped[ring.event_id]) grouped[ring.event_id] = [];
+      grouped[ring.event_id].push(ring);
     });
     setRings(grouped);
     setLoading(false);
