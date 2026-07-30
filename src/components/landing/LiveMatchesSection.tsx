@@ -208,6 +208,13 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
                     <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
                       {(() => {
                         const active = pickActiveEmbed(r);
+                        if (!active.url) {
+                          return (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black text-sm text-white/60">
+                              {lang === "en" ? "No stream" : "Χωρίς link"}
+                            </div>
+                          );
+                        }
                         return (
                           <iframe
                             src={normalizeEmbedUrl(active.url, active.start, active.end)}
