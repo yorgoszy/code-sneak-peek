@@ -50,6 +50,13 @@ interface LiveEvent {
   sponsors?: Sponsor[] | null;
 }
 
+interface RingDay {
+  date: string;
+  embed_url: string;
+  start_seconds: number | null;
+  end_seconds: number | null;
+}
+
 interface LiveRing {
   id: string;
   event_id: string;
@@ -64,7 +71,23 @@ interface LiveRing {
   day1_end_seconds: number | null;
   day2_start_seconds: number | null;
   day2_end_seconds: number | null;
+  days?: RingDay[] | null;
 }
+
+// Merge legacy day1/day2 columns with the flexible days[] array
+const getRingDays = (r: LiveRing): RingDay[] => {
+  const fromJson = Array.isArray(r.days) ? (r.days as RingDay[]) : [];
+  if (fromJson.length > 0) return fromJson;
+  const legacy: RingDay[] = [];
+  if (r.day1_date || r.embed_url_day1) {
+    legacy.push({ date: r.day1_date || "", embed_url: r.embed_url_day1 || "", start_seconds: r.day1_start_seconds, end_seconds: r.day1_end_seconds });
+  }
+  if (r.day2_date || r.embed_url_day2) {
+    legacy.push({ date: r.day2_date || "", embed_url: r.embed_url_day2 || "", start_seconds: r.day2_start_seconds, end_seconds: r.day2_end_seconds });
+  }
+  return legacy;
+};
+
 
 // Parse "HH:MM:SS", "MM:SS", or plain seconds into total seconds
 const parseTimeToSeconds = (input: string): number | null => {
