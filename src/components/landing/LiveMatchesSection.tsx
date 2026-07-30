@@ -127,9 +127,10 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
         .in("event_id", ids)
         .order("display_order");
       const grouped: Record<string, LiveRing[]> = {};
-      (rg || []).forEach((r) => {
-        if (!grouped[r.event_id]) grouped[r.event_id] = [];
-        grouped[r.event_id].push(r);
+      ((rg || []) as any[]).forEach((r) => {
+        const ring = { ...r, days: Array.isArray(r.days) ? (r.days as RingDay[]) : [] } as LiveRing;
+        if (!grouped[ring.event_id]) grouped[ring.event_id] = [];
+        grouped[ring.event_id].push(ring);
       });
       setRingsByEvent(grouped);
     };
