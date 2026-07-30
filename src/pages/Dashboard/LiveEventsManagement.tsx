@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Plus, Trash2, Pencil, Radio } from "lucide-react";
+import { Menu, Plus, Trash2, Pencil, Radio, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -100,6 +100,15 @@ const LiveEventsManagement: React.FC = () => {
   const [events, setEvents] = useState<LiveEvent[]>([]);
   const [rings, setRings] = useState<Record<string, LiveRing[]>>({});
   const [loading, setLoading] = useState(true);
+  const [collapsedEvents, setCollapsedEvents] = useState<Set<string>>(new Set());
+
+  const toggleCollapse = (id: string) => {
+    setCollapsedEvents((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
 
   const [eventDialog, setEventDialog] = useState(false);
   const [editingEvent, setEditingEvent] = useState<LiveEvent | null>(null);
@@ -328,6 +337,15 @@ const LiveEventsManagement: React.FC = () => {
                         {event.description && <p className="text-sm text-muted-foreground mt-1">{event.description}</p>}
                       </div>
                       <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-none"
+                          title={collapsedEvents.has(event.id) ? "Άνοιγμα" : "Ελαχιστοποίηση"}
+                          onClick={() => toggleCollapse(event.id)}
+                        >
+                          {collapsedEvents.has(event.id) ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+                        </Button>
                         <Button variant="outline" size="sm" className="rounded-none" onClick={() => openEditEvent(event)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -336,6 +354,7 @@ const LiveEventsManagement: React.FC = () => {
                         </Button>
                       </div>
                     </CardHeader>
+                    {!collapsedEvents.has(event.id) && (
                     <CardContent>
                       <div className="flex items-center justify-between mb-3">
                         <h3 className="font-semibold text-sm">Ρινγκ ({rings[event.id]?.length || 0})</h3>
@@ -392,6 +411,7 @@ const LiveEventsManagement: React.FC = () => {
                         </div>
                       )}
                     </CardContent>
+                    )}
                   </Card>
                 ))}
               </div>
