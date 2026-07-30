@@ -149,19 +149,39 @@ const LiveEventsManagement: React.FC = () => {
   const [ringDialog, setRingDialog] = useState(false);
   const [activeEventForRing, setActiveEventForRing] = useState<string | null>(null);
   const [editingRing, setEditingRing] = useState<LiveRing | null>(null);
-  const [ringForm, setRingForm] = useState({
+  const [ringForm, setRingForm] = useState<{
+    ring_name: string;
+    embed_url: string;
+    display_order: number;
+    days: { date: string; embed_url: string; start: string; end: string }[];
+  }>({
     ring_name: "",
     embed_url: "",
     display_order: 0,
-    embed_url_day1: "",
-    embed_url_day2: "",
-    day1_date: "",
-    day2_date: "",
-    day1_start: "",
-    day1_end: "",
-    day2_start: "",
-    day2_end: "",
+    days: [],
   });
+
+  const updateRingDay = (index: number, patch: Partial<{ date: string; embed_url: string; start: string; end: string }>) => {
+    setRingForm((prev) => ({ ...prev, days: prev.days.map((d, i) => (i === index ? { ...d, ...patch } : d)) }));
+  };
+
+  const addRingDay = () => {
+    setRingForm((prev) => {
+      // Auto-suggest next calendar date based on the last entry
+      const last = prev.days[prev.days.length - 1];
+      let nextDate = "";
+      if (last?.date) {
+        const d = new Date(last.date);
+        d.setDate(d.getDate() + 1);
+        nextDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      }
+      return { ...prev, days: [...prev.days, { date: nextDate, embed_url: "", start: "", end: "" }] };
+    });
+  };
+
+  const removeRingDay = (index: number) => {
+    setRingForm((prev) => ({ ...prev, days: prev.days.filter((_, i) => i !== index) }));
+  };
 
   const [deleteEventId, setDeleteEventId] = useState<string | null>(null);
   const [deleteRingId, setDeleteRingId] = useState<string | null>(null);
