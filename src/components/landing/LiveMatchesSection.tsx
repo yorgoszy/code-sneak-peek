@@ -302,7 +302,7 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
           );
         })}
 
-        {sponsors.length > 0 && (
+        {anyEventHasActiveLink && sponsors.length > 0 && (
           <div className="mt-10 border-y border-border py-6">
             <div className="mb-5 text-center text-xs font-bold uppercase tracking-widest text-muted-foreground">
               {sponsorsCaption}
