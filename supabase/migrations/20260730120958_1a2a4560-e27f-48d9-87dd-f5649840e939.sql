@@ -1,0 +1,1 @@
+ALTER TABLE public.live_event_rings ADD COLUMN IF NOT EXISTS days jsonb NOT NULL DEFAULT '[]'::jsonb;

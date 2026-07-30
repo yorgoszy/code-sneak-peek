@@ -50,6 +50,13 @@ interface LiveEvent {
   sponsors?: Sponsor[] | null;
 }
 
+interface RingDay {
+  date: string;
+  embed_url: string;
+  start_seconds: number | null;
+  end_seconds: number | null;
+}
+
 interface LiveRing {
   id: string;
   event_id: string;
@@ -64,7 +71,23 @@ interface LiveRing {
   day1_end_seconds: number | null;
   day2_start_seconds: number | null;
   day2_end_seconds: number | null;
+  days?: RingDay[] | null;
 }
+
+// Merge legacy day1/day2 columns with the flexible days[] array
+const getRingDays = (r: LiveRing): RingDay[] => {
+  const fromJson = Array.isArray(r.days) ? (r.days as RingDay[]) : [];
+  if (fromJson.length > 0) return fromJson;
+  const legacy: RingDay[] = [];
+  if (r.day1_date || r.embed_url_day1) {
+    legacy.push({ date: r.day1_date || "", embed_url: r.embed_url_day1 || "", start_seconds: r.day1_start_seconds, end_seconds: r.day1_end_seconds });
+  }
+  if (r.day2_date || r.embed_url_day2) {
+    legacy.push({ date: r.day2_date || "", embed_url: r.embed_url_day2 || "", start_seconds: r.day2_start_seconds, end_seconds: r.day2_end_seconds });
+  }
+  return legacy;
+};
+
 
 // Parse "HH:MM:SS", "MM:SS", or plain seconds into total seconds
 const parseTimeToSeconds = (input: string): number | null => {
@@ -96,10 +119,11 @@ const todayStr = () => {
 
 const pickActiveEmbed = (r: LiveRing): string => {
   const today = todayStr();
-  if (r.day1_date && r.embed_url_day1 && r.day1_date === today) return r.embed_url_day1;
-  if (r.day2_date && r.embed_url_day2 && r.day2_date === today) return r.embed_url_day2;
-  // Fallback: first available
-  return r.embed_url_day1 || r.embed_url_day2 || r.embed_url || "";
+  const days = getRingDays(r);
+  const match = days.find((d) => d.date === today && d.embed_url);
+  if (match) return match.embed_url;
+  const first = days.find((d) => d.embed_url);
+  return first?.embed_url || r.embed_url || "";
 };
 
 const LiveEventsManagement: React.FC = () => {
@@ -125,19 +149,39 @@ const LiveEventsManagement: React.FC = () => {
   const [ringDialog, setRingDialog] = useState(false);
   const [activeEventForRing, setActiveEventForRing] = useState<string | null>(null);
   const [editingRing, setEditingRing] = useState<LiveRing | null>(null);
-  const [ringForm, setRingForm] = useState({
+  const [ringForm, setRingForm] = useState<{
+    ring_name: string;
+    embed_url: string;
+    display_order: number;
+    days: { date: string; embed_url: string; start: string; end: string }[];
+  }>({
     ring_name: "",
     embed_url: "",
     display_order: 0,
-    embed_url_day1: "",
-    embed_url_day2: "",
-    day1_date: "",
-    day2_date: "",
-    day1_start: "",
-    day1_end: "",
-    day2_start: "",
-    day2_end: "",
+    days: [],
   });
+
+  const updateRingDay = (index: number, patch: Partial<{ date: string; embed_url: string; start: string; end: string }>) => {
+    setRingForm((prev) => ({ ...prev, days: prev.days.map((d, i) => (i === index ? { ...d, ...patch } : d)) }));
+  };
+
+  const addRingDay = () => {
+    setRingForm((prev) => {
+      // Auto-suggest next calendar date based on the last entry
+      const last = prev.days[prev.days.length - 1];
+      let nextDate = "";
+      if (last?.date) {
+        const d = new Date(last.date);
+        d.setDate(d.getDate() + 1);
+        nextDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      }
+      return { ...prev, days: [...prev.days, { date: nextDate, embed_url: "", start: "", end: "" }] };
+    });
+  };
+
+  const removeRingDay = (index: number) => {
+    setRingForm((prev) => ({ ...prev, days: prev.days.filter((_, i) => i !== index) }));
+  };
 
   const [deleteEventId, setDeleteEventId] = useState<string | null>(null);
   const [deleteRingId, setDeleteRingId] = useState<string | null>(null);
@@ -151,9 +195,10 @@ const LiveEventsManagement: React.FC = () => {
       sponsors: Array.isArray(e.sponsors) ? (e.sponsors as Sponsor[]) : [],
     })) as LiveEvent[]);
     const grouped: Record<string, LiveRing[]> = {};
-    (rg || []).forEach((r) => {
-      if (!grouped[r.event_id]) grouped[r.event_id] = [];
-      grouped[r.event_id].push(r);
+    ((rg || []) as any[]).forEach((r) => {
+      const ring = { ...r, days: Array.isArray(r.days) ? (r.days as RingDay[]) : [] } as LiveRing;
+      if (!grouped[ring.event_id]) grouped[ring.event_id] = [];
+      grouped[ring.event_id].push(ring);
     });
     setRings(grouped);
     setLoading(false);
@@ -233,14 +278,7 @@ const LiveEventsManagement: React.FC = () => {
       ring_name: "",
       embed_url: "",
       display_order: rings[eventId]?.length || 0,
-      embed_url_day1: "",
-      embed_url_day2: "",
-      day1_date: "",
-      day2_date: "",
-      day1_start: "",
-      day1_end: "",
-      day2_start: "",
-      day2_end: "",
+      days: [{ date: todayStr(), embed_url: "", start: "", end: "" }],
     });
     setRingDialog(true);
   };
@@ -252,14 +290,12 @@ const LiveEventsManagement: React.FC = () => {
       ring_name: r.ring_name,
       embed_url: r.embed_url,
       display_order: r.display_order,
-      embed_url_day1: r.embed_url_day1 || "",
-      embed_url_day2: r.embed_url_day2 || "",
-      day1_date: r.day1_date || "",
-      day2_date: r.day2_date || "",
-      day1_start: secondsToTime(r.day1_start_seconds),
-      day1_end: secondsToTime(r.day1_end_seconds),
-      day2_start: secondsToTime(r.day2_start_seconds),
-      day2_end: secondsToTime(r.day2_end_seconds),
+      days: getRingDays(r).map((d) => ({
+        date: d.date || "",
+        embed_url: d.embed_url || "",
+        start: secondsToTime(d.start_seconds),
+        end: secondsToTime(d.end_seconds),
+      })),
     });
     setRingDialog(true);
   };
@@ -269,22 +305,36 @@ const LiveEventsManagement: React.FC = () => {
       toast.error("Συμπληρώστε όνομα ρινγκ");
       return;
     }
-    if (!ringForm.embed_url_day1.trim() && !ringForm.embed_url_day2.trim() && !ringForm.embed_url.trim()) {
+    const cleanDays = ringForm.days
+      .filter((d) => d.embed_url.trim() || d.date)
+      .map((d) => ({
+        date: d.date || null,
+        embed_url: d.embed_url.trim(),
+        start_seconds: parseTimeToSeconds(d.start),
+        end_seconds: parseTimeToSeconds(d.end),
+      }));
+
+    if (cleanDays.every((d) => !d.embed_url) && !ringForm.embed_url.trim()) {
       toast.error("Συμπληρώστε τουλάχιστον ένα link");
       return;
     }
+
+    const d1 = cleanDays[0];
+    const d2 = cleanDays[1];
     const payload = {
       ring_name: ringForm.ring_name,
-      embed_url: ringForm.embed_url || ringForm.embed_url_day1 || ringForm.embed_url_day2,
+      embed_url: ringForm.embed_url || d1?.embed_url || "",
       display_order: ringForm.display_order,
-      embed_url_day1: ringForm.embed_url_day1 || null,
-      embed_url_day2: ringForm.embed_url_day2 || null,
-      day1_date: ringForm.day1_date || null,
-      day2_date: ringForm.day2_date || null,
-      day1_start_seconds: parseTimeToSeconds(ringForm.day1_start),
-      day1_end_seconds: parseTimeToSeconds(ringForm.day1_end),
-      day2_start_seconds: parseTimeToSeconds(ringForm.day2_start),
-      day2_end_seconds: parseTimeToSeconds(ringForm.day2_end),
+      days: cleanDays as any,
+      // legacy columns kept in sync for backwards compatibility
+      embed_url_day1: d1?.embed_url || null,
+      embed_url_day2: d2?.embed_url || null,
+      day1_date: d1?.date || null,
+      day2_date: d2?.date || null,
+      day1_start_seconds: d1?.start_seconds ?? null,
+      day1_end_seconds: d1?.end_seconds ?? null,
+      day2_start_seconds: d2?.start_seconds ?? null,
+      day2_end_seconds: d2?.end_seconds ?? null,
     };
     if (editingRing) {
       const { error } = await supabase.from("live_event_rings").update(payload).eq("id", editingRing.id);
@@ -297,6 +347,7 @@ const LiveEventsManagement: React.FC = () => {
     setRingDialog(false);
     fetchData();
   };
+
 
   const deleteRing = async () => {
     if (!deleteRingId) return;
@@ -432,17 +483,18 @@ const LiveEventsManagement: React.FC = () => {
                                   <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm">Χωρίς link</div>
                                 )}
                               </div>
-                              <div className="px-3 py-2 text-xs text-muted-foreground border-t border-border space-y-1">
-                                {r.day1_date && (
-                                  <div className="truncate"><span className="font-semibold">Ημέρα 1 ({formatDateGR(r.day1_date)}):</span> {r.embed_url_day1 || "—"}</div>
-                                )}
-                                {r.day2_date && (
-                                  <div className="truncate"><span className="font-semibold">Ημέρα 2 ({formatDateGR(r.day2_date)}):</span> {r.embed_url_day2 || "—"}</div>
-                                )}
-                                {!r.day1_date && !r.day2_date && (
+                              <div className="px-3 py-2 text-xs text-muted-foreground border-t border-border space-y-1 max-h-32 overflow-y-auto">
+                                {getRingDays(r).length > 0 ? (
+                                  getRingDays(r).map((d, i) => (
+                                    <div key={i} className="truncate">
+                                      <span className="font-semibold">Ημέρα {i + 1}{d.date ? ` (${formatDateGR(d.date)})` : ""}:</span> {d.embed_url || "—"}
+                                    </div>
+                                  ))
+                                ) : (
                                   <div className="truncate">{r.embed_url}</div>
                                 )}
                               </div>
+
                             </div>
                           ))}
                         </div>
@@ -527,7 +579,7 @@ const LiveEventsManagement: React.FC = () => {
 
         {/* Ring Dialog */}
         <Dialog open={ringDialog} onOpenChange={setRingDialog}>
-          <DialogContent className="rounded-none">
+          <DialogContent className="rounded-none max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingRing ? "Επεξεργασία Ρινγκ" : "Νέο Ρινγκ"}</DialogTitle>
             </DialogHeader>
@@ -543,29 +595,38 @@ const LiveEventsManagement: React.FC = () => {
                 </div>
               </div>
 
-              <div className="border border-border p-2 space-y-2">
-                <Label className="font-semibold text-xs">Ημέρα 1</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  <Input type="date" className="rounded-none h-8 col-span-1" value={ringForm.day1_date} onChange={(e) => setRingForm({ ...ringForm, day1_date: e.target.value })} />
-                  <Input className="rounded-none h-8 col-span-2" value={ringForm.embed_url_day1} onChange={(e) => setRingForm({ ...ringForm, embed_url_day1: e.target.value })} placeholder="Embed URL" />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Input className="rounded-none h-8" value={ringForm.day1_start} onChange={(e) => setRingForm({ ...ringForm, day1_start: e.target.value })} placeholder="Από (ωω:λλ:δδ)" />
-                  <Input className="rounded-none h-8" value={ringForm.day1_end} onChange={(e) => setRingForm({ ...ringForm, day1_end: e.target.value })} placeholder="Έως (ωω:λλ:δδ)" />
-                </div>
+              <div className="flex items-center justify-between">
+                <Label className="font-semibold text-xs">Ημέρες ({ringForm.days.length})</Label>
+                <Button type="button" size="sm" variant="outline" className="rounded-none" onClick={addRingDay}>
+                  <Plus className="h-4 w-4 mr-1" /> Προσθήκη Ημέρας
+                </Button>
               </div>
 
-              <div className="border border-border p-2 space-y-2">
-                <Label className="font-semibold text-xs">Ημέρα 2</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  <Input type="date" className="rounded-none h-8 col-span-1" value={ringForm.day2_date} onChange={(e) => setRingForm({ ...ringForm, day2_date: e.target.value })} />
-                  <Input className="rounded-none h-8 col-span-2" value={ringForm.embed_url_day2} onChange={(e) => setRingForm({ ...ringForm, embed_url_day2: e.target.value })} placeholder="Embed URL" />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Input className="rounded-none h-8" value={ringForm.day2_start} onChange={(e) => setRingForm({ ...ringForm, day2_start: e.target.value })} placeholder="Από (ωω:λλ:δδ)" />
-                  <Input className="rounded-none h-8" value={ringForm.day2_end} onChange={(e) => setRingForm({ ...ringForm, day2_end: e.target.value })} placeholder="Έως (ωω:λλ:δδ)" />
-                </div>
+              <div className="space-y-2 max-h-[45vh] overflow-y-auto pr-1">
+                {ringForm.days.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">Δεν έχουν οριστεί ημέρες.</p>
+                ) : (
+                  ringForm.days.map((d, i) => (
+                    <div key={i} className="border border-border p-2 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="font-semibold text-xs">Ημέρα {i + 1}</Label>
+                        <Button type="button" variant="ghost" size="sm" className="rounded-none h-7 w-7 p-0" onClick={() => removeRingDay(i)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <Input type="date" className="rounded-none h-8 col-span-1" value={d.date} onChange={(e) => updateRingDay(i, { date: e.target.value })} />
+                        <Input className="rounded-none h-8 col-span-2" value={d.embed_url} onChange={(e) => updateRingDay(i, { embed_url: e.target.value })} placeholder="Embed URL" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input className="rounded-none h-8" value={d.start} onChange={(e) => updateRingDay(i, { start: e.target.value })} placeholder="Από (ωω:λλ:δδ)" />
+                        <Input className="rounded-none h-8" value={d.end} onChange={(e) => updateRingDay(i, { end: e.target.value })} placeholder="Έως (ωω:λλ:δδ)" />
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
+
 
               <p className="text-xs text-muted-foreground">Εμφανίζεται αυτόματα το link που ταιριάζει με τη σημερινή ημερομηνία.</p>
             </div>
