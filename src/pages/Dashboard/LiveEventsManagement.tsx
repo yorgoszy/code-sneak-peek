@@ -411,6 +411,7 @@ const LiveEventsManagement: React.FC = () => {
                         </div>
                       )}
                     </CardContent>
+                    )}
                   </Card>
                 ))}
               </div>
