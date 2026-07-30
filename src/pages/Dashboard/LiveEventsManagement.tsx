@@ -100,6 +100,15 @@ const LiveEventsManagement: React.FC = () => {
   const [events, setEvents] = useState<LiveEvent[]>([]);
   const [rings, setRings] = useState<Record<string, LiveRing[]>>({});
   const [loading, setLoading] = useState(true);
+  const [collapsedEvents, setCollapsedEvents] = useState<Set<string>>(new Set());
+
+  const toggleCollapse = (id: string) => {
+    setCollapsedEvents((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
 
   const [eventDialog, setEventDialog] = useState(false);
   const [editingEvent, setEditingEvent] = useState<LiveEvent | null>(null);
