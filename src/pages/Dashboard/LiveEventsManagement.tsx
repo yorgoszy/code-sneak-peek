@@ -145,7 +145,10 @@ const LiveEventsManagement: React.FC = () => {
     setLoading(true);
     const { data: ev } = await supabase.from("live_events").select("*").order("created_at", { ascending: false });
     const { data: rg } = await supabase.from("live_event_rings").select("*").order("display_order");
-    setEvents(ev || []);
+    setEvents(((ev || []) as any[]).map((e) => ({
+      ...e,
+      sponsors: Array.isArray(e.sponsors) ? (e.sponsors as Sponsor[]) : [],
+    })) as LiveEvent[]);
     const grouped: Record<string, LiveRing[]> = {};
     (rg || []).forEach((r) => {
       if (!grouped[r.event_id]) grouped[r.event_id] = [];
