@@ -154,7 +154,6 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
   }, []);
 
   const lang = translations?.language || "el";
-  const sectionTitle = lang === "en" ? "Live Matches" : "Live Αγώνες";
   const ringLabel = lang === "en" ? "Ring" : "Ρινγκ";
   const sponsors = Array.isArray(draftExtra?.sponsor_logos)
     ? draftExtra.sponsor_logos.filter(Boolean)
