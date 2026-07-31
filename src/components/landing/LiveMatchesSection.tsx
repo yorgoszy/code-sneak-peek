@@ -180,7 +180,6 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
             <Radio className="w-4 h-4 animate-pulse" />
             LIVE
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">{sectionTitle}</h2>
         </div>
 
         {events.map((event) => {
@@ -220,6 +219,38 @@ const LiveMatchesSection: React.FC<Props> = ({ translations }) => {
                   {startDate && (
                     <div className="mt-2 text-sm text-black/70">
                       {lang === "en" ? "Starts" : "Έναρξη"}: {formatDate(startDate)}
+                    </div>
+                  )}
+                  {eventSponsors.length > 0 && (
+                    <div className="mt-8 pt-6 border-t border-border">
+                      <div className="mb-4 text-center text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                        {sponsorsCaption}
+                      </div>
+                      <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
+                        {eventSponsors.map((s, i) => {
+                          const img = (
+                            <img
+                              src={s.logo_url}
+                              alt={s.name || `${sponsorsCaption} ${i + 1}`}
+                              className="h-12 max-w-[160px] object-contain md:h-16 grayscale transition-all duration-300 hover:grayscale-0"
+                              loading="lazy"
+                            />
+                          );
+                          return s.link_url ? (
+                            <a
+                              key={`${s.logo_url}-${i}`}
+                              href={s.link_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={s.name || undefined}
+                            >
+                              {img}
+                            </a>
+                          ) : (
+                            <span key={`${s.logo_url}-${i}`}>{img}</span>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
                 </div>
