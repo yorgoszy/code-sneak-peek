@@ -54,11 +54,11 @@ interface EmailMessage {
 }
 
 interface EmailDetail extends EmailMessage {
-  raw: string;
   body: string;
-  headers: Record<string, string>;
   isHtml: boolean;
+  attachments?: { filename: string; contentType: string; size: number }[];
 }
+
 
 const FUNCTION_NAME = "email-client";
 
