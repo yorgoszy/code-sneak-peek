@@ -143,19 +143,6 @@ async function listEmails(folder: string, limit = 50) {
   }
 }
 
-function parseEmail(raw: string) {
-  const [headerSection, ...bodyParts] = raw.split("\r\n\r\n");
-  const body = bodyParts.join("\r\n\r\n");
-  const headers: Record<string, string> = {};
-  for (const line of (headerSection ?? "").split("\r\n")) {
-    const match = line.match(/^([^:]+):\s*(.*)$/);
-    if (match) headers[match[1].toLowerCase()] = match[2];
-  }
-  const contentType = headers["content-type"] ?? "";
-  const isHtml = contentType.includes("text/html");
-  return { headers, body, isHtml };
-}
-
 async function getEmail(folder: string, uid: number) {
   const client = getImapClient();
   try {
@@ -164,19 +151,27 @@ async function getEmail(folder: string, uid: number) {
     try {
       const msg = await client.fetchOne(`${uid}`, { source: true, envelope: true, flags: true, uid: true }, { uid: true });
       if (!msg || typeof msg === "boolean") return null;
-      const raw = new TextDecoder().decode(msg.source);
-      const parsed = parseEmail(raw);
+
+      const parsed = await simpleParser(msg.source);
+      const html = typeof parsed.html === "string" ? parsed.html : "";
+      const text = parsed.text ?? "";
+
       return {
         uid: msg.uid,
         seq: msg.seq,
-        subject: msg.envelope?.subject ?? "",
+        subject: parsed.subject ?? msg.envelope?.subject ?? "",
         from: msg.envelope?.from ?? [],
         to: msg.envelope?.to ?? [],
         date: msg.envelope?.date ?? null,
         flags: serializeFlags(msg.flags),
         size: msg.size ?? 0,
-        raw,
-        ...parsed,
+        isHtml: Boolean(html),
+        body: html || text,
+        attachments: (parsed.attachments ?? []).map((a: any) => ({
+          filename: a.filename ?? "attachment",
+          contentType: a.contentType ?? "application/octet-stream",
+          size: a.size ?? 0,
+        })),
       };
     } finally {
       lock.release();
@@ -185,6 +180,7 @@ async function getEmail(folder: string, uid: number) {
     await safeLogout(client);
   }
 }
+
 
 async function setSeen(folder: string, uid: number, seen: boolean) {
   const client = getImapClient();
