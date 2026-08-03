@@ -310,7 +310,7 @@ export const EmailClient: React.FC = () => {
             {selectedEmail.isHtml ? (
               <div
                 className="prose prose-sm max-w-none dark:prose-invert"
-                dangerouslySetInnerHTML={{ __html: selectedEmail.body }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedEmail.body) }}
               />
             ) : (
               <pre className="whitespace-pre-wrap font-sans text-sm">{selectedEmail.body}</pre>
