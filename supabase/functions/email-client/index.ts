@@ -225,7 +225,10 @@ Deno.serve(async (req) => {
     console.error("email-client error:", err);
     const status = err.message === "Unauthorized" ? 401 : err.message === "Forbidden" ? 403 : 500;
     const connectionError = ["ETIMEDOUT", "CONNECT_TIMEOUT", "UPGRADE_TIMEOUT", "ECONNREFUSED"].includes(err.code);
-    const message = connectionError
+    const certError = String(err.message ?? "").includes("certificate");
+    const message = certError
+      ? "Το SSL certificate του mail server έχει λήξει. Ανανεώστε το (Let's Encrypt στο Plesk) ή ορίστε EMAIL_IMAP_HOST/EMAIL_SMTP_HOST σε hostname με έγκυρο certificate."
+      : connectionError
       ? "Ο mail server δεν δέχτηκε έγκαιρα την ασφαλή σύνδεση. Ελέγξτε το SSL του mail.hyperkids.gr."
       : err.message;
     return new Response(JSON.stringify({ error: message, code: err.code ?? "EMAIL_ERROR" }), {
