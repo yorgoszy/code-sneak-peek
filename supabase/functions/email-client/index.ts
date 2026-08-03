@@ -48,7 +48,8 @@ function getImapClient() {
   return new ImapFlow({
     host: IMAP_HOST,
     port: IMAP_PORT,
-    secure: true,
+    // 993 = implicit TLS, 143 = STARTTLS (fallback that works better in edge runtime)
+    secure: IMAP_PORT === 993,
     auth: { user: EMAIL_USER, pass: EMAIL_PASS },
     tls: { rejectUnauthorized: false },
     logger: false,
