@@ -3,6 +3,8 @@
 import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 import { ImapFlow } from "npm:imapflow@1.6.5";
 import nodemailer from "npm:nodemailer@^9";
+import { simpleParser } from "npm:mailparser@3.7.1";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
