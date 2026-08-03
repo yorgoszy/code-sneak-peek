@@ -98,3 +98,6 @@ verify_jwt = false
 
 [functions.trial-request-action]
 verify_jwt = false
+
+[functions.email-client]
+verify_jwt = true
