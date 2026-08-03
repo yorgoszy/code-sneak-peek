@@ -186,6 +186,59 @@ async function getEmail(folder: string, uid: number) {
   }
 }
 
+async function setSeen(folder: string, uid: number, seen: boolean) {
+  const client = getImapClient();
+  try {
+    await client.connect();
+    const lock = await client.getMailboxLock(folder);
+    try {
+      if (seen) {
+        await client.messageFlagsAdd({ uid: String(uid) }, ["\\Seen"], { uid: true });
+      } else {
+        await client.messageFlagsRemove({ uid: String(uid) }, ["\\Seen"], { uid: true });
+      }
+      return { ok: true, uid, seen };
+    } finally {
+      lock.release();
+    }
+  } finally {
+    await safeLogout(client);
+  }
+}
+
+async function findTrashFolder(client: any): Promise<string | null> {
+  try {
+    const list = await client.list();
+    const trash = list.find((m: any) =>
+      m.specialUse === "\\Trash" || /^(trash|deleted|deleted items|junk)$/i.test(m.name ?? "")
+    );
+    return trash?.path ?? null;
+  } catch (_e) {
+    return null;
+  }
+}
+
+async function deleteEmail(folder: string, uid: number) {
+  const client = getImapClient();
+  try {
+    await client.connect();
+    const trash = await findTrashFolder(client);
+    const lock = await client.getMailboxLock(folder);
+    try {
+      if (trash && trash !== folder) {
+        await client.messageMove({ uid: String(uid) }, trash, { uid: true });
+        return { ok: true, uid, movedTo: trash };
+      }
+      await client.messageDelete({ uid: String(uid) }, { uid: true });
+      return { ok: true, uid, deleted: true };
+    } finally {
+      lock.release();
+    }
+  } finally {
+    await safeLogout(client);
+  }
+}
+
 async function sendEmail(to: string, subject: string, text: string, html?: string) {
   const transporter = nodemailer.createTransport({
     host: SMTP_HOST,
