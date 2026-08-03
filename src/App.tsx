@@ -56,6 +56,7 @@ import MeetingRoom from "@/pages/MeetingRoom";
 import ShopWithSidebar from "@/pages/Dashboard/ShopWithSidebar";
 import OnlineCoachingWithSidebar from "@/pages/OnlineCoachingWithSidebar";
 import OnlineBookingWithSidebar from "@/pages/Dashboard/OnlineBookingWithSidebar";
+import EmailWithSidebar from "@/pages/Dashboard/EmailWithSidebar";
 import BookingSectionsWithSidebar from "@/pages/Dashboard/BookingSectionsWithSidebar";
 import { SchoolNotesWithSidebar } from "@/pages/Dashboard/SchoolNotesWithSidebar";
 import StretchesManagementWithSidebar from "@/pages/Dashboard/StretchesManagementWithSidebar";
@@ -275,6 +276,7 @@ function App() {
                       <Route path="/dashboard/gift-cards" element={<ProtectedRoute requireAdmin><GiftCardsWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/online-coaching" element={<ProtectedRoute requireAdmin><OnlineCoachingWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/online-booking" element={<ProtectedRoute requireAdmin><OnlineBookingWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/email" element={<ProtectedRoute requireAdmin><EmailWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/booking-sections" element={<ProtectedRoute requireAdmin><BookingSectionsWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/school-notes" element={<ProtectedRoute requireAdmin><SchoolNotesWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/stretches" element={<ProtectedRoute requireAdmin><StretchesManagementWithSidebar /></ProtectedRoute>} />

@@ -788,10 +788,9 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     },
     {
       icon: Mail,
-      label: "Webmail",
-      path: "https://webmail.hyperkids.gr/",
-      badge: null,
-      external: true
+      label: "Email",
+      path: "/dashboard/email",
+      badge: null
     },
     { type: 'separator' },
     {
@@ -910,7 +909,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
         }
 
         // Regular menu item rendering
-        const isActive = location.pathname === item.path && !item.external;
+        const isActive = location.pathname === item.path;
         return (
           <button
             key={item.path}
