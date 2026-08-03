@@ -276,6 +276,12 @@ Deno.serve(async (req) => {
       result = await getEmail(folder ?? "INBOX", uid ?? 0);
     } else if (action === "send-email") {
       result = await sendEmail(to ?? "", subject ?? "", text ?? "", html);
+    } else if (action === "mark-read") {
+      result = await setSeen(folder ?? "INBOX", uid ?? 0, true);
+    } else if (action === "mark-unread") {
+      result = await setSeen(folder ?? "INBOX", uid ?? 0, false);
+    } else if (action === "delete-email") {
+      result = await deleteEmail(folder ?? "INBOX", uid ?? 0);
     } else {
       throw new Error("Unknown action");
     }
