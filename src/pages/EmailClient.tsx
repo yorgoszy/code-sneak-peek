@@ -39,7 +39,7 @@ interface EmailMessage {
   to: { name?: string; address?: string }[];
   date: string | null;
   internalDate: string | null;
-  flags: string[];
+  flags: unknown;
   size: number;
 }
 
@@ -86,6 +86,16 @@ function formatDate(dateStr: string | null) {
   } catch {
     return dateStr;
   }
+}
+
+function normalizeFlags(flags: unknown): string[] {
+  if (Array.isArray(flags)) return flags.filter((flag): flag is string => typeof flag === "string");
+  if (flags instanceof Set) return Array.from(flags).filter((flag): flag is string => typeof flag === "string");
+  if (typeof flags === "string") return [flags];
+  if (flags && typeof flags === "object") {
+    return Object.values(flags).filter((flag): flag is string => typeof flag === "string");
+  }
+  return [];
 }
 
 export const EmailClient: React.FC = () => {
@@ -182,7 +192,7 @@ export const EmailClient: React.FC = () => {
   }, [selectedFolder]);
 
   const selectedFolderData = useMemo(() => folders.find((f) => f.path === selectedFolder), [folders, selectedFolder]);
-  const isUnread = (msg: EmailMessage) => !msg.flags.includes("\\Seen");
+  const isUnread = (msg: EmailMessage) => !normalizeFlags(msg.flags).includes("\\Seen");
 
   const foldersPanel = (
     <div className="h-full flex flex-col border-r border-border bg-background">

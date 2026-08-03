@@ -79,6 +79,15 @@ async function safeLogout(client: any) {
   }
 }
 
+function serializeFlags(flags: unknown): string[] {
+  if (Array.isArray(flags)) return flags.map(String);
+  if (flags instanceof Set) return Array.from(flags, String);
+  if (flags && typeof (flags as { values?: unknown }).values === "function") {
+    return Array.from((flags as { values: () => Iterable<unknown> }).values(), String);
+  }
+  return [];
+}
+
 
 async function listFolders() {
   const client = getImapClient();
@@ -119,7 +128,7 @@ async function listEmails(folder: string, limit = 50) {
             to: msg.envelope?.to ?? [],
             date: msg.envelope?.date ?? null,
             internalDate: msg.internalDate ? msg.internalDate.toISOString() : null,
-            flags: msg.flags ?? [],
+            flags: serializeFlags(msg.flags),
             size: msg.size ?? 0,
           });
         }
@@ -164,7 +173,7 @@ async function getEmail(folder: string, uid: number) {
         from: msg.envelope?.from ?? [],
         to: msg.envelope?.to ?? [],
         date: msg.envelope?.date ?? null,
-        flags: msg.flags ?? [],
+        flags: serializeFlags(msg.flags),
         size: msg.size ?? 0,
         raw,
         ...parsed,
