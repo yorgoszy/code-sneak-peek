@@ -10,7 +10,7 @@ const corsHeaders = {
 };
 
 const IMAP_HOST = Deno.env.get("EMAIL_IMAP_HOST") ?? "mail.hyperkids.gr";
-const IMAP_PORT = parseInt(Deno.env.get("EMAIL_IMAP_PORT") ?? "993", 10);
+const IMAP_PORT = parseInt(Deno.env.get("EMAIL_IMAP_PORT") ?? "143", 10);
 const SMTP_HOST = Deno.env.get("EMAIL_SMTP_HOST") ?? "mail.hyperkids.gr";
 const SMTP_PORT = parseInt(Deno.env.get("EMAIL_SMTP_PORT") ?? "465", 10);
 const EMAIL_USER = Deno.env.get("EMAIL_USER") ?? "info@hyperkids.gr";
@@ -48,12 +48,27 @@ function getImapClient() {
   return new ImapFlow({
     host: IMAP_HOST,
     port: IMAP_PORT,
-    secure: true,
+    // 993 = implicit TLS, 143 = STARTTLS (fallback that works better in edge runtime)
+    secure: IMAP_PORT === 993,
     auth: { user: EMAIL_USER, pass: EMAIL_PASS },
     tls: { rejectUnauthorized: false },
     logger: false,
+    connectionTimeout: 20000,
+    greetingTimeout: 15000,
+    socketTimeout: 30000,
   });
 }
+
+// Never let logout() mask the real error (it throws "Connection not available"
+// when connect() itself failed).
+async function safeLogout(client: any) {
+  try {
+    await client.logout();
+  } catch (_e) {
+    try { client.close(); } catch (_e2) { /* ignore */ }
+  }
+}
+
 
 async function listFolders() {
   const client = getImapClient();
@@ -62,7 +77,7 @@ async function listFolders() {
     const tree = await client.listTree({ statusQuery: { messages: true, unseen: true } });
     return { folders: tree };
   } finally {
-    await client.logout();
+    await safeLogout(client);
   }
 }
 
@@ -105,7 +120,7 @@ async function listEmails(folder: string, limit = 50) {
       lock.release();
     }
   } finally {
-    await client.logout();
+    await safeLogout(client);
   }
 }
 
@@ -148,7 +163,7 @@ async function getEmail(folder: string, uid: number) {
       lock.release();
     }
   } finally {
-    await client.logout();
+    await safeLogout(client);
   }
 }
 
