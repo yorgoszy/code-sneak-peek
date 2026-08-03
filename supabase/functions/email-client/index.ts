@@ -10,7 +10,7 @@ const corsHeaders = {
 };
 
 const IMAP_HOST = Deno.env.get("EMAIL_IMAP_HOST") ?? "mail.hyperkids.gr";
-const IMAP_PORT = parseInt(Deno.env.get("EMAIL_IMAP_PORT") ?? "993", 10);
+const IMAP_PORT = parseInt(Deno.env.get("EMAIL_IMAP_PORT") ?? "143", 10);
 const SMTP_HOST = Deno.env.get("EMAIL_SMTP_HOST") ?? "mail.hyperkids.gr";
 const SMTP_PORT = parseInt(Deno.env.get("EMAIL_SMTP_PORT") ?? "465", 10);
 const EMAIL_USER = Deno.env.get("EMAIL_USER") ?? "info@hyperkids.gr";
