@@ -62,7 +62,7 @@ function getImapClient() {
 // when connect() itself failed).
 async function safeLogout(client: any) {
   try {
-    await safeLogout(client);
+    await client.logout();
   } catch (_e) {
     try { client.close(); } catch (_e2) { /* ignore */ }
   }
