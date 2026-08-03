@@ -62,7 +62,7 @@ function getImapClient() {
 // when connect() itself failed).
 async function safeLogout(client: any) {
   try {
-    await client.logout();
+    await safeLogout(client);
   } catch (_e) {
     try { client.close(); } catch (_e2) { /* ignore */ }
   }
@@ -76,7 +76,7 @@ async function listFolders() {
     const tree = await client.listTree({ statusQuery: { messages: true, unseen: true } });
     return { folders: tree };
   } finally {
-    await client.logout();
+    await safeLogout(client);
   }
 }
 
@@ -119,7 +119,7 @@ async function listEmails(folder: string, limit = 50) {
       lock.release();
     }
   } finally {
-    await client.logout();
+    await safeLogout(client);
   }
 }
 
@@ -162,7 +162,7 @@ async function getEmail(folder: string, uid: number) {
       lock.release();
     }
   } finally {
-    await client.logout();
+    await safeLogout(client);
   }
 }
 
