@@ -52,8 +52,22 @@ function getImapClient() {
     auth: { user: EMAIL_USER, pass: EMAIL_PASS },
     tls: { rejectUnauthorized: false },
     logger: false,
+    connectionTimeout: 20000,
+    greetingTimeout: 15000,
+    socketTimeout: 30000,
   });
 }
+
+// Never let logout() mask the real error (it throws "Connection not available"
+// when connect() itself failed).
+async function safeLogout(client: any) {
+  try {
+    await client.logout();
+  } catch (_e) {
+    try { client.close(); } catch (_e2) { /* ignore */ }
+  }
+}
+
 
 async function listFolders() {
   const client = getImapClient();
