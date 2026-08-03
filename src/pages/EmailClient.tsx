@@ -4,23 +4,33 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthContext } from "@/contexts/AuthContext";
 import {
   Loader2,
   Mail,
-  Inbox,
   Send,
   RefreshCw,
   ChevronLeft,
   X,
-  Paperclip,
   ArrowLeft,
   Menu,
+  Trash2,
+  MailOpen,
+  Circle,
 } from "lucide-react";
 
 interface EmailFolder {
@@ -57,6 +67,7 @@ async function invokeEmail(action: string, payload: Record<string, any> = {}) {
     body: { action, ...payload },
   });
   if (error) throw error;
+  if (data?.error) throw new Error(data.error);
   return data;
 }
 
@@ -70,7 +81,13 @@ function flattenFolders(tree: EmailFolder): EmailFolder[] {
     }
   }
   walk(tree);
-  return result;
+  // Deduplicate by path (root node can repeat) and drop empty paths
+  const seen = new Set<string>();
+  return result.filter((f) => {
+    if (!f.path || seen.has(f.path)) return false;
+    seen.add(f.path);
+    return true;
+  });
 }
 
 function formatAddress(addr?: { name?: string; address?: string }) {
@@ -78,11 +95,35 @@ function formatAddress(addr?: { name?: string; address?: string }) {
   return addr.name ? `${addr.name} <${addr.address}>` : addr.address || "";
 }
 
+function senderLabel(msg: EmailMessage) {
+  const first = msg.from?.[0];
+  return first?.name || first?.address || "(κενός αποστολέας)";
+}
+
 function formatDate(dateStr: string | null) {
   if (!dateStr) return "—";
   try {
     const d = new Date(dateStr);
-    return d.toLocaleString("el-GR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+    const today = new Date();
+    const sameDay = d.toDateString() === today.toDateString();
+    return sameDay
+      ? d.toLocaleTimeString("el-GR", { hour: "2-digit", minute: "2-digit" })
+      : d.toLocaleDateString("el-GR", { day: "2-digit", month: "2-digit", year: "2-digit" });
+  } catch {
+    return dateStr;
+  }
+}
+
+function formatFullDate(dateStr: string | null) {
+  if (!dateStr) return "—";
+  try {
+    return new Date(dateStr).toLocaleString("el-GR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   } catch {
     return dateStr;
   }
@@ -109,9 +150,11 @@ export const EmailClient: React.FC = () => {
   const [loadingEmails, setLoadingEmails] = useState(false);
   const [loadingEmail, setLoadingEmail] = useState(false);
   const [composeOpen, setComposeOpen] = useState(false);
-  const [mobileView, setMobileView] = useState<"folders" | "list" | "detail">("folders");
+  const [mobileView, setMobileView] = useState<"folders" | "list" | "detail">("list");
   const [composeForm, setComposeForm] = useState({ to: "", subject: "", body: "" });
   const [sending, setSending] = useState(false);
+  const [busyUid, setBusyUid] = useState<number | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<EmailMessage | null>(null);
 
   const loadFolders = async () => {
     setLoadingFolders(true);
@@ -138,16 +181,63 @@ export const EmailClient: React.FC = () => {
     }
   };
 
+  const setLocalSeen = (uid: number, seen: boolean) => {
+    setEmails((prev) =>
+      prev.map((m) => {
+        if (m.uid !== uid) return m;
+        const flags = normalizeFlags(m.flags).filter((f) => f !== "\\Seen");
+        return { ...m, flags: seen ? [...flags, "\\Seen"] : flags };
+      })
+    );
+  };
+
+  const markRead = async (uid: number, seen: boolean, silent = false) => {
+    setLocalSeen(uid, seen);
+    try {
+      await invokeEmail(seen ? "mark-read" : "mark-unread", { folder: selectedFolder, uid });
+      if (!silent) {
+        toast({ title: seen ? "Αναγνωσμένο" : "Μη αναγνωσμένο" });
+      }
+      loadFolders();
+    } catch (err: any) {
+      setLocalSeen(uid, !seen);
+      toast({ title: "Σφάλμα", description: err.message || "Αποτυχία ενημέρωσης", variant: "destructive" });
+    }
+  };
+
   const loadEmail = async (folder: string, uid: number) => {
     setLoadingEmail(true);
+    setMobileView("detail");
     try {
       const data = await invokeEmail("get-email", { folder, uid });
       setSelectedEmail(data);
-      setMobileView("detail");
+      const wasUnread = !normalizeFlags(data?.flags).includes("\\Seen");
+      if (wasUnread) markRead(uid, true, true);
     } catch (err: any) {
       toast({ title: "Σφάλμα", description: err.message || "Δεν ήταν δυνατή η φόρτωση του email", variant: "destructive" });
     } finally {
       setLoadingEmail(false);
+    }
+  };
+
+  const confirmDelete = async () => {
+    const target = deleteTarget;
+    setDeleteTarget(null);
+    if (!target) return;
+    setBusyUid(target.uid);
+    try {
+      await invokeEmail("delete-email", { folder: selectedFolder, uid: target.uid });
+      setEmails((prev) => prev.filter((m) => m.uid !== target.uid));
+      if (selectedEmail?.uid === target.uid) {
+        setSelectedEmail(null);
+        setMobileView("list");
+      }
+      toast({ title: "Διαγράφηκε", description: "Το email μεταφέρθηκε στα διαγραμμένα" });
+      loadFolders();
+    } catch (err: any) {
+      toast({ title: "Σφάλμα", description: err.message || "Αποτυχία διαγραφής", variant: "destructive" });
+    } finally {
+      setBusyUid(null);
     }
   };
 
@@ -166,7 +256,7 @@ export const EmailClient: React.FC = () => {
       toast({ title: "Αποστολή", description: "Το email στάλθηκε επιτυχώς" });
       setComposeOpen(false);
       setComposeForm({ to: "", subject: "", body: "" });
-      if (selectedFolder.toLowerCase() === "sent" || selectedFolder.toLowerCase().includes("sent")) {
+      if (selectedFolder.toLowerCase().includes("sent")) {
         loadEmails(selectedFolder);
       }
     } catch (err: any) {
@@ -177,56 +267,60 @@ export const EmailClient: React.FC = () => {
   };
 
   useEffect(() => {
-    if (session) {
-      loadFolders();
-      loadEmails(selectedFolder);
-    }
+    if (session) loadFolders();
   }, [session]);
 
   useEffect(() => {
     if (session) {
       loadEmails(selectedFolder);
       setSelectedEmail(null);
-      setMobileView("list");
     }
-  }, [selectedFolder]);
+  }, [session, selectedFolder]);
 
   const selectedFolderData = useMemo(() => folders.find((f) => f.path === selectedFolder), [folders, selectedFolder]);
   const isUnread = (msg: EmailMessage) => !normalizeFlags(msg.flags).includes("\\Seen");
+  const unreadCount = emails.filter(isUnread).length;
 
   const foldersPanel = (
-    <div className="h-full flex flex-col border-r border-border bg-background">
-      <div className="p-4 border-b border-border flex items-center justify-between">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Mail className="h-5 w-5" />
+    <div className="h-full min-h-0 flex flex-col border-r border-border bg-background">
+      <div className="h-14 shrink-0 px-4 border-b border-border flex items-center justify-between">
+        <h2 className="text-sm font-semibold uppercase tracking-wide flex items-center gap-2">
+          <Mail className="h-4 w-4" />
           Email
         </h2>
-        <Button variant="outline" size="icon" onClick={loadFolders} disabled={loadingFolders} className="rounded-none h-8 w-8">
+        <Button variant="ghost" size="icon" onClick={loadFolders} disabled={loadingFolders} className="rounded-none h-8 w-8">
           <RefreshCw className={`h-4 w-4 ${loadingFolders ? "animate-spin" : ""}`} />
         </Button>
       </div>
-      <ScrollArea className="flex-1">
-        <div className="p-2 space-y-1">
-          {folders.map((folder) => (
-            <button
-              key={folder.path}
-              onClick={() => {
-                setSelectedFolder(folder.path);
-                setMobileView("list");
-              }}
-              className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between rounded-none transition-colors ${
-                selectedFolder === folder.path ? "bg-[#00ffba] text-black" : "hover:bg-accent"
-              }`}
-            >
-              <span className="truncate">{folder.name}</span>
-              {(folder.status?.unseen ?? 0) > 0 && (
-                <Badge className="rounded-none bg-black text-white ml-2">{folder.status?.unseen}</Badge>
-              )}
-            </button>
-          ))}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="p-2 space-y-0.5">
+          {folders.map((folder) => {
+            const active = selectedFolder === folder.path;
+            return (
+              <button
+                key={folder.path}
+                onClick={() => {
+                  setSelectedFolder(folder.path);
+                  setMobileView("list");
+                }}
+                className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between rounded-none border-l-2 transition-colors ${
+                  active
+                    ? "border-[#00ffba] bg-accent font-medium"
+                    : "border-transparent hover:bg-accent/60 text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <span className="truncate">{folder.name}</span>
+                {(folder.status?.unseen ?? 0) > 0 && (
+                  <Badge variant="secondary" className="rounded-none ml-2 text-[10px] px-1.5">
+                    {folder.status?.unseen}
+                  </Badge>
+                )}
+              </button>
+            );
+          })}
         </div>
-      </ScrollArea>
-      <div className="p-3 border-t border-border">
+      </div>
+      <div className="p-3 border-t border-border shrink-0">
         <Button
           onClick={() => setComposeOpen(true)}
           className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
@@ -239,25 +333,28 @@ export const EmailClient: React.FC = () => {
   );
 
   const emailListPanel = (
-    <div className="h-full flex flex-col bg-background">
-      <div className="p-3 border-b border-border flex items-center justify-between lg:justify-start gap-2">
+    <div className="h-full min-h-0 flex flex-col border-r border-border bg-background">
+      <div className="h-14 shrink-0 px-3 border-b border-border flex items-center gap-2">
         <Button variant="outline" size="sm" onClick={() => setMobileView("folders")} className="lg:hidden rounded-none">
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          Φάκελοι
+          <ChevronLeft className="h-4 w-4" />
         </Button>
-        <h3 className="font-semibold truncate">
-          {selectedFolderData?.name || selectedFolder}
-          {selectedFolderData?.status?.messages !== undefined && (
-            <span className="ml-2 text-xs font-normal text-muted-foreground">
-              ({selectedFolderData.status.messages})
-            </span>
-          )}
-        </h3>
-        <Button variant="outline" size="icon" onClick={() => loadEmails(selectedFolder)} disabled={loadingEmails} className="rounded-none h-8 w-8 ml-auto">
+        <div className="min-w-0">
+          <h3 className="font-semibold text-sm truncate">{selectedFolderData?.name || selectedFolder}</h3>
+          <p className="text-[11px] text-muted-foreground">
+            {emails.length} μηνύματα{unreadCount > 0 ? ` · ${unreadCount} νέα` : ""}
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => loadEmails(selectedFolder)}
+          disabled={loadingEmails}
+          className="rounded-none h-8 w-8 ml-auto"
+        >
           <RefreshCw className={`h-4 w-4 ${loadingEmails ? "animate-spin" : ""}`} />
         </Button>
       </div>
-      <ScrollArea className="flex-1">
+      <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="divide-y divide-border">
           {loadingEmails && emails.length === 0 && (
             <div className="p-8 flex justify-center">
@@ -265,76 +362,158 @@ export const EmailClient: React.FC = () => {
             </div>
           )}
           {!loadingEmails && emails.length === 0 && (
-            <div className="p-8 text-center text-muted-foreground">Δεν βρέθηκαν emails</div>
+            <div className="p-8 text-center text-sm text-muted-foreground">Δεν βρέθηκαν emails</div>
           )}
-          {emails.map((email) => (
-            <button
-              key={email.uid}
-              onClick={() => loadEmail(selectedFolder, email.uid)}
-              className={`w-full text-left p-3 hover:bg-accent transition-colors rounded-none border-l-4 ${
-                selectedEmail?.uid === email.uid ? "border-[#00ffba] bg-accent" : "border-transparent"
-              }`}
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <p className={`text-sm truncate ${isUnread(email) ? "font-semibold" : ""}`}>
-                    {email.from.map(formatAddress).join(", ") || "(κενός αποστολέας)"}
+          {emails.map((email) => {
+            const unread = isUnread(email);
+            const active = selectedEmail?.uid === email.uid;
+            return (
+              <div
+                key={email.uid}
+                role="button"
+                tabIndex={0}
+                onClick={() => loadEmail(selectedFolder, email.uid)}
+                onKeyDown={(e) => e.key === "Enter" && loadEmail(selectedFolder, email.uid)}
+                className={`group relative w-full text-left px-3 py-2.5 cursor-pointer transition-colors border-l-2 ${
+                  active ? "border-[#00ffba] bg-accent" : "border-transparent hover:bg-accent/50"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  {unread ? (
+                    <Circle className="h-2 w-2 shrink-0 fill-[#00ffba] text-[#00ffba]" />
+                  ) : (
+                    <span className="h-2 w-2 shrink-0" />
+                  )}
+                  <p className={`text-sm truncate flex-1 ${unread ? "font-semibold" : "text-muted-foreground"}`}>
+                    {senderLabel(email)}
                   </p>
-                  <p className="text-sm truncate">{email.subject || "(χωρίς θέμα)"}</p>
+                  <span className="text-[11px] text-muted-foreground whitespace-nowrap">
+                    {formatDate(email.internalDate || email.date)}
+                  </span>
                 </div>
-                <span className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(email.internalDate || email.date)}</span>
+                <p className={`text-sm truncate pl-4 ${unread ? "font-medium" : ""}`}>
+                  {email.subject || "(χωρίς θέμα)"}
+                </p>
+                <div className="absolute right-2 bottom-1.5 hidden group-hover:flex items-center gap-1 bg-background/95 border border-border">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 rounded-none"
+                    title={unread ? "Σήμανση ως αναγνωσμένο" : "Σήμανση ως μη αναγνωσμένο"}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      markRead(email.uid, unread);
+                    }}
+                  >
+                    <MailOpen className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 rounded-none text-destructive"
+                    title="Διαγραφή"
+                    disabled={busyUid === email.uid}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteTarget(email);
+                    }}
+                  >
+                    {busyUid === email.uid ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-3.5 w-3.5" />
+                    )}
+                  </Button>
+                </div>
               </div>
-            </button>
-          ))}
+            );
+          })}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 
   const detailPanel = (
-    <div className="h-full flex flex-col bg-background">
-      <div className="p-3 border-b border-border flex items-center gap-2">
-        <Button variant="outline" size="sm" onClick={() => { setSelectedEmail(null); setMobileView("list"); }} className="lg:hidden rounded-none">
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Πίσω
+    <div className="h-full min-h-0 flex flex-col bg-background">
+      <div className="h-14 shrink-0 px-3 border-b border-border flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setSelectedEmail(null);
+            setMobileView("list");
+          }}
+          className="lg:hidden rounded-none"
+        >
+          <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h3 className="font-semibold truncate">{selectedEmail?.subject || "Λεπτομέρειες"}</h3>
+        <h3 className="font-semibold text-sm truncate flex-1">{selectedEmail?.subject || "Λεπτομέρειες"}</h3>
+        {selectedEmail && (
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 rounded-none"
+              title="Σήμανση ως μη αναγνωσμένο"
+              onClick={() => markRead(selectedEmail.uid, false)}
+            >
+              <MailOpen className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 rounded-none text-destructive"
+              title="Διαγραφή"
+              onClick={() => setDeleteTarget(selectedEmail)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
-      <ScrollArea className="flex-1 p-4">
+      <div className="flex-1 min-h-0 overflow-y-auto p-4">
         {loadingEmail && !selectedEmail && (
           <div className="flex justify-center p-8">
             <Loader2 className="h-6 w-6 animate-spin" />
           </div>
         )}
         {!loadingEmail && !selectedEmail && (
-          <div className="text-center text-muted-foreground p-8">Επιλέξτε ένα email για προβολή</div>
+          <div className="text-center text-sm text-muted-foreground p-8">Επιλέξτε ένα email για προβολή</div>
         )}
         {selectedEmail && (
           <div className="space-y-4">
-            <div className="space-y-1">
-              <p className="text-sm"><span className="font-medium">Από:</span> {selectedEmail.from.map(formatAddress).join(", ")}</p>
-              <p className="text-sm"><span className="font-medium">Προς:</span> {selectedEmail.to.map(formatAddress).join(", ")}</p>
-              <p className="text-sm"><span className="font-medium">Ημερομηνία:</span> {formatDate(selectedEmail.date)}</p>
+            <div className="space-y-1 text-sm">
+              <p>
+                <span className="text-muted-foreground">Από:</span>{" "}
+                {selectedEmail.from.map(formatAddress).join(", ")}
+              </p>
+              <p>
+                <span className="text-muted-foreground">Προς:</span>{" "}
+                {selectedEmail.to.map(formatAddress).join(", ")}
+              </p>
+              <p>
+                <span className="text-muted-foreground">Ημερομηνία:</span> {formatFullDate(selectedEmail.date)}
+              </p>
             </div>
             <Separator />
             {selectedEmail.isHtml ? (
               <div
-                className="prose prose-sm max-w-none dark:prose-invert"
+                className="prose prose-sm max-w-none dark:prose-invert break-words"
                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedEmail.body) }}
               />
             ) : (
-              <pre className="whitespace-pre-wrap font-sans text-sm">{selectedEmail.body}</pre>
+              <pre className="whitespace-pre-wrap break-words font-sans text-sm">{selectedEmail.body}</pre>
             )}
           </div>
         )}
-      </ScrollArea>
+      </div>
     </div>
   );
 
   return (
-    <div className="h-[calc(100vh-4rem)] lg:h-screen flex flex-col">
+    <div className="h-[100dvh] lg:h-screen flex flex-col overflow-hidden">
       {/* Mobile header */}
-      <div className="lg:hidden sticky top-0 z-40 bg-background border-b border-border p-3 flex items-center justify-between">
+      <div className="lg:hidden shrink-0 bg-background border-b border-border p-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" onClick={() => setMobileView("folders")} className="rounded-none">
             <Menu className="h-5 w-5" />
@@ -351,11 +530,34 @@ export const EmailClient: React.FC = () => {
         </Button>
       </div>
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
-        <div className={`${mobileView === "folders" ? "block" : "hidden"} lg:block lg:col-span-3`}>{foldersPanel}</div>
-        <div className={`${mobileView === "list" ? "block" : "hidden"} lg:block lg:col-span-4`}>{emailListPanel}</div>
-        <div className={`${mobileView === "detail" ? "block" : "hidden"} lg:block lg:col-span-5`}>{detailPanel}</div>
+      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
+        <div className={`${mobileView === "folders" ? "block" : "hidden"} lg:block lg:col-span-2 min-h-0 overflow-hidden`}>
+          {foldersPanel}
+        </div>
+        <div className={`${mobileView === "list" ? "block" : "hidden"} lg:block lg:col-span-4 min-h-0 overflow-hidden`}>
+          {emailListPanel}
+        </div>
+        <div className={`${mobileView === "detail" ? "block" : "hidden"} lg:block lg:col-span-6 min-h-0 overflow-hidden`}>
+          {detailPanel}
+        </div>
       </div>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent className="rounded-none">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Είστε σίγουροι;</AlertDialogTitle>
+            <AlertDialogDescription>
+              Το email «{deleteTarget?.subject || "(χωρίς θέμα)"}» θα μεταφερθεί στα διαγραμμένα.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-none">Ακύρωση</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90 rounded-none">
+              Διαγραφή
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {composeOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
