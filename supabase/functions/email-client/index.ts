@@ -1,7 +1,7 @@
 // Edge Function: email-client
 // Manages hyperkids.gr email via IMAP/SMTP for admin dashboard.
 import { createClient } from "npm:@supabase/supabase-js@2.45.0";
-import { ImapFlow } from "npm:imapflow@1.4.7";
+import { ImapFlow } from "npm:imapflow@1.6.5";
 import nodemailer from "npm:nodemailer@^9";
 
 const corsHeaders = {
@@ -10,7 +10,7 @@ const corsHeaders = {
 };
 
 const IMAP_HOST = Deno.env.get("EMAIL_IMAP_HOST") ?? "mail.hyperkids.gr";
-const IMAP_PORT = parseInt(Deno.env.get("EMAIL_IMAP_PORT") ?? "143", 10);
+const IMAP_PORT = parseInt(Deno.env.get("EMAIL_IMAP_PORT") ?? "993", 10);
 const SMTP_HOST = Deno.env.get("EMAIL_SMTP_HOST") ?? "mail.hyperkids.gr";
 const SMTP_PORT = parseInt(Deno.env.get("EMAIL_SMTP_PORT") ?? "465", 10);
 const EMAIL_USER = Deno.env.get("EMAIL_USER") ?? "info@hyperkids.gr";
@@ -48,20 +48,27 @@ function getImapClient() {
   return new ImapFlow({
     host: IMAP_HOST,
     port: IMAP_PORT,
-    // 993 = implicit TLS, 143 = STARTTLS (fallback that works better in edge runtime)
+    // Use implicit TLS. STARTTLS on port 143 stalls in the Supabase Edge runtime.
     secure: IMAP_PORT === 993,
     auth: { user: EMAIL_USER, pass: EMAIL_PASS },
     tls: { rejectUnauthorized: false },
     logger: false,
-    connectionTimeout: 20000,
-    greetingTimeout: 15000,
-    socketTimeout: 30000,
+    disableAutoIdle: true,
+    connectionTimeout: 30000,
+    greetingTimeout: 20000,
+    socketTimeout: 45000,
   });
 }
 
 // Never let logout() mask the real error (it throws "Connection not available"
 // when connect() itself failed).
 async function safeLogout(client: any) {
+  // ImapFlow throws "Connection not available" if logout is attempted after
+  // connect() failed. Closing the socket is sufficient in that state.
+  if (!client.usable) {
+    try { client.close(); } catch (_e) { /* ignore */ }
+    return;
+  }
   try {
     await client.logout();
   } catch (_e) {
@@ -214,7 +221,11 @@ Deno.serve(async (req) => {
   } catch (err: any) {
     console.error("email-client error:", err);
     const status = err.message === "Unauthorized" ? 401 : err.message === "Forbidden" ? 403 : 500;
-    return new Response(JSON.stringify({ error: err.message }), {
+    const connectionError = ["ETIMEDOUT", "CONNECT_TIMEOUT", "UPGRADE_TIMEOUT", "ECONNREFUSED"].includes(err.code);
+    const message = connectionError
+      ? "Ο mail server δεν δέχτηκε έγκαιρα την ασφαλή σύνδεση. Ελέγξτε το SSL του mail.hyperkids.gr."
+      : err.message;
+    return new Response(JSON.stringify({ error: message, code: err.code ?? "EMAIL_ERROR" }), {
       status,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
