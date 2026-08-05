@@ -302,11 +302,10 @@ const DayCardsView = () => {
               variant="outline"
               size="sm"
               onClick={() => {
-                setLayoutMode(prev => (prev === 'grid' ? 'carousel' : 'grid'));
-                setCarouselPage(0);
+                setLayoutMode(prev => (prev === 'grid' ? 'horizontal' : 'grid'));
               }}
               className="rounded-none"
-              title={layoutMode === 'grid' ? 'Αλλαγή σε carousel' : 'Αλλαγή σε πλέγμα'}
+              title={layoutMode === 'grid' ? 'Αλλαγή σε οριζόντια κύλιση' : 'Αλλαγή σε πλέγμα'}
             >
               {layoutMode === 'grid' ? (
                 <GalleryHorizontal className="h-4 w-4" />
@@ -320,7 +319,7 @@ const DayCardsView = () => {
           </div>
         </div>
 
-        {/* Grid / Carousel με 6 θέσεις */}
+        {/* Grid / Horizontal scroll με 6 θέσεις */}
         <div className="flex-1 min-h-0 p-2">
           {isLoading ? (
             <div className="h-full flex items-center justify-center text-gray-500">
@@ -331,54 +330,24 @@ const DayCardsView = () => {
               {slots.map((_, index) => renderSlot(index))}
             </div>
           ) : (
-            <div className="h-full flex flex-col">
-              <div className="flex-1 relative overflow-hidden">
-                <div
-                  className="h-full flex transition-transform duration-300 ease-in-out"
-                  style={{
-                    transform: `translateX(-${carouselPage * 100}%)`,
-                    width: `${Math.ceil(SLOT_COUNT / CAROUSEL_SLOTS_PER_PAGE) * 100}%`,
-                  }}
-                >
-                  {Array.from({ length: Math.ceil(SLOT_COUNT / CAROUSEL_SLOTS_PER_PAGE) }).map((_, pageIndex) => (
-                    <div
-                      key={pageIndex}
-                      className="h-full flex gap-2"
-                      style={{ width: `${100 / Math.ceil(SLOT_COUNT / CAROUSEL_SLOTS_PER_PAGE)}%` }}
-                    >
-                      {slots
-                        .slice(
-                          pageIndex * CAROUSEL_SLOTS_PER_PAGE,
-                          pageIndex * CAROUSEL_SLOTS_PER_PAGE + CAROUSEL_SLOTS_PER_PAGE
-                        )
-                        .map((_, offset) => renderSlot(pageIndex * CAROUSEL_SLOTS_PER_PAGE + offset))}
-                    </div>
-                  ))}
+            <div
+              ref={horizontalScrollRef}
+              className="h-full flex gap-2 overflow-x-auto overflow-y-hidden"
+              style={{ scrollbarWidth: 'thin', scrollbarColor: '#aca097 transparent' }}
+              onWheel={e => {
+                const el = horizontalScrollRef.current;
+                if (!el) return;
+                if (e.deltaY !== 0) {
+                  e.preventDefault();
+                  el.scrollLeft += e.deltaY;
+                }
+              }}
+            >
+              {slots.map((_, index) => (
+                <div key={index} className="h-full min-w-[450px] flex-shrink-0">
+                  {renderSlot(index)}
                 </div>
-              </div>
-              <div className="flex items-center justify-center gap-4 py-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCarouselPage(p => Math.max(0, p - 1))}
-                  disabled={carouselPage === 0}
-                  className="rounded-none"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <span className="text-sm text-gray-600">
-                  {carouselPage + 1} / {maxCarouselPage + 1}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCarouselPage(p => Math.min(maxCarouselPage, p + 1))}
-                  disabled={carouselPage === maxCarouselPage}
-                  className="rounded-none"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
+              ))}
             </div>
           )}
         </div>
