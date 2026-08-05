@@ -52,7 +52,8 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
   onPrevDay,
   onNextDay,
   program,
-  onClose
+  onClose,
+  inline = false
 }) => {
   const isCompleted = workoutStatus === 'completed';
 
