@@ -1,9 +1,11 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format, parseISO } from "date-fns";
 import { el } from "date-fns/locale";
-import { Play, CheckCircle, X, FlaskConical, Trophy, Minus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Play, CheckCircle, X, FlaskConical, Trophy, ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react";
 import { WorkoutTimer } from "./WorkoutTimer";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
