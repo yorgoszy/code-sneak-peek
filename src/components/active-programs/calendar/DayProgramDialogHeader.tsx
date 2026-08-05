@@ -1,9 +1,11 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
-import { Play, CheckCircle, X, FlaskConical, Trophy, Minus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Play, CheckCircle, X, FlaskConical, Trophy, ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react";
 import { WorkoutTimer } from "./WorkoutTimer";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
@@ -27,6 +29,7 @@ interface DayProgramDialogHeaderProps {
   onMinimize?: () => void;
   onPrevDay?: () => void;
   onNextDay?: () => void;
+  onDateChange?: (date: Date) => void;
   program: EnrichedAssignment;
   onClose: () => void;
 }
@@ -49,10 +52,17 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
   onMinimize,
   onPrevDay,
   onNextDay,
+  onDateChange,
   program,
   onClose
 }) => {
   const isCompleted = workoutStatus === 'completed';
+  const [dateOpen, setDateOpen] = useState(false);
+
+  const trainingDatesSet = React.useMemo(
+    () => new Set(program.training_dates || []),
+    [program.training_dates]
+  );
 
   // Βρίσκουμε το day program για την επιλεγμένη ημερομηνία
   const getDayProgram = () => {
@@ -118,9 +128,41 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
                 <ChevronLeft className="w-3 h-3" />
               </button>
             )}
-            <p className="text-xs text-gray-600">
-              {format(selectedDate, 'EEEE, d/M/yyyy', { locale: el })}
-            </p>
+            {onDateChange ? (
+              <Popover open={dateOpen} onOpenChange={setDateOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto px-1 py-0 text-xs text-gray-600 font-normal rounded-none hover:bg-gray-100"
+                  >
+                    <CalendarIcon className="w-3 h-3 mr-1" />
+                    {format(selectedDate, 'EEEE, d/M/yyyy', { locale: el })}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => {
+                      if (date) {
+                        onDateChange(date);
+                        setDateOpen(false);
+                      }
+                    }}
+                    disabled={(date) => {
+                      const dateStr = format(date, 'yyyy-MM-dd');
+                      return !trainingDatesSet.has(dateStr);
+                    }}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            ) : (
+              <p className="text-xs text-gray-600">
+                {format(selectedDate, 'EEEE, d/M/yyyy', { locale: el })}
+              </p>
+            )}
             {onNextDay && (
               <button
                 onClick={onNextDay}
