@@ -153,10 +153,13 @@ const DayCardsView = () => {
       setDragActive(false);
       setHoverSlot(null);
       if (!d?.assignmentId || typeof d.clientX !== 'number') return;
+      // Απλό κλικ (χωρίς μετακίνηση) -> το χειρίζεται το onProgramClick
+      if (d.moved === false) return;
       const idx = slotIndexAtPoint(d.clientX, d.clientY);
       if (idx === null) return;
       placeInSlot(idx, d.assignmentId, d.date || todayStr, d.userName);
     };
+
 
     window.addEventListener('bubble-drag-start', onStart as EventListener);
     window.addEventListener('bubble-drag-move', onMove as EventListener);
