@@ -164,13 +164,18 @@ const DayCardsView = () => {
     };
   }, [placeInSlot, todayStr]);
 
-  // Κλικ σε bubble -> πρώτη ελεύθερη θέση
+  // Κλικ σε bubble -> πρώτη ελεύθερη θέση (αλλιώς νέα θέση στο τέλος)
   const handleProgramClick = (assignment: EnrichedAssignment, date?: Date) => {
     const dateStr = format(date || new Date(), 'yyyy-MM-dd');
-    const free = slots.findIndex(s => s === null);
-    if (free === -1) return;
+    const current = slotsRef.current;
+    let free = current.findIndex(s => s === null || s.assignmentId === assignment.id);
+    if (free === -1) {
+      free = current.length;
+      setSlots(prev => [...prev, null]);
+    }
     placeInSlot(free, assignment.id, dateStr, assignment.app_users?.name);
   };
+
 
   const toggleFullscreen = async () => {
     try {
