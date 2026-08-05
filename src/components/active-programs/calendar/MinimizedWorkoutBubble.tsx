@@ -106,9 +106,10 @@ export const MinimizedWorkoutBubble: React.FC<MinimizedWorkoutBubbleProps> = ({
 
     if (dragPayload) {
       window.dispatchEvent(new CustomEvent('bubble-drag-end', {
-        detail: { ...dragPayload, clientX: e.clientX, clientY: e.clientY }
+        detail: { ...dragPayload, clientX: e.clientX, clientY: e.clientY, moved: wasMoved }
       }));
     }
+
 
     if (wasMoved) {
       suppressClickRef.current = true;
