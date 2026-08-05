@@ -43,6 +43,7 @@ import {
   BellRing,
   Bluetooth,
   LayoutTemplate,
+  LayoutGrid,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -602,6 +603,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: CreditCard, 
       label: "Program Cards", 
       path: "/dashboard/program-cards",
+      badge: null
+    },
+    {
+      icon: LayoutGrid,
+      label: "Προβολή Ημέρας",
+      path: "/dashboard/day-cards",
       badge: null
     },
     {

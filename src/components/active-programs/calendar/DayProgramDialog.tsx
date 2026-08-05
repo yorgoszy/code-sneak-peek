@@ -24,6 +24,8 @@ interface DayProgramDialogProps {
   onRefresh?: () => void;
   onMinimize?: () => void;
   onDateChange?: (newDate: Date) => void;
+  /** Render inline (fills parent container) instead of as a centered dialog */
+  inline?: boolean;
 }
 
 export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
@@ -34,7 +36,8 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   workoutStatus,
   onRefresh,
   onMinimize,
-  onDateChange
+  onDateChange,
+  inline = false
 }) => {
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
@@ -116,7 +119,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   // Auto-minimize when isOpen becomes false; auto-restore when isOpen becomes true
   const wasOpenRef = useRef(isOpen);
   useEffect(() => {
-    if (wasOpenRef.current && !isOpen && !isMinimized && !isClosingRef.current && program && selectedDate) {
+    if (!inline && wasOpenRef.current && !isOpen && !isMinimized && !isClosingRef.current && program && selectedDate) {
       // Inline minimize logic (handleMinimize is defined after early return)
       if (scrollContainerRef.current) {
         scrollPositionRef.current = scrollContainerRef.current.scrollTop;
@@ -341,36 +344,8 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     );
   }
 
-  return (
+  const dialogBody = (
     <>
-      <Dialog open={isOpen} onOpenChange={(open) => { 
-        // Only minimize on Escape key (onOpenChange fires for Escape in non-modal)
-        // Don't minimize if we're in the process of closing via X button
-        if (!open && !isClosingRef.current) handleMinimize(); 
-      }} modal={false}>
-        <DialogContent 
-          hideCloseButton
-          className="max-w-md h-[85vh] overflow-hidden rounded-none p-3 flex flex-col fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] z-50"
-          onInteractOutside={(e) => {
-            const target = e.target as HTMLElement;
-            // Don't minimize if clicking on a bubble or another dialog (e.g. video dialog)
-            if (target?.closest('[data-bubbles-container]') || target?.closest('[role="dialog"]') || target?.closest('[data-radix-portal]')) {
-              e.preventDefault();
-              return;
-            }
-            handleMinimize();
-          }}
-          onPointerDownOutside={(e) => {
-            const target = e.target as HTMLElement;
-            if (target?.closest('[data-bubbles-container]') || target?.closest('[role="dialog"]') || target?.closest('[data-radix-portal]')) {
-              e.preventDefault();
-            }
-          }}
-          onEscapeKeyDown={(e) => {
-            // Prevent default escape behavior - we'll handle minimize via onOpenChange
-            // This ensures isClosingRef check works correctly
-          }}
-        >
           <DayProgramDialogHeader
             selectedDate={selectedDate}
             workoutInProgress={workoutInProgress}
@@ -380,28 +355,23 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             onStartWorkout={handleStartWorkout}
             onCompleteWorkout={handleRequestComplete}
             onCancelWorkout={handleCancelWorkout}
-            onMinimize={handleMinimize}
+            onMinimize={inline ? undefined : handleMinimize}
             onPrevDay={canGoPrev ? handlePrevDay : undefined}
             onNextDay={canGoNext ? handleNextDay : undefined}
             program={program}
             onClose={() => {
-              // Set flag BEFORE any state changes
               isClosingRef.current = true;
-              // Clean up bubble
               if (bubbleIdRef.current) {
                 removeBubble(bubbleIdRef.current);
                 bubbleIdRef.current = '';
               }
               setIsMinimized(false);
-              // Tell parent to close and remove from tracking
               onClose();
-              // Reset flag after React has processed the close
-              requestAnimationFrame(() => { 
-                isClosingRef.current = false; 
+              requestAnimationFrame(() => {
+                isClosingRef.current = false;
               });
             }}
           />
-
           <div
             ref={scrollContainerRef}
             onScroll={(e) => { scrollPositionRef.current = (e.currentTarget as HTMLDivElement).scrollTop; }}
@@ -505,8 +475,48 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
               </div>
             )}
           </div>
+    </>
+  );
+
+  return (
+    <>
+      {inline ? (
+        <div className="h-full w-full flex flex-col overflow-hidden bg-white p-3 relative">
+          {dialogBody}
+        </div>
+      ) : (
+      <Dialog open={isOpen} onOpenChange={(open) => { 
+        // Only minimize on Escape key (onOpenChange fires for Escape in non-modal)
+        // Don't minimize if we're in the process of closing via X button
+        if (!open && !isClosingRef.current) handleMinimize(); 
+      }} modal={false}>
+        <DialogContent 
+          hideCloseButton
+          className="max-w-md h-[85vh] overflow-hidden rounded-none p-3 flex flex-col fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] z-50"
+          onInteractOutside={(e) => {
+            const target = e.target as HTMLElement;
+            // Don't minimize if clicking on a bubble or another dialog (e.g. video dialog)
+            if (target?.closest('[data-bubbles-container]') || target?.closest('[role="dialog"]') || target?.closest('[data-radix-portal]')) {
+              e.preventDefault();
+              return;
+            }
+            handleMinimize();
+          }}
+          onPointerDownOutside={(e) => {
+            const target = e.target as HTMLElement;
+            if (target?.closest('[data-bubbles-container]') || target?.closest('[role="dialog"]') || target?.closest('[data-radix-portal]')) {
+              e.preventDefault();
+            }
+          }}
+          onEscapeKeyDown={(e) => {
+            // Prevent default escape behavior - we'll handle minimize via onOpenChange
+            // This ensures isClosingRef check works correctly
+          }}
+        >
+          {dialogBody}
         </DialogContent>
       </Dialog>
+      )}
 
       <ExerciseVideoDialog
         isOpen={isVideoDialogOpen}

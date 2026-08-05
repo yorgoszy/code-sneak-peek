@@ -34,6 +34,7 @@ import Exercises from "@/pages/Exercises";
 import Programs from "@/pages/Programs";
 import ActivePrograms from "@/pages/ActivePrograms";
 import ProgramCards from "@/pages/ProgramCards";
+import DayCardsView from "@/pages/DayCardsView";
 import Tests from "@/pages/Tests";
 import Results from "@/pages/Results";
 import UserProfile from "@/pages/UserProfile";
@@ -261,6 +262,7 @@ function App() {
                       <Route path="/dashboard/program-templates" element={<ProtectedRoute requireAdmin><ProgramTemplates /></ProtectedRoute>} />
                       <Route path="/dashboard/active-programs" element={<ProtectedRoute requireAdmin><ActivePrograms /></ProtectedRoute>} />
                       <Route path="/dashboard/program-cards" element={<ProtectedRoute requireAdmin><ProgramCards /></ProtectedRoute>} />
+                      <Route path="/dashboard/day-cards" element={<ProtectedRoute requireAdmin><DayCardsView /></ProtectedRoute>} />
                       <Route path="/dashboard/tests" element={<ProtectedRoute requireAdmin><Tests /></ProtectedRoute>} />
                       <Route path="/dashboard/test-results" element={<ProtectedRoute requireAdmin><TestResultsWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/progress" element={<ProtectedRoute requireAdmin><ProgressTrackingWithSidebar /></ProtectedRoute>} />
