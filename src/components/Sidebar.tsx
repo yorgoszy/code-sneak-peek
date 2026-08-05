@@ -605,6 +605,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null
     },
     {
+      icon: LayoutGrid,
+      label: "Προβολή Ημέρας",
+      path: "/dashboard/day-cards",
+      badge: null
+    },
+    {
       icon: Utensils,
       label: "Διατροφή",
       path: "/dashboard/nutrition",
