@@ -90,7 +90,7 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
   const testTypes = dayProgram?.test_types || [];
 
   return (
-    <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50 p-2">
+    <div className={`bg-white border-b border-gray-200 z-50 ${inline ? 'sticky top-0 p-1' : 'fixed top-0 left-0 right-0 p-2'}`}>
       <div className="flex items-center justify-between gap-4">
         {/* Όνομα χρήστη και ημερομηνία */}
         <div className="text-left min-w-0 flex-1">
