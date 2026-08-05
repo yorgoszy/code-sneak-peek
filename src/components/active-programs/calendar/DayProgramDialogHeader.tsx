@@ -29,6 +29,8 @@ interface DayProgramDialogHeaderProps {
   onNextDay?: () => void;
   program: EnrichedAssignment;
   onClose: () => void;
+  /** When true, header is sticky inside its scroll parent instead of fixed to viewport */
+  inline?: boolean;
 }
 
 const getRpeColor = (rpe: number) => {
