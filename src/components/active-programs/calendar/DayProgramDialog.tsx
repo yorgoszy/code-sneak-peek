@@ -24,6 +24,8 @@ interface DayProgramDialogProps {
   onRefresh?: () => void;
   onMinimize?: () => void;
   onDateChange?: (newDate: Date) => void;
+  /** Render inline (fills parent container) instead of as a centered dialog */
+  inline?: boolean;
 }
 
 export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
@@ -34,7 +36,8 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   workoutStatus,
   onRefresh,
   onMinimize,
-  onDateChange
+  onDateChange,
+  inline = false
 }) => {
   const [selectedExercise, setSelectedExercise] = useState<any>(null);
   const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false);
@@ -116,7 +119,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   // Auto-minimize when isOpen becomes false; auto-restore when isOpen becomes true
   const wasOpenRef = useRef(isOpen);
   useEffect(() => {
-    if (wasOpenRef.current && !isOpen && !isMinimized && !isClosingRef.current && program && selectedDate) {
+    if (!inline && wasOpenRef.current && !isOpen && !isMinimized && !isClosingRef.current && program && selectedDate) {
       // Inline minimize logic (handleMinimize is defined after early return)
       if (scrollContainerRef.current) {
         scrollPositionRef.current = scrollContainerRef.current.scrollTop;
@@ -341,8 +344,45 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
     );
   }
 
+  const dialogBody = (
+    <>
+          <DayProgramDialogHeader
+            selectedDate={selectedDate}
+            workoutInProgress={workoutInProgress}
+            elapsedTime={elapsedTime}
+            workoutStatus={workoutStatus}
+            rpeScore={currentRpeScore}
+            onStartWorkout={handleStartWorkout}
+            onCompleteWorkout={handleRequestComplete}
+            onCancelWorkout={handleCancelWorkout}
+            onMinimize={inline ? undefined : handleMinimize}
+            onPrevDay={canGoPrev ? handlePrevDay : undefined}
+            onNextDay={canGoNext ? handleNextDay : undefined}
+            program={program}
+            onClose={() => {
+              isClosingRef.current = true;
+              if (bubbleIdRef.current) {
+                removeBubble(bubbleIdRef.current);
+                bubbleIdRef.current = '';
+              }
+              setIsMinimized(false);
+              onClose();
+              requestAnimationFrame(() => {
+                isClosingRef.current = false;
+              });
+            }}
+          />
+      __BODY_CONTENT__
+    </>
+  );
+
   return (
     <>
+      {inline ? (
+        <div className="h-full w-full flex flex-col overflow-hidden bg-white p-3 relative">
+          {dialogBody}
+        </div>
+      ) : (
       <Dialog open={isOpen} onOpenChange={(open) => { 
         // Only minimize on Escape key (onOpenChange fires for Escape in non-modal)
         // Don't minimize if we're in the process of closing via X button
