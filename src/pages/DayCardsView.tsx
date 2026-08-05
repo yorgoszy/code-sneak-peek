@@ -339,7 +339,7 @@ const DayCardsView = () => {
               Φόρτωση προγραμμάτων...
             </div>
           ) : layoutMode === 'grid' ? (
-            <div className="h-full overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr gap-2">
+            <div className="h-full overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 auto-rows-[calc(100%-0.5rem)] sm:auto-rows-[calc(50%-0.25rem)] gap-2">
               {slots.map((_, index) => renderSlot(index))}
               {renderAddSlotButton()}
             </div>
