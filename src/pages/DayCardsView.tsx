@@ -362,11 +362,23 @@ const DayCardsView = () => {
               style={{ scrollbarWidth: 'thin', scrollbarColor: '#aca097 transparent' }}
               onWheel={e => {
                 const el = horizontalScrollRef.current;
-                if (!el) return;
-                if (e.deltaY !== 0) {
-                  e.preventDefault();
-                  el.scrollLeft += e.deltaY;
+                if (!el || e.deltaY === 0) return;
+                // Αν το ποντίκι είναι μέσα σε κάθετα scrollable περιοχή (πρόγραμμα θέσης), άφησέ το να σκρολάρει
+                let node = e.target as HTMLElement | null;
+                while (node && node !== el) {
+                  const style = window.getComputedStyle(node);
+                  const canScrollY =
+                    (style.overflowY === 'auto' || style.overflowY === 'scroll') &&
+                    node.scrollHeight > node.clientHeight + 1;
+                  if (canScrollY) {
+                    const atTop = node.scrollTop <= 0;
+                    const atBottom = node.scrollTop + node.clientHeight >= node.scrollHeight - 1;
+                    if (!(e.deltaY < 0 && atTop) && !(e.deltaY > 0 && atBottom)) return;
+                  }
+                  node = node.parentElement;
                 }
+                e.preventDefault();
+                el.scrollLeft += e.deltaY;
               }}
             >
               {slots.map((_, index) => (
