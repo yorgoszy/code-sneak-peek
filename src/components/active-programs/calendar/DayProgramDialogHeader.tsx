@@ -29,6 +29,7 @@ interface DayProgramDialogHeaderProps {
   onMinimize?: () => void;
   onPrevDay?: () => void;
   onNextDay?: () => void;
+  onDateChange?: (date: Date) => void;
   program: EnrichedAssignment;
   onClose: () => void;
 }
