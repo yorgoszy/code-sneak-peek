@@ -13,6 +13,7 @@ import { useMinimizedBubbles } from '@/contexts/MinimizedBubblesContext';
 import { getWorkoutUserKey } from '@/contexts/MultipleWorkoutsContext';
 import { TodaysBubbles } from '@/components/active-programs/TodaysBubbles';
 import { DayProgramDialog } from '@/components/active-programs/calendar/DayProgramDialog';
+import { SlotProgramPickerDialog } from '@/components/active-programs/calendar/SlotProgramPickerDialog';
 import { supabase } from '@/integrations/supabase/client';
 import type { EnrichedAssignment } from '@/hooks/useActivePrograms/types';
 
@@ -39,6 +40,7 @@ const DayCardsView = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [slots, setSlots] = useState<Array<Slot | null>>(Array(SLOT_COUNT).fill(null));
   const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
+  const [pickerSlot, setPickerSlot] = useState<number | null>(null);
 
   const slotRefs = useRef<Array<HTMLDivElement | null>>(Array(SLOT_COUNT).fill(null));
   const [hoverSlot, setHoverSlot] = useState<number | null>(null);
@@ -291,11 +293,15 @@ const DayCardsView = () => {
                         }
                       />
                     ) : (
-                      <div className="h-full flex flex-col items-center justify-center gap-2 text-gray-400">
+                      <button
+                        type="button"
+                        onClick={() => setPickerSlot(index)}
+                        className="h-full w-full flex flex-col items-center justify-center gap-2 text-gray-400 hover:text-black hover:bg-gray-50 transition-colors"
+                      >
                         <LayoutGrid className="h-8 w-8" />
                         <span className="text-sm font-medium">Θέση {index + 1}</span>
-                        <span className="text-xs">Σύρε εδώ ένα bubble</span>
-                      </div>
+                        <span className="text-xs">Σύρε ένα bubble ή κλικ για επιλογή</span>
+                      </button>
                     )}
                   </div>
                 );
@@ -311,6 +317,23 @@ const DayCardsView = () => {
           todayStr={todayStr}
           onProgramClick={handleProgramClick}
           openWorkoutIds={new Set()}
+        />
+
+        <SlotProgramPickerDialog
+          isOpen={pickerSlot !== null}
+          onClose={() => setPickerSlot(null)}
+          activePrograms={activePrograms}
+          workoutCompletions={workoutCompletions}
+          onSelect={(assignment, date) => {
+            if (pickerSlot === null) return;
+            placeInSlot(
+              pickerSlot,
+              assignment.id,
+              format(date, 'yyyy-MM-dd'),
+              assignment.app_users?.name
+            );
+            setPickerSlot(null);
+          }}
         />
       </div>
     </div>
