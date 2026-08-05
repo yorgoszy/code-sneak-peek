@@ -358,7 +358,6 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
             onMinimize={inline ? undefined : handleMinimize}
             onPrevDay={canGoPrev ? handlePrevDay : undefined}
             onNextDay={canGoNext ? handleNextDay : undefined}
-            onDateChange={onDateChange}
             program={program}
             onClose={() => {
               isClosingRef.current = true;
