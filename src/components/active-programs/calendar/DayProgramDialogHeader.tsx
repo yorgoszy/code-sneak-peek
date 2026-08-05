@@ -128,9 +128,41 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
                 <ChevronLeft className="w-3 h-3" />
               </button>
             )}
-            <p className="text-xs text-gray-600">
-              {format(selectedDate, 'EEEE, d/M/yyyy', { locale: el })}
-            </p>
+            {onDateChange ? (
+              <Popover open={dateOpen} onOpenChange={setDateOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto px-1 py-0 text-xs text-gray-600 font-normal rounded-none hover:bg-gray-100"
+                  >
+                    <CalendarIcon className="w-3 h-3 mr-1" />
+                    {format(selectedDate, 'EEEE, d/M/yyyy', { locale: el })}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => {
+                      if (date) {
+                        onDateChange(date);
+                        setDateOpen(false);
+                      }
+                    }}
+                    disabled={(date) => {
+                      const dateStr = format(date, 'yyyy-MM-dd');
+                      return !trainingDatesSet.has(dateStr);
+                    }}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            ) : (
+              <p className="text-xs text-gray-600">
+                {format(selectedDate, 'EEEE, d/M/yyyy', { locale: el })}
+              </p>
+            )}
             {onNextDay && (
               <button
                 onClick={onNextDay}
