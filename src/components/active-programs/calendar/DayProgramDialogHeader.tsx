@@ -52,10 +52,17 @@ export const DayProgramDialogHeader: React.FC<DayProgramDialogHeaderProps> = ({
   onMinimize,
   onPrevDay,
   onNextDay,
+  onDateChange,
   program,
   onClose
 }) => {
   const isCompleted = workoutStatus === 'completed';
+  const [dateOpen, setDateOpen] = useState(false);
+
+  const trainingDatesSet = React.useMemo(
+    () => new Set(program.training_dates || []),
+    [program.training_dates]
+  );
 
   // Βρίσκουμε το day program για την επιλεγμένη ημερομηνία
   const getDayProgram = () => {
