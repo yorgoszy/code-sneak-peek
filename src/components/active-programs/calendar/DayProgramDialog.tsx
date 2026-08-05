@@ -347,6 +347,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   const dialogBody = (
     <>
           <DayProgramDialogHeader
+            inline={inline}
             selectedDate={selectedDate}
             workoutInProgress={workoutInProgress}
             elapsedTime={elapsedTime}
