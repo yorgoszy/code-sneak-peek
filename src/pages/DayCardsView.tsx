@@ -3,12 +3,12 @@ import { format } from 'date-fns';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Sidebar } from '@/components/Sidebar';
 import { Button } from '@/components/ui/button';
-import { Menu, Maximize2, Minimize2, LayoutGrid } from 'lucide-react';
+import { Menu, Maximize2, Minimize2, LayoutGrid, GalleryHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CustomLoadingScreen } from '@/components/ui/custom-loading';
 import { useAuth } from '@/hooks/useAuth';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { useActivePrograms } from '@/hooks/useActivePrograms';
-import { useMultipleWorkouts } from '@/hooks/useMultipleWorkouts';
+import { useMultipleWorkouts } from '@/contexts/MultipleWorkoutsContext';
 import { useMinimizedBubbles } from '@/contexts/MinimizedBubblesContext';
 import { getWorkoutUserKey } from '@/contexts/MultipleWorkoutsContext';
 import { TodaysBubbles } from '@/components/active-programs/TodaysBubbles';
@@ -18,7 +18,10 @@ import { supabase } from '@/integrations/supabase/client';
 import type { EnrichedAssignment } from '@/hooks/useActivePrograms/types';
 
 const SLOT_COUNT = 6;
+const CAROUSEL_SLOTS_PER_PAGE = 3;
 const ADMIN_ID = 'c6d44641-3b95-46bd-8270-e5ed72de25ad';
+
+type LayoutMode = 'grid' | 'carousel';
 
 interface Slot {
   assignmentId: string;
@@ -38,6 +41,8 @@ const DayCardsView = () => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>('grid');
+  const [carouselPage, setCarouselPage] = useState(0);
   const [slots, setSlots] = useState<Array<Slot | null>>(Array(SLOT_COUNT).fill(null));
   const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
   const [pickerSlot, setPickerSlot] = useState<number | null>(null);
@@ -55,6 +60,8 @@ const DayCardsView = () => {
   const programsForToday = activePrograms.filter(
     a => a.training_dates?.includes(todayStr)
   );
+
+  const maxCarouselPage = Math.ceil(SLOT_COUNT / CAROUSEL_SLOTS_PER_PAGE) - 1;
 
   // Redirect non-admins
   useEffect(() => {
@@ -188,6 +195,73 @@ const DayCardsView = () => {
     return () => document.removeEventListener('fullscreenchange', onFs);
   }, []);
 
+  const renderSlot = (index: number) => {
+    const slot = slots[index];
+    const assignment = slot
+      ? activePrograms.find(a => a.id === slot.assignmentId)
+      : undefined;
+    const isOver = hoverSlot === index;
+
+    return (
+      <div
+        key={index}
+        ref={el => (slotRefs.current[index] = el)}
+        className={`relative min-h-0 overflow-hidden border transition-colors ${
+          slot && assignment
+            ? 'border-gray-300 bg-white'
+            : isOver
+            ? 'border-2 border-dashed border-black bg-[#00ffba]/20'
+            : dragActive
+            ? 'border-2 border-dashed border-gray-400 bg-white/60'
+            : 'border-dashed border-gray-300 bg-white/40'
+        }`}
+      >
+        {slot && assignment ? (
+          <DayProgramDialog
+            inline
+            isOpen
+            program={assignment}
+            selectedDate={dateFromKey(slot.date)}
+            workoutStatus={getWorkoutStatus(slot.assignmentId, slot.date)}
+            onRefresh={handleRefresh}
+            onClose={() => {
+              setSlots(prev => {
+                const next = [...prev];
+                next[index] = null;
+                return next;
+              });
+              window.dispatchEvent(
+                new CustomEvent('bubble-drop-zone-show', {
+                  detail: { assignmentId: slot.assignmentId, date: slot.date },
+                })
+              );
+            }}
+            onDateChange={d =>
+              setSlots(prev => {
+                const next = [...prev];
+                next[index] = {
+                  assignmentId: slot.assignmentId,
+                  date: format(d, 'yyyy-MM-dd'),
+                };
+                return next;
+              })
+            }
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => setPickerSlot(index)}
+            className="h-full w-full flex flex-col items-center justify-center gap-2 text-gray-400 hover:text-black hover:bg-gray-50 transition-colors"
+          >
+            <LayoutGrid className="h-8 w-8" />
+            <span className="text-sm font-medium">Θέση {index + 1}</span>
+            <span className="text-xs">Σύρε ένα bubble ή κλικ για επιλογή</span>
+          </button>
+        )}
+      </div>
+    );
+  };
+
   if (authLoading || rolesLoading) return <CustomLoadingScreen />;
   if (!isAuthenticated) return <Navigate to="/auth" replace />;
 
@@ -227,85 +301,87 @@ const DayCardsView = () => {
             <span className="hidden sm:inline text-xs text-gray-500">
               Σύρε ένα bubble μέσα σε μια θέση
             </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setLayoutMode(prev => (prev === 'grid' ? 'carousel' : 'grid'));
+                setCarouselPage(0);
+              }}
+              className="rounded-none"
+              title={layoutMode === 'grid' ? 'Αλλαγή σε carousel' : 'Αλλαγή σε πλέγμα'}
+            >
+              {layoutMode === 'grid' ? (
+                <GalleryHorizontal className="h-4 w-4" />
+              ) : (
+                <LayoutGrid className="h-4 w-4" />
+              )}
+            </Button>
             <Button variant="outline" size="sm" onClick={toggleFullscreen} className="rounded-none">
               {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
             </Button>
           </div>
         </div>
 
-        {/* Grid με 6 θέσεις */}
+        {/* Grid / Carousel με 6 θέσεις */}
         <div className="flex-1 min-h-0 p-2">
           {isLoading ? (
             <div className="h-full flex items-center justify-center text-gray-500">
               Φόρτωση προγραμμάτων...
             </div>
-          ) : (
+          ) : layoutMode === 'grid' ? (
             <div className="h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 grid-rows-6 sm:grid-rows-3 lg:grid-rows-2 gap-2">
-              {slots.map((slot, index) => {
-                const assignment = slot
-                  ? activePrograms.find(a => a.id === slot.assignmentId)
-                  : undefined;
-                const isOver = hoverSlot === index;
-
-                return (
-                  <div
-                    key={index}
-                    ref={el => (slotRefs.current[index] = el)}
-                    className={`relative min-h-0 overflow-hidden border transition-colors ${
-                      slot && assignment
-                        ? 'border-gray-300 bg-white'
-                        : isOver
-                        ? 'border-2 border-dashed border-black bg-[#00ffba]/20'
-                        : dragActive
-                        ? 'border-2 border-dashed border-gray-400 bg-white/60'
-                        : 'border-dashed border-gray-300 bg-white/40'
-                    }`}
-                  >
-                    {slot && assignment ? (
-                      <DayProgramDialog
-                        inline
-                        isOpen
-                        program={assignment}
-                        selectedDate={dateFromKey(slot.date)}
-                        workoutStatus={getWorkoutStatus(slot.assignmentId, slot.date)}
-                        onRefresh={handleRefresh}
-                        onClose={() => {
-                          setSlots(prev => {
-                            const next = [...prev];
-                            next[index] = null;
-                            return next;
-                          });
-                          window.dispatchEvent(
-                            new CustomEvent('bubble-drop-zone-show', {
-                              detail: { assignmentId: slot.assignmentId, date: slot.date },
-                            })
-                          );
-                        }}
-                        onDateChange={d =>
-                          setSlots(prev => {
-                            const next = [...prev];
-                            next[index] = {
-                              assignmentId: slot.assignmentId,
-                              date: format(d, 'yyyy-MM-dd'),
-                            };
-                            return next;
-                          })
-                        }
-                      />
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => setPickerSlot(index)}
-                        className="h-full w-full flex flex-col items-center justify-center gap-2 text-gray-400 hover:text-black hover:bg-gray-50 transition-colors"
-                      >
-                        <LayoutGrid className="h-8 w-8" />
-                        <span className="text-sm font-medium">Θέση {index + 1}</span>
-                        <span className="text-xs">Σύρε ένα bubble ή κλικ για επιλογή</span>
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
+              {slots.map((_, index) => renderSlot(index))}
+            </div>
+          ) : (
+            <div className="h-full flex flex-col">
+              <div className="flex-1 relative overflow-hidden">
+                <div
+                  className="h-full flex transition-transform duration-300 ease-in-out"
+                  style={{
+                    transform: `translateX(-${carouselPage * 100}%)`,
+                    width: `${Math.ceil(SLOT_COUNT / CAROUSEL_SLOTS_PER_PAGE) * 100}%`,
+                  }}
+                >
+                  {Array.from({ length: Math.ceil(SLOT_COUNT / CAROUSEL_SLOTS_PER_PAGE) }).map((_, pageIndex) => (
+                    <div
+                      key={pageIndex}
+                      className="h-full flex gap-2"
+                      style={{ width: `${100 / Math.ceil(SLOT_COUNT / CAROUSEL_SLOTS_PER_PAGE)}%` }}
+                    >
+                      {slots
+                        .slice(
+                          pageIndex * CAROUSEL_SLOTS_PER_PAGE,
+                          pageIndex * CAROUSEL_SLOTS_PER_PAGE + CAROUSEL_SLOTS_PER_PAGE
+                        )
+                        .map((_, offset) => renderSlot(pageIndex * CAROUSEL_SLOTS_PER_PAGE + offset))}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center justify-center gap-4 py-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCarouselPage(p => Math.max(0, p - 1))}
+                  disabled={carouselPage === 0}
+                  className="rounded-none"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm text-gray-600">
+                  {carouselPage + 1} / {maxCarouselPage + 1}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCarouselPage(p => Math.min(maxCarouselPage, p + 1))}
+                  disabled={carouselPage === maxCarouselPage}
+                  className="rounded-none"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           )}
         </div>
