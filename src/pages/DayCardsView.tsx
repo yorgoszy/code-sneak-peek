@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Sidebar } from '@/components/Sidebar';
 import { Button } from '@/components/ui/button';
-import { Menu, Maximize2, Minimize2, LayoutGrid, GalleryHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Menu, Maximize2, Minimize2, LayoutGrid, GalleryHorizontal } from 'lucide-react';
 import { CustomLoadingScreen } from '@/components/ui/custom-loading';
 import { useAuth } from '@/hooks/useAuth';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
@@ -18,10 +18,9 @@ import { supabase } from '@/integrations/supabase/client';
 import type { EnrichedAssignment } from '@/hooks/useActivePrograms/types';
 
 const SLOT_COUNT = 6;
-const CAROUSEL_SLOTS_PER_PAGE = 3;
 const ADMIN_ID = 'c6d44641-3b95-46bd-8270-e5ed72de25ad';
 
-type LayoutMode = 'grid' | 'carousel';
+type LayoutMode = 'grid' | 'horizontal';
 
 interface Slot {
   assignmentId: string;
