@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { el } from "date-fns/locale";
 import { Play, CheckCircle, X, FlaskConical, Trophy, ChevronLeft, ChevronRight, CalendarIcon } from "lucide-react";
 import { WorkoutTimer } from "./WorkoutTimer";
