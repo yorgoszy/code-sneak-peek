@@ -192,6 +192,19 @@ const DayCardsView = () => {
     return () => document.removeEventListener('fullscreenchange', onFs);
   }, []);
 
+  const addSlot = () => setSlots(prev => [...prev, null]);
+
+  const renderAddSlotButton = () => (
+    <button
+      type="button"
+      onClick={addSlot}
+      className="h-full w-full min-h-[120px] flex flex-col items-center justify-center gap-2 border border-dashed border-gray-300 bg-white/40 text-gray-400 hover:text-black hover:bg-gray-50 transition-colors"
+    >
+      <Plus className="h-8 w-8" />
+      <span className="text-sm font-medium">Προσθήκη θέσης</span>
+    </button>
+  );
+
   const renderSlot = (index: number) => {
     const slot = slots[index];
     const assignment = slot
