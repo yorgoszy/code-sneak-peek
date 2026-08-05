@@ -72,8 +72,25 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
       removeBubble(makeBubbleId(detail.assignmentId, date));
     };
 
+    const handleDropZoneShow = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { assignmentId?: string; date?: string } | undefined;
+      if (!detail?.assignmentId) return;
+      const date = detail.date || todayStr;
+      const key = makeHideKey(detail.assignmentId, date);
+      setHiddenKeys(prev => {
+        const next = new Set(prev);
+        next.delete(key);
+        return next;
+      });
+      removeBubble(makeBubbleId(detail.assignmentId, date));
+    };
+
     window.addEventListener('bubble-drop-zone-hide', handleDropZoneHide as EventListener);
-    return () => window.removeEventListener('bubble-drop-zone-hide', handleDropZoneHide as EventListener);
+    window.addEventListener('bubble-drop-zone-show', handleDropZoneShow as EventListener);
+    return () => {
+      window.removeEventListener('bubble-drop-zone-hide', handleDropZoneHide as EventListener);
+      window.removeEventListener('bubble-drop-zone-show', handleDropZoneShow as EventListener);
+    };
   }, [removeBubble, todayStr]);
 
   // When a workout dialog re-opens, un-hide its bubble entry

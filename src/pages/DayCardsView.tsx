@@ -267,13 +267,18 @@ const DayCardsView = () => {
                         selectedDate={dateFromKey(slot.date)}
                         workoutStatus={getWorkoutStatus(slot.assignmentId, slot.date)}
                         onRefresh={handleRefresh}
-                        onClose={() =>
+                        onClose={() => {
                           setSlots(prev => {
                             const next = [...prev];
                             next[index] = null;
                             return next;
-                          })
-                        }
+                          });
+                          window.dispatchEvent(
+                            new CustomEvent('bubble-drop-zone-show', {
+                              detail: { assignmentId: slot.assignmentId, date: slot.date },
+                            })
+                          );
+                        }}
                         onDateChange={d =>
                           setSlots(prev => {
                             const next = [...prev];
