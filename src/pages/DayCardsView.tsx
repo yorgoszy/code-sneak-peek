@@ -8,7 +8,7 @@ import { CustomLoadingScreen } from '@/components/ui/custom-loading';
 import { useAuth } from '@/hooks/useAuth';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { useActivePrograms } from '@/hooks/useActivePrograms';
-import { useMultipleWorkouts } from '@/contexts/MultipleWorkouts';
+import { useMultipleWorkouts } from '@/contexts/MultipleWorkoutsContext';
 import { useMinimizedBubbles } from '@/contexts/MinimizedBubblesContext';
 import { getWorkoutUserKey } from '@/contexts/MultipleWorkoutsContext';
 import { TodaysBubbles } from '@/components/active-programs/TodaysBubbles';
