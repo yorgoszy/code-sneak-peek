@@ -41,12 +41,12 @@ const DayCardsView = () => {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('grid');
-  const [carouselPage, setCarouselPage] = useState(0);
   const [slots, setSlots] = useState<Array<Slot | null>>(Array(SLOT_COUNT).fill(null));
   const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
   const [pickerSlot, setPickerSlot] = useState<number | null>(null);
 
   const slotRefs = useRef<Array<HTMLDivElement | null>>(Array(SLOT_COUNT).fill(null));
+  const horizontalScrollRef = useRef<HTMLDivElement | null>(null);
   const [hoverSlot, setHoverSlot] = useState<number | null>(null);
   const [dragActive, setDragActive] = useState(false);
 
@@ -59,8 +59,6 @@ const DayCardsView = () => {
   const programsForToday = activePrograms.filter(
     a => a.training_dates?.includes(todayStr)
   );
-
-  const maxCarouselPage = Math.ceil(SLOT_COUNT / CAROUSEL_SLOTS_PER_PAGE) - 1;
 
   // Redirect non-admins
   useEffect(() => {
