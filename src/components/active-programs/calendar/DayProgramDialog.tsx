@@ -347,6 +347,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   const dialogBody = (
     <>
           <DayProgramDialogHeader
+            inline={inline}
             selectedDate={selectedDate}
             workoutInProgress={workoutInProgress}
             elapsedTime={elapsedTime}
@@ -481,7 +482,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
   return (
     <>
       {inline ? (
-        <div className="h-full w-full flex flex-col overflow-hidden bg-white p-3 relative">
+        <div className="h-full w-full flex flex-col overflow-hidden bg-white p-1 relative">
           {dialogBody}
         </div>
       ) : (
