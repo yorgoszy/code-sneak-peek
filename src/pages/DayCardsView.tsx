@@ -45,7 +45,11 @@ const DayCardsView = () => {
   const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
   const [pickerSlot, setPickerSlot] = useState<number | null>(null);
 
+  const slotsRef = useRef<Array<Slot | null>>(slots);
+  slotsRef.current = slots;
+
   const slotRefs = useRef<Array<HTMLDivElement | null>>(Array(SLOT_COUNT).fill(null));
+
   const horizontalScrollRef = useRef<HTMLDivElement | null>(null);
   const [hoverSlot, setHoverSlot] = useState<number | null>(null);
   const [dragActive, setDragActive] = useState(false);
