@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Sidebar } from '@/components/Sidebar';
 import { Button } from '@/components/ui/button';
-import { Menu, Maximize2, Minimize2, LayoutGrid, GalleryHorizontal } from 'lucide-react';
+import { Menu, Maximize2, Minimize2, LayoutGrid, GalleryHorizontal, Plus } from 'lucide-react';
 import { CustomLoadingScreen } from '@/components/ui/custom-loading';
 import { useAuth } from '@/hooks/useAuth';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
@@ -192,6 +192,19 @@ const DayCardsView = () => {
     return () => document.removeEventListener('fullscreenchange', onFs);
   }, []);
 
+  const addSlot = () => setSlots(prev => [...prev, null]);
+
+  const renderAddSlotButton = () => (
+    <button
+      type="button"
+      onClick={addSlot}
+      className="h-full w-full min-h-[120px] flex flex-col items-center justify-center gap-2 border border-dashed border-gray-300 bg-white/40 text-gray-400 hover:text-black hover:bg-gray-50 transition-colors"
+    >
+      <Plus className="h-8 w-8" />
+      <span className="text-sm font-medium">Προσθήκη θέσης</span>
+    </button>
+  );
+
   const renderSlot = (index: number) => {
     const slot = slots[index];
     const assignment = slot
@@ -292,7 +305,7 @@ const DayCardsView = () => {
               <Menu className="h-5 w-5" />
             </Button>
             <LayoutGrid className="h-5 w-5" />
-            <h1 className="text-base font-semibold">Προβολή Ημέρας — 6 Θέσεις</h1>
+            <h1 className="text-base font-semibold">Προβολή Ημέρας — {slots.length} Θέσεις</h1>
           </div>
           <div className="flex items-center gap-2">
             <span className="hidden sm:inline text-xs text-gray-500">
@@ -326,8 +339,9 @@ const DayCardsView = () => {
               Φόρτωση προγραμμάτων...
             </div>
           ) : layoutMode === 'grid' ? (
-            <div className="h-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 grid-rows-6 sm:grid-rows-3 lg:grid-rows-2 gap-2">
+            <div className="h-full overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr gap-2">
               {slots.map((_, index) => renderSlot(index))}
+              {renderAddSlotButton()}
             </div>
           ) : (
             <div
@@ -348,6 +362,7 @@ const DayCardsView = () => {
                   {renderSlot(index)}
                 </div>
               ))}
+              <div className="h-full min-w-[220px] flex-shrink-0">{renderAddSlotButton()}</div>
             </div>
           )}
         </div>
