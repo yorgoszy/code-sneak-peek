@@ -228,7 +228,7 @@ const DayCardsView = () => {
       <div
         key={index}
         ref={el => (slotRefs.current[index] = el)}
-        className={`relative min-h-0 overflow-hidden border transition-colors ${
+        className={`relative h-full min-h-0 overflow-hidden border transition-colors ${
           slot && assignment
             ? 'border-gray-300 bg-white'
             : isOver
@@ -382,7 +382,7 @@ const DayCardsView = () => {
               }}
             >
               {slots.map((_, index) => (
-                <div key={index} className="h-full min-w-[450px] flex-shrink-0">
+                <div key={index} className="h-full min-h-0 min-w-[450px] flex-shrink-0 overflow-hidden">
                   {renderSlot(index)}
                 </div>
               ))}

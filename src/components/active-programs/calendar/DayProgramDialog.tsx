@@ -376,7 +376,7 @@ export const DayProgramDialog: React.FC<DayProgramDialogProps> = ({
           <div
             ref={scrollContainerRef}
             onScroll={(e) => { scrollPositionRef.current = (e.currentTarget as HTMLDivElement).scrollTop; }}
-            className="pt-1 pb-2 overflow-y-auto flex-1 space-y-2"
+            className="min-h-0 pt-1 pb-2 overflow-y-scroll overscroll-contain flex-1 space-y-2 scrollbar-gray"
           >
             {dayProgram ? (
               <div className="space-y-2">
