@@ -1632,17 +1632,10 @@ serve(async (req) => {
           ? [...new Set(allProgramExercisesData.map((pe: any) => pe.exercise_id).filter(Boolean))]
           : [];
         
-        const exercisesResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/exercises?id=in.(${allExerciseIds.join(',')})&select=id,name,description`,
-          {
-            headers: {
-              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-            }
-          }
+        const allExercisesData = await fetchInBatches(
+          SUPABASE_URL, 'exercises', 'id', allExerciseIds as string[],
+          'select=id,name,description', SUPABASE_SERVICE_ROLE_KEY!
         );
-        const exercisesJsonData = await exercisesResponse.json();
-        const allExercisesData = Array.isArray(exercisesJsonData) ? exercisesJsonData : [];
         console.log(`✅ Loaded ${allExercisesData.length} exercises`);
         
         // Δημιουργία summary
