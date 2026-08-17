@@ -2005,92 +2005,38 @@ ${calendarDisplay}`;
         const menuProgramIds = allProgramsMenu.map((p: any) => p.id);
         
         // Weeks
-        const menuWeeksResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/program_weeks?program_id=in.(${menuProgramIds.join(',')})&select=*&order=week_number.asc`,
-          {
-            headers: {
-              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-            }
-          }
+        const menuWeeks = await fetchInBatches(
+          SUPABASE_URL, 'program_weeks', 'program_id', menuProgramIds,
+          'select=*&order=week_number.asc', SUPABASE_SERVICE_ROLE_KEY!
         );
-        const menuWeeksData = await menuWeeksResponse.json();
-        const menuWeeks = Array.isArray(menuWeeksData) ? menuWeeksData : [];
         
         // Days
         const menuWeekIds = menuWeeks.map((w: any) => w.id);
-        let menuDays: any[] = [];
-        if (menuWeekIds.length > 0) {
-          const menuDaysResponse = await fetch(
-            `${SUPABASE_URL}/rest/v1/program_days?week_id=in.(${menuWeekIds.join(',')})&select=*&order=day_number.asc`,
-            {
-              headers: {
-                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-              }
-            }
-          );
-          const menuDaysData = await menuDaysResponse.json();
-          menuDays = Array.isArray(menuDaysData) ? menuDaysData : [];
-        }
+        const menuDays = await fetchInBatches(
+          SUPABASE_URL, 'program_days', 'week_id', menuWeekIds,
+          'select=*&order=day_number.asc', SUPABASE_SERVICE_ROLE_KEY!
+        );
         
         // Blocks
         const menuDayIds = menuDays.map((d: any) => d.id);
-        let menuBlocks: any[] = [];
-        if (menuDayIds.length > 0) {
-          const menuBlocksResponse = await fetch(
-            `${SUPABASE_URL}/rest/v1/program_blocks?day_id=in.(${menuDayIds.join(',')})&select=*&order=block_order.asc`,
-            {
-              headers: {
-                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-              }
-            }
-          );
-          const menuBlocksData = await menuBlocksResponse.json();
-          menuBlocks = Array.isArray(menuBlocksData) ? menuBlocksData : [];
-        }
+        const menuBlocks = await fetchInBatches(
+          SUPABASE_URL, 'program_blocks', 'day_id', menuDayIds,
+          'select=*&order=block_order.asc', SUPABASE_SERVICE_ROLE_KEY!
+        );
         
         // Exercises
         const menuBlockIds = menuBlocks.map((b: any) => b.id);
-        let menuProgramExercises: any[] = [];
-        if (menuBlockIds.length > 0) {
-          // Batch loading για να μην υπερβούμε τα URL limits
-          const batchSize = 25;
-          for (let i = 0; i < menuBlockIds.length; i += batchSize) {
-            const batchIds = menuBlockIds.slice(i, i + batchSize);
-            const menuExercisesResponse = await fetch(
-              `${SUPABASE_URL}/rest/v1/program_exercises?block_id=in.(${batchIds.join(',')})&select=*&order=exercise_order.asc`,
-              {
-                headers: {
-                  "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-                  "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-                }
-              }
-            );
-            const menuExercisesData = await menuExercisesResponse.json();
-            if (Array.isArray(menuExercisesData)) {
-              menuProgramExercises.push(...menuExercisesData);
-            }
-          }
-        }
+        const menuProgramExercises = await fetchInBatches(
+          SUPABASE_URL, 'program_exercises', 'block_id', menuBlockIds,
+          'select=*&order=exercise_order.asc', SUPABASE_SERVICE_ROLE_KEY!, 25
+        );
         
         // Exercises names
-        const menuExerciseIds = [...new Set(menuProgramExercises.map((pe: any) => pe.exercise_id).filter(Boolean))];
-        let menuExercisesNames: any[] = [];
-        if (menuExerciseIds.length > 0) {
-          const menuExercisesNamesResponse = await fetch(
-            `${SUPABASE_URL}/rest/v1/exercises?id=in.(${menuExerciseIds.join(',')})&select=id,name,description`,
-            {
-              headers: {
-                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-              }
-            }
-          );
-          const menuExercisesNamesData = await menuExercisesNamesResponse.json();
-          menuExercisesNames = Array.isArray(menuExercisesNamesData) ? menuExercisesNamesData : [];
-        }
+        const menuExerciseIds = [...new Set(menuProgramExercises.map((pe: any) => pe.exercise_id).filter(Boolean))] as string[];
+        const menuExercisesNames = await fetchInBatches(
+          SUPABASE_URL, 'exercises', 'id', menuExerciseIds,
+          'select=id,name,description', SUPABASE_SERVICE_ROLE_KEY!
+        );
         
         // Build context
         const templates = allProgramsMenu.filter((p: any) => p.is_template === true);
