@@ -17,7 +17,7 @@ async function fetchInBatches(
   ids: string[],
   querySuffix: string,
   serviceKey: string,
-  batchSize = 40
+  batchSize = 25
 ): Promise<any[]> {
   const out: any[] = [];
   const unique = [...new Set(ids.filter(Boolean))];
@@ -27,9 +27,17 @@ async function fetchInBatches(
       `${baseUrl}/rest/v1/${table}?${column}=in.(${batch.join(',')})&${querySuffix}`,
       { headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` } }
     );
-    const json = await res.json();
-    if (Array.isArray(json)) out.push(...json);
-    else console.error(`fetchInBatches ${table} error:`, json);
+    const json = await res.json().catch(() => null);
+    if (!res.ok || !Array.isArray(json)) {
+      console.error(`fetchInBatches ${table} failed`, {
+        status: res.status,
+        batchStart: i,
+        batchLength: batch.length,
+        error: json,
+      });
+      throw new Error(`Failed to load ${table} batch (${res.status})`);
+    }
+    out.push(...json);
   }
   return out;
 }
@@ -1235,16 +1243,10 @@ serve(async (req) => {
             allRelExIds.add(r.related_exercise_id);
           });
 
-          const exNamesResponse = await fetch(
-            `${SUPABASE_URL}/rest/v1/exercises?id=in.(${Array.from(allRelExIds).join(',')})&select=id,name`,
-            {
-              headers: {
-                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-              }
-            }
+          const exNamesData = await fetchInBatches(
+            SUPABASE_URL, 'exercises', 'id', Array.from(allRelExIds),
+            'select=id,name', SUPABASE_SERVICE_ROLE_KEY!
           );
-          const exNamesData = await exNamesResponse.json();
           const exNameMap: Record<string, string> = {};
           if (Array.isArray(exNamesData)) {
             exNamesData.forEach((e: any) => { exNameMap[e.id] = e.name; });
@@ -4517,16 +4519,10 @@ ${drafts.map((p: any, i: number) => {
 
         if (userTestsMap.size > 0) {
           // Φόρτωση στοιχείων χρηστών
-          const athletesResponse = await fetch(
-            `${SUPABASE_URL}/rest/v1/app_users?id=in.(${Array.from(userTestsMap.keys()).join(',')})&select=id,name,email,photo_url&order=name.asc`,
-            {
-              headers: {
-                "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-                "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-              }
-            }
+          const athletes = await fetchInBatches(
+            SUPABASE_URL, 'app_users', 'id', Array.from(userTestsMap.keys()),
+            'select=id,name,email,photo_url&order=name.asc', SUPABASE_SERVICE_ROLE_KEY!
           );
-          const athletes = await athletesResponse.json();
 
           if (Array.isArray(athletes) && athletes.length > 0) {
             const athletesList = athletes.map((athlete: any) => {
