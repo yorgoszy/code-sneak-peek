@@ -1575,17 +1575,10 @@ serve(async (req) => {
         
         const allWeekIds = allWeeksData.map((w: any) => w.id);
         
-        const daysResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/program_days?week_id=in.(${allWeekIds.join(',')})&select=*&order=day_number.asc`,
-          {
-            headers: {
-              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-            }
-          }
+        const allDaysData = await fetchInBatches(
+          SUPABASE_URL, 'program_days', 'week_id', allWeekIds,
+          'select=*&order=day_number.asc', SUPABASE_SERVICE_ROLE_KEY!
         );
-        const daysJsonData = await daysResponse.json();
-        const allDaysData = Array.isArray(daysJsonData) ? daysJsonData : [];
         console.log(`✅ Loaded ${allDaysData.length} days`);
         
         const allDayIds = allDaysData.length > 0 ? allDaysData.map((d: any) => d.id) : [];
