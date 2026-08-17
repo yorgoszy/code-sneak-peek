@@ -2707,34 +2707,23 @@ ${drafts.map((p: any, i: number) => {
     const programIds = Array.isArray(assignments) ? assignments.map((a: any) => a.program_id).filter(Boolean) : [];
     let programsData: any[] = [];
     if (programIds.length > 0) {
-      const programsResponse = await fetch(
-        `${SUPABASE_URL}/rest/v1/programs?id=in.(${programIds.join(',')})&select=id,name,description,training_days,program_weeks!fk_program_weeks_program_id(id,name,week_number,program_days!fk_program_days_week_id(id,name,day_number,estimated_duration_minutes,is_test_day,test_types,is_competition_day,program_blocks!fk_program_blocks_day_id(id,name,block_order,training_type,workout_format,workout_duration,program_exercises!fk_program_exercises_block_id(id,sets,reps,reps_mode,kg,kg_mode,percentage_1rm,velocity_ms,tempo,rest,notes,exercise_order,exercises!fk_program_exercises_exercise_id(id,name,description,video_url)))))`,
-        {
-          headers: {
-            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-          }
-        }
+      programsData = await fetchInBatches(
+        SUPABASE_URL, 'programs', 'id', programIds,
+        'select=id,name,description,training_days,program_weeks!fk_program_weeks_program_id(id,name,week_number,program_days!fk_program_days_week_id(id,name,day_number,estimated_duration_minutes,is_test_day,test_types,is_competition_day,program_blocks!fk_program_blocks_day_id(id,name,block_order,training_type,workout_format,workout_duration,program_exercises!fk_program_exercises_block_id(id,sets,reps,reps_mode,kg,kg_mode,percentage_1rm,velocity_ms,tempo,rest,notes,exercise_order,exercises!fk_program_exercises_exercise_id(id,name,description,video_url)))))',
+        SUPABASE_SERVICE_ROLE_KEY!, 20
       );
-      programsData = await programsResponse.json();
-      console.log('📊 Programs with full structure loaded:', Array.isArray(programsData) ? programsData.length : 0);
+      console.log('📊 Programs with full structure loaded:', programsData.length);
     }
 
     // Φόρτωση app_users
     const userIds = Array.isArray(assignments) ? assignments.map((a: any) => a.user_id).filter(Boolean) : [];
     let usersData: any[] = [];
     if (userIds.length > 0) {
-      const usersResponse = await fetch(
-        `${SUPABASE_URL}/rest/v1/app_users?id=in.(${userIds.join(',')})&select=id,name,email,photo_url`,
-        {
-          headers: {
-            "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-          }
-        }
+      usersData = await fetchInBatches(
+        SUPABASE_URL, 'app_users', 'id', userIds,
+        'select=id,name,email,photo_url', SUPABASE_SERVICE_ROLE_KEY!
       );
-      usersData = await usersResponse.json();
-      console.log('📊 Users loaded:', Array.isArray(usersData) ? usersData.length : 0);
+      console.log('📊 Users loaded:', usersData.length);
     }
 
     // Συνδυασμός assignments με programs και users
