@@ -1590,17 +1590,10 @@ serve(async (req) => {
         
         const allDayIds = allDaysData.length > 0 ? allDaysData.map((d: any) => d.id) : [];
         
-        const blocksResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/program_blocks?day_id=in.(${allDayIds.join(',')})&select=*&order=block_order.asc`,
-          {
-            headers: {
-              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-            }
-          }
+        const allBlocksData = await fetchInBatches(
+          SUPABASE_URL, 'program_blocks', 'day_id', allDayIds,
+          'select=*&order=block_order.asc', SUPABASE_SERVICE_ROLE_KEY!
         );
-        const blocksJsonData = await blocksResponse.json();
-        const allBlocksData = Array.isArray(blocksJsonData) ? blocksJsonData : [];
         console.log(`✅ Loaded ${allBlocksData.length} blocks`);
         
         const allBlockIds = allBlocksData.length > 0 ? allBlocksData.map((b: any) => b.id) : [];
