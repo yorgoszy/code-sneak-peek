@@ -6,6 +6,34 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+/**
+ * Fetch rows with an `in.(...)` filter, splitting ids into batches so the
+ * REST URL never grows too large (Supabase rejects very long URLs with a 500).
+ */
+async function fetchInBatches(
+  baseUrl: string,
+  table: string,
+  column: string,
+  ids: string[],
+  querySuffix: string,
+  serviceKey: string,
+  batchSize = 40
+): Promise<any[]> {
+  const out: any[] = [];
+  const unique = [...new Set(ids.filter(Boolean))];
+  for (let i = 0; i < unique.length; i += batchSize) {
+    const batch = unique.slice(i, i + batchSize);
+    const res = await fetch(
+      `${baseUrl}/rest/v1/${table}?${column}=in.(${batch.join(',')})&${querySuffix}`,
+      { headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` } }
+    );
+    const json = await res.json();
+    if (Array.isArray(json)) out.push(...json);
+    else console.error(`fetchInBatches ${table} error:`, json);
+  }
+  return out;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
