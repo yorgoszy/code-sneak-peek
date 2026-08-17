@@ -1492,42 +1492,24 @@ serve(async (req) => {
         // Φόρτωση programs
         const allProgramIds = allAssignments.map((a: any) => a.program_id).filter(Boolean);
         console.log(`📊 Loading ${allProgramIds.length} programs`);
-        const allProgramsResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/programs?id=in.(${allProgramIds.join(',')})&select=id,name,description`,
-          {
-            headers: {
-              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-            }
-          }
+        const allProgramsData = await fetchInBatches(
+          SUPABASE_URL, 'programs', 'id', allProgramIds,
+          'select=id,name,description', SUPABASE_SERVICE_ROLE_KEY!
         );
-        const allProgramsData = await allProgramsResponse.json();
         
         // Φόρτωση users με ημερομηνία εγγραφής
         const allUserIds = allAssignments.map((a: any) => a.user_id).filter(Boolean);
-        const allUsersResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/app_users?id=in.(${allUserIds.join(',')})&select=id,name,email,created_at`,
-          {
-            headers: {
-              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-            }
-          }
+        const allUsersData = await fetchInBatches(
+          SUPABASE_URL, 'app_users', 'id', allUserIds,
+          'select=id,name,email,created_at', SUPABASE_SERVICE_ROLE_KEY!
         );
-        const allUsersData = await allUsersResponse.json();
         
         // Φόρτωση workout completions για ΟΛΕΣ τις αναθέσεις
         const allAssignmentIds = allAssignments.map((a: any) => a.id);
-        const allCompletionsResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/workout_completions?assignment_id=in.(${allAssignmentIds.join(',')})&select=*`,
-          {
-            headers: {
-              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-            }
-          }
+        const allCompletions = await fetchInBatches(
+          SUPABASE_URL, 'workout_completions', 'assignment_id', allAssignmentIds,
+          'select=*', SUPABASE_SERVICE_ROLE_KEY!
         );
-        const allCompletions = await allCompletionsResponse.json();
         
         // 🏋️ Φόρτωση exercise_results για πραγματικά αποτελέσματα προπονήσεων
         const allCompletionIds = Array.isArray(allCompletions) ? allCompletions.map((c: any) => c.id) : [];
