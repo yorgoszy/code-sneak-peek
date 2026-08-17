@@ -1555,17 +1555,10 @@ serve(async (req) => {
         }
         
         // 🏋️ Φόρτωση ΠΛΗΡΟΥΣ ΔΟΜΗΣ προγραμμάτων (weeks, days, blocks, exercises)
-        const weeksResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/program_weeks?program_id=in.(${allProgramIds.join(',')})&select=*&order=week_number.asc`,
-          {
-            headers: {
-              "apikey": SUPABASE_SERVICE_ROLE_KEY!,
-              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-            }
-          }
+        const allWeeksData = await fetchInBatches(
+          SUPABASE_URL, 'program_weeks', 'program_id', allProgramIds,
+          'select=*&order=week_number.asc', SUPABASE_SERVICE_ROLE_KEY!
         );
-        const weeksJsonData = await weeksResponse.json();
-        const allWeeksData = Array.isArray(weeksJsonData) ? weeksJsonData : [];
         console.log(`✅ Loaded ${allWeeksData.length} weeks`);
         
         if (allWeeksData.length === 0) {
