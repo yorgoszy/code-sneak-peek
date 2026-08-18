@@ -169,8 +169,9 @@ async function getEmail(folder: string, uid: number) {
         size: msg.size ?? 0,
         isHtml: Boolean(html),
         body: html || text,
-        attachments: (parsed.attachments ?? []).map((a: any) => ({
-          filename: a.filename ?? "attachment",
+        attachments: (parsed.attachments ?? []).map((a: any, i: number) => ({
+          index: i,
+          filename: a.filename ?? `attachment-${i + 1}`,
           contentType: a.contentType ?? "application/octet-stream",
           size: a.size ?? 0,
         })),
@@ -183,6 +184,41 @@ async function getEmail(folder: string, uid: number) {
   }
 }
 
+
+function toBase64(data: any): string {
+  const bytes = data instanceof Uint8Array ? data : new Uint8Array(data);
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
+
+async function getAttachment(folder: string, uid: number, index: number) {
+  const client = getImapClient();
+  try {
+    await client.connect();
+    const lock = await client.getMailboxLock(folder);
+    try {
+      const msg = await client.fetchOne(`${uid}`, { source: true, uid: true }, { uid: true });
+      if (!msg || typeof msg === "boolean") throw new Error("Το email δεν βρέθηκε");
+      const parsed = await simpleParser(msg.source);
+      const att = (parsed.attachments ?? [])[index];
+      if (!att) throw new Error("Το συνημμένο δεν βρέθηκε");
+      return {
+        filename: att.filename ?? `attachment-${index + 1}`,
+        contentType: att.contentType ?? "application/octet-stream",
+        size: att.size ?? 0,
+        base64: toBase64(att.content),
+      };
+    } finally {
+      lock.release();
+    }
+  } finally {
+    await safeLogout(client);
+  }
+}
 
 async function setSeen(folder: string, uid: number, seen: boolean) {
   const client = getImapClient();
@@ -237,7 +273,19 @@ async function deleteEmail(folder: string, uid: number) {
   }
 }
 
-async function sendEmail(to: string, subject: string, text: string, html?: string) {
+interface OutgoingAttachment {
+  filename?: string;
+  contentType?: string;
+  base64?: string;
+}
+
+async function sendEmail(
+  to: string,
+  subject: string,
+  text: string,
+  html?: string,
+  attachments?: OutgoingAttachment[]
+) {
   const transporter = nodemailer.createTransport({
     host: SMTP_HOST,
     port: SMTP_PORT,
@@ -252,6 +300,14 @@ async function sendEmail(to: string, subject: string, text: string, html?: strin
     subject,
     text,
     html,
+    attachments: (attachments ?? [])
+      .filter((a) => a?.base64)
+      .map((a, i) => ({
+        filename: a.filename ?? `attachment-${i + 1}`,
+        content: a.base64!,
+        encoding: "base64",
+        contentType: a.contentType ?? "application/octet-stream",
+      })),
   });
 
   return { messageId: info.messageId, accepted: info.accepted, rejected: info.rejected };
@@ -263,7 +319,7 @@ Deno.serve(async (req) => {
   try {
     await validateAdmin(req);
     const body = await req.json().catch(() => ({}));
-    const { action, folder, uid, to, subject, text, html, limit } = body;
+    const { action, folder, uid, to, subject, text, html, limit, attachments, attachmentIndex } = body;
 
     let result: any;
     if (action === "list-folders") {
@@ -273,7 +329,9 @@ Deno.serve(async (req) => {
     } else if (action === "get-email") {
       result = await getEmail(folder ?? "INBOX", uid ?? 0);
     } else if (action === "send-email") {
-      result = await sendEmail(to ?? "", subject ?? "", text ?? "", html);
+      result = await sendEmail(to ?? "", subject ?? "", text ?? "", html, attachments);
+    } else if (action === "get-attachment") {
+      result = await getAttachment(folder ?? "INBOX", uid ?? 0, attachmentIndex ?? 0);
     } else if (action === "mark-read") {
       result = await setSeen(folder ?? "INBOX", uid ?? 0, true);
     } else if (action === "mark-unread") {
