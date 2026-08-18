@@ -97,6 +97,13 @@ function formatAddress(addr?: { name?: string; address?: string }) {
   return addr.name ? `${addr.name} <${addr.address}>` : addr.address || "";
 }
 
+function formatSize(bytes?: number) {
+  if (!bytes) return "0 KB";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 function senderLabel(msg: EmailMessage) {
   const first = msg.from?.[0];
   return first?.name || first?.address || "(κενός αποστολέας)";
