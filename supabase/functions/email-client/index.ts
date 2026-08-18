@@ -90,6 +90,22 @@ function serializeFlags(flags: unknown): string[] {
   return [];
 }
 
+function bodyStructureHasAttachments(node: any): boolean {
+  if (!node || typeof node !== "object") return false;
+
+  const disposition = typeof node.disposition === "string"
+    ? node.disposition
+    : node.disposition?.type;
+  const filename = node.dispositionParameters?.filename ?? node.parameters?.name;
+  if (String(disposition ?? "").toLowerCase() === "attachment" || Boolean(filename)) {
+    return true;
+  }
+
+  return Array.isArray(node.childNodes)
+    ? node.childNodes.some((child: any) => bodyStructureHasAttachments(child))
+    : false;
+}
+
 
 async function listFolders() {
   const client = getImapClient();
@@ -121,6 +137,7 @@ async function listEmails(folder: string, limit = 50) {
           internalDate: true,
           size: true,
           uid: true,
+          bodyStructure: true,
         })) {
           messages.push({
             uid: msg.uid,
@@ -132,6 +149,7 @@ async function listEmails(folder: string, limit = 50) {
             internalDate: msg.internalDate ? msg.internalDate.toISOString() : null,
             flags: serializeFlags(msg.flags),
             size: msg.size ?? 0,
+            hasAttachments: bodyStructureHasAttachments(msg.bodyStructure),
           });
         }
       }
