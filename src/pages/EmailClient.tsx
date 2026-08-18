@@ -168,6 +168,39 @@ export const EmailClient: React.FC = () => {
   const [sending, setSending] = useState(false);
   const [busyUid, setBusyUid] = useState<number | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<EmailMessage | null>(null);
+  const [swipe, setSwipe] = useState<{ uid: number; dx: number } | null>(null);
+  const swipeStart = useRef<{ x: number; y: number; uid: number; active: boolean } | null>(null);
+
+  const SWIPE_THRESHOLD = 90;
+
+  const handleTouchStart = (uid: number) => (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    swipeStart.current = { x: t.clientX, y: t.clientY, uid, active: false };
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const start = swipeStart.current;
+    if (!start) return;
+    const t = e.touches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    if (!start.active) {
+      if (Math.abs(dx) < 10 || Math.abs(dx) < Math.abs(dy)) return;
+      start.active = true;
+    }
+    setSwipe({ uid: start.uid, dx: Math.max(0, dx) });
+  };
+
+  const handleTouchEnd = (email: EmailMessage) => () => {
+    const start = swipeStart.current;
+    const dx = swipe?.uid === email.uid ? swipe.dx : 0;
+    swipeStart.current = null;
+    setSwipe(null);
+    if (start?.active && dx >= SWIPE_THRESHOLD) {
+      setDeleteTarget(email);
+    }
+  };
+
 
   const loadFolders = async () => {
     setLoadingFolders(true);
