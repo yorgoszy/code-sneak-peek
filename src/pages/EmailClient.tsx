@@ -31,6 +31,8 @@ import {
   Trash2,
   MailOpen,
   Circle,
+  Paperclip,
+  Download,
 } from "lucide-react";
 
 interface EmailFolder {
@@ -56,7 +58,7 @@ interface EmailMessage {
 interface EmailDetail extends EmailMessage {
   body: string;
   isHtml: boolean;
-  attachments?: { filename: string; contentType: string; size: number }[];
+  attachments?: { index?: number; filename: string; contentType: string; size: number }[];
 }
 
 
@@ -152,6 +154,8 @@ export const EmailClient: React.FC = () => {
   const [composeOpen, setComposeOpen] = useState(false);
   const [mobileView, setMobileView] = useState<"folders" | "list" | "detail">("list");
   const [composeForm, setComposeForm] = useState({ to: "", subject: "", body: "" });
+  const [composeFiles, setComposeFiles] = useState<File[]>([]);
+  const [downloadingAtt, setDownloadingAtt] = useState<number | null>(null);
   const [sending, setSending] = useState(false);
   const [busyUid, setBusyUid] = useState<number | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<EmailMessage | null>(null);
@@ -248,14 +252,32 @@ export const EmailClient: React.FC = () => {
     }
     setSending(true);
     try {
+      const attachments = await Promise.all(
+        composeFiles.map(
+          (file) =>
+            new Promise<{ filename: string; contentType: string; base64: string }>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () =>
+                resolve({
+                  filename: file.name,
+                  contentType: file.type || "application/octet-stream",
+                  base64: String(reader.result).split(",")[1] ?? "",
+                });
+              reader.onerror = () => reject(new Error(`Αποτυχία ανάγνωσης: ${file.name}`));
+              reader.readAsDataURL(file);
+            })
+        )
+      );
       await invokeEmail("send-email", {
         to: composeForm.to,
         subject: composeForm.subject,
         text: composeForm.body,
+        attachments,
       });
       toast({ title: "Αποστολή", description: "Το email στάλθηκε επιτυχώς" });
       setComposeOpen(false);
       setComposeForm({ to: "", subject: "", body: "" });
+      setComposeFiles([]);
       if (selectedFolder.toLowerCase().includes("sent")) {
         loadEmails(selectedFolder);
       }
@@ -263,6 +285,31 @@ export const EmailClient: React.FC = () => {
       toast({ title: "Σφάλμα αποστολής", description: err.message || "Αποτυχία αποστολής", variant: "destructive" });
     } finally {
       setSending(false);
+    }
+  };
+
+  const downloadAttachment = async (index: number, filename: string) => {
+    if (!selectedEmail) return;
+    setDownloadingAtt(index);
+    try {
+      const data = await invokeEmail("get-attachment", {
+        folder: selectedFolder,
+        uid: selectedEmail.uid,
+        attachmentIndex: index,
+      });
+      const bytes = Uint8Array.from(atob(data.base64), (c) => c.charCodeAt(0));
+      const url = URL.createObjectURL(new Blob([bytes], { type: data.contentType }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = data.filename || filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      toast({ title: "Σφάλμα", description: err.message || "Αποτυχία λήψης συνημμένου", variant: "destructive" });
+    } finally {
+      setDownloadingAtt(null);
     }
   };
 
@@ -495,6 +542,40 @@ export const EmailClient: React.FC = () => {
                 <span className="text-muted-foreground">Ημερομηνία:</span> {formatFullDate(selectedEmail.date)}
               </p>
             </div>
+            {!!selectedEmail.attachments?.length && (
+              <>
+                <Separator />
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                    <Paperclip className="h-3.5 w-3.5" />
+                    Συνημμένα ({selectedEmail.attachments.length})
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedEmail.attachments.map((att, i) => {
+                      const idx = att.index ?? i;
+                      return (
+                        <Button
+                          key={`${att.filename}-${idx}`}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => downloadAttachment(idx, att.filename)}
+                          disabled={downloadingAtt === idx}
+                          className="rounded-none text-xs max-w-full"
+                        >
+                          {downloadingAtt === idx ? (
+                            <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                          ) : (
+                            <Download className="h-3.5 w-3.5 mr-1" />
+                          )}
+                          <span className="truncate">{att.filename}</span>
+                          <span className="ml-1 text-muted-foreground">({formatSize(att.size)})</span>
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
             <Separator />
             {selectedEmail.isHtml ? (
               <div
@@ -596,6 +677,39 @@ export const EmailClient: React.FC = () => {
                   placeholder="Γράψτε το μήνυμά σας..."
                   className="rounded-none"
                 />
+              </div>
+              <div>
+                <label className="text-sm font-medium flex items-center gap-1">
+                  <Paperclip className="h-4 w-4" />
+                  Συνημμένα
+                </label>
+                <Input
+                  type="file"
+                  multiple
+                  onChange={(e) => setComposeFiles((prev) => [...prev, ...Array.from(e.target.files ?? [])])}
+                  className="rounded-none"
+                />
+                {composeFiles.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    {composeFiles.map((file, i) => (
+                      <div
+                        key={`${file.name}-${i}`}
+                        className="flex items-center justify-between border border-border px-2 py-1 text-xs"
+                      >
+                        <span className="truncate">
+                          {file.name} <span className="text-muted-foreground">({formatSize(file.size)})</span>
+                        </span>
+                        <button
+                          onClick={() => setComposeFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                          className="text-muted-foreground hover:text-destructive"
+                          aria-label={`Αφαίρεση ${file.name}`}
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => setComposeOpen(false)} className="rounded-none">
