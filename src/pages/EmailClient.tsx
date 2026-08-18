@@ -168,6 +168,39 @@ export const EmailClient: React.FC = () => {
   const [sending, setSending] = useState(false);
   const [busyUid, setBusyUid] = useState<number | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<EmailMessage | null>(null);
+  const [swipe, setSwipe] = useState<{ uid: number; dx: number } | null>(null);
+  const swipeStart = useRef<{ x: number; y: number; uid: number; active: boolean } | null>(null);
+
+  const SWIPE_THRESHOLD = 90;
+
+  const handleTouchStart = (uid: number) => (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    swipeStart.current = { x: t.clientX, y: t.clientY, uid, active: false };
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const start = swipeStart.current;
+    if (!start) return;
+    const t = e.touches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    if (!start.active) {
+      if (Math.abs(dx) < 10 || Math.abs(dx) < Math.abs(dy)) return;
+      start.active = true;
+    }
+    setSwipe({ uid: start.uid, dx: Math.max(0, dx) });
+  };
+
+  const handleTouchEnd = (email: EmailMessage) => () => {
+    const start = swipeStart.current;
+    const dx = swipe?.uid === email.uid ? swipe.dx : 0;
+    swipeStart.current = null;
+    setSwipe(null);
+    if (start?.active && dx >= SWIPE_THRESHOLD) {
+      setDeleteTarget(email);
+    }
+  };
+
 
   const loadFolders = async () => {
     setLoadingFolders(true);
@@ -430,17 +463,33 @@ export const EmailClient: React.FC = () => {
           {emails.map((email) => {
             const unread = isUnread(email);
             const active = selectedEmail?.uid === email.uid;
+            const dx = swipe?.uid === email.uid ? swipe.dx : 0;
             return (
+              <div key={email.uid} className="relative overflow-hidden">
+                {dx > 0 && (
+                  <div className="absolute inset-0 flex items-center gap-2 px-3 bg-destructive text-destructive-foreground">
+                    <Trash2 className="h-4 w-4" />
+                    <span className="text-xs font-medium">Διαγραφή</span>
+                  </div>
+                )}
               <div
-                key={email.uid}
                 role="button"
                 tabIndex={0}
-                onClick={() => loadEmail(selectedFolder, email.uid)}
+                onClick={() => {
+                  if (dx > 0) return;
+                  loadEmail(selectedFolder, email.uid);
+                }}
                 onKeyDown={(e) => e.key === "Enter" && loadEmail(selectedFolder, email.uid)}
-                className={`group relative w-full text-left px-3 py-2.5 cursor-pointer transition-colors border-l-2 ${
+                onTouchStart={handleTouchStart(email.uid)}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd(email)}
+                onTouchCancel={handleTouchEnd(email)}
+                style={{ transform: dx ? `translateX(${dx}px)` : undefined }}
+                className={`group relative w-full text-left px-3 py-2.5 cursor-pointer transition-colors border-l-2 bg-background ${
                   active ? "border-[#00ffba] bg-accent" : "border-transparent hover:bg-accent/50"
                 }`}
               >
+
                 <div className="flex items-center gap-2">
                   {unread ? (
                     <Circle className="h-2 w-2 shrink-0 fill-[#00ffba] text-[#00ffba]" />
@@ -495,6 +544,8 @@ export const EmailClient: React.FC = () => {
                   </Button>
                 </div>
               </div>
+              </div>
+
             );
           })}
         </div>
