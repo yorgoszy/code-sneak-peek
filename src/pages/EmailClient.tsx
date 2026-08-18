@@ -544,6 +544,8 @@ export const EmailClient: React.FC = () => {
                   </Button>
                 </div>
               </div>
+              </div>
+
             );
           })}
         </div>
