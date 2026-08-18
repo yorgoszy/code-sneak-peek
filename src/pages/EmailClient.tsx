@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import DOMPurify from "dompurify";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,6 +53,7 @@ interface EmailMessage {
   internalDate: string | null;
   flags: unknown;
   size: number;
+  hasAttachments?: boolean;
 }
 
 interface EmailDetail extends EmailMessage {
@@ -162,6 +163,7 @@ export const EmailClient: React.FC = () => {
   const [mobileView, setMobileView] = useState<"folders" | "list" | "detail">("list");
   const [composeForm, setComposeForm] = useState({ to: "", subject: "", body: "" });
   const [composeFiles, setComposeFiles] = useState<File[]>([]);
+  const composeFileInputRef = useRef<HTMLInputElement>(null);
   const [downloadingAtt, setDownloadingAtt] = useState<number | null>(null);
   const [sending, setSending] = useState(false);
   const [busyUid, setBusyUid] = useState<number | null>(null);
@@ -222,6 +224,13 @@ export const EmailClient: React.FC = () => {
     try {
       const data = await invokeEmail("get-email", { folder, uid });
       setSelectedEmail(data);
+      setEmails((prev) =>
+        prev.map((message) =>
+          message.uid === uid
+            ? { ...message, hasAttachments: Boolean(data?.attachments?.length) }
+            : message
+        )
+      );
       const wasUnread = !normalizeFlags(data?.flags).includes("\\Seen");
       if (wasUnread) markRead(uid, true, true);
     } catch (err: any) {
@@ -448,6 +457,12 @@ export const EmailClient: React.FC = () => {
                 <p className={`text-sm truncate pl-4 ${unread ? "font-medium" : ""}`}>
                   {email.subject || "(χωρίς θέμα)"}
                 </p>
+                {email.hasAttachments && (
+                  <Paperclip
+                    className="absolute right-3 top-8 h-3.5 w-3.5 text-muted-foreground group-hover:hidden"
+                    aria-label="Έχει συνημμένα"
+                  />
+                )}
                 <div className="absolute right-2 bottom-1.5 hidden group-hover:flex items-center gap-1 bg-background/95 border border-border">
                   <Button
                     variant="ghost"
@@ -690,12 +705,26 @@ export const EmailClient: React.FC = () => {
                   <Paperclip className="h-4 w-4" />
                   Συνημμένα
                 </label>
-                <Input
+                <input
+                  ref={composeFileInputRef}
                   type="file"
                   multiple
-                  onChange={(e) => setComposeFiles((prev) => [...prev, ...Array.from(e.target.files ?? [])])}
-                  className="rounded-none"
+                  onChange={(e) => {
+                    setComposeFiles((prev) => [...prev, ...Array.from(e.target.files ?? [])]);
+                    e.target.value = "";
+                  }}
+                  className="sr-only"
+                  aria-label="Επιλογή συνημμένων"
                 />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => composeFileInputRef.current?.click()}
+                  className="mt-1 w-full justify-start rounded-none"
+                >
+                  <Paperclip className="h-4 w-4 mr-2" />
+                  Επιλογή αρχείων
+                </Button>
                 {composeFiles.length > 0 && (
                   <div className="mt-2 space-y-1">
                     {composeFiles.map((file, i) => (
@@ -706,13 +735,16 @@ export const EmailClient: React.FC = () => {
                         <span className="truncate">
                           {file.name} <span className="text-muted-foreground">({formatSize(file.size)})</span>
                         </span>
-                        <button
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
                           onClick={() => setComposeFiles((prev) => prev.filter((_, idx) => idx !== i))}
-                          className="text-muted-foreground hover:text-destructive"
+                          className="h-7 w-7 shrink-0 rounded-none text-muted-foreground hover:text-destructive"
                           aria-label={`Αφαίρεση ${file.name}`}
                         >
                           <X className="h-3.5 w-3.5" />
-                        </button>
+                        </Button>
                       </div>
                     ))}
                   </div>
