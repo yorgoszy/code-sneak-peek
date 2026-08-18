@@ -463,17 +463,33 @@ export const EmailClient: React.FC = () => {
           {emails.map((email) => {
             const unread = isUnread(email);
             const active = selectedEmail?.uid === email.uid;
+            const dx = swipe?.uid === email.uid ? swipe.dx : 0;
             return (
+              <div key={email.uid} className="relative overflow-hidden">
+                {dx > 0 && (
+                  <div className="absolute inset-0 flex items-center gap-2 px-3 bg-destructive text-destructive-foreground">
+                    <Trash2 className="h-4 w-4" />
+                    <span className="text-xs font-medium">Διαγραφή</span>
+                  </div>
+                )}
               <div
-                key={email.uid}
                 role="button"
                 tabIndex={0}
-                onClick={() => loadEmail(selectedFolder, email.uid)}
+                onClick={() => {
+                  if (dx > 0) return;
+                  loadEmail(selectedFolder, email.uid);
+                }}
                 onKeyDown={(e) => e.key === "Enter" && loadEmail(selectedFolder, email.uid)}
-                className={`group relative w-full text-left px-3 py-2.5 cursor-pointer transition-colors border-l-2 ${
+                onTouchStart={handleTouchStart(email.uid)}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd(email)}
+                onTouchCancel={handleTouchEnd(email)}
+                style={{ transform: dx ? `translateX(${dx}px)` : undefined }}
+                className={`group relative w-full text-left px-3 py-2.5 cursor-pointer transition-colors border-l-2 bg-background ${
                   active ? "border-[#00ffba] bg-accent" : "border-transparent hover:bg-accent/50"
                 }`}
               >
+
                 <div className="flex items-center gap-2">
                   {unread ? (
                     <Circle className="h-2 w-2 shrink-0 fill-[#00ffba] text-[#00ffba]" />
