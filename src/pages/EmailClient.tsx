@@ -149,7 +149,7 @@ function normalizeFlags(flags: unknown): string[] {
   return [];
 }
 
-export const EmailClient: React.FC = () => {
+export const EmailClient: React.FC<{ onOpenAppMenu?: () => void }> = ({ onOpenAppMenu }) => {
   const { session } = useAuthContext();
   const { toast } = useToast();
   const [folders, setFolders] = useState<EmailFolder[]>([]);
