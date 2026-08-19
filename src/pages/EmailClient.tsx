@@ -668,9 +668,14 @@ export const EmailClient: React.FC<{ onOpenAppMenu?: () => void }> = ({ onOpenAp
     <div className="h-[100dvh] lg:h-screen flex flex-col overflow-hidden">
       {/* Mobile header */}
       <div className="lg:hidden shrink-0 bg-background border-b border-border p-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          {onOpenAppMenu && (
+            <Button variant="outline" size="sm" onClick={onOpenAppMenu} className="rounded-none">
+              <Menu className="h-5 w-5" />
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={() => setMobileView("folders")} className="rounded-none">
-            <Menu className="h-5 w-5" />
+            <Inbox className="h-5 w-5" />
           </Button>
           <h1 className="text-lg font-semibold">Email</h1>
         </div>
