@@ -28,6 +28,7 @@ import {
   X,
   ArrowLeft,
   Menu,
+  Inbox,
   Trash2,
   MailOpen,
   Circle,
