@@ -526,17 +526,17 @@ export const SubscriptionManagement: React.FC = () => {
     }
   };
 
-  // Τιμή μονάδας (καθαρή αξία) — επεξεργάσιμη για εκπτώσεις
-  const getEffectiveUnitNet = () => {
+  // Τελική αξία μονάδας (με ΦΠΑ) — επεξεργάσιμη για εκπτώσεις, αποφορολογείται μετά
+  const getEffectiveUnitGross = () => {
     const parsed = customUnitNet !== null ? parseFloat(customUnitNet.replace(',', '.')) : NaN;
     if (!isNaN(parsed) && parsed >= 0) return parsed;
-    const typePrice = subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0;
-    return typePrice / 1.13;
+    return subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0;
   };
 
   const getEffectiveTotal = () => {
-    return Math.round(getEffectiveUnitNet() * 1.13 * durationMultiplier * 100) / 100;
+    return Math.round(getEffectiveUnitGross() * durationMultiplier * 100) / 100;
   };
+
 
   const createReceiptForSubscription = async (userData: any, subscriptionType: SubscriptionType, startDate: string, endDate: Date, multiplier: number = 1, customTotalPrice?: number) => {
     try {
@@ -1636,11 +1636,12 @@ export const SubscriptionManagement: React.FC = () => {
                       </Select>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium mb-1">Τιμή μονάδας (€)</label>
+                      <label className="block text-xs font-medium mb-1">Τελική τιμή μονάδας (με ΦΠΑ) €</label>
                       <Input
                         type="text"
                         inputMode="decimal"
-                        value={customUnitNet !== null ? customUnitNet : getEffectiveUnitNet().toFixed(2)}
+                        value={customUnitNet !== null ? customUnitNet : getEffectiveUnitGross().toFixed(2)}
+
                         onChange={(e) => setCustomUnitNet(e.target.value)}
                         onBlur={() => {
                           if (customUnitNet !== null) {
