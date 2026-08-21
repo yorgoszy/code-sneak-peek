@@ -630,7 +630,8 @@ export const SubscriptionManagement: React.FC = () => {
       selectedUserData,
       subscriptionStartDate,
       endDate,
-      durationMultiplier
+      durationMultiplier,
+      customTotalPrice: getEffectiveTotal()
     });
 
     // Εμφάνιση dialog για απόδειξη
