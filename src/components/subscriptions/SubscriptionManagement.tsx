@@ -554,7 +554,7 @@ export const SubscriptionManagement: React.FC = () => {
           id: "1",
           description: multiplier > 1 ? `${subscriptionType.name} x${multiplier}` : subscriptionType.name,
           quantity: multiplier,
-          unitPrice: subscriptionType.price / 1.13,
+          unitPrice: netPrice / (multiplier || 1),
           total: totalPrice,
           vatRate: 13
         }],
