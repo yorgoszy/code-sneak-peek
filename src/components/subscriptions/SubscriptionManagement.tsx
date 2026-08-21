@@ -1638,13 +1638,18 @@ export const SubscriptionManagement: React.FC = () => {
                     <div>
                       <label className="block text-xs font-medium mb-1">Τιμή μονάδας (€)</label>
                       <Input
-                        value={(() => {
-                          const totalPrice = subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0;
-                          const netPrice = totalPrice / 1.13;
-                          return netPrice.toFixed(2);
-                        })()}
-                        disabled
-                        className="rounded-none bg-gray-50 h-7 text-sm"
+                        type="text"
+                        inputMode="decimal"
+                        value={customUnitNet !== null ? customUnitNet : getEffectiveUnitNet().toFixed(2)}
+                        onChange={(e) => setCustomUnitNet(e.target.value)}
+                        onBlur={() => {
+                          if (customUnitNet !== null) {
+                            const parsed = parseFloat(customUnitNet.replace(',', '.'));
+                            if (isNaN(parsed) || parsed < 0) setCustomUnitNet(null);
+                            else setCustomUnitNet(parsed.toFixed(2));
+                          }
+                        }}
+                        className="rounded-none h-7 text-sm"
                       />
                     </div>
                     <div>
@@ -1660,26 +1665,39 @@ export const SubscriptionManagement: React.FC = () => {
                   <div className="bg-gray-50 p-2 border-l-4 border-[#00ffba] space-y-1">
                     <div className="flex justify-between text-sm">
                       <span className="font-medium">Αξία Συνδρομής:</span>
-                      <span>€{(() => {
-                        const totalPrice = (subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0) * durationMultiplier;
-                        const netPrice = totalPrice / 1.13;
-                        return netPrice.toFixed(2);
-                      })()}</span>
+                      <span>€{(getEffectiveTotal() / 1.13).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="font-medium">ΦΠΑ:</span>
-                      <span>€{(() => {
-                        const totalPrice = (subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0) * durationMultiplier;
-                        const netPrice = totalPrice / 1.13;
-                        const vatAmount = totalPrice - netPrice;
-                        return vatAmount.toFixed(2);
-                      })()}</span>
+                      <span>€{(getEffectiveTotal() - getEffectiveTotal() / 1.13).toFixed(2)}</span>
                     </div>
-                    <div className="border-t border-[#00ffba] pt-1">
-                      <div className="flex justify-between text-base font-bold text-[#00ffba]">
-                        <span>Σύνολο:</span>
-                        <span>€{((subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0) * durationMultiplier).toFixed(2)}</span>
+                    <div className="border-t border-[#00ffba] pt-1 space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-base font-bold text-[#00ffba]">Σύνολο (με ΦΠΑ):</span>
+                        <Input
+                          type="text"
+                          inputMode="decimal"
+                          value={getEffectiveTotal().toFixed(2)}
+                          onChange={(e) => {
+                            const parsed = parseFloat(e.target.value.replace(',', '.'));
+                            if (!isNaN(parsed) && parsed >= 0) {
+                              setCustomUnitNet((parsed / 1.13 / (durationMultiplier || 1)).toFixed(2));
+                            } else {
+                              setCustomUnitNet('');
+                            }
+                          }}
+                          className="rounded-none h-7 text-sm w-28 text-right font-bold"
+                        />
                       </div>
+                      {customUnitNet !== null && (
+                        <button
+                          type="button"
+                          onClick={() => setCustomUnitNet(null)}
+                          className="text-xs text-gray-500 underline"
+                        >
+                          Επαναφορά αρχικής τιμής
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
