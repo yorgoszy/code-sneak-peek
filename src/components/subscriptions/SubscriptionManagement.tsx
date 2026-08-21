@@ -1601,6 +1601,7 @@ export const SubscriptionManagement: React.FC = () => {
                 <Select value={selectedSubscriptionType} onValueChange={(value) => {
                   setSelectedSubscriptionType(value);
                   setDurationMultiplier(1);
+                  setCustomUnitNet(null);
                 }}>
                   <SelectTrigger className="rounded-none h-8 text-sm">
                     <SelectValue placeholder="Επιλέξτε τύπο συνδρομής" />
