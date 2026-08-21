@@ -88,6 +88,7 @@ export const SubscriptionManagement: React.FC = () => {
   const [sectionDialogOpen, setSectionDialogOpen] = useState(false);
   const [selectedUserForSection, setSelectedUserForSection] = useState<{id: string, name: string, sectionId: string | null} | null>(null);
   const [durationMultiplier, setDurationMultiplier] = useState(1);
+  const [customUnitNet, setCustomUnitNet] = useState<string | null>(null);
   const [receiptPreviewOpen, setReceiptPreviewOpen] = useState(false);
   const [selectedReceiptData, setSelectedReceiptData] = useState<any>(null);
   const [mydataErrorDialogOpen, setMydataErrorDialogOpen] = useState(false);
