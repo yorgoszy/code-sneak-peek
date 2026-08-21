@@ -791,6 +791,9 @@ export const SubscriptionManagement: React.FC = () => {
     const { isPaid } = result;
 
     const { subscriptionType, selectedUserData, subscriptionStartDate, endDate } = pendingSubscriptionData;
+    const effectiveTotalPrice = typeof pendingSubscriptionData.customTotalPrice === 'number'
+      ? pendingSubscriptionData.customTotalPrice
+      : subscriptionType.price * durationMultiplier;
 
 
 
