@@ -1636,11 +1636,12 @@ export const SubscriptionManagement: React.FC = () => {
                       </Select>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium mb-1">Τιμή μονάδας (€)</label>
+                      <label className="block text-xs font-medium mb-1">Τελική τιμή μονάδας (με ΦΠΑ) €</label>
                       <Input
                         type="text"
                         inputMode="decimal"
-                        value={customUnitNet !== null ? customUnitNet : getEffectiveUnitNet().toFixed(2)}
+                        value={customUnitNet !== null ? customUnitNet : getEffectiveUnitGross().toFixed(2)}
+
                         onChange={(e) => setCustomUnitNet(e.target.value)}
                         onBlur={() => {
                           if (customUnitNet !== null) {
