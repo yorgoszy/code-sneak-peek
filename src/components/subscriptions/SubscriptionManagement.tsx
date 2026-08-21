@@ -1672,22 +1672,9 @@ export const SubscriptionManagement: React.FC = () => {
                       <span>€{(getEffectiveTotal() - getEffectiveTotal() / 1.13).toFixed(2)}</span>
                     </div>
                     <div className="border-t border-[#00ffba] pt-1 space-y-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-base font-bold text-[#00ffba]">Σύνολο (με ΦΠΑ):</span>
-                        <Input
-                          type="text"
-                          inputMode="decimal"
-                          value={getEffectiveTotal().toFixed(2)}
-                          onChange={(e) => {
-                            const parsed = parseFloat(e.target.value.replace(',', '.'));
-                            if (!isNaN(parsed) && parsed >= 0) {
-                              setCustomUnitNet((parsed / 1.13 / (durationMultiplier || 1)).toFixed(2));
-                            } else {
-                              setCustomUnitNet('');
-                            }
-                          }}
-                          className="rounded-none h-7 text-sm w-28 text-right font-bold"
-                        />
+                      <div className="flex items-center justify-between gap-2 text-base font-bold text-[#00ffba]">
+                        <span>Σύνολο (με ΦΠΑ):</span>
+                        <span>€{getEffectiveTotal().toFixed(2)}</span>
                       </div>
                       {customUnitNet !== null && (
                         <button
