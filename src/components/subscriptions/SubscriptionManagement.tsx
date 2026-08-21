@@ -88,6 +88,7 @@ export const SubscriptionManagement: React.FC = () => {
   const [sectionDialogOpen, setSectionDialogOpen] = useState(false);
   const [selectedUserForSection, setSelectedUserForSection] = useState<{id: string, name: string, sectionId: string | null} | null>(null);
   const [durationMultiplier, setDurationMultiplier] = useState(1);
+  const [customUnitNet, setCustomUnitNet] = useState<string | null>(null);
   const [receiptPreviewOpen, setReceiptPreviewOpen] = useState(false);
   const [selectedReceiptData, setSelectedReceiptData] = useState<any>(null);
   const [mydataErrorDialogOpen, setMydataErrorDialogOpen] = useState(false);
@@ -525,10 +526,22 @@ export const SubscriptionManagement: React.FC = () => {
     }
   };
 
-  const createReceiptForSubscription = async (userData: any, subscriptionType: SubscriptionType, startDate: string, endDate: Date, multiplier: number = 1) => {
+  // Τιμή μονάδας (καθαρή αξία) — επεξεργάσιμη για εκπτώσεις
+  const getEffectiveUnitNet = () => {
+    const parsed = customUnitNet !== null ? parseFloat(customUnitNet.replace(',', '.')) : NaN;
+    if (!isNaN(parsed) && parsed >= 0) return parsed;
+    const typePrice = subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0;
+    return typePrice / 1.13;
+  };
+
+  const getEffectiveTotal = () => {
+    return Math.round(getEffectiveUnitNet() * 1.13 * durationMultiplier * 100) / 100;
+  };
+
+  const createReceiptForSubscription = async (userData: any, subscriptionType: SubscriptionType, startDate: string, endDate: Date, multiplier: number = 1, customTotalPrice?: number) => {
     try {
       const receiptNumber = await generateReceiptNumber();
-      const totalPrice = subscriptionType.price * multiplier;
+      const totalPrice = typeof customTotalPrice === 'number' ? customTotalPrice : subscriptionType.price * multiplier;
       const netPrice = totalPrice / 1.13;
       const vatAmount = totalPrice - netPrice;
 
@@ -541,7 +554,7 @@ export const SubscriptionManagement: React.FC = () => {
           id: "1",
           description: multiplier > 1 ? `${subscriptionType.name} x${multiplier}` : subscriptionType.name,
           quantity: multiplier,
-          unitPrice: subscriptionType.price / 1.13,
+          unitPrice: netPrice / (multiplier || 1),
           total: totalPrice,
           vatRate: 13
         }],
@@ -617,7 +630,8 @@ export const SubscriptionManagement: React.FC = () => {
       selectedUserData,
       subscriptionStartDate,
       endDate,
-      durationMultiplier
+      durationMultiplier,
+      customTotalPrice: getEffectiveTotal()
     });
 
     // Εμφάνιση dialog για απόδειξη
@@ -777,6 +791,9 @@ export const SubscriptionManagement: React.FC = () => {
     const { isPaid } = result;
 
     const { subscriptionType, selectedUserData, subscriptionStartDate, endDate } = pendingSubscriptionData;
+    const effectiveTotalPrice = typeof pendingSubscriptionData.customTotalPrice === 'number'
+      ? pendingSubscriptionData.customTotalPrice
+      : subscriptionType.price * durationMultiplier;
 
 
 
@@ -817,7 +834,7 @@ export const SubscriptionManagement: React.FC = () => {
         visitEndDate.setMonth(subscriptionStartDate.getMonth() + ((subscriptionType.visit_expiry_months || 0) * durationMultiplier));
         
         const totalVisits = subscriptionType.visit_count * durationMultiplier;
-        const totalPrice = subscriptionType.price * durationMultiplier;
+        const totalPrice = effectiveTotalPrice;
         
         const { error: visitPackageError } = await supabase
           .from('visit_packages')
@@ -843,7 +860,7 @@ export const SubscriptionManagement: React.FC = () => {
         // Default videocall count: 1 για single purchase, 4 για μηνιαία
         const baseVideocallCount = subscriptionType.videocall_count || (subscriptionType.single_purchase ? 1 : 4);
         const totalVideocalls = baseVideocallCount * durationMultiplier;
-        const totalPrice = subscriptionType.price * durationMultiplier;
+        const totalPrice = effectiveTotalPrice;
         
         const { error: videocallPackageError } = await supabase
           .from('videocall_packages')
@@ -861,12 +878,12 @@ export const SubscriptionManagement: React.FC = () => {
       }
 
       // Δημιουργία απόδειξης πάντα
-      await createReceiptForSubscription(selectedUserData, subscriptionType, startDate, endDate, durationMultiplier);
+      await createReceiptForSubscription(selectedUserData, subscriptionType, startDate, endDate, durationMultiplier, effectiveTotalPrice);
 
       // Αποστολή απόδειξης με email
       try {
         const invoiceNumber = generateInvoiceNumber();
-        const totalPrice = subscriptionType.price * durationMultiplier;
+        const totalPrice = effectiveTotalPrice;
         
         const receiptData = {
           userName: selectedUserData.name,
@@ -1584,6 +1601,7 @@ export const SubscriptionManagement: React.FC = () => {
                 <Select value={selectedSubscriptionType} onValueChange={(value) => {
                   setSelectedSubscriptionType(value);
                   setDurationMultiplier(1);
+                  setCustomUnitNet(null);
                 }}>
                   <SelectTrigger className="rounded-none h-8 text-sm">
                     <SelectValue placeholder="Επιλέξτε τύπο συνδρομής" />
@@ -1620,13 +1638,18 @@ export const SubscriptionManagement: React.FC = () => {
                     <div>
                       <label className="block text-xs font-medium mb-1">Τιμή μονάδας (€)</label>
                       <Input
-                        value={(() => {
-                          const totalPrice = subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0;
-                          const netPrice = totalPrice / 1.13;
-                          return netPrice.toFixed(2);
-                        })()}
-                        disabled
-                        className="rounded-none bg-gray-50 h-7 text-sm"
+                        type="text"
+                        inputMode="decimal"
+                        value={customUnitNet !== null ? customUnitNet : getEffectiveUnitNet().toFixed(2)}
+                        onChange={(e) => setCustomUnitNet(e.target.value)}
+                        onBlur={() => {
+                          if (customUnitNet !== null) {
+                            const parsed = parseFloat(customUnitNet.replace(',', '.'));
+                            if (isNaN(parsed) || parsed < 0) setCustomUnitNet(null);
+                            else setCustomUnitNet(parsed.toFixed(2));
+                          }
+                        }}
+                        className="rounded-none h-7 text-sm"
                       />
                     </div>
                     <div>
@@ -1642,26 +1665,26 @@ export const SubscriptionManagement: React.FC = () => {
                   <div className="bg-gray-50 p-2 border-l-4 border-[#00ffba] space-y-1">
                     <div className="flex justify-between text-sm">
                       <span className="font-medium">Αξία Συνδρομής:</span>
-                      <span>€{(() => {
-                        const totalPrice = (subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0) * durationMultiplier;
-                        const netPrice = totalPrice / 1.13;
-                        return netPrice.toFixed(2);
-                      })()}</span>
+                      <span>€{(getEffectiveTotal() / 1.13).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="font-medium">ΦΠΑ:</span>
-                      <span>€{(() => {
-                        const totalPrice = (subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0) * durationMultiplier;
-                        const netPrice = totalPrice / 1.13;
-                        const vatAmount = totalPrice - netPrice;
-                        return vatAmount.toFixed(2);
-                      })()}</span>
+                      <span>€{(getEffectiveTotal() - getEffectiveTotal() / 1.13).toFixed(2)}</span>
                     </div>
-                    <div className="border-t border-[#00ffba] pt-1">
-                      <div className="flex justify-between text-base font-bold text-[#00ffba]">
-                        <span>Σύνολο:</span>
-                        <span>€{((subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0) * durationMultiplier).toFixed(2)}</span>
+                    <div className="border-t border-[#00ffba] pt-1 space-y-1">
+                      <div className="flex items-center justify-between gap-2 text-base font-bold text-[#00ffba]">
+                        <span>Σύνολο (με ΦΠΑ):</span>
+                        <span>€{getEffectiveTotal().toFixed(2)}</span>
                       </div>
+                      {customUnitNet !== null && (
+                        <button
+                          type="button"
+                          onClick={() => setCustomUnitNet(null)}
+                          className="text-xs text-gray-500 underline"
+                        >
+                          Επαναφορά αρχικής τιμής
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1768,8 +1791,10 @@ export const SubscriptionManagement: React.FC = () => {
           }
           subscriptionName={pendingSubscriptionData?.subscriptionType?.name}
           subscriptionPrice={
-            (pendingSubscriptionData?.subscriptionType?.price || 0) *
-            (pendingSubscriptionData?.durationMultiplier || 1)
+            typeof pendingSubscriptionData?.customTotalPrice === 'number'
+              ? pendingSubscriptionData.customTotalPrice
+              : (pendingSubscriptionData?.subscriptionType?.price || 0) *
+                (pendingSubscriptionData?.durationMultiplier || 1)
           }
           onConfirm={(result) => {
             if (pendingSubscriptionData?.isRenewal) {
