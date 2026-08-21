@@ -1791,8 +1791,10 @@ export const SubscriptionManagement: React.FC = () => {
           }
           subscriptionName={pendingSubscriptionData?.subscriptionType?.name}
           subscriptionPrice={
-            (pendingSubscriptionData?.subscriptionType?.price || 0) *
-            (pendingSubscriptionData?.durationMultiplier || 1)
+            typeof pendingSubscriptionData?.customTotalPrice === 'number'
+              ? pendingSubscriptionData.customTotalPrice
+              : (pendingSubscriptionData?.subscriptionType?.price || 0) *
+                (pendingSubscriptionData?.durationMultiplier || 1)
           }
           onConfirm={(result) => {
             if (pendingSubscriptionData?.isRenewal) {
