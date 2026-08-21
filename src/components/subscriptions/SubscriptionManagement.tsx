@@ -526,10 +526,22 @@ export const SubscriptionManagement: React.FC = () => {
     }
   };
 
-  const createReceiptForSubscription = async (userData: any, subscriptionType: SubscriptionType, startDate: string, endDate: Date, multiplier: number = 1) => {
+  // Τιμή μονάδας (καθαρή αξία) — επεξεργάσιμη για εκπτώσεις
+  const getEffectiveUnitNet = () => {
+    const parsed = customUnitNet !== null ? parseFloat(customUnitNet.replace(',', '.')) : NaN;
+    if (!isNaN(parsed) && parsed >= 0) return parsed;
+    const typePrice = subscriptionTypes.find(t => t.id === selectedSubscriptionType)?.price || 0;
+    return typePrice / 1.13;
+  };
+
+  const getEffectiveTotal = () => {
+    return Math.round(getEffectiveUnitNet() * 1.13 * durationMultiplier * 100) / 100;
+  };
+
+  const createReceiptForSubscription = async (userData: any, subscriptionType: SubscriptionType, startDate: string, endDate: Date, multiplier: number = 1, customTotalPrice?: number) => {
     try {
       const receiptNumber = await generateReceiptNumber();
-      const totalPrice = subscriptionType.price * multiplier;
+      const totalPrice = typeof customTotalPrice === 'number' ? customTotalPrice : subscriptionType.price * multiplier;
       const netPrice = totalPrice / 1.13;
       const vatAmount = totalPrice - netPrice;
 
