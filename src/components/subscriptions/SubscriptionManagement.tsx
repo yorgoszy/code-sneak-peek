@@ -834,7 +834,7 @@ export const SubscriptionManagement: React.FC = () => {
         visitEndDate.setMonth(subscriptionStartDate.getMonth() + ((subscriptionType.visit_expiry_months || 0) * durationMultiplier));
         
         const totalVisits = subscriptionType.visit_count * durationMultiplier;
-        const totalPrice = subscriptionType.price * durationMultiplier;
+        const totalPrice = effectiveTotalPrice;
         
         const { error: visitPackageError } = await supabase
           .from('visit_packages')
@@ -860,7 +860,7 @@ export const SubscriptionManagement: React.FC = () => {
         // Default videocall count: 1 για single purchase, 4 για μηνιαία
         const baseVideocallCount = subscriptionType.videocall_count || (subscriptionType.single_purchase ? 1 : 4);
         const totalVideocalls = baseVideocallCount * durationMultiplier;
-        const totalPrice = subscriptionType.price * durationMultiplier;
+        const totalPrice = effectiveTotalPrice;
         
         const { error: videocallPackageError } = await supabase
           .from('videocall_packages')
@@ -878,12 +878,12 @@ export const SubscriptionManagement: React.FC = () => {
       }
 
       // Δημιουργία απόδειξης πάντα
-      await createReceiptForSubscription(selectedUserData, subscriptionType, startDate, endDate, durationMultiplier);
+      await createReceiptForSubscription(selectedUserData, subscriptionType, startDate, endDate, durationMultiplier, effectiveTotalPrice);
 
       // Αποστολή απόδειξης με email
       try {
         const invoiceNumber = generateInvoiceNumber();
-        const totalPrice = subscriptionType.price * durationMultiplier;
+        const totalPrice = effectiveTotalPrice;
         
         const receiptData = {
           userName: selectedUserData.name,
