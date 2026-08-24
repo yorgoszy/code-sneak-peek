@@ -43,6 +43,50 @@ export const fetchDraftProgramsLight = async (): Promise<Program[]> => {
     })) as Program[];
 };
 
+/**
+ * Ελαφριά φόρτωση λίστας templates (χωρίς blocks/ασκήσεις).
+ * Admin: μόνο templates χωρίς coach_id/created_by. Coach: τα δικά του.
+ */
+export const fetchTemplateProgramsLight = async (
+  opts: { isAdmin: boolean; coachId?: string }
+): Promise<Program[]> => {
+  let query = supabase
+    .from('programs')
+    .select(`
+      id, name, description, is_template, is_sellable, price, created_at, created_by, coach_id, user_id,
+      program_weeks!fk_program_weeks_program_id(
+        id, name, week_number,
+        program_days!fk_program_days_week_id(id, name, day_number)
+      )
+    `)
+    .eq('is_template', true)
+    .order('created_at', { ascending: false });
+
+  if (opts.isAdmin) {
+    query = query.is('coach_id', null).is('created_by', null);
+  } else if (opts.coachId) {
+    query = query.or(`coach_id.eq.${opts.coachId},created_by.eq.${opts.coachId}`);
+  } else {
+    return [];
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  return (data || []).map((p: any) => ({
+    ...p,
+    program_assignments: [],
+    program_weeks: (p.program_weeks || [])
+      .sort((a: any, b: any) => (a.week_number || 0) - (b.week_number || 0))
+      .map((w: any) => ({
+        ...w,
+        program_days: (w.program_days || []).sort(
+          (a: any, b: any) => (a.day_number || 0) - (b.day_number || 0)
+        ),
+      })),
+  })) as Program[];
+};
+
 /** Πλήρης φόρτωση ενός προγράμματος (on demand: edit / preview / duplicate). */
 export const fetchFullProgram = async (programId: string): Promise<Program | null> => {
   const { data, error } = await supabase
