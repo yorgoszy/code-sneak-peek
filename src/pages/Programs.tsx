@@ -15,6 +15,7 @@ import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { fetchDraftProgramsLight, fetchFullProgram } from "@/utils/programsFetch";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,7 +53,8 @@ const Programs = () => {
 
 
   const { users, exercises } = useProgramsData();
-  const { loading, fetchProgramsWithAssignments, saveProgram, deleteProgram, duplicateProgram } = usePrograms();
+  const { saveProgram, deleteProgram, duplicateProgram } = usePrograms();
+  const [listLoading, setListLoading] = useState(true);
   
   // Get admin's id to filter users by coach_id
   const adminCoachId = dashboardUserProfile?.id;
@@ -108,18 +110,15 @@ const Programs = () => {
 
   const loadPrograms = async () => {
     try {
-      console.log('🔄 Loading draft/template programs...');
-      const data = await fetchProgramsWithAssignments();
-      // Δείχνουμε ΜΟΝΟ admin/global draft/template προγράμματα (όχι coach-owned)
-      const draftPrograms = data.filter(program =>
-        (!program.program_assignments || program.program_assignments.length === 0) &&
-        !program.created_by &&
-        !program.coach_id
-      );
+      setListLoading(true);
+      console.log('🔄 Loading draft/template programs (light)...');
+      const draftPrograms = await fetchDraftProgramsLight();
       console.log('✅ Draft programs loaded:', draftPrograms.length);
       setPrograms(draftPrograms);
     } catch (error) {
       console.error('❌ Error loading programs:', error);
+    } finally {
+      setListLoading(false);
     }
   };
 
@@ -138,9 +137,10 @@ const Programs = () => {
     }
   };
 
-  const handleEditProgram = (program: Program) => {
-    console.log('Editing program:', program);
-    setEditingProgram(program);
+  const handleEditProgram = async (program: Program) => {
+    console.log('Editing program:', program.id);
+    const full = await fetchFullProgram(program.id);
+    setEditingProgram(full || program);
     setBuilderOpen(true);
   };
 
@@ -165,7 +165,8 @@ const Programs = () => {
 
   const handleDuplicateProgram = async (program: Program) => {
     try {
-      await duplicateProgram(program);
+      const full = await fetchFullProgram(program.id);
+      await duplicateProgram(full || program);
       await loadPrograms(); // Ξαναφόρτωση μετά την αντιγραφή
     } catch (error) {
       console.error('Error duplicating program:', error);
@@ -175,8 +176,9 @@ const Programs = () => {
   const handleConvertToTemplate = async (program: Program) => {
     try {
       console.log('🔄 Converting program to template:', program.id);
+      const full = await fetchFullProgram(program.id);
       const templateData = { 
-        ...program, 
+        ...(full || program), 
         is_template: true 
       };
       await saveProgram(templateData);
@@ -209,7 +211,7 @@ const Programs = () => {
     setBuilderOpen(true);
   };
 
-  if (loading) {
+  if (listLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex w-full">
         {/* Desktop Sidebar */}
@@ -354,6 +356,7 @@ const Programs = () => {
                 onDeleteExercise={() => {}}
                 onOpenBuilder={handleOpenBuilder}
                 onConvertToTemplate={handleConvertToTemplate}
+                loadFullProgram={fetchFullProgram}
                 coachId={adminCoachId}
               />
             </TabsContent>
