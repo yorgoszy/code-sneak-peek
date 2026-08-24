@@ -356,6 +356,7 @@ const Programs = () => {
                 onDeleteExercise={() => {}}
                 onOpenBuilder={handleOpenBuilder}
                 onConvertToTemplate={handleConvertToTemplate}
+                loadFullProgram={fetchFullProgram}
                 coachId={adminCoachId}
               />
             </TabsContent>

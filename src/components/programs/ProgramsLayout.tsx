@@ -32,6 +32,7 @@ interface ProgramsLayoutProps {
   onConvertToTemplate?: (program: Program) => void;
   /** Coach ID για φιλτράρισμα χρηστών */
   coachId?: string;
+  loadFullProgram?: (programId: string) => Promise<Program | null>;
 }
 
 export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
@@ -50,7 +51,8 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
   onOpenBuilder,
   isTemplateMode = false,
   onConvertToTemplate,
-  coachId
+  coachId,
+  loadFullProgram
 }) => {
   const isMobile = useIsMobile();
 
@@ -79,6 +81,7 @@ export const ProgramsLayout: React.FC<ProgramsLayoutProps> = ({
           onDuplicateProgram={onDuplicateProgram}
           onConvertToTemplate={onConvertToTemplate}
           isTemplateMode={isTemplateMode}
+          loadFullProgram={loadFullProgram}
         />
       </div>
 

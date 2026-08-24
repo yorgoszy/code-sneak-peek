@@ -28,6 +28,7 @@ interface ProgramsListProps {
   onPreviewProgram?: (program: Program) => void;
   onConvertToTemplate?: (program: Program) => void;
   isTemplateMode?: boolean;
+  loadFullProgram?: (programId: string) => Promise<Program | null>;
 }
 
 export const ProgramsList: React.FC<ProgramsListProps> = ({
@@ -39,7 +40,8 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
   onDuplicateProgram,
   onPreviewProgram,
   onConvertToTemplate,
-  isTemplateMode = false
+  isTemplateMode = false,
+  loadFullProgram
 }) => {
   const isMobile = useIsMobile();
   const showButtonText = isMobile && !isTemplateMode;
@@ -214,10 +216,15 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
     }
   };
 
-  const handlePreviewProgram = (e: React.MouseEvent, program: Program) => {
+  const handlePreviewProgram = async (e: React.MouseEvent, program: Program) => {
     e.stopPropagation();
     setSelectedProgramForPreview(program);
     setPreviewDialogOpen(true);
+    // Η λίστα φορτώνει ελαφριά δεδομένα — φέρνουμε την πλήρη δομή on demand
+    if (loadFullProgram) {
+      const full = await loadFullProgram(program.id);
+      if (full) setSelectedProgramForPreview(full);
+    }
   };
 
   if (programs.length === 0) {
