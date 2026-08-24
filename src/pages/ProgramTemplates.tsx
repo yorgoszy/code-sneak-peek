@@ -63,7 +63,7 @@ const ProgramTemplates = () => {
       setLoading(true);
       console.log('🔄 Loading template programs (light)...', { isAdmin, userProfile: dashboardUserProfile?.id });
       const templatePrograms = await fetchTemplateProgramsLight({
-        isAdmin,
+        isAdmin: isAdmin(),
         coachId: dashboardUserProfile?.id,
       });
       console.log('✅ Template programs loaded:', templatePrograms.length);
