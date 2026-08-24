@@ -15,6 +15,7 @@ import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { fetchDraftProgramsLight, fetchFullProgram } from "@/utils/programsFetch";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,7 +53,8 @@ const Programs = () => {
 
 
   const { users, exercises } = useProgramsData();
-  const { loading, fetchProgramsWithAssignments, saveProgram, deleteProgram, duplicateProgram } = usePrograms();
+  const { saveProgram, deleteProgram, duplicateProgram } = usePrograms();
+  const [listLoading, setListLoading] = useState(true);
   
   // Get admin's id to filter users by coach_id
   const adminCoachId = dashboardUserProfile?.id;
@@ -209,7 +211,7 @@ const Programs = () => {
     setBuilderOpen(true);
   };
 
-  if (loading) {
+  if (listLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex w-full">
         {/* Desktop Sidebar */}
