@@ -108,18 +108,15 @@ const Programs = () => {
 
   const loadPrograms = async () => {
     try {
-      console.log('🔄 Loading draft/template programs...');
-      const data = await fetchProgramsWithAssignments();
-      // Δείχνουμε ΜΟΝΟ admin/global draft/template προγράμματα (όχι coach-owned)
-      const draftPrograms = data.filter(program =>
-        (!program.program_assignments || program.program_assignments.length === 0) &&
-        !program.created_by &&
-        !program.coach_id
-      );
+      setListLoading(true);
+      console.log('🔄 Loading draft/template programs (light)...');
+      const draftPrograms = await fetchDraftProgramsLight();
       console.log('✅ Draft programs loaded:', draftPrograms.length);
       setPrograms(draftPrograms);
     } catch (error) {
       console.error('❌ Error loading programs:', error);
+    } finally {
+      setListLoading(false);
     }
   };
 
@@ -138,9 +135,10 @@ const Programs = () => {
     }
   };
 
-  const handleEditProgram = (program: Program) => {
-    console.log('Editing program:', program);
-    setEditingProgram(program);
+  const handleEditProgram = async (program: Program) => {
+    console.log('Editing program:', program.id);
+    const full = await fetchFullProgram(program.id);
+    setEditingProgram(full || program);
     setBuilderOpen(true);
   };
 
@@ -165,7 +163,8 @@ const Programs = () => {
 
   const handleDuplicateProgram = async (program: Program) => {
     try {
-      await duplicateProgram(program);
+      const full = await fetchFullProgram(program.id);
+      await duplicateProgram(full || program);
       await loadPrograms(); // Ξαναφόρτωση μετά την αντιγραφή
     } catch (error) {
       console.error('Error duplicating program:', error);
@@ -175,8 +174,9 @@ const Programs = () => {
   const handleConvertToTemplate = async (program: Program) => {
     try {
       console.log('🔄 Converting program to template:', program.id);
+      const full = await fetchFullProgram(program.id);
       const templateData = { 
-        ...program, 
+        ...(full || program), 
         is_template: true 
       };
       await saveProgram(templateData);
