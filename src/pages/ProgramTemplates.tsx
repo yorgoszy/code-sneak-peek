@@ -10,6 +10,7 @@ import { Menu, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { fetchTemplateProgramsLight, fetchFullProgram } from "@/utils/programsFetch";
 
 const ProgramTemplates = () => {
   const { user, signOut } = useAuth();
@@ -31,7 +32,8 @@ const ProgramTemplates = () => {
   const [previewTemplate, setPreviewTemplate] = useState<Program | null>(null);
 
   const { users, exercises } = useProgramsData();
-  const { loading, fetchProgramsWithAssignments, saveProgram, deleteProgram, duplicateProgram } = usePrograms();
+  const { saveProgram, deleteProgram, duplicateProgram } = usePrograms();
+  const [loading, setLoading] = useState(true);
 
   // Check for tablet size
   React.useEffect(() => {
@@ -58,26 +60,18 @@ const ProgramTemplates = () => {
 
   const loadTemplates = async () => {
     try {
-      console.log('🔄 Loading template programs...', { isAdmin, userProfile: dashboardUserProfile?.id });
-      const data = await fetchProgramsWithAssignments();
-      
-      // Filter to show only templates AND filter by coach_id
-      const templatePrograms = data.filter(program => {
-        if (!program.is_template) return false;
-        
-        // Admin: βλέπει μόνο templates χωρίς coach_id (admin templates)
-        // Coach: βλέπει μόνο templates με το δικό του coach_id
-        if (isAdmin) {
-          return !program.coach_id && !program.created_by;
-        } else {
-          return program.coach_id === dashboardUserProfile?.id || program.created_by === dashboardUserProfile?.id;
-        }
+      setLoading(true);
+      console.log('🔄 Loading template programs (light)...', { isAdmin, userProfile: dashboardUserProfile?.id });
+      const templatePrograms = await fetchTemplateProgramsLight({
+        isAdmin: isAdmin(),
+        coachId: dashboardUserProfile?.id,
       });
-      
       console.log('✅ Template programs loaded:', templatePrograms.length);
       setTemplates(templatePrograms);
     } catch (error) {
       console.error('❌ Error loading templates:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -98,9 +92,10 @@ const ProgramTemplates = () => {
     }
   };
 
-  const handleEditTemplate = (template: Program) => {
-    console.log('Editing template:', template);
-    setEditingTemplate(template);
+  const handleEditTemplate = async (template: Program) => {
+    console.log('Editing template:', template.id);
+    const full = await fetchFullProgram(template.id);
+    setEditingTemplate(full || template);
     setBuilderOpen(true);
   };
 
@@ -125,7 +120,8 @@ const ProgramTemplates = () => {
 
   const handleDuplicateTemplate = async (template: Program) => {
     try {
-      await duplicateProgram(template);
+      const full = await fetchFullProgram(template.id);
+      await duplicateProgram(full || template);
       await loadTemplates();
     } catch (error) {
       console.error('Error duplicating template:', error);
@@ -288,6 +284,7 @@ const ProgramTemplates = () => {
             onDeleteBlock={() => {}}
             onDeleteExercise={() => {}}
             onOpenBuilder={handleOpenBuilder}
+            loadFullProgram={fetchFullProgram}
             isTemplateMode={true}
           />
         </div>
