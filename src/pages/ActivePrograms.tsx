@@ -377,7 +377,14 @@ const ActivePrograms = () => {
           <DayProgramDialog
             key={workout.id}
             isOpen={isThisOpen}
-            onClose={() => setActiveWorkoutId(prev => prev === workout.id ? null : prev)}
+            onClose={() => {
+              setActiveWorkoutId(prev => prev === workout.id ? null : prev);
+              // Αν δεν τρέχει προπόνηση και δεν είναι σημερινή ημέρα, μην αφήνεις bubble πίσω
+              const dateStr = format(workout.selectedDate, 'yyyy-MM-dd');
+              if (!workout.workoutInProgress && dateStr !== todayStr) {
+                removeWorkout(workout.id);
+              }
+            }}
             program={workout.assignment}
             selectedDate={workout.selectedDate}
             workoutStatus={getWorkoutStatus(workout.assignment, format(workout.selectedDate, 'yyyy-MM-dd'))}
