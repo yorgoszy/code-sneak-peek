@@ -10,9 +10,14 @@ import { recalculateWeeksForUser } from '@/components/programs/builder/services/
  * @param coachId - ID του coach. Αν είναι null, φέρνει μόνο assignments χωρίς coach_id (για admin)
  * @param isAdmin - Αν true και coachId null, φέρνει assignments με coach_id IS NULL
  */
-export const useActivePrograms = (coachId?: string | null, isAdmin: boolean = false) => {
+export const useActivePrograms = (
+  coachId?: string | null,
+  isAdmin: boolean = false,
+  options?: { light?: boolean }
+) => {
+  const light = options?.light ?? false;
   return useQuery({
-    queryKey: ['active-programs', coachId, isAdmin],
+    queryKey: ['active-programs', coachId, isAdmin, light],
     queryFn: async (): Promise<EnrichedAssignment[]> => {
       console.log('🔄 Fetching active programs from database...', { coachId, isAdmin });
       
@@ -46,9 +51,10 @@ export const useActivePrograms = (coachId?: string | null, isAdmin: boolean = fa
 
         // Fetch related programs separately with explicit foreign key hints
         const programIds = assignments.map(a => a.program_id).filter(Boolean);
+        const lightSelect = 'id, name, description, training_days';
         const { data: programs, error: programsError } = await supabase
           .from('programs')
-          .select(`
+          .select(light ? lightSelect : `
             id,
             name,
             description,
@@ -105,18 +111,8 @@ export const useActivePrograms = (coachId?: string | null, isAdmin: boolean = fa
           throw programsError;
         }
 
-        console.log('✅ Raw programs data:', programs);
-        console.log('📊 Programs structure check:', programs?.map(p => ({
-          id: p.id,
-          name: p.name,
-          weeksCount: p.program_weeks?.length,
-          weeks: p.program_weeks?.map(w => ({
-            id: w.id,
-            name: w.name,
-            week_number: w.week_number,
-            daysCount: w.program_days?.length
-          }))
-        })));
+        const programsList = (programs || []) as any[];
+
 
         // Fetch related users separately
         const userIds = assignments.map(a => a.user_id).filter(Boolean);
@@ -132,7 +128,7 @@ export const useActivePrograms = (coachId?: string | null, isAdmin: boolean = fa
 
         // Combine the data manually with sorted program structure
         const enrichedAssignments: EnrichedAssignment[] = assignments.map(assignment => {
-          const program = programs?.find(p => p.id === assignment.program_id);
+          const program = programsList.find(p => p.id === assignment.program_id);
           const user = users?.find(u => u.id === assignment.user_id);
 
           // Deep sort the program structure to preserve intended order

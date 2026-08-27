@@ -23,13 +23,17 @@ import {
   AlertDialogTitle 
 } from "@/components/ui/alert-dialog";
 
+const ADMIN_ID = 'c6d44641-3b95-46bd-8270-e5ed72de25ad';
+
 const ProgramCards = () => {
   const { user, loading: authLoading, signOut, isAuthenticated } = useAuth();
   const { isAdmin, userProfile, loading: rolesLoading } = useRoleCheck();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
-  const { data: activePrograms = [], isLoading, error, refetch } = useActivePrograms();
+  // ⚡ light: φέρνουμε μόνο metadata προγραμμάτων (χωρίς weeks/days/blocks/exercises).
+  // Το πλήρες πρόγραμμα φορτώνεται on-demand όταν ανοίγει ο διάλογος προβολής.
+  const { data: activePrograms = [], isLoading, error, refetch } = useActivePrograms(undefined, false, { light: true });
   const completionsCache = useWorkoutCompletionsCache();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = React.useState(false);
@@ -58,16 +62,38 @@ const ProgramCards = () => {
     }
   }, [authLoading, rolesLoading, isAuthenticated, userProfile, isAdmin, navigate]);
 
-  // Fetch all workout completions - same as calendar
+  // ⚡ Φέρνουμε completions ΜΟΝΟ για τα assignments που εμφανίζονται (σε chunks)
+  const assignmentIdsKey = React.useMemo(
+    () => activePrograms.filter(p => p.app_users?.coach_id === ADMIN_ID).map(p => p.id).sort().join(','),
+    [activePrograms]
+  );
+
   React.useEffect(() => {
     const loadCompletions = async () => {
-      if (activePrograms.length > 0) {
-        const allCompletions = await completionsCache.getAllWorkoutCompletions();
-        setWorkoutCompletions(allCompletions);
+      const ids = assignmentIdsKey ? assignmentIdsKey.split(',') : [];
+      if (ids.length === 0) {
+        setWorkoutCompletions([]);
+        return;
       }
+      const all: any[] = [];
+      for (let i = 0; i < ids.length; i += 100) {
+        const chunk = ids.slice(i, i + 100);
+        const { data, error } = await supabase
+          .from('workout_completions')
+          .select('id, assignment_id, scheduled_date, status, rpe_score, completed_at')
+          .in('assignment_id', chunk)
+          .limit(5000);
+        if (error) {
+          console.error('Error loading completions chunk:', error);
+          continue;
+        }
+        all.push(...(data || []));
+      }
+      setWorkoutCompletions(all);
     };
     loadCompletions();
-  }, [activePrograms, completionsCache, realtimeKey]);
+  }, [assignmentIdsKey, realtimeKey]);
+
 
   // Calculate stats the same way as UserProfileProgramCards but with better completion logic
   const calculateProgramStats = (assignment: any) => {
@@ -145,7 +171,18 @@ const ProgramCards = () => {
       
       // Get program info for required fields
       const programId = assignment.program_id;
-      const daysPerWeek = assignment.programs?.program_weeks?.[0]?.program_days?.length || 1;
+      let daysPerWeek = assignment.programs?.program_weeks?.[0]?.program_days?.length || 0;
+      if (!daysPerWeek) {
+        // light mode: φέρνουμε on-demand τις ημέρες της 1ης εβδομάδας
+        const { data: firstWeek } = await supabase
+          .from('program_weeks')
+          .select('id, program_days(id)')
+          .eq('program_id', programId)
+          .order('week_number', { ascending: true })
+          .limit(1)
+          .maybeSingle();
+        daysPerWeek = (firstWeek as any)?.program_days?.length || 1;
+      }
       
       // Create missed workout completions for remaining dates
       if (missedDates.length > 0) {
@@ -275,7 +312,7 @@ const ProgramCards = () => {
   // });
 
   // Admin βλέπει μόνο assignments χρηστών που δημιουργήθηκαν από admin (coach_id = admin ID)
-  const ADMIN_ID = 'c6d44641-3b95-46bd-8270-e5ed72de25ad';
+  
   const adminPrograms = activePrograms.filter(p => p.app_users?.coach_id === ADMIN_ID);
 
   // Calculate stats for each program
