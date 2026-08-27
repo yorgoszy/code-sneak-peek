@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 import { MonthlyView } from './MonthlyView';
 import { MobileMonthlyView } from './MobileMonthlyView';
-import { BubbleTrashDropZone } from './BubbleTrashDropZone';
+
 
 interface CalendarGridProps {
   currentMonth: Date;
@@ -44,9 +44,6 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   const [selectedDialogDate, setSelectedDialogDate] = useState<Date | null>(null);
   const [calendarView, setCalendarView] = useState<'monthly' | 'weekly' | 'daily'>('monthly');
   const [internalRealtimeKey, setInternalRealtimeKey] = useState(0);
-  const [hiddenBubbles, setHiddenBubbles] = useState<Set<string>>(new Set());
-
-  const bubbleKey = (assignmentId: string, date: string) => `${assignmentId}|${date}`;
 
   // Optional realtime subscription. Disabled on Active Programs tablet view by request.
   useEffect(() => {
@@ -137,12 +134,10 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
       return acc;
     }, []);
     
-    const visible = dates.filter(
-      (d: any) => !hiddenBubbles.has(bubbleKey(d.assignmentId, d.date))
-    );
+    const visible = dates;
     console.log('📅 CalendarGrid: RECALCULATED program dates with status:', visible.length, 'Key:', realtimeKey + internalRealtimeKey);
     return visible;
-  }, [activePrograms, workoutCompletions, realtimeKey, internalRealtimeKey, hiddenBubbles]);
+  }, [activePrograms, workoutCompletions, realtimeKey, internalRealtimeKey]);
 
   // Device detection for mobile
   const [isMobile, setIsMobile] = React.useState<boolean>(false);
@@ -163,19 +158,6 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 
   const handleDateClick = (date: Date) => {
     setSelectedDate(date);
-    // Επαναφορά τυχόν κρυμμένων bubbles για την ημέρα που πάτησε ο χρήστης
-    const dateStr = format(date, 'yyyy-MM-dd');
-    setHiddenBubbles(prev => {
-      let changed = false;
-      const next = new Set(prev);
-      for (const k of prev) {
-        if (k.endsWith(`|${dateStr}`)) {
-          next.delete(k);
-          changed = true;
-        }
-      }
-      return changed ? next : prev;
-    });
   };
 
   const handleUserNameClick = (programData: any, event: React.MouseEvent) => {
@@ -259,12 +241,6 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           </Tabs>
         </CardContent>
       </Card>
-
-      <BubbleTrashDropZone
-        onHide={(drop) =>
-          setHiddenBubbles(prev => new Set(prev).add(bubbleKey(drop.assignmentId, drop.date)))
-        }
-      />
     </>
   );
 };
