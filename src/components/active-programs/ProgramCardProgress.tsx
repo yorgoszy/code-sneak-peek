@@ -36,7 +36,13 @@ export const ProgramCardProgress: React.FC<ProgramCardProgressProps> = ({
     
     // Βρίσκουμε πόσες ημέρες έχει μια εβδομάδα του προγράμματος
     const programDays = assignment.programs?.program_weeks?.[0]?.program_days || [];
-    const daysPerWeek = programDays.length || assignment.training_dates.length;
+    // Fallback: όσες ημερομηνίες πέφτουν μέσα στις πρώτες 7 μέρες
+    const firstDate = new Date(assignment.training_dates[0] + 'T00:00:00');
+    const datesInFirstWeek = assignment.training_dates.filter(d => {
+      const diff = (new Date(d + 'T00:00:00').getTime() - firstDate.getTime()) / 86400000;
+      return diff >= 0 && diff < 7;
+    }).length;
+    const daysPerWeek = programDays.length || datesInFirstWeek || 1;
     
     // Παίρνουμε τις πρώτες ημέρες του προγράμματος (ένας κύκλος)
     const firstCycleDates = assignment.training_dates.slice(0, daysPerWeek);
