@@ -10,9 +10,14 @@ import { recalculateWeeksForUser } from '@/components/programs/builder/services/
  * @param coachId - ID του coach. Αν είναι null, φέρνει μόνο assignments χωρίς coach_id (για admin)
  * @param isAdmin - Αν true και coachId null, φέρνει assignments με coach_id IS NULL
  */
-export const useActivePrograms = (coachId?: string | null, isAdmin: boolean = false) => {
+export const useActivePrograms = (
+  coachId?: string | null,
+  isAdmin: boolean = false,
+  options?: { light?: boolean }
+) => {
+  const light = options?.light ?? false;
   return useQuery({
-    queryKey: ['active-programs', coachId, isAdmin],
+    queryKey: ['active-programs', coachId, isAdmin, light],
     queryFn: async (): Promise<EnrichedAssignment[]> => {
       console.log('🔄 Fetching active programs from database...', { coachId, isAdmin });
       
