@@ -171,7 +171,18 @@ const ProgramCards = () => {
       
       // Get program info for required fields
       const programId = assignment.program_id;
-      const daysPerWeek = assignment.programs?.program_weeks?.[0]?.program_days?.length || 1;
+      let daysPerWeek = assignment.programs?.program_weeks?.[0]?.program_days?.length || 0;
+      if (!daysPerWeek) {
+        // light mode: φέρνουμε on-demand τις ημέρες της 1ης εβδομάδας
+        const { data: firstWeek } = await supabase
+          .from('program_weeks')
+          .select('id, program_days(id)')
+          .eq('program_id', programId)
+          .order('week_number', { ascending: true })
+          .limit(1)
+          .maybeSingle();
+        daysPerWeek = (firstWeek as any)?.program_days?.length || 1;
+      }
       
       // Create missed workout completions for remaining dates
       if (missedDates.length > 0) {
