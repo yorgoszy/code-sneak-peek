@@ -255,9 +255,10 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
                 size={isActive ? 'lg' : 'sm'}
                 isCompleted={isCompleted}
                 onRestore={() => {
-                  hideBubble(assignment.id, dateStr);
                   if (isActive) {
                     onBubbleMinimize?.(workoutId);
+                  } else {
+                    onProgramClick(assignment, dateFromKey(dateStr));
                   }
                 }}
               />
