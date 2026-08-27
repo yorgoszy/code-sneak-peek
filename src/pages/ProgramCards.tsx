@@ -29,7 +29,9 @@ const ProgramCards = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
-  const { data: activePrograms = [], isLoading, error, refetch } = useActivePrograms();
+  // ⚡ light: φέρνουμε μόνο metadata προγραμμάτων (χωρίς weeks/days/blocks/exercises).
+  // Το πλήρες πρόγραμμα φορτώνεται on-demand όταν ανοίγει ο διάλογος προβολής.
+  const { data: activePrograms = [], isLoading, error, refetch } = useActivePrograms(undefined, false, { light: true });
   const completionsCache = useWorkoutCompletionsCache();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = React.useState(false);
