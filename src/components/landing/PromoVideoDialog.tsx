@@ -10,6 +10,14 @@ interface PromoVideoDialogProps {
 // Placeholder — αντικατέστησε με το CDN URL του promo βίντεο μόλις ανέβει.
 const DEFAULT_PROMO_VIDEO = "";
 
+// Instagram reel/post/tv URL → embed URL
+const parseInstagram = (url: string) => {
+  const m = url.match(/instagram\.com\/(?:[\w.]+\/)?(reel|reels|p|tv)\/([\w-]+)/i);
+  if (!m) return null;
+  const kind = m[1] === 'reels' ? 'reel' : m[1];
+  return `https://www.instagram.com/${kind}/${m[2]}/embed/captioned/`;
+};
+
 export const PromoVideoDialog: React.FC<PromoVideoDialogProps> = ({
   open,
   onOpenChange,
@@ -19,36 +27,53 @@ export const PromoVideoDialog: React.FC<PromoVideoDialogProps> = ({
   const ytId = isYouTube
     ? videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([\w-]{11})/)?.[1]
     : null;
+  const igEmbed = !isYouTube ? parseInstagram(videoUrl) : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl p-0 rounded-none bg-black border-0 overflow-hidden">
+      <DialogContent
+        className={`p-0 rounded-none bg-black border-0 overflow-hidden ${igEmbed ? 'max-w-[420px]' : 'max-w-4xl'}`}
+      >
         <DialogTitle className="sr-only">Promo Video</DialogTitle>
-        <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-          {videoUrl ? (
-            ytId ? (
-              <iframe
-                src={`https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`}
-                className="absolute inset-0 w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                title="Promo video"
-              />
+        {igEmbed ? (
+          <div className="relative w-full bg-black" style={{ height: '80vh' }}>
+            <iframe
+              src={igEmbed}
+              className="absolute inset-0 w-full h-full"
+              allow="autoplay; clipboard-write; encrypted-media; picture-in-picture"
+              allowFullScreen
+              scrolling="no"
+              frameBorder={0}
+              title="Instagram promo video"
+            />
+          </div>
+        ) : (
+          <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+            {videoUrl ? (
+              ytId ? (
+                <iframe
+                  src={`https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`}
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title="Promo video"
+                />
+              ) : (
+                <video
+                  src={videoUrl}
+                  className="absolute inset-0 w-full h-full object-contain"
+                  controls
+                  autoPlay
+                  playsInline
+                />
+              )
             ) : (
-              <video
-                src={videoUrl}
-                className="absolute inset-0 w-full h-full object-contain"
-                controls
-                autoPlay
-                playsInline
-              />
-            )
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-white text-center p-6">
-              Δεν έχει οριστεί ακόμη promo βίντεο.
-            </div>
-          )}
-        </div>
+              <div className="absolute inset-0 flex items-center justify-center text-white text-center p-6">
+                Δεν έχει οριστεί ακόμη promo βίντεο.
+              </div>
+            )}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
