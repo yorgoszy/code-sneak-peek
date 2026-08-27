@@ -7,6 +7,7 @@ import { Play, Eye, Edit, CheckCircle, Trash2, CheckCircle2 } from "lucide-react
 import { ProgramViewDialog } from "./calendar/ProgramViewDialog";
 import { DayProgramDialog } from "./calendar/DayProgramDialog";
 import { format } from "date-fns";
+import { fetchFullProgram } from "@/utils/programsFetch";
 import type { EnrichedAssignment } from "@/hooks/useActivePrograms/types";
 
 interface ProgramCardActionsProps {
@@ -35,6 +36,32 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
   const { t } = useTranslation();
   const [isProgramViewOpen, setIsProgramViewOpen] = useState(false);
   const [isDayProgramOpen, setIsDayProgramOpen] = useState(false);
+  const [fullAssignment, setFullAssignment] = useState<EnrichedAssignment>(assignment);
+  const [loadingProgram, setLoadingProgram] = useState(false);
+
+  // ⚡ Lazy load: όταν η λίστα φορτώνεται σε light mode, φέρνουμε το πλήρες
+  // πρόγραμμα μόνο όταν ο χρήστης ανοίγει τον διάλογο.
+  const ensureFullProgram = async () => {
+    if (fullAssignment.programs?.program_weeks?.length) return;
+    if (!assignment.program_id) return;
+    setLoadingProgram(true);
+    try {
+      const full = await fetchFullProgram(assignment.program_id);
+      if (full) {
+        setFullAssignment({ ...assignment, programs: full as any });
+      }
+    } finally {
+      setLoadingProgram(false);
+    }
+  };
+
+  React.useEffect(() => {
+    setFullAssignment(prev =>
+      prev.programs?.program_weeks?.length && prev.id === assignment.id
+        ? { ...prev, ...assignment, programs: prev.programs }
+        : assignment
+    );
+  }, [assignment]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -50,6 +77,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
   };
 
   const handleStartWorkout = (weekIndex: number, dayIndex: number) => {
+    ensureFullProgram();
     setIsDayProgramOpen(true);
   };
 
@@ -89,6 +117,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
               console.log('👁️ Opening ProgramViewDialog with assignment:', assignment);
               console.log('👁️ Assignment programs:', assignment?.programs);
               console.log('👁️ Program weeks:', assignment?.programs?.program_weeks);
+              ensureFullProgram();
               setIsProgramViewOpen(true);
             }}
             title={t('programs.viewProgram')}
@@ -101,7 +130,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
               variant="ghost"
               size="sm"
               className="h-6 w-6 p-0 hover:bg-blue-100"
-              onClick={() => setIsDayProgramOpen(true)}
+              onClick={() => { ensureFullProgram(); setIsDayProgramOpen(true); }}
               title={t('programs.startWorkout')}
             >
               <Play className="h-3 w-3 text-blue-600" />
@@ -140,7 +169,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
           console.log('🔄 Closing ProgramViewDialog');
           setIsProgramViewOpen(false);
         }}
-        assignment={assignment}
+        assignment={fullAssignment}
         onStartWorkout={handleStartWorkout}
         editMode={!userMode}
         onRefresh={onRefresh}
@@ -150,7 +179,7 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
         <DayProgramDialog
           isOpen={isDayProgramOpen}
           onClose={() => setIsDayProgramOpen(false)}
-          program={assignment}
+          program={fullAssignment}
           selectedDate={selectedDate}
           workoutStatus={workoutStatus}
           onRefresh={onRefresh}
