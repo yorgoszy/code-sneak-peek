@@ -181,12 +181,6 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
     return idA.localeCompare(idB);
   });
 
-  const hideBubble = (assignmentId: string, date: string) => {
-    const key = makeHideKey(assignmentId, date);
-    setHiddenKeys(prev => new Set(prev).add(key));
-    removeBubble(makeBubbleId(assignmentId, date));
-  };
-
   const renderBubbleItem = (bubble: typeof bubbles[0]) => {
     const { assignmentId, date } = parseBubbleId(bubble.id);
     const key = makeHideKey(assignmentId, date);
@@ -208,10 +202,13 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
         size={isActive ? 'lg' : 'sm'}
         isCompleted={bubbleCompleted}
         onRestore={() => {
-          hideBubble(assignmentId, date || todayStr);
           if (isActive) {
             onBubbleMinimize?.(workoutId);
+            return;
           }
+          bubble.onRestore();
+          removeBubble(bubble.id);
+          onBubbleRestore?.(workoutId);
         }}
       />
     );
