@@ -51,9 +51,10 @@ export const useActivePrograms = (
 
         // Fetch related programs separately with explicit foreign key hints
         const programIds = assignments.map(a => a.program_id).filter(Boolean);
+        const lightSelect = 'id, name, description, training_days';
         const { data: programs, error: programsError } = await supabase
           .from('programs')
-          .select(`
+          .select(light ? lightSelect : `
             id,
             name,
             description,
