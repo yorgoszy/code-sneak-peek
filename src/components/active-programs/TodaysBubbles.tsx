@@ -181,6 +181,12 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
     return idA.localeCompare(idB);
   });
 
+  const hideBubble = (assignmentId: string, date: string) => {
+    const key = makeHideKey(assignmentId, date);
+    setHiddenKeys(prev => new Set(prev).add(key));
+    removeBubble(makeBubbleId(assignmentId, date));
+  };
+
   const renderBubbleItem = (bubble: typeof bubbles[0]) => {
     const { assignmentId, date } = parseBubbleId(bubble.id);
     const key = makeHideKey(assignmentId, date);
@@ -201,19 +207,11 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
         elapsedTime={bubble.elapsedTime}
         size={isActive ? 'lg' : 'sm'}
         isCompleted={bubbleCompleted}
-        dragPayload={{
-          assignmentId,
-          date: date || todayStr,
-          userName: bubble.athleteName,
-        }}
         onRestore={() => {
+          hideBubble(assignmentId, date || todayStr);
           if (isActive) {
             onBubbleMinimize?.(workoutId);
-            return;
           }
-          bubble.onRestore();
-          removeBubble(bubble.id);
-          onBubbleRestore?.(workoutId);
         }}
       />
     );
@@ -259,16 +257,10 @@ export const TodaysBubbles: React.FC<TodaysBubblesProps> = ({
                 elapsedTime={elapsedTime}
                 size={isActive ? 'lg' : 'sm'}
                 isCompleted={isCompleted}
-                dragPayload={{
-                  assignmentId: assignment.id,
-                  date: dateStr,
-                  userName: name,
-                }}
                 onRestore={() => {
+                  hideBubble(assignment.id, dateStr);
                   if (isActive) {
                     onBubbleMinimize?.(workoutId);
-                  } else {
-                    onProgramClick(assignment, dateFromKey(dateStr));
                   }
                 }}
               />
