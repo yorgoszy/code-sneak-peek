@@ -254,12 +254,6 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           </Tabs>
         </CardContent>
       </Card>
-
-      <BubbleTrashDropZone
-        onHide={(drop) =>
-          setHiddenBubbles(prev => new Set(prev).add(bubbleKey(drop.assignmentId, drop.date)))
-        }
-      />
     </>
   );
 };
