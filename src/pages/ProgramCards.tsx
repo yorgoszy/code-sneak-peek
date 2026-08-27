@@ -60,16 +60,38 @@ const ProgramCards = () => {
     }
   }, [authLoading, rolesLoading, isAuthenticated, userProfile, isAdmin, navigate]);
 
-  // Fetch all workout completions - same as calendar
+  // ⚡ Φέρνουμε completions ΜΟΝΟ για τα assignments που εμφανίζονται (σε chunks)
+  const assignmentIdsKey = React.useMemo(
+    () => activePrograms.filter(p => p.app_users?.coach_id === ADMIN_ID).map(p => p.id).sort().join(','),
+    [activePrograms]
+  );
+
   React.useEffect(() => {
     const loadCompletions = async () => {
-      if (activePrograms.length > 0) {
-        const allCompletions = await completionsCache.getAllWorkoutCompletions();
-        setWorkoutCompletions(allCompletions);
+      const ids = assignmentIdsKey ? assignmentIdsKey.split(',') : [];
+      if (ids.length === 0) {
+        setWorkoutCompletions([]);
+        return;
       }
+      const all: any[] = [];
+      for (let i = 0; i < ids.length; i += 100) {
+        const chunk = ids.slice(i, i + 100);
+        const { data, error } = await supabase
+          .from('workout_completions')
+          .select('id, assignment_id, scheduled_date, status, rpe_score, completed_at')
+          .in('assignment_id', chunk)
+          .limit(5000);
+        if (error) {
+          console.error('Error loading completions chunk:', error);
+          continue;
+        }
+        all.push(...(data || []));
+      }
+      setWorkoutCompletions(all);
     };
     loadCompletions();
-  }, [activePrograms, completionsCache, realtimeKey]);
+  }, [assignmentIdsKey, realtimeKey]);
+
 
   // Calculate stats the same way as UserProfileProgramCards but with better completion logic
   const calculateProgramStats = (assignment: any) => {
