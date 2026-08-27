@@ -51,7 +51,25 @@ export const useActivePrograms = (
 
         // Fetch related programs separately with explicit foreign key hints
         const programIds = assignments.map(a => a.program_id).filter(Boolean);
-        const lightSelect = 'id, name, description, training_days';
+        // light: μόνο metadata + ελάχιστα days (για ενδείξεις τεστ/αγώνα και ημέρες/εβδομάδα)
+        const lightSelect = `
+            id,
+            name,
+            description,
+            training_days,
+            program_weeks!fk_program_weeks_program_id(
+              id,
+              name,
+              week_number,
+              program_days!fk_program_days_week_id(
+                id,
+                name,
+                day_number,
+                is_test_day,
+                is_competition_day
+              )
+            )
+          `;
         const { data: programs, error: programsError } = await supabase
           .from('programs')
           .select(light ? lightSelect : `

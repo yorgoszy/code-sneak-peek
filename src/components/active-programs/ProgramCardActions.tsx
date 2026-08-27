@@ -42,7 +42,10 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
   // ⚡ Lazy load: όταν η λίστα φορτώνεται σε light mode, φέρνουμε το πλήρες
   // πρόγραμμα μόνο όταν ο χρήστης ανοίγει τον διάλογο.
   const ensureFullProgram = async () => {
-    if (fullAssignment.programs?.program_weeks?.length) return;
+    const hasBlocks = fullAssignment.programs?.program_weeks?.some((w: any) =>
+      w.program_days?.some((d: any) => d.program_blocks?.length)
+    );
+    if (hasBlocks) return;
     if (!assignment.program_id) return;
     setLoadingProgram(true);
     try {
@@ -57,7 +60,8 @@ export const ProgramCardActions: React.FC<ProgramCardActionsProps> = ({
 
   React.useEffect(() => {
     setFullAssignment(prev =>
-      prev.programs?.program_weeks?.length && prev.id === assignment.id
+      prev.id === assignment.id &&
+      prev.programs?.program_weeks?.some((w: any) => w.program_days?.some((d: any) => d.program_blocks?.length))
         ? { ...prev, ...assignment, programs: prev.programs }
         : assignment
     );
