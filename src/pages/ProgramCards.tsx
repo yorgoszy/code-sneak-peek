@@ -198,7 +198,7 @@ const ProgramCards = () => {
             program_id: programId,
             scheduled_date: date,
             status: 'missed',
-            completed_at: new Date().toISOString(),
+            completed_date: new Date().toISOString().split('T')[0],
             week_number: weekNumber,
             day_number: dayNumber
           };
