@@ -80,7 +80,7 @@ const ProgramCards = () => {
         const chunk = ids.slice(i, i + 100);
         const { data, error } = await supabase
           .from('workout_completions')
-          .select('id, assignment_id, scheduled_date, status, rpe_score, completed_at')
+          .select('id, assignment_id, scheduled_date, status, rpe_score, completed_date')
           .in('assignment_id', chunk)
           .limit(5000);
         if (error) {
