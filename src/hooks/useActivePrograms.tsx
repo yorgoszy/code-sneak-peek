@@ -128,7 +128,7 @@ export const useActivePrograms = (
 
         // Combine the data manually with sorted program structure
         const enrichedAssignments: EnrichedAssignment[] = assignments.map(assignment => {
-          const program = programs?.find(p => p.id === assignment.program_id);
+          const program = programsList.find(p => p.id === assignment.program_id);
           const user = users?.find(u => u.id === assignment.user_id);
 
           // Deep sort the program structure to preserve intended order
