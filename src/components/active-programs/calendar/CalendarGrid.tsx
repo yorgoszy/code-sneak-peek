@@ -134,12 +134,10 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
       return acc;
     }, []);
     
-    const visible = dates.filter(
-      (d: any) => !hiddenBubbles.has(bubbleKey(d.assignmentId, d.date))
-    );
+    const visible = dates;
     console.log('📅 CalendarGrid: RECALCULATED program dates with status:', visible.length, 'Key:', realtimeKey + internalRealtimeKey);
     return visible;
-  }, [activePrograms, workoutCompletions, realtimeKey, internalRealtimeKey, hiddenBubbles]);
+  }, [activePrograms, workoutCompletions, realtimeKey, internalRealtimeKey]);
 
   // Device detection for mobile
   const [isMobile, setIsMobile] = React.useState<boolean>(false);
