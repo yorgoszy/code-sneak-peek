@@ -1,5 +1,7 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { X } from "lucide-react";
+
 
 interface PromoVideoDialogProps {
   open: boolean;
