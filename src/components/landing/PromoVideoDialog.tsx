@@ -1,5 +1,7 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { X } from "lucide-react";
+
 
 interface PromoVideoDialogProps {
   open: boolean;
@@ -31,8 +33,17 @@ export const PromoVideoDialog: React.FC<PromoVideoDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 rounded-none bg-black border-0 w-[min(92vw,420px)] max-w-[420px] [&>button]:-top-9 [&>button]:right-0 [&>button]:text-white [&>button]:opacity-100 [&>button]:z-50">
+      <DialogContent className="p-0 rounded-none bg-black border-0 w-[min(92vw,420px)] max-w-[420px] [&>button]:hidden">
         <DialogTitle className="sr-only">Promo Video</DialogTitle>
+        <button
+          type="button"
+          onClick={() => onOpenChange(false)}
+          aria-label="Κλείσιμο"
+          className="absolute top-2 right-2 z-50 rounded-none bg-black/80 text-white p-1 hover:bg-black"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
         <div className="relative w-full" style={{ paddingBottom: "177.78%" }}>
           {igEmbed ? (
             <>
