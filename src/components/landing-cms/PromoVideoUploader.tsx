@@ -102,18 +102,18 @@ export const PromoVideoUploader: React.FC<Props> = ({ value, onChange, valueMobi
       <Label className="text-sm font-semibold">Promo Videos</Label>
       <SingleUploader
         label="🖥️ Desktop (οριζόντιο)"
-        placeholder="YouTube URL ή ανέβασε αρχείο"
+        placeholder="YouTube / Instagram URL ή ανέβασε αρχείο"
         value={value}
         onChange={onChange}
       />
       <SingleUploader
         label="📱 Mobile (κάθετο)"
-        placeholder="YouTube URL ή ανέβασε αρχείο"
+        placeholder="YouTube / Instagram URL ή ανέβασε αρχείο"
         value={valueMobile}
         onChange={onChangeMobile}
       />
       <p className="text-xs text-muted-foreground">
-        Το desktop βίντεο εμφανίζεται σε υπολογιστές/tablets, το mobile σε κινητά. YouTube ή απευθείας αρχείο (resumable upload, χωρίς όριο μεγέθους).
+        Το desktop βίντεο εμφανίζεται σε υπολογιστές/tablets, το mobile σε κινητά. YouTube, Instagram reel/post (public) ή απευθείας αρχείο (resumable upload, χωρίς όριο μεγέθους).
       </p>
     </div>
   );
