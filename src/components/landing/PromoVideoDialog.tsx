@@ -31,9 +31,9 @@ export const PromoVideoDialog: React.FC<PromoVideoDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 rounded-none bg-black border-0 overflow-hidden max-w-4xl">
+      <DialogContent className="p-0 rounded-none bg-black border-0 overflow-hidden w-[min(92vw,420px)] max-w-[420px]">
         <DialogTitle className="sr-only">Promo Video</DialogTitle>
-        <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+        <div className="relative w-full" style={{ paddingBottom: "177.78%" }}>
           {igEmbed ? (
             <>
               <iframe
