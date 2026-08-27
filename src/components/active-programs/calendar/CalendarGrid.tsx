@@ -44,9 +44,6 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   const [selectedDialogDate, setSelectedDialogDate] = useState<Date | null>(null);
   const [calendarView, setCalendarView] = useState<'monthly' | 'weekly' | 'daily'>('monthly');
   const [internalRealtimeKey, setInternalRealtimeKey] = useState(0);
-  const [hiddenBubbles, setHiddenBubbles] = useState<Set<string>>(new Set());
-
-  const bubbleKey = (assignmentId: string, date: string) => `${assignmentId}|${date}`;
 
   // Optional realtime subscription. Disabled on Active Programs tablet view by request.
   useEffect(() => {
