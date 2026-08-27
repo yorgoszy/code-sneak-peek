@@ -23,6 +23,8 @@ import {
   AlertDialogTitle 
 } from "@/components/ui/alert-dialog";
 
+const ADMIN_ID = 'c6d44641-3b95-46bd-8270-e5ed72de25ad';
+
 const ProgramCards = () => {
   const { user, loading: authLoading, signOut, isAuthenticated } = useAuth();
   const { isAdmin, userProfile, loading: rolesLoading } = useRoleCheck();
