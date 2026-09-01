@@ -709,9 +709,8 @@ export const GymBookingsCalendarView = () => {
                       {sectionsForSlot.map((section) => {
                         const isSelected = selectedSections.includes(section.id);
                         
-                        // Get users assigned to this section
-                        const assignedUsers = sectionUsers[section.id] || [];
-                        const currentBookings = assignedUsers.length;
+                        // Μέλη τμήματος + επιπλέον online κρατήσεις
+                        const currentBookings = getSlotAttendeesCount(section.id, dateStr, time);
                         const capacity = section.max_capacity;
 
                         const isHovered = hoveredSection === section.id;
