@@ -18,6 +18,8 @@ import { RootRedirect } from "@/components/RootRedirect";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
 import Auth from "@/pages/Auth";
 import ResetPassword from "@/pages/ResetPassword";
+import TrialResponse from "@/pages/TrialResponse";
+
 import NotificationPreferencesPage from "@/pages/Dashboard/NotificationPreferencesPage";
 import BlackmagicViewPage from "@/pages/Dashboard/BlackmagicViewPage";
 import { NotificationPermissionPrompt } from "@/components/notifications/NotificationPermissionPrompt";
