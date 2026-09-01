@@ -54,12 +54,17 @@ serve(async (req) => {
     }
 
     if (tr.status !== "pending") {
+      // Already handled: if it was approved, make sure the booking exists.
+      if (tr.status === "approved") {
+        try { await createTrialBooking(supabase, tr); } catch (e) { console.error("booking failed", e); }
+      }
       return htmlResponse(renderPage(
           "Έχει ήδη απαντηθεί",
           `Το αίτημα έχει ήδη ${tr.status === "approved" ? "εγκριθεί" : "απορριφθεί"}.`,
           "#999"
         ), 200);
     }
+
 
     const newStatus = action === "approve" ? "approved" : "rejected";
     if (!response) {
