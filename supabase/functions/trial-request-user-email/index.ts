@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "npm:resend@2.0.0";
+import { createTrialBooking } from "../_shared/trialBooking.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,6 +24,14 @@ serve(async (req) => {
       .eq("id", id)
       .maybeSingle();
     if (error || !tr) throw new Error(error?.message || "Not found");
+
+    if (status === "approved") {
+      try {
+        await createTrialBooking(supabase, tr);
+      } catch (e) {
+        console.error("trial booking creation failed", e);
+      }
+    }
 
     const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
     const dateStr = tr.preferred_date ? new Date(tr.preferred_date).toLocaleDateString("el-GR") : "";
