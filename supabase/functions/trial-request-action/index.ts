@@ -1,11 +1,18 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "npm:resend@2.0.0";
+import { createTrialBooking } from "../_shared/trialBooking.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+const htmlResponse = (html: string, status = 200) =>
+  new Response(new TextEncoder().encode(html), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "text/html; charset=utf-8" },
+  });
 
 const renderPage = (title: string, body: string, color = "#000") => `
 <!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title></head>
@@ -27,10 +34,7 @@ serve(async (req) => {
     let response = url.searchParams.get("response") || "";
 
     if (!id || !token || !["approve", "reject"].includes(action || "")) {
-      return new Response(renderPage("Σφάλμα", "Μη έγκυρος σύνδεσμος.", "#c00"), {
-        status: 400,
-        headers: { "Content-Type": "text/html; charset=utf-8" },
-      });
+      return htmlResponse(renderPage("Σφάλμα", "Μη έγκυρος σύνδεσμος.", "#c00"), 400);
     }
 
     const supabase = createClient(
@@ -46,21 +50,15 @@ serve(async (req) => {
       .maybeSingle();
 
     if (error || !tr) {
-      return new Response(renderPage("Σφάλμα", "Το αίτημα δεν βρέθηκε ή ο σύνδεσμος δεν είναι έγκυρος.", "#c00"), {
-        status: 404,
-        headers: { "Content-Type": "text/html; charset=utf-8" },
-      });
+      return htmlResponse(renderPage("Σφάλμα", "Το αίτημα δεν βρέθηκε ή ο σύνδεσμος δεν είναι έγκυρος.", "#c00"), 404);
     }
 
     if (tr.status !== "pending") {
-      return new Response(
-        renderPage(
+      return htmlResponse(renderPage(
           "Έχει ήδη απαντηθεί",
           `Το αίτημα έχει ήδη ${tr.status === "approved" ? "εγκριθεί" : "απορριφθεί"}.`,
           "#999"
-        ),
-        { status: 200, headers: { "Content-Type": "text/html; charset=utf-8" } }
-      );
+        ), 200);
     }
 
     const newStatus = action === "approve" ? "approved" : "rejected";
@@ -112,19 +110,13 @@ serve(async (req) => {
       console.error("user email failed", e);
     }
 
-    return new Response(
-      renderPage(
+    return htmlResponse(renderPage(
         newStatus === "approved" ? "Εγκρίθηκε ✓" : "Απορρίφθηκε",
         `Το αίτημα του ${tr.name} έχει ενημερωθεί και ο χρήστης ειδοποιήθηκε.`,
         newStatus === "approved" ? "#000" : "#666"
-      ),
-      { status: 200, headers: { "Content-Type": "text/html; charset=utf-8" } }
-    );
+      ), 200);
   } catch (e) {
     console.error("trial-request-action error", e);
-    return new Response(renderPage("Σφάλμα", String(e), "#c00"), {
-      status: 500,
-      headers: { "Content-Type": "text/html; charset=utf-8" },
-    });
+    return htmlResponse(renderPage("Σφάλμα", String(e), "#c00"), 500);
   }
 });
