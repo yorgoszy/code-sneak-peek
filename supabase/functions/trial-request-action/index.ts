@@ -85,8 +85,18 @@ serve(async (req) => {
 
     if (updErr) throw updErr;
 
+    // Create the actual booking so it appears in the booking dashboard
+    if (newStatus === "approved") {
+      try {
+        await createTrialBooking(supabase, tr);
+      } catch (e) {
+        console.error("trial booking creation failed", e);
+      }
+    }
+
     // Email user
     try {
+
       const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
       const dateStr = tr.preferred_date ? new Date(tr.preferred_date).toLocaleDateString("el-GR") : "";
       const timeStr = tr.preferred_time ? String(tr.preferred_time).slice(0, 5) : "";
