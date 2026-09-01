@@ -522,8 +522,7 @@ export const GymBookingsCalendarView = () => {
                     const isSelected = selectedSections.includes(section.id);
                     
                     // Get users assigned to this section
-                    const assignedUsers = sectionUsers[section.id] || [];
-                    const currentBookings = assignedUsers.length;
+                    const currentBookings = getSlotAttendeesCount(section.id, selectedDateStr, time);
                     const capacity = section.max_capacity;
 
                     return (
