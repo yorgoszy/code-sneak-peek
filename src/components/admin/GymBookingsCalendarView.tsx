@@ -291,6 +291,17 @@ export const GymBookingsCalendarView = () => {
     return getBookingsForDateAndTime(date, time).length;
   };
 
+  // Συνολικός αριθμός ατόμων σε ένα slot: μέλη τμήματος + επιπλέον online κρατήσεις
+  const getSlotAttendeesCount = (sectionId: string, date: string, time: string) => {
+    const assignedUsers = sectionUsers[sectionId] || [];
+    const memberIds = new Set(assignedUsers.map(u => u.id));
+    const extras = getBookingsForDateAndTime(date, time).filter(b =>
+      b.section_id === sectionId && b.user_id && !memberIds.has(b.user_id)
+    );
+    const uniqueExtras = new Set(extras.map(b => b.user_id));
+    return assignedUsers.length + uniqueExtras.size;
+  };
+
   const toggleSection = (sectionId: string) => {
     setSelectedSections(prev => {
       if (prev.includes(sectionId)) {
