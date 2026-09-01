@@ -8,20 +8,18 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const htmlResponse = (html: string, status = 200) =>
-  new Response(new TextEncoder().encode(html), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "text/html; charset=utf-8" },
-  });
+const APP_URL = "https://hyperkids.lovable.app";
 
-const renderPage = (title: string, body: string, color = "#000") => `
-<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title></head>
-<body style="font-family:Arial,sans-serif;background:#f5f5f5;margin:0;padding:40px;text-align:center">
-  <div style="max-width:500px;margin:0 auto;background:#fff;border:2px solid ${color};padding:40px">
-    <h1 style="color:${color};margin:0 0 20px">${title}</h1>
-    <p style="color:#333;font-size:16px">${body}</p>
-  </div>
-</body></html>`;
+// The Supabase functions gateway serves responses as text/plain, so HTML pages
+// show up as raw source in the browser. Redirect to an app page instead.
+const redirectPage = (state: "approved" | "rejected" | "info", message: string, name = "") => {
+  const url = new URL(`${APP_URL}/trial-response`);
+  url.searchParams.set("state", state);
+  if (name) url.searchParams.set("name", name);
+  if (message) url.searchParams.set("message", message);
+  return new Response(null, { status: 302, headers: { ...corsHeaders, Location: url.toString() } });
+};
+
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -34,7 +32,7 @@ serve(async (req) => {
     let response = url.searchParams.get("response") || "";
 
     if (!id || !token || !["approve", "reject"].includes(action || "")) {
-      return htmlResponse(renderPage("Σφάλμα", "Μη έγκυρος σύνδεσμος.", "#c00"), 400);
+      return redirectPage("info", "Μη έγκυρος σύνδεσμος.");
     }
 
     const supabase = createClient(
@@ -50,7 +48,7 @@ serve(async (req) => {
       .maybeSingle();
 
     if (error || !tr) {
-      return htmlResponse(renderPage("Σφάλμα", "Το αίτημα δεν βρέθηκε ή ο σύνδεσμος δεν είναι έγκυρος.", "#c00"), 404);
+      return redirectPage("info", "Το αίτημα δεν βρέθηκε ή ο σύνδεσμος δεν είναι έγκυρος.");
     }
 
     if (tr.status !== "pending") {
@@ -58,11 +56,11 @@ serve(async (req) => {
       if (tr.status === "approved") {
         try { await createTrialBooking(supabase, tr); } catch (e) { console.error("booking failed", e); }
       }
-      return htmlResponse(renderPage(
-          "Έχει ήδη απαντηθεί",
-          `Το αίτημα έχει ήδη ${tr.status === "approved" ? "εγκριθεί" : "απορριφθεί"}.`,
-          "#999"
-        ), 200);
+      return redirectPage(
+        tr.status === "approved" ? "approved" : "rejected",
+        `Το αίτημα έχει ήδη ${tr.status === "approved" ? "εγκριθεί" : "απορριφθεί"}.`,
+        tr.name || ""
+      );
     }
 
 
@@ -125,13 +123,15 @@ serve(async (req) => {
       console.error("user email failed", e);
     }
 
-    return htmlResponse(renderPage(
-        newStatus === "approved" ? "Εγκρίθηκε ✓" : "Απορρίφθηκε",
-        `Το αίτημα του ${tr.name} έχει ενημερωθεί και ο χρήστης ειδοποιήθηκε.`,
-        newStatus === "approved" ? "#000" : "#666"
-      ), 200);
+    return redirectPage(
+      newStatus === "approved" ? "approved" : "rejected",
+      newStatus === "approved"
+        ? "Το αίτημα εγκρίθηκε, ο χρήστης ειδοποιήθηκε και η κράτηση καταχωρήθηκε."
+        : "Το αίτημα απορρίφθηκε και ο χρήστης ειδοποιήθηκε.",
+      tr.name || ""
+    );
   } catch (e) {
     console.error("trial-request-action error", e);
-    return htmlResponse(renderPage("Σφάλμα", String(e), "#c00"), 500);
+    return redirectPage("info", `Σφάλμα: ${String(e)}`);
   }
 });
