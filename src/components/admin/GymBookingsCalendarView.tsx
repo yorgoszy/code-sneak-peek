@@ -291,6 +291,17 @@ export const GymBookingsCalendarView = () => {
     return getBookingsForDateAndTime(date, time).length;
   };
 
+  // Συνολικός αριθμός ατόμων σε ένα slot: μέλη τμήματος + επιπλέον online κρατήσεις
+  const getSlotAttendeesCount = (sectionId: string, date: string, time: string) => {
+    const assignedUsers = sectionUsers[sectionId] || [];
+    const memberIds = new Set(assignedUsers.map(u => u.id));
+    const extras = getBookingsForDateAndTime(date, time).filter(b =>
+      b.section_id === sectionId && b.user_id && !memberIds.has(b.user_id)
+    );
+    const uniqueExtras = new Set(extras.map(b => b.user_id));
+    return assignedUsers.length + uniqueExtras.size;
+  };
+
   const toggleSection = (sectionId: string) => {
     setSelectedSections(prev => {
       if (prev.includes(sectionId)) {
@@ -511,8 +522,7 @@ export const GymBookingsCalendarView = () => {
                     const isSelected = selectedSections.includes(section.id);
                     
                     // Get users assigned to this section
-                    const assignedUsers = sectionUsers[section.id] || [];
-                    const currentBookings = assignedUsers.length;
+                    const currentBookings = getSlotAttendeesCount(section.id, selectedDateStr, time);
                     const capacity = section.max_capacity;
 
                     return (
@@ -699,9 +709,8 @@ export const GymBookingsCalendarView = () => {
                       {sectionsForSlot.map((section) => {
                         const isSelected = selectedSections.includes(section.id);
                         
-                        // Get users assigned to this section
-                        const assignedUsers = sectionUsers[section.id] || [];
-                        const currentBookings = assignedUsers.length;
+                        // Μέλη τμήματος + επιπλέον online κρατήσεις
+                        const currentBookings = getSlotAttendeesCount(section.id, dateStr, time);
                         const capacity = section.max_capacity;
 
                         const isHovered = hoveredSection === section.id;
