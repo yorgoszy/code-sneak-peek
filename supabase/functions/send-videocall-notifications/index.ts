@@ -1075,7 +1075,7 @@ serve(async (req) => {
       }
 
       // Fetch booking data for booking_created and booking_cancelled
-      if (['booking_created', 'booking_cancelled'].includes(type) && bookingId) {
+      if (['booking_created', 'booking_cancelled', 'booking_admin_notification'].includes(type) && bookingId) {
         if (type === 'booking_cancelled' && bookingDate && bookingTime) {
           // For cancellations, use the data passed directly since booking might be deleted
           userData = { 

@@ -11,6 +11,7 @@ interface SectionUser {
   name: string;
   email: string;
   avatar_url: string | null;
+  isBooking?: boolean;
 }
 
 interface AttendanceDetailsDialogProps {
@@ -37,7 +38,7 @@ export const AttendanceDetailsDialog: React.FC<AttendanceDetailsDialogProps> = (
     if (isOpen && sectionId) {
       fetchSectionUsers();
     }
-  }, [isOpen, sectionId]);
+  }, [isOpen, sectionId, date, time]);
 
   const fetchSectionUsers = async () => {
     if (!sectionId) return;
@@ -50,7 +51,30 @@ export const AttendanceDetailsDialog: React.FC<AttendanceDetailsDialogProps> = (
         .eq('subscription_status', 'active');
 
       if (error) throw error;
-      setUsers(data || []);
+      const members: SectionUser[] = data || [];
+
+      // Extra people who booked this specific day/time online
+      let extras: SectionUser[] = [];
+      if (date && time) {
+        const timeShort = time.length > 5 ? time.substring(0, 5) : time;
+        const { data: bookings } = await supabase
+          .from('booking_sessions')
+          .select('booking_time, app_users!user_id(id, name, email, avatar_url)')
+          .eq('section_id', sectionId)
+          .eq('booking_date', date)
+          .eq('status', 'confirmed');
+
+        const memberIds = new Set(members.map(m => m.id));
+        (bookings || []).forEach((b: any) => {
+          const bTime = String(b.booking_time || '').substring(0, 5);
+          const u = b.app_users;
+          if (bTime !== timeShort || !u || memberIds.has(u.id)) return;
+          if (extras.some(e => e.id === u.id)) return;
+          extras.push({ ...u, isBooking: true });
+        });
+      }
+
+      setUsers([...members, ...extras]);
     } catch (error) {
       console.error('Error fetching section users:', error);
     } finally {
@@ -114,6 +138,11 @@ export const AttendanceDetailsDialog: React.FC<AttendanceDetailsDialogProps> = (
                       {user.email}
                     </div>
                   </div>
+                  {user.isBooking && (
+                    <Badge variant="outline" className="rounded-none text-[10px] flex-shrink-0">
+                      Κράτηση
+                    </Badge>
+                  )}
                 </div>
               ))
             )}
