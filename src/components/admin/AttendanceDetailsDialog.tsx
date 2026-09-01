@@ -138,6 +138,11 @@ export const AttendanceDetailsDialog: React.FC<AttendanceDetailsDialogProps> = (
                       {user.email}
                     </div>
                   </div>
+                  {user.isBooking && (
+                    <Badge variant="outline" className="rounded-none text-[10px] flex-shrink-0">
+                      Κράτηση
+                    </Badge>
+                  )}
                 </div>
               ))
             )}
