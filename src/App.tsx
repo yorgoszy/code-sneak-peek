@@ -177,6 +177,8 @@ function App() {
                       {/* Backwards compatibility (old reset link) */}
                       <Route path="/auth/reset-password" element={<ResetPassword />} />
                       <Route path="/reset-password" element={<ResetPassword />} />
+                      <Route path="/trial-response" element={<TrialResponse />} />
+
                       <Route path="/dashboard/notification-preferences" element={<ProtectedRoute><NotificationPreferencesPage /></ProtectedRoute>} />
                       <Route path="/dashboard/blackmagic-view" element={<ProtectedRoute><BlackmagicViewPage /></ProtectedRoute>} />
                       <Route path="/remote-camera/:sessionId" element={<RemoteCameraView />} />
