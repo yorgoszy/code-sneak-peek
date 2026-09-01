@@ -11,6 +11,7 @@ interface SectionUser {
   name: string;
   email: string;
   avatar_url: string | null;
+  isBooking?: boolean;
 }
 
 interface AttendanceDetailsDialogProps {
