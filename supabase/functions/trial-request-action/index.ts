@@ -1,20 +1,25 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "npm:resend@2.0.0";
+import { createTrialBooking } from "../_shared/trialBooking.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const renderPage = (title: string, body: string, color = "#000") => `
-<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title></head>
-<body style="font-family:Arial,sans-serif;background:#f5f5f5;margin:0;padding:40px;text-align:center">
-  <div style="max-width:500px;margin:0 auto;background:#fff;border:2px solid ${color};padding:40px">
-    <h1 style="color:${color};margin:0 0 20px">${title}</h1>
-    <p style="color:#333;font-size:16px">${body}</p>
-  </div>
-</body></html>`;
+const APP_URL = "https://hyperkids.lovable.app";
+
+// The Supabase functions gateway serves responses as text/plain, so HTML pages
+// show up as raw source in the browser. Redirect to an app page instead.
+const redirectPage = (state: "approved" | "rejected" | "info", message: string, name = "") => {
+  const url = new URL(`${APP_URL}/trial-response`);
+  url.searchParams.set("state", state);
+  if (name) url.searchParams.set("name", name);
+  if (message) url.searchParams.set("message", message);
+  return new Response(null, { status: 302, headers: { ...corsHeaders, Location: url.toString() } });
+};
+
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -27,10 +32,7 @@ serve(async (req) => {
     let response = url.searchParams.get("response") || "";
 
     if (!id || !token || !["approve", "reject"].includes(action || "")) {
-      return new Response(renderPage("Σφάλμα", "Μη έγκυρος σύνδεσμος.", "#c00"), {
-        status: 400,
-        headers: { "Content-Type": "text/html; charset=utf-8" },
-      });
+      return redirectPage("info", "Μη έγκυρος σύνδεσμος.");
     }
 
     const supabase = createClient(
@@ -46,22 +48,21 @@ serve(async (req) => {
       .maybeSingle();
 
     if (error || !tr) {
-      return new Response(renderPage("Σφάλμα", "Το αίτημα δεν βρέθηκε ή ο σύνδεσμος δεν είναι έγκυρος.", "#c00"), {
-        status: 404,
-        headers: { "Content-Type": "text/html; charset=utf-8" },
-      });
+      return redirectPage("info", "Το αίτημα δεν βρέθηκε ή ο σύνδεσμος δεν είναι έγκυρος.");
     }
 
     if (tr.status !== "pending") {
-      return new Response(
-        renderPage(
-          "Έχει ήδη απαντηθεί",
-          `Το αίτημα έχει ήδη ${tr.status === "approved" ? "εγκριθεί" : "απορριφθεί"}.`,
-          "#999"
-        ),
-        { status: 200, headers: { "Content-Type": "text/html; charset=utf-8" } }
+      // Already handled: if it was approved, make sure the booking exists.
+      if (tr.status === "approved") {
+        try { await createTrialBooking(supabase, tr); } catch (e) { console.error("booking failed", e); }
+      }
+      return redirectPage(
+        tr.status === "approved" ? "approved" : "rejected",
+        `Το αίτημα έχει ήδη ${tr.status === "approved" ? "εγκριθεί" : "απορριφθεί"}.`,
+        tr.name || ""
       );
     }
+
 
     const newStatus = action === "approve" ? "approved" : "rejected";
     if (!response) {
@@ -82,8 +83,18 @@ serve(async (req) => {
 
     if (updErr) throw updErr;
 
+    // Create the actual booking so it appears in the booking dashboard
+    if (newStatus === "approved") {
+      try {
+        await createTrialBooking(supabase, tr);
+      } catch (e) {
+        console.error("trial booking creation failed", e);
+      }
+    }
+
     // Email user
     try {
+
       const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
       const dateStr = tr.preferred_date ? new Date(tr.preferred_date).toLocaleDateString("el-GR") : "";
       const timeStr = tr.preferred_time ? String(tr.preferred_time).slice(0, 5) : "";
@@ -112,19 +123,15 @@ serve(async (req) => {
       console.error("user email failed", e);
     }
 
-    return new Response(
-      renderPage(
-        newStatus === "approved" ? "Εγκρίθηκε ✓" : "Απορρίφθηκε",
-        `Το αίτημα του ${tr.name} έχει ενημερωθεί και ο χρήστης ειδοποιήθηκε.`,
-        newStatus === "approved" ? "#000" : "#666"
-      ),
-      { status: 200, headers: { "Content-Type": "text/html; charset=utf-8" } }
+    return redirectPage(
+      newStatus === "approved" ? "approved" : "rejected",
+      newStatus === "approved"
+        ? "Το αίτημα εγκρίθηκε, ο χρήστης ειδοποιήθηκε και η κράτηση καταχωρήθηκε."
+        : "Το αίτημα απορρίφθηκε και ο χρήστης ειδοποιήθηκε.",
+      tr.name || ""
     );
   } catch (e) {
     console.error("trial-request-action error", e);
-    return new Response(renderPage("Σφάλμα", String(e), "#c00"), {
-      status: 500,
-      headers: { "Content-Type": "text/html; charset=utf-8" },
-    });
+    return redirectPage("info", `Σφάλμα: ${String(e)}`);
   }
 });

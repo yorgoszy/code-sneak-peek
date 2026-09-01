@@ -18,6 +18,8 @@ import { RootRedirect } from "@/components/RootRedirect";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
 import Auth from "@/pages/Auth";
 import ResetPassword from "@/pages/ResetPassword";
+import TrialResponse from "@/pages/TrialResponse";
+
 import NotificationPreferencesPage from "@/pages/Dashboard/NotificationPreferencesPage";
 import BlackmagicViewPage from "@/pages/Dashboard/BlackmagicViewPage";
 import { NotificationPermissionPrompt } from "@/components/notifications/NotificationPermissionPrompt";
@@ -177,6 +179,8 @@ function App() {
                       {/* Backwards compatibility (old reset link) */}
                       <Route path="/auth/reset-password" element={<ResetPassword />} />
                       <Route path="/reset-password" element={<ResetPassword />} />
+                      <Route path="/trial-response" element={<TrialResponse />} />
+
                       <Route path="/dashboard/notification-preferences" element={<ProtectedRoute><NotificationPreferencesPage /></ProtectedRoute>} />
                       <Route path="/dashboard/blackmagic-view" element={<ProtectedRoute><BlackmagicViewPage /></ProtectedRoute>} />
                       <Route path="/remote-camera/:sessionId" element={<RemoteCameraView />} />
