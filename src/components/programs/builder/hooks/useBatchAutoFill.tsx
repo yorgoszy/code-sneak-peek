@@ -115,9 +115,17 @@ function batchFillWeeks(
             if (predictedVelocity !== null) {
               newVelocity = predictedVelocity;
             }
+
+            if (newKg !== ex.kg || newVelocity !== ex.velocity_ms || ex.kg_auto_filled) {
+              changed = true;
+              return { ...ex, kg: newKg, velocity_ms: newVelocity, kg_auto_filled: false };
+            }
+            return ex;
           } else if (!ex.kg) {
-            // No percentage, no kg => fill with 1RM directly
+            // No percentage, no kg => fill with 1RM directly (per-user value)
             newKg = oneRM.toString().replace('.', ',');
+            changed = true;
+            return { ...ex, kg: newKg, kg_auto_filled: true };
           }
 
           if (newKg !== ex.kg || newVelocity !== ex.velocity_ms) {

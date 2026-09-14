@@ -170,6 +170,16 @@ export async function recalculateWeeksForUser(
           if (hasPercentage && !oneRM) {
             return { ...ex, kg: '', velocity_ms: 0 };
           }
+
+          // kg που είχε συμπληρωθεί αυτόματα από το 1RM του preview χρήστη (χωρίς %1RM):
+          // ξαναγράφεται με το 1RM του συγκεκριμένου χρήστη, αλλιώς καθαρίζεται.
+          if (!hasPercentage && ex.kg_auto_filled) {
+            return {
+              ...ex,
+              kg: oneRM ? oneRM.toString().replace('.', ',') : '',
+            };
+          }
+
           if (!oneRM) return ex;
 
           let newKg = ex.kg;
