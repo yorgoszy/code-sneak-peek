@@ -109,6 +109,9 @@ export interface ProgramExercise {
   tempo: string;
   rest: string;
   notes?: string;
+  /** Builder-only: true when kg was auto-filled from the preview user's 1RM (no %1RM),
+   *  so it must be recalculated per user during assignment. */
+  kg_auto_filled?: boolean;
   exercises?: Exercise;
 }
 
