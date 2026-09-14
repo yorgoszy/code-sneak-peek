@@ -22,14 +22,36 @@ if (isPreviewHost || isInIframe) {
   // Also clear all caches
   caches?.keys().then(keys => keys.forEach(k => caches.delete(k)));
 } else if ('serviceWorker' in navigator) {
-  // Register SW but DO NOT auto-reload on updates.
-  // Auto-reload causes the page to refresh when the device wakes from sleep,
-  // wiping in-progress chats and form state.
-  registerSW({
+  const appStart = Date.now();
+  let applyUpdate: ((reload?: boolean) => Promise<void>) | null = null;
+  let updatePending = false;
+
+  const applyIfSafe = () => {
+    if (!updatePending || !applyUpdate) return;
+    // Apply immediately if the app just opened (no work in progress yet),
+    // otherwise wait until the user leaves the tab so nothing gets lost.
+    if (Date.now() - appStart < 15000 || document.visibilityState === 'hidden') {
+      updatePending = false;
+      applyUpdate(true);
+    }
+  };
+
+  applyUpdate = registerSW({
     immediate: true,
+    onRegisteredSW(_url, registration) {
+      if (!registration) return;
+      // Check for a new version periodically and when the app regains focus
+      const check = () => registration.update().catch(() => {});
+      setInterval(check, 30 * 60 * 1000);
+      window.addEventListener('focus', check);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') check();
+        else applyIfSafe();
+      });
+    },
     onNeedRefresh() {
-      // New version available — will apply on next manual reload by the user.
-      console.log('New content available - will apply on next reload');
+      updatePending = true;
+      applyIfSafe();
     },
     onOfflineReady() {
       console.log('App ready to work offline');
@@ -38,4 +60,3 @@ if (isPreviewHost || isInIframe) {
 }
 
 createRoot(document.getElementById("root")!).render(<App />);
-
