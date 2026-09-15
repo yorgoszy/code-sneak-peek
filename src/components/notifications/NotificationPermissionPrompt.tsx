@@ -9,26 +9,28 @@ const DISMISS_KEY = 'notif_prompt_dismissed_v1';
 
 export const NotificationPermissionPrompt: React.FC = () => {
   const { isAuthenticated, userProfile } = useAuthContext();
-  const { permission, isSupported, subscribe, loading } = usePushNotifications();
+  const { permission, isSupported, isSubscribed, subscribe, loading } = usePushNotifications();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated || !userProfile?.id || !isSupported) return;
-    const dismissed = sessionStorage.getItem(DISMISS_KEY);
-    if (dismissed) return;
-    if (permission === 'default') {
-      const t = setTimeout(() => setOpen(true), 1500);
-      return () => clearTimeout(t);
-    }
-  }, [isAuthenticated, userProfile?.id, isSupported, permission]);
+    // Permanent opt-out / opt-in memory (persists across sessions and app restarts)
+    if (localStorage.getItem(DISMISS_KEY)) return;
+    if (isSubscribed || permission !== 'default') return;
+    const t = setTimeout(() => setOpen(true), 1500);
+    return () => clearTimeout(t);
+  }, [isAuthenticated, userProfile?.id, isSupported, permission, isSubscribed]);
 
   const handleAllow = async () => {
     const ok = await subscribe();
     setOpen(false);
-    if (!ok) sessionStorage.setItem(DISMISS_KEY, '1');
+    // Never ask again, whether it succeeded or the user declined at the browser prompt
+    localStorage.setItem(DISMISS_KEY, '1');
+    try { sessionStorage.removeItem(DISMISS_KEY); } catch {}
+    if (!ok) return;
   };
   const handleDismiss = () => {
-    sessionStorage.setItem(DISMISS_KEY, '1');
+    localStorage.setItem(DISMISS_KEY, '1');
     setOpen(false);
   };
 
