@@ -24,17 +24,39 @@ export const DashboardContent = ({ isAdmin, userProfile }: DashboardContentProps
   const [selectedProgram, setSelectedProgram] = useState<any>(null);
   const [isDayDialogOpen, setIsDayDialogOpen] = useState(false);
   
-  // Για Admin/Coach: περνάμε το userProfile.id ώστε το dashboard να δείχνει μόνο τα δικά του σημερινά προγράμματα
-  const coachIdFilter = userProfile?.id ?? null;
-  const { data: activePrograms = [], refetch } = useActivePrograms(coachIdFilter, isAdmin);
+  // Ίδια λογική με τη σελίδα Active Programs ώστε να συμφωνούν τα σημερινά προγράμματα
+  const { data: allPrograms = [], refetch } = useActivePrograms();
   const { getWorkoutCompletions } = useWorkoutCompletions();
-  
+
+  const activePrograms = useMemo(
+    () => allPrograms.filter((p: any) => p.app_users?.coach_id === userProfile?.id),
+    [allPrograms, userProfile?.id]
+  );
+
   // Σημερινή ημερομηνία
   const today = new Date();
   const todayString = formatDateToLocalString(today);
-  
+
+  // Για ολοκληρωμένα assignments κρατάμε μόνο τις ημέρες που πραγματικά ολοκληρώθηκαν
+  const visiblePrograms = useMemo(() => {
+    return activePrograms
+      .map((assignment: any) => {
+        if (assignment.status !== 'completed') return assignment;
+        const completedDates = new Set(
+          workoutCompletions
+            .filter((c: any) => c.assignment_id === assignment.id && c.status === 'completed')
+            .map((c: any) => c.scheduled_date)
+        );
+        return {
+          ...assignment,
+          training_dates: (assignment.training_dates || []).filter((d: string) => completedDates.has(d)),
+        };
+      })
+      .filter((a: any) => (a.training_dates || []).length > 0);
+  }, [activePrograms, workoutCompletions]);
+
   // Φιλτράρουμε τα προγράμματα που έχουν προπόνηση σήμερα
-  const todaysPrograms = activePrograms.filter(assignment => {
+  const todaysPrograms = visiblePrograms.filter((assignment: any) => {
     if (!assignment.training_dates) return false;
     return assignment.training_dates.includes(todayString);
   });
