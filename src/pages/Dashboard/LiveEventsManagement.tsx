@@ -405,7 +405,7 @@ const LiveEventsManagement: React.FC = () => {
             </div>
           </div>
 
-          <main className="flex-1 p-4 lg:p-6 overflow-auto">
+          <main className="flex-1 p-3 lg:p-4 overflow-auto">
             <div className="hidden lg:flex items-center justify-between mb-3">
               <div>
                 <h1 className="text-xl font-bold flex items-center gap-2">
