@@ -446,7 +446,7 @@ const LiveEventsManagement: React.FC = () => {
                             <Badge variant="outline" className="rounded-none">Ανενεργό</Badge>
                           )}
                         </CardTitle>
-                        {event.description && <p className="text-sm text-muted-foreground mt-1">{event.description}</p>}
+                        {event.description && <p className="text-xs text-muted-foreground mt-0.5">{event.description}</p>}
                       </div>
                       <div className="flex gap-2">
                         <Button
@@ -467,51 +467,64 @@ const LiveEventsManagement: React.FC = () => {
                       </div>
                     </CardHeader>
                     {!collapsedEvents.has(event.id) && (
-                    <CardContent>
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="font-semibold text-sm">Ρινγκ ({rings[event.id]?.length || 0})</h3>
-                        <Button size="sm" variant="outline" className="rounded-none" onClick={() => openCreateRing(event.id)}>
-                          <Plus className="h-4 w-4 mr-1" /> Προσθήκη Ρινγκ
+                    <CardContent className="p-3 pt-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-semibold text-xs">Ρινγκ ({rings[event.id]?.length || 0})</h3>
+                        <Button size="sm" variant="outline" className="rounded-none h-7 text-xs" onClick={() => openCreateRing(event.id)}>
+                          <Plus className="h-3.5 w-3.5 mr-1" /> Προσθήκη Ρινγκ
                         </Button>
                       </div>
                       {(rings[event.id] || []).length === 0 ? (
-                        <p className="text-sm text-muted-foreground">Δεν υπάρχουν ρινγκ.</p>
+                        <p className="text-xs text-muted-foreground">Δεν υπάρχουν ρινγκ.</p>
                       ) : (
-                        <div className={`grid gap-4 ${rings[event.id].length === 1 ? 'grid-cols-1' : rings[event.id].length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
-                          {rings[event.id].map((r) => (
+                        <div className={`grid gap-2 ${rings[event.id].length === 1 ? 'grid-cols-1' : rings[event.id].length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
+                          {rings[event.id].map((r) => {
+                            const showPreview = previewRings.has(r.id);
+                            return (
                             <div key={r.id} className="border border-border bg-card">
-                              <div className="px-3 py-2 bg-[#00ffba] text-black font-bold flex items-center justify-between">
-                                <span className="flex items-center gap-2">
-                                  <Radio className="w-4 h-4" />
+                              <div className="px-2 py-1 bg-[#00ffba] text-black text-xs font-bold flex items-center justify-between">
+                                <span className="flex items-center gap-1.5">
+                                  <Radio className="w-3.5 h-3.5" />
                                   Ρινγκ {r.ring_name}
                                 </span>
-                                <div className="flex gap-1">
-                                  <Button variant="ghost" size="sm" className="rounded-none h-7 w-7 p-0 text-black hover:bg-black/10" onClick={() => openEditRing(r)}>
-                                    <Pencil className="h-3.5 w-3.5" />
+                                <div className="flex gap-0.5">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="rounded-none h-6 w-6 p-0 text-black hover:bg-black/10"
+                                    title={showPreview ? "Απόκρυψη προεπισκόπησης" : "Προεπισκόπηση"}
+                                    onClick={() => togglePreview(r.id)}
+                                  >
+                                    {showPreview ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                                   </Button>
-                                  <Button variant="ghost" size="sm" className="rounded-none h-7 w-7 p-0 text-black hover:bg-black/10" onClick={() => setDeleteRingId(r.id)}>
-                                    <Trash2 className="h-3.5 w-3.5" />
+                                  <Button variant="ghost" size="sm" className="rounded-none h-6 w-6 p-0 text-black hover:bg-black/10" onClick={() => openEditRing(r)}>
+                                    <Pencil className="h-3 w-3" />
+                                  </Button>
+                                  <Button variant="ghost" size="sm" className="rounded-none h-6 w-6 p-0 text-black hover:bg-black/10" onClick={() => setDeleteRingId(r.id)}>
+                                    <Trash2 className="h-3 w-3" />
                                   </Button>
                                 </div>
                               </div>
-                              <div className="relative w-full bg-black" style={{ paddingBottom: "56.25%" }}>
-                                {pickActiveEmbed(r) ? (
-                                  <iframe
-                                    src={normalizeEmbedUrl(pickActiveEmbed(r))}
-                                    className="absolute inset-0 w-full h-full"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                    title={`Ρινγκ ${r.ring_name}`}
-                                  />
-                                ) : (
-                                  <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm">Χωρίς link</div>
-                                )}
-                              </div>
-                              <div className="px-3 py-2 text-xs text-muted-foreground border-t border-border space-y-1 max-h-32 overflow-y-auto">
+                              {showPreview && (
+                                <div className="relative w-full bg-black" style={{ paddingBottom: "56.25%" }}>
+                                  {pickActiveEmbed(r) ? (
+                                    <iframe
+                                      src={normalizeEmbedUrl(pickActiveEmbed(r))}
+                                      className="absolute inset-0 w-full h-full"
+                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                      allowFullScreen
+                                      title={`Ρινγκ ${r.ring_name}`}
+                                    />
+                                  ) : (
+                                    <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm">Χωρίς link</div>
+                                  )}
+                                </div>
+                              )}
+                              <div className="px-2 py-1.5 text-[11px] text-muted-foreground border-t border-border space-y-0.5 max-h-20 overflow-y-auto">
                                 {getRingDays(r).length > 0 ? (
                                   getRingDays(r).map((d, i) => (
                                     <div key={i} className="truncate">
-                                      <span className="font-semibold">Ημέρα {i + 1}{d.date ? ` (${formatDateGR(d.date)})` : ""}:</span> {d.embed_url || "—"}
+                                      <span className="font-semibold">Ημ. {i + 1}{d.date ? ` (${formatDateGR(d.date)})` : ""}:</span> {d.embed_url || "—"}
                                     </div>
                                   ))
                                 ) : (
@@ -520,7 +533,8 @@ const LiveEventsManagement: React.FC = () => {
                               </div>
 
                             </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </CardContent>
