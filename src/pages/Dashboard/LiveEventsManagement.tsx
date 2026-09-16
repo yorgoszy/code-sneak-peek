@@ -433,12 +433,12 @@ const LiveEventsManagement: React.FC = () => {
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-2">
                 {events.map((event) => (
                   <Card key={event.id} className="rounded-none">
-                    <CardHeader className="flex flex-row items-start justify-between gap-2">
+                    <CardHeader className="p-3 pb-2 flex flex-row items-center justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="flex items-center gap-2 flex-wrap">
+                        <CardTitle className="text-base flex items-center gap-2 flex-wrap">
                           {event.title}
                           {event.is_active ? (
                             <Badge className="rounded-none bg-[#00ffba] text-black hover:bg-[#00ffba]/90">Ενεργό</Badge>
