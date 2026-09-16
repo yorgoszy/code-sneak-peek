@@ -406,14 +406,14 @@ const LiveEventsManagement: React.FC = () => {
           </div>
 
           <main className="flex-1 p-4 lg:p-6 overflow-auto">
-            <div className="hidden lg:flex items-center justify-between mb-6">
+            <div className="hidden lg:flex items-center justify-between mb-3">
               <div>
-                <h1 className="text-2xl font-bold flex items-center gap-2">
-                  <Radio className="h-6 w-6" /> Live Αγώνες
+                <h1 className="text-xl font-bold flex items-center gap-2">
+                  <Radio className="h-5 w-5" /> Live Αγώνες
                 </h1>
-                <p className="text-sm text-muted-foreground">Διαχείριση live streams ανά ρινγκ</p>
+                <p className="text-xs text-muted-foreground">Διαχείριση live streams ανά ρινγκ</p>
               </div>
-              <Button onClick={openCreateEvent} className="rounded-none">
+              <Button size="sm" onClick={openCreateEvent} className="rounded-none">
                 <Plus className="h-4 w-4 mr-2" /> Νέο Event
               </Button>
             </div>
