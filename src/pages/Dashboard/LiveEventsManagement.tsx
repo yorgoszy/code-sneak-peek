@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Menu, Plus, Trash2, Pencil, Radio, ChevronDown, ChevronUp, X, Upload } from "lucide-react";
+import { Menu, Plus, Trash2, Pencil, Radio, ChevronDown, ChevronUp, X, Upload, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -201,6 +201,16 @@ const LiveEventsManagement: React.FC = () => {
 
   const [deleteEventId, setDeleteEventId] = useState<string | null>(null);
   const [deleteRingId, setDeleteRingId] = useState<string | null>(null);
+  const [previewRings, setPreviewRings] = useState<Set<string>>(new Set());
+
+  const togglePreview = (ringId: string) => {
+    setPreviewRings((prev) => {
+      const next = new Set(prev);
+      if (next.has(ringId)) next.delete(ringId);
+      else next.add(ringId);
+      return next;
+    });
+  };
 
   const fetchData = async () => {
     setLoading(true);
