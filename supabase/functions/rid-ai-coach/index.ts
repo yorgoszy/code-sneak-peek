@@ -1783,34 +1783,61 @@ ${calendarDisplay}`;
         if (Array.isArray(allAssignments) && Array.isArray(allWeeksData) && Array.isArray(allDaysData) && 
             Array.isArray(allBlocksData) && Array.isArray(allProgramExercisesData) && Array.isArray(allExercisesData)) {
           
-          allAssignments.forEach((assignment: any) => {
-            const program = Array.isArray(allProgramsData) ? allProgramsData.find((p: any) => p.id === assignment.program_id) : null;
-            const user = Array.isArray(allUsersData) ? allUsersData.find((u: any) => u.id === assignment.user_id) : null;
+          // Index maps (O(1) lookups αντί για nested filters/finds)
+          const programById = new Map<string, any>((Array.isArray(allProgramsData) ? allProgramsData : []).map((p: any) => [p.id, p]));
+          const userById = new Map<string, any>((Array.isArray(allUsersData) ? allUsersData : []).map((u: any) => [u.id, u]));
+          const exerciseById = new Map<string, any>(allExercisesData.map((e: any) => [e.id, e]));
+          const weeksByProgramA = new Map<string, any[]>();
+          for (const w of allWeeksData) {
+            const arr = weeksByProgramA.get(w.program_id) || []; arr.push(w); weeksByProgramA.set(w.program_id, arr);
+          }
+          const daysByWeekA = new Map<string, any[]>();
+          for (const d of allDaysData) {
+            const arr = daysByWeekA.get(d.week_id) || []; arr.push(d); daysByWeekA.set(d.week_id, arr);
+          }
+          const blocksByDayA = new Map<string, any[]>();
+          for (const b of allBlocksData) {
+            const arr = blocksByDayA.get(b.day_id) || []; arr.push(b); blocksByDayA.set(b.day_id, arr);
+          }
+          const pexByBlockA = new Map<string, any[]>();
+          for (const pe of allProgramExercisesData) {
+            const arr = pexByBlockA.get(pe.block_id) || []; arr.push(pe); pexByBlockA.set(pe.block_id, arr);
+          }
+          const completionByKey = new Map<string, any>();
+          if (Array.isArray(allCompletions)) {
+            for (const c of allCompletions) completionByKey.set(`${c.assignment_id}|${c.scheduled_date}`, c);
+          }
+          const resultByKey = new Map<string, any>();
+          if (Array.isArray(allExerciseResults)) {
+            for (const er of allExerciseResults) resultByKey.set(`${er.workout_completion_id}|${er.program_exercise_id}`, er);
+          }
+
+          // Περιορισμός: μόνο τα 12 πιο πρόσφατα assignments (CPU limit)
+          const detailedAssignments = allAssignments.slice(0, 12);
+          for (const assignment of detailedAssignments) {
+            const program = programById.get(assignment.program_id) || null;
+            const user = userById.get(assignment.user_id) || null;
             
-            if (!program || !user || !assignment.training_dates) return;
+            if (!program || !user || !assignment.training_dates) continue;
             
             detailedWorkoutsContext += `\n🏃 ${user.name} - ${program.name}:\n`;
             
-            // Map training dates to days
-            const programWeeks = allWeeksData.filter((w: any) => w.program_id === program.id);
+            const programWeeks = weeksByProgramA.get(program.id) || [];
             
             programWeeks.forEach((week: any) => {
-              const weekDays = allDaysData.filter((d: any) => d.week_id === week.id);
+              const weekDays = daysByWeekA.get(week.id) || [];
               
               weekDays.forEach((day: any, dayIndex: number) => {
-                // Calculate actual training date index based on all previous weeks' days
                 const daysBeforeThisWeek = programWeeks
                   .filter((w: any) => w.week_order < week.week_order)
-                  .reduce((total, w) => total + allDaysData.filter((d: any) => d.week_id === w.id).length, 0);
+                  .reduce((total: number, w: any) => total + (daysByWeekA.get(w.id) || []).length, 0);
                 
                 const dateIndex = daysBeforeThisWeek + dayIndex;
                 
                 if (dateIndex >= assignment.training_dates.length) return;
                 
                 const scheduledDate = assignment.training_dates[dateIndex];
-                const completion = Array.isArray(allCompletions) 
-                  ? allCompletions.find((c: any) => c.assignment_id === assignment.id && c.scheduled_date === scheduledDate)
-                  : null;
+                const completion = completionByKey.get(`${assignment.id}|${scheduledDate}`) || null;
                 
                 const statusIcon = completion?.status === 'completed' ? '✅' : completion?.status === 'missed' ? '❌' : '📅';
                 const rpeScore = completion?.rpe_score;
@@ -1818,17 +1845,15 @@ ${calendarDisplay}`;
                 
                 detailedWorkoutsContext += `\n  ${statusIcon} ${scheduledDate} - ${day.name}${rpeText}:\n`;
                 
-                // Blocks και ασκήσεις
-                const dayBlocks = allBlocksData.filter((b: any) => b.day_id === day.id);
+                const dayBlocks = blocksByDayA.get(day.id) || [];
                 
                 dayBlocks.forEach((block: any) => {
                   detailedWorkoutsContext += `\n    🔹 ${block.name}${block.training_type ? ` (${block.training_type})` : ''}:\n`;
                   
-                  const blockExercises = allProgramExercisesData.filter((pe: any) => pe.block_id === block.id);
+                  const blockExercises = pexByBlockA.get(block.id) || [];
                   
                   blockExercises.forEach((pe: any) => {
-                    const exercise = allExercisesData.find((e: any) => e.id === pe.exercise_id);
-                    const exerciseName = exercise?.name || 'Unknown Exercise';
+                    const exerciseName = exerciseById.get(pe.exercise_id)?.name || 'Unknown Exercise';
                     
                     // Programmed values
                     let exerciseLine = `      • ${exerciseName}: ${pe.sets || '?'}x${pe.reps || '?'}`;
@@ -1841,9 +1866,7 @@ ${calendarDisplay}`;
                     
                     // Actual results if completed
                     if (completion?.status === 'completed') {
-                      const exerciseResult = allExerciseResults.find((er: any) => 
-                        er.workout_completion_id === completion.id && er.program_exercise_id === pe.id
-                      );
+                      const exerciseResult = resultByKey.get(`${completion.id}|${pe.id}`);
                       if (exerciseResult) {
                         exerciseLine += '\n        ➜ ΠΡΑΓΜΑΤΙΚΑ: ';
                         const actualParts: string[] = [];
@@ -1864,7 +1887,11 @@ ${calendarDisplay}`;
             });
             
             detailedWorkoutsContext += '\n';
-          });
+            if (detailedWorkoutsContext.length > 80000) {
+              detailedWorkoutsContext += '\n... (συντομεύθηκε λόγω μεγέθους)\n';
+              break;
+            }
+          }
         } else {
           console.error('⚠️ Some data is not an array:', {
             allWeeksData: Array.isArray(allWeeksData),
