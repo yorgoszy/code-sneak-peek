@@ -1783,34 +1783,61 @@ ${calendarDisplay}`;
         if (Array.isArray(allAssignments) && Array.isArray(allWeeksData) && Array.isArray(allDaysData) && 
             Array.isArray(allBlocksData) && Array.isArray(allProgramExercisesData) && Array.isArray(allExercisesData)) {
           
-          allAssignments.forEach((assignment: any) => {
-            const program = Array.isArray(allProgramsData) ? allProgramsData.find((p: any) => p.id === assignment.program_id) : null;
-            const user = Array.isArray(allUsersData) ? allUsersData.find((u: any) => u.id === assignment.user_id) : null;
+          // Index maps (O(1) lookups αντί για nested filters/finds)
+          const programById = new Map<string, any>((Array.isArray(allProgramsData) ? allProgramsData : []).map((p: any) => [p.id, p]));
+          const userById = new Map<string, any>((Array.isArray(allUsersData) ? allUsersData : []).map((u: any) => [u.id, u]));
+          const exerciseById = new Map<string, any>(allExercisesData.map((e: any) => [e.id, e]));
+          const weeksByProgramA = new Map<string, any[]>();
+          for (const w of allWeeksData) {
+            const arr = weeksByProgramA.get(w.program_id) || []; arr.push(w); weeksByProgramA.set(w.program_id, arr);
+          }
+          const daysByWeekA = new Map<string, any[]>();
+          for (const d of allDaysData) {
+            const arr = daysByWeekA.get(d.week_id) || []; arr.push(d); daysByWeekA.set(d.week_id, arr);
+          }
+          const blocksByDayA = new Map<string, any[]>();
+          for (const b of allBlocksData) {
+            const arr = blocksByDayA.get(b.day_id) || []; arr.push(b); blocksByDayA.set(b.day_id, arr);
+          }
+          const pexByBlockA = new Map<string, any[]>();
+          for (const pe of allProgramExercisesData) {
+            const arr = pexByBlockA.get(pe.block_id) || []; arr.push(pe); pexByBlockA.set(pe.block_id, arr);
+          }
+          const completionByKey = new Map<string, any>();
+          if (Array.isArray(allCompletions)) {
+            for (const c of allCompletions) completionByKey.set(`${c.assignment_id}|${c.scheduled_date}`, c);
+          }
+          const resultByKey = new Map<string, any>();
+          if (Array.isArray(allExerciseResults)) {
+            for (const er of allExerciseResults) resultByKey.set(`${er.workout_completion_id}|${er.program_exercise_id}`, er);
+          }
+
+          // Περιορισμός: μόνο τα 12 πιο πρόσφατα assignments (CPU limit)
+          const detailedAssignments = allAssignments.slice(0, 12);
+          for (const assignment of detailedAssignments) {
+            const program = programById.get(assignment.program_id) || null;
+            const user = userById.get(assignment.user_id) || null;
             
-            if (!program || !user || !assignment.training_dates) return;
+            if (!program || !user || !assignment.training_dates) continue;
             
             detailedWorkoutsContext += `\n🏃 ${user.name} - ${program.name}:\n`;
             
-            // Map training dates to days
-            const programWeeks = allWeeksData.filter((w: any) => w.program_id === program.id);
+            const programWeeks = weeksByProgramA.get(program.id) || [];
             
             programWeeks.forEach((week: any) => {
-              const weekDays = allDaysData.filter((d: any) => d.week_id === week.id);
+              const weekDays = daysByWeekA.get(week.id) || [];
               
               weekDays.forEach((day: any, dayIndex: number) => {
-                // Calculate actual training date index based on all previous weeks' days
                 const daysBeforeThisWeek = programWeeks
                   .filter((w: any) => w.week_order < week.week_order)
-                  .reduce((total, w) => total + allDaysData.filter((d: any) => d.week_id === w.id).length, 0);
+                  .reduce((total: number, w: any) => total + (daysByWeekA.get(w.id) || []).length, 0);
                 
                 const dateIndex = daysBeforeThisWeek + dayIndex;
                 
                 if (dateIndex >= assignment.training_dates.length) return;
                 
                 const scheduledDate = assignment.training_dates[dateIndex];
-                const completion = Array.isArray(allCompletions) 
-                  ? allCompletions.find((c: any) => c.assignment_id === assignment.id && c.scheduled_date === scheduledDate)
-                  : null;
+                const completion = completionByKey.get(`${assignment.id}|${scheduledDate}`) || null;
                 
                 const statusIcon = completion?.status === 'completed' ? '✅' : completion?.status === 'missed' ? '❌' : '📅';
                 const rpeScore = completion?.rpe_score;
@@ -1818,17 +1845,15 @@ ${calendarDisplay}`;
                 
                 detailedWorkoutsContext += `\n  ${statusIcon} ${scheduledDate} - ${day.name}${rpeText}:\n`;
                 
-                // Blocks και ασκήσεις
-                const dayBlocks = allBlocksData.filter((b: any) => b.day_id === day.id);
+                const dayBlocks = blocksByDayA.get(day.id) || [];
                 
                 dayBlocks.forEach((block: any) => {
                   detailedWorkoutsContext += `\n    🔹 ${block.name}${block.training_type ? ` (${block.training_type})` : ''}:\n`;
                   
-                  const blockExercises = allProgramExercisesData.filter((pe: any) => pe.block_id === block.id);
+                  const blockExercises = pexByBlockA.get(block.id) || [];
                   
                   blockExercises.forEach((pe: any) => {
-                    const exercise = allExercisesData.find((e: any) => e.id === pe.exercise_id);
-                    const exerciseName = exercise?.name || 'Unknown Exercise';
+                    const exerciseName = exerciseById.get(pe.exercise_id)?.name || 'Unknown Exercise';
                     
                     // Programmed values
                     let exerciseLine = `      • ${exerciseName}: ${pe.sets || '?'}x${pe.reps || '?'}`;
@@ -1841,9 +1866,7 @@ ${calendarDisplay}`;
                     
                     // Actual results if completed
                     if (completion?.status === 'completed') {
-                      const exerciseResult = allExerciseResults.find((er: any) => 
-                        er.workout_completion_id === completion.id && er.program_exercise_id === pe.id
-                      );
+                      const exerciseResult = resultByKey.get(`${completion.id}|${pe.id}`);
                       if (exerciseResult) {
                         exerciseLine += '\n        ➜ ΠΡΑΓΜΑΤΙΚΑ: ';
                         const actualParts: string[] = [];
@@ -1864,7 +1887,11 @@ ${calendarDisplay}`;
             });
             
             detailedWorkoutsContext += '\n';
-          });
+            if (detailedWorkoutsContext.length > 80000) {
+              detailedWorkoutsContext += '\n... (συντομεύθηκε λόγω μεγέθους)\n';
+              break;
+            }
+          }
         } else {
           console.error('⚠️ Some data is not an array:', {
             allWeeksData: Array.isArray(allWeeksData),
@@ -2040,7 +2067,45 @@ ${calendarDisplay}`;
           'select=id,name,description', SUPABASE_SERVICE_ROLE_KEY!
         );
         
-        // Build context
+        // Build context - index maps (O(n) αντί για nested filters)
+        const weeksByProgram = new Map<string, any[]>();
+        for (const w of menuWeeks) {
+          const arr = weeksByProgram.get(w.program_id) || [];
+          arr.push(w); weeksByProgram.set(w.program_id, arr);
+        }
+        const daysByWeek = new Map<string, any[]>();
+        for (const d of menuDays) {
+          const arr = daysByWeek.get(d.week_id) || [];
+          arr.push(d); daysByWeek.set(d.week_id, arr);
+        }
+        const blocksByDay = new Map<string, any[]>();
+        for (const b of menuBlocks) {
+          const arr = blocksByDay.get(b.day_id) || [];
+          arr.push(b); blocksByDay.set(b.day_id, arr);
+        }
+        const pexByBlock = new Map<string, any[]>();
+        for (const pe of menuProgramExercises) {
+          const arr = pexByBlock.get(pe.block_id) || [];
+          arr.push(pe); pexByBlock.set(pe.block_id, arr);
+        }
+        const exerciseNameById = new Map<string, string>();
+        for (const e of menuExercisesNames) exerciseNameById.set(e.id, e.name);
+
+        const countStructure = (p: any) => {
+          const weeks = weeksByProgram.get(p.id) || [];
+          let days = 0, blocks = 0, exercises = 0;
+          for (const w of weeks) {
+            const wDays = daysByWeek.get(w.id) || [];
+            days += wDays.length;
+            for (const d of wDays) {
+              const dBlocks = blocksByDay.get(d.id) || [];
+              blocks += dBlocks.length;
+              for (const b of dBlocks) exercises += (pexByBlock.get(b.id) || []).length;
+            }
+          }
+          return { weeks: weeks.length, days, blocks, exercises };
+        };
+
         const templates = allProgramsMenu.filter((p: any) => p.is_template === true);
         const drafts = allProgramsMenu.filter((p: any) => p.status === 'draft' && !p.is_template);
         const otherPrograms = allProgramsMenu.filter((p: any) => p.status !== 'draft' && !p.is_template);
@@ -2054,68 +2119,66 @@ ${calendarDisplay}`;
 - Σύνολο: ${allProgramsMenu.length}
 
 📁 TEMPLATES (${templates.length}):
-${templates.map((p: any, i: number) => {
-  const weeks = menuWeeks.filter((w: any) => w.program_id === p.id);
-  const days = weeks.flatMap((w: any) => menuDays.filter((d: any) => d.week_id === w.id));
-  const blocks = days.flatMap((d: any) => menuBlocks.filter((b: any) => b.day_id === d.id));
-  const exercises = blocks.flatMap((b: any) => menuProgramExercises.filter((pe: any) => pe.block_id === b.id));
-  
+${templates.slice(0, 30).map((p: any, i: number) => {
+  const s = countStructure(p);
   return `${i + 1}. ${p.name}
    - Περιγραφή: ${p.description || 'Χωρίς περιγραφή'}
-   - Δομή: ${weeks.length} εβδομάδες, ${days.length} ημέρες, ${blocks.length} blocks, ${exercises.length} ασκήσεις
+   - Δομή: ${s.weeks} εβδομάδες, ${s.days} ημέρες, ${s.blocks} blocks, ${s.exercises} ασκήσεις
    - Δημιουργήθηκε: ${new Date(p.created_at).toLocaleDateString('el-GR')}`;
 }).join('\n\n')}
 
 📝 DRAFTS (${drafts.length}):
-${drafts.map((p: any, i: number) => {
-  const weeks = menuWeeks.filter((w: any) => w.program_id === p.id);
-  const days = weeks.flatMap((w: any) => menuDays.filter((d: any) => d.week_id === w.id));
-  const blocks = days.flatMap((d: any) => menuBlocks.filter((b: any) => b.day_id === d.id));
-  const exercises = blocks.flatMap((b: any) => menuProgramExercises.filter((pe: any) => pe.block_id === b.id));
-  
+${drafts.slice(0, 30).map((p: any, i: number) => {
+  const s = countStructure(p);
   return `${i + 1}. ${p.name}
    - Περιγραφή: ${p.description || 'Χωρίς περιγραφή'}
-   - Δομή: ${weeks.length} εβδομάδες, ${days.length} ημέρες, ${blocks.length} blocks, ${exercises.length} ασκήσεις
+   - Δομή: ${s.weeks} εβδομάδες, ${s.days} ημέρες, ${s.blocks} blocks, ${s.exercises} ασκήσεις
    - Τελευταία ενημέρωση: ${new Date(p.updated_at).toLocaleDateString('el-GR')}`;
 }).join('\n\n')}
 
-📋 ΑΝΑΛΥΤΙΚΗ ΔΟΜΗ ΠΡΟΓΡΑΜΜΑΤΩΝ:
+📋 ΑΝΑΛΥΤΙΚΗ ΔΟΜΗ ΠΡΟΓΡΑΜΜΑΤΩΝ (τα 10 πιο πρόσφατα):
 `;
         
-        // Αναλυτική δομή για κάθε πρόγραμμα
-        allProgramsMenu.forEach((program: any) => {
-          const progWeeks = menuWeeks.filter((w: any) => w.program_id === program.id);
-          if (progWeeks.length === 0) return;
+        // Αναλυτική δομή μόνο για τα 10 πιο πρόσφατα προγράμματα (CPU/context limit)
+        const detailParts: string[] = [];
+        for (const program of allProgramsMenu.slice(0, 10)) {
+          const progWeeks = weeksByProgram.get(program.id) || [];
+          if (progWeeks.length === 0) continue;
           
-          adminProgramsMenuContext += `\n🏋️ ${program.name} ${program.is_template ? '(TEMPLATE)' : program.status === 'draft' ? '(DRAFT)' : ''}:\n`;
+          detailParts.push(`\n🏋️ ${program.name} ${program.is_template ? '(TEMPLATE)' : program.status === 'draft' ? '(DRAFT)' : ''}:\n`);
           
-          progWeeks.forEach((week: any) => {
-            const weekDays = menuDays.filter((d: any) => d.week_id === week.id);
-            adminProgramsMenuContext += `  📅 ${week.name || `Εβδομάδα ${week.week_number}`}:\n`;
+          for (const week of progWeeks) {
+            const weekDays = daysByWeek.get(week.id) || [];
+            detailParts.push(`  📅 ${week.name || `Εβδομάδα ${week.week_number}`}:\n`);
             
-            weekDays.forEach((day: any) => {
-              const dayBlocks = menuBlocks.filter((b: any) => b.day_id === day.id);
-              adminProgramsMenuContext += `    📌 ${day.name || `Ημέρα ${day.day_number}`}:\n`;
+            for (const day of weekDays) {
+              const dayBlocks = blocksByDay.get(day.id) || [];
+              detailParts.push(`    📌 ${day.name || `Ημέρα ${day.day_number}`}:\n`);
               
-              dayBlocks.forEach((block: any) => {
-                const blockExercises = menuProgramExercises.filter((pe: any) => pe.block_id === block.id);
-                adminProgramsMenuContext += `      🔹 ${block.name}${block.training_type ? ` (${block.training_type})` : ''}:\n`;
+              for (const block of dayBlocks) {
+                const blockExercises = pexByBlock.get(block.id) || [];
+                detailParts.push(`      🔹 ${block.name}${block.training_type ? ` (${block.training_type})` : ''}:\n`);
                 
-                blockExercises.forEach((pe: any) => {
-                  const exercise = menuExercisesNames.find((e: any) => e.id === pe.exercise_id);
-                  const exerciseName = exercise?.name || 'Unknown Exercise';
+                for (const pe of blockExercises) {
+                  const exerciseName = exerciseNameById.get(pe.exercise_id) || 'Unknown Exercise';
                   let details = `${pe.sets || '?'}x${pe.reps || '?'}`;
                   if (pe.kg) details += ` @ ${pe.kg}kg`;
                   if (pe.tempo) details += ` tempo ${pe.tempo}`;
                   if (pe.rest) details += ` rest ${pe.rest}s`;
                   if (pe.notes) details += ` (${pe.notes})`;
                   
-                  adminProgramsMenuContext += `        • ${exerciseName}: ${details}\n`;
-                });
-              });
-            });
-          });
-        });
+                  detailParts.push(`        • ${exerciseName}: ${details}\n`);
+                }
+              }
+            }
+          }
+        }
+        adminProgramsMenuContext += detailParts.join('');
+
+        // Hard cap για αποφυγή υπερβολικού context
+        if (adminProgramsMenuContext.length > 60000) {
+          adminProgramsMenuContext = adminProgramsMenuContext.slice(0, 60000) + '\n... (συντομεύθηκε)\n';
+        }
         
         console.log(`✅ Admin Programs Menu context length: ${adminProgramsMenuContext.length} chars`);
       }
