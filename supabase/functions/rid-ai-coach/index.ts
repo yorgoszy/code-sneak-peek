@@ -2040,7 +2040,45 @@ ${calendarDisplay}`;
           'select=id,name,description', SUPABASE_SERVICE_ROLE_KEY!
         );
         
-        // Build context
+        // Build context - index maps (O(n) αντί για nested filters)
+        const weeksByProgram = new Map<string, any[]>();
+        for (const w of menuWeeks) {
+          const arr = weeksByProgram.get(w.program_id) || [];
+          arr.push(w); weeksByProgram.set(w.program_id, arr);
+        }
+        const daysByWeek = new Map<string, any[]>();
+        for (const d of menuDays) {
+          const arr = daysByWeek.get(d.week_id) || [];
+          arr.push(d); daysByWeek.set(d.week_id, arr);
+        }
+        const blocksByDay = new Map<string, any[]>();
+        for (const b of menuBlocks) {
+          const arr = blocksByDay.get(b.day_id) || [];
+          arr.push(b); blocksByDay.set(b.day_id, arr);
+        }
+        const pexByBlock = new Map<string, any[]>();
+        for (const pe of menuProgramExercises) {
+          const arr = pexByBlock.get(pe.block_id) || [];
+          arr.push(pe); pexByBlock.set(pe.block_id, arr);
+        }
+        const exerciseNameById = new Map<string, string>();
+        for (const e of menuExercisesNames) exerciseNameById.set(e.id, e.name);
+
+        const countStructure = (p: any) => {
+          const weeks = weeksByProgram.get(p.id) || [];
+          let days = 0, blocks = 0, exercises = 0;
+          for (const w of weeks) {
+            const wDays = daysByWeek.get(w.id) || [];
+            days += wDays.length;
+            for (const d of wDays) {
+              const dBlocks = blocksByDay.get(d.id) || [];
+              blocks += dBlocks.length;
+              for (const b of dBlocks) exercises += (pexByBlock.get(b.id) || []).length;
+            }
+          }
+          return { weeks: weeks.length, days, blocks, exercises };
+        };
+
         const templates = allProgramsMenu.filter((p: any) => p.is_template === true);
         const drafts = allProgramsMenu.filter((p: any) => p.status === 'draft' && !p.is_template);
         const otherPrograms = allProgramsMenu.filter((p: any) => p.status !== 'draft' && !p.is_template);
@@ -2054,68 +2092,66 @@ ${calendarDisplay}`;
 - Σύνολο: ${allProgramsMenu.length}
 
 📁 TEMPLATES (${templates.length}):
-${templates.map((p: any, i: number) => {
-  const weeks = menuWeeks.filter((w: any) => w.program_id === p.id);
-  const days = weeks.flatMap((w: any) => menuDays.filter((d: any) => d.week_id === w.id));
-  const blocks = days.flatMap((d: any) => menuBlocks.filter((b: any) => b.day_id === d.id));
-  const exercises = blocks.flatMap((b: any) => menuProgramExercises.filter((pe: any) => pe.block_id === b.id));
-  
+${templates.slice(0, 30).map((p: any, i: number) => {
+  const s = countStructure(p);
   return `${i + 1}. ${p.name}
    - Περιγραφή: ${p.description || 'Χωρίς περιγραφή'}
-   - Δομή: ${weeks.length} εβδομάδες, ${days.length} ημέρες, ${blocks.length} blocks, ${exercises.length} ασκήσεις
+   - Δομή: ${s.weeks} εβδομάδες, ${s.days} ημέρες, ${s.blocks} blocks, ${s.exercises} ασκήσεις
    - Δημιουργήθηκε: ${new Date(p.created_at).toLocaleDateString('el-GR')}`;
 }).join('\n\n')}
 
 📝 DRAFTS (${drafts.length}):
-${drafts.map((p: any, i: number) => {
-  const weeks = menuWeeks.filter((w: any) => w.program_id === p.id);
-  const days = weeks.flatMap((w: any) => menuDays.filter((d: any) => d.week_id === w.id));
-  const blocks = days.flatMap((d: any) => menuBlocks.filter((b: any) => b.day_id === d.id));
-  const exercises = blocks.flatMap((b: any) => menuProgramExercises.filter((pe: any) => pe.block_id === b.id));
-  
+${drafts.slice(0, 30).map((p: any, i: number) => {
+  const s = countStructure(p);
   return `${i + 1}. ${p.name}
    - Περιγραφή: ${p.description || 'Χωρίς περιγραφή'}
-   - Δομή: ${weeks.length} εβδομάδες, ${days.length} ημέρες, ${blocks.length} blocks, ${exercises.length} ασκήσεις
+   - Δομή: ${s.weeks} εβδομάδες, ${s.days} ημέρες, ${s.blocks} blocks, ${s.exercises} ασκήσεις
    - Τελευταία ενημέρωση: ${new Date(p.updated_at).toLocaleDateString('el-GR')}`;
 }).join('\n\n')}
 
-📋 ΑΝΑΛΥΤΙΚΗ ΔΟΜΗ ΠΡΟΓΡΑΜΜΑΤΩΝ:
+📋 ΑΝΑΛΥΤΙΚΗ ΔΟΜΗ ΠΡΟΓΡΑΜΜΑΤΩΝ (τα 10 πιο πρόσφατα):
 `;
         
-        // Αναλυτική δομή για κάθε πρόγραμμα
-        allProgramsMenu.forEach((program: any) => {
-          const progWeeks = menuWeeks.filter((w: any) => w.program_id === program.id);
-          if (progWeeks.length === 0) return;
+        // Αναλυτική δομή μόνο για τα 10 πιο πρόσφατα προγράμματα (CPU/context limit)
+        const detailParts: string[] = [];
+        for (const program of allProgramsMenu.slice(0, 10)) {
+          const progWeeks = weeksByProgram.get(program.id) || [];
+          if (progWeeks.length === 0) continue;
           
-          adminProgramsMenuContext += `\n🏋️ ${program.name} ${program.is_template ? '(TEMPLATE)' : program.status === 'draft' ? '(DRAFT)' : ''}:\n`;
+          detailParts.push(`\n🏋️ ${program.name} ${program.is_template ? '(TEMPLATE)' : program.status === 'draft' ? '(DRAFT)' : ''}:\n`);
           
-          progWeeks.forEach((week: any) => {
-            const weekDays = menuDays.filter((d: any) => d.week_id === week.id);
-            adminProgramsMenuContext += `  📅 ${week.name || `Εβδομάδα ${week.week_number}`}:\n`;
+          for (const week of progWeeks) {
+            const weekDays = daysByWeek.get(week.id) || [];
+            detailParts.push(`  📅 ${week.name || `Εβδομάδα ${week.week_number}`}:\n`);
             
-            weekDays.forEach((day: any) => {
-              const dayBlocks = menuBlocks.filter((b: any) => b.day_id === day.id);
-              adminProgramsMenuContext += `    📌 ${day.name || `Ημέρα ${day.day_number}`}:\n`;
+            for (const day of weekDays) {
+              const dayBlocks = blocksByDay.get(day.id) || [];
+              detailParts.push(`    📌 ${day.name || `Ημέρα ${day.day_number}`}:\n`);
               
-              dayBlocks.forEach((block: any) => {
-                const blockExercises = menuProgramExercises.filter((pe: any) => pe.block_id === block.id);
-                adminProgramsMenuContext += `      🔹 ${block.name}${block.training_type ? ` (${block.training_type})` : ''}:\n`;
+              for (const block of dayBlocks) {
+                const blockExercises = pexByBlock.get(block.id) || [];
+                detailParts.push(`      🔹 ${block.name}${block.training_type ? ` (${block.training_type})` : ''}:\n`);
                 
-                blockExercises.forEach((pe: any) => {
-                  const exercise = menuExercisesNames.find((e: any) => e.id === pe.exercise_id);
-                  const exerciseName = exercise?.name || 'Unknown Exercise';
+                for (const pe of blockExercises) {
+                  const exerciseName = exerciseNameById.get(pe.exercise_id) || 'Unknown Exercise';
                   let details = `${pe.sets || '?'}x${pe.reps || '?'}`;
                   if (pe.kg) details += ` @ ${pe.kg}kg`;
                   if (pe.tempo) details += ` tempo ${pe.tempo}`;
                   if (pe.rest) details += ` rest ${pe.rest}s`;
                   if (pe.notes) details += ` (${pe.notes})`;
                   
-                  adminProgramsMenuContext += `        • ${exerciseName}: ${details}\n`;
-                });
-              });
-            });
-          });
-        });
+                  detailParts.push(`        • ${exerciseName}: ${details}\n`);
+                }
+              }
+            }
+          }
+        }
+        adminProgramsMenuContext += detailParts.join('');
+
+        // Hard cap για αποφυγή υπερβολικού context
+        if (adminProgramsMenuContext.length > 60000) {
+          adminProgramsMenuContext = adminProgramsMenuContext.slice(0, 60000) + '\n... (συντομεύθηκε)\n';
+        }
         
         console.log(`✅ Admin Programs Menu context length: ${adminProgramsMenuContext.length} chars`);
       }
