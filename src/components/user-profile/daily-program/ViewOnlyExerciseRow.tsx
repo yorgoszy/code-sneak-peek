@@ -3,6 +3,7 @@ import React, { useMemo, useState } from 'react';
 import { Play, Check, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getVideoThumbnail, isValidVideoUrl } from '@/utils/videoUtils';
+import { formatRepsTimeValue } from '@/utils/timeFormatting';
 import { VelocityCameraDialog } from '@/components/active-programs/calendar/VelocityCameraDialog';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useUserExerciseDataCacheContext } from '@/hooks/useUserExerciseDataCache';
@@ -198,7 +199,11 @@ export const ViewOnlyExerciseRow: React.FC<ViewOnlyExerciseRowProps> = ({
         </div>
         <div className="flex flex-col items-center" style={{ width: '60px' }}>
           <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>{getRepsLabel()}</label>
-          <div className="text-center w-full flex items-center justify-center" style={inputStyle}>{exercise.reps || '-'}</div>
+          <div className="text-center w-full flex items-center justify-center" style={inputStyle}>
+            {(exercise.reps_mode || 'reps') === 'time'
+              ? (formatRepsTimeValue(exercise.reps) || '-')
+              : (exercise.reps || '-')}
+          </div>
         </div>
         <div className="flex flex-col items-center" style={{ width: '60px' }}>
           <label className="block mb-1 text-center w-full" style={{ fontSize: '10px', color: '#666' }}>%1RM</label>

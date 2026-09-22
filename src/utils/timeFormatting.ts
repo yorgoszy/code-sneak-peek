@@ -48,3 +48,38 @@ export const formatTimeInput = (value: string): string => {
   
   return `${mins}:${secs}`;
 };
+
+/**
+ * Μορφοποίηση τιμής reps όταν το reps_mode είναι 'time'
+ * Δέχεται είτε καθαρά δευτερόλεπτα ("15"), είτε μορφή MM:SS ("00:15"),
+ * είτε μορφή rolling input χωρίς άνω-κάτω τελεία ("0015")
+ * και επιστρέφει πάντα m:ss (π.χ. "0:15")
+ */
+export const formatRepsTimeValue = (reps: string | number | null | undefined): string => {
+  if (reps === null || reps === undefined || String(reps).trim() === '') return '';
+  const raw = String(reps).trim();
+  let totalSeconds: number;
+
+  if (raw.includes(':')) {
+    const parts = raw.split(':');
+    const mins = parseInt(parts[0]) || 0;
+    const secs = parseFloat(parts[1]) || 0;
+    totalSeconds = mins * 60 + secs;
+  } else {
+    const digitsOnly = raw.replace(/\D/g, '');
+    if (!digitsOnly) return raw;
+    if (digitsOnly.length >= 4) {
+      // Rolling input style: τα 2 τελευταία ψηφία είναι δευτερόλεπτα
+      const mm = parseInt(digitsOnly.slice(0, -2)) || 0;
+      const ss = parseInt(digitsOnly.slice(-2)) || 0;
+      totalSeconds = mm * 60 + ss;
+    } else {
+      totalSeconds = parseInt(digitsOnly) || 0;
+    }
+  }
+
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = Math.round(totalSeconds % 60);
+  if (secs === 60) return `${mins + 1}:00`;
+  return `${mins}:${String(secs).padStart(2, '0')}`;
+};
