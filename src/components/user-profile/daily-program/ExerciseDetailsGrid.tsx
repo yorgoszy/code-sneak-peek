@@ -2,6 +2,7 @@
 import React from 'react';
 import { Separator } from "@/components/ui/separator";
 import { formatVelocityMs } from "@/utils/timeCalculations";
+import { formatRepsTimeValue } from "@/utils/timeFormatting";
 
 interface ExerciseDetailsGridProps {
   exercise: {
@@ -60,7 +61,11 @@ export const ExerciseDetailsGrid: React.FC<ExerciseDetailsGridProps> = ({
         
         <div className="flex-1 text-center">
           <div className="font-medium text-gray-600 mb-1">{REPS_MODE_LABELS[exercise.reps_mode || 'reps']}</div>
-          <div className="text-gray-900">{exercise.reps || '-'}</div>
+          <div className="text-gray-900">
+            {(exercise.reps_mode || 'reps') === 'time'
+              ? (formatRepsTimeValue(exercise.reps) || '-')
+              : (exercise.reps || '-')}
+          </div>
           {actualValues?.reps && (
             <div className="text-xs text-green-600 font-medium">{actualValues.reps}</div>
           )}
