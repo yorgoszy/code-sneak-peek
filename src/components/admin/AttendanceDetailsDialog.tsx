@@ -11,7 +11,6 @@ interface SectionUser {
   name: string;
   email: string;
   avatar_url: string | null;
-  isBooking?: boolean;
 }
 
 interface AttendanceDetailsDialogProps {
@@ -44,37 +43,32 @@ export const AttendanceDetailsDialog: React.FC<AttendanceDetailsDialogProps> = (
     if (!sectionId) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('app_users')
-        .select('id, name, email, avatar_url')
-        .eq('section_id', sectionId)
-        .eq('subscription_status', 'active');
-
-      if (error) throw error;
-      const members: SectionUser[] = data || [];
-
-      // Extra people who booked this specific day/time online
-      let extras: SectionUser[] = [];
-      if (date && time) {
-        const timeShort = time.length > 5 ? time.substring(0, 5) : time;
-        const { data: bookings } = await supabase
-          .from('booking_sessions')
-          .select('booking_time, app_users!user_id(id, name, email, avatar_url)')
-          .eq('section_id', sectionId)
-          .eq('booking_date', date)
-          .eq('status', 'confirmed');
-
-        const memberIds = new Set(members.map(m => m.id));
-        (bookings || []).forEach((b: any) => {
-          const bTime = String(b.booking_time || '').substring(0, 5);
-          const u = b.app_users;
-          if (bTime !== timeShort || !u || memberIds.has(u.id)) return;
-          if (extras.some(e => e.id === u.id)) return;
-          extras.push({ ...u, isBooking: true });
-        });
+      if (!date || !time) {
+        setUsers([]);
+        return;
       }
 
-      setUsers([...members, ...extras]);
+      const timeShort = time.substring(0, 5);
+      const { data, error } = await supabase
+        .from('booking_sessions')
+        .select('booking_time, user_id, app_users!user_id(id, name, email, avatar_url)')
+        .eq('section_id', sectionId)
+        .eq('booking_date', date)
+        .in('booking_type', ['gym_visit', 'gym'])
+        .in('status', ['confirmed', 'completed']);
+
+      if (error) throw error;
+
+      const uniqueUsers = new Map<string, SectionUser>();
+      (data || []).forEach((booking: any) => {
+        const bookingTime = String(booking.booking_time || '').substring(0, 5);
+        const user = booking.app_users;
+        if (bookingTime === timeShort && user?.id) {
+          uniqueUsers.set(user.id, user);
+        }
+      });
+
+      setUsers(Array.from(uniqueUsers.values()));
     } catch (error) {
       console.error('Error fetching section users:', error);
     } finally {
@@ -105,7 +99,7 @@ export const AttendanceDetailsDialog: React.FC<AttendanceDetailsDialogProps> = (
                 {time}
               </span>
               <Badge variant="outline" className="rounded-none text-xs">
-                {users.length} μέλη
+                {users.length} {users.length === 1 ? 'μέλος' : 'μέλη'}
               </Badge>
             </div>
           </div>
@@ -116,7 +110,7 @@ export const AttendanceDetailsDialog: React.FC<AttendanceDetailsDialogProps> = (
               <div className="text-center py-6 text-gray-500 text-sm">Φόρτωση...</div>
             ) : users.length === 0 ? (
               <div className="text-center py-6 text-gray-500 text-sm">
-                Δεν υπάρχουν εγγεγραμμένα μέλη
+                Δεν υπάρχουν κρατήσεις για αυτή την ώρα
               </div>
             ) : (
               users.map((user) => (
@@ -138,11 +132,6 @@ export const AttendanceDetailsDialog: React.FC<AttendanceDetailsDialogProps> = (
                       {user.email}
                     </div>
                   </div>
-                  {user.isBooking && (
-                    <Badge variant="outline" className="rounded-none text-[10px] flex-shrink-0">
-                      Κράτηση
-                    </Badge>
-                  )}
                 </div>
               ))
             )}
