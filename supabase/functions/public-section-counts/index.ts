@@ -26,40 +26,68 @@ serve(async (req) => {
 
     if (sectionsError) throw sectionsError;
 
-    // Get user counts per section
-    const { data: users, error: usersError } = await supabase
-      .from('app_users')
-      .select('section_id')
-      .not('section_id', 'is', null)
-      .eq('subscription_status', 'active');
-
-    if (usersError) throw usersError;
-
-    // Count users per section
-    const sectionCounts: { [sectionId: string]: number } = {};
-    (users || []).forEach(user => {
-      if (user.section_id) {
-        sectionCounts[user.section_id] = (sectionCounts[user.section_id] || 0) + 1;
-      }
-    });
-
     // Get closed days for current week
     const now = new Date();
-    const startOfWeek = new Date(now);
     const dayOfWeek = now.getDay();
+    const startOfWeek = new Date(now);
     startOfWeek.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+    startOfWeek.setHours(0, 0, 0, 0);
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+    const weekStartStr = startOfWeek.toISOString().split('T')[0];
+    const weekEndStr = endOfWeek.toISOString().split('T')[0];
 
     const { data: closedDays, error: closedError } = await supabase
       .from('closed_days')
       .select('closed_date, reason')
-      .gte('closed_date', startOfWeek.toISOString().split('T')[0])
-      .lte('closed_date', endOfWeek.toISOString().split('T')[0]);
+      .gte('closed_date', weekStartStr)
+      .lte('closed_date', weekEndStr);
 
     if (closedError) {
       console.log('Closed days fetch error (table may not exist):', closedError.message);
     }
+
+    // Per-section, per-date, per-time unique attendee counts from real bookings
+    // (same logic as the admin Overview: only confirmed/completed gym bookings
+    // at the exact booked hour count)
+    const { data: bookings, error: bookingsError } = await supabase
+      .from('booking_sessions')
+      .select('section_id, user_id, booking_date, booking_time')
+      .not('user_id', 'is', null)
+      .gte('booking_date', weekStartStr)
+      .lte('booking_date', weekEndStr)
+      .in('booking_type', ['gym_visit', 'gym'])
+      .in('status', ['confirmed', 'completed']);
+
+    if (bookingsError) {
+      console.log('Bookings fetch error:', bookingsError.message);
+    }
+
+    const slotSets: { [sectionId: string]: { [date: string]: { [time: string]: Set<string> } } } = {};
+    (bookings || []).forEach(b => {
+      if (!b.section_id || !b.user_id || !b.booking_date) return;
+      const time = (b.booking_time || '').length > 5
+        ? (b.booking_time as string).substring(0, 5)
+        : (b.booking_time || '');
+      if (!time) return;
+      if (!slotSets[b.section_id]) slotSets[b.section_id] = {};
+      if (!slotSets[b.section_id][b.booking_date]) slotSets[b.section_id][b.booking_date] = {};
+      if (!slotSets[b.section_id][b.booking_date][time]) slotSets[b.section_id][b.booking_date][time] = new Set();
+      slotSets[b.section_id][b.booking_date][time].add(b.user_id);
+    });
+
+    const buildCounts = (sectionId: string) => {
+      const counts: { [date: string]: { [time: string]: number } } = {};
+      const dates = slotSets[sectionId] || {};
+      Object.keys(dates).sort().forEach(date => {
+        counts[date] = {};
+        Object.keys(dates[date]).sort().forEach(time => {
+          counts[date][time] = dates[date][time].size;
+        });
+      });
+      return counts;
+    };
 
     // Filter out videocall sections and combine data
     const publicSections = (sections || [])
@@ -74,7 +102,8 @@ serve(async (req) => {
         name: section.name,
         max_capacity: section.max_capacity,
         available_hours: section.available_hours,
-        active_users: sectionCounts[section.id] || 0
+        active_users: 0,
+        hourly_counts: buildCounts(section.id)
       }));
 
     return new Response(JSON.stringify({

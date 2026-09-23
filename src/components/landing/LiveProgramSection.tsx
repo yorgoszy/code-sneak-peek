@@ -11,6 +11,7 @@ interface PublicSection {
   max_capacity: number;
   available_hours: any;
   active_users: number;
+  hourly_counts?: { [date: string]: { [time: string]: number } };
 }
 
 interface ClosedDay {
@@ -66,6 +67,12 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
 
   const isDateClosed = (dateStr: string): boolean => {
     return closedDays.some(cd => cd.closed_date === dateStr);
+  };
+
+  // Μόνο όσοι έχουν κράτηση στη συγκεκριμένη ώρα και ημερομηνία μετρούν
+  // (ίδια λογική με το /dashboard/online-booking/επισκόπηση)
+  const getBookingsFor = (section: PublicSection, dateStr: string, time: string): number => {
+    return section.hourly_counts?.[dateStr]?.[time] ?? 0;
   };
 
   const getLoadingBarColor = (bookingsCount: number, capacity: number) => {
@@ -181,7 +188,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                 return (
                   <div key={time} className="space-y-1">
                     {sectionsForSlot.map((section) => {
-                      const currentBookings = section.active_users;
+                      const currentBookings = getBookingsFor(section, selectedDateStr, time);
                       const capacity = section.max_capacity;
 
                       return (
@@ -289,7 +296,7 @@ const LiveProgramSection: React.FC<LiveProgramSectionProps> = ({ translations })
                   return (
                     <div key={dateStr} className="border border-[#aca097]/30 rounded-none bg-[#aca097]/10 p-0.5 space-y-0.5">
                       {sectionsForSlot.map((section) => {
-                        const currentBookings = section.active_users;
+                        const currentBookings = getBookingsFor(section, dateStr, time);
                         const capacity = section.max_capacity;
                         const isHovered = hoveredSection === section.id;
 
