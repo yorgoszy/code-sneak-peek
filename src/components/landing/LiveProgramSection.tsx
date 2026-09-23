@@ -11,6 +11,7 @@ interface PublicSection {
   max_capacity: number;
   available_hours: any;
   active_users: number;
+  hourly_counts?: { [date: string]: { [time: string]: number } };
 }
 
 interface ClosedDay {
