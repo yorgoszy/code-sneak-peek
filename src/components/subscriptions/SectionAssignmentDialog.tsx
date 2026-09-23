@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Calendar, Loader2, Check } from "lucide-react";
+import { Users, Calendar, Loader2 } from "lucide-react";
 import { format, addDays, isBefore, isEqual, parseISO } from "date-fns";
 
 import type { Json } from "@/integrations/supabase/types";
@@ -38,14 +38,14 @@ const dayNameMap: Record<number, string> = {
   6: 'saturday'
 };
 
-const dayLabels: Record<string, string> = {
-  monday: 'Δευτέρα',
-  tuesday: 'Τρίτη',
-  wednesday: 'Τετάρτη',
-  thursday: 'Πέμπτη',
-  friday: 'Παρασκευή',
-  saturday: 'Σάββατο',
-  sunday: 'Κυριακή'
+const dayShortLabels: Record<string, string> = {
+  monday: 'Δευ',
+  tuesday: 'Τρί',
+  wednesday: 'Τετ',
+  thursday: 'Πέμ',
+  friday: 'Παρ',
+  saturday: 'Σάβ',
+  sunday: 'Κυρ'
 };
 
 const orderedDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -390,11 +390,11 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
           </div>
 
           {selectedSection !== 'none' && sectionDays.length > 0 && (
-            <div className="space-y-2">
-              <Label>Ημέρες και ώρες προσέλευσης</Label>
-              <div className="max-h-64 space-y-2 overflow-y-auto border p-2">
+            <div className="space-y-1">
+              <Label className="text-sm">Ημέρες και ώρες προσέλευσης</Label>
+              <div className="max-h-56 overflow-y-auto border divide-y divide-border/60">
                 {loadingSchedule ? (
-                  <div className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
+                  <div className="flex items-center justify-center gap-2 py-4 text-sm text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Φόρτωση επιλογών...
                   </div>
@@ -402,42 +402,41 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
                   const selectedTimes = selectedSchedule[day] || [];
                   const dayActive = selectedTimes.length > 0;
                   return (
-                    <div key={day} className="border p-2">
-                      <Button
+                    <div key={day} className="flex items-center gap-1.5 flex-wrap px-2 py-1.5">
+                      <button
                         type="button"
-                        variant="outline"
-                        size="sm"
                         onClick={() => toggleDay(day, times)}
-                        className={dayActive ? 'w-full justify-start rounded-none border-primary bg-primary text-primary-foreground hover:bg-primary/90' : 'w-full justify-start rounded-none'}
+                        className={`shrink-0 px-1.5 py-0.5 text-xs font-medium rounded-none border transition-colors ${
+                          dayActive
+                            ? 'bg-[#00ffba] text-black border-[#00ffba]'
+                            : 'bg-background text-foreground border-border hover:bg-muted'
+                        }`}
                       >
-                        {dayActive && <Check className="mr-2 h-4 w-4" />}
-                        {dayLabels[day]}
-                      </Button>
-                      {dayActive && (
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {times.map(time => {
-                            const active = selectedTimes.includes(time);
-                            return (
-                              <Button
-                                key={`${day}-${time}`}
-                                type="button"
-                                variant={active ? 'default' : 'outline'}
-                                size="sm"
-                                onClick={() => toggleTime(day, time)}
-                                className="rounded-none"
-                              >
-                                {time}
-                              </Button>
-                            );
-                          })}
-                        </div>
-                      )}
+                        {dayShortLabels[day]}
+                      </button>
+                      {times.map(time => {
+                        const active = selectedTimes.includes(time);
+                        return (
+                          <button
+                            key={`${day}-${time}`}
+                            type="button"
+                            onClick={() => toggleTime(day, time)}
+                            className={`px-1 py-0.5 text-[11px] leading-none rounded-none border transition-colors ${
+                              active
+                                ? 'bg-[#00ffba] text-black border-[#00ffba]'
+                                : 'bg-background text-foreground border-border hover:bg-muted'
+                            }`}
+                          >
+                            {time}
+                          </button>
+                        );
+                      })}
                     </div>
                   );
                 })}
               </div>
               <p className="text-xs text-muted-foreground">
-                Πατήστε την ημέρα και κρατήστε μόνο τις ώρες που θα έρχεται ο χρήστης.
+                Πατήστε την ημέρα για όλες τις ώρες ή επιλέξτε μεμονωμένες ώρες.
               </p>
             </div>
           )}
