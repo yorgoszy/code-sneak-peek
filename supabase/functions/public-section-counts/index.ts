@@ -102,7 +102,8 @@ serve(async (req) => {
         name: section.name,
         max_capacity: section.max_capacity,
         available_hours: section.available_hours,
-        active_users: sectionCounts[section.id] || 0
+        active_users: sectionCounts[section.id] || 0,
+        hourly_counts: buildCounts(section.id)
       }));
 
     return new Response(JSON.stringify({
