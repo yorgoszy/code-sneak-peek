@@ -51,14 +51,18 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
   const [selectedSection, setSelectedSection] = useState<string>(currentSectionId || 'none');
   const [loading, setLoading] = useState(false);
   const [subscriptionEndDate, setSubscriptionEndDate] = useState<string | null>(null);
+  const [selectedTimes, setSelectedTimes] = useState<string[]>([]);
 
   useEffect(() => {
     if (isOpen) {
       loadSections();
       loadUserSubscription();
       setSelectedSection(currentSectionId || 'none');
+      setSelectedTimes([]);
     }
   }, [isOpen, currentSectionId, userId]);
+
+  useEffect(() => { setSelectedTimes([]); }, [selectedSection]);
 
   const loadSections = async () => {
     try {
@@ -143,8 +147,11 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
       const dayName = dayNameMap[dayOfWeek];
       const hoursForDay = availableHours[dayName] || [];
 
-      // Create a booking for each time slot on this day
-      for (const time of hoursForDay) {
+      // Create a booking for each (selected) time slot on this day
+      const timesForDay = selectedTimes.length > 0
+        ? hoursForDay.filter(t => selectedTimes.includes(t))
+        : hoursForDay;
+      for (const time of timesForDay) {
         bookingsToCreate.push({
           user_id: userId,
           section_id: sectionId,
@@ -242,6 +249,14 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
   };
 
   const selectedSectionData = sections.find(s => s.id === selectedSection);
+  const sectionTimes: string[] = React.useMemo(() => {
+    const ah = (selectedSectionData?.available_hours || {}) as Record<string, string[]>;
+    const set = new Set<string>();
+    Object.values(ah).forEach(arr => Array.isArray(arr) && arr.forEach(t => set.add(t)));
+    return Array.from(set).sort();
+  }, [selectedSectionData]);
+  const toggleTime = (t: string) =>
+    setSelectedTimes(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -277,6 +292,30 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
               </SelectContent>
             </Select>
           </div>
+
+          {selectedSection !== 'none' && sectionTimes.length > 0 && (
+            <div className="space-y-2">
+              <Label>Ώρα προσέλευσης</Label>
+              <div className="flex flex-wrap gap-2">
+                {sectionTimes.map(t => {
+                  const active = selectedTimes.includes(t);
+                  return (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => toggleTime(t)}
+                      className={`px-3 py-1 text-sm border rounded-none ${active ? 'bg-[#00ffba] text-black border-[#00ffba]' : 'bg-background hover:bg-muted'}`}
+                    >
+                      {t.slice(0, 5)}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {selectedTimes.length > 0 ? 'Κρατήσεις μόνο για τις επιλεγμένες ώρες' : 'Χωρίς επιλογή: κρατήσεις για όλες τις ώρες'}
+              </p>
+            </div>
+          )}
 
           {/* Subscription info */}
           <div className="p-3 bg-muted rounded-none border">
