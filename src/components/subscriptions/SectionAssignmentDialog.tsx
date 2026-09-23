@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Calendar, Loader2, Check } from "lucide-react";
+import { Users, Calendar, Loader2 } from "lucide-react";
 import { format, addDays, isBefore, isEqual, parseISO } from "date-fns";
 
 import type { Json } from "@/integrations/supabase/types";
@@ -36,16 +36,6 @@ const dayNameMap: Record<number, string> = {
   4: 'thursday',
   5: 'friday',
   6: 'saturday'
-};
-
-const dayLabels: Record<string, string> = {
-  monday: 'Δευτέρα',
-  tuesday: 'Τρίτη',
-  wednesday: 'Τετάρτη',
-  thursday: 'Πέμπτη',
-  friday: 'Παρασκευή',
-  saturday: 'Σάββατο',
-  sunday: 'Κυριακή'
 };
 
 const dayShortLabels: Record<string, string> = {
