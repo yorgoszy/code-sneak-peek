@@ -99,7 +99,7 @@ export const AttendanceDetailsDialog: React.FC<AttendanceDetailsDialogProps> = (
                 {time}
               </span>
               <Badge variant="outline" className="rounded-none text-xs">
-                {users.length} μέλη
+                {users.length} {users.length === 1 ? 'μέλος' : 'μέλη'}
               </Badge>
             </div>
           </div>
