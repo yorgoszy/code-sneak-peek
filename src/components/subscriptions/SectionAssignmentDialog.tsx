@@ -48,6 +48,16 @@ const dayLabels: Record<string, string> = {
   sunday: 'Κυριακή'
 };
 
+const dayShortLabels: Record<string, string> = {
+  monday: 'Δευ',
+  tuesday: 'Τρί',
+  wednesday: 'Τετ',
+  thursday: 'Πέμ',
+  friday: 'Παρ',
+  saturday: 'Σάβ',
+  sunday: 'Κυρ'
+};
+
 const orderedDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
 type SelectedSchedule = Record<string, string[]>;
