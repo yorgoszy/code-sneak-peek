@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Calendar, Loader2 } from "lucide-react";
+import { Users, Calendar, Loader2, Check } from "lucide-react";
 import { format, addDays, isBefore, isEqual, parseISO } from "date-fns";
 
 import type { Json } from "@/integrations/supabase/types";
@@ -38,6 +38,20 @@ const dayNameMap: Record<number, string> = {
   6: 'saturday'
 };
 
+const dayLabels: Record<string, string> = {
+  monday: 'Δευτέρα',
+  tuesday: 'Τρίτη',
+  wednesday: 'Τετάρτη',
+  thursday: 'Πέμπτη',
+  friday: 'Παρασκευή',
+  saturday: 'Σάββατο',
+  sunday: 'Κυριακή'
+};
+
+const orderedDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+
+type SelectedSchedule = Record<string, string[]>;
+
 export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = ({
   isOpen,
   onClose,
@@ -51,18 +65,64 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
   const [selectedSection, setSelectedSection] = useState<string>(currentSectionId || 'none');
   const [loading, setLoading] = useState(false);
   const [subscriptionEndDate, setSubscriptionEndDate] = useState<string | null>(null);
-  const [selectedTimes, setSelectedTimes] = useState<string[]>([]);
+  const [selectedSchedule, setSelectedSchedule] = useState<SelectedSchedule>({});
+  const [loadingSchedule, setLoadingSchedule] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       loadSections();
       loadUserSubscription();
       setSelectedSection(currentSectionId || 'none');
-      setSelectedTimes([]);
+      setSelectedSchedule({});
     }
   }, [isOpen, currentSectionId, userId]);
 
-  useEffect(() => { setSelectedTimes([]); }, [selectedSection]);
+  useEffect(() => {
+    if (!isOpen || selectedSection === 'none') {
+      setSelectedSchedule({});
+      return;
+    }
+
+    if (selectedSection !== currentSectionId) {
+      setSelectedSchedule({});
+      return;
+    }
+
+    const loadExistingSchedule = async () => {
+      setLoadingSchedule(true);
+      try {
+        const today = format(new Date(), 'yyyy-MM-dd');
+        const { data, error } = await supabase
+          .from('booking_sessions')
+          .select('booking_date, booking_time')
+          .eq('user_id', userId)
+          .eq('section_id', selectedSection)
+          .gte('booking_date', today)
+          .in('booking_type', ['gym_visit', 'gym'])
+          .in('status', ['confirmed', 'completed']);
+
+        if (error) throw error;
+
+        const schedule: SelectedSchedule = {};
+        (data || []).forEach(booking => {
+          const date = new Date(`${booking.booking_date}T12:00:00`);
+          const dayName = dayNameMap[date.getDay()];
+          const bookingTime = String(booking.booking_time).substring(0, 5);
+          if (!schedule[dayName]) schedule[dayName] = [];
+          if (!schedule[dayName].includes(bookingTime)) schedule[dayName].push(bookingTime);
+        });
+        Object.values(schedule).forEach(times => times.sort());
+        setSelectedSchedule(schedule);
+      } catch (error) {
+        console.error('Error loading existing booking schedule:', error);
+        setSelectedSchedule({});
+      } finally {
+        setLoadingSchedule(false);
+      }
+    };
+
+    loadExistingSchedule();
+  }, [isOpen, selectedSection, currentSectionId, userId]);
 
   const loadSections = async () => {
     try {
@@ -147,10 +207,11 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
       const dayName = dayNameMap[dayOfWeek];
       const hoursForDay = availableHours[dayName] || [];
 
-      // Create a booking for each (selected) time slot on this day
-      const timesForDay = selectedTimes.length > 0
-        ? hoursForDay.filter(t => selectedTimes.includes(t))
-        : hoursForDay;
+      // Create bookings only for the selected times of this weekday
+      const selectedTimesForDay = selectedSchedule[dayName] || [];
+      const timesForDay = hoursForDay.filter(time =>
+        selectedTimesForDay.includes(String(time).substring(0, 5))
+      );
       for (const time of timesForDay) {
         bookingsToCreate.push({
           user_id: userId,
@@ -209,6 +270,16 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
       return;
     }
 
+    const hasSelectedSlot = Object.values(selectedSchedule).some(times => times.length > 0);
+    if (selectedSection !== 'none' && !hasSelectedSlot) {
+      toast({
+        variant: "destructive",
+        title: "Επιλέξτε ημέρα και ώρα",
+        description: "Χρειάζεται τουλάχιστον μία ώρα σε μία ημέρα."
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       // Update user's section
@@ -249,14 +320,39 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
   };
 
   const selectedSectionData = sections.find(s => s.id === selectedSection);
-  const sectionTimes: string[] = React.useMemo(() => {
-    const ah = (selectedSectionData?.available_hours || {}) as Record<string, string[]>;
-    const set = new Set<string>();
-    Object.values(ah).forEach(arr => Array.isArray(arr) && arr.forEach(t => set.add(t)));
-    return Array.from(set).sort();
+  const sectionDays = React.useMemo(() => {
+    const availableHours = (selectedSectionData?.available_hours || {}) as Record<string, string[]>;
+    return orderedDays
+      .filter(day => Array.isArray(availableHours[day]) && availableHours[day].length > 0)
+      .map(day => ({
+        day,
+        times: availableHours[day].map(time => String(time).substring(0, 5)).sort()
+      }));
   }, [selectedSectionData]);
-  const toggleTime = (t: string) =>
-    setSelectedTimes(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]);
+
+  const toggleDay = (day: string, times: string[]) => {
+    setSelectedSchedule(previous => {
+      if ((previous[day] || []).length > 0) {
+        const next = { ...previous };
+        delete next[day];
+        return next;
+      }
+      return { ...previous, [day]: times };
+    });
+  };
+
+  const toggleTime = (day: string, time: string) => {
+    setSelectedSchedule(previous => {
+      const dayTimes = previous[day] || [];
+      const nextTimes = dayTimes.includes(time)
+        ? dayTimes.filter(value => value !== time)
+        : [...dayTimes, time].sort();
+      const next = { ...previous };
+      if (nextTimes.length === 0) delete next[day];
+      else next[day] = nextTimes;
+      return next;
+    });
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -293,26 +389,55 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
             </Select>
           </div>
 
-          {selectedSection !== 'none' && sectionTimes.length > 0 && (
+          {selectedSection !== 'none' && sectionDays.length > 0 && (
             <div className="space-y-2">
-              <Label>Ώρα προσέλευσης</Label>
-              <div className="flex flex-wrap gap-2">
-                {sectionTimes.map(t => {
-                  const active = selectedTimes.includes(t);
+              <Label>Ημέρες και ώρες προσέλευσης</Label>
+              <div className="max-h-64 space-y-2 overflow-y-auto border p-2">
+                {loadingSchedule ? (
+                  <div className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Φόρτωση επιλογών...
+                  </div>
+                ) : sectionDays.map(({ day, times }) => {
+                  const selectedTimes = selectedSchedule[day] || [];
+                  const dayActive = selectedTimes.length > 0;
                   return (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => toggleTime(t)}
-                      className={`px-3 py-1 text-sm border rounded-none ${active ? 'bg-[#00ffba] text-black border-[#00ffba]' : 'bg-background hover:bg-muted'}`}
-                    >
-                      {t.slice(0, 5)}
-                    </button>
+                    <div key={day} className="border p-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => toggleDay(day, times)}
+                        className={dayActive ? 'w-full justify-start rounded-none border-primary bg-primary text-primary-foreground hover:bg-primary/90' : 'w-full justify-start rounded-none'}
+                      >
+                        {dayActive && <Check className="mr-2 h-4 w-4" />}
+                        {dayLabels[day]}
+                      </Button>
+                      {dayActive && (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {times.map(time => {
+                            const active = selectedTimes.includes(time);
+                            return (
+                              <Button
+                                key={`${day}-${time}`}
+                                type="button"
+                                variant={active ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => toggleTime(day, time)}
+                                className="rounded-none"
+                              >
+                                {time}
+                              </Button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
               <p className="text-xs text-muted-foreground">
-                {selectedTimes.length > 0 ? 'Κρατήσεις μόνο για τις επιλεγμένες ώρες' : 'Χωρίς επιλογή: κρατήσεις για όλες τις ώρες'}
+                Πατήστε την ημέρα και κρατήστε μόνο τις ώρες που θα έρχεται ο χρήστης.
               </p>
             </div>
           )}
@@ -331,7 +456,7 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
             </div>
             {selectedSection !== 'none' && subscriptionEndDate && selectedSectionData?.available_hours && (
               <p className="text-xs text-muted-foreground mt-2">
-                Θα δημιουργηθούν κρατήσεις για όλες τις ημέρες του τμήματος μέχρι τη λήξη της συνδρομής
+                Θα δημιουργηθούν κρατήσεις μόνο για τις επιλεγμένες ημέρες και ώρες μέχρι τη λήξη της συνδρομής
               </p>
             )}
           </div>
