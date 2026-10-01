@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { HeartPulse, Bluetooth, BluetoothOff, Menu, RotateCcw } from 'lucide-react';
 import { Sidebar } from '@/components/Sidebar';
 import { CoachSidebar } from '@/components/CoachSidebar';
@@ -37,6 +38,7 @@ const HeartRatePage = () => {
   const [rrList, setRrList] = useState<number[]>([]);
   const deviceRef = useRef<any>(null);
   const startRef = useRef<number>(0);
+  const [maxHrSetting, setMaxHrSetting] = useState('200');
 
   const supported = typeof navigator !== 'undefined' && 'bluetooth' in navigator;
 
@@ -90,12 +92,20 @@ const HeartRatePage = () => {
 
   // Chart
   const W = 600, H = 160;
-  const chartMin = min !== null ? min - 5 : 40;
-  const chartMax = max !== null ? max + 5 : 200;
+  const maxHr = Math.max(100, Number(maxHrSetting) || 200);
+  const chartMin = Math.min(min !== null ? min - 5 : 40, maxHr * 0.45);
+  const chartMax = Math.max(max !== null ? max + 5 : 200, maxHr);
+  const yFor = (bpm: number) => H - ((bpm - chartMin) / Math.max(1, chartMax - chartMin)) * H;
+  const zones = [
+    { name: 'Z1', range: '50-60%', from: 0.5, to: 0.6, color: '#9ca3af' },
+    { name: 'Z2', range: '60-70%', from: 0.6, to: 0.7, color: '#3b82f6' },
+    { name: 'Z3', range: '70-80%', from: 0.7, to: 0.8, color: '#22c55e' },
+    { name: 'Z4', range: '80-90%', from: 0.8, to: 0.9, color: '#eab308' },
+    { name: 'Z5', range: '90-100%', from: 0.9, to: 1.0, color: '#ef4444' },
+  ];
   const points = samples.map((s, i) => {
     const x = samples.length > 1 ? (i / (samples.length - 1)) * W : 0;
-    const y = H - ((s.bpm - chartMin) / Math.max(1, chartMax - chartMin)) * H;
-    return `${x},${y}`;
+    return `${x},${yFor(s.bpm)}`;
   }).join(' ');
 
   const renderSidebar = () => isAdmin()
@@ -175,13 +185,46 @@ const HeartRatePage = () => {
             </div>
 
             <Card className="rounded-none">
-              <CardHeader className="pb-2"><CardTitle className="text-sm">Γράφημα παλμών</CardTitle></CardHeader>
+              <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-sm">Γράφημα παλμών & ζώνες</CardTitle>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span>Max HR:</span>
+                  <Input
+                    type="number"
+                    value={maxHrSetting}
+                    onChange={(e) => setMaxHrSetting(e.target.value)}
+                    className="rounded-none h-7 w-20 text-xs"
+                  />
+                </div>
+              </CardHeader>
               <CardContent>
                 <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-40" preserveAspectRatio="none">
+                  {zones.map(z => {
+                    const yTop = Math.max(0, yFor(maxHr * z.to));
+                    const yBottom = Math.min(H, yFor(maxHr * z.from));
+                    const bandH = yBottom - yTop;
+                    if (bandH <= 0) return null;
+                    return (
+                      <g key={z.name}>
+                        <rect x={0} y={yTop} width={W} height={bandH} fill={z.color} opacity={0.18} />
+                        <text x={W - 4} y={yTop + 11} textAnchor="end" fontSize={9} fontWeight="bold" fill={z.color}>
+                          {z.name}
+                        </text>
+                      </g>
+                    );
+                  })}
                   {samples.length > 1 && (
-                    <polyline points={points} fill="none" stroke="hsl(var(--destructive))" strokeWidth="2" />
+                    <polyline points={points} fill="none" stroke="hsl(var(--foreground))" strokeWidth="2" />
                   )}
                 </svg>
+                <div className="flex flex-wrap items-center gap-3 mt-1">
+                  {zones.map(z => (
+                    <span key={z.name} className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <span className="inline-block w-2.5 h-2.5" style={{ backgroundColor: z.color }} />
+                      {z.name} ({z.range})
+                    </span>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </main>
