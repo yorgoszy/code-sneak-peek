@@ -32,7 +32,6 @@ import {
   Compass,
   Heart,
   HeartPulse,
-  HeartPulse,
   IdCard,
   Gift,
   ShieldAlert,

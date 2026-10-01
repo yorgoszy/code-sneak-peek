@@ -29,7 +29,6 @@ import {
   Gauge,
   Heart,
   HeartPulse,
-  HeartPulse,
   Trophy,
   ChevronDown,
   AppWindow,
