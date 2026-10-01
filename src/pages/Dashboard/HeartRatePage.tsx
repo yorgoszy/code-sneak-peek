@@ -37,6 +37,7 @@ const HeartRatePage = () => {
   const [rrList, setRrList] = useState<number[]>([]);
   const deviceRef = useRef<any>(null);
   const startRef = useRef<number>(0);
+  const [maxHrSetting, setMaxHrSetting] = useState('200');
 
   const supported = typeof navigator !== 'undefined' && 'bluetooth' in navigator;
 
@@ -90,12 +91,20 @@ const HeartRatePage = () => {
 
   // Chart
   const W = 600, H = 160;
-  const chartMin = min !== null ? min - 5 : 40;
-  const chartMax = max !== null ? max + 5 : 200;
+  const maxHr = Math.max(100, Number(maxHrSetting) || 200);
+  const chartMin = Math.min(min !== null ? min - 5 : 40, maxHr * 0.45);
+  const chartMax = Math.max(max !== null ? max + 5 : 200, maxHr);
+  const yFor = (bpm: number) => H - ((bpm - chartMin) / Math.max(1, chartMax - chartMin)) * H;
+  const zones = [
+    { name: 'Z1', range: '50-60%', from: 0.5, to: 0.6, color: '#9ca3af' },
+    { name: 'Z2', range: '60-70%', from: 0.6, to: 0.7, color: '#3b82f6' },
+    { name: 'Z3', range: '70-80%', from: 0.7, to: 0.8, color: '#22c55e' },
+    { name: 'Z4', range: '80-90%', from: 0.8, to: 0.9, color: '#eab308' },
+    { name: 'Z5', range: '90-100%', from: 0.9, to: 1.0, color: '#ef4444' },
+  ];
   const points = samples.map((s, i) => {
     const x = samples.length > 1 ? (i / (samples.length - 1)) * W : 0;
-    const y = H - ((s.bpm - chartMin) / Math.max(1, chartMax - chartMin)) * H;
-    return `${x},${y}`;
+    return `${x},${yFor(s.bpm)}`;
   }).join(' ');
 
   const renderSidebar = () => isAdmin()
