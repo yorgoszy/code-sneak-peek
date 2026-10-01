@@ -722,6 +722,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       badge: null
     },
     {
+      icon: HeartPulse,
+      label: "Heart Rate (HR+)",
+      path: "/dashboard/heart-rate",
+      badge: null
+    },
+    {
       icon: Heart,
       label: "HRV",
       path: "/dashboard/hrv",

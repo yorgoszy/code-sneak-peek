@@ -120,6 +120,7 @@ import CognitivePage from "@/pages/Dashboard/CognitivePage";
 import JumpPage from "@/pages/Dashboard/JumpPage";
 import BarVelocityPage from "@/pages/Dashboard/BarVelocityPage";
 import HRVPage from "@/pages/Dashboard/HRVPage";
+import HeartRatePage from "@/pages/Dashboard/HeartRatePage";
 import GiftCardsWithSidebar from "@/pages/Dashboard/GiftCardsWithSidebar";
 import HealthCardsPage from "@/pages/Dashboard/HealthCardsPage";
 import AthleteCardsPage from "@/pages/Dashboard/AthleteCardsPage";
@@ -241,6 +242,7 @@ function App() {
                       <Route path="/dashboard/cognitive" element={<ProtectedRoute><CognitivePage /></ProtectedRoute>} />
                       <Route path="/dashboard/jump" element={<ProtectedRoute><JumpPage /></ProtectedRoute>} />
                       <Route path="/dashboard/bar-velocity" element={<ProtectedRoute><BarVelocityPage /></ProtectedRoute>} />
+                      <Route path="/dashboard/heart-rate" element={<ProtectedRoute><HeartRatePage /></ProtectedRoute>} />
                       <Route path="/dashboard/hrv" element={<ProtectedRoute><HRVPage /></ProtectedRoute>} />
                       <Route path="/dashboard/health-cards" element={<ProtectedRoute><HealthCardsPage /></ProtectedRoute>} />
                       <Route path="/dashboard/athlete-cards" element={<ProtectedRoute><AthleteCardsPage /></ProtectedRoute>} />
