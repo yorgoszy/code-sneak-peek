@@ -29,6 +29,7 @@ import {
   Gauge,
   Heart,
   HeartPulse,
+  HeartPulse,
   Trophy,
   ChevronDown,
   AppWindow,
@@ -106,6 +107,7 @@ export const CoachSidebar = ({
     { icon: Brain, label: "Cognitive", path: effectiveCoachId ? `/dashboard/cognitive?coachId=${effectiveCoachId}` : "/dashboard/cognitive", requiresSubscription: true },
     { icon: ArrowUp, label: "Jump", path: effectiveCoachId ? `/dashboard/jump?coachId=${effectiveCoachId}` : "/dashboard/jump", requiresSubscription: true },
     { icon: Gauge, label: "Bar Velocity", path: effectiveCoachId ? `/dashboard/bar-velocity?coachId=${effectiveCoachId}` : "/dashboard/bar-velocity", requiresSubscription: true },
+    { icon: HeartPulse, label: "Heart Rate (HR+)", path: effectiveCoachId ? `/dashboard/heart-rate?coachId=${effectiveCoachId}` : "/dashboard/heart-rate", requiresSubscription: true },
     { icon: Heart, label: "HRV", path: effectiveCoachId ? `/dashboard/hrv?coachId=${effectiveCoachId}` : "/dashboard/hrv", requiresSubscription: true },
   ];
 

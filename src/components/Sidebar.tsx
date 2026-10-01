@@ -32,6 +32,7 @@ import {
   Compass,
   Heart,
   HeartPulse,
+  HeartPulse,
   IdCard,
   Gift,
   ShieldAlert,
@@ -719,6 +720,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: Gauge,
       label: "Bar Velocity",
       path: "/dashboard/bar-velocity",
+      badge: null
+    },
+    {
+      icon: HeartPulse,
+      label: "Heart Rate (HR+)",
+      path: "/dashboard/heart-rate",
       badge: null
     },
     {
