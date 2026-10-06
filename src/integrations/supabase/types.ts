@@ -6180,6 +6180,72 @@ export type Database = {
           },
         ]
       }
+      heart_rate_sessions: {
+        Row: {
+          avg_bpm: number | null
+          created_at: string
+          device_name: string | null
+          duration_seconds: number | null
+          ended_at: string | null
+          id: string
+          max_bpm: number | null
+          max_hr_setting: number | null
+          min_bpm: number | null
+          rmssd: number | null
+          rr_intervals: Json
+          samples: Json
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          avg_bpm?: number | null
+          created_at?: string
+          device_name?: string | null
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          max_bpm?: number | null
+          max_hr_setting?: number | null
+          min_bpm?: number | null
+          rmssd?: number | null
+          rr_intervals?: Json
+          samples?: Json
+          started_at: string
+          user_id: string
+        }
+        Update: {
+          avg_bpm?: number | null
+          created_at?: string
+          device_name?: string | null
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          max_bpm?: number | null
+          max_hr_setting?: number | null
+          min_bpm?: number | null
+          rmssd?: number | null
+          rr_intervals?: Json
+          samples?: Json
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "heart_rate_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "heart_rate_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       home_page: {
         Row: {
           content: Json
