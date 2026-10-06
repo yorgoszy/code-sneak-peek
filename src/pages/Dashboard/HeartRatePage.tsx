@@ -134,7 +134,7 @@ const HeartRatePage = () => {
 
   // Chart
   const W = 600, H = 160;
-  const maxHr = Math.max(100, Number(maxHrSetting) || 200);
+  const maxHr = Math.max(100, maxHrAuto ?? 200);
   const chartMin = Math.min(min !== null ? min - 5 : 40, maxHr * 0.45);
   const chartMax = Math.max(max !== null ? max + 5 : 200, maxHr);
   const yFor = (bpm: number) => H - ((bpm - chartMin) / Math.max(1, chartMax - chartMin)) * H;
