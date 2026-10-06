@@ -179,10 +179,10 @@ const HeartRatePage = () => {
             </div>
           </div>
 
-          <main className="flex-1 p-4 lg:p-6 overflow-auto space-y-4">
+          <main className="flex-1 p-3 lg:p-4 overflow-auto space-y-2">
             <div className="hidden lg:flex items-center gap-2">
-              <HeartPulse className="h-6 w-6" />
-              <h1 className="text-2xl font-bold">Heart Rate (HR+)</h1>
+              <HeartPulse className="h-5 w-5" />
+              <h1 className="text-xl font-bold">Heart Rate (HR+)</h1>
             </div>
 
             {!supported && (
@@ -194,73 +194,73 @@ const HeartRatePage = () => {
             )}
 
             <Card className="rounded-none">
-              <CardContent className="p-4 flex flex-wrap items-center gap-3">
+              <CardContent className="p-2.5 flex flex-wrap items-center gap-2">
                 {!connected ? (
-                  <Button onClick={connect} disabled={!supported} className="rounded-none">
-                    <Bluetooth className="h-4 w-4 mr-2" /> Σύνδεση συσκευής
+                  <Button onClick={connect} disabled={!supported} size="sm" className="rounded-none text-xs">
+                    <Bluetooth className="h-3.5 w-3.5 mr-1.5" /> Σύνδεση συσκευής
                   </Button>
                 ) : (
-                  <Button variant="outline" onClick={disconnect} className="rounded-none">
-                    <BluetoothOff className="h-4 w-4 mr-2" /> Αποσύνδεση
+                  <Button variant="outline" onClick={disconnect} size="sm" className="rounded-none text-xs">
+                    <BluetoothOff className="h-3.5 w-3.5 mr-1.5" /> Αποσύνδεση
                   </Button>
                 )}
                 {!recording ? (
-                  <Button onClick={startRecording} disabled={!connected || saving} className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black">
-                    <Play className="h-4 w-4 mr-2" /> Έναρξη προπόνησης
+                  <Button onClick={startRecording} disabled={!connected || saving} size="sm" className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black text-xs">
+                    <Play className="h-3.5 w-3.5 mr-1.5" /> Έναρξη προπόνησης
                   </Button>
                 ) : (
-                  <Button onClick={stopRecording} variant="destructive" className="rounded-none">
-                    <Square className="h-4 w-4 mr-2" /> Λήξη προπόνησης
+                  <Button onClick={stopRecording} variant="destructive" size="sm" className="rounded-none text-xs">
+                    <Square className="h-3.5 w-3.5 mr-1.5" /> Λήξη προπόνησης
                   </Button>
                 )}
-                {recording && <span className="text-xs text-destructive animate-pulse">● Καταγραφή</span>}
-                <Button variant="outline" onClick={reset} disabled={recording} className="rounded-none">
-                  <RotateCcw className="h-4 w-4 mr-2" /> Μηδενισμός
+                {recording && <span className="text-[10px] text-destructive animate-pulse">● Καταγραφή</span>}
+                <Button variant="outline" onClick={reset} disabled={recording} size="sm" className="rounded-none text-xs">
+                  <RotateCcw className="h-3.5 w-3.5 mr-1.5" /> Μηδενισμός
                 </Button>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-xs text-muted-foreground">
                   {connected ? `Συνδεδεμένο: ${deviceName}` : 'Καμία συσκευή'}
                 </span>
               </CardContent>
             </Card>
 
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              <Card className="rounded-none col-span-2 md:col-span-1">
-                <CardContent className="p-4 text-center">
-                  <HeartPulse className={`h-8 w-8 mx-auto ${connected ? 'animate-pulse text-destructive' : 'text-muted-foreground'}`} />
-                  <div className="text-5xl font-bold">{bpm ?? '--'}</div>
-                  <div className="text-xs text-muted-foreground">BPM</div>
-                </CardContent>
-              </Card>
-              {[['Μέσος', avg], ['Max', max], ['Min', min], ['RMSSD (ms)', rmssd]].map(([l, v]) => (
-                <Card key={l as string} className="rounded-none">
-                  <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-semibold">{v ?? '--'}</div>
-                    <div className="text-xs text-muted-foreground">{l}</div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <Card className="rounded-none">
+              <CardContent className="p-2.5 flex items-center gap-4">
+                <div className="flex flex-col items-center shrink-0 w-[74px]">
+                  <HeartPulse className={`h-4 w-4 ${connected ? 'animate-pulse text-destructive' : 'text-muted-foreground'}`} />
+                  <div className="text-4xl font-bold leading-none mt-0.5">{bpm ?? '--'}</div>
+                  <div className="text-[10px] text-muted-foreground">BPM</div>
+                </div>
+                <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-1">
+                  {[['Μέσος', avg], ['Max', max], ['Min', min], ['RMSSD (ms)', rmssd]].map(([l, v]) => (
+                    <div key={l as string} className="flex items-baseline justify-between gap-1 border-b border-border/40 pb-0.5">
+                      <span className="text-[10px] text-muted-foreground truncate">{l}</span>
+                      <span className="text-sm font-semibold">{v ?? '--'}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
             <Card className="rounded-none">
-              <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-sm">Γράφημα παλμών & ζώνες</CardTitle>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <CardHeader className="pb-1 pt-2 px-3 flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-xs">Γράφημα παλμών & ζώνες</CardTitle>
+                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                   <span>Max HR:</span>
                   <Input
                     type="number"
                     value={maxHrSetting}
                     onChange={(e) => { maxHrTouchedRef.current = true; setMaxHrSetting(e.target.value); }}
-                    className="rounded-none h-7 w-20 text-xs"
+                    className="rounded-none h-6 w-16 text-xs"
                   />
                   {maxHrAuto !== null && (
-                    <span className="text-[10px]">
-                      {maxHrTouchedRef.current ? 'χειροκίνητο' : `αυτόματο από ηλικία (220−ηλικία×0.33)`}
+                    <span className="text-[9px] hidden sm:inline">
+                      {maxHrTouchedRef.current ? 'χειροκίνητο' : 'αυτόματο (220−ηλικία×0.33)'}
                     </span>
                   )}
                 </div>
               </CardHeader>
-              <CardContent>
-                <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-40" preserveAspectRatio="none">
+              <CardContent className="p-3 pt-0">
+                <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-28" preserveAspectRatio="none">
                   {zones.map(z => {
                     const yTop = Math.max(0, yFor(maxHr * z.to));
                     const yBottom = Math.min(H, yFor(maxHr * z.from));
@@ -269,7 +269,7 @@ const HeartRatePage = () => {
                     return (
                       <g key={z.name}>
                         <rect x={0} y={yTop} width={W} height={bandH} fill={z.color} opacity={0.18} />
-                        <text x={W - 4} y={yTop + 11} textAnchor="end" fontSize={9} fontWeight="bold" fill={z.color}>
+                        <text x={W - 4} y={yTop + 10} textAnchor="end" fontSize={8} fontWeight="bold" fill={z.color}>
                           {z.name}
                         </text>
                       </g>
@@ -279,10 +279,10 @@ const HeartRatePage = () => {
                     <polyline points={points} fill="none" stroke="hsl(var(--foreground))" strokeWidth="2" />
                   )}
                 </svg>
-                <div className="flex flex-wrap items-center gap-3 mt-1">
+                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 mt-1">
                   {zones.map(z => (
-                    <span key={z.name} className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                      <span className="inline-block w-2.5 h-2.5" style={{ backgroundColor: z.color }} />
+                    <span key={z.name} className="flex items-center gap-1 text-[9px] text-muted-foreground">
+                      <span className="inline-block w-2 h-2" style={{ backgroundColor: z.color }} />
                       {z.name} ({z.range})
                     </span>
                   ))}
