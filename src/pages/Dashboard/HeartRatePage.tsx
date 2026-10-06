@@ -179,10 +179,10 @@ const HeartRatePage = () => {
             </div>
           </div>
 
-          <main className="flex-1 p-4 lg:p-6 overflow-auto space-y-4">
+          <main className="flex-1 p-3 lg:p-4 overflow-auto space-y-2">
             <div className="hidden lg:flex items-center gap-2">
-              <HeartPulse className="h-6 w-6" />
-              <h1 className="text-2xl font-bold">Heart Rate (HR+)</h1>
+              <HeartPulse className="h-5 w-5" />
+              <h1 className="text-xl font-bold">Heart Rate (HR+)</h1>
             </div>
 
             {!supported && (
