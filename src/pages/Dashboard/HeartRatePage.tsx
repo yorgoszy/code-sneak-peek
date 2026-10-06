@@ -242,25 +242,25 @@ const HeartRatePage = () => {
             </Card>
 
             <Card className="rounded-none">
-              <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-sm">Γράφημα παλμών & ζώνες</CardTitle>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <CardHeader className="pb-1 pt-2 px-3 flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-xs">Γράφημα παλμών & ζώνες</CardTitle>
+                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                   <span>Max HR:</span>
                   <Input
                     type="number"
                     value={maxHrSetting}
                     onChange={(e) => { maxHrTouchedRef.current = true; setMaxHrSetting(e.target.value); }}
-                    className="rounded-none h-7 w-20 text-xs"
+                    className="rounded-none h-6 w-16 text-xs"
                   />
                   {maxHrAuto !== null && (
-                    <span className="text-[10px]">
-                      {maxHrTouchedRef.current ? 'χειροκίνητο' : `αυτόματο από ηλικία (220−ηλικία×0.33)`}
+                    <span className="text-[9px] hidden sm:inline">
+                      {maxHrTouchedRef.current ? 'χειροκίνητο' : 'αυτόματο (220−ηλικία×0.33)'}
                     </span>
                   )}
                 </div>
               </CardHeader>
-              <CardContent>
-                <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-40" preserveAspectRatio="none">
+              <CardContent className="p-3 pt-0">
+                <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-28" preserveAspectRatio="none">
                   {zones.map(z => {
                     const yTop = Math.max(0, yFor(maxHr * z.to));
                     const yBottom = Math.min(H, yFor(maxHr * z.from));
@@ -269,7 +269,7 @@ const HeartRatePage = () => {
                     return (
                       <g key={z.name}>
                         <rect x={0} y={yTop} width={W} height={bandH} fill={z.color} opacity={0.18} />
-                        <text x={W - 4} y={yTop + 11} textAnchor="end" fontSize={9} fontWeight="bold" fill={z.color}>
+                        <text x={W - 4} y={yTop + 10} textAnchor="end" fontSize={8} fontWeight="bold" fill={z.color}>
                           {z.name}
                         </text>
                       </g>
@@ -279,10 +279,10 @@ const HeartRatePage = () => {
                     <polyline points={points} fill="none" stroke="hsl(var(--foreground))" strokeWidth="2" />
                   )}
                 </svg>
-                <div className="flex flex-wrap items-center gap-3 mt-1">
+                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 mt-1">
                   {zones.map(z => (
-                    <span key={z.name} className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                      <span className="inline-block w-2.5 h-2.5" style={{ backgroundColor: z.color }} />
+                    <span key={z.name} className="flex items-center gap-1 text-[9px] text-muted-foreground">
+                      <span className="inline-block w-2 h-2" style={{ backgroundColor: z.color }} />
                       {z.name} ({z.range})
                     </span>
                   ))}
