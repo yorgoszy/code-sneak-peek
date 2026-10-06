@@ -42,8 +42,6 @@ const HeartRatePage = () => {
   const [rrList, setRrList] = useState<number[]>([]);
   const deviceRef = useRef<any>(null);
   const startRef = useRef<number>(0);
-  const [maxHrSetting, setMaxHrSetting] = useState('200');
-  const maxHrTouchedRef = useRef(false);
   const [maxHrAuto, setMaxHrAuto] = useState<number | null>(null);
 
   // Αυτόματο Max HR από την ηλικία: 220 - (ηλικία × 0.33)
