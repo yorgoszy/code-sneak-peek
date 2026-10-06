@@ -54,7 +54,7 @@ const HeartRatePage = () => {
     const m = today.getMonth() - b.getMonth();
     if (m < 0 || (m === 0 && today.getDate() < b.getDate())) age--;
     if (age < 0 || age > 120) return;
-    setMaxHrAuto(auto);
+    setMaxHrAuto(Math.round(220 - age * 0.33));
   }, [userProfile?.birth_date]);
 
   const supported = typeof navigator !== 'undefined' && 'bluetooth' in navigator;
