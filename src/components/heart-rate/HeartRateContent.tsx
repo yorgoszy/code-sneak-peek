@@ -258,9 +258,6 @@ export const HeartRateContent: React.FC<HeartRateContentProps> = ({ lockedUserId
           <CardTitle className="text-xs">Γράφημα παλμών & ζώνες</CardTitle>
           <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
             <span>Max HR: <span className="font-semibold text-foreground">{maxHrAuto ?? '—'}</span></span>
-            <span className="text-[9px] hidden sm:inline">
-              {maxHrAuto !== null ? 'αυτόματο (220−ηλικία×0.33)' : 'χωρίς ημερομηνία γέννησης'}
-            </span>
           </div>
         </CardHeader>
         <CardContent className="p-3 pt-0">
