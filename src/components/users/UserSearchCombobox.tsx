@@ -37,6 +37,8 @@ interface UserSearchComboboxProps {
   disabled?: boolean;
   /** Extra classes for the trigger button (e.g. to match LIFT styling) */
   triggerClassName?: string;
+  /** User ids to show first, in the given priority order (rest keep name order) */
+  priorityUserIds?: string[];
 }
 
 // Normalize text for search (remove accents, lowercase)
@@ -63,6 +65,7 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
   filterByCoach = true,
   disabled = false,
   triggerClassName,
+  priorityUserIds,
 }) => {
   const [open, setOpen] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
