@@ -26,6 +26,7 @@ import { UserProfileNutrition } from "./UserProfileNutrition";
 import { UserProfileSafety } from "./UserProfileSafety";
 import { UserProfileFights } from "./UserProfileFights";
 import { CyclePage } from "@/components/cycle/CyclePage";
+import { HeartRateContent } from "@/components/heart-rate/HeartRateContent";
 
 import CoachBracketsPage from "@/pages/Dashboard/CoachBracketsPage";
 import CoachLivePage from "@/pages/Dashboard/CoachLivePage";
@@ -293,6 +294,14 @@ export const UserProfileContent = ({
           <div className="space-y-4">
             <BackButton />
             <CyclePage userId={userProfile?.id} ownerName={userProfile?.name} />
+          </div>
+        );
+      case "heart-rate":
+        return (
+          <div className="space-y-4">
+            <BackButton />
+            <h2 className="text-xl font-semibold">Heart Rate (HR+)</h2>
+            <HeartRateContent lockedUserId={userProfile?.id} />
           </div>
         );
       case "coach-brackets":
