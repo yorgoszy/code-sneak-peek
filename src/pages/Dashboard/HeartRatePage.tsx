@@ -249,9 +249,14 @@ const HeartRatePage = () => {
                   <Input
                     type="number"
                     value={maxHrSetting}
-                    onChange={(e) => setMaxHrSetting(e.target.value)}
+                    onChange={(e) => { maxHrTouchedRef.current = true; setMaxHrSetting(e.target.value); }}
                     className="rounded-none h-7 w-20 text-xs"
                   />
+                  {maxHrAuto !== null && (
+                    <span className="text-[10px]">
+                      {maxHrTouchedRef.current ? 'χειροκίνητο' : `αυτόματο από ηλικία (220−ηλικία×0.33)`}
+                    </span>
+                  )}
                 </div>
               </CardHeader>
               <CardContent>
