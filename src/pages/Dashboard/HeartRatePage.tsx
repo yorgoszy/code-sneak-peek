@@ -199,6 +199,17 @@ const HeartRatePage = () => {
               </Card>
             )}
 
+            <div className="max-w-sm">
+              <UserSearchCombobox
+                value={selectedUserId}
+                onValueChange={(v) => !recording && setSelectedUserId(v || userProfile?.id || '')}
+                placeholder="Επιλέξτε χρήστη..."
+                coachId={userProfile?.id}
+                adminOwned={isAdmin()}
+                disabled={recording}
+                triggerClassName="h-7 text-xs"
+              />
+            </div>
             <div className="flex flex-wrap items-center gap-1.5 px-0.5">
               {!connected ? (
                 <Button onClick={connect} disabled={!supported} size="sm" className="rounded-none text-[11px] h-6 px-2">
