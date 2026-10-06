@@ -16,7 +16,8 @@ import {
   BookOpen,
   Download,
   ShieldAlert,
-  Droplet
+  Droplet,
+  HeartPulse
 
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -329,6 +330,14 @@ export const UserProfileSidebar = forwardRef<
       badge: null,
       visible: userProfile?.gender === 'female',
       disabled: false,
+    },
+    {
+      icon: HeartPulse,
+      label: "Heart Rate (HR+)",
+      key: "heart-rate",
+      badge: null,
+      visible: true,
+      disabled: !hasSubscription
     },
   ].filter(item => item.visible);
 
