@@ -8,6 +8,7 @@ import { CoachSidebar } from '@/components/CoachSidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { toast } from 'sonner';
+import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
 
 interface Sample { t: number; bpm: number; }
 
@@ -44,9 +45,19 @@ const HeartRatePage = () => {
   const [maxHrAuto, setMaxHrAuto] = useState<number | null>(null);
 
   // Αυτόματο Max HR από την ηλικία: 220 - (ηλικία × 0.33)
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [birthDate, setBirthDate] = useState<string | null>(null);
+  useEffect(() => { if (!selectedUserId && userProfile?.id) setSelectedUserId(userProfile.id); }, [userProfile?.id]);
   useEffect(() => {
-    if (!userProfile?.birth_date) return;
-    const b = new Date(userProfile.birth_date);
+    if (!selectedUserId) return;
+    setMaxHrAuto(null); setBirthDate(null);
+    supabase.from('app_users').select('birth_date').eq('id', selectedUserId).maybeSingle()
+      .then(({ data }) => setBirthDate((data as any)?.birth_date ?? null));
+  }, [selectedUserId]);
+
+  useEffect(() => {
+    if (!birthDate) return;
+    const b = new Date(birthDate);
     if (isNaN(b.getTime())) return;
     const today = new Date();
     let age = today.getFullYear() - b.getFullYear();
@@ -54,7 +65,7 @@ const HeartRatePage = () => {
     if (m < 0 || (m === 0 && today.getDate() < b.getDate())) age--;
     if (age < 0 || age > 120) return;
     setMaxHrAuto(Math.round(220 - age * 0.33));
-  }, [userProfile?.birth_date]);
+  }, [birthDate]);
 
   const supported = typeof navigator !== 'undefined' && 'bluetooth' in navigator;
 
@@ -97,11 +108,11 @@ const HeartRatePage = () => {
 
   const stopRecording = async () => {
     if (!recStartRef.current) return;
-    if (!userProfile?.id) { toast.error('Δεν βρέθηκε συνδεδεμένος χρήστης'); return; }
+    if (!selectedUserId) { toast.error('Επιλέξτε χρήστη'); return; }
     setRecording(false); setSaving(true);
     const end = new Date();
     const { error } = await supabase.from('heart_rate_sessions' as any).insert({
-      user_id: userProfile.id,
+      user_id: selectedUserId,
       device_name: deviceName,
       started_at: recStartRef.current.toISOString(),
       ended_at: end.toISOString(),
@@ -188,6 +199,17 @@ const HeartRatePage = () => {
               </Card>
             )}
 
+            <div className="max-w-sm">
+              <UserSearchCombobox
+                value={selectedUserId}
+                onValueChange={(v) => !recording && setSelectedUserId(v || userProfile?.id || '')}
+                placeholder="Επιλέξτε χρήστη..."
+                coachId={userProfile?.id}
+                adminOwned={isAdmin()}
+                disabled={recording}
+                triggerClassName="h-7 text-xs"
+              />
+            </div>
             <div className="flex flex-wrap items-center gap-1.5 px-0.5">
               {!connected ? (
                 <Button onClick={connect} disabled={!supported} size="sm" className="rounded-none text-[11px] h-6 px-2">
