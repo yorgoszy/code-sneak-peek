@@ -193,35 +193,33 @@ const HeartRatePage = () => {
               </Card>
             )}
 
-            <Card className="rounded-none">
-              <CardContent className="p-2.5 flex flex-wrap items-center gap-2">
-                {!connected ? (
-                  <Button onClick={connect} disabled={!supported} size="sm" className="rounded-none text-xs">
-                    <Bluetooth className="h-3.5 w-3.5 mr-1.5" /> Σύνδεση συσκευής
-                  </Button>
-                ) : (
-                  <Button variant="outline" onClick={disconnect} size="sm" className="rounded-none text-xs">
-                    <BluetoothOff className="h-3.5 w-3.5 mr-1.5" /> Αποσύνδεση
-                  </Button>
-                )}
-                {!recording ? (
-                  <Button onClick={startRecording} disabled={!connected || saving} size="sm" className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black text-xs">
-                    <Play className="h-3.5 w-3.5 mr-1.5" /> Έναρξη προπόνησης
-                  </Button>
-                ) : (
-                  <Button onClick={stopRecording} variant="destructive" size="sm" className="rounded-none text-xs">
-                    <Square className="h-3.5 w-3.5 mr-1.5" /> Λήξη προπόνησης
-                  </Button>
-                )}
-                {recording && <span className="text-[10px] text-destructive animate-pulse">● Καταγραφή</span>}
-                <Button variant="outline" onClick={reset} disabled={recording} size="sm" className="rounded-none text-xs">
-                  <RotateCcw className="h-3.5 w-3.5 mr-1.5" /> Μηδενισμός
+            <div className="flex flex-wrap items-center gap-1.5 px-0.5">
+              {!connected ? (
+                <Button onClick={connect} disabled={!supported} size="sm" className="rounded-none text-[11px] h-6 px-2">
+                  <Bluetooth className="h-3 w-3 mr-1" /> Σύνδεση
                 </Button>
-                <span className="text-xs text-muted-foreground">
-                  {connected ? `Συνδεδεμένο: ${deviceName}` : 'Καμία συσκευή'}
-                </span>
-              </CardContent>
-            </Card>
+              ) : (
+                <Button variant="outline" onClick={disconnect} size="sm" className="rounded-none text-[11px] h-6 px-2">
+                  <BluetoothOff className="h-3 w-3 mr-1" /> Αποσύνδεση
+                </Button>
+              )}
+              {!recording ? (
+                <Button onClick={startRecording} disabled={!connected || saving} size="sm" className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black text-[11px] h-6 px-2">
+                  <Play className="h-3 w-3 mr-1" /> Έναρξη
+                </Button>
+              ) : (
+                <Button onClick={stopRecording} variant="destructive" size="sm" className="rounded-none text-[11px] h-6 px-2">
+                  <Square className="h-3 w-3 mr-1" /> Λήξη
+                </Button>
+              )}
+              {recording && <span className="text-[10px] text-destructive animate-pulse">● Καταγραφή</span>}
+              <Button variant="outline" onClick={reset} disabled={recording} size="sm" className="rounded-none text-[11px] h-6 px-2">
+                <RotateCcw className="h-3 w-3 mr-1" /> Μηδενισμός
+              </Button>
+              <span className="text-[10px] text-muted-foreground ml-auto truncate max-w-[140px]">
+                {connected ? deviceName : 'Καμία συσκευή'}
+              </span>
+            </div>
 
             <Card className="rounded-none">
               <CardContent className="p-2.5 flex items-center gap-4">
