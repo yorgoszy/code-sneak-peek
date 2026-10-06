@@ -108,7 +108,7 @@ const HeartRatePage = () => {
       ended_at: end.toISOString(),
       duration_seconds: Math.round((end.getTime() - recStartRef.current.getTime()) / 1000),
       avg_bpm: avg, max_bpm: max, min_bpm: min, rmssd,
-      max_hr_setting: Number(maxHrSetting) || null,
+      max_hr_setting: maxHrAuto,
       samples, rr_intervals: rrList.map(r => Math.round(r)),
     });
     setSaving(false); recStartRef.current = null;
