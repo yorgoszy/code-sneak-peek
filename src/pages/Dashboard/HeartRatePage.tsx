@@ -264,11 +264,11 @@ const HeartRatePage = () => {
                     <polyline points={points} fill="none" stroke="hsl(var(--foreground))" strokeWidth="2" />
                   )}
                 </svg>
-                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 mt-1">
+                <div className="flex items-center justify-between mt-0.5 px-1">
                   {zones.map(z => (
-                    <span key={z.name} className="flex items-center gap-1 text-[9px] text-muted-foreground">
-                      <span className="inline-block w-2 h-2" style={{ backgroundColor: z.color }} />
-                      {z.name} ({z.range})
+                    <span key={z.name} className="flex items-center gap-0.5 text-[8px] text-muted-foreground">
+                      <span className="inline-block w-1.5 h-1.5" style={{ backgroundColor: z.color }} />
+                      {z.name} {z.range}
                     </span>
                   ))}
                 </div>
