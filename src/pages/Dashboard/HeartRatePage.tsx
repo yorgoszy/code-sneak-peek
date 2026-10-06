@@ -47,6 +47,21 @@ const HeartRatePage = () => {
   // Αυτόματο Max HR από την ηλικία: 220 - (ηλικία × 0.33)
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [birthDate, setBirthDate] = useState<string | null>(null);
+  const [recentUserIds, setRecentUserIds] = useState<string[]>([]);
+
+  // Χρήστες με τις πιο πρόσφατες HR+ προπονήσεις πρώτοι στην επιλογή
+  useEffect(() => {
+    supabase.from('heart_rate_sessions').select('user_id, started_at')
+      .order('started_at', { ascending: false }).limit(200)
+      .then(({ data }) => {
+        const seen = new Set<string>();
+        const ids: string[] = [];
+        (data || []).forEach((r: any) => {
+          if (r.user_id && !seen.has(r.user_id)) { seen.add(r.user_id); ids.push(r.user_id); }
+        });
+        setRecentUserIds(ids);
+      });
+  }, []);
   useEffect(() => { if (!selectedUserId && userProfile?.id) setSelectedUserId(userProfile.id); }, [userProfile?.id]);
   useEffect(() => {
     if (!selectedUserId) return;
@@ -207,6 +222,7 @@ const HeartRatePage = () => {
                 coachId={userProfile?.id}
                 adminOwned={isAdmin()}
                 disabled={recording}
+                priorityUserIds={recentUserIds}
                 triggerClassName="h-7 text-xs"
               />
             </div>
