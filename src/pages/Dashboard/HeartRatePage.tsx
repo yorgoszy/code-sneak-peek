@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { HeartPulse, Bluetooth, BluetoothOff, Menu, RotateCcw } from 'lucide-react';
+import { HeartPulse, Bluetooth, BluetoothOff, Menu, RotateCcw, Play, Square } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { Sidebar } from '@/components/Sidebar';
 import { CoachSidebar } from '@/components/CoachSidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
@@ -28,7 +29,10 @@ const parseHeartRate = (value: DataView) => {
 };
 
 const HeartRatePage = () => {
-  const { isAdmin } = useRoleCheck();
+  const { isAdmin, userProfile } = useRoleCheck();
+  const [recording, setRecording] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const recStartRef = useRef<Date | null>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [deviceName, setDeviceName] = useState<string | null>(null);
@@ -71,6 +75,32 @@ const HeartRatePage = () => {
     } catch (err: any) {
       if (err?.name !== 'NotFoundError') toast.error('Αποτυχία σύνδεσης: ' + (err?.message || ''));
     }
+  };
+
+  const startRecording = () => {
+    setSamples([]); setRrList([]); startRef.current = Date.now();
+    recStartRef.current = new Date(); setRecording(true);
+    toast.success('Η καταγραφή ξεκίνησε');
+  };
+
+  const stopRecording = async () => {
+    if (!recStartRef.current) return;
+    if (!userProfile?.id) { toast.error('Δεν βρέθηκε συνδεδεμένος χρήστης'); return; }
+    setRecording(false); setSaving(true);
+    const end = new Date();
+    const { error } = await supabase.from('heart_rate_sessions' as any).insert({
+      user_id: userProfile.id,
+      device_name: deviceName,
+      started_at: recStartRef.current.toISOString(),
+      ended_at: end.toISOString(),
+      duration_seconds: Math.round((end.getTime() - recStartRef.current.getTime()) / 1000),
+      avg_bpm: avg, max_bpm: max, min_bpm: min, rmssd,
+      max_hr_setting: Number(maxHrSetting) || null,
+      samples, rr_intervals: rrList.map(r => Math.round(r)),
+    });
+    setSaving(false); recStartRef.current = null;
+    if (error) toast.error('Αποτυχία αποθήκευσης: ' + error.message);
+    else toast.success('Η προπόνηση αποθηκεύτηκε');
   };
 
   const disconnect = () => {
@@ -157,7 +187,17 @@ const HeartRatePage = () => {
                     <BluetoothOff className="h-4 w-4 mr-2" /> Αποσύνδεση
                   </Button>
                 )}
-                <Button variant="outline" onClick={reset} className="rounded-none">
+                {!recording ? (
+                  <Button onClick={startRecording} disabled={!connected || saving} className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black">
+                    <Play className="h-4 w-4 mr-2" /> Έναρξη προπόνησης
+                  </Button>
+                ) : (
+                  <Button onClick={stopRecording} variant="destructive" className="rounded-none">
+                    <Square className="h-4 w-4 mr-2" /> Λήξη προπόνησης
+                  </Button>
+                )}
+                {recording && <span className="text-xs text-destructive animate-pulse">● Καταγραφή</span>}
+                <Button variant="outline" onClick={reset} disabled={recording} className="rounded-none">
                   <RotateCcw className="h-4 w-4 mr-2" /> Μηδενισμός
                 </Button>
                 <span className="text-sm text-muted-foreground">
