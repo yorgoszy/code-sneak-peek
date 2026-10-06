@@ -136,6 +136,20 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
     );
   });
 
+  // Priority ordering: users in priorityUserIds come first, in that order
+  const sortedUsers = React.useMemo(() => {
+    if (!priorityUserIds || priorityUserIds.length === 0) return filteredUsers;
+    const rank = new Map(priorityUserIds.map((id, i) => [id, i]));
+    return [...filteredUsers].sort((a, b) => {
+      const ra = rank.get(a.id);
+      const rb = rank.get(b.id);
+      if (ra === undefined && rb === undefined) return 0;
+      if (ra === undefined) return 1;
+      if (rb === undefined) return -1;
+      return ra - rb;
+    });
+  }, [filteredUsers, priorityUserIds]);
+
   return (
     <Popover open={disabled ? false : open} onOpenChange={disabled ? undefined : setOpen}>
       <PopoverTrigger asChild>
@@ -177,7 +191,7 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
               {isLoading ? 'Φόρτωση...' : 'Δεν βρέθηκαν χρήστες'}
             </CommandEmpty>
             <CommandGroup>
-              {filteredUsers.map((user) => (
+              {sortedUsers.map((user) => (
                 <CommandItem
                   key={user.id}
                   value={user.id}
