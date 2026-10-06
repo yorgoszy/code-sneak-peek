@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { HeartPulse, Bluetooth, BluetoothOff, Menu, RotateCcw, Play, Square } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Sidebar } from '@/components/Sidebar';
@@ -42,8 +41,6 @@ const HeartRatePage = () => {
   const [rrList, setRrList] = useState<number[]>([]);
   const deviceRef = useRef<any>(null);
   const startRef = useRef<number>(0);
-  const [maxHrSetting, setMaxHrSetting] = useState('200');
-  const maxHrTouchedRef = useRef(false);
   const [maxHrAuto, setMaxHrAuto] = useState<number | null>(null);
 
   // Αυτόματο Max HR από την ηλικία: 220 - (ηλικία × 0.33)
@@ -56,9 +53,7 @@ const HeartRatePage = () => {
     const m = today.getMonth() - b.getMonth();
     if (m < 0 || (m === 0 && today.getDate() < b.getDate())) age--;
     if (age < 0 || age > 120) return;
-    const auto = Math.round(220 - age * 0.33);
-    setMaxHrAuto(auto);
-    if (!maxHrTouchedRef.current) setMaxHrSetting(String(auto));
+    setMaxHrAuto(Math.round(220 - age * 0.33));
   }, [userProfile?.birth_date]);
 
   const supported = typeof navigator !== 'undefined' && 'bluetooth' in navigator;
@@ -112,7 +107,7 @@ const HeartRatePage = () => {
       ended_at: end.toISOString(),
       duration_seconds: Math.round((end.getTime() - recStartRef.current.getTime()) / 1000),
       avg_bpm: avg, max_bpm: max, min_bpm: min, rmssd,
-      max_hr_setting: Number(maxHrSetting) || null,
+      max_hr_setting: maxHrAuto,
       samples, rr_intervals: rrList.map(r => Math.round(r)),
     });
     setSaving(false); recStartRef.current = null;
@@ -139,7 +134,7 @@ const HeartRatePage = () => {
 
   // Chart
   const W = 600, H = 160;
-  const maxHr = Math.max(100, Number(maxHrSetting) || 200);
+  const maxHr = Math.max(100, maxHrAuto ?? 200);
   const chartMin = Math.min(min !== null ? min - 5 : 40, maxHr * 0.45);
   const chartMax = Math.max(max !== null ? max + 5 : 200, maxHr);
   const yFor = (bpm: number) => H - ((bpm - chartMin) / Math.max(1, chartMax - chartMin)) * H;
@@ -243,18 +238,10 @@ const HeartRatePage = () => {
               <CardHeader className="pb-1 pt-2 px-3 flex flex-row items-center justify-between space-y-0">
                 <CardTitle className="text-xs">Γράφημα παλμών & ζώνες</CardTitle>
                 <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                  <span>Max HR:</span>
-                  <Input
-                    type="number"
-                    value={maxHrSetting}
-                    onChange={(e) => { maxHrTouchedRef.current = true; setMaxHrSetting(e.target.value); }}
-                    className="rounded-none h-6 w-16 text-xs"
-                  />
-                  {maxHrAuto !== null && (
-                    <span className="text-[9px] hidden sm:inline">
-                      {maxHrTouchedRef.current ? 'χειροκίνητο' : 'αυτόματο (220−ηλικία×0.33)'}
-                    </span>
-                  )}
+                  <span>Max HR: <span className="font-semibold text-foreground">{maxHrAuto ?? '—'}</span></span>
+                  <span className="text-[9px] hidden sm:inline">
+                    {maxHrAuto !== null ? 'αυτόματο (220−ηλικία×0.33)' : 'χωρίς ημερομηνία γέννησης'}
+                  </span>
                 </div>
               </CardHeader>
               <CardContent className="p-3 pt-0">
