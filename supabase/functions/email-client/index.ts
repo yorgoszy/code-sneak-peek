@@ -14,9 +14,9 @@ const corsHeaders = {
 // NOTE: mail.hyperkids.gr has an EXPIRED TLS certificate and Deno ignores
 // `rejectUnauthorized: false`, so we must connect via the hosting server's
 // hostname, which serves a valid certificate for the same mailboxes.
-const IMAP_HOST = Deno.env.get("EMAIL_IMAP_HOST") ?? "srv.redhost1.eu";
+const IMAP_HOST = Deno.env.get("EMAIL_IMAP_HOST") ?? "imap.gmail.com";
 const IMAP_PORT = parseInt(Deno.env.get("EMAIL_IMAP_PORT") ?? "993", 10);
-const SMTP_HOST = Deno.env.get("EMAIL_SMTP_HOST") ?? "srv.redhost1.eu";
+const SMTP_HOST = Deno.env.get("EMAIL_SMTP_HOST") ?? "smtp.gmail.com";
 const SMTP_PORT = parseInt(Deno.env.get("EMAIL_SMTP_PORT") ?? "465", 10);
 const EMAIL_USER = Deno.env.get("EMAIL_USER") ?? "info@hyperkids.gr";
 const EMAIL_PASS = Deno.env.get("EMAIL_PASSWORD") ?? "";
@@ -368,12 +368,15 @@ Deno.serve(async (req) => {
     const status = err.message === "Unauthorized" ? 401 : err.message === "Forbidden" ? 403 : 500;
     const connectionError = ["ETIMEDOUT", "CONNECT_TIMEOUT", "UPGRADE_TIMEOUT", "ECONNREFUSED"].includes(err.code);
     const certError = String(err.message ?? "").includes("certificate");
-    const message = certError
+    const authError = err.authenticationFailed || /Command failed|AUTHENTICATIONFAILED|Invalid credentials/i.test(String(err.message ?? "") + String(err.responseText ?? ""));
+    const message = authError
+      ? "Ο mail server απέρριψε τη σύνδεση. Το email είναι πλέον στο Google Workspace: χρειάζεται App Password της Google για το info@hyperkids.gr."
+      : certError
       ? "Το SSL certificate του mail server έχει λήξει. Ανανεώστε το (Let's Encrypt στο Plesk) ή ορίστε EMAIL_IMAP_HOST/EMAIL_SMTP_HOST σε hostname με έγκυρο certificate."
       : connectionError
       ? "Ο mail server δεν δέχτηκε έγκαιρα την ασφαλή σύνδεση. Ελέγξτε το SSL του mail.hyperkids.gr."
       : err.message;
-    return new Response(JSON.stringify({ error: message, code: err.code ?? "EMAIL_ERROR" }), {
+    return new Response(JSON.stringify({ error: message, code: authError ? "EMAIL_AUTH" : (err.code ?? "EMAIL_ERROR") }), {
       status,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
