@@ -70,7 +70,17 @@ async function invokeEmail(action: string, payload: Record<string, any> = {}) {
   const { data, error } = await supabase.functions.invoke(FUNCTION_NAME, {
     body: { action, ...payload },
   });
-  if (error) throw error;
+  if (error) {
+    let msg = error.message;
+    try {
+      const ctx = (error as any).context;
+      if (ctx?.json) {
+        const body = await ctx.json();
+        if (body?.error) msg = body.error;
+      }
+    } catch {}
+    throw new Error(msg);
+  }
   if (data?.error) throw new Error(data.error);
   return data;
 }
