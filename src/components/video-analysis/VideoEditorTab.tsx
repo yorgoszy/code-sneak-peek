@@ -2480,11 +2480,12 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
 
                       {placed.map(({ m: marker, startPx }) => {
                         let dotColor = '';
-                        if (marker.owner === 'athlete') {
+                        if (marker.blocked) {
+                          dotColor = marker.owner === 'athlete' ? 'bg-gray-800' : 'bg-blue-500';
+                        } else if (marker.owner === 'athlete') {
                           dotColor = marker.hitTarget ? 'bg-[#00ffba]' : 'bg-gray-300';
                         } else {
-                          if (marker.blocked) dotColor = 'bg-blue-500';
-                          else if (marker.hitTarget) dotColor = 'bg-red-500';
+                          if (marker.hitTarget) dotColor = 'bg-red-500';
                           else dotColor = 'bg-gray-300';
                         }
 
