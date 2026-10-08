@@ -177,6 +177,19 @@ export const AdminVideoAnalysisOverview = () => {
   };
 
   const ourIsBlue = (fights.find(f => f.id === selectedFightId) as any)?.our_corner === 'blue';
+  // ours = our athlete, theirs = opponent; swap sides when our athlete is in the blue corner
+  const renderRedBlue = (ours: number | string, theirs: number | string) => {
+    const red = ourIsBlue ? theirs : ours;
+    const blue = ourIsBlue ? ours : theirs;
+    return (
+      <span className="inline-flex items-baseline gap-0.5">
+        <span className="text-red-500">{red}</span>
+        <span className="text-gray-400">/</span>
+        <span className="text-blue-500">{blue}</span>
+      </span>
+    );
+  };
+
   const statCards = [
     {
       title: 'Χτυπήματα',
@@ -219,18 +232,6 @@ export const AdminVideoAnalysisOverview = () => {
   const fightStyleInfo = getFightStyleInfo();
 
   // Second row of stats - Red vs Blue per category
-  // ours = our athlete, theirs = opponent; swap sides when our athlete is in the blue corner
-  const renderRedBlue = (ours: number | string, theirs: number | string) => {
-    const red = ourIsBlue ? theirs : ours;
-    const blue = ourIsBlue ? ours : theirs;
-    return (
-      <span className="inline-flex items-baseline gap-0.5">
-        <span className="text-red-500">{red}</span>
-        <span className="text-gray-400">/</span>
-        <span className="text-blue-500">{blue}</span>
-      </span>
-    );
-  };
 
   const statCards2 = [
     {
