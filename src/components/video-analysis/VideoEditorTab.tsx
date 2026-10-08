@@ -1393,6 +1393,14 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
     }));
   };
 
+  // Right-click on a strike: toggle "blocked" (μπλοκαρισμένο) — mutually exclusive with hitTarget
+  const toggleStrikeBlocked = (id: string) => {
+    setStrikeMarkers(prev => prev.map(m => {
+      if (m.id !== id) return m;
+      return { ...m, blocked: !m.blocked, hitTarget: false };
+    }));
+  };
+
   // Format time within round (MM:SS)
   const formatTimeInRound = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
