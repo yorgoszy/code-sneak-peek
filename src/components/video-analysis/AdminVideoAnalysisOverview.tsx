@@ -176,16 +176,11 @@ export const AdminVideoAnalysisOverview = () => {
     }
   };
 
+  const ourIsBlue = (fights.find(f => f.id === selectedFightId) as any)?.our_corner === 'blue';
   const statCards = [
     {
       title: 'Χτυπήματα',
-      value: (
-        <span className="inline-flex items-baseline gap-1">
-          <span className="text-red-500">{stats?.totalStrikes || 0}</span>
-          <span className="text-gray-400">/</span>
-          <span className="text-blue-500">{stats?.opponentTotalStrikes || 0}</span>
-        </span>
-      ),
+      value: renderRedBlue(stats?.totalStrikes || 0, stats?.opponentTotalStrikes || 0),
       subtitle: `${stats?.landedStrikes || 0} / ${stats?.opponentLandedStrikes || 0} επιτυχ.`,
       icon: Target,
       color: 'text-foreground',
@@ -193,13 +188,7 @@ export const AdminVideoAnalysisOverview = () => {
     },
     {
       title: 'Ορθότητα',
-      value: (
-        <span className="inline-flex items-baseline gap-1">
-          <span className="text-red-500">{stats?.correctnessRate || 0}%</span>
-          <span className="text-gray-400">/</span>
-          <span className="text-blue-500">{stats?.opponentCorrectnessRate || 0}%</span>
-        </span>
-      ),
+      value: renderRedBlue(`${stats?.correctnessRate || 0}%`, `${stats?.opponentCorrectnessRate || 0}%`),
       subtitle: `${stats?.correctStrikes || 0} / ${stats?.opponentCorrectStrikes || 0} σωστά`,
       icon: CheckCircle,
       color: 'text-foreground',
@@ -230,13 +219,18 @@ export const AdminVideoAnalysisOverview = () => {
   const fightStyleInfo = getFightStyleInfo();
 
   // Second row of stats - Red vs Blue per category
-  const renderRedBlue = (red: number, blue: number, redLanded?: number, blueLanded?: number) => (
-    <span className="inline-flex items-baseline gap-0.5">
-      <span className="text-red-500">{red}</span>
-      <span className="text-gray-400">/</span>
-      <span className="text-blue-500">{blue}</span>
-    </span>
-  );
+  // ours = our athlete, theirs = opponent; swap sides when our athlete is in the blue corner
+  const renderRedBlue = (ours: number | string, theirs: number | string) => {
+    const red = ourIsBlue ? theirs : ours;
+    const blue = ourIsBlue ? ours : theirs;
+    return (
+      <span className="inline-flex items-baseline gap-0.5">
+        <span className="text-red-500">{red}</span>
+        <span className="text-gray-400">/</span>
+        <span className="text-blue-500">{blue}</span>
+      </span>
+    );
+  };
 
   const statCards2 = [
     {
