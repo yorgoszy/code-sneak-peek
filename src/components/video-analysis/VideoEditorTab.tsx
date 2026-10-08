@@ -2449,18 +2449,18 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                 {/* Strike markers stay inside their round, wrapping into additional rows. */}
                 {(() => {
                   const timelineDuration = Math.max(totalDuration > 0 ? totalDuration : duration, 0.1);
-                  const chipWidth = compactMode ? 16 : 20; // px
-                  const rowHeight = compactMode ? 16 : 20;
+                  const chipWidth = 12; // px
+                  const rowHeight = 12;
 
                   const getStrikeAbbreviation = (name: string): string => {
                     const lowerName = (name || '').toLowerCase();
-                    if (lowerName.includes('punch') || lowerName.includes('box') || lowerName.includes('μπουνιά') || lowerName.includes('γροθιά')) return 'B';
-                    if (lowerName.includes('knee') || lowerName.includes('γόνατο') || lowerName.includes('γονατο')) return 'KN';
-                    if (lowerName.includes('kick') || lowerName.includes('λάκτισμα') || lowerName.includes('κλωτσιά') || lowerName.includes('κλωτσια')) return 'K';
-                    if (lowerName.includes('elbow') || lowerName.includes('αγκώνας') || lowerName.includes('αγκωνας')) return 'EL';
-                    if (lowerName.includes('clinch') || lowerName.includes('plam') || lowerName.includes('πλαμ')) return 'CL';
+                    if (lowerName.includes('punch') || lowerName.includes('box') || lowerName.includes('μπουνιά') || lowerName.includes('γροθιά')) return 'Χ';
+                    if (lowerName.includes('knee') || lowerName.includes('γόνατο') || lowerName.includes('γονατο')) return 'Γ';
+                    if (lowerName.includes('kick') || lowerName.includes('λάκτισμα') || lowerName.includes('κλωτσιά') || lowerName.includes('κλωτσια')) return 'Κ';
+                    if (lowerName.includes('elbow') || lowerName.includes('αγκώνας') || lowerName.includes('αγκωνας')) return 'Α';
+                    if (lowerName.includes('clinch') || lowerName.includes('plam') || lowerName.includes('πλαμ')) return 'ΠΛ';
                     if (/^\d+$/.test((name || '').trim())) return (name || '').trim();
-                    return (name || '').substring(0, 2).toUpperCase();
+                    return (name || '').substring(0, 1).toUpperCase();
                   };
 
                   const sorted = [...strikeMarkers].sort((a, b) => a.time - b.time);
@@ -2492,8 +2492,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                     rowCounts[m.owner] = Math.max(rowCounts[m.owner], row + 1);
                     return { m, startPx, row, widthPx };
                   });
-                  const laneHeight = rowCounts.athlete * (rowHeight + 2) + 2;
-                  const totalHeight = laneHeight + rowCounts.opponent * (rowHeight + 2) + 4;
+                  const laneHeight = rowCounts.athlete * (rowHeight + 1) + 2;
+                  const totalHeight = laneHeight + rowCounts.opponent * (rowHeight + 1) + 4;
 
                   return (
                     <div
