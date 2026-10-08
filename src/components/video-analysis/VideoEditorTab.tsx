@@ -2446,13 +2446,11 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                   />
                 </div>
                 
-                {/* Strike Markers on Timeline - Greedy side-by-side placement to avoid overlap */}
+                {/* Strike markers stay inside their round, wrapping into additional rows. */}
                 {(() => {
-                  const timelineDuration = totalDuration > 0 ? totalDuration : duration;
+                  const timelineDuration = Math.max(totalDuration > 0 ? totalDuration : duration, 0.1);
                   const chipWidth = compactMode ? 16 : 20; // px
                   const rowHeight = compactMode ? 16 : 20;
-                  const laneHeight = rowHeight + 4;
-                  const totalHeight = laneHeight * 2 + 4;
 
                   const getStrikeAbbreviation = (name: string): string => {
                     const lowerName = (name || '').toLowerCase();
@@ -2465,35 +2463,64 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                     return (name || '').substring(0, 2).toUpperCase();
                   };
 
-                  // Sort by time and stable, then greedy stack: if natural position would overlap
-                  // the previous marker (same lane), push to the right just past the previous end.
                   const sorted = [...strikeMarkers].sort((a, b) => a.time - b.time);
                   const containerWidthPx = strikeLanePxWidth || 1;
-
-                  const lastEndPxByOwner: Record<'athlete' | 'opponent', number> = { athlete: -Infinity, opponent: -Infinity };
+                  const roundBounds = roundMarkers.map((round) => ({
+                    round,
+                    endTime: round.endTime ?? Math.max(globalCurrentTime, round.startTime + 0.1),
+                  }));
+                  const rowEndsByGroup = new Map<string, number[]>();
+                  const rowCounts = { athlete: 1, opponent: 1 };
                   const placed = sorted.map((m) => {
+                    // Prefer current time bounds so resizing a round updates its marker layout.
+                    const bounds = roundBounds.find(({ round, endTime }) => m.time >= round.startTime && m.time <= endTime)
+                      ?? roundBounds.find(({ round }) => round.roundNumber === m.roundNumber);
+                    const leftPx = bounds ? Math.max(0, (bounds.round.startTime / timelineDuration) * containerWidthPx) : 0;
+                    const rightPx = bounds ? Math.min(containerWidthPx, (bounds.endTime / timelineDuration) * containerWidthPx) : containerWidthPx;
+                    const widthPx = Math.min(chipWidth, Math.max(1, rightPx - leftPx - 2));
+                    const minStart = leftPx + 1;
+                    const maxStart = Math.max(minStart, rightPx - widthPx - 1);
                     const naturalPx = (m.time / timelineDuration) * containerWidthPx;
-                    const owner = m.owner as 'athlete' | 'opponent';
-                    const startPx = Math.max(naturalPx, lastEndPxByOwner[owner] + 1);
-                    lastEndPxByOwner[owner] = startPx + chipWidth;
-                    return { m, startPx };
+                    const groupKey = `${bounds?.round.id ?? 'unassigned'}-${m.owner}`;
+                    const rowEnds = rowEndsByGroup.get(groupKey) ?? [];
+                    const preferredStart = Math.max(minStart, Math.min(naturalPx, maxStart));
+                    let row = rowEnds.findIndex((end) => Math.max(preferredStart, end + 1) <= maxStart);
+                    if (row < 0) row = rowEnds.length;
+                    const startPx = Math.max(preferredStart, (rowEnds[row] ?? minStart - 1) + 1);
+                    rowEnds[row] = startPx + widthPx;
+                    rowEndsByGroup.set(groupKey, rowEnds);
+                    rowCounts[m.owner] = Math.max(rowCounts[m.owner], row + 1);
+                    return { m, startPx, row, widthPx };
                   });
+                  const laneHeight = rowCounts.athlete * (rowHeight + 2) + 2;
+                  const totalHeight = laneHeight + rowCounts.opponent * (rowHeight + 2) + 4;
 
                   return (
                     <div
                       ref={strikeLaneRef}
-                      className="relative bg-gray-50 rounded-none border border-gray-200 mt-1 overflow-hidden"
+                      className="relative bg-muted/30 rounded-none border border-border mt-1 overflow-hidden"
                       style={{ height: `${totalHeight}px` }}
                     >
+                      {roundBounds.map(({ round, endTime }) => (
+                        <div
+                          key={round.id}
+                          className="absolute inset-y-0 border-x border-border bg-muted/40 pointer-events-none"
+                          style={{
+                            left: `${(round.startTime / timelineDuration) * 100}%`,
+                            width: `${Math.max(0, ((endTime - round.startTime) / timelineDuration) * 100)}%`,
+                          }}
+                          aria-label={`Χτυπήματα Round ${round.roundNumber}`}
+                        />
+                      ))}
                       {/* Lane divider */}
-                      <div className="absolute left-0 right-0 border-t border-gray-200" style={{ top: `${laneHeight + 2}px` }} />
+                      <div className="absolute left-0 right-0 border-t border-border" style={{ top: `${laneHeight + 2}px` }} />
                       {/* Timebar */}
                       <div
                         className="absolute w-0.5 h-full bg-black z-20"
                         style={{ left: `${(globalCurrentTime / timelineDuration) * 100}%` }}
                       />
 
-                      {placed.map(({ m: marker, startPx }) => {
+                      {placed.map(({ m: marker, startPx, row, widthPx }) => {
                         let dotColor = '';
                         if (marker.blocked) {
                           dotColor = marker.owner === 'athlete' ? 'bg-gray-800' : 'bg-blue-500';
@@ -2505,16 +2532,16 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                         }
 
                         const abbreviation = getStrikeAbbreviation(marker.strikeTypeName || '');
-                        const laneTop = marker.owner === 'athlete' ? 2 : laneHeight + 4;
+                        const laneTop = (marker.owner === 'athlete' ? 2 : laneHeight + 4) + row * (rowHeight + 2);
 
                         return (
                           <div
                             key={marker.id}
-                            className="absolute cursor-pointer hover:scale-110 transition-all z-10 flex items-center justify-center"
+                            className="absolute cursor-pointer hover:opacity-80 transition-opacity z-10 flex items-center justify-center overflow-hidden"
                             style={{
                               left: `${startPx}px`,
                               top: `${laneTop}px`,
-                              minWidth: `${chipWidth}px`,
+                              width: `${widthPx}px`,
                               height: `${rowHeight}px`
                             }}
                             onClick={() => toggleStrikeState(marker.id)}
