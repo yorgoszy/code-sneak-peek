@@ -1355,7 +1355,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
 
   // Add strike marker at current time
   // owner is now explicitly passed based on which side (athlete/opponent) the user clicked
-  const addStrikeMarker = (strikeType: StrikeType, ownerOverride?: 'athlete' | 'opponent', blocked = false) => {
+  const addStrikeMarker = (strikeType: StrikeType, ownerOverride?: 'athlete' | 'opponent', blocked = false, hitTarget = false) => {
     const owner = ownerOverride ?? determineStrikeOwner(globalCurrentTime);
     const roundInfo = determineRoundInfo(globalCurrentTime);
     
@@ -1370,7 +1370,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
       actionType: owner === 'athlete' ? 'attack' : 'defense',
       roundNumber: roundInfo.roundNumber,
       timeInRound: roundInfo.timeInRound,
-      hitTarget: false, // Default to false, user can toggle with click
+      hitTarget, // Middle-click on the strike button = found target (βρήκε στόχο)
       blocked // Right-click on the strike button = blocked (μπλοκαρισμένο)
     };
     
@@ -1380,7 +1380,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
     const roundText = roundInfo.roundNumber 
       ? ` - R${roundInfo.roundNumber} @ ${formatTimeInRound(roundInfo.timeInRound!)}`
       : '';
-    toast.success(`${strikeType.name} (${owner === 'athlete' ? 'Αθλητής' : 'Αντίπαλος'})${roundText}${blocked ? ' - Μπλοκαρισμένο' : ''}`);
+    const stateText = blocked ? ' - Μπλοκαρισμένο' : hitTarget ? ' - Στόχος' : '';
+    toast.success(`${strikeType.name} (${owner === 'athlete' ? 'Αθλητής' : 'Αντίπαλος'})${roundText}${stateText}`);
   };
 
   // Toggle strike states based on owner
@@ -2091,7 +2092,13 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                         e.stopPropagation();
                         addStrikeMarker(strike, owner, true);
                       }}
-                      title="Αριστερό κλικ: χτύπημα • Δεξί κλικ: μπλοκαρισμένο"
+                      onAuxClick={(e) => {
+                        if (e.button !== 1) return;
+                        e.preventDefault();
+                        e.stopPropagation();
+                        addStrikeMarker(strike, owner, false, true);
+                      }}
+                      title="Αριστερό κλικ: χτύπημα • Δεξί κλικ: μπλοκαρισμένο • Ροδέλα: βρήκε στόχο"
                     >
                       {strike.name}
                     </Button>
