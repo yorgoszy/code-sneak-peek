@@ -424,7 +424,8 @@ export const VideoAnalysisOverview = () => {
       {selectedFightId && (
         <FightTimelineChart 
           roundsData={stats?.roundsTimelineData || []}
-          loading={loadingStats} 
+          loading={loadingStats}
+          ourIsBlue={ourIsBlue} 
         />
       )}
 

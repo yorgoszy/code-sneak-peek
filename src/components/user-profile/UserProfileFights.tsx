@@ -266,7 +266,7 @@ export const UserProfileFights: React.FC<Props> = ({ userId }) => {
 
           {/* Timeline chart */}
           {!statsLoading && stats?.roundsTimelineData && (
-            <FightTimelineChart roundsData={stats.roundsTimelineData} loading={statsLoading} />
+            <FightTimelineChart roundsData={stats.roundsTimelineData} loading={statsLoading} ourIsBlue={!isRed} />
           )}
         </div>
       )}

@@ -23,6 +23,7 @@ interface Fight {
   fight_date: string;
   result: string | null;
   fight_type: string | null;
+  our_corner?: string | null;
 }
 
 export const FightStatsCard: React.FC<FightStatsCardProps> = ({ userId }) => {
@@ -50,7 +51,7 @@ export const FightStatsCard: React.FC<FightStatsCardProps> = ({ userId }) => {
       try {
         const { data, error } = await supabase
           .from('muaythai_fights')
-          .select('id, opponent_name, fight_date, result, fight_type')
+          .select('id, opponent_name, fight_date, result, fight_type, our_corner')
           .eq('user_id', userId)
           .order('fight_date', { ascending: false })
           .limit(2);
@@ -267,6 +268,7 @@ export const FightStatsCard: React.FC<FightStatsCardProps> = ({ userId }) => {
             <FightTimelineChart 
               roundsData={stats.roundsTimelineData}
               loading={statsLoading}
+              ourIsBlue={latestFight.our_corner === 'blue'}
             />
           </div>
         )}

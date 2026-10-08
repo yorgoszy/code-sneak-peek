@@ -6,9 +6,11 @@ import { RoundTimelineData } from '@/hooks/useFightStats';
 interface FightTimelineChartProps {
   roundsData: RoundTimelineData[];
   loading?: boolean;
+  /** true when our athlete fought in the blue corner — swaps series so red/blue match the corners */
+  ourIsBlue?: boolean;
 }
 
-export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ roundsData, loading }) => {
+export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ roundsData, loading, ourIsBlue = false }) => {
   if (loading) {
     return (
       <Card className="rounded-none">
@@ -32,6 +34,10 @@ export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ roundsDa
       </Card>
     );
   }
+
+  // "strikes" = our athlete, "attacks" = opponent
+  const redKey = ourIsBlue ? 'attacks' : 'strikes';
+  const blueKey = ourIsBlue ? 'strikes' : 'attacks';
 
   return (
     <Card className="rounded-none">
@@ -93,7 +99,7 @@ export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ roundsDa
                     />
                     <Area 
                       type="monotone"
-                      dataKey="strikes" 
+                      dataKey={redKey} 
                       name="Κόκκινος" 
                       stroke="#ef4444" 
                       strokeWidth={1.5}
@@ -101,7 +107,7 @@ export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ roundsDa
                     />
                     <Area 
                       type="monotone"
-                      dataKey="attacks" 
+                      dataKey={blueKey} 
                       name="Μπλε" 
                       stroke="#3b82f6" 
                       strokeWidth={1.5}
