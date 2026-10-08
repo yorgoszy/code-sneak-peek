@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { isStoredFightVideo, resolveFightVideoUrl } from '@/utils/fightVideoStorage';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, MapPin, User, Clock, Trophy, FileText, Video, Scale } from 'lucide-react';
@@ -26,6 +27,17 @@ interface FightViewDialogProps {
 }
 
 export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClose, fight }) => {
+  const [playableUrl, setPlayableUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setPlayableUrl(null);
+    if (isOpen && fight?.video_url) {
+      resolveFightVideoUrl(fight.video_url).then((u) => { if (!cancelled) setPlayableUrl(u); });
+    }
+    return () => { cancelled = true; };
+  }, [isOpen, fight?.video_url]);
+
   if (!fight) return null;
 
   const getResultLabel = (result: string | null) => {
@@ -71,8 +83,9 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
     return null;
   };
 
-  const embedUrl = fight.video_url ? getEmbedUrl(fight.video_url) : null;
-  const isDirectVideo = fight.video_url ? /\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(fight.video_url) : false;
+  const isStored = isStoredFightVideo(fight.video_url);
+  const embedUrl = fight.video_url && !isStored ? getEmbedUrl(fight.video_url) : null;
+  const isDirectVideo = isStored || (fight.video_url ? /\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(fight.video_url) : false);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -178,11 +191,15 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
                     />
                   </div>
                 ) : isDirectVideo ? (
+                  playableUrl ? (
                   <video
-                    src={fight.video_url}
+                    src={playableUrl}
                     controls
                     className="w-full aspect-video bg-black"
                   />
+                  ) : (
+                    <div className="w-full aspect-video bg-muted flex items-center justify-center text-sm text-muted-foreground">Φόρτωση βίντεο...</div>
+                  )
                 ) : (
                   <a
                     href={fight.video_url}
@@ -200,7 +217,7 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
               <div className="flex items-start gap-3 border border-border p-3">
                 <Video className="w-4 h-4 text-muted-foreground mt-0.5" />
                 <p className="text-sm text-muted-foreground">
-                  Δεν υπάρχει αποθηκευμένο βίντεο. Η ανάλυση έγινε από αρχείο του υπολογιστή, που δεν ανεβαίνει. Πάτα το μολύβι και πρόσθεσε link YouTube για να εμφανίζεται εδώ.
+                  Δεν υπάρχει αποθηκευμένο βίντεο. Η ανάλυση έγινε από αρχείο του υπολογιστή, που δεν ανεβαίνει. Πάτα το μολύβι και ανέβασε το βίντεο ή πρόσθεσε link YouTube για να εμφανίζεται εδώ.
                 </p>
               </div>
             )}

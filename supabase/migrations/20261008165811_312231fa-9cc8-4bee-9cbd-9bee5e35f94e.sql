@@ -1,0 +1,4 @@
+CREATE POLICY "fight_videos_read_authenticated" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'fight-videos');
+CREATE POLICY "fight_videos_insert_staff" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'fight-videos' AND (public.is_admin_user() OR public.is_coach_user(auth.uid())));
+CREATE POLICY "fight_videos_update_staff" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'fight-videos' AND (public.is_admin_user() OR public.is_coach_user(auth.uid())));
+CREATE POLICY "fight_videos_delete_staff" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'fight-videos' AND (public.is_admin_user() OR public.is_coach_user(auth.uid())));
