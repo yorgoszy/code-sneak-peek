@@ -44,7 +44,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useVideoExport } from '@/hooks/useVideoExport';
-import { useStrikeTypes, StrikeType, categoryLabels, sideLabels } from '@/hooks/useStrikeTypes';
+import { useStrikeTypes, StrikeType, categoryLabels, sideLabels, compareByCategory } from '@/hooks/useStrikeTypes';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 // (admin detection used below to control combobox filter scope)
 import { useSafeCoachContext } from '@/contexts/CoachContext';
@@ -2068,6 +2068,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
             ) : (
               (() => {
                 const sortedStrikes = [...strikeTypes].sort((a, b) => {
+                  const byCategory = compareByCategory(a, b);
+                  if (byCategory !== 0) return byCategory;
                   const aIsNumber = /^\d+$/.test(a.name.trim());
                   const bIsNumber = /^\d+$/.test(b.name.trim());
                   if (aIsNumber && !bIsNumber) return -1;
