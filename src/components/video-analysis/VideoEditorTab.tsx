@@ -2552,7 +2552,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                             }}
                             title={`${marker.strikeTypeName} - ${marker.owner === 'athlete' ? 'ΕΓΩ' : 'ΑΝΤ'} - ${formatTime(marker.time)}${marker.blocked ? ' - Μπλοκαρισμένο (δεξί κλικ για αναίρεση)' : ' (δεξί κλικ = μπλοκαρισμένο)'}`}
                           >
-                            <div className="px-0 py-0 text-[7px] leading-none rounded-sm font-bold text-center w-full h-full flex items-center justify-center" style={{ background: dotColor ? undefined : undefined }}>
+                            <div className={`px-0 py-0 text-[7px] leading-none rounded-sm font-bold w-full h-full flex items-center justify-center ${dotColor} ${marker.owner === 'athlete' ? 'text-black' : 'text-white'} ${marker.blocked ? 'line-through' : ''}`}>
                               {abbreviation}
                             </div>
                           </div>
