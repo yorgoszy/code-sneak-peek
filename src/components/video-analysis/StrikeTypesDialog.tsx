@@ -29,7 +29,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Edit2, Trash2, Target, Loader2 } from 'lucide-react';
-import { useStrikeTypes, categoryLabels, sideLabels, StrikeType, CreateStrikeType } from '@/hooks/useStrikeTypes';
+import { useStrikeTypes, categoryLabels, sideLabels, categoryOrder, StrikeType, CreateStrikeType } from '@/hooks/useStrikeTypes';
 
 interface StrikeTypesDialogProps {
   isOpen: boolean;
@@ -116,7 +116,7 @@ export const StrikeTypesDialog: React.FC<StrikeTypesDialogProps> = ({
     return colors[category] || 'bg-gray-500';
   };
 
-  // Group by category
+  // Group by category, in the configured display order (ΧΕΡΙ, ΠΟΔΙ, ΑΓΚΩΝΑΣ, ΓΟΝΑΤΟ)
   const groupedStrikes = strikeTypes.reduce((acc, strike) => {
     if (!acc[strike.category]) {
       acc[strike.category] = [];
@@ -124,6 +124,12 @@ export const StrikeTypesDialog: React.FC<StrikeTypesDialogProps> = ({
     acc[strike.category].push(strike);
     return acc;
   }, {} as Record<string, StrikeType[]>);
+
+  const orderedCategories = Object.keys(groupedStrikes).sort((a, b) => {
+    const ai = categoryOrder.indexOf(a as StrikeType['category']);
+    const bi = categoryOrder.indexOf(b as StrikeType['category']);
+    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+  });
 
   return (
     <>
@@ -180,8 +186,8 @@ export const StrikeTypesDialog: React.FC<StrikeTypesDialogProps> = ({
                           <SelectContent>
                             <SelectItem value="punch">Γροθιά</SelectItem>
                             <SelectItem value="kick">Κλωτσιά</SelectItem>
-                            <SelectItem value="knee">Γόνατο</SelectItem>
                             <SelectItem value="elbow">Αγκώνας</SelectItem>
+                            <SelectItem value="knee">Γόνατο</SelectItem>
                             <SelectItem value="combo">Κόμπο</SelectItem>
                             <SelectItem value="combo_kick_finish">Κόμπο + Πόδι</SelectItem>
                             <SelectItem value="muay_plam">Muay Plam</SelectItem>
@@ -235,14 +241,14 @@ export const StrikeTypesDialog: React.FC<StrikeTypesDialogProps> = ({
               </div>
             ) : (
               <div className="space-y-2">
-                {Object.entries(groupedStrikes).map(([category, strikes]) => (
+                {orderedCategories.map((category) => (
                   <div key={category} className="border border-gray-200 rounded-none p-2">
                     <div className="flex items-center gap-2 mb-1.5">
                       <div className={`w-2 h-2 ${getCategoryColor(category)} rounded-full`} />
                       <span className="text-xs font-semibold text-gray-600">{categoryLabels[category]}</span>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
-                      {strikes.map((strike) => (
+                      {groupedStrikes[category].map((strike) => (
                         <div 
                           key={strike.id} 
                           className="flex items-center justify-between bg-gray-50 border border-gray-200 px-1.5 py-0.5 group hover:bg-gray-100"
