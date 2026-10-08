@@ -72,7 +72,7 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
   };
 
   const embedUrl = fight.video_url ? getEmbedUrl(fight.video_url) : null;
-  const isDirectVideo = fight.video_url ? /\.(mp4|webm|ogg)(\?|$)/i.test(fight.video_url) : false;
+  const isDirectVideo = fight.video_url ? /\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(fight.video_url) : false;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -193,6 +193,15 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
                     Προβολή Video
                   </a>
                 )}
+              </div>
+            )}
+
+            {!fight.video_url && (
+              <div className="flex items-start gap-3 border border-border p-3">
+                <Video className="w-4 h-4 text-muted-foreground mt-0.5" />
+                <p className="text-sm text-muted-foreground">
+                  Δεν υπάρχει αποθηκευμένο βίντεο. Η ανάλυση έγινε από αρχείο του υπολογιστή, που δεν ανεβαίνει. Πάτα το μολύβι και πρόσθεσε link YouTube για να εμφανίζεται εδώ.
+                </p>
               </div>
             )}
 
