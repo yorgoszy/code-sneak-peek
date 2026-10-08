@@ -2503,9 +2503,14 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                               height: `${rowHeight}px`
                             }}
                             onClick={() => toggleStrikeState(marker.id)}
-                            title={`${marker.strikeTypeName} - ${marker.owner === 'athlete' ? 'ΕΓΩ' : 'ΑΝΤ'} - ${formatTime(marker.time)}`}
+                            onContextMenu={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              toggleStrikeBlocked(marker.id);
+                            }}
+                            title={`${marker.strikeTypeName} - ${marker.owner === 'athlete' ? 'ΕΓΩ' : 'ΑΝΤ'} - ${formatTime(marker.time)}${marker.blocked ? ' - Μπλοκαρισμένο (δεξί κλικ για αναίρεση)' : ' (δεξί κλικ = μπλοκαρισμένο)'}`}
                           >
-                            <div className={`${compactMode ? 'px-0.5 py-0 text-[8px]' : 'px-1 py-0.5 text-[9px]'} rounded font-bold ${dotColor} ring-1 ring-gray-200 ${marker.owner === 'athlete' ? 'text-black' : 'text-white'}`}>
+                            <div className={`${compactMode ? 'px-0.5 py-0 text-[8px]' : 'px-1 py-0.5 text-[9px]'} rounded font-bold ${dotColor} ring-1 ring-gray-200 ${marker.owner === 'athlete' ? 'text-black' : 'text-white'} ${marker.blocked ? 'line-through' : ''}`}>
                               {abbreviation}
                             </div>
                           </div>
