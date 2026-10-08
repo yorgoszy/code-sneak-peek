@@ -190,6 +190,9 @@ export const AdminVideoAnalysisOverview = () => {
     );
   };
 
+  // Ποσοστό επί τις εκατό (0 όταν δεν υπάρχει παρονομαστής)
+  const pct = (part: number, whole: number) => (whole > 0 ? Math.round((part / whole) * 100) : 0);
+
   const statCards = [
     {
       title: 'Χτυπήματα',
@@ -272,7 +275,10 @@ export const AdminVideoAnalysisOverview = () => {
     },
     {
       title: 'Άμυνα',
-      value: renderRedBlue(stats?.successfulDefenses || 0, stats?.opponentSuccessfulDefenses || 0),
+      value: renderRedBlue(
+        `${stats?.defenseSuccessRate || 0}%`,
+        `${pct(stats?.opponentSuccessfulDefenses || 0, stats?.totalStrikes || 0)}%`
+      ),
       subtitle: `${stats?.totalHitsReceived || 0} / ${stats?.opponentTotalHitsReceived || 0} δέχτ.`,
       icon: Shield,
       color: 'text-foreground',
@@ -280,7 +286,7 @@ export const AdminVideoAnalysisOverview = () => {
     },
     {
       title: 'Επίθεση',
-      value: renderRedBlue(stats?.landedStrikes || 0, stats?.opponentLandedStrikes || 0),
+      value: renderRedBlue(`${stats?.accuracy || 0}%`, `${stats?.opponentAccuracy || 0}%`),
       subtitle: `${stats?.totalStrikes || 0} / ${stats?.opponentTotalStrikes || 0} σύνολο`,
       icon: Swords,
       color: 'text-foreground',
