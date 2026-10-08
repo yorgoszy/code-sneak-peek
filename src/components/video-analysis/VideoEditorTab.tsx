@@ -2107,8 +2107,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                   ))
                 );
                 return (
-                  <div className="grid grid-cols-2 gap-2">
-                    {/* Red corner - Left */}
+                  <div className="grid grid-cols-1 gap-2">
+                    {/* Red corner - Top */}
                     <div className={compactMode ? "p-1 bg-red-50 border border-red-300 rounded-none" : "p-2 bg-red-50 border border-red-300 rounded-none"}>
                       <div className="flex items-center gap-1 mb-1">
                         <div className="w-2 h-2 bg-red-500" />
@@ -2118,7 +2118,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                         {renderButtons(ourCorner === 'red' ? 'athlete' : 'opponent')}
                       </div>
                     </div>
-                    {/* Blue corner - Right */}
+                    {/* Blue corner - Bottom */}
                     <div className={compactMode ? "p-1 bg-blue-50 border border-blue-300 rounded-none" : "p-2 bg-blue-50 border border-blue-300 rounded-none"}>
                       <div className="flex items-center gap-1 mb-1">
                         <div className="w-2 h-2 bg-blue-500" />
