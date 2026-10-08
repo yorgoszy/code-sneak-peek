@@ -162,19 +162,37 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
             )}
 
             {fight.video_url && (
-              <div className="flex items-center gap-3">
-                <Video className="w-4 h-4 text-gray-500" />
-                <div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Video className="w-4 h-4 text-gray-500" />
                   <p className="text-xs text-gray-500">Video</p>
-                  <a 
-                    href={fight.video_url} 
-                    target="_blank" 
+                </div>
+                {embedUrl ? (
+                  <div className="aspect-video w-full bg-black">
+                    <iframe
+                      src={embedUrl}
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      title="Fight video"
+                    />
+                  </div>
+                ) : isDirectVideo ? (
+                  <video
+                    src={fight.video_url}
+                    controls
+                    className="w-full aspect-video bg-black"
+                  />
+                ) : (
+                  <a
+                    href={fight.video_url}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:underline text-sm"
                   >
                     Προβολή Video
                   </a>
-                </div>
+                )}
               </div>
             )}
 
