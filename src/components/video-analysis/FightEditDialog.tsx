@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Upload } from 'lucide-react';
+import { uploadFightVideo, isStoredFightVideo } from '@/utils/fightVideoStorage';
 import { UserSearchCombobox } from '@/components/users/UserSearchCombobox';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { useSafeCoachContext } from '@/contexts/CoachContext';
@@ -63,7 +64,31 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
     video_url: '',
   });
   const [saving, setSaving] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  const handleVideoUpload = async (file: File) => {
+    if (!fight) return;
+    setUploadProgress(0);
+    try {
+      const storedUrl = await uploadFightVideo(fight.id, file, setUploadProgress);
+      // Save immediately so the upload isn't lost if the dialog is closed
+      const { error } = await supabase
+        .from('muaythai_fights')
+        .update({ video_url: storedUrl, updated_at: new Date().toISOString() })
+        .eq('id', fight.id);
+      if (error) throw error;
+      setFormData((prev) => ({ ...prev, video_url: storedUrl }));
+      toast({ title: 'Επιτυχία', description: 'Το βίντεο ανέβηκε' });
+      onSave();
+    } catch (err: any) {
+      console.error('Video upload error:', err);
+      toast({ title: 'Σφάλμα', description: 'Αποτυχία ανεβάσματος βίντεο', variant: 'destructive' });
+    } finally {
+      setUploadProgress(null);
+    }
+  };
 
   useEffect(() => {
     if (fight) {
@@ -328,13 +353,62 @@ export const FightEditDialog: React.FC<FightEditDialogProps> = ({
           </div>
 
           <div>
-            <Label>Video URL</Label>
-            <Input
-              value={formData.video_url}
-              onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
-              placeholder="https://..."
-              className="rounded-none"
+            <Label>Βίντεο</Label>
+            {isStoredFightVideo(formData.video_url) ? (
+              <div className="flex items-center justify-between border border-border px-3 h-9 text-sm">
+                <span className="truncate">Ανεβασμένο βίντεο ✓</span>
+                <button
+                  type="button"
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                  onClick={() => setFormData({ ...formData, video_url: '' })}
+                >
+                  Αφαίρεση
+                </button>
+              </div>
+            ) : (
+              <Input
+                value={formData.video_url}
+                onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
+                placeholder="Link YouTube ή ανέβασμα αρχείου"
+                className="rounded-none"
+              />
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="video/*,.mov"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleVideoUpload(f);
+                e.target.value = '';
+              }}
             />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-none mt-2 w-full"
+              disabled={uploadProgress !== null}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {uploadProgress !== null ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Ανέβασμα... {uploadProgress}%
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Ανέβασμα βίντεο από τον υπολογιστή
+                </>
+              )}
+            </Button>
+            {uploadProgress !== null && (
+              <div className="h-1 bg-muted mt-1">
+                <div className="h-full bg-[#00ffba] transition-all" style={{ width: `${uploadProgress}%` }} />
+              </div>
+            )}
           </div>
 
           <div>
