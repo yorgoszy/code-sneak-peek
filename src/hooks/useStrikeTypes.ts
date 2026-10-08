@@ -22,6 +22,24 @@ export interface CreateStrikeType {
   description?: string;
 }
 
+// Preferred display order: ΧΕΡΙ, ΠΟΔΙ, ΑΓΚΩΝΑΣ, ΓΟΝΑΤΟ
+export const categoryOrder: StrikeType['category'][] = [
+  'punch',
+  'kick',
+  'elbow',
+  'knee',
+  'combo',
+  'combo_kick_finish',
+  'muay_plam',
+];
+
+export const compareByCategory = (a: StrikeType, b: StrikeType) => {
+  const ai = categoryOrder.indexOf(a.category);
+  const bi = categoryOrder.indexOf(b.category);
+  if (ai !== bi) return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+  return (a.order_index ?? 0) - (b.order_index ?? 0);
+};
+
 export const useStrikeTypes = (coachId: string | null) => {
   const [strikeTypes, setStrikeTypes] = useState<StrikeType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +62,7 @@ export const useStrikeTypes = (coachId: string | null) => {
         .order('order_index');
 
       if (error) throw error;
-      setStrikeTypes((data as StrikeType[]) || []);
+      setStrikeTypes(((data as StrikeType[]) || []).sort(compareByCategory));
     } catch (error) {
       console.error('Error fetching strike types:', error);
       toast.error('Σφάλμα κατά τη φόρτωση των τύπων χτυπημάτων');
