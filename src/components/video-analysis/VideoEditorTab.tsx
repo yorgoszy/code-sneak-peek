@@ -2090,7 +2090,12 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                   if (aIsNumber && bIsNumber) return parseInt(a.name) - parseInt(b.name);
                   return 0;
                 });
-                const renderButtons = (owner: 'athlete' | 'opponent') => (
+                const renderButtons = (corner: 'red' | 'blue') => {
+                  const owner = corner === ourCorner ? 'athlete' : 'opponent';
+                  const cornerClasses = corner === 'red'
+                    ? 'border-competition-red hover:bg-competition-red hover:text-primary-foreground hover:border-competition-red'
+                    : 'border-competition-blue hover:bg-competition-blue hover:text-primary-foreground hover:border-competition-blue';
+                  return (
                   sortedStrikes.map((strike) => (
                     <Button
                       key={`${owner}-${strike.id}`}
@@ -2098,8 +2103,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                       variant="outline"
                       className={
                         compactMode
-                          ? `rounded-none h-5 text-[9px] px-1.5 border ${owner === 'athlete' ? 'border-red-400 hover:bg-red-500 hover:text-white hover:border-red-500' : 'border-blue-400 hover:bg-blue-500 hover:text-white hover:border-blue-500'}`
-                          : `rounded-none h-6 text-[10px] px-2 border ${owner === 'athlete' ? 'border-red-400 hover:bg-red-500 hover:text-white hover:border-red-500' : 'border-blue-400 hover:bg-blue-500 hover:text-white hover:border-blue-500'}`
+                          ? `rounded-none h-5 text-[9px] px-1.5 border ${cornerClasses}`
+                          : `rounded-none h-6 text-[10px] px-2 border ${cornerClasses}`
                       }
                       onClick={() => addStrikeMarker(strike, owner)}
                       onContextMenu={(e) => {
@@ -2118,7 +2123,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                       {strike.name}
                     </Button>
                   ))
-                );
+                  );
+                };
                 return (
                   <div className="grid grid-cols-1 gap-2">
                     {/* Red corner - Top */}
@@ -2128,7 +2134,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                         <span className="text-xs font-semibold text-red-700">{ourCorner === 'red' ? 'Αθλητής μας' : 'Αντίπαλος'}</span>
                       </div>
                       <div className="flex items-center gap-1 flex-wrap">
-                        {renderButtons(ourCorner === 'red' ? 'athlete' : 'opponent')}
+                        {renderButtons('red')}
                       </div>
                     </div>
                     {/* Blue corner - Bottom */}
@@ -2138,7 +2144,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                         <span className="text-xs font-semibold text-blue-700">{ourCorner === 'blue' ? 'Αθλητής μας' : 'Αντίπαλος'}</span>
                       </div>
                       <div className="flex items-center gap-1 flex-wrap">
-                        {renderButtons(ourCorner === 'blue' ? 'athlete' : 'opponent')}
+                        {renderButtons('blue')}
                       </div>
                     </div>
                   </div>
