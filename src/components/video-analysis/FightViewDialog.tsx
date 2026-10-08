@@ -53,9 +53,30 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
 
   const result = getResultLabel(fight.result);
 
+  const getEmbedUrl = (url: string): string | null => {
+    if (!url) return null;
+    if (url.includes('youtube.com/watch?v=')) {
+      const id = url.split('v=')[1]?.split('&')[0];
+      return id ? `https://www.youtube.com/embed/${id}` : null;
+    }
+    if (url.includes('youtu.be/')) {
+      const id = url.split('youtu.be/')[1]?.split('?')[0];
+      return id ? `https://www.youtube.com/embed/${id}` : null;
+    }
+    if (url.includes('youtube.com/embed/')) return url;
+    if (url.includes('vimeo.com')) {
+      const id = url.split('/').pop()?.split('?')[0];
+      return id ? `https://player.vimeo.com/video/${id}` : null;
+    }
+    return null;
+  };
+
+  const embedUrl = fight.video_url ? getEmbedUrl(fight.video_url) : null;
+  const isDirectVideo = fight.video_url ? /\.(mp4|webm|ogg)(\?|$)/i.test(fight.video_url) : false;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="rounded-none max-w-md">
+      <DialogContent className="rounded-none max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Trophy className="w-5 h-5" />
@@ -141,19 +162,37 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
             )}
 
             {fight.video_url && (
-              <div className="flex items-center gap-3">
-                <Video className="w-4 h-4 text-gray-500" />
-                <div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Video className="w-4 h-4 text-gray-500" />
                   <p className="text-xs text-gray-500">Video</p>
-                  <a 
-                    href={fight.video_url} 
-                    target="_blank" 
+                </div>
+                {embedUrl ? (
+                  <div className="aspect-video w-full bg-black">
+                    <iframe
+                      src={embedUrl}
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      title="Fight video"
+                    />
+                  </div>
+                ) : isDirectVideo ? (
+                  <video
+                    src={fight.video_url}
+                    controls
+                    className="w-full aspect-video bg-black"
+                  />
+                ) : (
+                  <a
+                    href={fight.video_url}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:underline text-sm"
                   >
                     Προβολή Video
                   </a>
-                </div>
+                )}
               </div>
             )}
 
