@@ -2085,24 +2085,24 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                 );
                 return (
                   <div className="grid grid-cols-2 gap-2">
-                    {/* Athlete side (Red - Left) */}
+                    {/* Red corner - Left */}
                     <div className={compactMode ? "p-1 bg-red-50 border border-red-300 rounded-none" : "p-2 bg-red-50 border border-red-300 rounded-none"}>
                       <div className="flex items-center gap-1 mb-1">
                         <div className="w-2 h-2 bg-red-500" />
-                        <span className="text-xs font-semibold text-red-700">Αθλητής μας</span>
+                        <span className="text-xs font-semibold text-red-700">{ourCorner === 'red' ? 'Αθλητής μας' : 'Αντίπαλος'}</span>
                       </div>
                       <div className="flex items-center gap-1 flex-wrap">
-                        {renderButtons('athlete')}
+                        {renderButtons(ourCorner === 'red' ? 'athlete' : 'opponent')}
                       </div>
                     </div>
-                    {/* Opponent side (Blue - Right) */}
+                    {/* Blue corner - Right */}
                     <div className={compactMode ? "p-1 bg-blue-50 border border-blue-300 rounded-none" : "p-2 bg-blue-50 border border-blue-300 rounded-none"}>
                       <div className="flex items-center gap-1 mb-1">
                         <div className="w-2 h-2 bg-blue-500" />
-                        <span className="text-xs font-semibold text-blue-700">Αντίπαλος</span>
+                        <span className="text-xs font-semibold text-blue-700">{ourCorner === 'blue' ? 'Αθλητής μας' : 'Αντίπαλος'}</span>
                       </div>
                       <div className="flex items-center gap-1 flex-wrap">
-                        {renderButtons('opponent')}
+                        {renderButtons(ourCorner === 'blue' ? 'athlete' : 'opponent')}
                       </div>
                     </div>
                   </div>
