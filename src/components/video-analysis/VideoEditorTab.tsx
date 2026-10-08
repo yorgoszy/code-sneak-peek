@@ -1355,7 +1355,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
 
   // Add strike marker at current time
   // owner is now explicitly passed based on which side (athlete/opponent) the user clicked
-  const addStrikeMarker = (strikeType: StrikeType, ownerOverride?: 'athlete' | 'opponent') => {
+  const addStrikeMarker = (strikeType: StrikeType, ownerOverride?: 'athlete' | 'opponent', blocked = false) => {
     const owner = ownerOverride ?? determineStrikeOwner(globalCurrentTime);
     const roundInfo = determineRoundInfo(globalCurrentTime);
     
@@ -1371,7 +1371,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
       roundNumber: roundInfo.roundNumber,
       timeInRound: roundInfo.timeInRound,
       hitTarget: false, // Default to false, user can toggle with click
-      blocked: false // Default to false, can toggle only for opponent strikes during defense
+      blocked // Right-click on the strike button = blocked (μπλοκαρισμένο)
     };
     
     setStrikeMarkers(prev => [...prev, newMarker].sort((a, b) => a.time - b.time));
@@ -1380,7 +1380,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
     const roundText = roundInfo.roundNumber 
       ? ` - R${roundInfo.roundNumber} @ ${formatTimeInRound(roundInfo.timeInRound!)}`
       : '';
-    toast.success(`${strikeType.name} (${owner === 'athlete' ? 'Αθλητής' : 'Αντίπαλος'})${roundText}`);
+    toast.success(`${strikeType.name} (${owner === 'athlete' ? 'Αθλητής' : 'Αντίπαλος'})${roundText}${blocked ? ' - Μπλοκαρισμένο' : ''}`);
   };
 
   // Toggle strike states based on owner
@@ -2086,6 +2086,12 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                           : `rounded-none h-6 text-[10px] px-2 border ${owner === 'athlete' ? 'border-red-400 hover:bg-red-500 hover:text-white hover:border-red-500' : 'border-blue-400 hover:bg-blue-500 hover:text-white hover:border-blue-500'}`
                       }
                       onClick={() => addStrikeMarker(strike, owner)}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        addStrikeMarker(strike, owner, true);
+                      }}
+                      title="Αριστερό κλικ: χτύπημα • Δεξί κλικ: μπλοκαρισμένο"
                     >
                       {strike.name}
                     </Button>
