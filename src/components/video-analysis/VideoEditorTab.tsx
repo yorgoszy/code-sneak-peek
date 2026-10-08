@@ -2092,7 +2092,13 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                         e.stopPropagation();
                         addStrikeMarker(strike, owner, true);
                       }}
-                      title="Αριστερό κλικ: χτύπημα • Δεξί κλικ: μπλοκαρισμένο"
+                      onAuxClick={(e) => {
+                        if (e.button !== 1) return;
+                        e.preventDefault();
+                        e.stopPropagation();
+                        addStrikeMarker(strike, owner, false, true);
+                      }}
+                      title="Αριστερό κλικ: χτύπημα • Δεξί κλικ: μπλοκαρισμένο • Ροδέλα: βρήκε στόχο"
                     >
                       {strike.name}
                     </Button>
