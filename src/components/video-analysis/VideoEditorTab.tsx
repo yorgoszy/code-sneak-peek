@@ -2086,6 +2086,12 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                           : `rounded-none h-6 text-[10px] px-2 border ${owner === 'athlete' ? 'border-red-400 hover:bg-red-500 hover:text-white hover:border-red-500' : 'border-blue-400 hover:bg-blue-500 hover:text-white hover:border-blue-500'}`
                       }
                       onClick={() => addStrikeMarker(strike, owner)}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        addStrikeMarker(strike, owner, true);
+                      }}
+                      title="Αριστερό κλικ: χτύπημα • Δεξί κλικ: μπλοκαρισμένο"
                     >
                       {strike.name}
                     </Button>
