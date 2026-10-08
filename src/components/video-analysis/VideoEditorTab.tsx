@@ -905,6 +905,19 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
     }
   };
 
+  // Spacebar: play/pause only
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code !== 'Space' && e.key !== ' ') return;
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+      e.preventDefault();
+      togglePlay();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [togglePlay]);
+
   // When switching clips, reset local playback state and wait for the new source to become ready
   useEffect(() => {
     setIsPlaying(false);
