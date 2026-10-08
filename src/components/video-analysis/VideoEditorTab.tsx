@@ -2532,7 +2532,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                         }
 
                         const abbreviation = getStrikeAbbreviation(marker.strikeTypeName || '');
-                        const laneTop = (marker.owner === 'athlete' ? 2 : laneHeight + 4) + row * (rowHeight + 2);
+                        const laneTop = (marker.owner === 'athlete' ? 2 : laneHeight + 4) + row * (rowHeight + 1);
 
                         return (
                           <div
@@ -2552,7 +2552,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                             }}
                             title={`${marker.strikeTypeName} - ${marker.owner === 'athlete' ? 'ΕΓΩ' : 'ΑΝΤ'} - ${formatTime(marker.time)}${marker.blocked ? ' - Μπλοκαρισμένο (δεξί κλικ για αναίρεση)' : ' (δεξί κλικ = μπλοκαρισμένο)'}`}
                           >
-                            <div className={`${compactMode ? 'px-0.5 py-0 text-[8px]' : 'px-1 py-0.5 text-[9px]'} rounded font-bold ${dotColor} ring-1 ring-gray-200 ${marker.owner === 'athlete' ? 'text-black' : 'text-white'} ${marker.blocked ? 'line-through' : ''}`}>
+                            <div className="px-0 py-0 text-[7px] leading-none rounded-sm font-bold text-center w-full h-full flex items-center justify-center" style={{ background: dotColor ? undefined : undefined }}>
                               {abbreviation}
                             </div>
                           </div>
