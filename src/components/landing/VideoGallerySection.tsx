@@ -68,7 +68,8 @@ const VideoGallerySection: React.FC<Props> = ({ translations }) => {
         console.error("Error loading public fight gallery", error);
         return;
       }
-      setFights(((data as any[]) || []) as FightRow[]);
+      // Uploaded (private) videos aren't playable publicly — show only YouTube ones here
+      setFights((((data as any[]) || []) as FightRow[]).filter((f) => !!parseYouTubeId(f.video_url || "")));
     };
     load();
   }, []);
