@@ -1393,6 +1393,14 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
     }));
   };
 
+  // Right-click on a strike: toggle "blocked" (μπλοκαρισμένο) — mutually exclusive with hitTarget
+  const toggleStrikeBlocked = (id: string) => {
+    setStrikeMarkers(prev => prev.map(m => {
+      if (m.id !== id) return m;
+      return { ...m, blocked: !m.blocked, hitTarget: false };
+    }));
+  };
+
   // Format time within round (MM:SS)
   const formatTimeInRound = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -2472,11 +2480,12 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
 
                       {placed.map(({ m: marker, startPx }) => {
                         let dotColor = '';
-                        if (marker.owner === 'athlete') {
+                        if (marker.blocked) {
+                          dotColor = marker.owner === 'athlete' ? 'bg-gray-800' : 'bg-blue-500';
+                        } else if (marker.owner === 'athlete') {
                           dotColor = marker.hitTarget ? 'bg-[#00ffba]' : 'bg-gray-300';
                         } else {
-                          if (marker.blocked) dotColor = 'bg-blue-500';
-                          else if (marker.hitTarget) dotColor = 'bg-red-500';
+                          if (marker.hitTarget) dotColor = 'bg-red-500';
                           else dotColor = 'bg-gray-300';
                         }
 
@@ -2494,9 +2503,14 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                               height: `${rowHeight}px`
                             }}
                             onClick={() => toggleStrikeState(marker.id)}
-                            title={`${marker.strikeTypeName} - ${marker.owner === 'athlete' ? 'ΕΓΩ' : 'ΑΝΤ'} - ${formatTime(marker.time)}`}
+                            onContextMenu={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              toggleStrikeBlocked(marker.id);
+                            }}
+                            title={`${marker.strikeTypeName} - ${marker.owner === 'athlete' ? 'ΕΓΩ' : 'ΑΝΤ'} - ${formatTime(marker.time)}${marker.blocked ? ' - Μπλοκαρισμένο (δεξί κλικ για αναίρεση)' : ' (δεξί κλικ = μπλοκαρισμένο)'}`}
                           >
-                            <div className={`${compactMode ? 'px-0.5 py-0 text-[8px]' : 'px-1 py-0.5 text-[9px]'} rounded font-bold ${dotColor} ring-1 ring-gray-200 ${marker.owner === 'athlete' ? 'text-black' : 'text-white'}`}>
+                            <div className={`${compactMode ? 'px-0.5 py-0 text-[8px]' : 'px-1 py-0.5 text-[9px]'} rounded font-bold ${dotColor} ring-1 ring-gray-200 ${marker.owner === 'athlete' ? 'text-black' : 'text-white'} ${marker.blocked ? 'line-through' : ''}`}>
                               {abbreviation}
                             </div>
                           </div>
