@@ -263,19 +263,24 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
   // Load existing analysis (fight + rounds + strikes) for this match video, if any
   const loadedExistingRef = useRef(false);
   const editFightMetaRef = useRef<any>(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisLoadError, setAnalysisLoadError] = useState<string | null>(null);
   useEffect(() => {
     if ((!matchVideoId && !editFightId) || loadedExistingRef.current) return;
     loadedExistingRef.current = true;
+    setAnalysisLoading(true);
+    setAnalysisLoadError(null);
 
     (async () => {
       try {
-        const { data: fight } = await supabase
+        const { data: fight, error: fightError } = await supabase
           .from('muaythai_fights')
           .select('*')
           .eq(editFightId ? 'id' : 'match_video_id', (editFightId || matchVideoId) as string)
           .maybeSingle();
 
-        if (!fight) return;
+        if (fightError) throw fightError;
+        if (!fight) throw new Error('Ο αγώνας δεν βρέθηκε ή δεν έχεις δικαίωμα προβολής.');
         editFightMetaRef.current = fight;
 
         // Load the saved video when editing an existing fight
@@ -301,12 +306,13 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
           setOurCorner((fight as any).our_corner);
         }
 
-        const { data: rounds } = await supabase
+        const { data: rounds, error: roundsError } = await supabase
           .from('muaythai_rounds')
           .select('id, round_number, duration_seconds, start_seconds')
           .eq('fight_id', fight.id)
           .order('round_number');
 
+        if (roundsError) throw roundsError;
         if (!rounds || rounds.length === 0) return;
 
         // Reconstruct round markers on a sequential timeline
@@ -328,11 +334,12 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
         setRoundMarkers(restoredRounds);
 
         const roundIds = rounds.map((r: any) => r.id);
-        const { data: strikes } = await supabase
+        const { data: strikes, error: strikesError } = await supabase
           .from('muaythai_strikes')
           .select('id, round_id, timestamp_in_round, strike_type, side, landed, is_opponent, is_correct')
           .in('round_id', roundIds);
 
+        if (strikesError) throw strikesError;
         if (!strikes) return;
 
         const restoredStrikes: StrikeMarker[] = strikes.map((s: any) => {
@@ -359,6 +366,10 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
         toast.info('Φορτώθηκε υπάρχουσα ανάλυση για αυτόν τον αγώνα');
       } catch (err) {
         console.error('Error loading existing analysis:', err);
+        setAnalysisLoadError('Δεν φορτώθηκε η αποθηκευμένη ανάλυση. Δοκίμασε να ανοίξεις ξανά τον αγώνα.');
+        toast.error('Αποτυχία φόρτωσης της αποθηκευμένης ανάλυσης');
+      } finally {
+        setAnalysisLoading(false);
       }
     })();
   }, [matchVideoId, editFightId]);
@@ -1625,6 +1636,10 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
 
   // Save fight to database
   const saveFight = async () => {
+    if (analysisLoading || analysisLoadError) {
+      toast.error('Περίμενε να φορτωθεί επιτυχώς η αποθηκευμένη ανάλυση πριν την αποθήκευση.');
+      return;
+    }
     if (!selectedUserId || !coachId) {
       toast.error('Απαιτείται επιλογή χρήστη');
       return;
@@ -1854,8 +1869,59 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
     toast.success(`Το Round ${roundNumber} μετακινήθηκε στο ${formatTime(globalCurrentTime)}`);
   };
 
+  const analysisSummary = (editFightId || strikeMarkers.length > 0) && (
+    <section aria-label="Στατιστικά ανάλυσης" className="border border-border bg-background p-3 space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold">Στατιστικά ανάλυσης</h3>
+        <span className="text-xs text-muted-foreground">{roundMarkers.length} rounds · {strikeMarkers.length} χτυπήματα</span>
+      </div>
+      {analysisLoading ? (
+        <p role="status" className="text-sm text-muted-foreground">Φόρτωση αποθηκευμένης ανάλυσης…</p>
+      ) : analysisLoadError ? (
+        <p role="alert" className="text-sm text-destructive">{analysisLoadError}</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left py-2 font-medium">Στοιχείο</th>
+                <th className="text-center py-2 text-competition-red font-semibold">Κόκκινη γωνία</th>
+                <th className="text-center py-2 text-competition-blue font-semibold">Μπλε γωνία</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { label: 'Χτυπήματα', athlete: strikeStats.athleteTotal, opponent: strikeStats.opponentTotal },
+                { label: 'Επιτυχημένα', athlete: strikeStats.athleteHits, opponent: strikeStats.opponentHits },
+                { label: 'Ορθότητα', athlete: `${strikeStats.athleteAccuracy.toFixed(1)}%`, opponent: `${strikeStats.opponentAccuracy.toFixed(1)}%` },
+                ...(['punch', 'kick', 'elbow', 'knee'] as const).map(category => ({
+                  label: categoryLabels[category],
+                  athlete: strikeStats.athleteByCategory[category] || 0,
+                  opponent: strikeStats.opponentByCategory[category] || 0,
+                })),
+                ...roundMarkers.map(round => ({
+                  label: `Round ${round.roundNumber}`,
+                  athlete: strikeStats.byRound[round.roundNumber]?.athlete.length || 0,
+                  opponent: strikeStats.byRound[round.roundNumber]?.opponent.length || 0,
+                })),
+              ].map(row => (
+                <tr key={row.label} className="border-b border-border last:border-0">
+                  <td className="py-1.5 text-muted-foreground">{row.label}</td>
+                  <td className="py-1.5 text-center text-competition-red font-semibold">{ourCorner === 'blue' ? row.opponent : row.athlete}</td>
+                  <td className="py-1.5 text-center text-competition-blue font-semibold">{ourCorner === 'blue' ? row.athlete : row.opponent}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+
   if (videos.length === 0) {
     return (
+      <div className="space-y-3">
+      {analysisSummary}
       <Card className="rounded-none border-dashed border-2 border-gray-300">
         <CardContent className="py-6">
           <div className="text-center space-y-4">
@@ -1931,11 +1997,13 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
           </div>
         </CardContent>
       </Card>
+      </div>
     );
   }
 
   return (
     <div className={compactMode ? "h-full min-h-0 flex flex-col gap-2 overflow-hidden" : "space-y-4"}>
+      {analysisSummary}
       {/* Hidden file input for adding more videos */}
       <input
         ref={fileInputRef}
