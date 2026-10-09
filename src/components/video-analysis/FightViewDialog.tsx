@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Calendar, MapPin, User, Clock, Trophy, FileText, Video, Scale } from 'lucide-react';
 import { format } from 'date-fns';
 import { useFightStats } from '@/hooks/useFightStats';
+import { FightTimelineChart } from './FightTimelineChart';
 import { el } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -213,22 +214,34 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
                 <div className="grid grid-cols-3 gap-2">
                   <StatCard label="Χτυπήματα" value={rb(stats.totalStrikes, stats.opponentTotalStrikes)} sub={<>Επιτυχ.: {rb(stats.landedStrikes, stats.opponentLandedStrikes)}</>} />
                   <StatCard label="Ορθότητα" value={rb(`${stats.correctnessRate}%`, `${stats.opponentCorrectnessRate}%`)} />
-                  <StatCard label="Χρόνος" value={<span className="font-bold">{stats.attackTimeFormatted}</span>} sub={`Επ: ${stats.attackTimeFormatted} | Άμ: ${stats.defenseTimeFormatted}`} />
+                  <StatCard label="Χρόνος" value={<span className="font-bold">{stats.actionTimeFormatted}</span>} sub={<><span className="text-competition-red">Επ: {stats.attackTimeFormatted}</span> | <span className="text-competition-blue">Άμ: {stats.defenseTimeFormatted}</span></>} />
                 </div>
                 <div className="grid grid-cols-4 gap-2">
-                  <StatCard label="Box" value={rb(stats.punchesLanded, stats.opponentPunchesLanded)} sub={rb(stats.punchesTotal, stats.opponentPunchesTotal)} />
-                  <StatCard label="Kicks" value={rb(stats.kicksLanded, stats.opponentKicksLanded)} sub={rb(stats.kicksTotal, stats.opponentKicksTotal)} />
-                  <StatCard label="Knees" value={rb(stats.kneesLanded, stats.opponentKneesLanded)} sub={rb(stats.kneesTotal, stats.opponentKneesTotal)} />
-                  <StatCard label="Elbows" value={rb(stats.elbowsLanded, stats.opponentElbowsLanded)} sub={rb(stats.elbowsTotal, stats.opponentElbowsTotal)} />
+                  <StatCard label="Box" value={rb(stats.punchesTotal, stats.opponentPunchesTotal)} sub={<>Επιτυχ.: {rb(stats.punchesLanded, stats.opponentPunchesLanded)}</>} />
+                  <StatCard label="Kicks" value={rb(stats.kicksTotal, stats.opponentKicksTotal)} sub={<>Επιτυχ.: {rb(stats.kicksLanded, stats.opponentKicksLanded)}</>} />
+                  <StatCard label="Knees" value={rb(stats.kneesTotal, stats.opponentKneesTotal)} sub={<>Επιτυχ.: {rb(stats.kneesLanded, stats.opponentKneesLanded)}</>} />
+                  <StatCard label="Elbows" value={rb(stats.elbowsTotal, stats.opponentElbowsTotal)} sub={<>Επιτυχ.: {rb(stats.elbowsLanded, stats.opponentElbowsLanded)}</>} />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <StatCard label="Άμυνα" value={rb(`${stats.defenseSuccessRate}%`, `${stats.totalStrikes > 0 ? Math.round((stats.opponentSuccessfulDefenses / stats.totalStrikes) * 100) : 0}%`)} sub={<>Δέχτηκε: {rb(stats.totalHitsReceived, stats.opponentTotalHitsReceived)}</>} />
                   <StatCard label="Επίθεση" value={rb(`${stats.accuracy}%`, `${stats.opponentAccuracy}%`)} />
                 </div>
+                <div className="flex items-center justify-between gap-2 border border-border p-2">
+                  <div>
+                    <p className="text-sm font-bold">
+                      {stats.attackDefenseRatio >= 1.5 ? 'Επιθετικός' : stats.attackDefenseRatio <= 0.7 ? 'Αμυντικός' : 'Ισορροπημένος'}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">Στυλ Μάχης</p>
+                  </div>
+                  <span className="text-xs font-semibold">Επ/Άμ: {stats.attackDefenseRatio.toFixed(2)}</span>
+                </div>
               </div>
             )}
           </div>
         </div>
+        {(statsLoading || stats.roundsTimelineData.length > 0) && (
+          <FightTimelineChart roundsData={stats.roundsTimelineData} loading={statsLoading} ourIsBlue={ourBlue} />
+        )}
       </DialogContent>
     </Dialog>
   );
