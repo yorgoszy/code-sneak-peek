@@ -2,10 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { isStoredFightVideo, resolveFightVideoUrl } from '@/utils/fightVideoStorage';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Calendar, MapPin, User, Clock, Trophy, FileText, Video, Scale } from 'lucide-react';
 import { format } from 'date-fns';
 import { useFightStats } from '@/hooks/useFightStats';
 import { el } from 'date-fns/locale';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface Fight {
   id: string;
