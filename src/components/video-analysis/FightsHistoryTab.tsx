@@ -284,6 +284,7 @@ export const FightsHistoryTab: React.FC<FightsHistoryTabProps> = ({ userId, onRe
 
       {/* View Dialog */}
       <FightViewDialog
+        onVideoSaved={fetchFights}
         isOpen={viewDialogOpen}
         onClose={() => {
           setViewDialogOpen(false);

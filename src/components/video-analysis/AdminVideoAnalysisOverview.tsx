@@ -604,6 +604,7 @@ export const AdminVideoAnalysisOverview = () => {
       </AlertDialog>
 
       <FightViewDialog
+        onVideoSaved={fetchFights}
         isOpen={viewDialogOpen}
         onClose={() => {
           setViewDialogOpen(false);

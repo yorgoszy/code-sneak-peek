@@ -579,6 +579,7 @@ export const VideoAnalysisOverview = () => {
       />
 
       <FightViewDialog
+        onVideoSaved={fetchFights}
         isOpen={viewDialogOpen}
         onClose={() => {
           setViewDialogOpen(false);
