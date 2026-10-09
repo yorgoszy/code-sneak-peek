@@ -1,0 +1,1 @@
+ALTER TABLE public.muaythai_rounds ADD COLUMN IF NOT EXISTS start_seconds numeric;

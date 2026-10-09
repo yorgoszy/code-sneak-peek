@@ -41,7 +41,8 @@ import {
   ZoomOut,
   Minus,
   Plus as PlusIcon,
-  Sparkles
+  Sparkles,
+  MapPin,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useVideoExport } from '@/hooks/useVideoExport';
@@ -302,7 +303,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
 
         const { data: rounds } = await supabase
           .from('muaythai_rounds')
-          .select('id, round_number, duration_seconds')
+          .select('id, round_number, duration_seconds, start_seconds')
           .eq('fight_id', fight.id)
           .order('round_number');
 
@@ -312,8 +313,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
         let cursor = 0;
         const roundIdToNumber = new Map<string, number>();
         const restoredRounds: RoundMarker[] = rounds.map((r: any) => {
-          const start = cursor;
-          const end = cursor + (r.duration_seconds || 0);
+          const saved = typeof r.start_seconds === 'number' ? Number(r.start_seconds) : (r.start_seconds != null ? Number(r.start_seconds) : null);
+          const start = saved != null && !isNaN(saved) ? saved : cursor;
+          const end = start + (r.duration_seconds || 0);
           cursor = end;
           roundIdToNumber.set(r.id, r.round_number);
           return {
@@ -1742,6 +1744,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
           fight_id: fightId,
           round_number: round.roundNumber,
           duration_seconds: roundDuration,
+          start_seconds: Math.round(round.startTime * 100) / 100,
           athlete_strikes_total: athleteStrikesTotal,
           athlete_strikes_correct: athleteStrikesCorrect,
           opponent_strikes_total: opponentStrikesTotal,
@@ -1759,6 +1762,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
           fight_id: fightId,
           round_number: 1,
           duration_seconds: avgRoundDuration,
+          start_seconds: 0,
           athlete_strikes_total: athleteStrikes.length,
           athlete_strikes_correct: athleteStrikes.filter(s => s.hitTarget).length,
           opponent_strikes_total: opponentStrikes.length,
@@ -1836,6 +1840,18 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
       console.error('Error saving fight:', error);
       toast.error('Σφάλμα κατά την αποθήκευση');
     }
+  };
+
+  const moveRoundToCurrentTime = (roundNumber: number) => {
+    const target = roundMarkers.find(r => r.roundNumber === roundNumber);
+    if (!target) return;
+    const delta = globalCurrentTime - target.startTime;
+    if (Math.abs(delta) < 0.01) return;
+    setRoundMarkers(prev => prev.map(r => r.roundNumber === roundNumber
+      ? { ...r, startTime: r.startTime + delta, endTime: r.endTime !== null ? r.endTime + delta : r.endTime }
+      : r));
+    setStrikeMarkers(prev => prev.map(s => s.roundNumber === roundNumber ? { ...s, time: s.time + delta } : s));
+    toast.success(`Το Round ${roundNumber} μετακινήθηκε στο ${formatTime(globalCurrentTime)}`);
   };
 
   if (videos.length === 0) {
@@ -2230,6 +2246,23 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                   >
                     R{roundMarkers.length + 1}
                   </Button>
+                )}
+                {editFightId && roundMarkers.length > 0 && !activeRound && (
+                  <div className="flex items-center gap-1 pl-1.5 ml-1 border-l border-gray-300">
+                    <span className="text-[10px] text-gray-500 whitespace-nowrap">Θέση εδώ:</span>
+                    {roundMarkers.map((rm) => (
+                      <Button
+                        key={rm.id}
+                        size="sm"
+                        variant="outline"
+                        className="rounded-none h-6 text-[10px] px-1.5"
+                        title={`Μετακίνηση του Round ${rm.roundNumber} (και των χτυπημάτων του) ώστε να ξεκινά στην τρέχουσα θέση του βίντεο`}
+                        onClick={() => moveRoundToCurrentTime(rm.roundNumber)}
+                      >
+                        <MapPin className="w-3 h-3 mr-0.5" />R{rm.roundNumber}
+                      </Button>
+                    ))}
+                  </div>
                 )}
               </div>
               

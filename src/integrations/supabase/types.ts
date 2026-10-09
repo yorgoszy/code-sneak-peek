@@ -7406,6 +7406,7 @@ export type Database = {
           opponent_strikes_correct: number | null
           opponent_strikes_total: number | null
           round_number: number
+          start_seconds: number | null
         }
         Insert: {
           athlete_strikes_correct?: number | null
@@ -7419,6 +7420,7 @@ export type Database = {
           opponent_strikes_correct?: number | null
           opponent_strikes_total?: number | null
           round_number: number
+          start_seconds?: number | null
         }
         Update: {
           athlete_strikes_correct?: number | null
@@ -7432,6 +7434,7 @@ export type Database = {
           opponent_strikes_correct?: number | null
           opponent_strikes_total?: number | null
           round_number?: number
+          start_seconds?: number | null
         }
         Relationships: [
           {
