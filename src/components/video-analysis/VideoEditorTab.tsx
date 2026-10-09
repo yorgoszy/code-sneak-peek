@@ -42,6 +42,7 @@ import {
   Minus,
   Plus as PlusIcon,
   Sparkles
+  MapPin,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useVideoExport } from '@/hooks/useVideoExport';
