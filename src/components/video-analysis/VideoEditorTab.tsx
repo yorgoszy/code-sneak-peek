@@ -1762,6 +1762,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
           fight_id: fightId,
           round_number: 1,
           duration_seconds: avgRoundDuration,
+          start_seconds: 0,
           athlete_strikes_total: athleteStrikes.length,
           athlete_strikes_correct: athleteStrikes.filter(s => s.hitTarget).length,
           opponent_strikes_total: opponentStrikes.length,
