@@ -41,7 +41,7 @@ import {
   ZoomOut,
   Minus,
   Plus as PlusIcon,
-  Sparkles
+  Sparkles,
   MapPin,
 } from 'lucide-react';
 import { toast } from 'sonner';
