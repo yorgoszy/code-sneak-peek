@@ -214,6 +214,16 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
   
   // Strike markers state
   const [strikeMarkers, setStrikeMarkers] = useState<StrikeMarker[]>([]);
+
+  // Timeline span: video length when known, otherwise long enough to show every saved round/strike/flag.
+  const timelineSpan = React.useMemo(() => {
+    const videoLen = totalDuration > 0 ? totalDuration : duration;
+    let maxData = 0;
+    roundMarkers.forEach(r => { maxData = Math.max(maxData, r.endTime ?? r.startTime); });
+    strikeMarkers.forEach(m => { maxData = Math.max(maxData, m.time); });
+    actionFlags.forEach(f => { maxData = Math.max(maxData, f.endTime ?? f.startTime); });
+    return Math.max(videoLen, maxData > 0 ? maxData + 1 : 0, 1);
+  }, [totalDuration, duration, roundMarkers, strikeMarkers, actionFlags]);
   const [isStrikePopoverOpen, setIsStrikePopoverOpen] = useState(false);
   
   // AI Analysis panel visibility
@@ -1321,14 +1331,14 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
     const rect = timelineContainerRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const percentage = Math.max(0, Math.min(1, x / rect.width));
-    const newTime = percentage * duration;
+    const newTime = percentage * timelineSpan;
     
     setRoundMarkers(prev => prev.map(round => {
       if (round.id !== draggingRound.id) return round;
       
       if (draggingRound.edge === 'start') {
         // Don't let start go past end
-        const maxStart = round.endTime ? round.endTime - 0.1 : duration - 0.1;
+        const maxStart = round.endTime ? round.endTime - 0.1 : timelineSpan - 0.1;
         return { ...round, startTime: Math.min(newTime, maxStart) };
       } else {
         // Don't let end go before start
@@ -1336,7 +1346,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
         return { ...round, endTime: Math.max(newTime, minEnd) };
       }
     }));
-  }, [draggingRound, duration]);
+  }, [draggingRound, timelineSpan]);
 
   const handleRoundDragEnd = useCallback(() => {
     if (draggingRound) {
@@ -1357,20 +1367,20 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
     const rect = timelineContainerRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const percentage = Math.max(0, Math.min(1, x / rect.width));
-    const newTime = percentage * duration;
+    const newTime = percentage * timelineSpan;
     
     setActionFlags(prev => prev.map(flag => {
       if (flag.id !== draggingFlag.id) return flag;
       
       if (draggingFlag.edge === 'start') {
-        const maxStart = flag.endTime ? flag.endTime - 0.1 : duration - 0.1;
+        const maxStart = flag.endTime ? flag.endTime - 0.1 : timelineSpan - 0.1;
         return { ...flag, startTime: Math.min(newTime, maxStart) };
       } else {
         const minEnd = flag.startTime + 0.1;
         return { ...flag, endTime: Math.max(newTime, minEnd) };
       }
     }));
-  }, [draggingFlag, duration]);
+  }, [draggingFlag, timelineSpan]);
 
   const handleFlagDragEnd = useCallback(() => {
     if (draggingFlag) {
@@ -2463,7 +2473,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                     const effectiveEndTime = isOpen 
                       ? Math.max(globalCurrentTime, round.startTime + 0.1) 
                       : round.endTime!;
-                    const timelineDuration = totalDuration > 0 ? totalDuration : duration;
+                    const timelineDuration = timelineSpan;
                     const roundWidth = Math.max(0, ((effectiveEndTime - round.startTime) / timelineDuration) * 100);
                     const isDragging = draggingRound?.id === round.id;
                     const roundDuration = effectiveEndTime - round.startTime;
@@ -2529,7 +2539,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                   {/* Current position indicator */}
                   <div 
                     className="absolute w-0.5 h-full bg-black z-10"
-                    style={{ left: `${(globalCurrentTime / (totalDuration > 0 ? totalDuration : duration)) * 100}%` }}
+                    style={{ left: `${(globalCurrentTime / timelineSpan) * 100}%` }}
                   />
                 </div>
                 
@@ -2538,7 +2548,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                   {/* Action flag markers */}
                   {actionFlags.map((flag) => {
                     const isOpen = flag.endTime === null;
-                    const timelineDuration = totalDuration > 0 ? totalDuration : duration;
+                    const timelineDuration = timelineSpan;
                     // For open flags, use the max of globalCurrentTime and startTime to prevent backwards jumping
                     const effectiveEndTime = isOpen 
                       ? Math.max(globalCurrentTime, flag.startTime + 0.1) 
@@ -2609,13 +2619,13 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                   {/* Current position indicator */}
                   <div 
                     className="absolute w-0.5 h-full bg-black z-10"
-                    style={{ left: `${(globalCurrentTime / (totalDuration > 0 ? totalDuration : duration)) * 100}%` }}
+                    style={{ left: `${(globalCurrentTime / timelineSpan) * 100}%` }}
                   />
                 </div>
                 
                 {/* Strike markers stay inside their round, wrapping into additional rows. */}
                 {(() => {
-                  const timelineDuration = Math.max(totalDuration > 0 ? totalDuration : duration, 0.1);
+                  const timelineDuration = timelineSpan;
                   const chipWidth = 12; // px
                   const rowHeight = 12;
 
@@ -2734,15 +2744,15 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                   {/* Playback progress */}
                   <div 
                     className="absolute h-full bg-[#00ffba] rounded-none"
-                    style={{ width: `${(globalCurrentTime / (totalDuration > 0 ? totalDuration : duration)) * 100}%` }}
+                    style={{ width: `${(globalCurrentTime / timelineSpan) * 100}%` }}
                   />
                   
                   {/* Trim range indicator */}
                   <div 
                     className="absolute h-full bg-blue-500/30"
                     style={{ 
-                      left: `${(trimStart / duration) * 100}%`,
-                      width: `${((trimEnd - trimStart) / duration) * 100}%`
+                      left: `${(trimStart / timelineSpan) * 100}%`,
+                      width: `${((trimEnd - trimStart) / timelineSpan) * 100}%`
                     }}
                   />
                   
@@ -2752,8 +2762,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                       key={clip.id}
                       className="absolute h-full bg-purple-500/50 border-l-2 border-r-2 border-purple-600"
                       style={{ 
-                        left: `${(clip.startTime / duration) * 100}%`,
-                        width: `${((clip.endTime - clip.startTime) / duration) * 100}%`
+                        left: `${(clip.startTime / timelineSpan) * 100}%`,
+                        width: `${((clip.endTime - clip.startTime) / timelineSpan) * 100}%`
                       }}
                       title={clip.label}
                     />
@@ -2763,14 +2773,14 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
                 {/* Time markers */}
                 {timelineZoom > 1 && (
                   <div className="relative h-3 flex">
-                    {Array.from({ length: Math.ceil(duration / (timelineZoom > 5 ? 1 : 5)) + 1 }).map((_, i) => {
+                    {Array.from({ length: Math.ceil(timelineSpan / (timelineZoom > 5 ? 1 : 5)) + 1 }).map((_, i) => {
                       const time = i * (timelineZoom > 5 ? 1 : 5);
-                      if (time > duration) return null;
+                      if (time > timelineSpan) return null;
                       return (
                         <div
                           key={i}
                           className="absolute text-[8px] text-gray-400 transform -translate-x-1/2"
-                          style={{ left: `${(time / duration) * 100}%` }}
+                          style={{ left: `${(time / timelineSpan) * 100}%` }}
                         >
                           {formatTime(time)}
                         </div>
@@ -2785,7 +2795,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
             <Slider
               value={[globalCurrentTime]}
               min={0}
-              max={totalDuration > 0 ? totalDuration : (duration || 100)}
+              max={timelineSpan}
               step={0.01}
               onValueChange={(value) => seekGlobal(value[0])}
               className="cursor-pointer"
@@ -2794,7 +2804,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
             {/* Time display */}
             <div className={compactMode ? "flex justify-between text-[10px] text-gray-500 leading-none" : "flex justify-between text-xs text-gray-500"}>
               <span>{formatTime(globalCurrentTime)}</span>
-              <span>{formatTime(totalDuration > 0 ? totalDuration : duration)}</span>
+              <span>{formatTime(timelineSpan)}</span>
             </div>
             
           </div>
