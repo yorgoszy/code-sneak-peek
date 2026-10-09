@@ -631,8 +631,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
           setCurrentTime(0);
         }
 
-        // Only reset markers if this is the first video
-        if (isFirstVideo) {
+        // Only reset markers if this is the first video (keep saved analysis when editing)
+        if (isFirstVideo && !editFightMetaRef.current) {
           setClips([]);
           setActionFlags([]);
           setActiveFlag(null);
@@ -1842,9 +1842,20 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
         <CardContent className="py-6">
           <div className="text-center space-y-4">
             <Film className="w-10 h-10 mx-auto text-gray-300 mb-2" />
+            {editFightId && (roundMarkers.length > 0 || strikeMarkers.length > 0) && (
+              <div className="max-w-lg mx-auto border border-border bg-muted/40 p-3 text-sm">
+                <p className="font-semibold">
+                  Φορτώθηκε η αποθηκευμένη ανάλυση: {roundMarkers.length} rounds, {strikeMarkers.length} χτυπήματα
+                </p>
+                <p className="text-muted-foreground text-xs mt-1">
+                  Ο αγώνας δεν έχει ανεβασμένο βίντεο. Διάλεξε ξανά το ίδιο αρχείο από τον υπολογιστή (π.χ. .mov) ή βάλε link YouTube για να εμφανιστεί ο editor με όλα τα χτυπήματα.
+                </p>
+              </div>
+            )}
             <p className="text-gray-500 text-sm">
               Ανεβάστε βίντεο ή επικολλήστε YouTube link (έως 3 βίντεο)
             </p>
+            
             
             {/* File Upload */}
             <div>
