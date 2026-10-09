@@ -1879,59 +1879,10 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
     toast.success(`Το Round ${roundNumber} μετακινήθηκε στο ${formatTime(globalCurrentTime)}`);
   };
 
-  const analysisSummary = (editFightId || strikeMarkers.length > 0) && (
-    <section aria-label="Στατιστικά ανάλυσης" className="border border-border bg-background p-3 space-y-2">
-      <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold">Στατιστικά ανάλυσης</h3>
-        <span className="text-xs text-muted-foreground">{roundMarkers.length} rounds · {strikeMarkers.length} χτυπήματα</span>
-      </div>
-      {analysisLoading ? (
-        <p role="status" className="text-sm text-muted-foreground">Φόρτωση αποθηκευμένης ανάλυσης…</p>
-      ) : analysisLoadError ? (
-        <p role="alert" className="text-sm text-destructive">{analysisLoadError}</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="text-left py-2 font-medium">Στοιχείο</th>
-                <th className="text-center py-2 text-competition-red font-semibold">Κόκκινη γωνία</th>
-                <th className="text-center py-2 text-competition-blue font-semibold">Μπλε γωνία</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { label: 'Χτυπήματα', athlete: strikeStats.athleteTotal, opponent: strikeStats.opponentTotal },
-                { label: 'Επιτυχημένα', athlete: strikeStats.athleteHits, opponent: strikeStats.opponentHits },
-                { label: 'Ορθότητα', athlete: `${strikeStats.athleteAccuracy.toFixed(1)}%`, opponent: `${strikeStats.opponentAccuracy.toFixed(1)}%` },
-                ...(['punch', 'kick', 'elbow', 'knee'] as const).map(category => ({
-                  label: categoryLabels[category],
-                  athlete: strikeStats.athleteByCategory[category] || 0,
-                  opponent: strikeStats.opponentByCategory[category] || 0,
-                })),
-                ...roundMarkers.map(round => ({
-                  label: `Round ${round.roundNumber}`,
-                  athlete: strikeStats.byRound[round.roundNumber]?.athlete.length || 0,
-                  opponent: strikeStats.byRound[round.roundNumber]?.opponent.length || 0,
-                })),
-              ].map(row => (
-                <tr key={row.label} className="border-b border-border last:border-0">
-                  <td className="py-1.5 text-muted-foreground">{row.label}</td>
-                  <td className="py-1.5 text-center text-competition-red font-semibold">{ourCorner === 'blue' ? row.opponent : row.athlete}</td>
-                  <td className="py-1.5 text-center text-competition-blue font-semibold">{ourCorner === 'blue' ? row.athlete : row.opponent}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </section>
-  );
 
   if (videos.length === 0) {
     return (
       <div className="space-y-3">
-      {analysisSummary}
       <Card className="rounded-none border-dashed border-2 border-gray-300">
         <CardContent className="py-6">
           <div className="text-center space-y-4">
@@ -2013,7 +1964,6 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
 
   return (
     <div className={compactMode ? "h-full min-h-0 flex flex-col gap-2 overflow-hidden" : "space-y-4"}>
-      {analysisSummary}
       {/* Hidden file input for adding more videos */}
       <input
         ref={fileInputRef}
