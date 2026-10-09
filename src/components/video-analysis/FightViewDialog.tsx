@@ -34,16 +34,44 @@ interface FightViewDialogProps {
 
 export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClose, fight }) => {
   const [playableUrl, setPlayableUrl] = useState<string | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(fight?.video_url || null);
+  const [linkInput, setLinkInput] = useState('');
+  const [savingLink, setSavingLink] = useState(false);
   const { stats, loading: statsLoading } = useFightStats(isOpen && fight ? fight.id : null);
+
+  useEffect(() => {
+    setVideoUrl(fight?.video_url || null);
+    setLinkInput('');
+  }, [fight?.id, fight?.video_url]);
 
   useEffect(() => {
     let cancelled = false;
     setPlayableUrl(null);
-    if (isOpen && fight?.video_url) {
-      resolveFightVideoUrl(fight.video_url).then((u) => { if (!cancelled) setPlayableUrl(u); });
+    if (isOpen && videoUrl) {
+      resolveFightVideoUrl(videoUrl).then((u) => { if (!cancelled) setPlayableUrl(u); });
     }
     return () => { cancelled = true; };
-  }, [isOpen, fight?.video_url]);
+  }, [isOpen, videoUrl]);
+
+  const handleSaveLink = async () => {
+    const url = linkInput.trim();
+    if (!url || !fight) return;
+    setSavingLink(true);
+    try {
+      const { error } = await supabase
+        .from('muaythai_fights')
+        .update({ video_url: url })
+        .eq('id', fight.id);
+      if (error) throw error;
+      setVideoUrl(url);
+      toast.success('Το βίντεο αποθηκεύτηκε!');
+    } catch (e: any) {
+      console.error(e);
+      toast.error('Σφάλμα κατά την αποθήκευση του link');
+    } finally {
+      setSavingLink(false);
+    }
+  };
 
   if (!fight) return null;
 
