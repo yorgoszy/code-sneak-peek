@@ -209,7 +209,7 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
               </div>
             )}
 
-            {fight.video_url && (
+            {videoUrl && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Video className="w-4 h-4 text-gray-500" />
@@ -237,7 +237,7 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
                   )
                 ) : (
                   <a
-                    href={fight.video_url}
+                    href={videoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:underline text-sm"
@@ -248,12 +248,29 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
               </div>
             )}
 
-            {!fight.video_url && (
+            {!videoUrl && (
               <div className="flex items-start gap-3 border border-border p-3">
                 <Video className="w-4 h-4 text-muted-foreground mt-0.5" />
-                <p className="text-sm text-muted-foreground">
-                  Δεν υπάρχει αποθηκευμένο βίντεο. Η ανάλυση έγινε από αρχείο του υπολογιστή, που δεν ανεβαίνει. Πάτα το μολύβι και ανέβασε το βίντεο ή πρόσθεσε link YouTube για να εμφανίζεται εδώ.
-                </p>
+                <div className="flex-1 space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    Δεν υπάρχει αποθηκευμένο βίντεο. Βάλε link YouTube/Vimeo εδώ για να εμφανίζεται:
+                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      value={linkInput}
+                      onChange={(e) => setLinkInput(e.target.value)}
+                      placeholder="https://youtube.com/watch?v=..."
+                      className="rounded-none h-8 text-sm"
+                    />
+                    <Button
+                      onClick={handleSaveLink}
+                      disabled={savingLink || !linkInput.trim()}
+                      className="rounded-none h-8 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+                    >
+                      {savingLink ? '...' : 'Αποθήκευση'}
+                    </Button>
+                  </div>
+                </div>
               </div>
             )}
 
