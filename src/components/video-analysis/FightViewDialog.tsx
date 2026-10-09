@@ -118,9 +118,9 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
     return null;
   };
 
-  const isStored = isStoredFightVideo(fight.video_url);
-  const embedUrl = fight.video_url && !isStored ? getEmbedUrl(fight.video_url) : null;
-  const isDirectVideo = isStored || (fight.video_url ? /\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(fight.video_url) : false);
+  const isStored = isStoredFightVideo(videoUrl);
+  const embedUrl = videoUrl && !isStored ? getEmbedUrl(videoUrl) : null;
+  const isDirectVideo = isStored || (videoUrl ? /\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(videoUrl) : false);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
