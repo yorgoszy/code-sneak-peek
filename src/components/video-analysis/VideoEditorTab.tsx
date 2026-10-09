@@ -2804,7 +2804,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
             {/* Time display */}
             <div className={compactMode ? "flex justify-between text-[10px] text-gray-500 leading-none" : "flex justify-between text-xs text-gray-500"}>
               <span>{formatTime(globalCurrentTime)}</span>
-              <span>{formatTimetimelineSpan}</span>
+              <span>{formatTime(timelineSpan)}</span>
             </div>
             
           </div>
