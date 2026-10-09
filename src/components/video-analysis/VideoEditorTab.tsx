@@ -709,7 +709,9 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
       const isFirstVideo = videos.length === 0;
       setVideos(prev => [...prev, newVideo]);
       
-      if (isFirstVideo) {
+      if (isFirstVideo && editFightMetaRef.current) {
+        setActiveVideoIndex(0);
+      } else if (isFirstVideo) {
         setActiveVideoIndex(0);
         setClips([]);
         setActionFlags([]);
