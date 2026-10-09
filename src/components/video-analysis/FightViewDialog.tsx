@@ -24,6 +24,7 @@ interface Fight {
   notes: string | null;
   video_url: string | null;
   our_corner?: string | null;
+  user_name?: string | null;
 }
 
 interface FightViewDialogProps {
@@ -151,7 +152,11 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base flex-wrap">
             <Trophy className="w-4 h-4" />
-            <span>vs {fight.opponent_name || '-'}</span>
+            <span>
+              <span className="text-competition-red">{ourBlue ? (fight.opponent_name || '-') : (fight.user_name || '-')}</span>
+              <span className="text-muted-foreground"> vs </span>
+              <span className="text-competition-blue">{ourBlue ? (fight.user_name || '-') : (fight.opponent_name || '-')}</span>
+            </span>
             <Badge className={`${result.color} rounded-none text-white`}>{result.label}</Badge>
             {result.isKo && <Badge className="bg-yellow-400 hover:bg-yellow-500 text-black rounded-none">KO</Badge>}
             <Badge variant="outline" className="rounded-none">{getFightTypeLabel(fight.fight_type)}</Badge>
