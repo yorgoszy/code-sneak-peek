@@ -140,8 +140,8 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
     </span>
   );
   const StatCard = ({ label, value, sub, className = '' }: { label: string; value: React.ReactNode; sub?: React.ReactNode; className?: string }) => (
-    <div className={`border border-border p-2 ${className}`}>
-      <div className="text-base leading-tight">{value}</div>
+    <div className={`min-w-0 break-words border border-border p-2 ${className}`}>
+      <div className="text-sm sm:text-base leading-tight">{value}</div>
       <div className="text-[10px] text-muted-foreground">{label}</div>
       {sub && <div className="text-[10px] text-muted-foreground">{sub}</div>}
     </div>
@@ -149,11 +149,11 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="rounded-none max-w-[95vw] w-[1400px] max-h-[95vh] overflow-y-auto p-4">
-        <DialogHeader>
+      <DialogContent className="rounded-none w-[calc(100vw-1rem)] max-w-[1400px] max-h-[calc(100dvh-1rem)] overflow-y-auto overflow-x-hidden p-3 sm:p-4">
+        <DialogHeader className="min-w-0 text-left pr-6">
           <DialogTitle className="flex items-center gap-2 text-base flex-wrap">
-            <Trophy className="w-4 h-4" />
-            <span>
+            <Trophy className="w-4 h-4 shrink-0" />
+            <span className="min-w-0 break-words">
               <span className="text-competition-red">{ourBlue ? (fight.opponent_name || '-') : (fight.user_name || '-')}</span>
               <span className="text-muted-foreground"> vs </span>
               <span className="text-competition-blue">{ourBlue ? (fight.user_name || '-') : (fight.opponent_name || '-')}</span>
@@ -161,17 +161,17 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
             <Badge className={`${result.color} rounded-none text-white`}>{result.label}</Badge>
             {result.isKo && <Badge className="bg-yellow-400 hover:bg-yellow-500 text-black rounded-none">KO</Badge>}
             <Badge variant="outline" className="rounded-none">{getFightTypeLabel(fight.fight_type)}</Badge>
-            <span className="text-xs font-normal text-muted-foreground flex items-center gap-3 ml-2">
+            <span className="w-full lg:w-auto min-w-0 text-xs font-normal text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1">
               <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{format(new Date(fight.fight_date), 'dd/MM/yyyy', { locale: el })}</span>
-              {fight.location && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{fight.location}</span>}
+              {fight.location && <span className="flex min-w-0 items-center gap-1"><MapPin className="w-3 h-3 shrink-0" /><span className="break-words">{fight.location}</span></span>}
               {fight.weight_class && <span className="flex items-center gap-1"><Scale className="w-3 h-3" />{fight.weight_class}</span>}
               {fmtRounds && <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{fmtRounds}</span>}
             </span>
           </DialogTitle>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-4">
-          <div className="space-y-2">
+        <div className="grid min-w-0 grid-cols-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-3 sm:gap-4">
+          <div className="min-w-0 space-y-2">
             {videoUrl ? (
               embedUrl ? (
                 <div className="aspect-video w-full bg-black">
@@ -184,26 +184,26 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
                   <div className="w-full aspect-video bg-muted flex items-center justify-center text-sm text-muted-foreground">Φόρτωση βίντεο...</div>
                 )
               ) : (
-                <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="text-sm underline">Προβολή Video</a>
+                <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="text-sm underline break-all">Προβολή Video</a>
               )
             ) : (
-              <div className="aspect-video w-full border border-border flex flex-col items-center justify-center gap-2 p-4">
+              <div className="min-h-40 sm:aspect-video w-full border border-border flex flex-col items-center justify-center gap-2 p-3 sm:p-4">
                 <Video className="w-6 h-6 text-muted-foreground" />
                 <p className="text-sm text-muted-foreground text-center">Δεν υπάρχει βίντεο. Βάλε link YouTube για να εμφανίζεται εδώ και στην αρχική σελίδα:</p>
-                <div className="flex gap-2 w-full max-w-md">
-                  <Input value={linkInput} onChange={(e) => setLinkInput(e.target.value)} placeholder="https://youtube.com/watch?v=..." className="rounded-none h-8 text-sm" />
-                  <Button onClick={handleSaveLink} disabled={savingLink || !linkInput.trim()} className="rounded-none h-8 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black">
+                <div className="flex flex-col sm:flex-row gap-2 w-full min-w-0 max-w-md">
+                  <Input value={linkInput} onChange={(e) => setLinkInput(e.target.value)} placeholder="https://youtube.com/watch?v=..." className="rounded-none min-w-0 h-8 text-sm" />
+                  <Button onClick={handleSaveLink} disabled={savingLink || !linkInput.trim()} className="rounded-none shrink-0 h-8">
                     {savingLink ? '...' : 'Αποθήκευση'}
                   </Button>
                 </div>
               </div>
             )}
             {fight.notes && (
-              <p className="text-xs text-muted-foreground flex items-start gap-1"><FileText className="w-3 h-3 mt-0.5" /><span className="whitespace-pre-wrap">{fight.notes}</span></p>
+              <p className="text-xs text-muted-foreground flex min-w-0 items-start gap-1"><FileText className="w-3 h-3 mt-0.5 shrink-0" /><span className="min-w-0 whitespace-pre-wrap break-words">{fight.notes}</span></p>
             )}
           </div>
 
-          <div className="space-y-2">
+          <div className="min-w-0 space-y-2">
             <p className="text-sm font-semibold">Στατιστικά Ανάλυσης</p>
             {statsLoading ? (
               <p className="text-xs text-muted-foreground">Φόρτωση...</p>
@@ -211,12 +211,12 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
               <p className="text-xs text-muted-foreground">Δεν υπάρχει αποθηκευμένη ανάλυση για αυτόν τον αγώνα.</p>
             ) : (
               <div className="space-y-2">
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   <StatCard label="Χτυπήματα" value={rb(stats.totalStrikes, stats.opponentTotalStrikes)} sub={<>Επιτυχ.: {rb(stats.landedStrikes, stats.opponentLandedStrikes)}</>} />
                   <StatCard label="Ορθότητα" value={rb(`${stats.correctnessRate}%`, `${stats.opponentCorrectnessRate}%`)} />
                   <StatCard label="Χρόνος" value={<span className="font-bold">{stats.actionTimeFormatted}</span>} sub={<><span className="text-competition-red">Επ: {stats.attackTimeFormatted}</span> | <span className="text-competition-blue">Άμ: {stats.defenseTimeFormatted}</span></>} />
                 </div>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <StatCard label="Box" value={rb(stats.punchesTotal, stats.opponentPunchesTotal)} sub={<>Επιτυχ.: {rb(stats.punchesLanded, stats.opponentPunchesLanded)}</>} />
                   <StatCard label="Kicks" value={rb(stats.kicksTotal, stats.opponentKicksTotal)} sub={<>Επιτυχ.: {rb(stats.kicksLanded, stats.opponentKicksLanded)}</>} />
                   <StatCard label="Knees" value={rb(stats.kneesTotal, stats.opponentKneesTotal)} sub={<>Επιτυχ.: {rb(stats.kneesLanded, stats.opponentKneesLanded)}</>} />
@@ -240,7 +240,7 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
           </div>
         </div>
         {(statsLoading || stats.roundsTimelineData.length > 0) && (
-          <FightTimelineChart roundsData={stats.roundsTimelineData} loading={statsLoading} ourIsBlue={ourBlue} />
+          <FightTimelineChart roundsData={stats.roundsTimelineData} loading={statsLoading} ourIsBlue={ourBlue} responsiveLayout />
         )}
       </DialogContent>
     </Dialog>
