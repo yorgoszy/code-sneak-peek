@@ -24,6 +24,7 @@ interface Fight {
   notes: string | null;
   video_url: string | null;
   our_corner?: string | null;
+  user_name?: string | null;
 }
 
 interface FightViewDialogProps {
