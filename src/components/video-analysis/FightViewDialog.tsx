@@ -2,10 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { isStoredFightVideo, resolveFightVideoUrl } from '@/utils/fightVideoStorage';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Calendar, MapPin, User, Clock, Trophy, FileText, Video, Scale } from 'lucide-react';
 import { format } from 'date-fns';
 import { useFightStats } from '@/hooks/useFightStats';
 import { el } from 'date-fns/locale';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface Fight {
   id: string;
@@ -30,16 +34,44 @@ interface FightViewDialogProps {
 
 export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClose, fight }) => {
   const [playableUrl, setPlayableUrl] = useState<string | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(fight?.video_url || null);
+  const [linkInput, setLinkInput] = useState('');
+  const [savingLink, setSavingLink] = useState(false);
   const { stats, loading: statsLoading } = useFightStats(isOpen && fight ? fight.id : null);
+
+  useEffect(() => {
+    setVideoUrl(fight?.video_url || null);
+    setLinkInput('');
+  }, [fight?.id, fight?.video_url]);
 
   useEffect(() => {
     let cancelled = false;
     setPlayableUrl(null);
-    if (isOpen && fight?.video_url) {
-      resolveFightVideoUrl(fight.video_url).then((u) => { if (!cancelled) setPlayableUrl(u); });
+    if (isOpen && videoUrl) {
+      resolveFightVideoUrl(videoUrl).then((u) => { if (!cancelled) setPlayableUrl(u); });
     }
     return () => { cancelled = true; };
-  }, [isOpen, fight?.video_url]);
+  }, [isOpen, videoUrl]);
+
+  const handleSaveLink = async () => {
+    const url = linkInput.trim();
+    if (!url || !fight) return;
+    setSavingLink(true);
+    try {
+      const { error } = await supabase
+        .from('muaythai_fights')
+        .update({ video_url: url })
+        .eq('id', fight.id);
+      if (error) throw error;
+      setVideoUrl(url);
+      toast.success('Το βίντεο αποθηκεύτηκε!');
+    } catch (e: any) {
+      console.error(e);
+      toast.error('Σφάλμα κατά την αποθήκευση του link');
+    } finally {
+      setSavingLink(false);
+    }
+  };
 
   if (!fight) return null;
 
@@ -86,9 +118,9 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
     return null;
   };
 
-  const isStored = isStoredFightVideo(fight.video_url);
-  const embedUrl = fight.video_url && !isStored ? getEmbedUrl(fight.video_url) : null;
-  const isDirectVideo = isStored || (fight.video_url ? /\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(fight.video_url) : false);
+  const isStored = isStoredFightVideo(videoUrl);
+  const embedUrl = videoUrl && !isStored ? getEmbedUrl(videoUrl) : null;
+  const isDirectVideo = isStored || (videoUrl ? /\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(videoUrl) : false);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -177,7 +209,7 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
               </div>
             )}
 
-            {fight.video_url && (
+            {videoUrl && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Video className="w-4 h-4 text-gray-500" />
@@ -205,7 +237,7 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
                   )
                 ) : (
                   <a
-                    href={fight.video_url}
+                    href={videoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:underline text-sm"
@@ -216,12 +248,29 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
               </div>
             )}
 
-            {!fight.video_url && (
+            {!videoUrl && (
               <div className="flex items-start gap-3 border border-border p-3">
                 <Video className="w-4 h-4 text-muted-foreground mt-0.5" />
-                <p className="text-sm text-muted-foreground">
-                  Δεν υπάρχει αποθηκευμένο βίντεο. Η ανάλυση έγινε από αρχείο του υπολογιστή, που δεν ανεβαίνει. Πάτα το μολύβι και ανέβασε το βίντεο ή πρόσθεσε link YouTube για να εμφανίζεται εδώ.
-                </p>
+                <div className="flex-1 space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    Δεν υπάρχει αποθηκευμένο βίντεο. Βάλε link YouTube/Vimeo εδώ για να εμφανίζεται:
+                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      value={linkInput}
+                      onChange={(e) => setLinkInput(e.target.value)}
+                      placeholder="https://youtube.com/watch?v=..."
+                      className="rounded-none h-8 text-sm"
+                    />
+                    <Button
+                      onClick={handleSaveLink}
+                      disabled={savingLink || !linkInput.trim()}
+                      className="rounded-none h-8 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+                    >
+                      {savingLink ? '...' : 'Αποθήκευση'}
+                    </Button>
+                  </div>
+                </div>
               </div>
             )}
 
