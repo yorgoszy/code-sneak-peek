@@ -8,9 +8,11 @@ interface FightTimelineChartProps {
   loading?: boolean;
   /** true when our athlete fought in the blue corner — swaps series so red/blue match the corners */
   ourIsBlue?: boolean;
+  /** Stack round charts on narrow dialog viewports. */
+  responsiveLayout?: boolean;
 }
 
-export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ roundsData, loading, ourIsBlue = false }) => {
+export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ roundsData, loading, ourIsBlue = false, responsiveLayout = false }) => {
   if (loading) {
     return (
       <Card className="rounded-none">
@@ -51,7 +53,7 @@ export const FightTimelineChart: React.FC<FightTimelineChartProps> = ({ roundsDa
         </div>
         
         {/* Rounds displayed horizontally with gaps */}
-        <div className="flex gap-2">
+        <div className={responsiveLayout ? 'grid min-w-0 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2' : 'flex gap-2'}>
           {roundsData.map((round) => (
             <div key={round.roundNumber} className="flex-1 min-w-0">
               <div className="text-[10px] text-center text-gray-500 mb-0.5">
