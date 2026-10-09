@@ -19,6 +19,7 @@ import { StrikeTypesDialog } from './StrikeTypesDialog';
 import { VideoEditorTab } from './VideoEditorTab';
 import { FightViewDialog } from './FightViewDialog';
 import { FightEditDialog } from './FightEditDialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { MatchFightCard } from './MatchFightCard';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
@@ -70,6 +71,7 @@ export const AdminVideoAnalysisOverview = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('fights');
   const [editorFightId, setEditorFightId] = useState<string | null>(null);
+  const [editorDialogOpen, setEditorDialogOpen] = useState(false);
   
   const { toast } = useToast();
   const { stats, loading: loadingStats } = useFightStats(selectedFightId);
@@ -544,7 +546,7 @@ export const AdminVideoAnalysisOverview = () => {
                               className="rounded-none h-7 w-7 p-0"
                               onClick={() => {
                                 setEditorFightId(fight.id);
-                                setActiveTab('editor');
+                                setEditorDialogOpen(true);
                               }}
                             >
                               <Edit className="w-3 h-3" />
@@ -571,7 +573,7 @@ export const AdminVideoAnalysisOverview = () => {
 
             {/* Editor Tab */}
             <TabsContent value="editor" className="mt-4">
-              <VideoEditorTab key={editorFightId || 'new'} editFightId={editorFightId} onFightSaved={fetchFights} />
+              <VideoEditorTab key="new" onFightSaved={fetchFights} />
             </TabsContent>
           </Tabs>
 
@@ -612,6 +614,27 @@ export const AdminVideoAnalysisOverview = () => {
         }}
         fight={selectedFightForAction}
       />
+
+      <Dialog open={editorDialogOpen} onOpenChange={setEditorDialogOpen}>
+        <DialogContent className="rounded-none max-w-[95vw] w-[1400px] max-h-[95vh] overflow-y-auto p-4">
+          <DialogHeader>
+            <DialogTitle className="text-base flex items-center gap-2">
+              <Film className="w-4 h-4" />
+              Επεξεργασία ανάλυσης
+            </DialogTitle>
+          </DialogHeader>
+          {editorFightId && (
+            <VideoEditorTab
+              key={editorFightId}
+              editFightId={editorFightId}
+              onFightSaved={() => {
+                fetchFights();
+                setEditorDialogOpen(false);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       <FightEditDialog
         isOpen={editDialogOpen}
