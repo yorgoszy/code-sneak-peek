@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { Calendar, MapPin, User, Clock, Trophy, FileText, Video, Scale } from 'lucide-react';
 import { format } from 'date-fns';
+import { useFightStats } from '@/hooks/useFightStats';
 import { el } from 'date-fns/locale';
 
 interface Fight {
@@ -18,6 +19,7 @@ interface Fight {
   weight_class: string | null;
   notes: string | null;
   video_url: string | null;
+  our_corner?: string | null;
 }
 
 interface FightViewDialogProps {
@@ -28,6 +30,7 @@ interface FightViewDialogProps {
 
 export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClose, fight }) => {
   const [playableUrl, setPlayableUrl] = useState<string | null>(null);
+  const { stats, loading: statsLoading } = useFightStats(isOpen && fight ? fight.id : null);
 
   useEffect(() => {
     let cancelled = false;
@@ -89,7 +92,7 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="rounded-none max-w-2xl">
+      <DialogContent className="rounded-none max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Trophy className="w-5 h-5" />
@@ -231,6 +234,49 @@ export const FightViewDialog: React.FC<FightViewDialogProps> = ({ isOpen, onClos
                 </div>
               </div>
             )}
+          </div>
+          {/* Analysis stats */}
+          <div className="space-y-2 border-t border-border pt-3">
+            <p className="text-sm font-semibold">Στατιστικά Ανάλυσης</p>
+            {statsLoading ? (
+              <p className="text-xs text-muted-foreground">Φόρτωση...</p>
+            ) : !stats || (stats.totalStrikes === 0 && stats.opponentTotalStrikes === 0) ? (
+              <p className="text-xs text-muted-foreground">Δεν υπάρχει αποθηκευμένη ανάλυση για αυτόν τον αγώνα.</p>
+            ) : (() => {
+              const ourBlue = fight.our_corner === 'blue';
+              const rows: [string, string | number, string | number][] = [
+                ['Χτυπήματα', stats.totalStrikes, stats.opponentTotalStrikes],
+                ['Επιτυχημένα', stats.landedStrikes, stats.opponentLandedStrikes],
+                ['Επίθεση (ποσοστό)', `${stats.accuracy}%`, `${stats.opponentAccuracy}%`],
+                ['Ορθότητα', `${stats.correctStrikes} (${stats.correctnessRate}%)`, `${stats.opponentCorrectStrikes} (${stats.opponentCorrectnessRate}%)`],
+                ['Χέρια', `${stats.punchesLanded}/${stats.punchesTotal}`, `${stats.opponentPunchesLanded}/${stats.opponentPunchesTotal}`],
+                ['Πόδια', `${stats.kicksLanded}/${stats.kicksTotal}`, `${stats.opponentKicksLanded}/${stats.opponentKicksTotal}`],
+                ['Αγκώνες', `${stats.elbowsLanded}/${stats.elbowsTotal}`, `${stats.opponentElbowsLanded}/${stats.opponentElbowsTotal}`],
+                ['Γόνατα', `${stats.kneesLanded}/${stats.kneesTotal}`, `${stats.opponentKneesLanded}/${stats.opponentKneesTotal}`],
+                ['Άμυνα', `${stats.defenseSuccessRate}%`, `${stats.totalStrikes > 0 ? Math.round((stats.opponentSuccessfulDefenses / stats.totalStrikes) * 100) : 0}%`],
+                ['Χτυπήματα που δέχτηκε', stats.totalHitsReceived, stats.opponentTotalHitsReceived],
+              ];
+              return (
+                <div className="border border-border">
+                  <div className="grid grid-cols-3 text-xs font-semibold bg-muted">
+                    <div className="p-1.5">Στατιστικό</div>
+                    <div className="p-1.5 text-center text-competition-red">Κόκκινη</div>
+                    <div className="p-1.5 text-center text-competition-blue">Μπλε</div>
+                  </div>
+                  {rows.map(([label, ours, theirs]) => (
+                    <div key={label} className="grid grid-cols-3 text-xs border-t border-border">
+                      <div className="p-1.5">{label}</div>
+                      <div className="p-1.5 text-center font-medium">{ourBlue ? theirs : ours}</div>
+                      <div className="p-1.5 text-center font-medium">{ourBlue ? ours : theirs}</div>
+                    </div>
+                  ))}
+                  <div className="grid grid-cols-3 text-xs border-t border-border">
+                    <div className="p-1.5">Χρόνος επίθεσης / άμυνας</div>
+                    <div className="p-1.5 text-center col-span-2">{stats.attackTimeFormatted} / {stats.defenseTimeFormatted}</div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
       </DialogContent>

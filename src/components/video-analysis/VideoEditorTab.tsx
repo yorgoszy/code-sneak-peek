@@ -1,3 +1,4 @@
+import { resolveFightVideoUrl } from '@/utils/fightVideoStorage';
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -123,6 +124,7 @@ interface VideoEditorTabProps {
   initialWeightClass?: string | null;
   initialLocation?: string | null;
   initialVideoUrl?: string | null;
+  editFightId?: string | null;
 }
 
 export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
@@ -140,6 +142,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
   initialWeightClass,
   initialLocation,
   initialVideoUrl,
+  editFightId,
 }) => {
   // Role check & coach ID - align with VideoAnalysisOverview / StrikeTypesDialog
   // so that strike types in the editor always match the ones from the management dialog.
@@ -258,19 +261,37 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
 
   // Load existing analysis (fight + rounds + strikes) for this match video, if any
   const loadedExistingRef = useRef(false);
+  const editFightMetaRef = useRef<any>(null);
   useEffect(() => {
-    if (!matchVideoId || loadedExistingRef.current) return;
+    if ((!matchVideoId && !editFightId) || loadedExistingRef.current) return;
     loadedExistingRef.current = true;
 
     (async () => {
       try {
         const { data: fight } = await supabase
           .from('muaythai_fights')
-          .select('id, user_id, opponent_name, our_corner')
-          .eq('match_video_id', matchVideoId)
+          .select('*')
+          .eq(editFightId ? 'id' : 'match_video_id', (editFightId || matchVideoId) as string)
           .maybeSingle();
 
         if (!fight) return;
+        editFightMetaRef.current = fight;
+
+        // Load the saved video when editing an existing fight
+        if (editFightId && (fight as any).video_url) {
+          const vurl: string = (fight as any).video_url;
+          const ytId = vurl.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([\w-]{11})/)?.[1];
+          if (ytId) {
+            setVideos([{ id: `youtube-${Date.now()}`, file: null, url: vurl, name: `YouTube: ${ytId}`, duration: 0, startOffset: 0, mimeType: 'video/youtube', isYouTube: true, youtubeId: ytId }]);
+            setActiveVideoIndex(0);
+          } else {
+            const playable = await resolveFightVideoUrl(vurl);
+            if (playable) {
+              setVideos([{ id: `stored-${Date.now()}`, file: null, url: playable, name: 'Βίντεο αγώνα', duration: 0, startOffset: 0, mimeType: 'video/mp4' }]);
+              setActiveVideoIndex(0);
+            }
+          }
+        }
 
         // Sync user/opponent/corner from saved fight
         if (fight.user_id) setSelectedUserId(fight.user_id);
@@ -338,7 +359,7 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
         console.error('Error loading existing analysis:', err);
       }
     })();
-  }, [matchVideoId]);
+  }, [matchVideoId, editFightId]);
 
 
   useEffect(() => {
@@ -1626,8 +1647,8 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
       const effectiveOpponentName = opponentName;
 
       // Find existing fight for this match video (so we can replace it)
-      let existingFightId: string | null = null;
-      if (matchVideoId) {
+      let existingFightId: string | null = editFightId || null;
+      if (!existingFightId && matchVideoId) {
         const { data: existing } = await supabase
           .from('muaythai_fights')
           .select('id')
@@ -1655,6 +1676,19 @@ export const VideoEditorTab: React.FC<VideoEditorTabProps> = ({
         match_video_id: matchVideoId || null,
         our_corner: ourCorner,
       };
+      // Keep original metadata when editing an existing fight
+      const meta = editFightId ? editFightMetaRef.current : null;
+      if (meta) {
+        fightPayload.fight_date = meta.fight_date;
+        fightPayload.fight_type = meta.fight_type;
+        fightPayload.weight_class = meta.weight_class;
+        fightPayload.location = meta.location;
+        fightPayload.notes = meta.notes;
+        fightPayload.match_video_id = meta.match_video_id;
+        fightPayload.coach_id = meta.coach_id || coachId;
+        fightPayload.video_url = meta.video_url || fightPayload.video_url;
+        fightPayload.result = meta.result;
+      }
 
       let fightId: string;
       if (existingFightId) {

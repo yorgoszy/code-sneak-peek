@@ -68,6 +68,8 @@ export const AdminVideoAnalysisOverview = () => {
   const [selectedFightForAction, setSelectedFightForAction] = useState<Fight | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('fights');
+  const [editorFightId, setEditorFightId] = useState<string | null>(null);
   
   const { toast } = useToast();
   const { stats, loading: loadingStats } = useFightStats(selectedFightId);
@@ -472,7 +474,7 @@ export const AdminVideoAnalysisOverview = () => {
           </div>
 
           {/* Tabs */}
-          <Tabs defaultValue="fights" className="w-full">
+          <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); if (v === 'fights') setEditorFightId(null); }} className="w-full">
             <div className="overflow-x-auto">
               <TabsList className="flex w-max sm:grid sm:w-full sm:grid-cols-2 rounded-none h-8 gap-0.5">
                 <TabsTrigger value="fights" className="rounded-none text-xs py-1.5 px-3 whitespace-nowrap flex items-center gap-1">
@@ -541,8 +543,8 @@ export const AdminVideoAnalysisOverview = () => {
                               size="sm"
                               className="rounded-none h-7 w-7 p-0"
                               onClick={() => {
-                                setSelectedFightForAction(fight);
-                                setEditDialogOpen(true);
+                                setEditorFightId(fight.id);
+                                setActiveTab('editor');
                               }}
                             >
                               <Edit className="w-3 h-3" />
@@ -569,7 +571,7 @@ export const AdminVideoAnalysisOverview = () => {
 
             {/* Editor Tab */}
             <TabsContent value="editor" className="mt-4">
-              <VideoEditorTab onFightSaved={fetchFights} />
+              <VideoEditorTab key={editorFightId || 'new'} editFightId={editorFightId} onFightSaved={fetchFights} />
             </TabsContent>
           </Tabs>
 
