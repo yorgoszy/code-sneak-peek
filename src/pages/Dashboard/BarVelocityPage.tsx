@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Camera, Play, Square, RotateCcw, Activity, TrendingUp, Zap, Target, Ruler, Check, X, Menu } from "lucide-react";
 import { CameraZoomControl } from "@/components/CameraZoomControl";
 import { toast } from "sonner";
+import { BarVelocityFileAnalyzer } from "@/components/bar-velocity/BarVelocityFileAnalyzer";
 
 interface VelocityResult {
   id: number;
@@ -35,6 +36,7 @@ const BarVelocityPage = () => {
   const { isAdmin } = useRoleCheck();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [sourceMode, setSourceMode] = useState<'file' | 'live'>('file');
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -532,7 +534,18 @@ const BarVelocityPage = () => {
                 )}
               </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="flex gap-2">
+            <Button size="sm" variant={sourceMode === 'file' ? 'default' : 'outline'} className="rounded-none" onClick={() => setSourceMode('file')}>
+              Ανάλυση αρχείου (high fps)
+            </Button>
+            <Button size="sm" variant={sourceMode === 'live' ? 'default' : 'outline'} className="rounded-none" onClick={() => setSourceMode('live')}>
+              Ζωντανή κάμερα
+            </Button>
+          </div>
+
+          {sourceMode === 'file' && <BarVelocityFileAnalyzer />}
+
+          <div className={sourceMode === 'file' ? 'hidden' : 'grid grid-cols-1 lg:grid-cols-3 gap-4'}>
             {/* Camera View */}
             <Card className="lg:col-span-2 rounded-none">
               <CardContent className="p-2">
