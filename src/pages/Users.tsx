@@ -133,89 +133,74 @@ const Users = () => {
         return;
       }
       
-      // For admins: fetch admin users (with admin coach_id) and coach users separately
-      // Admin users - users with admin's coach_id
+      // For admins: run all list queries in parallel (one round trip instead of many)
       const ADMIN_COACH_ID = 'c6d44641-3b95-46bd-8270-e5ed72de25ad';
-      const { data: adminUsersData, error: adminError } = await supabase
-        .from('app_users')
-        .select('*')
-        .or(`coach_id.eq.${ADMIN_COACH_ID},coach_id.is.null`)
-        .order('created_at', { ascending: false });
-      
-      if (adminError) {
-        console.error('❌ Error fetching admin users:', adminError);
+      const [adminRes, coachUsersRes, coachesRes, coachRoleRes, federationRes, ackRes] = await Promise.all([
+        supabase
+          .from('app_users')
+          .select('*')
+          .or(`coach_id.eq.${ADMIN_COACH_ID},coach_id.is.null`)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('app_users')
+          .select('*')
+          .not('coach_id', 'is', null)
+          .neq('coach_id', ADMIN_COACH_ID)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('app_users')
+          .select('id, name, email, avatar_url, photo_url')
+          .eq('role', 'coach')
+          .order('name', { ascending: true }),
+        supabase
+          .from('app_users')
+          .select('*')
+          .eq('role', 'coach')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('app_users')
+          .select('*')
+          .eq('role', 'federation')
+          .order('created_at', { ascending: false }),
+        userProfile?.id
+          ? supabase.from('acknowledged_users').select('user_id').eq('admin_user_id', userProfile.id)
+          : Promise.resolve({ data: [] as { user_id: string }[], error: null }),
+      ]);
+
+      if (adminRes.error) {
+        console.error('❌ Error fetching admin users:', adminRes.error);
         return;
       }
-      
-      // Coach users - users with coach_id that is NOT the admin's coach_id
-      const { data: coachUsersData, error: coachError } = await supabase
-        .from('app_users')
-        .select('*')
-        .not('coach_id', 'is', null)
-        .neq('coach_id', ADMIN_COACH_ID)
-        .order('created_at', { ascending: false });
-      
-      if (coachError) {
-        console.error('❌ Error fetching coach users:', coachError);
+      if (coachUsersRes.error) {
+        console.error('❌ Error fetching coach users:', coachUsersRes.error);
         return;
       }
-      
-      // Fetch coaches (users with role = 'coach') for dropdown filter
-      const { data: coachesData, error: coachesError } = await supabase
-        .from('app_users')
-        .select('id, name, email, avatar_url, photo_url')
-        .eq('role', 'coach')
-        .order('name', { ascending: true });
-      
-      if (coachesError) {
-        console.error('❌ Error fetching coaches:', coachesError);
-      } else {
-        setCoaches(coachesData || []);
-      }
-      
-      // Fetch full coach data for the Coaches tab (users with role = 'coach')
-      const { data: coachRoleData, error: coachRoleError } = await supabase
-        .from('app_users')
-        .select('*')
-        .eq('role', 'coach')
-        .order('created_at', { ascending: false });
-      
-      if (coachRoleError) {
-        console.error('❌ Error fetching coach role users:', coachRoleError);
-      } else {
-        const coachRoleWithSubscription = await fetchSubscriptionStatuses(coachRoleData || []);
-        setCoachRoleUsers(coachRoleWithSubscription);
-        console.log('✅ Coach role users fetched:', coachRoleWithSubscription.length);
-      }
+      if (coachesRes.error) console.error('❌ Error fetching coaches:', coachesRes.error);
+      else setCoaches(coachesRes.data || []);
 
-      // Fetch federation users (users with role = 'federation')
-      const { data: federationData, error: federationError } = await supabase
-        .from('app_users')
-        .select('*')
-        .eq('role', 'federation')
-        .order('created_at', { ascending: false });
-      
-      if (federationError) {
-        console.error('❌ Error fetching federation users:', federationError);
-      } else {
-        const federationWithSubscription = await fetchSubscriptionStatuses(federationData || []);
-        setFederationUsers(federationWithSubscription);
-        console.log('✅ Federation users fetched:', federationWithSubscription.length);
-      }
+      const adminUsersData = (adminRes.data || []) as AppUser[];
+      const coachUsersData = (coachUsersRes.data || []) as AppUser[];
+      const coachRoleData = (coachRoleRes.data || []) as AppUser[];
+      const federationData = (federationRes.data || []) as AppUser[];
 
-      // Fetch subscription status for admin users
-      const adminUsersWithSubscription = await fetchSubscriptionStatuses(adminUsersData || []);
-      
-      // Fetch subscription status for coach users
-      const coachUsersWithSubscription = await fetchSubscriptionStatuses(coachUsersData || []);
+      // One batched subscription lookup for every user shown on the page
+      const uniqueUsers = new Map<string, AppUser>();
+      [...adminUsersData, ...coachUsersData, ...coachRoleData, ...federationData].forEach(u => uniqueUsers.set(u.id, u));
+      const withSubs = await fetchSubscriptionStatuses(Array.from(uniqueUsers.values()));
+      const statusById = new Map(withSubs.map(u => [u.id, u.subscription_status]));
+      const attach = (list: AppUser[]): UserWithSubscription[] =>
+        list.map(u => ({ ...u, subscription_status: statusById.get(u.id) || 'Ανενεργή' } as UserWithSubscription));
+
+      const adminUsersWithSubscription = attach(adminUsersData);
+      const coachUsersWithSubscription = attach(coachUsersData);
+      if (coachRoleRes.error) console.error('❌ Error fetching coach role users:', coachRoleRes.error);
+      else setCoachRoleUsers(attach(coachRoleData));
+      if (federationRes.error) console.error('❌ Error fetching federation users:', federationRes.error);
+      else setFederationUsers(attach(federationData));
 
       console.log('✅ Admin users fetched:', adminUsersWithSubscription.length);
-      console.log('✅ Coach users fetched:', coachUsersWithSubscription.length);
-      
-      // Set coach users
       setCoachUsers(coachUsersWithSubscription);
-      
-      // Φέρνουμε τους acknowledged χρήστες από τη βάση για τον τρέχοντα admin
+
       if (!userProfile?.id) {
         setNewRegistrations(adminUsersWithSubscription);
         setAllUsers([]);
@@ -223,26 +208,13 @@ const Users = () => {
         return;
       }
 
-      const { data: acknowledgedData } = await supabase
-        .from('acknowledged_users')
-        .select('user_id')
-        .eq('admin_user_id', userProfile.id);
       const acknowledgedUserIdsSet = new Set(
-        (acknowledgedData || []).map(item => item.user_id)
+        ((ackRes.data || []) as { user_id: string }[]).map(item => item.user_id)
       );
-      
-      // Filter new registrations only from admin users
-      const newUsers = adminUsersWithSubscription.filter(user => 
-        !acknowledgedUserIdsSet.has(user.id)
-      );
-      const acknowledgedUsers = adminUsersWithSubscription.filter(user => 
-        acknowledgedUserIdsSet.has(user.id)
-      );
-      
-      setNewRegistrations(newUsers);
-      setAllUsers(acknowledgedUsers);
+      setNewRegistrations(adminUsersWithSubscription.filter(u => !acknowledgedUserIdsSet.has(u.id)));
+      setAllUsers(adminUsersWithSubscription.filter(u => acknowledgedUserIdsSet.has(u.id)));
       setUsers(adminUsersWithSubscription);
-      
+
       // Trigger sidebar update
       window.dispatchEvent(new CustomEvent('users-updated'));
       
