@@ -270,52 +270,50 @@ const Users = () => {
       }
     }
 
-    return Promise.all(
-      usersData.map(async (user) => {
-        let subscription = null;
-        
-        // Check if user was created by a coach (coach_id points to a user with role='coach')
-        const isCoachManaged = user.coach_id && coachRoles[user.coach_id] === 'coach';
-        
-        if (isCoachManaged) {
-          const { data: coachSub } = await supabase
-            .from('coach_subscriptions')
-            .select('end_date, status, is_paused')
-            .eq('user_id', user.id)
-            .eq('status', 'active')
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          subscription = coachSub;
-        } else {
-          // Regular user - use user_subscriptions
-          const { data: userSub } = await supabase
-            .from('user_subscriptions')
-            .select('end_date, status, is_paused')
-            .eq('user_id', user.id)
-            .eq('status', 'active')
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          subscription = userSub;
-        }
+    const coachManagedIds: string[] = [];
+    const regularIds: string[] = [];
+    usersData.forEach(u => {
+      if (u.coach_id && coachRoles[u.coach_id] === 'coach') coachManagedIds.push(u.id);
+      else regularIds.push(u.id);
+    });
 
-        let subscriptionStatus: 'Ενεργή' | 'Ανενεργή' | 'Παύση' = 'Ανενεργή';
-        
-        if (subscription) {
-          if (subscription.is_paused) {
-            subscriptionStatus = 'Παύση';
-          } else if (new Date(subscription.end_date) >= new Date()) {
-            subscriptionStatus = 'Ενεργή';
-          }
-        }
+    // Batched fetch (chunks to keep URLs short) — avoids one request per user
+    const fetchLatest = async (table: 'coach_subscriptions' | 'user_subscriptions', ids: string[]) => {
+      const map = new Map<string, { end_date: string; status: string; is_paused: boolean | null; created_at: string }>();
+      const chunks: string[][] = [];
+      for (let i = 0; i < ids.length; i += 150) chunks.push(ids.slice(i, i + 150));
+      const results = await Promise.all(chunks.map(chunk =>
+        supabase
+          .from(table)
+          .select('user_id, end_date, status, is_paused, created_at')
+          .in('user_id', chunk)
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
+      ));
+      results.forEach(({ data }) => {
+        (data || []).forEach((row: any) => {
+          if (!map.has(row.user_id)) map.set(row.user_id, row);
+        });
+      });
+      return map;
+    };
 
-        return {
-          ...user,
-          subscription_status: subscriptionStatus
-        };
-      })
-    );
+    const [coachSubs, userSubs] = await Promise.all([
+      fetchLatest('coach_subscriptions', coachManagedIds),
+      fetchLatest('user_subscriptions', regularIds),
+    ]);
+    const coachManagedSet = new Set(coachManagedIds);
+    const now = new Date();
+
+    return usersData.map(user => {
+      const subscription = coachManagedSet.has(user.id) ? coachSubs.get(user.id) : userSubs.get(user.id);
+      let subscriptionStatus: 'Ενεργή' | 'Ανενεργή' | 'Παύση' = 'Ανενεργή';
+      if (subscription) {
+        if (subscription.is_paused) subscriptionStatus = 'Παύση';
+        else if (new Date(subscription.end_date) >= now) subscriptionStatus = 'Ενεργή';
+      }
+      return { ...user, subscription_status: subscriptionStatus };
+    });
   };
 
   const handleAcknowledgeUsers = async () => {
