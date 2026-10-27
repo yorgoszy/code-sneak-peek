@@ -3,8 +3,6 @@ import {
   Users,
   UsersRound,
   ArrowLeft,
-  ArrowUp,
-  Brain,
   CreditCard,
   TrendingUp,
   BarChart3,
@@ -17,22 +15,13 @@ import {
   LogOut,
   Dumbbell,
   Lock,
-  MonitorPlay,
-  Timer,
-  Compass,
-  BookOpen,
   Download,
-  Gauge,
-  Heart,
   HeartPulse,
-  ChevronDown,
-  AppWindow,
   GraduationCap,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
-import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
@@ -64,7 +53,6 @@ export const CoachSidebar = ({
   const { userProfile, isAdmin } = useRoleCheck();
   const { signOut } = useAuth();
   const { t } = useTranslation();
-  const [isAppMenuOpen, setIsAppMenuOpen] = useState(false);
   const isMobile = useIsMobile();
 
   const effectiveCoachId =
@@ -88,26 +76,6 @@ export const CoachSidebar = ({
     '/dashboard/coach-goals-awards',
   ];
 
-  // App submenu items
-  const appMenuItems = [
-    { icon: MonitorPlay, label: "Video Analysis", path: effectiveCoachId ? `/dashboard/video-analysis?coachId=${effectiveCoachId}` : "/dashboard/video-analysis", requiresSubscription: true },
-    { icon: Timer, label: "Sprint Timer", path: effectiveCoachId ? `/dashboard/sprint-timer?coachId=${effectiveCoachId}` : "/dashboard/sprint-timer", requiresSubscription: true },
-    { icon: Compass, label: "Change Direction", path: effectiveCoachId ? `/dashboard/change-direction?coachId=${effectiveCoachId}` : "/dashboard/change-direction", requiresSubscription: true },
-    { icon: Brain, label: "Cognitive", path: effectiveCoachId ? `/dashboard/cognitive?coachId=${effectiveCoachId}` : "/dashboard/cognitive", requiresSubscription: true },
-    { icon: ArrowUp, label: "Jump", path: effectiveCoachId ? `/dashboard/jump?coachId=${effectiveCoachId}` : "/dashboard/jump", requiresSubscription: true },
-    { icon: Gauge, label: "Bar Velocity", path: effectiveCoachId ? `/dashboard/bar-velocity?coachId=${effectiveCoachId}` : "/dashboard/bar-velocity", requiresSubscription: true },
-    { icon: HeartPulse, label: "Heart Rate (HR+)", path: effectiveCoachId ? `/dashboard/heart-rate?coachId=${effectiveCoachId}` : "/dashboard/heart-rate", requiresSubscription: true },
-    { icon: Heart, label: "HRV", path: effectiveCoachId ? `/dashboard/hrv?coachId=${effectiveCoachId}` : "/dashboard/hrv", requiresSubscription: true },
-  ];
-
-  // Check if any app submenu item is active
-  const isAppMenuActive = appMenuItems.some(item => {
-    const pathWithoutQuery = item.path.split("?")[0];
-    return location.pathname === pathWithoutQuery;
-  });
-
-  // Auto-open app menu if an item inside is active
-  const appMenuExpanded = isAppMenuOpen || isAppMenuActive;
 
   const menuItems = [
     {
@@ -218,8 +186,6 @@ export const CoachSidebar = ({
       requiresSubscription: true,
     },
     { type: "separator" },
-    // App submenu placeholder
-    { type: "app-menu" },
     {
       icon: Settings,
       label: "Ρυθμίσεις Προφίλ",
@@ -342,67 +308,6 @@ export const CoachSidebar = ({
           return <div key={`separator-${index}`} className="my-2 h-px bg-border" />;
         }
 
-        // Render App submenu
-        if (item.type === "app-menu") {
-          const isAppDisabled = !hasFullAccess;
-          return (
-            <div key="app-menu">
-              <button
-                onClick={() => {
-                  if (isAppDisabled) {
-                    toast.error('Απαιτείται ενεργή συνδρομή HYPERsync για πρόσβαση σε αυτή τη λειτουργία');
-                    navigate(effectiveCoachId ? `/dashboard/coach-shop?coachId=${effectiveCoachId}` : "/dashboard/coach-shop");
-                    return;
-                  }
-                  setIsAppMenuOpen(!appMenuExpanded);
-                }}
-                className={
-                  "w-full flex items-center justify-between px-3 py-2 text-sm font-medium transition-colors rounded-none " +
-                  (isAppDisabled
-                    ? "text-muted-foreground/50 cursor-not-allowed opacity-50"
-                    : isAppMenuActive
-                      ? "bg-black/10 text-black border-r-2 border-black"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent")
-                }
-              >
-                <div className="flex items-center space-x-3 min-w-0">
-                  {isAppDisabled ? (
-                    <Lock className="h-5 w-5 flex-shrink-0 text-muted-foreground/50" />
-                  ) : (
-                    <AppWindow className="h-5 w-5 flex-shrink-0" />
-                  )}
-                  {(!isCollapsed || isMobile) && <span className="truncate">App</span>}
-                </div>
-                {(!isCollapsed || isMobile) && !isAppDisabled && (
-                  <ChevronDown className={`h-4 w-4 flex-shrink-0 transition-transform ${appMenuExpanded ? 'rotate-180' : ''}`} />
-                )}
-              </button>
-              {appMenuExpanded && (!isCollapsed || isMobile) && !isAppDisabled && (
-                <div className="ml-4 border-l border-border pl-2 space-y-0.5 mt-0.5">
-                  {appMenuItems.map((subItem, subIndex) => {
-                    const subPath = subItem.path.split("?")[0];
-                    const isSubActive = location.pathname === subPath;
-                    return (
-                      <button
-                        key={subItem.path}
-                        onClick={() => handleMenuClick(subItem)}
-                        className={
-                          "w-full flex items-center space-x-3 px-2 py-1.5 text-xs font-medium transition-colors rounded-none " +
-                          (isSubActive
-                            ? "bg-black/10 text-black"
-                            : "text-sidebar-foreground hover:bg-sidebar-accent")
-                        }
-                      >
-                        <subItem.icon className="h-4 w-4 flex-shrink-0" />
-                        <span className="truncate">{subItem.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          );
-        }
 
         return renderMenuItem(item, index);
       })}
