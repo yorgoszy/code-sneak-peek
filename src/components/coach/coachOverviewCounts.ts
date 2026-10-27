@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import type { supabase } from "@/integrations/supabase/client";
 
 export interface CoachOverviewCounts {
   athletes: number;
@@ -18,7 +18,7 @@ const testTables = [
 export async function loadCoachOverviewCounts(
   coachId: string,
   today: string,
-  client = supabase,
+  client: typeof supabase,
 ): Promise<CoachOverviewCounts> {
   // Page identifiers so counts are not limited by PostgREST's default 1,000 rows.
   const loadAthletes = async () => {
