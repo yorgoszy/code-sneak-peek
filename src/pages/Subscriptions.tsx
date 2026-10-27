@@ -96,6 +96,8 @@ export default function Subscriptions() {
             <TabsTrigger value="offers" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Ενεργές Προσφορές</TabsTrigger>
             <TabsTrigger value="magic-boxes" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Μαγικά Κουτιά</TabsTrigger>
             <TabsTrigger value="history" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Ιστορικό</TabsTrigger>
+            {isAdmin() && <TabsTrigger value="coach-mydata" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Coach myDATA</TabsTrigger>}
+
             <Button
               onClick={() => {
                 navigator.clipboard.writeText('6a1bc2b0ad328f1971a203175834caa4');
