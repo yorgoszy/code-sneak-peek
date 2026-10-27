@@ -106,6 +106,18 @@ const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
                 >
                   <Menu className="h-5 w-5" />
                 </Button>
+                {!isOverviewPage && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleBackToOverview}
+                    className="rounded-none"
+                    aria-label="Επιστροφή στην Επισκόπηση"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    <span className="hidden md:inline ml-1">Επιστροφή</span>
+                  </Button>
+                )}
                 {title && (
                   <h1 className="text-lg font-semibold">{title}</h1>
                 )}
