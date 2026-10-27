@@ -19,8 +19,16 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Menu, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useSearchParams } from 'react-router-dom';
+import { useAuthContext } from '@/contexts/AuthContext';
+import { CoachMyDataTab } from '@/components/admin/CoachMyDataTab';
 
 export default function Subscriptions() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { isAdmin } = useAuthContext();
+  const validTabs = ['management', 'booking', 'videocalls', 'visits', 'receipts', 'expenses', 'financial', 'types', 'offers', 'magic-boxes', 'history', ...(isAdmin() ? ['coach-mydata'] : [])];
+  const requestedTab = searchParams.get('tab') || 'management';
+  const activeTab = validTabs.includes(requestedTab) ? requestedTab : 'management';
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
@@ -75,13 +83,14 @@ export default function Subscriptions() {
             <p className="text-gray-600">Διαχειριστείτε τις συνδρομές και τους τύπους συνδρομών</p>
           </div>
         
-        <Tabs defaultValue="management" className="w-full">
+        <Tabs value={activeTab} onValueChange={value => { const next = new URLSearchParams(searchParams); next.set('tab', value); setSearchParams(next, { replace: true }); }} className="w-full">
           <TabsList className="flex w-full justify-start mb-6 rounded-none h-auto flex-wrap overflow-x-auto gap-2">
             <TabsTrigger value="management" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Συνδρομές</TabsTrigger>
             <TabsTrigger value="booking" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Booking</TabsTrigger>
             <TabsTrigger value="videocalls" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Βιντεοκλήσεις</TabsTrigger>
             <TabsTrigger value="visits" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Επισκέψεις</TabsTrigger>
             <TabsTrigger value="receipts" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Αποδείξεις</TabsTrigger>
+            {isAdmin() && <TabsTrigger value="coach-mydata" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Coach myDATA</TabsTrigger>}
             <TabsTrigger value="expenses" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Έξοδα</TabsTrigger>
             <TabsTrigger value="financial" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Έσοδα-Έξοδα</TabsTrigger>
             <TabsTrigger value="types" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Τύποι</TabsTrigger>
@@ -106,6 +115,7 @@ export default function Subscriptions() {
           <TabsContent value="management">
             <SubscriptionManagement />
           </TabsContent>
+          {isAdmin() && <TabsContent value="coach-mydata"><CoachMyDataTab /></TabsContent>}
 
           <TabsContent value="booking">
             <AdminBookingManagement />

@@ -2622,6 +2622,81 @@ export type Database = {
           },
         ]
       }
+      coach_mydata_settings: {
+        Row: {
+          activity: string
+          address: string
+          branch: number
+          business_name: string
+          city: string
+          coach_id: string
+          connection_verified_at: string | null
+          created_at: string
+          enabled: boolean
+          next_number: number
+          postal_code: string
+          receipt_series: string
+          tax_office: string
+          updated_at: string
+          vat_category: number | null
+          vat_exemption_category: number | null
+          vat_number: string
+        }
+        Insert: {
+          activity?: string
+          address?: string
+          branch?: number
+          business_name?: string
+          city?: string
+          coach_id: string
+          connection_verified_at?: string | null
+          created_at?: string
+          enabled?: boolean
+          next_number?: number
+          postal_code?: string
+          receipt_series?: string
+          tax_office?: string
+          updated_at?: string
+          vat_category?: number | null
+          vat_exemption_category?: number | null
+          vat_number?: string
+        }
+        Update: {
+          activity?: string
+          address?: string
+          branch?: number
+          business_name?: string
+          city?: string
+          coach_id?: string
+          connection_verified_at?: string | null
+          created_at?: string
+          enabled?: boolean
+          next_number?: number
+          postal_code?: string
+          receipt_series?: string
+          tax_office?: string
+          updated_at?: string
+          vat_category?: number | null
+          vat_exemption_category?: number | null
+          vat_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_mydata_settings_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: true
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_mydata_settings_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: true
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_profiles: {
         Row: {
           address: string | null
