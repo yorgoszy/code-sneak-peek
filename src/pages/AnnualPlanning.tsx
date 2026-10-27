@@ -854,7 +854,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
       .from('app_users')
       .select('id, name, email, avatar_url, photo_url')
       .order('name');
-    const { data, error } = await scopeAnnualPlanningUsers(query, scopedCoachId);
+    const { data, error } = await (scopedCoachId ? query.eq('coach_id', scopedCoachId) : query);
 
     if (error) {
       console.error('❌ Error fetching users:', error);
@@ -883,7 +883,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
         )
       `)
       .order('created_at', { ascending: false });
-    const { data, error } = await scopeAnnualPlanningPhases(query, scopedCoachId);
+    const { data, error } = await (scopedCoachId ? query.eq('app_users.coach_id', scopedCoachId) : query);
 
     if (error) {
       console.error('Error fetching assigned macrocycles:', error);
