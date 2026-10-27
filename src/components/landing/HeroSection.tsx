@@ -246,7 +246,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
           paddingRight: bounds.right != null ? `${bounds.right}px` : undefined,
         }}
       >
-        <div className="text-left">
+        <div className="text-left" style={mobileOnly ? { fontSize: 0 } : undefined}>
           <HeroEditableText
             kind="title"
             font={titleConf.font}
