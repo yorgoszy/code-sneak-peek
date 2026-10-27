@@ -11,6 +11,7 @@ import {
   UsersIcon,
   Mail,
   ArrowLeft,
+  Globe,
   ArrowUp,
   Crown,
   TrendingUp,
@@ -842,6 +843,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       icon: ArrowLeft,
       label: "Επιστροφή στην Αρχική",
       path: "/",
+      badge: null
+    },
+    {
+      icon: Globe,
+      label: "WeKeep",
+      path: "/wekeep",
       badge: null
     }
   ];
