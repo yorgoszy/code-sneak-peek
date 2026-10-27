@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash2, Search, Eye, Mail } from "lucide-react";
@@ -40,6 +41,7 @@ interface CoachUser {
 }
 
 const MyAthletesContent = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { coachId } = useCoachContext();
   const isMobile = useIsMobile();
   
@@ -53,6 +55,14 @@ const MyAthletesContent = () => {
   const [deleteUserDialogOpen, setDeleteUserDialogOpen] = useState(false);
   const [viewUserDialogOpen, setViewUserDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<CoachUser | null>(null);
+
+  useEffect(() => {
+    if (!coachId || searchParams.get("action") !== "create") return;
+    setNewUserDialogOpen(true);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete("action");
+    setSearchParams(nextParams, { replace: true });
+  }, [coachId, searchParams, setSearchParams]);
 
   const fetchAthletes = async () => {
     if (loadingAthletes || !coachId) return;
