@@ -848,7 +848,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     {
       icon: Globe,
       label: "WeKeep",
-      path: "/wekeep",
+      path: "/wekeep?preview=1",
       badge: null
     }
   ];

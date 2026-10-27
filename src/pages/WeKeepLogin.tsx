@@ -17,7 +17,8 @@ export default function WeKeepLogin() {
 
   useEffect(() => {
     document.title = "WeKeep — Σύνδεση Coach";
-    if (!loading && isAuthenticated) navigate("/dashboard/coach-overview", { replace: true });
+    const isPreview = new URLSearchParams(window.location.search).has("preview");
+    if (!isPreview && !loading && isAuthenticated) navigate("/dashboard/coach-overview", { replace: true });
   }, [loading, isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
