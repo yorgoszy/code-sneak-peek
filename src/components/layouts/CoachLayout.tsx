@@ -138,6 +138,19 @@ const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
 
         {/* Page Content */}
         <div className={`flex-1 ${isMobile ? 'p-3' : 'p-6'}`}>
+          {!showSidebarButton && !isOverviewPage && (
+            <div className="mb-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBackToOverview}
+                className="rounded-none"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Επιστροφή
+              </Button>
+            </div>
+          )}
           {children}
         </div>
       </div>
