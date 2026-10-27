@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CoachProvider, useCoachContext } from '@/contexts/CoachContext';
-import { CoachSidebar } from '@/components/CoachSidebar';
 import { Button } from '@/components/ui/button';
-import { Menu, LogOut, ArrowLeft } from 'lucide-react';
+import { LogOut, ArrowLeft } from 'lucide-react';
 import { CustomLoadingScreen } from '@/components/ui/custom-loading';
 import { MaintenanceGuard } from '@/components/maintenance/MaintenanceGuard';
 
@@ -16,19 +15,16 @@ interface CoachLayoutContentProps {
   showHeader?: boolean;
 }
 
-const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({ 
-  children, 
+const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
+  children,
   title,
-  showHeader = true 
+  showHeader = true
 }) => {
   const { signOut } = useAuth();
   const { coachId, isLoading } = useCoachContext();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isTablet, setIsTablet] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
   // Κρύβουμε το κουμπί Επιστροφή στην ίδια τη σελίδα Επισκόπηση
   const isOverviewPage = location.pathname.startsWith('/dashboard/coach-overview');
@@ -36,17 +32,6 @@ const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
   const handleBackToOverview = () => {
     navigate(coachId ? `/dashboard/coach-overview?coachId=${coachId}` : '/dashboard/coach-overview');
   };
-
-  useEffect(() => {
-    const checkTablet = () => {
-      setIsTablet(window.innerWidth >= 768 && window.innerWidth <= 1024);
-    };
-    checkTablet();
-    window.addEventListener('resize', checkTablet);
-    return () => window.removeEventListener('resize', checkTablet);
-  }, []);
-
-  const showSidebarButton = isMobile || isTablet;
 
   const handleSignOut = async () => {
     await signOut();
@@ -63,49 +48,13 @@ const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
 
   return (
     <div className="min-h-screen bg-gray-50 flex w-full">
-      {/* Desktop Sidebar */}
-      {!showSidebarButton && (
-        <div className="block">
-          <CoachSidebar 
-            isCollapsed={sidebarCollapsed} 
-            setIsCollapsed={setSidebarCollapsed}
-            contextCoachId={coachId}
-          />
-        </div>
-      )}
-
-      {/* Mobile/Tablet Sidebar Overlay */}
-      {showSidebarButton && showMobileSidebar && (
-        <div className="fixed inset-0 z-50">
-          <div 
-            className="absolute inset-0 bg-black bg-opacity-50"
-            onClick={() => setShowMobileSidebar(false)}
-          />
-          <div className="relative w-64 h-full">
-            <CoachSidebar 
-              isCollapsed={false} 
-              setIsCollapsed={setSidebarCollapsed}
-              contextCoachId={coachId}
-            />
-          </div>
-        </div>
-      )}
-
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Header with mobile menu button */}
-        {showSidebarButton && showHeader && (
+        {/* Header */}
+        {showHeader && (
           <div className="sticky top-0 z-40 bg-white border-b border-gray-200 p-3 md:p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowMobileSidebar(true)}
-                  className="rounded-none"
-                >
-                  <Menu className="h-5 w-5" />
-                </Button>
                 {!isOverviewPage && (
                   <Button
                     variant="outline"
@@ -123,8 +72,8 @@ const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
                 )}
               </div>
               <div className="flex items-center space-x-2">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="rounded-none"
                   onClick={handleSignOut}
                   size="sm"
@@ -138,19 +87,6 @@ const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
 
         {/* Page Content */}
         <div className={`flex-1 ${isMobile ? 'p-3' : 'p-6'}`}>
-          {!showSidebarButton && !isOverviewPage && (
-            <div className="mb-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleBackToOverview}
-                className="rounded-none"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Επιστροφή
-              </Button>
-            </div>
-          )}
           {children}
         </div>
       </div>
@@ -166,8 +102,8 @@ interface CoachLayoutProps {
   ContentComponent?: React.ComponentType;
 }
 
-export const CoachLayout: React.FC<CoachLayoutProps> = ({ 
-  children, 
+export const CoachLayout: React.FC<CoachLayoutProps> = ({
+  children,
   title,
   showHeader = true,
   requireAuth = true,
