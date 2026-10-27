@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { useSafeCoachContext } from "@/contexts/CoachContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
@@ -74,6 +75,7 @@ interface UserOption {
 export function HealthCardsContent() {
   const { t } = useTranslation();
   const { userProfile } = useRoleCheck();
+  const coachContext = useSafeCoachContext();
 
   const [healthCards, setHealthCards] = useState<HealthCard[]>([]);
   const [loading, setLoading] = useState(true);
@@ -129,9 +131,11 @@ export function HealthCardsContent() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingCard, setDeletingCard] = useState<HealthCard | null>(null);
 
-  // Κανόνας: ο καθένας (Admin/Coach) βλέπει ΜΟΝΟ τους δικούς του χρήστες.
-  // Άρα πάντα φιλτράρουμε με το δικό του app_users.id (αγνοούμε coachId στο URL).
-  const effectiveCoachId = userProfile?.id ?? null;
+  // Κανόνας: ο καθένας βλέπει ΜΟΝΟ τους αθλητές του coach που είναι ανοιχτός.
+  // Μέσα σε CoachLayout (coach σελίδα) παίρνουμε το coachId από το CoachContext
+  // (τιμά και το ?coachId= του URL όταν admin βλέπει coach)· αλλιώς (admin σελίδα)
+  // χρησιμοποιούμε το δικό μας app_users.id.
+  const effectiveCoachId = coachContext?.coachId ?? userProfile?.id ?? null;
 
   // Load users for search dropdown
   useEffect(() => {
