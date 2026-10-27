@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
-import { BarChart3, ClipboardList, CreditCard, Dumbbell, FilePlus2, GraduationCap, HeartPulse, Plus, Settings, UserPlus, Users } from "lucide-react";
+import { BarChart3, CalendarDays, ClipboardList, CreditCard, Dumbbell, FilePlus2, GraduationCap, HeartPulse, Layers, Plus, Settings, UserPlus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NewCoachUserDialog } from "@/components/coach-users/NewCoachUserDialog";
 import { NewSubscriptionDialog } from "@/components/coach/subscriptions/NewSubscriptionDialog";
@@ -23,6 +23,8 @@ const overviewItems: { label: string; icon: any; path: string; create?: boolean;
   { label: "Νέα συνδρομή", icon: Plus, path: "/dashboard/coach-subscriptions", dialog: "subscription" },
   { label: "Ενεργά προγράμματα", icon: Dumbbell, path: "/dashboard/coach-active-programs", countKey: "programs" },
   { label: "Νέο πρόγραμμα", icon: FilePlus2, path: "/dashboard/coach-programs", create: true },
+  { label: "Ετήσιος Προγραμματισμός", icon: CalendarDays, path: "/dashboard/coach-annual-planning" },
+  { label: "Program Cards", icon: Layers, path: "/dashboard/coach-program-cards" },
   { label: "Πρόοδος αθλητών", icon: BarChart3, path: "/dashboard/coach-athletes-progress", countKey: "testedAthletes" },
   { label: "Τεστ", icon: ClipboardList, path: "/dashboard/coach-progress" },
   { label: "Κάρτα Υγείας", icon: HeartPulse, path: "/dashboard/coach-health-cards" },
