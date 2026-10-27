@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Loader2, Menu, X, LogIn } from "lucide-react";
 import heroImage from "@/assets/wekeep-hero.jpg";
+import logoAsset from "@/assets/wekeep-logo.png.asset.json";
 
 const navLinks = [
   { label: "Αρχική", href: "#home" },
@@ -27,8 +28,14 @@ export default function WeKeepLogin() {
 
   useEffect(() => {
     document.title = "WeKeep — Πλατφόρμα για προπονητές";
+    const iconLink = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+    const previousIcon = iconLink?.href;
+    if (iconLink) iconLink.href = "/wekeep-icon.png";
     const isPreview = new URLSearchParams(window.location.search).has("preview");
     if (!isPreview && !loading && isAuthenticated) navigate("/dashboard/coach-overview", { replace: true });
+    return () => {
+      if (iconLink && previousIcon) iconLink.href = previousIcon;
+    };
   }, [loading, isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,7 +67,9 @@ export default function WeKeepLogin() {
       {/* Top menu */}
       <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
-          <a href="#home" className="text-2xl font-bold tracking-tight">WeKeep</a>
+          <a href="#home" className="flex items-center">
+            <img src={logoAsset.url} alt="WeKeep" width={1518} height={476} className="h-6 w-auto" />
+          </a>
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((l) => (
               <a key={l.href} href={l.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -119,6 +128,7 @@ export default function WeKeepLogin() {
       <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
         <DialogContent className="max-w-sm rounded-none">
           <DialogHeader>
+            <img src={logoAsset.url} alt="WeKeep" width={1518} height={476} className="h-5 w-auto self-start" />
             <DialogTitle>Σύνδεση στο WeKeep</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
