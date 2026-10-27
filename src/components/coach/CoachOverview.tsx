@@ -1,9 +1,13 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { BarChart3, ClipboardList, CreditCard, Dumbbell, FilePlus2, Plus, UserPlus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NewCoachUserDialog } from "@/components/coach-users/NewCoachUserDialog";
 import { NewSubscriptionDialog } from "@/components/coach/subscriptions/NewSubscriptionDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { loadCoachOverviewCounts, type CoachOverviewCounts } from "./coachOverviewCounts";
 
 interface CoachOverviewProps {
   coachId: string;
@@ -11,14 +15,14 @@ interface CoachOverviewProps {
 
 type DialogKey = "athlete" | "subscription";
 
-const overviewItems: { label: string; icon: any; path: string; create?: boolean; dialog?: DialogKey }[] = [
-  { label: "Οι αθλητές μου", icon: Users, path: "/dashboard/my-athletes" },
+const overviewItems: { label: string; icon: any; path: string; create?: boolean; dialog?: DialogKey; countKey?: keyof CoachOverviewCounts }[] = [
+  { label: "Οι αθλητές μου", icon: Users, path: "/dashboard/my-athletes", countKey: "athletes" },
   { label: "Προσθήκη νέου αθλητή", icon: UserPlus, path: "/dashboard/my-athletes", dialog: "athlete" },
-  { label: "Συνδρομές", icon: CreditCard, path: "/dashboard/coach-subscriptions" },
+  { label: "Συνδρομές", icon: CreditCard, path: "/dashboard/coach-subscriptions", countKey: "subscriptions" },
   { label: "Νέα συνδρομή", icon: Plus, path: "/dashboard/coach-subscriptions", dialog: "subscription" },
-  { label: "Ενεργά προγράμματα", icon: Dumbbell, path: "/dashboard/coach-active-programs" },
+  { label: "Ενεργά προγράμματα", icon: Dumbbell, path: "/dashboard/coach-active-programs", countKey: "programs" },
   { label: "Νέο πρόγραμμα", icon: FilePlus2, path: "/dashboard/coach-programs", create: true },
-  { label: "Πρόοδος αθλητών", icon: BarChart3, path: "/dashboard/coach-athletes-progress" },
+  { label: "Πρόοδος αθλητών", icon: BarChart3, path: "/dashboard/coach-athletes-progress", countKey: "testedAthletes" },
   { label: "Τεστ", icon: ClipboardList, path: "/dashboard/coach-progress" },
 ];
 
@@ -26,15 +30,34 @@ const tileClass = "h-auto min-h-28 min-w-0 rounded-none bg-background p-3 text-f
 
 export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
   const [openDialog, setOpenDialog] = useState<DialogKey | null>(null);
+  const today = format(new Date(), "yyyy-MM-dd");
+  const { data: counts, isError, refetch } = useQuery({
+    queryKey: ["coach-overview-counts", coachId, today],
+    queryFn: () => loadCoachOverviewCounts(coachId, today, supabase),
+    enabled: Boolean(coachId),
+    staleTime: 0,
+  });
+  const handleCreated = () => {
+    setOpenDialog(null);
+    void refetch();
+  };
 
   return (
     <section className="space-y-4">
       <h2 className="text-lg font-semibold">Επισκόπηση</h2>
+      {isError && <p role="status" className="text-sm text-muted-foreground">Δεν ήταν δυνατή η φόρτωση των αριθμών.</p>}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {overviewItems.map(({ label, icon: Icon, path, create, dialog }) => {
+        {overviewItems.map(({ label, icon: Icon, path, create, dialog, countKey }) => {
           const content = (
             <>
-              <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+              <span className="flex w-full items-center justify-between gap-2">
+                <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                {countKey && (
+                  <span className="text-2xl font-semibold leading-none tabular-nums" aria-live="polite">
+                    {counts ? counts[countKey] : isError ? "—" : "…"}
+                  </span>
+                )}
+              </span>
               <span className="w-full whitespace-normal break-words text-left text-sm font-medium leading-snug">{label}</span>
             </>
           );
@@ -68,13 +91,13 @@ export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
         open={openDialog === "athlete"}
         onOpenChange={(o) => !o && setOpenDialog(null)}
         coachId={coachId}
-        onSuccess={() => setOpenDialog(null)}
+        onSuccess={handleCreated}
       />
       <NewSubscriptionDialog
         open={openDialog === "subscription"}
         onOpenChange={(o) => !o && setOpenDialog(null)}
         coachId={coachId}
-        onSuccess={() => setOpenDialog(null)}
+        onSuccess={handleCreated}
       />
     </section>
   );
