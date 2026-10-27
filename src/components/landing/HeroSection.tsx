@@ -197,9 +197,23 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
       setMobileFit(Math.min(2.4, Math.max(0.9, btnW / textW)));
     };
     const fonts = (document as any).fonts;
-    if (fonts?.ready) fonts.ready.then(measure).catch(() => { /* ignore */ });
-    const id = window.setTimeout(measure, 700);
-    return () => { cancelled = true; window.clearTimeout(id); };
+    const families = [layout.title?.font || 'Bebas Neue', layout.subtitle?.font || 'Bebas Neue'];
+    const famsLoaded = () => {
+      if (!fonts?.check) return true;
+      try { return families.every((fam: string) => fonts.check(`16px "${fam}"`)); } catch { return true; }
+    };
+    // measure only once the headline webfont is really on screen, otherwise the
+    // ratio comes out of fallback-font metrics and the fit lands short
+    const started = Date.now();
+    const iv = window.setInterval(() => {
+      if (cancelled) { window.clearInterval(iv); return; }
+      const timedOut = Date.now() - started > 2500;
+      if (famsLoaded() || timedOut) {
+        measure();
+        if (done || timedOut) window.clearInterval(iv);
+      }
+    }, 120);
+    return () => { cancelled = true; window.clearInterval(iv); };
   }, [mobileOnly, vw, baseTitleSize, baseSubtitleSize, mobileFit]);
 
   if (mobileOnly && mobileFit) {
@@ -246,7 +260,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
           paddingRight: bounds.right != null ? `${bounds.right}px` : undefined,
         }}
       >
-        <div className="text-left">
+        <div className="text-left" style={mobileOnly ? { fontSize: 0 } : undefined}>
           <HeroEditableText
             kind="title"
             font={titleConf.font}
@@ -273,7 +287,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             pos={{ x: subtitleConf.x, y: subtitleConf.y }}
             active={active === 'subtitle'}
             onActivate={() => setActive('subtitle')}
-            className="mb-6 tracking-wide"
+            className={mobileOnly ? "tracking-wide" : "mb-6 tracking-wide"}
             style={{
               fontFamily: layout.subtitle?.font ? `'${layout.subtitle.font}', sans-serif` : "'Bebas Neue', sans-serif",
               fontSize: subtitleConf.size ? `${subtitleConf.size}px` : undefined,
