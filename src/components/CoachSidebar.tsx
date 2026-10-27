@@ -109,7 +109,7 @@ export const CoachSidebar = ({
     {
       icon: HeartPulse,
       label: t('healthCard.title'),
-      path: effectiveCoachId ? `/dashboard/health-cards?coachId=${effectiveCoachId}` : "/dashboard/health-cards",
+      path: effectiveCoachId ? `/dashboard/coach-health-cards?coachId=${effectiveCoachId}` : "/dashboard/coach-health-cards",
       badge: expiringHealthCards > 0 ? expiringHealthCards.toString() : null,
       requiresSubscription: true,
     },
