@@ -27,6 +27,9 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   const [localLayout, setLocalLayout] = React.useState<any>(null);
   const [trialOpen, setTrialOpen] = React.useState(false);
   const [promoOpen, setPromoOpen] = React.useState(false);
+  const heroContentRef = React.useRef<HTMLDivElement>(null);
+  const [mobileFit, setMobileFit] = React.useState<number | null>(null);
+
 
   // Click outside hero edit roots → deactivate
   React.useEffect(() => {
@@ -149,6 +152,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
     : vw >= 1200
       ? 1
       : Math.max(0.32, vw / 1200);
+
+  const mobileOnly = !editor && !hasBpOverride && bp === 'mobile';
+
+
   const scaledText = (cfg: { font?: string; size?: number; x?: number; y?: number; color?: string }, minSize = 0) => ({
     font: cfg?.font,
     color: cfg?.color,
@@ -159,6 +166,53 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   const titleConf = scaledText(layout.title);
   const subtitleConf = scaledText(layout.subtitle);
   const taglineConf = scaledText(layout.tagline, 12);
+  const baseTitleSize = titleConf.size;
+  const baseSubtitleSize = subtitleConf.size;
+
+  // Mobile only: grow the headline until its widest line is as wide as the
+  // primary CTA ("ΚΛΕΙΣΕ ΔΟΚΙΜΑΣΤΙΚΟ"). The measurement runs at the unscaled
+  // size, once the saved layout and the webfonts have arrived.
+  const fittedKeyRef = React.useRef<string>('');
+  React.useEffect(() => {
+    if (!mobileOnly) { setMobileFit(null); fittedKeyRef.current = ''; return; }
+    if (!baseTitleSize || !baseSubtitleSize) return;
+    const key = `${vw}|${baseTitleSize}|${baseSubtitleSize}`;
+    if (fittedKeyRef.current === key) return;
+    if (mobileFit !== null) { setMobileFit(null); return; }
+    let cancelled = false;
+    let done = false;
+    const measure = () => {
+      if (cancelled || done) return;
+      const root = heroContentRef.current;
+      if (!root) return;
+      const btn = root.querySelector('[data-hero-edit-button="primary"]') as HTMLElement | null;
+      const ttl = root.querySelector('[data-hero-edit-kind="title"]') as HTMLElement | null;
+      const sub = root.querySelector('[data-hero-edit-kind="subtitle"]') as HTMLElement | null;
+      if (!btn || !ttl || !sub) return;
+      const btnW = btn.getBoundingClientRect().width;
+      const textW = Math.max(ttl.getBoundingClientRect().width, sub.getBoundingClientRect().width);
+      if (!btnW || !textW) return;
+      done = true;
+      fittedKeyRef.current = key;
+      setMobileFit(Math.min(2.4, Math.max(0.9, btnW / textW)));
+    };
+    const fonts = (document as any).fonts;
+    if (fonts?.ready) fonts.ready.then(measure).catch(() => { /* ignore */ });
+    const id = window.setTimeout(measure, 700);
+    return () => { cancelled = true; window.clearTimeout(id); };
+  }, [mobileOnly, vw, baseTitleSize, baseSubtitleSize, mobileFit]);
+
+  if (mobileOnly && mobileFit) {
+    if (titleConf.size) titleConf.size *= mobileFit;
+    if (subtitleConf.size) subtitleConf.size *= mobileFit;
+  }
+  if (mobileOnly) {
+    // drop "est. 2024 — thessaloniki" under the headline instead of beside it
+    taglineConf.x = 0;
+    taglineConf.y = 0;
+  }
+
+
 
   const onCtaClick = () => {
     setTrialOpen(true);
@@ -184,8 +238,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
       </div>
 
       <div
+        ref={heroContentRef}
         className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full"
         style={{
+
           paddingLeft: bounds.left != null ? `${bounds.left}px` : undefined,
           paddingRight: bounds.right != null ? `${bounds.right}px` : undefined,
         }}
@@ -227,8 +283,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             <EditableText as="span" sectionKey="hero" field="subtitle" lang={lang} value={subtitle} />
           </HeroEditableText>
 
+          {mobileOnly && <br />}
+
           <HeroEditableText
             kind="tagline"
+
             font={taglineConf.font}
             size={taglineConf.size}
             pos={{ x: taglineConf.x, y: taglineConf.y }}
