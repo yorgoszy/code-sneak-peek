@@ -283,8 +283,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             <EditableText as="span" sectionKey="hero" field="subtitle" lang={lang} value={subtitle} />
           </HeroEditableText>
 
+          {mobileOnly && <br />}
+
           <HeroEditableText
             kind="tagline"
+
             font={taglineConf.font}
             size={taglineConf.size}
             pos={{ x: taglineConf.x, y: taglineConf.y }}
