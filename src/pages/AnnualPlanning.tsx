@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { ensureCompetitionProgramCard } from "@/pages/annual-planning/competitionProgram";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { AnnualPlanningUserSelection } from "@/components/annual-planning/AnnualPlanningUserSelection";
+import { filterAnnualPlanningRecipients } from './annual-planning/coachScope';
 
 
 interface AppUser {
@@ -258,14 +259,15 @@ const MacrocycleCard: React.FC<MacrocycleCardProps> = ({
   );
 };
 
-const AnnualPlanning: React.FC = () => {
+const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
   const [searchParams] = useSearchParams();
   const coachIdFromUrl = searchParams.get('coachId');
   const { isAdmin, userProfile, loading: roleLoading } = useRoleCheck();
   const isAdminUser = isAdmin();
   
   // Effective coach ID - from URL or from logged in user
-  const effectiveCoachId = coachIdFromUrl || userProfile?.id;
+  const effectiveCoachId = coachId || (isAdminUser ? coachIdFromUrl || userProfile?.id : userProfile?.id);
+  const scopedCoachId = coachId || (isAdminUser ? coachIdFromUrl || undefined : userProfile?.role === 'coach' ? userProfile.id : undefined);
   
   const [users, setUsers] = useState<AppUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
@@ -777,11 +779,11 @@ const AnnualPlanning: React.FC = () => {
     fetchUsers();
     fetchAssignedMacrocycles();
     fetchSavedMacrocycles();
-  }, [effectiveCoachId, isAdminUser, coachIdFromUrl]);
+  }, [effectiveCoachId, isAdminUser, coachIdFromUrl, scopedCoachId]);
 
   // Auto-select current user if not admin
   useEffect(() => {
-    if (!roleLoading && !isAdminUser && userProfile && !selectedUser) {
+    if (!roleLoading && !scopedCoachId && !isAdminUser && userProfile && !selectedUser) {
       setSelectedUser({
         id: userProfile.id,
         name: userProfile.name,
@@ -790,7 +792,7 @@ const AnnualPlanning: React.FC = () => {
         photo_url: userProfile.photo_url || null
       });
     }
-  }, [roleLoading, isAdminUser, userProfile, selectedUser]);
+  }, [roleLoading, scopedCoachId, isAdminUser, userProfile, selectedUser]);
 
   // Load data when dialog year changes
   useEffect(() => {
@@ -848,13 +850,11 @@ const AnnualPlanning: React.FC = () => {
   }, [dialogYear, dialogOpen, dialogMacrocycle]);
 
   const fetchUsers = async () => {
-    // Φέρνουμε ΟΛΟΥΣ τους χρήστες χωρίς κανένα φίλτρο (ίδιο με το program builder - useProgramsData)
-    console.log('📊 AnnualPlanning - Fetching ALL users from app_users...');
-    
-    const { data, error } = await supabase
+    const query = supabase
       .from('app_users')
       .select('id, name, email, avatar_url, photo_url')
       .order('name');
+    const { data, error } = await (scopedCoachId ? query.eq('coach_id', scopedCoachId) : query);
 
     if (error) {
       console.error('❌ Error fetching users:', error);
@@ -866,7 +866,7 @@ const AnnualPlanning: React.FC = () => {
   };
 
   const fetchAssignedMacrocycles = async () => {
-    const { data, error } = await supabase
+    const query = supabase
       .from('user_annual_phases')
       .select(`
         id,
@@ -876,13 +876,14 @@ const AnnualPlanning: React.FC = () => {
         phase,
         notes,
         created_at,
-        app_users!user_annual_phases_user_id_fkey (
+        app_users!user_annual_phases_user_id_fkey!inner (
           name,
           avatar_url,
           photo_url
         )
       `)
       .order('created_at', { ascending: false });
+    const { data, error } = await (scopedCoachId ? query.eq('app_users.coach_id', scopedCoachId) : query);
 
     if (error) {
       console.error('Error fetching assigned macrocycles:', error);
@@ -1112,8 +1113,8 @@ const AnnualPlanning: React.FC = () => {
           .in('group_id', selectedGroupIds);
         
         groupMembers?.forEach(gm => {
-          if (!allUserIds.includes(gm.user_id!)) {
-            allUserIds.push(gm.user_id!);
+          if (gm.user_id && !allUserIds.includes(gm.user_id)) {
+            allUserIds.push(gm.user_id);
             userNames.push((gm.app_users as any).name);
           }
         });
@@ -1125,6 +1126,10 @@ const AnnualPlanning: React.FC = () => {
         userNames.push(selectedUser.name);
       }
       
+      if (scopedCoachId) {
+        allUserIds = filterAnnualPlanningRecipients(allUserIds, users.map(user => user.id));
+      }
+
       if (allUserIds.length === 0) {
         toast.error('Δεν βρέθηκαν χρήστες για ανάθεση');
         setIsAssigning(false);
@@ -2388,7 +2393,7 @@ const AnnualPlanning: React.FC = () => {
         <TabsContent value="assigned" className="mt-2">
           {(() => {
             // Filter macrocycles for non-admin users
-            const filteredMacrocycles = isAdminUser 
+            const filteredMacrocycles = isAdminUser || scopedCoachId
               ? assignedMacrocycles 
               : assignedMacrocycles.filter(m => m.user_id === userProfile?.id);
             

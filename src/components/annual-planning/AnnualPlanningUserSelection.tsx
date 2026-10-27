@@ -190,7 +190,8 @@ export const AnnualPlanningUserSelection: React.FC<AnnualPlanningUserSelectionPr
         .eq('group_id', groupId);
 
       if (!error && membersData) {
-        const memberIds = membersData.map(m => m.user_id);
+        const allowedIds = new Set(users.map(user => user.id));
+        const memberIds = membersData.map(m => m.user_id).filter((id): id is string => !!id && (!coachId || allowedIds.has(id)));
         onUserIdsChange(memberIds);
       }
     } catch (error) {

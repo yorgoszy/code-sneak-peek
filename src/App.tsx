@@ -87,6 +87,7 @@ import KnowledgeManagementWithSidebar from "@/pages/KnowledgeManagementWithSideb
 import { NutritionWithSidebar } from "@/pages/Dashboard/NutritionWithSidebar";
 import CycleWithSidebar from "@/pages/Dashboard/CycleWithSidebar";
 import { AnnualPlanningWithSidebar } from "@/pages/Dashboard/AnnualPlanningWithSidebar";
+import CoachAnnualPlanningPage from '@/pages/Dashboard/CoachAnnualPlanningPage';
 import AmsSettingsPage from "@/pages/Dashboard/AmsSettingsPage";
 import LoadMonitoringPage from "@/pages/Dashboard/LoadMonitoringPage";
 import GameDemandAnalyzerPage from "@/pages/Dashboard/GameDemandAnalyzerPage";
@@ -301,6 +302,7 @@ function App() {
                       <Route path="/dashboard/nutrition" element={<ProtectedRoute><NutritionWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/cycle" element={<ProtectedRoute><CycleWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/annual-planning" element={<ProtectedRoute><AnnualPlanningWithSidebar /></ProtectedRoute>} />
+                      <Route path="/dashboard/coach-annual-planning" element={<ProtectedRoute><CoachAnnualPlanningPage /></ProtectedRoute>} />
                       <Route path="/dashboard/phase-config" element={<ProtectedRoute requireAdmin><PhaseConfigWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/ams-settings" element={<ProtectedRoute><AmsSettingsPage /></ProtectedRoute>} />
                       <Route path="/dashboard/load-monitoring" element={<ProtectedRoute><LoadMonitoringPage /></ProtectedRoute>} />

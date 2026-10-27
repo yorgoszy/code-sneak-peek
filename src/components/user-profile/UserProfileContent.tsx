@@ -28,6 +28,8 @@ import { UserProfileFights } from "./UserProfileFights";
 import { CyclePage } from "@/components/cycle/CyclePage";
 import { HeartRateContent } from "@/components/heart-rate/HeartRateContent";
 import { CoachOverview } from "@/components/coach/CoachOverview";
+import AnnualPlanning from '@/pages/AnnualPlanning';
+import { Button } from '@/components/ui/button';
 
 import CoachBracketsPage from "@/pages/Dashboard/CoachBracketsPage";
 import CoachLivePage from "@/pages/Dashboard/CoachLivePage";
@@ -306,6 +308,16 @@ export const UserProfileContent = ({
             <BackButton />
             <h2 className="text-xl font-semibold">Heart Rate (HR+)</h2>
             <HeartRateContent lockedUserId={userProfile?.id} />
+          </div>
+        );
+      case "coach-annual-planning":
+        return (
+          <div className="space-y-4">
+            <Button variant="outline" size="sm" className="rounded-none" onClick={() => setActiveTab?.('overview')}>
+              <ArrowLeft className="h-4 w-4 mr-2" />Επιστροφή
+            </Button>
+            <h2 className="text-xl font-semibold">Ετήσιος Προγραμματισμός</h2>
+            <AnnualPlanning coachId={userProfile?.role === 'coach' ? userProfile.id : userProfile?.coach_id} />
           </div>
         );
       case "coach-brackets":
