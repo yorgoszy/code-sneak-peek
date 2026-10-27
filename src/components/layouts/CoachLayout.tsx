@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CoachProvider, useCoachContext } from '@/contexts/CoachContext';
 import { CoachSidebar } from '@/components/CoachSidebar';
 import { Button } from '@/components/ui/button';
-import { Menu, LogOut } from 'lucide-react';
+import { Menu, LogOut, ArrowLeft } from 'lucide-react';
 import { CustomLoadingScreen } from '@/components/ui/custom-loading';
 import { MaintenanceGuard } from '@/components/maintenance/MaintenanceGuard';
 
