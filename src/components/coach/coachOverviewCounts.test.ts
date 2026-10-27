@@ -1,4 +1,5 @@
-import { describe, expect, test } from "bun:test";
+import { describe, it as test } from "node:test";
+import { strictEqual } from "node:assert";
 import { loadCoachOverviewCounts } from "./coachOverviewCounts";
 
 const coachId = "coach-one";
@@ -38,15 +39,15 @@ function fixture() {
 
 describe("coach overview counts", () => {
   test("counts only the coach's registered athletes", async () => {
-    expect((await loadCoachOverviewCounts(coachId, today, fixture())).athletes).toBe(2);
+    strictEqual((await loadCoachOverviewCounts(coachId, today, fixture())).athletes, 2);
   });
   test("counts currently active, unpaused subscriptions including today's expiry", async () => {
-    expect((await loadCoachOverviewCounts(coachId, today, fixture())).subscriptions).toBe(1);
+    strictEqual((await loadCoachOverviewCounts(coachId, today, fixture())).subscriptions, 1);
   });
   test("counts active assignments, not completed or another coach's assignments", async () => {
-    expect((await loadCoachOverviewCounts(coachId, today, fixture())).programs).toBe(1);
+    strictEqual((await loadCoachOverviewCounts(coachId, today, fixture())).programs, 1);
   });
   test("counts unique registered users across test types and beyond 1000 sessions", async () => {
-    expect((await loadCoachOverviewCounts(coachId, today, fixture())).testedAthletes).toBe(2);
+    strictEqual((await loadCoachOverviewCounts(coachId, today, fixture())).testedAthletes, 2);
   });
 });
