@@ -68,7 +68,7 @@ const AboutSection: React.FC<AboutSectionProps> = ({ translations }) => {
             <CarouselItem key={slide.id} className="basis-full">
               {/* Banner */}
               <div
-                className="relative w-full overflow-hidden flex items-center justify-center h-[calc(10vw-1px)]"
+                className="relative w-full overflow-hidden flex items-center justify-center h-[calc(10vw-2px)]"
               >
                 <div
                   className="absolute inset-0 bg-cover"
