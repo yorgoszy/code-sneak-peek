@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Search, CreditCard, Plus } from "lucide-react";
@@ -63,6 +64,7 @@ interface CoachSubscription {
 }
 
 const CoachSubscriptionsContent = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { coachId } = useCoachContext();
   const isMobile = useIsMobile();
   
@@ -72,6 +74,15 @@ const CoachSubscriptionsContent = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("subscriptions");
   const [newSubscriptionOpen, setNewSubscriptionOpen] = useState(false);
+
+  useEffect(() => {
+    if (!coachId || searchParams.get("action") !== "create") return;
+    setActiveTab("subscriptions");
+    setNewSubscriptionOpen(true);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete("action");
+    setSearchParams(nextParams, { replace: true });
+  }, [coachId, searchParams, setSearchParams]);
   
   // Action dialogs state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);

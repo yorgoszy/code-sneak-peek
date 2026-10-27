@@ -1,4 +1,5 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
+import { useSearchParams } from "react-router-dom";
 import { Program } from "@/components/programs/types";
 import { usePrograms } from "@/hooks/usePrograms";
 import { useProgramsData } from "@/hooks/useProgramsData";
@@ -11,6 +12,7 @@ import { CoachLayout } from "@/components/layouts/CoachLayout";
 import { useCoachContext } from "@/contexts/CoachContext";
 
 const CoachProgramsContent = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { coachId } = useCoachContext();
   const isMobile = useIsMobile();
   
@@ -20,6 +22,15 @@ const CoachProgramsContent = () => {
   const [editingProgram, setEditingProgram] = useState<Program | null>(null);
   const [coachAthletes, setCoachAthletes] = useState<any[]>([]);
   const [allExercises, setAllExercises] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!coachId || searchParams.get("action") !== "create") return;
+    setEditingProgram(null);
+    setBuilderOpen(true);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete("action");
+    setSearchParams(nextParams, { replace: true });
+  }, [coachId, searchParams, setSearchParams]);
 
   const { exercises } = useProgramsData();
   const { loading, saveProgram, deleteProgram, duplicateProgram } = usePrograms();
