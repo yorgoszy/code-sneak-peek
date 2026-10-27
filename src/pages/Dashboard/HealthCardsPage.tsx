@@ -525,51 +525,63 @@ export function HealthCardsContent() {
                   const daysLeft = getDaysUntilExpiry(card.end_date);
                   return (
                     <Card key={card.id} className="rounded-none">
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center space-x-3">
-                            <Avatar className="h-10 w-10 rounded-full">
+                      <CardContent className="p-3">
+                        <div className="flex items-start justify-between gap-2 mb-3">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Avatar className="h-9 w-9 rounded-full flex-shrink-0">
                               <AvatarImage src={card.user?.photo_url || ''} />
                               <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba] rounded-full">
                                 {card.user?.name?.charAt(0).toUpperCase() || '?'}
                               </AvatarFallback>
                             </Avatar>
-                            <div>
-                              <p className="font-medium">{card.user?.name || 'Άγνωστο'}</p>
-                              <p className="text-xs text-gray-500">{card.user?.email}</p>
+                            <div className="min-w-0">
+                              <p className="font-medium text-sm truncate">{card.user?.name || 'Άγνωστο'}</p>
+                              <p className="text-xs text-gray-500 truncate">{card.user?.email}</p>
                             </div>
                           </div>
-                          {getStatusBadge(daysLeft)}
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 text-sm mb-3">
-                          <div>
-                            <span className="text-gray-500">Λήξη:</span>
-                            <span className={`ml-1 ${getDaysExpiryColor(card.end_date)}`}>
-                              {getDaysExpiryText(card.end_date)}
-                            </span>
+                          <div className="flex-shrink-0">
+                            {getStatusBadge(daysLeft)}
                           </div>
                         </div>
-                        <div className="flex justify-end gap-1">
+                        <div className="grid grid-cols-3 gap-2 text-xs mb-3 border-t border-b border-border py-2">
+                          <div>
+                            <p className="text-gray-500">Έναρξη</p>
+                            <p className="font-medium">{formatDate(card.start_date)}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500">Λήξη</p>
+                            <p className="font-medium">{formatDate(card.end_date)}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500">Υπόλοιπο</p>
+                            <p className={getDaysExpiryColor(card.end_date)}>
+                              {getDaysExpiryText(card.end_date)}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
                           {card.image_url && (
                             <Button
                               variant="outline"
                               size="sm"
-                              className="rounded-none"
+                              className="rounded-none flex-1"
                               onClick={() => {
                                 setViewingCard(card);
                                 setIsViewDialogOpen(true);
                               }}
                             >
-                              <Eye className="h-4 w-4" />
+                              <Eye className="h-4 w-4 mr-1" />
+                              Προβολή
                             </Button>
                           )}
                           <Button
                             variant="outline"
                             size="sm"
-                            className="rounded-none"
+                            className="rounded-none flex-1"
                             onClick={() => handleOpenEditDialog(card)}
                           >
-                            <Pencil className="h-4 w-4" />
+                            <Pencil className="h-4 w-4 mr-1" />
+                            Επεξεργασία
                           </Button>
                           <Button
                             variant="outline"
