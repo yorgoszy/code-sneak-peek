@@ -96,9 +96,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   const effectiveExtra = draftExtra ?? cms?.extra_data ?? {};
   const promoVideoUrlDesktop = (effectiveExtra?.promo_video_url as string) || '';
   const promoVideoUrlMobile = (effectiveExtra?.promo_video_url_mobile as string) || '';
+  const [vw, setVw] = React.useState<number>(() => (typeof window !== 'undefined' ? window.innerWidth : 1280));
   const [isMobile, setIsMobile] = React.useState<boolean>(() => typeof window !== 'undefined' && window.innerWidth < 768);
   React.useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth < 768);
+    const onResize = () => {
+      setVw(window.innerWidth);
+      setIsMobile(window.innerWidth < 768);
+    };
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
