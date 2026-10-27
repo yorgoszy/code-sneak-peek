@@ -148,13 +148,6 @@ export const CoachSidebar = ({
       requiresSubscription: true,
     },
     {
-      icon: ShoppingBag,
-      label: "Shop",
-      path: effectiveCoachId ? `/dashboard/coach-shop?coachId=${effectiveCoachId}` : "/dashboard/coach-shop",
-      badge: null,
-      requiresSubscription: false,
-    },
-    {
       icon: GraduationCap,
       label: "Online Courses",
       path: effectiveCoachId ? `/dashboard/knowledge?coachId=${effectiveCoachId}` : "/dashboard/knowledge",
