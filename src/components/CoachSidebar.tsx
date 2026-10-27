@@ -17,7 +17,6 @@ import {
   Droplet,
   LogOut,
   Dumbbell,
-  ShoppingBag,
   Lock,
   MonitorPlay,
   Timer,
