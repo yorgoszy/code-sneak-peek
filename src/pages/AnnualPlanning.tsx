@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { ensureCompetitionProgramCard } from "@/pages/annual-planning/competitionProgram";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { AnnualPlanningUserSelection } from "@/components/annual-planning/AnnualPlanningUserSelection";
-import { scopeAnnualPlanningUsers, scopeAnnualPlanningPhases, filterAnnualPlanningRecipients } from './annual-planning/coachScope';
+import { filterAnnualPlanningRecipients } from './annual-planning/coachScope';
 
 
 interface AppUser {
