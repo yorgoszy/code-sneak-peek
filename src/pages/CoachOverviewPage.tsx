@@ -16,7 +16,7 @@ const CoachOverviewContent = () => {
 
 const CoachOverviewPage = () => {
   return (
-    <CoachLayout title="Επισκόπηση" ContentComponent={CoachOverviewContent} />
+    <CoachLayout ContentComponent={CoachOverviewContent} />
   );
 };
 

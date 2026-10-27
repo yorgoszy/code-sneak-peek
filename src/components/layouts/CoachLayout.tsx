@@ -8,6 +8,9 @@ import { Button } from '@/components/ui/button';
 import { LogOut, ArrowLeft } from 'lucide-react';
 import { CustomLoadingScreen } from '@/components/ui/custom-loading';
 import { MaintenanceGuard } from '@/components/maintenance/MaintenanceGuard';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+
 
 interface CoachLayoutContentProps {
   children: React.ReactNode;
@@ -28,6 +31,26 @@ const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
 
   // Κρύβουμε το κουμπί Επιστροφή στην ίδια τη σελίδα Επισκόπηση
   const isOverviewPage = location.pathname.startsWith('/dashboard/coach-overview');
+
+  // Όνομα του προπονητή που βλέπουμε αυτή τη στιγμή
+  const { data: coachProfile } = useQuery({
+    queryKey: ['coach-layout-profile', coachId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('app_users')
+        .select('name, avatar_url, photo_url')
+        .eq('id', coachId as string)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: Boolean(coachId),
+    staleTime: 60_000,
+  });
+
+  const coachName = coachProfile?.name || title || 'Προπονητής';
+  const coachAvatar = coachProfile?.avatar_url || coachProfile?.photo_url || null;
+
 
   const handleBackToOverview = () => {
     navigate(coachId ? `/dashboard/coach-overview?coachId=${coachId}` : '/dashboard/coach-overview');
@@ -67,9 +90,22 @@ const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
                     <span className="hidden md:inline ml-1">Επιστροφή</span>
                   </Button>
                 )}
-                {title && (
-                  <h1 className="text-lg font-semibold">{title}</h1>
-                )}
+                <div className="flex items-center gap-2 min-w-0">
+                  {coachAvatar && (
+                    <img
+                      src={coachAvatar}
+                      alt=""
+                      className="h-7 w-7 shrink-0 rounded-full object-cover"
+                    />
+                  )}
+                  <div className="min-w-0">
+                    <h1 className="truncate text-lg font-semibold">{coachName}</h1>
+                    {title && (
+                      <p className="truncate text-xs text-gray-500">{title}</p>
+                    )}
+                  </div>
+                </div>
+
               </div>
               <div className="flex items-center space-x-2">
                 <Button
