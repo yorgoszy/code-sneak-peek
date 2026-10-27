@@ -141,6 +141,25 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
     };
   };
 
+  // Responsive fallback: on small screens scale the desktop hero layout down,
+  // unless the editor saved an explicit per-breakpoint override.
+  const hasBpOverride = bp !== 'desktop' && !!merged?.[bp] && Object.keys(merged[bp] ?? {}).length > 0;
+  const responsiveScale = editor || hasBpOverride
+    ? 1
+    : vw >= 1200
+      ? 1
+      : Math.max(0.32, vw / 1200);
+  const scaledText = (cfg: { font?: string; size?: number; x?: number; y?: number; color?: string }, minSize = 0) => ({
+    font: cfg?.font,
+    color: cfg?.color,
+    size: cfg?.size != null ? Math.max(minSize, cfg.size * responsiveScale) : undefined,
+    x: (cfg?.x ?? 0) * responsiveScale,
+    y: (cfg?.y ?? 0) * responsiveScale,
+  });
+  const titleConf = scaledText(layout.title);
+  const subtitleConf = scaledText(layout.subtitle);
+  const taglineConf = scaledText(layout.tagline, 12);
+
   const onCtaClick = () => {
     setTrialOpen(true);
   };
