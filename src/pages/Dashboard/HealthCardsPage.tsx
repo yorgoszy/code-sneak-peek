@@ -131,9 +131,11 @@ export function HealthCardsContent() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingCard, setDeletingCard] = useState<HealthCard | null>(null);
 
-  // Κανόνας: ο καθένας (Admin/Coach) βλέπει ΜΟΝΟ τους δικούς του χρήστες.
-  // Άρα πάντα φιλτράρουμε με το δικό του app_users.id (αγνοούμε coachId στο URL).
-  const effectiveCoachId = userProfile?.id ?? null;
+  // Κανόνας: ο καθένας βλέπει ΜΟΝΟ τους αθλητές του coach που είναι ανοιχτός.
+  // Μέσα σε CoachLayout (coach σελίδα) παίρνουμε το coachId από το CoachContext
+  // (τιμά και το ?coachId= του URL όταν admin βλέπει coach)· αλλιώς (admin σελίδα)
+  // χρησιμοποιούμε το δικό μας app_users.id.
+  const effectiveCoachId = coachContext?.coachId ?? userProfile?.id ?? null;
 
   // Load users for search dropdown
   useEffect(() => {
