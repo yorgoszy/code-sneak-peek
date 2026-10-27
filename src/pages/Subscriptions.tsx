@@ -90,7 +90,6 @@ export default function Subscriptions() {
             <TabsTrigger value="videocalls" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Βιντεοκλήσεις</TabsTrigger>
             <TabsTrigger value="visits" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Επισκέψεις</TabsTrigger>
             <TabsTrigger value="receipts" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Αποδείξεις</TabsTrigger>
-            {isAdmin() && <TabsTrigger value="coach-mydata" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Coach myDATA</TabsTrigger>}
             <TabsTrigger value="expenses" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Έξοδα</TabsTrigger>
             <TabsTrigger value="financial" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Έσοδα-Έξοδα</TabsTrigger>
             <TabsTrigger value="types" className="rounded-none whitespace-nowrap text-xs sm:text-sm">Τύποι</TabsTrigger>
