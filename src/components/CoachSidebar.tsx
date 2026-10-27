@@ -41,7 +41,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useState } from "react";
-import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
@@ -73,7 +72,6 @@ export const CoachSidebar = ({
   const { userProfile, isAdmin } = useRoleCheck();
   const { signOut } = useAuth();
   const { t } = useTranslation();
-  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [isAppMenuOpen, setIsAppMenuOpen] = useState(false);
   const isMobile = useIsMobile();
 
@@ -241,58 +239,9 @@ export const CoachSidebar = ({
       badge: null,
       requiresSubscription: true,
     },
-    {
-      icon: Award,
-      label: "Στόχοι & Βραβεία",
-      path: effectiveCoachId ? `/dashboard/coach-goals-awards?coachId=${effectiveCoachId}` : "/dashboard/coach-goals-awards",
-      badge: null,
-      requiresSubscription: true,
-    },
-    {
-      icon: BarChart3,
-      label: "Game Demand Analyzer",
-      path: "/dashboard/game-demand-analyzer",
-      badge: null,
-      requiresSubscription: true,
-    },
     { type: "separator" },
     // App submenu placeholder
     { type: "app-menu" },
-    {
-      icon: Swords,
-      label: "Αγώνες",
-      path: effectiveCoachId ? `/dashboard/coach-competitions?coachId=${effectiveCoachId}` : "/dashboard/coach-competitions",
-      badge: null,
-      requiresSubscription: true,
-    },
-    {
-      icon: Scale,
-      label: "Ζύγιση",
-      path: effectiveCoachId ? `/coach/${effectiveCoachId}/weigh-in` : "/dashboard/coach-competitions",
-      badge: null,
-      requiresSubscription: false,
-    },
-    {
-      icon: Trophy,
-      label: "Ranking",
-      path: effectiveCoachId ? `/coach/${effectiveCoachId}/ranking` : "/dashboard/coach-competitions",
-      badge: null,
-      requiresSubscription: false,
-    },
-    {
-      icon: Shuffle,
-      label: "Κλήρωση",
-      path: effectiveCoachId ? `/coach/${effectiveCoachId}/brackets` : "/dashboard/coach-competitions",
-      badge: null,
-      requiresSubscription: false,
-    },
-    {
-      icon: Radio,
-      label: "Live",
-      path: effectiveCoachId ? `/coach/${effectiveCoachId}/live` : "/dashboard/coach-competitions",
-      badge: null,
-      requiresSubscription: false,
-    },
     {
       icon: Settings,
       label: "Ρυθμίσεις Προφίλ",
@@ -346,9 +295,6 @@ export const CoachSidebar = ({
     }
   };
 
-  const handleAIChatClick = () => {
-    setIsAIChatOpen(true);
-  };
 
   const renderMenuItem = (item: any, index: number) => {
     const pathWithoutQuery = typeof item.path === "string" ? item.path.split("?")[0] : "";
@@ -482,56 +428,15 @@ export const CoachSidebar = ({
 
         return renderMenuItem(item, index);
       })}
-
-      {/* RidAI Προπονητής Button */}
-      <button
-        onClick={() => {
-          if (!hasFullAccess) {
-            toast.error('Απαιτείται ενεργή συνδρομή HYPERsync για πρόσβαση σε αυτή τη λειτουργία');
-            navigate(effectiveCoachId ? `/dashboard/coach-shop?coachId=${effectiveCoachId}` : "/dashboard/coach-shop");
-            return;
-          }
-          handleAIChatClick();
-        }}
-        disabled={!hasFullAccess}
-        className={
-          "w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium transition-colors rounded-none border-t border-border mt-2 pt-4 " +
-          (!hasFullAccess
-            ? "text-muted-foreground/50 cursor-not-allowed opacity-50"
-            : "text-sidebar-foreground hover:bg-sidebar-accent")
-        }
-      >
-        {!hasFullAccess ? (
-          <Lock className="h-5 w-5 flex-shrink-0 text-muted-foreground/50" />
-        ) : (
-          <Brain className="h-5 w-5 flex-shrink-0 text-black" />
-        )}
-        {(!isCollapsed || isMobile) && (
-          <div className="flex flex-col items-start min-w-0">
-            <span className="text-sm font-medium truncate">HyperAI</span>
-            <span className="text-xs text-muted-foreground truncate">powered by hyperteam</span>
-          </div>
-        )}
-      </button>
     </div>
   );
 
   return (
-    <>
-      <BaseSidebar
-        isCollapsed={isCollapsed && !isMobile}
-        setIsCollapsed={setIsCollapsed}
-        headerContent={headerContent}
-        navigationContent={navigationContent}
-      />
-
-      <EnhancedAIChatDialog
-        isOpen={isAIChatOpen}
-        onClose={() => setIsAIChatOpen(false)}
-        athleteId={userProfile?.id}
-        athleteName={userProfile?.name}
-        athletePhotoUrl={userProfile?.photo_url}
-      />
-    </>
+    <BaseSidebar
+      isCollapsed={isCollapsed && !isMobile}
+      setIsCollapsed={setIsCollapsed}
+      headerContent={headerContent}
+      navigationContent={navigationContent}
+    />
   );
 };
