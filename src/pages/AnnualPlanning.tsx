@@ -1126,6 +1126,10 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
         userNames.push(selectedUser.name);
       }
       
+      if (scopedCoachId) {
+        allUserIds = filterAnnualPlanningRecipients(allUserIds, users.map(user => user.id));
+      }
+
       if (allUserIds.length === 0) {
         toast.error('Δεν βρέθηκαν χρήστες για ανάθεση');
         setIsAssigning(false);
