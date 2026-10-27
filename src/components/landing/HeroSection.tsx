@@ -96,9 +96,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
   const effectiveExtra = draftExtra ?? cms?.extra_data ?? {};
   const promoVideoUrlDesktop = (effectiveExtra?.promo_video_url as string) || '';
   const promoVideoUrlMobile = (effectiveExtra?.promo_video_url_mobile as string) || '';
+  const [vw, setVw] = React.useState<number>(() => (typeof window !== 'undefined' ? window.innerWidth : 1280));
   const [isMobile, setIsMobile] = React.useState<boolean>(() => typeof window !== 'undefined' && window.innerWidth < 768);
   React.useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth < 768);
+    const onResize = () => {
+      setVw(window.innerWidth);
+      setIsMobile(window.innerWidth < 768);
+    };
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
@@ -137,6 +141,25 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
     };
   };
 
+  // Responsive fallback: on small screens scale the desktop hero layout down,
+  // unless the editor saved an explicit per-breakpoint override.
+  const hasBpOverride = bp !== 'desktop' && !!merged?.[bp] && Object.keys(merged[bp] ?? {}).length > 0;
+  const responsiveScale = editor || hasBpOverride
+    ? 1
+    : vw >= 1200
+      ? 1
+      : Math.max(0.32, vw / 1200);
+  const scaledText = (cfg: { font?: string; size?: number; x?: number; y?: number; color?: string }, minSize = 0) => ({
+    font: cfg?.font,
+    color: cfg?.color,
+    size: cfg?.size != null ? Math.max(minSize, cfg.size * responsiveScale) : undefined,
+    x: (cfg?.x ?? 0) * responsiveScale,
+    y: (cfg?.y ?? 0) * responsiveScale,
+  });
+  const titleConf = scaledText(layout.title);
+  const subtitleConf = scaledText(layout.subtitle);
+  const taglineConf = scaledText(layout.tagline, 12);
+
   const onCtaClick = () => {
     setTrialOpen(true);
   };
@@ -170,15 +193,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
         <div className="text-left">
           <HeroEditableText
             kind="title"
-            font={layout.title?.font}
-            size={layout.title?.size}
-            pos={{ x: layout.title?.x, y: layout.title?.y }}
+            font={titleConf.font}
+            size={titleConf.size}
+            pos={{ x: titleConf.x, y: titleConf.y }}
             active={active === 'title'}
             onActivate={() => setActive('title')}
             className="mb-2 tracking-wide"
             style={{
               fontFamily: layout.title?.font ? `'${layout.title.font}', sans-serif` : "'Bebas Neue', sans-serif",
-              fontSize: layout.title?.size ? `${layout.title.size}px` : undefined,
+              fontSize: titleConf.size ? `${titleConf.size}px` : undefined,
               color: layout.title?.color ?? '#FFFFFF',
             }}
           >
@@ -189,15 +212,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
 
           <HeroEditableText
             kind="subtitle"
-            font={layout.subtitle?.font}
-            size={layout.subtitle?.size}
-            pos={{ x: layout.subtitle?.x, y: layout.subtitle?.y }}
+            font={subtitleConf.font}
+            size={subtitleConf.size}
+            pos={{ x: subtitleConf.x, y: subtitleConf.y }}
             active={active === 'subtitle'}
             onActivate={() => setActive('subtitle')}
             className="mb-6 tracking-wide"
             style={{
               fontFamily: layout.subtitle?.font ? `'${layout.subtitle.font}', sans-serif` : "'Bebas Neue', sans-serif",
-              fontSize: layout.subtitle?.size ? `${layout.subtitle.size}px` : undefined,
+              fontSize: subtitleConf.size ? `${subtitleConf.size}px` : undefined,
               color: layout.subtitle?.color ?? '#FFFFFF',
             }}
           >
@@ -206,15 +229,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
 
           <HeroEditableText
             kind="tagline"
-            font={layout.tagline?.font}
-            size={layout.tagline?.size}
-            pos={{ x: layout.tagline?.x, y: layout.tagline?.y }}
+            font={taglineConf.font}
+            size={taglineConf.size}
+            pos={{ x: taglineConf.x, y: taglineConf.y }}
             active={active === 'tagline'}
             onActivate={() => setActive('tagline')}
             className="mb-6"
             style={{
               fontFamily: layout.tagline?.font ? `'${layout.tagline.font}', serif` : "'UnifrakturMaguntia', serif",
-              fontSize: `${layout.tagline?.size ?? 12}px`,
+              fontSize: `${taglineConf.size ?? 12}px`,
               color: layout.tagline?.color ?? '#FFFFFF',
               opacity: 0.7,
               textTransform: 'lowercase',
