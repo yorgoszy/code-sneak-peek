@@ -9538,6 +9538,7 @@ export type Database = {
       }
       saved_macrocycles: {
         Row: {
+          coach_id: string | null
           created_at: string
           id: string
           monthly_phases: Json | null
@@ -9548,6 +9549,7 @@ export type Database = {
           year: number
         }
         Insert: {
+          coach_id?: string | null
           created_at?: string
           id?: string
           monthly_phases?: Json | null
@@ -9558,6 +9560,7 @@ export type Database = {
           year: number
         }
         Update: {
+          coach_id?: string | null
           created_at?: string
           id?: string
           monthly_phases?: Json | null
@@ -9567,7 +9570,22 @@ export type Database = {
           weekly_phases?: Json | null
           year?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "saved_macrocycles_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_macrocycles_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       school_notes: {
         Row: {
