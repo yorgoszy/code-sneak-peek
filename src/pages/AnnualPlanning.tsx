@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { ensureCompetitionProgramCard } from "@/pages/annual-planning/competitionProgram";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { AnnualPlanningUserSelection } from "@/components/annual-planning/AnnualPlanningUserSelection";
-import { filterAnnualPlanningRecipients } from './annual-planning/coachScope';
+import { filterAnnualPlanningRecipients, scopeSavedMacrocycles } from './annual-planning/coachScope';
 
 
 interface AppUser {
@@ -931,11 +931,13 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
   };
 
   const fetchSavedMacrocycles = async () => {
+    setSavedMacrocycles([]);
     try {
-      const { data, error } = await (supabase as any)
+      const query = (supabase as any)
         .from('saved_macrocycles')
         .select('*')
         .order('created_at', { ascending: false });
+      const { data, error } = await scopeSavedMacrocycles(query, scopedCoachId, (q, id) => q.eq('coach_id', id));
 
       if (error) {
         console.error('Error fetching saved macrocycles:', error);
@@ -1036,7 +1038,8 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
           year,
           phases: selectedPhases,
           monthly_phases: monthlyPhases,
-          weekly_phases: weeklyPhases
+          weekly_phases: weeklyPhases,
+          coach_id: scopedCoachId || userProfile?.id
         })
         .eq('id', editingMacrocycleId);
 
@@ -1056,7 +1059,8 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
           year,
           phases: selectedPhases,
           monthly_phases: monthlyPhases,
-          weekly_phases: weeklyPhases
+          weekly_phases: weeklyPhases,
+          coach_id: scopedCoachId || userProfile?.id
         });
 
       if (error) {
@@ -1794,10 +1798,10 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
   return (
     <div className="p-2 lg:p-0">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className={cn("w-full rounded-none h-8", isAdminUser ? "grid-cols-3" : "grid-cols-2")} style={{ display: 'grid', gridTemplateColumns: isAdminUser ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)' }}>
+        <TabsList className={cn("w-full rounded-none h-8", isAdminUser || scopedCoachId ? "grid-cols-3" : "grid-cols-2")} style={{ display: 'grid', gridTemplateColumns: isAdminUser || scopedCoachId ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)' }}>
           <TabsTrigger value="new" className="rounded-none text-xs">Νέο</TabsTrigger>
           <TabsTrigger value="assigned" className="rounded-none text-xs">Ανατεθημένα</TabsTrigger>
-          {isAdminUser && (
+          {(isAdminUser || scopedCoachId) && (
             <TabsTrigger value="saved" className="rounded-none text-xs">Αποθηκευμένα</TabsTrigger>
           )}
         </TabsList>
@@ -1846,7 +1850,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
                 <div className="space-y-1">
                   <label className="text-xs font-medium">&nbsp;</label>
                   <div className="flex gap-2">
-                    {isAdminUser && !isViewMode && (
+                    {(isAdminUser || scopedCoachId) && !isViewMode && (
                       <Button
                         onClick={handleSave}
                         variant="outline"

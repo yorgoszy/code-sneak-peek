@@ -1,0 +1,4 @@
+ALTER TABLE public.saved_macrocycles ADD COLUMN coach_id uuid REFERENCES public.app_users(id) ON DELETE CASCADE DEFAULT public.current_app_user_id();
+CREATE INDEX saved_macrocycles_coach_id_idx ON public.saved_macrocycles(coach_id);
+ALTER TABLE public.saved_macrocycles ENABLE ROW LEVEL SECURITY;
+ALTER POLICY "Coaches and admins can manage saved_macrocycles" ON public.saved_macrocycles TO authenticated USING (public.is_admin_user() OR (public.has_role(auth.uid(), 'coach'::public.user_role) AND coach_id = public.current_app_user_id())) WITH CHECK (public.is_admin_user() OR (public.has_role(auth.uid(), 'coach'::public.user_role) AND coach_id = public.current_app_user_id()));
