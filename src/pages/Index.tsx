@@ -31,7 +31,9 @@ const Index = () => {
   const navigate = useNavigate();
   const { language, translations, toggleLanguage } = useTranslations();
   
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const [trialOpen, setTrialOpen] = useState(false);
+  const { data: landingTheme } = useLandingTheme();
+  useApplyLandingTheme(landingTheme);
 
   const handleSignOut = async () => {
     await signOut();
