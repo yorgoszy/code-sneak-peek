@@ -1,5 +1,4 @@
 import {
-  Swords,
   Home,
   Users,
   UsersRound,
@@ -19,7 +18,6 @@ import {
   LogOut,
   Dumbbell,
   ShoppingBag,
-  Award,
   Lock,
   MonitorPlay,
   Timer,
@@ -29,13 +27,9 @@ import {
   Gauge,
   Heart,
   HeartPulse,
-  Trophy,
   ChevronDown,
   AppWindow,
   GraduationCap,
-  Shuffle,
-  Radio,
-  Scale,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
