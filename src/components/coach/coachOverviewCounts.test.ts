@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { describe, it as test } from "node:test";
 import { strictEqual } from "node:assert";
 import { loadCoachOverviewCounts } from "./coachOverviewCounts";
