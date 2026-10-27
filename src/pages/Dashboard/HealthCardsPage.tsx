@@ -480,123 +480,16 @@ export function HealthCardsContent() {
       </Card>
 
       {/* Add/Edit Health Card Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
-        if (!open) handleCloseDialog();
-        else setIsAddDialogOpen(true);
-      }}>
-        <DialogContent className="rounded-none">
-          <DialogHeader>
-            <DialogTitle>
-              {editingCard ? t("healthCard.edit") : t("healthCard.addNew")}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            {/* User Selection - same pattern as NewSubscriptionDialog */}
-            <div className="space-y-2">
-              <Label>{t("healthCard.selectUser")}</Label>
-              {selectedUser ? (
-                <div className="flex items-center gap-3 p-3 border border-border bg-muted/50">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={selectedUser.photo_url || selectedUser.avatar_url || undefined} />
-                    <AvatarFallback>{selectedUser.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <p className="font-medium">{selectedUser.name}</p>
-                    <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
-                  </div>
-                  {!editingCard && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setSelectedUser(null)}
-                      className="rounded-none"
-                    >
-                      Αλλαγή
-                    </Button>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      value={userSearchTerm}
-                      onChange={(e) => setUserSearchTerm(e.target.value)}
-                      placeholder="Αναζήτηση με όνομα ή email..."
-                      className="pl-10 rounded-none"
-                    />
-                  </div>
-                  <div className="max-h-48 overflow-y-auto border border-border bg-background">
-                    {userSearchTerm.trim().length === 0 ? (
-                      <div className="p-3 text-center text-muted-foreground text-sm">
-                        Πληκτρολογήστε για αναζήτηση...
-                      </div>
-                    ) : filteredUsers.length === 0 ? (
-                      <div className="p-3 text-center text-muted-foreground text-sm">
-                        Δεν βρέθηκαν χρήστες
-                      </div>
-                    ) : (
-                      filteredUsers.map(user => (
-                        <div
-                          key={user.id}
-                          className="flex items-center gap-3 p-3 hover:bg-muted cursor-pointer border-b border-border last:border-b-0"
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setUserSearchTerm('');
-                          }}
-                        >
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={user.photo_url || user.avatar_url || undefined} />
-                            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium text-sm">{user.name}</p>
-                            <p className="text-xs text-muted-foreground">{user.email}</p>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div>
-              <Label>{t("healthCard.startDate")}</Label>
-              <Input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="rounded-none"
-              />
-            </div>
-            <div>
-              <Label>
-                {t("healthCard.certificate")}
-                {!editingCard && <span className="text-muted-foreground text-xs ml-1">({t("common.optional")})</span>}
-              </Label>
-              <Input
-                type="file"
-                accept="image/*,application/pdf"
-                onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                className="rounded-none"
-              />
-              {editingCard?.image_url && !selectedFile && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  {t("healthCard.currentImageKept")}
-                </p>
-              )}
-            </div>
-            <Button
-              onClick={handleAddHealthCard}
-              disabled={uploading || !selectedUser}
-              className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
-            >
-              {uploading ? t("common.uploading") : (editingCard ? t("common.save") : t("healthCard.upload"))}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <HealthCardFormDialog
+        open={isAddDialogOpen}
+        onOpenChange={(open) => {
+          setIsAddDialogOpen(open);
+          if (!open) setEditingCard(null);
+        }}
+        coachId={effectiveCoachId}
+        editingCard={editingCard}
+        onSaved={loadHealthCards}
+      />
 
       {/* View Health Card Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
