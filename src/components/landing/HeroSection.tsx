@@ -193,15 +193,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
         <div className="text-left">
           <HeroEditableText
             kind="title"
-            font={layout.title?.font}
-            size={layout.title?.size}
-            pos={{ x: layout.title?.x, y: layout.title?.y }}
+            font={titleConf.font}
+            size={titleConf.size}
+            pos={{ x: titleConf.x, y: titleConf.y }}
             active={active === 'title'}
             onActivate={() => setActive('title')}
             className="mb-2 tracking-wide"
             style={{
               fontFamily: layout.title?.font ? `'${layout.title.font}', sans-serif` : "'Bebas Neue', sans-serif",
-              fontSize: layout.title?.size ? `${layout.title.size}px` : undefined,
+              fontSize: titleConf.size ? `${titleConf.size}px` : undefined,
               color: layout.title?.color ?? '#FFFFFF',
             }}
           >
@@ -212,15 +212,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
 
           <HeroEditableText
             kind="subtitle"
-            font={layout.subtitle?.font}
-            size={layout.subtitle?.size}
-            pos={{ x: layout.subtitle?.x, y: layout.subtitle?.y }}
+            font={subtitleConf.font}
+            size={subtitleConf.size}
+            pos={{ x: subtitleConf.x, y: subtitleConf.y }}
             active={active === 'subtitle'}
             onActivate={() => setActive('subtitle')}
             className="mb-6 tracking-wide"
             style={{
               fontFamily: layout.subtitle?.font ? `'${layout.subtitle.font}', sans-serif` : "'Bebas Neue', sans-serif",
-              fontSize: layout.subtitle?.size ? `${layout.subtitle.size}px` : undefined,
+              fontSize: subtitleConf.size ? `${subtitleConf.size}px` : undefined,
               color: layout.subtitle?.color ?? '#FFFFFF',
             }}
           >
@@ -229,15 +229,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
 
           <HeroEditableText
             kind="tagline"
-            font={layout.tagline?.font}
-            size={layout.tagline?.size}
-            pos={{ x: layout.tagline?.x, y: layout.tagline?.y }}
+            font={taglineConf.font}
+            size={taglineConf.size}
+            pos={{ x: taglineConf.x, y: taglineConf.y }}
             active={active === 'tagline'}
             onActivate={() => setActive('tagline')}
             className="mb-6"
             style={{
               fontFamily: layout.tagline?.font ? `'${layout.tagline.font}', serif` : "'UnifrakturMaguntia', serif",
-              fontSize: `${layout.tagline?.size ?? 12}px`,
+              fontSize: `${taglineConf.size ?? 12}px`,
               color: layout.tagline?.color ?? '#FFFFFF',
               opacity: 0.7,
               textTransform: 'lowercase',
