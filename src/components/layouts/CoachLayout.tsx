@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useRoleCheck } from '@/hooks/useRoleCheck';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { CoachProvider, useCoachContext } from '@/contexts/CoachContext';
 import { CoachSidebar } from '@/components/CoachSidebar';
 import { Button } from '@/components/ui/button';
-import { Menu, LogOut } from 'lucide-react';
+import { Menu, LogOut, ArrowLeft } from 'lucide-react';
 import { CustomLoadingScreen } from '@/components/ui/custom-loading';
 import { MaintenanceGuard } from '@/components/maintenance/MaintenanceGuard';
 
@@ -24,9 +24,18 @@ const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
   const { signOut } = useAuth();
   const { coachId, isLoading } = useCoachContext();
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isTablet, setIsTablet] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+
+  // Κρύβουμε το κουμπί Επιστροφή στην ίδια τη σελίδα Επισκόπηση
+  const isOverviewPage = location.pathname.startsWith('/dashboard/coach-overview');
+
+  const handleBackToOverview = () => {
+    navigate(coachId ? `/dashboard/coach-overview?coachId=${coachId}` : '/dashboard/coach-overview');
+  };
 
   useEffect(() => {
     const checkTablet = () => {
@@ -97,6 +106,18 @@ const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
                 >
                   <Menu className="h-5 w-5" />
                 </Button>
+                {!isOverviewPage && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleBackToOverview}
+                    className="rounded-none"
+                    aria-label="Επιστροφή στην Επισκόπηση"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    <span className="hidden md:inline ml-1">Επιστροφή</span>
+                  </Button>
+                )}
                 {title && (
                   <h1 className="text-lg font-semibold">{title}</h1>
                 )}
@@ -117,6 +138,19 @@ const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
 
         {/* Page Content */}
         <div className={`flex-1 ${isMobile ? 'p-3' : 'p-6'}`}>
+          {!showSidebarButton && !isOverviewPage && (
+            <div className="mb-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBackToOverview}
+                className="rounded-none"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Επιστροφή
+              </Button>
+            </div>
+          )}
           {children}
         </div>
       </div>
