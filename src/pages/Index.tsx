@@ -4,8 +4,6 @@ import hyperkidsImage from '@/assets/hyperkids1.png.asset.json';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslations } from "@/hooks/useTranslations";
-import { useIsPWA } from "@/hooks/useIsPWA";
-import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/landing/Navigation";
 import HeroSection from "@/components/landing/HeroSection";
 import ProgramsSection from "@/components/landing/ProgramsSection";
@@ -33,40 +31,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { language, translations, toggleLanguage } = useTranslations();
   
-  const isPWA = useIsPWA();
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [trialOpen, setTrialOpen] = useState(false);
-  const { data: landingTheme } = useLandingTheme();
-  useApplyLandingTheme(landingTheme);
-
-  // PWA Auto-redirect to dashboard when logged in
-  useEffect(() => {
-    if (!isPWA || !isAuthenticated || loading) return;
-
-    const fetchUserRole = async () => {
-      try {
-        const { data: userProfile } = await supabase
-          .from('app_users')
-          .select('role')
-          .eq('auth_user_id', user?.id)
-          .single();
-
-        if (userProfile?.role) {
-          setUserRole(userProfile.role);
-          // Redirect to appropriate dashboard based on role
-          if (userProfile.role === 'admin') {
-            navigate('/dashboard', { replace: true });
-          } else {
-            navigate('/dashboard', { replace: true });
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching user role for PWA redirect:', error);
-      }
-    };
-
-    fetchUserRole();
-  }, [isPWA, isAuthenticated, loading, user?.id, navigate]);
 
   const handleSignOut = async () => {
     await signOut();
