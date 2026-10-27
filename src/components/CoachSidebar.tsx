@@ -17,7 +17,6 @@ import {
   Droplet,
   LogOut,
   Dumbbell,
-  ShoppingBag,
   Lock,
   MonitorPlay,
   Timer,
@@ -146,13 +145,6 @@ export const CoachSidebar = ({
       path: effectiveCoachId ? `/dashboard/health-cards?coachId=${effectiveCoachId}` : "/dashboard/health-cards",
       badge: expiringHealthCards > 0 ? expiringHealthCards.toString() : null,
       requiresSubscription: true,
-    },
-    {
-      icon: ShoppingBag,
-      label: "Shop",
-      path: effectiveCoachId ? `/dashboard/coach-shop?coachId=${effectiveCoachId}` : "/dashboard/coach-shop",
-      badge: null,
-      requiresSubscription: false,
     },
     {
       icon: GraduationCap,
