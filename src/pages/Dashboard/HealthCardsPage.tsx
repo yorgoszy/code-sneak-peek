@@ -10,12 +10,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { format, differenceInDays, addYears } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { matchesSearchTerm } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { HealthCardFormDialog } from "@/components/health-cards/HealthCardFormDialog";
 import {
   Table,
   TableBody,
@@ -58,13 +58,6 @@ interface HealthCard {
   };
 }
 
-interface UserOption {
-  id: string;
-  name: string;
-  email: string;
-  avatar_url: string | null;
-  photo_url: string | null;
-}
 
 /**
  * Το περιεχόμενο της Κάρτας Υγείας χωρίς layout.
@@ -84,14 +77,6 @@ export function HealthCardsContent() {
   // Add/Edit dialog
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<HealthCard | null>(null);
-  const [selectedUser, setSelectedUser] = useState<UserOption | null>(null);
-  const [startDate, setStartDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-
-  // User search for dialog
-  const [userSearchTerm, setUserSearchTerm] = useState("");
-  const [allUsers, setAllUsers] = useState<UserOption[]>([]);
 
   // View dialog
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -137,21 +122,6 @@ export function HealthCardsContent() {
   // χρησιμοποιούμε το δικό μας app_users.id.
   const effectiveCoachId = coachContext?.coachId ?? userProfile?.id ?? null;
 
-  // Load users for search dropdown
-  useEffect(() => {
-    const loadUsers = async () => {
-      if (!effectiveCoachId) return;
-      const { data, error } = await supabase
-        .from("app_users")
-        .select("id, name, email, avatar_url, photo_url")
-        .eq("coach_id", effectiveCoachId)
-        .order("name");
-      if (!error && data) {
-        setAllUsers(data);
-      }
-    };
-    loadUsers();
-  }, [effectiveCoachId]);
 
   useEffect(() => {
     loadHealthCards();
@@ -202,106 +172,10 @@ export function HealthCardsContent() {
     }
   };
 
-  const handleAddHealthCard = async () => {
-    if (!selectedUser) {
-      toast.error(t("healthCard.selectUser"));
-      return;
-    }
-
-    try {
-      setUploading(true);
-
-      // Check if user already has a health card
-      const { data: existingCard } = await supabase
-        .from("health_cards")
-        .select("id, image_url")
-        .eq("user_id", selectedUser.id)
-        .maybeSingle();
-
-      let imageUrl = existingCard?.image_url || null;
-
-      // Upload new image if provided
-      if (selectedFile) {
-        // If exists, delete old image
-        if (existingCard?.image_url) {
-          const oldPath = existingCard.image_url.split('/health-cards/')[1] || existingCard.image_url.split("/").pop();
-          if (oldPath) {
-            await supabase.storage.from("health-cards").remove([oldPath]);
-          }
-        }
-
-        const fileExt = selectedFile.name.split(".").pop();
-        const fileName = `${selectedUser.id}/health-card-${Date.now()}.${fileExt}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("health-cards")
-          .upload(fileName, selectedFile);
-
-        if (uploadError) throw uploadError;
-
-        // Store the path, not the public URL (bucket is private)
-        imageUrl = fileName;
-      }
-
-      const startDateObj = new Date(startDate);
-      const endDateObj = addYears(startDateObj, 1);
-
-      // Upsert health card
-      const { error: upsertError } = await supabase.from("health_cards").upsert(
-        {
-          user_id: selectedUser.id,
-          image_url: imageUrl,
-          start_date: startDate,
-          end_date: format(endDateObj, "yyyy-MM-dd"),
-          notification_sent: false,
-        },
-        { onConflict: "user_id" }
-      );
-
-      if (upsertError) throw upsertError;
-
-      toast.success(editingCard ? t("healthCard.updateSuccess") : t("healthCard.uploadSuccess"));
-      handleCloseDialog();
-      loadHealthCards();
-    } catch (error) {
-      console.error("Error uploading health card:", error);
-      toast.error(t("healthCard.uploadError"));
-    } finally {
-      setUploading(false);
-    }
-  };
-
   const handleOpenEditDialog = (card: HealthCard) => {
     setEditingCard(card);
-    // Find user from allUsers or create a temp object
-    const user = allUsers.find(u => u.id === card.user_id) || {
-      id: card.user_id,
-      name: card.user?.name || '',
-      email: card.user?.email || '',
-      avatar_url: null,
-      photo_url: card.user?.photo_url || null,
-    };
-    setSelectedUser(user);
-    setStartDate(card.start_date);
-    setSelectedFile(null);
-    setUserSearchTerm('');
     setIsAddDialogOpen(true);
   };
-
-  const handleCloseDialog = () => {
-    setIsAddDialogOpen(false);
-    setEditingCard(null);
-    setSelectedUser(null);
-    setSelectedFile(null);
-    setStartDate(format(new Date(), "yyyy-MM-dd"));
-    setUserSearchTerm('');
-  };
-
-  // Filter users for search
-  const filteredUsers = allUsers.filter(u =>
-    matchesSearchTerm(u.name, userSearchTerm) ||
-    matchesSearchTerm(u.email, userSearchTerm)
-  );
 
   const handleDeleteHealthCard = async () => {
     if (!deletingCard) return;
