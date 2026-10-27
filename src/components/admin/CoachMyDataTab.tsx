@@ -122,7 +122,7 @@ export function CoachMyDataTab() {
           <div className="flex min-w-0 items-center gap-3"><Avatar className="h-10 w-10 shrink-0"><AvatarImage src={coach.avatar_url || coach.photo_url || undefined} /><AvatarFallback>{coach.name.slice(0, 1)}</AvatarFallback></Avatar><div className="min-w-0"><p className="truncate font-medium">{coach.name}</p><p className="truncate text-sm text-muted-foreground">{coach.email}</p></div></div>
           <div className="min-w-0 text-sm"><p className="truncate">{tax?.business_name || 'Χωρίς φορολογικά στοιχεία'}</p><p className="text-muted-foreground">{tax?.vat_number ? `ΑΦΜ ${tax.vat_number}` : '—'} · {coachVatOptions.find(item => item.category === tax?.vat_category)?.label || 'ΦΠΑ μη ορισμένο'}</p></div>
           <Badge variant="outline" className="w-fit rounded-none">{tax?.enabled && tax.connection_verified_at ? 'Ενεργή σύνδεση' : 'Μη ενεργοποιημένη'}</Badge>
-          <Button variant="outline" onClick={() => edit(coach)} className="rounded-none"><Pencil className="mr-2 h-4 w-4" />Στοιχεία</Button>
+          <Button variant="outline" onClick={() => { window.location.href = `/dashboard/coach-profile?coachId=${coach.id}`; }} className="rounded-none"><Pencil className="mr-2 h-4 w-4" />Στοιχεία</Button>
         </div>;
       })}
     </div>}
