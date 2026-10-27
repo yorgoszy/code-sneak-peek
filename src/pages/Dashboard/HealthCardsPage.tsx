@@ -1,16 +1,15 @@
 import { useState, useEffect } from "react";
+import { Navigate } from "react-router-dom";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Sidebar } from "@/components/Sidebar";
-import { CoachSidebar } from "@/components/CoachSidebar";
 import { Button } from "@/components/ui/button";
-import { Menu, HeartPulse, Upload, Trash2, Eye, Pencil, Search, Plus } from "lucide-react";
+import { Menu, HeartPulse, Trash2, Eye, Pencil, Search, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { format, differenceInDays, addYears } from "date-fns";
-import { el } from "date-fns/locale";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { matchesSearchTerm } from "@/lib/utils";
@@ -66,12 +65,16 @@ interface UserOption {
   photo_url: string | null;
 }
 
-export default function HealthCardsPage() {
+/**
+ * Το περιεχόμενο της Κάρτας Υγείας χωρίς layout.
+ * Χρησιμοποιείται από την admin σελίδα (HealthCardsPage) και από τη
+ * coach σελίδα (CoachHealthCardsPage) που το τυλίγει σε CoachLayout.
+ * Ο καθένας βλέπει ΜΟΝΟ τους δικούς του χρήστες (φιλτράρισμα με userProfile.id).
+ */
+export function HealthCardsContent() {
   const { t } = useTranslation();
-  const { isAdmin, userProfile } = useRoleCheck();
+  const { userProfile } = useRoleCheck();
 
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [healthCards, setHealthCards] = useState<HealthCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -153,7 +156,7 @@ export default function HealthCardsPage() {
   const loadHealthCards = async () => {
     try {
       setLoading(true);
-      
+
       let query = supabase
         .from("health_cards")
         .select(`
@@ -291,8 +294,8 @@ export default function HealthCardsPage() {
   };
 
   // Filter users for search
-  const filteredUsers = allUsers.filter(u => 
-    matchesSearchTerm(u.name, userSearchTerm) || 
+  const filteredUsers = allUsers.filter(u =>
+    matchesSearchTerm(u.name, userSearchTerm) ||
     matchesSearchTerm(u.email, userSearchTerm)
   );
 
@@ -371,13 +374,13 @@ export default function HealthCardsPage() {
       const bEnd = new Date(b.end_date);
       const aDays = Math.ceil((aEnd.getTime() - today.getTime()) / (1000 * 3600 * 24));
       const bDays = Math.ceil((bEnd.getTime() - today.getTime()) / (1000 * 3600 * 24));
-      
+
       const aExpired = aDays < 0;
       const bExpired = bDays < 0;
-      
+
       if (aExpired && !bExpired) return -1;
       if (!aExpired && bExpired) return 1;
-      
+
       return aEnd.getTime() - bEnd.getTime();
     });
 
@@ -385,263 +388,206 @@ export default function HealthCardsPage() {
     return format(new Date(dateString), "dd/MM/yy");
   };
 
-  const renderSidebar = () => {
-    if (isAdmin()) {
-      return (
-        <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-      );
-    }
-    return (
-      <CoachSidebar
-        isCollapsed={isCollapsed}
-        setIsCollapsed={setIsCollapsed}
-        contextCoachId={effectiveCoachId || undefined}
-      />
-    );
-  };
-
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        {/* Desktop Sidebar */}
-        <div className="hidden lg:block">{renderSidebar()}</div>
-
-        {/* Mobile/Tablet sidebar overlay */}
-        {isMobileOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden">
-            <div
-              className="absolute inset-0 bg-black/50"
-              onClick={() => setIsMobileOpen(false)}
-            />
-            <div className="relative w-64 h-full">{renderSidebar()}</div>
+    <>
+      <Card className="rounded-none">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <HeartPulse className="h-5 w-5 text-[#00ffba]" />
+              {t("healthCard.title")} ({filteredHealthCards.length})
+            </CardTitle>
+            <Button
+              onClick={() => setIsAddDialogOpen(true)}
+              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none w-full sm:w-auto"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              {t("healthCard.addNew")}
+            </Button>
           </div>
-        )}
-
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col min-w-0">
-          {/* Mobile/Tablet Header */}
-          <div className="sticky top-0 z-40 bg-background border-b border-border p-3 lg:hidden">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsMobileOpen(true)}
-                  className="rounded-none"
-                >
-                  <Menu className="h-5 w-5" />
-                </Button>
-                <h1 className="text-lg font-semibold flex items-center gap-2">
-                  <HeartPulse className="h-5 w-5" />
-                  {t("healthCard.title")}
-                </h1>
-              </div>
+        </CardHeader>
+        <CardContent>
+          {/* Search Input */}
+          <div className="mb-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Αναζήτηση με όνομα ή email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 rounded-none"
+              />
             </div>
           </div>
 
-          {/* Page Content */}
-          <main className="flex-1 p-4 lg:p-6 overflow-auto">
-            <Card className="rounded-none">
-              <CardHeader className="pb-4">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <HeartPulse className="h-5 w-5 text-[#00ffba]" />
-                    {t("healthCard.title")} ({filteredHealthCards.length})
-                  </CardTitle>
-                  <Button
-                    onClick={() => setIsAddDialogOpen(true)}
-                    className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none w-full sm:w-auto"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    {t("healthCard.addNew")}
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {/* Search Input */}
-                <div className="mb-4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      placeholder="Αναζήτηση με όνομα ή email..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 rounded-none"
-                    />
-                  </div>
-                </div>
-
-                {loading ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">{t("common.loading")}</p>
-                  </div>
-                ) : filteredHealthCards.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">{t("healthCard.noCards")}</p>
-                  </div>
-                ) : (
-                  <>
-                    {/* Desktop Table */}
-                    <div className="hidden md:block">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Χρήστης</TableHead>
-                            <TableHead>Έναρξη</TableHead>
-                            <TableHead>Λήξη</TableHead>
-                            <TableHead>Υπόλοιπο</TableHead>
-                            <TableHead>Κατάσταση</TableHead>
-                            <TableHead className="text-right">Ενέργειες</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredHealthCards.map((card) => {
-                            const daysLeft = getDaysUntilExpiry(card.end_date);
-                            return (
-                              <TableRow key={card.id}>
-                                <TableCell>
-                                  <div className="flex items-center space-x-3">
-                                    <Avatar className="h-8 w-8 rounded-full">
-                                      <AvatarImage src={card.user?.photo_url || ''} />
-                                      <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba] rounded-full">
-                                        {card.user?.name?.charAt(0).toUpperCase() || '?'}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                      <p className="font-medium">{card.user?.name || 'Άγνωστο'}</p>
-                                      <p className="text-xs text-gray-500">{card.user?.email}</p>
-                                    </div>
-                                  </div>
-                                </TableCell>
-                                <TableCell>{formatDate(card.start_date)}</TableCell>
-                                <TableCell>{formatDate(card.end_date)}</TableCell>
-                                <TableCell>
-                                  <span className={getDaysExpiryColor(card.end_date)}>
-                                    {getDaysExpiryText(card.end_date)}
-                                  </span>
-                                </TableCell>
-                                <TableCell>
-                                  {getStatusBadge(daysLeft)}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  <div className="flex justify-end gap-1">
-                                    {card.image_url && (
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="rounded-none"
-                                        onClick={() => {
-                                          setViewingCard(card);
-                                          setIsViewDialogOpen(true);
-                                        }}
-                                      >
-                                        <Eye className="h-4 w-4" />
-                                      </Button>
-                                    )}
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="rounded-none"
-                                      onClick={() => handleOpenEditDialog(card)}
-                                    >
-                                      <Pencil className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="rounded-none text-destructive hover:text-destructive"
-                                      onClick={() => {
-                                        setDeletingCard(card);
-                                        setIsDeleteDialogOpen(true);
-                                      }}
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                        </TableBody>
-                      </Table>
-                    </div>
-
-                    {/* Mobile Cards */}
-                    <div className="md:hidden space-y-3">
-                      {filteredHealthCards.map((card) => {
-                        const daysLeft = getDaysUntilExpiry(card.end_date);
-                        return (
-                          <Card key={card.id} className="rounded-none">
-                            <CardContent className="p-4">
-                              <div className="flex items-start justify-between mb-3">
-                                <div className="flex items-center space-x-3">
-                                  <Avatar className="h-10 w-10 rounded-full">
-                                    <AvatarImage src={card.user?.photo_url || ''} />
-                                    <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba] rounded-full">
-                                      {card.user?.name?.charAt(0).toUpperCase() || '?'}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div>
-                                    <p className="font-medium">{card.user?.name || 'Άγνωστο'}</p>
-                                    <p className="text-xs text-gray-500">{card.user?.email}</p>
-                                  </div>
-                                </div>
-                                {getStatusBadge(daysLeft)}
+          {loading ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500">{t("common.loading")}</p>
+            </div>
+          ) : filteredHealthCards.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500">{t("healthCard.noCards")}</p>
+            </div>
+          ) : (
+            <>
+              {/* Desktop Table */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Χρήστης</TableHead>
+                      <TableHead>Έναρξη</TableHead>
+                      <TableHead>Λήξη</TableHead>
+                      <TableHead>Υπόλοιπο</TableHead>
+                      <TableHead>Κατάσταση</TableHead>
+                      <TableHead className="text-right">Ενέργειες</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredHealthCards.map((card) => {
+                      const daysLeft = getDaysUntilExpiry(card.end_date);
+                      return (
+                        <TableRow key={card.id}>
+                          <TableCell>
+                            <div className="flex items-center space-x-3">
+                              <Avatar className="h-8 w-8 rounded-full">
+                                <AvatarImage src={card.user?.photo_url || ''} />
+                                <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba] rounded-full">
+                                  {card.user?.name?.charAt(0).toUpperCase() || '?'}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium">{card.user?.name || 'Άγνωστο'}</p>
+                                <p className="text-xs text-gray-500">{card.user?.email}</p>
                               </div>
-                              <div className="grid grid-cols-2 gap-2 text-sm mb-3">
-                                <div>
-                                  <span className="text-gray-500">Λήξη:</span>
-                                  <span className={`ml-1 ${getDaysExpiryColor(card.end_date)}`}>
-                                    {getDaysExpiryText(card.end_date)}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="flex justify-end gap-1">
-                                {card.image_url && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="rounded-none"
-                                    onClick={() => {
-                                      setViewingCard(card);
-                                      setIsViewDialogOpen(true);
-                                    }}
-                                  >
-                                    <Eye className="h-4 w-4" />
-                                  </Button>
-                                )}
+                            </div>
+                          </TableCell>
+                          <TableCell>{formatDate(card.start_date)}</TableCell>
+                          <TableCell>{formatDate(card.end_date)}</TableCell>
+                          <TableCell>
+                            <span className={getDaysExpiryColor(card.end_date)}>
+                              {getDaysExpiryText(card.end_date)}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            {getStatusBadge(daysLeft)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-1">
+                              {card.image_url && (
                                 <Button
                                   variant="outline"
                                   size="sm"
                                   className="rounded-none"
-                                  onClick={() => handleOpenEditDialog(card)}
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="rounded-none text-destructive hover:text-destructive"
                                   onClick={() => {
-                                    setDeletingCard(card);
-                                    setIsDeleteDialogOpen(true);
+                                    setViewingCard(card);
+                                    setIsViewDialogOpen(true);
                                   }}
                                 >
-                                  <Trash2 className="h-4 w-4" />
+                                  <Eye className="h-4 w-4" />
                                 </Button>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
-                    </div>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          </main>
-        </div>
-      </div>
+                              )}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="rounded-none"
+                                onClick={() => handleOpenEditDialog(card)}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="rounded-none text-destructive hover:text-destructive"
+                                onClick={() => {
+                                  setDeletingCard(card);
+                                  setIsDeleteDialogOpen(true);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile Cards */}
+              <div className="md:hidden space-y-3">
+                {filteredHealthCards.map((card) => {
+                  const daysLeft = getDaysUntilExpiry(card.end_date);
+                  return (
+                    <Card key={card.id} className="rounded-none">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center space-x-3">
+                            <Avatar className="h-10 w-10 rounded-full">
+                              <AvatarImage src={card.user?.photo_url || ''} />
+                              <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba] rounded-full">
+                                {card.user?.name?.charAt(0).toUpperCase() || '?'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">{card.user?.name || 'Άγνωστο'}</p>
+                              <p className="text-xs text-gray-500">{card.user?.email}</p>
+                            </div>
+                          </div>
+                          {getStatusBadge(daysLeft)}
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                          <div>
+                            <span className="text-gray-500">Λήξη:</span>
+                            <span className={`ml-1 ${getDaysExpiryColor(card.end_date)}`}>
+                              {getDaysExpiryText(card.end_date)}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex justify-end gap-1">
+                          {card.image_url && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="rounded-none"
+                              onClick={() => {
+                                setViewingCard(card);
+                                setIsViewDialogOpen(true);
+                              }}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-none"
+                            onClick={() => handleOpenEditDialog(card)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-none text-destructive hover:text-destructive"
+                            onClick={() => {
+                              setDeletingCard(card);
+                              setIsDeleteDialogOpen(true);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Add/Edit Health Card Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
@@ -669,9 +615,9 @@ export default function HealthCardsPage() {
                     <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
                   </div>
                   {!editingCard && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setSelectedUser(null)}
                       className="rounded-none"
                     >
@@ -736,7 +682,7 @@ export default function HealthCardsPage() {
             </div>
             <div>
               <Label>
-                {t("healthCard.certificate")} 
+                {t("healthCard.certificate")}
                 {!editingCard && <span className="text-muted-foreground text-xs ml-1">({t("common.optional")})</span>}
               </Label>
               <Input
@@ -810,6 +756,74 @@ export default function HealthCardsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </>
+  );
+}
+
+/**
+ * Admin σελίδα Κάρτας Υγείας (/dashboard/health-cards).
+ * Οι coaches ανακατευθύνονται στη δική τους σελίδα (/dashboard/coach-health-cards).
+ */
+export default function HealthCardsPage() {
+  const { t } = useTranslation();
+  const { isAdmin, loading: rolesLoading } = useRoleCheck();
+
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  if (!rolesLoading && !isAdmin()) {
+    return <Navigate to="/dashboard/coach-health-cards" replace />;
+  }
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        {/* Desktop Sidebar */}
+        <div className="hidden lg:block">
+          <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+        </div>
+
+        {/* Mobile/Tablet sidebar overlay */}
+        {isMobileOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <div
+              className="absolute inset-0 bg-black/50"
+              onClick={() => setIsMobileOpen(false)}
+            />
+            <div className="relative w-64 h-full">
+              <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+            </div>
+          </div>
+        )}
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Mobile/Tablet Header */}
+          <div className="sticky top-0 z-40 bg-background border-b border-border p-3 lg:hidden">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsMobileOpen(true)}
+                  className="rounded-none"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+                <h1 className="text-lg font-semibold flex items-center gap-2">
+                  <HeartPulse className="h-5 w-5" />
+                  {t("healthCard.title")}
+                </h1>
+              </div>
+            </div>
+          </div>
+
+          {/* Page Content */}
+          <main className="flex-1 p-4 lg:p-6 overflow-auto">
+            <HealthCardsContent />
+          </main>
+        </div>
+      </div>
     </SidebarProvider>
   );
 }

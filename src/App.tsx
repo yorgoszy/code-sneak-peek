@@ -123,6 +123,7 @@ import HRVPage from "@/pages/Dashboard/HRVPage";
 import HeartRatePage from "@/pages/Dashboard/HeartRatePage";
 import GiftCardsWithSidebar from "@/pages/Dashboard/GiftCardsWithSidebar";
 import HealthCardsPage from "@/pages/Dashboard/HealthCardsPage";
+import CoachHealthCardsPage from "@/pages/Dashboard/CoachHealthCardsPage";
 import AthleteCardsPage from "@/pages/Dashboard/AthleteCardsPage";
 import CoachCompetitionsPage from "@/pages/Dashboard/CoachCompetitionsPage";
 const CoachBracketsScopedPage = React.lazy(() => import("@/pages/coach/CoachBracketsScopedPage"));
@@ -226,6 +227,7 @@ function App() {
                       <Route path="/dashboard/coach-active-programs" element={<ProtectedRoute><CoachActiveProgramsPage /></ProtectedRoute>} />
                       <Route path="/dashboard/coach-program-cards" element={<ProtectedRoute><CoachProgramCardsPage /></ProtectedRoute>} />
                       <Route path="/dashboard/coach-groups" element={<ProtectedRoute><CoachGroupsPage /></ProtectedRoute>} />
+                      <Route path="/dashboard/coach-health-cards" element={<ProtectedRoute><CoachHealthCardsPage /></ProtectedRoute>} />
                       <Route
                         path="/dashboard/coach-exercises"
                         element={
