@@ -8,6 +8,8 @@ const PublicReportAbuse = lazy(() => import('@/pages/PublicReportAbuse'));
 
 // Domains that should show the public report-abuse form as their landing page
 const ABUSE_REPORT_DOMAINS = ['pestomou.com', 'www.pestomou.com'];
+const WEKEEP_DOMAINS = ['wekeep.gr', 'www.wekeep.gr'];
+const WeKeepLogin = lazy(() => import('@/pages/WeKeepLogin'));
 
 export const RootRedirect = () => {
   const { loading } = useAuth();
@@ -15,6 +17,9 @@ export const RootRedirect = () => {
   const isAbuseReportDomain =
     typeof window !== 'undefined' &&
     ABUSE_REPORT_DOMAINS.includes(window.location.hostname);
+  const isWeKeepDomain =
+    typeof window !== 'undefined' &&
+    WEKEEP_DOMAINS.includes(window.location.hostname);
 
   // Check for password recovery tokens and redirect to reset password page
   useEffect(() => {
@@ -54,6 +59,14 @@ export const RootRedirect = () => {
     return (
       <Suspense fallback={<CustomLoadingScreen />}>
         <PublicReportAbuse />
+      </Suspense>
+    );
+  }
+
+  if (isWeKeepDomain) {
+    return (
+      <Suspense fallback={<CustomLoadingScreen />}>
+        <WeKeepLogin />
       </Suspense>
     );
   }
