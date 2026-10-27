@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
-import { BarChart3, ClipboardList, CreditCard, Dumbbell, FilePlus2, HeartPulse, Plus, UserPlus, Users } from "lucide-react";
+import { BarChart3, ClipboardList, CreditCard, Dumbbell, FilePlus2, GraduationCap, HeartPulse, Plus, Settings, UserPlus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NewCoachUserDialog } from "@/components/coach-users/NewCoachUserDialog";
 import { NewSubscriptionDialog } from "@/components/coach/subscriptions/NewSubscriptionDialog";
@@ -27,6 +27,8 @@ const overviewItems: { label: string; icon: any; path: string; create?: boolean;
   { label: "Τεστ", icon: ClipboardList, path: "/dashboard/coach-progress" },
   { label: "Κάρτα Υγείας", icon: HeartPulse, path: "/dashboard/coach-health-cards" },
   { label: "Προσθήκη Κάρτας Υγείας", icon: Plus, path: "/dashboard/coach-health-cards", dialog: "healthCard" },
+  { label: "Online Courses", icon: GraduationCap, path: "/dashboard/coach-courses" },
+  { label: "Ρυθμίσεις", icon: Settings, path: "/dashboard/coach-profile" },
 ];
 
 const tileClass = "h-auto min-h-28 min-w-0 rounded-none bg-background p-3 text-foreground sm:p-4";
