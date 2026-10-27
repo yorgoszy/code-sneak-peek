@@ -27,6 +27,7 @@ import { UserProfileSafety } from "./UserProfileSafety";
 import { UserProfileFights } from "./UserProfileFights";
 import { CyclePage } from "@/components/cycle/CyclePage";
 import { HeartRateContent } from "@/components/heart-rate/HeartRateContent";
+import { CoachOverview } from "@/components/coach/CoachOverview";
 
 import CoachBracketsPage from "@/pages/Dashboard/CoachBracketsPage";
 import CoachLivePage from "@/pages/Dashboard/CoachLivePage";
@@ -138,6 +139,9 @@ export const UserProfileContent = ({
   const renderContent = () => {
     switch (activeTab) {
       case "overview":
+        if (userProfile?.role === 'coach') {
+          return <CoachOverview coachId={userProfile.id} />;
+        }
         return (
           <div className="space-y-4">
             <h2 className="text-xl font-semibold">{t('overview.title')}</h2>
