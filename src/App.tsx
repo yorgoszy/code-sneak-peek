@@ -17,6 +17,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { RootRedirect } from "@/components/RootRedirect";
 import { FEATURE_FLAGS } from "@/config/featureFlags";
 import Auth from "@/pages/Auth";
+import WeKeepLogin from "@/pages/WeKeepLogin";
 import ResetPassword from "@/pages/ResetPassword";
 import TrialResponse from "@/pages/TrialResponse";
 
@@ -180,6 +181,7 @@ function App() {
                       {/* Public routes */}
                       <Route path="/" element={<RootRedirect />} />
                       <Route path="/auth" element={<Auth />} />
+                      <Route path="/wekeep" element={<WeKeepLogin />} />
                       {/* Backwards compatibility (old reset link) */}
                       <Route path="/auth/reset-password" element={<ResetPassword />} />
                       <Route path="/reset-password" element={<ResetPassword />} />
