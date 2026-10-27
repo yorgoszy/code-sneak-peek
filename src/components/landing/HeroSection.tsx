@@ -273,7 +273,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
             pos={{ x: subtitleConf.x, y: subtitleConf.y }}
             active={active === 'subtitle'}
             onActivate={() => setActive('subtitle')}
-            className="mb-6 tracking-wide"
+            className={mobileOnly ? "tracking-wide" : "mb-6 tracking-wide"}
             style={{
               fontFamily: layout.subtitle?.font ? `'${layout.subtitle.font}', sans-serif` : "'Bebas Neue', sans-serif",
               fontSize: subtitleConf.size ? `${subtitleConf.size}px` : undefined,
