@@ -116,7 +116,7 @@ export const CoachSidebar = ({
     {
       icon: GraduationCap,
       label: "Online Courses",
-      path: effectiveCoachId ? `/dashboard/knowledge?coachId=${effectiveCoachId}` : "/dashboard/knowledge",
+      path: effectiveCoachId ? `/dashboard/coach-courses?coachId=${effectiveCoachId}` : "/dashboard/coach-courses",
       badge: null,
       requiresSubscription: false,
     },

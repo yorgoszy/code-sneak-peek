@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Navigate } from "react-router-dom";
 import { Sidebar } from "@/components/Sidebar";
 import { CoachSidebar } from "@/components/CoachSidebar";
 import KnowledgeManagement from "./KnowledgeManagement";
@@ -10,7 +11,7 @@ import { Menu, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 const KnowledgeManagementWithSidebar: React.FC = () => {
-  const { isAdmin } = useRoleCheck();
+  const { isAdmin, loading: rolesLoading } = useRoleCheck();
   const { effectiveCoachId } = useEffectiveCoachId();
   const { signOut } = useAuth();
   const isMobile = useIsMobile();
@@ -33,7 +34,10 @@ const KnowledgeManagementWithSidebar: React.FC = () => {
     await signOut();
   };
 
-  const SidebarComponent = isAdmin() ? Sidebar : CoachSidebar;
+  // Οι coaches έχουν τη δική τους σελίδα Online Courses (shop)
+  if (!rolesLoading && !isAdmin()) {
+    return <Navigate to="/dashboard/coach-courses" replace />;
+  }
 
   return (
     <div className="flex min-h-screen w-full">
