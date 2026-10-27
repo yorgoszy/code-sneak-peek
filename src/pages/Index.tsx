@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import hypergymImage from '@/assets/hypergym-service.png';
 import hyperkidsImage from '@/assets/hyperkids1.png.asset.json';
 import { useNavigate } from "react-router-dom";
