@@ -69,7 +69,7 @@ export const CoachSidebar = ({
     '/dashboard/coach-programs',
     '/dashboard/coach-active-programs',
     '/dashboard/coach-program-cards',
-    '/dashboard/annual-planning',
+    '/dashboard/coach-annual-planning',
     '/dashboard/nutrition',
     '/dashboard/coach-progress',
     '/dashboard/coach-athletes-progress',
@@ -159,7 +159,7 @@ export const CoachSidebar = ({
     {
       icon: CalendarDays,
       label: "Ετήσιος Προγραμματισμός",
-      path: effectiveCoachId ? `/dashboard/annual-planning?coachId=${effectiveCoachId}` : "/dashboard/annual-planning",
+      path: effectiveCoachId ? `/dashboard/coach-annual-planning?coachId=${effectiveCoachId}` : "/dashboard/coach-annual-planning",
       badge: null,
       requiresSubscription: true,
     },

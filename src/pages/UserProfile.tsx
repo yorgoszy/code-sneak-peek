@@ -167,6 +167,19 @@ const UserProfile = () => {
     sidebarRef.current?.refreshOffers();
   };
 
+  const handleCoachNavigation = (path: string) => {
+    const pathname = path.split('?')[0];
+    if (pathname === '/dashboard/coach-annual-planning') {
+      setActiveTab('coach-annual-planning');
+      return true;
+    }
+    if (activeTab === 'coach-annual-planning' && pathname === '/dashboard/coach-overview') {
+      setActiveTab('overview');
+      return true;
+    }
+    return false;
+  };
+
   return (
     <MaintenanceGuard userRole={userProfile?.role}>
     <div className="min-h-screen bg-gray-50 flex">
@@ -176,6 +189,7 @@ const UserProfile = () => {
             isCollapsed={isCollapsed}
             setIsCollapsed={setIsCollapsed}
             contextCoachId={coachContextId}
+            onNavigateOverride={handleCoachNavigation}
           />
         ) : (
           <UserProfileSidebar
@@ -203,6 +217,7 @@ const UserProfile = () => {
                 isCollapsed={false}
                 setIsCollapsed={setIsCollapsed}
                 contextCoachId={coachContextId}
+                onNavigateOverride={handleCoachNavigation}
               />
             ) : (
               <UserProfileSidebar
