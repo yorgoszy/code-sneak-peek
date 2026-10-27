@@ -27,7 +27,7 @@ import { useLandingTheme, useApplyLandingTheme, useLandingSection } from "@/hook
 import { EditorOverlay } from "@/components/landing/EditorOverlay";
 
 const Index = () => {
-  const { user, loading, signOut, isAuthenticated } = useAuth();
+  const { loading, signOut, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { language, translations, toggleLanguage } = useTranslations();
   
