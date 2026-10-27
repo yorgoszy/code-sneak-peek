@@ -93,7 +93,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
   );
 
   return (
-    <section id="results" className="pt-32 pb-28 bg-white relative z-10">
+    <section id="results" className="pb-28 bg-white relative z-10">
       {/* Banner — styled like ProgramsSection */}
       <div className="relative w-full overflow-hidden flex items-center justify-center" style={{ height: 'calc(10vw - 1px)' }}>
         <div
@@ -104,7 +104,7 @@ const ResultsSection: React.FC<ResultsSectionProps> = ({ translations }) => {
         <div className="absolute inset-0 bg-black/30" />
 
         <h3
-          className="relative z-10 text-center px-4 text-[14vw] md:text-[14vw] lg:text-[15.6vw] leading-none"
+          className="relative z-10 text-center px-4 text-[15.6vw] leading-none"
           style={{
             fontFamily: '"Roobert Pro", sans-serif',
             fontWeight: 500,
