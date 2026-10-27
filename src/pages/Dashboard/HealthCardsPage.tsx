@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { useSafeCoachContext } from "@/contexts/CoachContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
@@ -74,6 +75,7 @@ interface UserOption {
 export function HealthCardsContent() {
   const { t } = useTranslation();
   const { userProfile } = useRoleCheck();
+  const coachContext = useSafeCoachContext();
 
   const [healthCards, setHealthCards] = useState<HealthCard[]>([]);
   const [loading, setLoading] = useState(true);
