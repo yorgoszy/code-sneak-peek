@@ -153,13 +153,32 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
       ? 1
       : Math.max(0.32, vw / 1200);
 
-  // Mobile only: grow the headline until its widest line is as wide as the
-  // primary CTA ("ΚΛΕΙΣΕ ΔΟΚΙΜΑΣΤΙΚΟ"). Measured once at the base size.
   const mobileOnly = !editor && !hasBpOverride && bp === 'mobile';
-  const fittedVwRef = React.useRef<number>(-1);
+
+
+  const scaledText = (cfg: { font?: string; size?: number; x?: number; y?: number; color?: string }, minSize = 0) => ({
+    font: cfg?.font,
+    color: cfg?.color,
+    size: cfg?.size != null ? Math.max(minSize, cfg.size * responsiveScale) : undefined,
+    x: (cfg?.x ?? 0) * responsiveScale,
+    y: (cfg?.y ?? 0) * responsiveScale,
+  });
+  const titleConf = scaledText(layout.title);
+  const subtitleConf = scaledText(layout.subtitle);
+  const taglineConf = scaledText(layout.tagline, 12);
+  const baseTitleSize = titleConf.size;
+  const baseSubtitleSize = subtitleConf.size;
+
+  // Mobile only: grow the headline until its widest line is as wide as the
+  // primary CTA ("ΚΛΕΙΣΕ ΔΟΚΙΜΑΣΤΙΚΟ"). The measurement runs at the unscaled
+  // size, once the saved layout and the webfonts have arrived.
+  const fittedKeyRef = React.useRef<string>('');
   React.useEffect(() => {
-    if (!mobileOnly) { setMobileFit(null); fittedVwRef.current = -1; return; }
-    if (fittedVwRef.current === vw) return;
+    if (!mobileOnly) { setMobileFit(null); fittedKeyRef.current = ''; return; }
+    if (!baseTitleSize || !baseSubtitleSize) return;
+    const key = `${vw}|${baseTitleSize}|${baseSubtitleSize}`;
+    if (fittedKeyRef.current === key) return;
+    if (mobileFit !== null) { setMobileFit(null); return; }
     let cancelled = false;
     let done = false;
     const measure = () => {
@@ -174,25 +193,14 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
       const textW = Math.max(ttl.getBoundingClientRect().width, sub.getBoundingClientRect().width);
       if (!btnW || !textW) return;
       done = true;
-      fittedVwRef.current = vw;
+      fittedKeyRef.current = key;
       setMobileFit(Math.min(2.4, Math.max(0.9, btnW / textW)));
     };
     const fonts = (document as any).fonts;
     if (fonts?.ready) fonts.ready.then(measure).catch(() => { /* ignore */ });
-    const id = window.setTimeout(measure, 600);
+    const id = window.setTimeout(measure, 700);
     return () => { cancelled = true; window.clearTimeout(id); };
-  }, [mobileOnly, vw]);
-
-  const scaledText = (cfg: { font?: string; size?: number; x?: number; y?: number; color?: string }, minSize = 0) => ({
-    font: cfg?.font,
-    color: cfg?.color,
-    size: cfg?.size != null ? Math.max(minSize, cfg.size * responsiveScale) : undefined,
-    x: (cfg?.x ?? 0) * responsiveScale,
-    y: (cfg?.y ?? 0) * responsiveScale,
-  });
-  const titleConf = scaledText(layout.title);
-  const subtitleConf = scaledText(layout.subtitle);
-  const taglineConf = scaledText(layout.tagline, 12);
+  }, [mobileOnly, vw, baseTitleSize, baseSubtitleSize, mobileFit]);
 
   if (mobileOnly && mobileFit) {
     if (titleConf.size) titleConf.size *= mobileFit;
@@ -203,6 +211,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ translations, onGetStarted })
     taglineConf.x = 0;
     taglineConf.y = 0;
   }
+
 
 
   const onCtaClick = () => {
