@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowUpRight, BarChart3, ClipboardList, CreditCard, Dumbbell, FilePlus2, Plus, UserPlus, Users } from "lucide-react";
+import { BarChart3, ClipboardList, CreditCard, Dumbbell, FilePlus2, Plus, UserPlus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NewCoachUserDialog } from "@/components/coach-users/NewCoachUserDialog";
 import { NewSubscriptionDialog } from "@/components/coach/subscriptions/NewSubscriptionDialog";
@@ -35,7 +35,6 @@ export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
           const content = (
             <>
               <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
-              <ArrowUpRight className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" aria-hidden="true" />
               <span className="w-full whitespace-normal break-words text-left text-sm font-medium leading-snug">{label}</span>
             </>
           );
