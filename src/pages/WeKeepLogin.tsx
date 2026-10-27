@@ -128,7 +128,7 @@ export default function WeKeepLogin() {
       <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
         <DialogContent className="max-w-sm rounded-none">
           <DialogHeader>
-            <img src={logoAsset.url} alt="WeKeep" width={1518} height={476} className="h-5 w-auto" />
+            <img src={logoAsset.url} alt="WeKeep" width={1518} height={476} className="h-5 w-auto self-start" />
             <DialogTitle>Σύνδεση στο WeKeep</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
