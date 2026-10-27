@@ -24,9 +24,18 @@ const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
   const { signOut } = useAuth();
   const { coachId, isLoading } = useCoachContext();
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isTablet, setIsTablet] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+
+  // Κρύβουμε το κουμπί Επιστροφή στην ίδια τη σελίδα Επισκόπηση
+  const isOverviewPage = location.pathname.startsWith('/dashboard/coach-overview');
+
+  const handleBackToOverview = () => {
+    navigate(coachId ? `/dashboard/coach-overview?coachId=${coachId}` : '/dashboard/coach-overview');
+  };
 
   useEffect(() => {
     const checkTablet = () => {
