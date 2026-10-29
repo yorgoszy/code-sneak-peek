@@ -432,12 +432,12 @@ const CoachSubscriptionsContent = () => {
             <CardHeader className="pb-4">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-[#00ffba]" />
+                  <CreditCard className="h-5 w-5 text-[#004aad]" />
                   Συνδρομές ({filteredSubscriptions.length})
                 </CardTitle>
                 <Button
                   onClick={() => setNewSubscriptionOpen(true)}
-                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none w-full sm:w-auto"
+                  className="bg-[#004aad] hover:bg-[#004aad]/90 text-white rounded-none w-full sm:w-auto"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Νέα Συνδρομή
