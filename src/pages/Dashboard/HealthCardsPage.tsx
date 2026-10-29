@@ -268,16 +268,16 @@ export function HealthCardsContent() {
 
   return (
     <>
-      <Card className="rounded-none">
+      <Card className="rounded-none text-[#004aad]">
         <CardHeader className="pb-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <HeartPulse className="h-5 w-5 text-[#00ffba]" />
+            <CardTitle className="text-lg flex items-center gap-2 text-[#004aad]">
+              <HeartPulse className="h-5 w-5 text-[#004aad]" />
               {t("healthCard.title")} ({filteredHealthCards.length})
             </CardTitle>
             <Button
               onClick={() => setIsAddDialogOpen(true)}
-              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none w-full sm:w-auto"
+              className="bg-[#004aad] hover:bg-[#004aad]/90 text-white rounded-none w-full sm:w-auto"
             >
               <Plus className="h-4 w-4 mr-2" />
               {t("healthCard.addNew")}
@@ -288,23 +288,23 @@ export function HealthCardsContent() {
           {/* Search Input */}
           <div className="mb-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#004aad]/70" />
               <Input
                 placeholder="Αναζήτηση με όνομα ή email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 rounded-none"
+                className="pl-10 rounded-none text-[#004aad] placeholder:text-[#004aad]/70"
               />
             </div>
           </div>
 
           {loading ? (
             <div className="text-center py-8">
-              <p className="text-gray-500">{t("common.loading")}</p>
+              <p className="text-[#004aad]/70">{t("common.loading")}</p>
             </div>
           ) : filteredHealthCards.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-500">{t("healthCard.noCards")}</p>
+              <p className="text-[#004aad]/70">{t("healthCard.noCards")}</p>
             </div>
           ) : (
             <>
@@ -313,12 +313,12 @@ export function HealthCardsContent() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Χρήστης</TableHead>
-                      <TableHead>Έναρξη</TableHead>
-                      <TableHead>Λήξη</TableHead>
-                      <TableHead>Υπόλοιπο</TableHead>
-                      <TableHead>Κατάσταση</TableHead>
-                      <TableHead className="text-right">Ενέργειες</TableHead>
+                      <TableHead className="text-[#004aad]">Χρήστης</TableHead>
+                      <TableHead className="text-[#004aad]">Έναρξη</TableHead>
+                      <TableHead className="text-[#004aad]">Λήξη</TableHead>
+                      <TableHead className="text-[#004aad]">Υπόλοιπο</TableHead>
+                      <TableHead className="text-[#004aad]">Κατάσταση</TableHead>
+                      <TableHead className="text-right text-[#004aad]">Ενέργειες</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -330,13 +330,13 @@ export function HealthCardsContent() {
                             <div className="flex items-center space-x-3">
                               <Avatar className="h-8 w-8 rounded-full">
                                 <AvatarImage src={card.user?.photo_url || ''} />
-                                <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba] rounded-full">
+                                <AvatarFallback className="bg-[#004aad]/20 text-[#004aad] rounded-full">
                                   {card.user?.name?.charAt(0).toUpperCase() || '?'}
                                 </AvatarFallback>
                               </Avatar>
                               <div>
-                                <p className="font-medium">{card.user?.name || 'Άγνωστο'}</p>
-                                <p className="text-xs text-gray-500">{card.user?.email}</p>
+                                <p className="font-medium text-[#004aad]">{card.user?.name || 'Άγνωστο'}</p>
+                                <p className="text-xs text-[#004aad]/70">{card.user?.email}</p>
                               </div>
                             </div>
                           </TableCell>
