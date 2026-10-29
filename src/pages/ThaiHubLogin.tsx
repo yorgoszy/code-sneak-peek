@@ -107,14 +107,14 @@ export default function ThaiHubLogin() {
       <section id="home" className="relative min-h-screen flex items-center pt-16">
         <img src={heroImage} alt="Προπονητής παρακολουθεί αθλήτρια" width={1920} height={1088}
           className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="max-w-xl space-y-6">
-            <p className="text-xs uppercase tracking-[0.3em] text-[var(--th-red)] font-semibold">Για προπονητές</p>
-            <h1 className="text-4xl sm:text-6xl font-bold tracking-tight leading-tight">
-              Κράτα τους αθλητές σου σε <span className="text-[var(--th-blue)]">τροχιά</span>.
+            <p className="text-xs uppercase tracking-[0.3em] text-white font-semibold">Για προπονητές</p>
+            <h1 className="text-4xl sm:text-6xl font-bold tracking-tight leading-tight text-white">
+              Κράτα τους αθλητές σου σε <span className="text-white">τροχιά</span>.
             </h1>
-            <p className="text-base sm:text-lg text-muted-foreground">
+            <p className="text-base sm:text-lg text-white/80">
               Προγράμματα, συνδρομές, τεστ και πρόοδος — όλα σε ένα μέρος.
             </p>
             <div className="flex flex-wrap gap-4">
