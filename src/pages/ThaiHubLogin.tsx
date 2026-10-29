@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Loader2, Menu, X, LogIn } from "lucide-react";
-import heroImage from "@/assets/thaihub-hero.jpg";
+import heroImage from "@/assets/thaihub-hero-boxer.png.asset.json";
 import thaihubLogo from "@/assets/thaihub-logo.png.asset.json";
 
 const navLinks = [
