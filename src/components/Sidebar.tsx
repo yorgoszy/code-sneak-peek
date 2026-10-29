@@ -850,6 +850,12 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
       label: "WeKeep",
       path: "/wekeep?preview=1",
       badge: null
+    },
+    {
+      icon: Globe,
+      label: "ThaiHub",
+      path: "/thaihub?preview=1",
+      badge: null
     }
   ];
 
