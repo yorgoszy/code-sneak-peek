@@ -57,14 +57,14 @@ export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
           const content = (
             <>
               <span className="flex w-full items-center justify-between gap-2">
-                <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                <Icon className="h-5 w-5 shrink-0 text-[#004aad]" aria-hidden="true" />
                 {countKey && (
                   <span className="text-2xl font-semibold leading-none tabular-nums" aria-live="polite">
                     {counts ? counts[countKey] : isError ? "—" : "…"}
                   </span>
                 )}
               </span>
-              <span className="w-full whitespace-normal break-words text-left text-sm font-medium leading-snug">{label}</span>
+              <span className="w-full whitespace-normal break-words text-left text-sm font-medium leading-snug text-[#004aad]">{label}</span>
             </>
           );
 
