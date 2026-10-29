@@ -260,9 +260,9 @@ export const AnnualPlanningUserSelection: React.FC<AnnualPlanningUserSelectionPr
                           </div>
                         </div>
                         {selectedUserIds.includes(user.id) ? (
-                          <Check className="w-3 h-3 text-[#00ffba]" />
+                          <Check className="w-3 h-3 text-[#004aad]" />
                         ) : (
-                          <Plus className="w-3 h-3 text-[#00ffba]" />
+                          <Plus className="w-3 h-3 text-[#004aad]" />
                         )}
                       </div>
                     ))
@@ -303,7 +303,7 @@ export const AnnualPlanningUserSelection: React.FC<AnnualPlanningUserSelectionPr
             disabled={disabled}
             className={`px-2 py-1 text-[10px] rounded-none border transition-colors flex items-center gap-1 ${
               assignmentMode === 'individual'
-                ? 'bg-[#00ffba] text-black border-[#00ffba]'
+                ? 'bg-[#004aad] text-white border-[#004aad]'
                 : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
             }`}
           >
@@ -315,7 +315,7 @@ export const AnnualPlanningUserSelection: React.FC<AnnualPlanningUserSelectionPr
             disabled={disabled}
             className={`px-2 py-1 text-[10px] rounded-none border transition-colors flex items-center gap-1 ${
               assignmentMode === 'group'
-                ? 'bg-[#00ffba] text-black border-[#00ffba]'
+                ? 'bg-[#004aad] text-white border-[#004aad]'
                 : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
             }`}
           >

@@ -1880,8 +1880,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
                     {!isViewMode && (
                       <Button
                         onClick={handleAssign}
-                        className="rounded-none flex-1 h-8 text-xs"
-                        style={{ backgroundColor: '#00ffba', color: 'black' }}
+                        className="rounded-none flex-1 h-8 text-xs bg-[#004aad] hover:bg-[rgba(0,74,173,0.7)] text-white"
                         disabled={selectedPhases.length === 0 || (selectedUserIds.length === 0 && selectedGroupIds.length === 0) || isAssigning}
                       >
                         <UserPlus className="w-3 h-3 mr-1" />
