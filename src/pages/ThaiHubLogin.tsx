@@ -111,10 +111,10 @@ export default function ThaiHubLogin() {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="max-w-xl space-y-6">
             <p className="text-xs uppercase tracking-[0.3em] text-[var(--th-red)] font-semibold">Για προπονητές</p>
-            <h1 className="text-4xl sm:text-6xl font-bold tracking-tight leading-tight text-black">
-              Κράτα τους αθλητές σου σε <span className="text-[var(--th-blue)]">τροχιά</span>.
+            <h1 className="text-4xl sm:text-6xl font-bold tracking-tight leading-tight text-white">
+              Κράτα τους αθλητές σου σε <span className="text-white">τροχιά</span>.
             </h1>
-            <p className="text-base sm:text-lg text-black/70">
+            <p className="text-base sm:text-lg text-white/80">
               Προγράμματα, συνδρομές, τεστ και πρόοδος — όλα σε ένα μέρος.
             </p>
             <div className="flex flex-wrap gap-4">
