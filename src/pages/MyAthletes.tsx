@@ -310,24 +310,24 @@ const MyAthletesContent = () => {
                                 {athlete.name.charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
-                            <span className="font-medium">{athlete.name}</span>
+                            <span className="font-medium text-[#004aad]">{athlete.name}</span>
                           </div>
                         </TableCell>
-                        <TableCell>{athlete.email}</TableCell>
-                        <TableCell>{athlete.phone || '-'}</TableCell>
+                        <TableCell className="text-[#004aad]">{athlete.email}</TableCell>
+                        <TableCell className="text-[#004aad]">{athlete.phone || '-'}</TableCell>
                         <TableCell>
                           <span className={`px-2 py-1 text-xs rounded ${getSubscriptionStatusColor(athlete.subscriptionStatus)}`}>
                             {getSubscriptionStatusText(athlete.subscriptionStatus)}
                           </span>
                         </TableCell>
-                        <TableCell>{formatDate(athlete.created_at)}</TableCell>
+                        <TableCell className="text-[#004aad]">{formatDate(athlete.created_at)}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end space-x-1">
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleViewUser(athlete)}
-                              className="rounded-none"
+                              className="rounded-none text-[#004aad]"
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -335,7 +335,7 @@ const MyAthletesContent = () => {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleEditUser(athlete)}
-                              className="rounded-none"
+                              className="rounded-none text-[#004aad]"
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
@@ -343,7 +343,7 @@ const MyAthletesContent = () => {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleSendPasswordReset(athlete)}
-                              className="rounded-none"
+                              className="rounded-none text-[#004aad]"
                               title="Αποστολή email επαναφοράς κωδικού"
                             >
                               <Mail className="h-4 w-4" />
