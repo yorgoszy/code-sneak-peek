@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { matchesSearchTerm } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { BlueDatePicker } from "@/components/ui/blue-date-picker";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -265,11 +266,10 @@ export const HealthCardFormDialog = ({
 
           <div>
             <Label>{t("healthCard.startDate")}</Label>
-            <Input
-              type="date"
+            <BlueDatePicker
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="rounded-none text-[#004aad] blue-calendar-indicator"
+              onChange={setStartDate}
+              className="w-full"
             />
           </div>
           <div>
