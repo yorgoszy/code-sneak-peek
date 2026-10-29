@@ -162,7 +162,7 @@ export const NewCoachUserDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="rounded-none max-w-lg">
+      <DialogContent className="rounded-none max-w-lg text-[#004aad]">
         <DialogHeader className="pb-2">
           <DialogTitle className="text-base">Νέος Αθλητής</DialogTitle>
         </DialogHeader>
@@ -172,7 +172,7 @@ export const NewCoachUserDialog = ({
             <div className="relative shrink-0">
               <Avatar className="h-12 w-12 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                 <AvatarImage src={avatarPreview || ''} />
-                <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba] text-lg">
+                <AvatarFallback className="bg-[#004aad]/20 text-[#004aad] text-lg">
                   {formData.name ? formData.name.charAt(0).toUpperCase() : <Camera className="h-5 w-5" />}
                 </AvatarFallback>
               </Avatar>
@@ -200,7 +200,7 @@ export const NewCoachUserDialog = ({
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Ονοματεπώνυμο"
-                className="rounded-none h-8 text-sm"
+                className="rounded-none h-8 text-sm placeholder:text-[#004aad]/70"
                 required
               />
             </div>
@@ -217,7 +217,7 @@ export const NewCoachUserDialog = ({
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="email@example.com"
-                className="rounded-none h-8 text-sm"
+                className="rounded-none h-8 text-sm placeholder:text-[#004aad]/70"
                 required
               />
             </div>
@@ -228,7 +228,7 @@ export const NewCoachUserDialog = ({
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 placeholder="69XXXXXXXX"
-                className="rounded-none h-8 text-sm"
+                className="rounded-none h-8 text-sm placeholder:text-[#004aad]/70"
               />
             </div>
           </div>
@@ -242,7 +242,7 @@ export const NewCoachUserDialog = ({
                 type="date"
                 value={formData.birth_date}
                 onChange={(e) => setFormData({ ...formData, birth_date: e.target.value })}
-                className="rounded-none h-8 text-sm"
+                className="rounded-none h-8 text-sm blue-calendar-indicator"
               />
             </div>
             <div>
@@ -270,7 +270,7 @@ export const NewCoachUserDialog = ({
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder="Σημειώσεις για τον αθλητή..."
-              className="rounded-none text-sm resize-none"
+              className="rounded-none text-sm resize-none placeholder:text-[#004aad]/70"
               rows={2}
             />
           </div>
@@ -290,7 +290,7 @@ export const NewCoachUserDialog = ({
               type="submit"
               size="sm"
               disabled={loading}
-              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none h-8"
+              className="bg-[#004aad] hover:bg-[#004aad]/90 text-white rounded-none h-8"
             >
               {loading ? "Αποθήκευση..." : "Αποθήκευση"}
             </Button>
