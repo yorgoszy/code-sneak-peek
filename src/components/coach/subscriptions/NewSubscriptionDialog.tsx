@@ -43,13 +43,15 @@ interface NewSubscriptionDialogProps {
   onOpenChange: (open: boolean) => void;
   coachId: string;
   onSuccess: () => void;
+  tableName?: "coach_subscriptions" | "user_subscriptions";
 }
 
 export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
   open,
   onOpenChange,
   coachId,
-  onSuccess
+  onSuccess,
+  tableName = "coach_subscriptions"
 }) => {
   const [athletes, setAthletes] = useState<Athlete[]>([]);
   const [subscriptionTypes, setSubscriptionTypes] = useState<SubscriptionType[]>([]);
@@ -138,7 +140,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
 
       // Create subscription
       const { data: subscriptionData, error: subscriptionError } = await supabase
-        .from('coach_subscriptions')
+        .from(tableName)
         .insert({
           user_id: selectedAthlete.id,
           subscription_type_id: selectedTypeId,

@@ -74,6 +74,8 @@ const CoachSubscriptionsContent = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("subscriptions");
   const [newSubscriptionOpen, setNewSubscriptionOpen] = useState(false);
+  // Οι admin χρησιμοποιούν τον κεντρικό πίνακα user_subscriptions, οι coaches τον coach_subscriptions
+  const [subsTable, setSubsTable] = useState<"coach_subscriptions" | "user_subscriptions" | null>(null);
 
   useEffect(() => {
     if (!coachId || searchParams.get("action") !== "create") return;
@@ -93,17 +95,20 @@ const CoachSubscriptionsContent = () => {
 
   const triggerFinancialRefresh = () => setFinancialRefreshKey(prev => prev + 1);
 
-  const fetchSubscriptions = async () => {
-    if (loadingSubscriptions || !coachId) return;
+  const fetchSubscriptions = async (table: "coach_subscriptions" | "user_subscriptions" | null = subsTable) => {
+    if (loadingSubscriptions || !coachId || !table) return;
 
     setLoadingSubscriptions(true);
     try {
+      const userJoin = table === "user_subscriptions"
+        ? "app_users!user_subscriptions_user_id_fkey (name, email, avatar_url, photo_url)"
+        : "app_users!coach_subscriptions_user_id_fkey (name, email, avatar_url, photo_url)";
       const { data, error } = await supabase
-        .from("coach_subscriptions")
+        .from(table)
         .select(`
           *,
           subscription_types (id, name, price, duration_months),
-          app_users!coach_subscriptions_user_id_fkey (name, email, avatar_url, photo_url)
+          ${userJoin}
         `)
         .eq("coach_id", coachId)
         .order("created_at", { ascending: false });
@@ -114,7 +119,7 @@ const CoachSubscriptionsContent = () => {
         return;
       }
 
-      setSubscriptions(data || []);
+      setSubscriptions((data as any) || []);
     } catch (error) {
       console.error("💥 Error:", error);
     } finally {
@@ -142,7 +147,7 @@ const CoachSubscriptionsContent = () => {
   const togglePaymentStatus = async (id: string, currentStatus: boolean) => {
     try {
       const { error } = await supabase
-        .from("coach_subscriptions")
+        .from(subsTable!)
         .update({ is_paid: !currentStatus })
         .eq("id", id);
 
@@ -164,7 +169,7 @@ const CoachSubscriptionsContent = () => {
       const remainingDays = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
 
       const { error } = await supabase
-        .from("coach_subscriptions")
+        .from(subsTable!)
         .update({
           is_paused: true,
           paused_at: new Date().toISOString(),
@@ -191,7 +196,7 @@ const CoachSubscriptionsContent = () => {
       newEndDate.setDate(today.getDate() + remainingDays);
 
       const { error } = await supabase
-        .from("coach_subscriptions")
+        .from(subsTable!)
         .update({
           is_paused: false,
           paused_at: null,
@@ -244,18 +249,22 @@ const CoachSubscriptionsContent = () => {
       newEndDate.setMonth(newEndDate.getMonth() + durationMonths);
       newEndDate.setDate(newEndDate.getDate() - 1);
 
+      const insertPayload: any = {
+        coach_id: coachId,
+        user_id: subscription.user_id,
+        subscription_type_id: subscription.subscription_types.id,
+        start_date: newStartDate.toISOString().split("T")[0],
+        end_date: newEndDate.toISOString().split("T")[0],
+        status: "active",
+        is_paused: false
+      };
+      if (subsTable === "coach_subscriptions") {
+        insertPayload.coach_user_id = subscription.user_id;
+      }
+
       const { data: subscriptionData, error: subscriptionError } = await supabase
-        .from("coach_subscriptions")
-        .insert({
-          coach_id: coachId,
-          user_id: subscription.user_id,
-          coach_user_id: subscription.user_id,
-          subscription_type_id: subscription.subscription_types.id,
-          start_date: newStartDate.toISOString().split("T")[0],
-          end_date: newEndDate.toISOString().split("T")[0],
-          status: "active",
-          is_paused: false
-        })
+        .from(subsTable!)
+        .insert(insertPayload)
         .select()
         .single();
 
@@ -305,7 +314,7 @@ const CoachSubscriptionsContent = () => {
 
     try {
       const { error } = await supabase
-        .from("coach_subscriptions")
+        .from(subsTable!)
         .delete()
         .eq("id", subscriptionToDelete);
 
@@ -319,11 +328,21 @@ const CoachSubscriptionsContent = () => {
     }
   };
 
+  // Εντοπισμός ρόλου: αν ο χρήστης είναι admin, οι συνδρομές είναι στον user_subscriptions
   useEffect(() => {
-    if (coachId) {
-      fetchSubscriptions();
+    const detectTable = async () => {
+      if (!coachId) return;
+      const { data } = await supabase
+        .from("app_users")
+        .select("role")
+        .eq("id", coachId)
+        .single();
+      const table = data?.role === "admin" ? "user_subscriptions" : "coach_subscriptions";
+      setSubsTable(table);
+      fetchSubscriptions(table);
       fetchSubscriptionTypes();
-    }
+    };
+    detectTable();
   }, [coachId]);
 
   const getStatusColor = (status: string, isPaused: boolean) => {
@@ -616,6 +635,7 @@ const CoachSubscriptionsContent = () => {
         open={newSubscriptionOpen}
         onOpenChange={setNewSubscriptionOpen}
         coachId={coachId}
+        tableName={subsTable ?? "coach_subscriptions"}
         onSuccess={() => {
           fetchSubscriptions();
           setNewSubscriptionOpen(false);
@@ -634,6 +654,7 @@ const CoachSubscriptionsContent = () => {
           onClose={() => setEditDialogOpen(false)}
           subscription={subscriptionToEdit}
           subscriptionTypes={subscriptionTypes}
+          tableName={subsTable ?? "coach_subscriptions"}
           onSuccess={() => {
             fetchSubscriptions();
             setEditDialogOpen(false);
