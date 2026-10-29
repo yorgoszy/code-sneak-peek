@@ -260,6 +260,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
                     ))
                   )}
                 </div>
+                )}
               </div>
             )}
           </div>
