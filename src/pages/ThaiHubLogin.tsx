@@ -118,7 +118,7 @@ export default function ThaiHubLogin() {
               Προγράμματα, συνδρομές, τεστ και πρόοδος — όλα σε ένα μέρος.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Button size="lg" onClick={() => setLoginOpen(true)} className="rounded-none bg-[var(--th-red)] hover:bg-[var(--th-red)]/90 text-white">
+              <Button size="lg" onClick={() => setLoginOpen(true)} className="rounded-none bg-[var(--th-red)] hover:bg-[rgba(255,49,49,0.7)] text-white">
                 Σύνδεση
               </Button>
               <Button size="lg" asChild className="rounded-none bg-white text-[var(--th-red)] hover:bg-[rgba(255,49,49,0.1)]">
