@@ -147,7 +147,7 @@ const CoachSubscriptionsContent = () => {
   const togglePaymentStatus = async (id: string, currentStatus: boolean) => {
     try {
       const { error } = await supabase
-        .from("coach_subscriptions")
+        .from(subsTable!)
         .update({ is_paid: !currentStatus })
         .eq("id", id);
 
@@ -169,7 +169,7 @@ const CoachSubscriptionsContent = () => {
       const remainingDays = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
 
       const { error } = await supabase
-        .from("coach_subscriptions")
+        .from(subsTable!)
         .update({
           is_paused: true,
           paused_at: new Date().toISOString(),
@@ -196,7 +196,7 @@ const CoachSubscriptionsContent = () => {
       newEndDate.setDate(today.getDate() + remainingDays);
 
       const { error } = await supabase
-        .from("coach_subscriptions")
+        .from(subsTable!)
         .update({
           is_paused: false,
           paused_at: null,
@@ -314,7 +314,7 @@ const CoachSubscriptionsContent = () => {
 
     try {
       const { error } = await supabase
-        .from("coach_subscriptions")
+        .from(subsTable!)
         .delete()
         .eq("id", subscriptionToDelete);
 
