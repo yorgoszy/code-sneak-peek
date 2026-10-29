@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Loader2, Menu, X, LogIn } from "lucide-react";
-import heroImage from "@/assets/thaihub-hero.jpg";
+import heroImage from "@/assets/thaihub-hero-boxer.png.asset.json";
 import thaihubLogo from "@/assets/thaihub-logo.png.asset.json";
 
 const navLinks = [
@@ -105,7 +105,7 @@ export default function ThaiHubLogin() {
 
       {/* Hero */}
       <section id="home" className="relative min-h-screen flex items-center pt-16">
-        <img src={heroImage} alt="Προπονητής παρακολουθεί αθλήτρια" width={1920} height={1088}
+        <img src={heroImage.url} alt="Πυγμάχος προπονείται σε σάκο" width={1920} height={1088}
           className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
@@ -118,7 +118,7 @@ export default function ThaiHubLogin() {
               Προγράμματα, συνδρομές, τεστ και πρόοδος — όλα σε ένα μέρος.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Button size="lg" onClick={() => setLoginOpen(true)} className="rounded-none bg-[var(--th-blue)] hover:bg-[var(--th-blue)]/90 text-white">
+              <Button size="lg" onClick={() => setLoginOpen(true)} className="rounded-none bg-[var(--th-red)] hover:bg-[var(--th-red)]/90 text-white">
                 Σύνδεση
               </Button>
               <Button size="lg" variant="outline" asChild className="rounded-none border-[var(--th-blue)] text-[var(--th-blue)] hover:bg-[var(--th-blue)]/10">
