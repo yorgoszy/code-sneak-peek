@@ -306,7 +306,7 @@ const MyAthletesContent = () => {
                           <div className="flex items-center space-x-3">
                             <Avatar className="h-8 w-8 rounded-full">
                               <AvatarImage src={(athlete as any).photo_url || athlete.avatar_url || ''} />
-                              <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba] rounded-full">
+                              <AvatarFallback className="bg-[#004aad]/20 text-[#004aad] rounded-full">
                                 {athlete.name.charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
@@ -373,7 +373,7 @@ const MyAthletesContent = () => {
                         <div className="flex items-center space-x-3">
                           <Avatar className="h-10 w-10 rounded-full">
                             <AvatarImage src={(athlete as any).photo_url || athlete.avatar_url || ''} />
-                            <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba] rounded-full">
+                            <AvatarFallback className="bg-[#004aad]/20 text-[#004aad] rounded-full">
                               {athlete.name.charAt(0).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
