@@ -244,10 +244,10 @@ const MyAthletesContent = () => {
       <Card className="rounded-none">
         <CardHeader className="pb-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <CardTitle className="text-lg">Αθλητές ({filteredAthletes.length})</CardTitle>
+            <CardTitle className="text-lg text-[#004aad]">Αθλητές ({filteredAthletes.length})</CardTitle>
             <Button 
               onClick={() => setNewUserDialogOpen(true)}
-              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none w-full sm:w-auto"
+              className="bg-[#004aad] hover:bg-[#004aad]/90 text-white rounded-none w-full sm:w-auto"
             >
               <Plus className="h-4 w-4 mr-2" />
               Νέος Αθλητής
