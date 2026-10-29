@@ -70,7 +70,7 @@ export default function ThaiHubLogin() {
   return (
     <div className="thaihub-page min-h-screen bg-background text-foreground">
       {/* Top menu */}
-      <nav className="fixed top-0 w-full z-50 bg-white border-b border-border">
+      <nav className="fixed top-0 w-full z-50 bg-white border-b border-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
           <a href="#home" className="flex items-center">
             <img src={thaihubLogo.url} alt="ThaiHub" className="h-8 w-auto" />
