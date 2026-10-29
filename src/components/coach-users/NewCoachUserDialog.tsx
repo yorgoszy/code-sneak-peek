@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BlueDatePicker } from "@/components/ui/blue-date-picker";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Camera, X } from "lucide-react";
@@ -237,12 +238,9 @@ export const NewCoachUserDialog = ({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label htmlFor="birth_date" className="text-xs">Ημ. Γέννησης</Label>
-              <Input
-                id="birth_date"
-                type="date"
+              <BlueDatePicker
                 value={formData.birth_date}
-                onChange={(e) => setFormData({ ...formData, birth_date: e.target.value })}
-                className="rounded-none h-8 text-sm text-[#004aad] blue-calendar-indicator"
+                onChange={(v) => setFormData({ ...formData, birth_date: v })}
               />
             </div>
             <div>
