@@ -101,7 +101,7 @@ const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
                   <div className="min-w-0">
                     <h1 className="truncate text-lg font-semibold text-[#004aad]">{coachName}</h1>
                     {title && (
-                      <p className="truncate text-xs text-gray-500">{title}</p>
+                      <p className="truncate text-xs text-[#004aad]">{title}</p>
                     )}
                   </div>
                 </div>
