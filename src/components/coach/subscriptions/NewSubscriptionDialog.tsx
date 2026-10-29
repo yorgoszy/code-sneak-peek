@@ -321,7 +321,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
           <Button 
             onClick={handleSave} 
             disabled={loading || !selectedAthlete || !selectedTypeId}
-            className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+            className="bg-[#004aad] hover:bg-[#004aad]/90 text-white rounded-none"
           >
             {loading ? 'Αποθήκευση...' : 'Δημιουργία'}
           </Button>
