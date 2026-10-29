@@ -404,13 +404,13 @@ export function HealthCardsContent() {
                           <div className="flex items-center gap-2 min-w-0">
                             <Avatar className="h-9 w-9 rounded-full flex-shrink-0">
                               <AvatarImage src={card.user?.photo_url || ''} />
-                              <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba] rounded-full">
+                              <AvatarFallback className="bg-[#004aad]/20 text-[#004aad] rounded-full">
                                 {card.user?.name?.charAt(0).toUpperCase() || '?'}
                               </AvatarFallback>
                             </Avatar>
                             <div className="min-w-0">
-                              <p className="font-medium text-sm truncate">{card.user?.name || 'Άγνωστο'}</p>
-                              <p className="text-xs text-gray-500 truncate">{card.user?.email}</p>
+                              <p className="font-medium text-sm truncate text-[#004aad]">{card.user?.name || 'Άγνωστο'}</p>
+                              <p className="text-xs text-[#004aad]/70 truncate">{card.user?.email}</p>
                             </div>
                           </div>
                           <div className="flex-shrink-0">
@@ -419,15 +419,15 @@ export function HealthCardsContent() {
                         </div>
                         <div className="grid grid-cols-3 gap-2 text-xs mb-3 border-t border-b border-border py-2">
                           <div>
-                            <p className="text-gray-500">Έναρξη</p>
-                            <p className="font-medium">{formatDate(card.start_date)}</p>
+                            <p className="text-[#004aad]/70">Έναρξη</p>
+                            <p className="font-medium text-[#004aad]">{formatDate(card.start_date)}</p>
                           </div>
                           <div>
-                            <p className="text-gray-500">Λήξη</p>
-                            <p className="font-medium">{formatDate(card.end_date)}</p>
+                            <p className="text-[#004aad]/70">Λήξη</p>
+                            <p className="font-medium text-[#004aad]">{formatDate(card.end_date)}</p>
                           </div>
                           <div>
-                            <p className="text-gray-500">Υπόλοιπο</p>
+                            <p className="text-[#004aad]/70">Υπόλοιπο</p>
                             <p className={getDaysExpiryColor(card.end_date)}>
                               {getDaysExpiryText(card.end_date)}
                             </p>
