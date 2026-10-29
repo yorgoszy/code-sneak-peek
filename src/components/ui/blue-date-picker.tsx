@@ -46,6 +46,11 @@ export const BlueDatePicker = ({ value, onChange, placeholder = "Επιλέξτ�
             }}
             initialFocus
             className="p-3 pointer-events-auto"
+            classNames={{
+              day_selected:
+                "bg-[#004aad] text-white hover:bg-[#004aad]/90 focus:bg-[#004aad] focus:text-white rounded-none",
+              day_today: "bg-[#004aad]/10 text-[#004aad] rounded-none",
+            }}
           />
         </div>
       </PopoverContent>
