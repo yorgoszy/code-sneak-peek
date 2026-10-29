@@ -249,12 +249,12 @@ export const NewCoachUserDialog = ({
                 value={formData.gender}
                 onValueChange={(value) => setFormData({ ...formData, gender: value })}
               >
-                <SelectTrigger className="rounded-none h-8 text-sm">
+                <SelectTrigger className="rounded-none h-8 text-sm text-[#004aad]">
                   <SelectValue placeholder="Επιλέξτε" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="male">Άνδρας</SelectItem>
-                  <SelectItem value="female">Γυναίκα</SelectItem>
+                <SelectContent className="text-[#004aad]">
+                  <SelectItem value="male" className="text-[#004aad]">Άνδρας</SelectItem>
+                  <SelectItem value="female" className="text-[#004aad]">Γυναίκα</SelectItem>
                 </SelectContent>
               </Select>
             </div>
