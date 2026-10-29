@@ -77,7 +77,7 @@ export default function ThaiHubLogin() {
           </a>
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((l) => (
-              <a key={l.href} href={l.href} className="text-sm text-[var(--th-blue)] hover:text-[var(--th-blue)]/70 transition-colors">
+              <a key={l.href} href={l.href} className="text-sm text-[var(--th-blue)] hover:text-[var(--th-red)]/70 transition-colors">
                 {l.label}
               </a>
             ))}
