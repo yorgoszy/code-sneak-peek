@@ -438,7 +438,7 @@ export function HealthCardsContent() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="rounded-none flex-1"
+                              className="rounded-none flex-1 text-[#004aad]"
                               onClick={() => {
                                 setViewingCard(card);
                                 setIsViewDialogOpen(true);
@@ -451,7 +451,7 @@ export function HealthCardsContent() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="rounded-none flex-1"
+                            className="rounded-none flex-1 text-[#004aad]"
                             onClick={() => handleOpenEditDialog(card)}
                           >
                             <Pencil className="h-4 w-4 mr-1" />
