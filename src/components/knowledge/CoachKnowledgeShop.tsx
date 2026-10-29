@@ -269,8 +269,8 @@ export const CoachKnowledgeShop: React.FC<CoachKnowledgeShopProps> = ({ coachId 
     <div className="p-4 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-2">
-        <ShoppingBag className="w-6 h-6 text-[#cb8954]" />
-        <h1 className="text-xl font-bold">Knowledge Shop</h1>
+        <ShoppingBag className="w-6 h-6 text-[#004aad]" />
+        <h1 className="text-xl font-bold text-[#004aad]">Knowledge Shop</h1>
       </div>
 
       {/* Purchased Courses */}
