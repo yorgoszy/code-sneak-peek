@@ -198,7 +198,7 @@ const MacrocycleCard: React.FC<MacrocycleCardProps> = ({
                 >
                   <ChevronLeft className="h-2.5 w-2.5" />
                 </Button>
-                <span className="text-[10px] text-muted-foreground w-8 text-center">{currentYear}</span>
+                <span className="text-[10px] text-[#004aad] w-8 text-center">{currentYear}</span>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -239,7 +239,7 @@ const MacrocycleCard: React.FC<MacrocycleCardProps> = ({
         </div>
         <div className="flex flex-wrap gap-0.5 mt-2">
           {currentPhases.length === 0 ? (
-            <span className="text-[9px] text-muted-foreground">Δεν υπάρχει πλάνο για το {currentYear}</span>
+            <span className="text-[9px] text-[#004aad]">Δεν υπάρχει πλάνο για το {currentYear}</span>
           ) : (
             currentPhases.map((phase, idx) => (
               <span 
@@ -1799,10 +1799,10 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
     <div className="p-2 lg:p-0">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className={cn("w-full rounded-none h-8", isAdminUser || scopedCoachId ? "grid-cols-3" : "grid-cols-2")} style={{ display: 'grid', gridTemplateColumns: isAdminUser || scopedCoachId ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)' }}>
-          <TabsTrigger value="new" className="rounded-none text-xs">Νέο</TabsTrigger>
-          <TabsTrigger value="assigned" className="rounded-none text-xs">Ανατεθημένα</TabsTrigger>
+          <TabsTrigger value="new" className="rounded-none text-xs text-[#004aad]">Νέο</TabsTrigger>
+          <TabsTrigger value="assigned" className="rounded-none text-xs text-[#004aad]">Ανατεθημένα</TabsTrigger>
           {(isAdminUser || scopedCoachId) && (
-            <TabsTrigger value="saved" className="rounded-none text-xs">Αποθηκευμένα</TabsTrigger>
+            <TabsTrigger value="saved" className="rounded-none text-xs text-[#004aad]">Αποθηκευμένα</TabsTrigger>
           )}
         </TabsList>
 
@@ -1815,7 +1815,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
                 {/* User/Group Selection - Only show for admins */}
                 <div className="space-y-1">
                   {roleLoading ? (
-                    <div className="p-1.5 bg-muted rounded-none text-xs text-muted-foreground">
+                    <div className="p-1.5 bg-muted rounded-none text-xs text-[#004aad]">
                       Φόρτωση...
                     </div>
                   ) : (
@@ -1832,15 +1832,15 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
 
                 {/* Macrocycle Name */}
                 <div className="space-y-1">
-                  <label className="text-xs font-medium">
+                  <label className="text-xs font-medium text-[#004aad]">
                     Όνομα Μακροκύκλου
-                    {isViewMode && <span className="text-muted-foreground ml-2">(Προβολή)</span>}
+                    {isViewMode && <span className="text-[#004aad] ml-2">(Προβολή)</span>}
                   </label>
                   <Input
                     placeholder="π.χ. Προετοιμασία 2025"
                     value={macrocycleName}
                     onChange={(e) => setMacrocycleName(e.target.value)}
-                    className="rounded-none h-8 text-xs"
+                    className="rounded-none h-8 text-xs text-[#004aad]"
                     readOnly={isViewMode}
                     disabled={isViewMode}
                   />
@@ -1848,13 +1848,13 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
 
                 {/* Action Buttons */}
                 <div className="space-y-1">
-                  <label className="text-xs font-medium">&nbsp;</label>
+                  <label className="text-xs font-medium text-[#004aad]">&nbsp;</label>
                   <div className="flex gap-2">
                     {(isAdminUser || scopedCoachId) && !isViewMode && (
                       <Button
                         onClick={handleSave}
                         variant="outline"
-                        className="rounded-none flex-1 h-8 text-xs"
+                        className="rounded-none flex-1 h-8 text-xs text-[#004aad]"
                         disabled={selectedPhases.length === 0 || !macrocycleName.trim()}
                       >
                         <Save className="w-3 h-3 mr-1" />
@@ -1871,7 +1871,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
                           setWeeklyPhases([]);
                         }}
                         variant="outline"
-                        className="rounded-none flex-1 h-8 text-xs"
+                        className="rounded-none flex-1 h-8 text-xs text-[#004aad]"
                       >
                         <X className="w-3 h-3 mr-1" />
                         Κλείσιμο Προβολής
@@ -1896,7 +1896,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
           {/* Ετήσιος Προγραμματισμός */}
           <Card className="rounded-none border-l-0">
             <CardHeader className="p-2 sm:p-4">
-              <CardTitle className="flex items-center justify-between text-sm sm:text-base">
+              <CardTitle className="flex items-center justify-between text-sm sm:text-base text-[#004aad]">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   Ετήσιος Προγραμματισμός
@@ -1910,7 +1910,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
                   >
                     <ChevronLeft className="h-3 w-3" />
                   </Button>
-                  <span className="text-sm font-semibold w-12 text-center">{year}</span>
+                  <span className="text-sm font-semibold w-12 text-center text-[#004aad]">{year}</span>
                   <Button
                     variant="outline"
                     size="icon"
@@ -1937,7 +1937,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
             </CardHeader>
             <CardContent className="p-2 sm:p-4 pt-0">
               <div className="overflow-x-auto scrollbar-gold">
-                <table className="w-full border-collapse text-[9px] sm:text-xs">
+                <table className="w-full border-collapse text-[9px] sm:text-xs text-[#004aad]">
                   <thead>
                     <tr>
                       <th className="border p-0.5 sm:p-1 bg-muted text-left w-[50px] sm:w-[160px]">Φάση</th>
@@ -2010,7 +2010,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
 
         <Card className="rounded-none border-l-0 mt-2">
         <CardHeader className="p-2 sm:p-4">
-          <CardTitle className="flex items-center justify-between text-sm sm:text-base">
+          <CardTitle className="flex items-center justify-between text-sm sm:text-base text-[#004aad]">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               Μηνιαίος Προγραμματισμός
@@ -2030,7 +2030,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
         </CardHeader>
         <CardContent className="p-2 sm:p-4 pt-0">
           <div className="overflow-x-auto scrollbar-gray">
-            <table className="w-full border-collapse text-[7px] sm:text-[9px] md:text-xs">
+            <table className="w-full border-collapse text-[7px] sm:text-[9px] md:text-xs text-[#004aad]">
               <thead>
                 <tr>
                   <th className="border p-0.5 sm:p-1 bg-muted text-left w-[40px] sm:w-[80px] md:w-[120px]">Φάση</th>
@@ -2179,7 +2179,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
       <Card className="rounded-none border-l-0 mt-2">
         <CardHeader className="p-2 sm:p-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base text-[#004aad]">
               <Calendar className="w-4 h-4" />
               Εβδομαδιαίος Προγραμματισμός
             </CardTitle>
@@ -2230,7 +2230,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
 
             if (allPhasesList.length === 0) {
               return (
-                <div className="text-center text-muted-foreground text-sm py-4">
+                <div className="text-center text-[#004aad] text-sm py-4">
                   Δεν έχουν επιλεγεί φάσεις στον Μηνιαίο Προγραμματισμό
                 </div>
               );
@@ -2253,7 +2253,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
 
                   return (
                     <div className="pb-4">
-                      <table className="border-collapse table-fixed text-[7px] sm:text-[9px] md:text-xs">
+                      <table className="border-collapse table-fixed text-[7px] sm:text-[9px] md:text-xs text-[#004aad]">
                         <thead>
                           {/* Month headers */}
                           <tr>
@@ -2403,7 +2403,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
             return filteredMacrocycles.length === 0 ? (
               <Card className="rounded-none border-l-0">
                 <CardContent className="p-6">
-                  <div className="text-center text-muted-foreground text-sm">
+                  <div className="text-center text-[#004aad] text-sm">
                     Δεν υπάρχουν ανατεθειμένοι μακροκύκλοι
                   </div>
                 </CardContent>
@@ -2433,7 +2433,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
           {savedMacrocycles.length === 0 ? (
             <Card className="rounded-none border-l-0">
               <CardContent className="p-6">
-                <div className="text-center text-muted-foreground text-sm">
+                <div className="text-center text-[#004aad] text-sm">
                   Δεν υπάρχουν αποθηκευμένοι μακροκύκλοι
                 </div>
               </CardContent>
@@ -2446,7 +2446,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs font-medium">{macrocycle.name}</p>
-                        <p className="text-[10px] text-muted-foreground">Έτος: {macrocycle.year}</p>
+                        <p className="text-[10px] text-[#004aad]">Έτος: {macrocycle.year}</p>
                       </div>
                       <div className="flex gap-1">
                         <Button
@@ -2527,7 +2527,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
                     <span className="text-xs sm:text-sm">{dialogMacrocycle.user_name}</span>
                   </>
                 )}
-                <span className="text-muted-foreground text-[10px]">- {dialogMode === 'view' ? 'Προβολή' : 'Επεξεργασία'}</span>
+                <span className="text-[#004aad] text-[10px]">- {dialogMode === 'view' ? 'Προβολή' : 'Επεξεργασία'}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -2558,7 +2558,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
                     </Button>
                     <Button
                       className="rounded-none h-5 text-[10px] px-2"
-                      style={{ backgroundColor: '#00ffba', color: 'black' }}
+                      style={{ backgroundColor: '#004aad', color: 'white' }}
                       onClick={handleSaveDialogChanges}
                     >
                       Αποθήκευση
@@ -2581,7 +2581,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
 
           {/* Phases Grid in Dialog - Compact */}
           <div className="overflow-x-auto scrollbar-gold">
-            <table className="w-full border-collapse text-[6px] sm:text-[8px] md:text-[10px]">
+            <table className="w-full border-collapse text-[6px] sm:text-[8px] md:text-[10px] text-[#004aad]">
               <thead>
                 <tr>
                   <th className="border p-0.5 bg-muted text-left w-[35px] sm:w-[70px] md:w-[120px]">Φάση</th>
@@ -2640,7 +2640,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
               Μηνιαίος Προγραμματισμός
             </h4>
             <div className="overflow-x-auto scrollbar-gold">
-              <table className="w-full border-collapse text-[5px] sm:text-[7px] md:text-[9px]">
+              <table className="w-full border-collapse text-[5px] sm:text-[7px] md:text-[9px] text-[#004aad]">
                 <thead>
                   <tr>
                     <th className="border p-0.5 bg-muted text-left w-[35px] sm:w-[70px] md:w-[100px]">Φάση</th>
@@ -2813,7 +2813,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
               </div>
             </div>
             <div className="overflow-x-auto scrollbar-gold">
-              <table className="w-full border-collapse text-[5px] sm:text-[7px] md:text-[9px]">
+              <table className="w-full border-collapse text-[5px] sm:text-[7px] md:text-[9px] text-[#004aad]">
                 <thead>
                   {/* Week headers row */}
                   <tr>
@@ -2877,7 +2877,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
                 <tbody>
                   {getDialogWeeklySubPhases.length === 0 ? (
                     <tr>
-                      <td colSpan={1 + getDialogCalendarWeeksForMonth.length * 7} className="border p-2 text-center text-muted-foreground text-[10px]">
+                      <td colSpan={1 + getDialogCalendarWeeksForMonth.length * 7} className="border p-2 text-center text-[#004aad] text-[10px]">
                         Δεν έχουν επιλεγεί φάσεις στον Μηνιαίο Προγραμματισμό για τον {MONTHS_DROPDOWN[dialogWeeklyMonth - 1]}
                       </td>
                     </tr>
@@ -3006,7 +3006,7 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
           <DialogHeader>
             <DialogTitle>Διαγραφή Μακροκύκλου</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground py-4">
+          <p className="text-sm text-[#004aad] py-4">
             Είστε σίγουροι ότι θέλετε να διαγράψετε αυτόν τον μακροκύκλο;
           </p>
           <div className="flex justify-end gap-2">

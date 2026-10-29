@@ -226,7 +226,7 @@ export const AnnualPlanningUserSelection: React.FC<AnnualPlanningUserSelectionPr
             >
               <div className="p-2 border-b border-gray-200">
                 <div className="relative">
-                  <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400" />
+                  <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-[#004aad]" />
                   <Input
                     placeholder="Αναζήτηση..."
                     value={searchTerm}
@@ -238,7 +238,7 @@ export const AnnualPlanningUserSelection: React.FC<AnnualPlanningUserSelectionPr
               <ScrollArea className="h-48">
                 <div className="p-1 space-y-0.5">
                   {filteredUsers.length === 0 ? (
-                    <div className="p-3 text-center text-xs text-gray-500">
+                    <div className="p-3 text-center text-xs text-[#004aad]">
                       {availableUsers.length === 0 ? "Όλοι επιλεγμένοι" : "Δεν βρέθηκαν"}
                     </div>
                   ) : (
@@ -256,7 +256,7 @@ export const AnnualPlanningUserSelection: React.FC<AnnualPlanningUserSelectionPr
                           </Avatar>
                           <div className="min-w-0 flex-1">
                             <p className="font-medium text-xs truncate">{user.name}</p>
-                            <p className="text-[10px] text-gray-600 truncate">{user.email}</p>
+                            <p className="text-[10px] text-[#004aad] truncate">{user.email}</p>
                           </div>
                         </div>
                         {selectedUserIds.includes(user.id) ? (
@@ -304,7 +304,7 @@ export const AnnualPlanningUserSelection: React.FC<AnnualPlanningUserSelectionPr
             className={`px-2 py-1 text-[10px] rounded-none border transition-colors flex items-center gap-1 ${
               assignmentMode === 'individual'
                 ? 'bg-[#004aad] text-white border-[#004aad]'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                : 'bg-white text-[#004aad] border-gray-300 hover:bg-gray-50'
             }`}
           >
             <User className="w-3 h-3" />
@@ -316,7 +316,7 @@ export const AnnualPlanningUserSelection: React.FC<AnnualPlanningUserSelectionPr
             className={`px-2 py-1 text-[10px] rounded-none border transition-colors flex items-center gap-1 ${
               assignmentMode === 'group'
                 ? 'bg-[#004aad] text-white border-[#004aad]'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                : 'bg-white text-[#004aad] border-gray-300 hover:bg-gray-50'
             }`}
           >
             <Users className="w-3 h-3" />
@@ -328,7 +328,7 @@ export const AnnualPlanningUserSelection: React.FC<AnnualPlanningUserSelectionPr
       <div className="flex items-center gap-1 p-1 border rounded-none bg-gray-50 min-h-[24px]">
         <div className="flex flex-wrap gap-0.5 flex-1 min-w-0">
           {selectedUsers.length === 0 ? (
-            <span className="text-[10px] text-gray-500">Δεν έχουν επιλεγεί χρήστες</span>
+            <span className="text-[10px] text-[#004aad]">Δεν έχουν επιλεγεί χρήστες</span>
           ) : (
             selectedUsers.map((user) => (
               <div
@@ -342,7 +342,7 @@ export const AnnualPlanningUserSelection: React.FC<AnnualPlanningUserSelectionPr
                 <span className="text-[10px] truncate max-w-[40px] md:max-w-[60px]">{user.name}</span>
                 <button
                   onClick={(e) => handleRemoveUser(user.id, e)}
-                  className="text-gray-400 hover:text-red-500 p-0"
+                  className="text-[#004aad] hover:text-red-500 p-0"
                   aria-label={`Αφαίρεση ${user.name}`}
                 >
                   <X className="w-2.5 h-2.5" />
@@ -357,7 +357,7 @@ export const AnnualPlanningUserSelection: React.FC<AnnualPlanningUserSelectionPr
           size="sm"
           onClick={handleClearAll}
           disabled={selectedUsers.length === 0}
-          className="rounded-none text-[9px] h-4 px-1 text-gray-500 hover:text-red-600 disabled:opacity-40"
+          className="rounded-none text-[9px] h-4 px-1 text-[#004aad] hover:text-red-600 disabled:opacity-40"
         >
           <span className="hidden md:inline">Καθαρισμός</span>
           <X className="w-3 h-3 md:hidden" />
