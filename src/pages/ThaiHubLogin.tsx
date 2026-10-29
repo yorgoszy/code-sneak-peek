@@ -121,7 +121,7 @@ export default function ThaiHubLogin() {
               <Button size="lg" onClick={() => setLoginOpen(true)} className="rounded-none bg-[var(--th-red)] hover:bg-[var(--th-red)]/90 text-white">
                 Σύνδεση
               </Button>
-              <Button size="lg" variant="outline" asChild className="rounded-none border-[var(--th-blue)] text-[var(--th-blue)] hover:bg-[var(--th-blue)]/10">
+              <Button size="lg" variant="outline" asChild className="rounded-none border-[var(--th-red)] text-[var(--th-red)] hover:bg-[var(--th-red)]/10">
                 <a href="#features">Μάθε περισσότερα</a>
               </Button>
             </div>
