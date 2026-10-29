@@ -39,7 +39,7 @@ export const CourseShopCard: React.FC<CourseShopCardProps> = ({
   return (
     <Card 
       className={`rounded-none overflow-hidden transition-all ${
-        isPurchased ? 'cursor-pointer hover:shadow-lg hover:border-[#00ffba]' : ''
+        isPurchased ? 'cursor-pointer hover:shadow-lg hover:border-[#004aad]' : ''
       }`}
       onClick={handleClick}
     >
@@ -62,18 +62,18 @@ export const CourseShopCard: React.FC<CourseShopCardProps> = ({
           className={`w-full h-full flex items-center justify-center ${course.thumbnail_url ? 'hidden' : ''}`}
           style={{ display: course.thumbnail_url ? 'none' : 'flex' }}
         >
-          <Youtube className="w-12 h-12 text-muted-foreground" />
+          <Youtube className="w-12 h-12 text-[#004aad]" />
         </div>
         
         {/* Status Badge */}
         <div className="absolute top-2 right-2">
           {isPurchased ? (
-            <Badge className="rounded-none bg-[#00ffba] text-black">
+            <Badge className="rounded-none bg-[#004aad] text-white">
               <Check className="w-3 h-3 mr-1" />
               Αγοράστηκε
             </Badge>
           ) : (
-            <Badge className="rounded-none bg-[#cb8954] text-white">
+            <Badge className="rounded-none bg-[#004aad] text-white">
               <Lock className="w-3 h-3 mr-1" />
               Κλειδωμένο
             </Badge>
@@ -133,12 +133,12 @@ export const CourseShopCard: React.FC<CourseShopCardProps> = ({
                 }
               }}
             >
-              <FileDown className="w-4 h-4 text-black" />
+              <FileDown className="w-4 h-4 text-white" />
             </button>
           )}
         </div>
         {course.description && (
-          <p className="text-xs text-muted-foreground line-clamp-2">{course.description}</p>
+          <p className="text-xs text-[#004aad] line-clamp-2">{course.description}</p>
         )}
         {course.category && (
           <Badge variant="outline" className="rounded-none text-xs">
@@ -150,7 +150,7 @@ export const CourseShopCard: React.FC<CourseShopCardProps> = ({
           {isPurchased ? (
             <Button
               size="sm"
-              className="w-full rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+              className="w-full rounded-none bg-[#004aad] hover:bg-[#004aad]/90 text-white"
               onClick={(e) => {
                 e.stopPropagation();
                 onOpen(course);
@@ -161,7 +161,7 @@ export const CourseShopCard: React.FC<CourseShopCardProps> = ({
           ) : (
             <Button
               size="sm"
-              className="w-full rounded-none bg-[#cb8954] hover:bg-[#cb8954]/90 text-white"
+              className="w-full rounded-none bg-[#004aad] hover:bg-[#004aad]/90 text-white"
               onClick={(e) => {
                 e.stopPropagation();
                 onBuy(course);

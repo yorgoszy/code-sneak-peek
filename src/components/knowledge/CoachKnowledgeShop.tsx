@@ -256,7 +256,7 @@ export const CoachKnowledgeShop: React.FC<CoachKnowledgeShopProps> = ({ coachId 
 
   if (loading) {
     return (
-      <div className="p-4 text-center text-muted-foreground">
+      <div className="p-4 text-center text-[#004aad]">
         Φόρτωση...
       </div>
     );
@@ -269,14 +269,14 @@ export const CoachKnowledgeShop: React.FC<CoachKnowledgeShopProps> = ({ coachId 
     <div className="p-4 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-2">
-        <ShoppingBag className="w-6 h-6 text-[#cb8954]" />
-        <h1 className="text-xl font-bold">Knowledge Shop</h1>
+        <ShoppingBag className="w-6 h-6 text-[#004aad]" />
+        <h1 className="text-xl font-bold text-[#004aad]">Knowledge Shop</h1>
       </div>
 
       {/* Purchased Courses */}
       {purchasedCourses.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-[#004aad] flex items-center gap-2">
             <BookOpen className="w-4 h-4" />
             Τα Μαθήματά μου ({purchasedCourses.length})
           </h2>
@@ -296,13 +296,13 @@ export const CoachKnowledgeShop: React.FC<CoachKnowledgeShopProps> = ({ coachId 
 
       {/* Available Courses */}
       <div className="space-y-3">
-        <h2 className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+        <h2 className="text-sm font-semibold text-[#004aad] flex items-center gap-2">
           <ShoppingBag className="w-4 h-4" />
           Διαθέσιμα Μαθήματα ({availableCourses.length})
         </h2>
         {availableCourses.length === 0 ? (
           <Card className="rounded-none">
-            <CardContent className="p-8 text-center text-muted-foreground">
+            <CardContent className="p-8 text-center text-[#004aad]">
               <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <p>Δεν υπάρχουν διαθέσιμα μαθήματα προς αγορά</p>
             </CardContent>
