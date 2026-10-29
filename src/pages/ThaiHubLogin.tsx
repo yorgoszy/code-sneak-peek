@@ -96,7 +96,7 @@ export default function ThaiHubLogin() {
                 {l.label}
               </a>
             ))}
-            <Button onClick={() => { setMenuOpen(false); setLoginOpen(true); }} className="w-full rounded-none bg-[var(--th-blue)] hover:bg-[var(--th-blue)]/90 text-white">
+            <Button onClick={() => { setMenuOpen(false); setLoginOpen(true); }} className="w-full rounded-none bg-[var(--th-blue)] hover:bg-[rgba(0,74,173,0.7)] text-white">
               Σύνδεση
             </Button>
           </div>
@@ -148,7 +148,7 @@ export default function ThaiHubLogin() {
                 onChange={(e) => setPassword(e.target.value)} className="rounded-none" />
             </div>
             {error && <p className="text-sm text-muted-foreground">{error}</p>}
-            <Button type="submit" disabled={busy} className="w-full rounded-none bg-[var(--th-blue)] hover:bg-[var(--th-blue)]/90 text-white">
+            <Button type="submit" disabled={busy} className="w-full rounded-none bg-[var(--th-blue)] hover:bg-[rgba(0,74,173,0.7)] text-white">
               {busy && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Σύνδεση
             </Button>
