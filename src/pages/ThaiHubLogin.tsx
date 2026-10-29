@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Loader2, Menu, X, LogIn } from "lucide-react";
-import heroImage from "@/assets/thaihub-hero-2.png.asset.json";
+import heroImage from "@/assets/thaihub-hero-ring.png.asset.json";
 import thaihubLogo from "@/assets/thaihub-logo.png.asset.json";
 
 const navLinks = [
@@ -105,7 +105,7 @@ export default function ThaiHubLogin() {
 
       {/* Hero */}
       <section id="home" className="relative min-h-screen flex items-center pt-16">
-        <img src={heroImage.url} alt="Πυγμάχος προπονείται σε σάκο" width={1920} height={1088}
+        <img src={heroImage.url} alt="Μαγιάτικη αγώνες στο ρινγκ" width={1920} height={1088}
           className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-b from-white via-white/85 to-white/50" />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
