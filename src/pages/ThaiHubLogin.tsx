@@ -114,7 +114,7 @@ export default function ThaiHubLogin() {
             <h1 className="text-4xl sm:text-6xl font-bold tracking-tight leading-tight text-[var(--th-blue)]">
               Κράτα τους αθλητές σου σε <span className="text-[var(--th-blue)]">τροχιά</span>.
             </h1>
-            <p className="text-base sm:text-lg text-white/80">
+            <p className="text-base sm:text-lg text-[var(--th-blue)]">
               Προγράμματα, συνδρομές, τεστ και πρόοδος — όλα σε ένα μέρος.
             </p>
             <div className="flex flex-wrap gap-4">
