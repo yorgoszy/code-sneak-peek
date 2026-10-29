@@ -107,7 +107,7 @@ export default function ThaiHubLogin() {
       <section id="home" className="relative min-h-screen flex items-center pt-16">
         <img src={heroImage.url} alt="Πυγμάχος προπονείται σε σάκο" width={1920} height={1088}
           className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/70 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white via-white/70 to-white/30" />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="max-w-xl space-y-6">
             <p className="text-xs uppercase tracking-[0.3em] text-[var(--th-red)] font-semibold">Για προπονητές</p>
