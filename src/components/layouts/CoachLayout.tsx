@@ -110,7 +110,7 @@ const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
               <div className="flex items-center space-x-2">
                 <Button
                   variant="outline"
-                  className="rounded-none"
+                  className="rounded-none text-[#004aad]"
                   onClick={handleSignOut}
                   size="sm"
                 >
