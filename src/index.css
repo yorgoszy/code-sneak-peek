@@ -109,6 +109,11 @@ html, body {
 
     --metric-green: 120 60% 40%; /* grass green for jump numbers */
 
+    /* ThaiHub brand palette: #ff3131 red, #004aad blue, #ffffff white */
+    --th-blue: #004aad;
+    --th-red: #ff3131;
+    --th-white: #ffffff;
+
     --sidebar-background: 0 0% 98%;
 
     --sidebar-foreground: 240 5.3% 26.1%;

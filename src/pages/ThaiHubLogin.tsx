@@ -68,7 +68,7 @@ export default function ThaiHubLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="thaihub-page min-h-screen bg-background text-foreground">
       {/* Top menu */}
       <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
@@ -81,7 +81,7 @@ export default function ThaiHubLogin() {
                 {l.label}
               </a>
             ))}
-            <Button onClick={() => setLoginOpen(true)} className="rounded-none">
+            <Button onClick={() => setLoginOpen(true)} className="rounded-none bg-[var(--th-blue)] hover:bg-[var(--th-blue)]/90 text-white">
               <LogIn className="h-4 w-4 mr-2" /> Σύνδεση
             </Button>
           </div>
@@ -96,7 +96,7 @@ export default function ThaiHubLogin() {
                 {l.label}
               </a>
             ))}
-            <Button onClick={() => { setMenuOpen(false); setLoginOpen(true); }} className="w-full rounded-none">
+            <Button onClick={() => { setMenuOpen(false); setLoginOpen(true); }} className="w-full rounded-none bg-[var(--th-blue)] hover:bg-[var(--th-blue)]/90 text-white">
               Σύνδεση
             </Button>
           </div>
@@ -110,18 +110,18 @@ export default function ThaiHubLogin() {
         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent" />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="max-w-xl space-y-6">
-            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Για προπονητές</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-[var(--th-red)] font-semibold">Για προπονητές</p>
             <h1 className="text-4xl sm:text-6xl font-bold tracking-tight leading-tight">
-              Κράτα τους αθλητές σου σε τροχιά.
+              Κράτα τους αθλητές σου σε <span className="text-[var(--th-blue)]">τροχιά</span>.
             </h1>
             <p className="text-base sm:text-lg text-muted-foreground">
               Προγράμματα, συνδρομές, τεστ και πρόοδος — όλα σε ένα μέρος.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Button size="lg" onClick={() => setLoginOpen(true)} className="rounded-none">
+              <Button size="lg" onClick={() => setLoginOpen(true)} className="rounded-none bg-[var(--th-blue)] hover:bg-[var(--th-blue)]/90 text-white">
                 Σύνδεση
               </Button>
-              <Button size="lg" variant="outline" asChild className="rounded-none">
+              <Button size="lg" variant="outline" asChild className="rounded-none border-[var(--th-blue)] text-[var(--th-blue)] hover:bg-[var(--th-blue)]/10">
                 <a href="#features">Μάθε περισσότερα</a>
               </Button>
             </div>
@@ -148,7 +148,7 @@ export default function ThaiHubLogin() {
                 onChange={(e) => setPassword(e.target.value)} className="rounded-none" />
             </div>
             {error && <p className="text-sm text-muted-foreground">{error}</p>}
-            <Button type="submit" disabled={busy} className="w-full rounded-none">
+            <Button type="submit" disabled={busy} className="w-full rounded-none bg-[var(--th-blue)] hover:bg-[var(--th-blue)]/90 text-white">
               {busy && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Σύνδεση
             </Button>
