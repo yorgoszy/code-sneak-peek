@@ -209,7 +209,7 @@ export const AnnualPlanningUserSelection: React.FC<AnnualPlanningUserSelectionPr
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className="h-6 px-2 text-[10px] rounded-none w-[120px] justify-start"
+                className="h-6 px-2 text-[10px] rounded-none w-[120px] justify-start text-[#004aad]"
                 disabled={disabled || availableUsers.length === 0}
               >
                 <Plus className="w-3 h-3 mr-1" />
