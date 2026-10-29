@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Loader2, Menu, X, LogIn } from "lucide-react";
 import heroImage from "@/assets/wekeep-hero.jpg";
+import thaihubLogo from "@/assets/thaihub-logo.png.asset.json";
 
 const navLinks = [
   { label: "Αρχική", href: "#home" },
@@ -29,9 +30,16 @@ export default function ThaiHubLogin() {
     const previousTitle = document.title;
     document.title = "ThaiHub — Πλατφόρμα για προπονητές";
     const isPreview = new URLSearchParams(window.location.search).has("preview");
+    const favicon = document.querySelector<HTMLLinkElement>("link[rel='icon']");
+    const previousFavicon = favicon?.href;
+    if (favicon) {
+      favicon.href = "/thaihub-icon.png";
+      favicon.type = "image/png";
+    }
     if (!isPreview && !loading && isAuthenticated) navigate("/dashboard/coach-overview", { replace: true });
     return () => {
       document.title = previousTitle;
+      if (favicon && previousFavicon) favicon.href = previousFavicon;
     };
   }, [loading, isAuthenticated, navigate]);
 
@@ -65,7 +73,7 @@ export default function ThaiHubLogin() {
       <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
           <a href="#home" className="flex items-center">
-            <span className="text-2xl font-bold">ThaiHub</span>
+            <img src={thaihubLogo.url} alt="ThaiHub" className="h-8 w-auto" />
           </a>
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((l) => (
@@ -125,7 +133,7 @@ export default function ThaiHubLogin() {
       <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
         <DialogContent className="max-w-sm rounded-none">
           <DialogHeader>
-            <span className="text-xl font-bold self-start">ThaiHub</span>
+            <img src={thaihubLogo.url} alt="ThaiHub" className="h-8 w-auto self-start" />
             <DialogTitle>Σύνδεση στο ThaiHub</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
