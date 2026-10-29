@@ -197,7 +197,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-none max-w-md">
+      <DialogContent className="rounded-none max-w-md text-[#004aad]">
         <DialogHeader>
           <DialogTitle>Νέα Συνδρομή</DialogTitle>
         </DialogHeader>
@@ -213,7 +213,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
                 </Avatar>
                 <div className="flex-1">
                   <p className="font-medium">{selectedAthlete.name}</p>
-                  <p className="text-sm text-muted-foreground">{selectedAthlete.email}</p>
+                  <p className="text-sm text-[#004aad]/70">{selectedAthlete.email}</p>
                 </div>
                 <Button 
                   variant="ghost" 
@@ -227,7 +227,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
             ) : (
               <div className="space-y-2">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#004aad]/70" />
                   <Input
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -237,11 +237,11 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
                 </div>
                 <div className="max-h-48 overflow-y-auto border border-border">
                   {searchTerm.trim().length === 0 ? (
-                    <div className="p-3 text-center text-muted-foreground text-sm">
+                    <div className="p-3 text-center text-[#004aad]/70 text-sm">
                       Πληκτρολογήστε για αναζήτηση...
                     </div>
                   ) : filteredAthletes.length === 0 ? (
-                    <div className="p-3 text-center text-muted-foreground text-sm">
+                    <div className="p-3 text-center text-[#004aad]/70 text-sm">
                       Δεν βρέθηκαν αθλητές
                     </div>
                   ) : (
@@ -257,7 +257,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
                         </Avatar>
                         <div>
                           <p className="font-medium text-sm">{athlete.name}</p>
-                          <p className="text-xs text-muted-foreground">{athlete.email}</p>
+                          <p className="text-xs text-[#004aad]/70">{athlete.email}</p>
                         </div>
                       </div>
                     ))
@@ -282,7 +282,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
           <div className="space-y-2">
             <Label>Τύπος Συνδρομής</Label>
             {subscriptionTypes.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-[#004aad]/70">
                 Δεν έχετε δημιουργήσει τύπους συνδρομών. Πηγαίνετε στο tab "Τύποι" για να δημιουργήσετε.
               </p>
             ) : (
