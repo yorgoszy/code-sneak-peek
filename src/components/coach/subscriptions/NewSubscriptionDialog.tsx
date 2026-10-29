@@ -235,6 +235,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
                     className="pl-10 rounded-none placeholder:text-[#004aad]/70"
                   />
                 </div>
+                {searchTerm.trim().length > 0 && (
                 <div className="max-h-48 overflow-y-auto border border-border">
                   {filteredAthletes.length === 0 ? (
                     <div className="p-3 text-center text-[#004aad]/70 text-sm">
