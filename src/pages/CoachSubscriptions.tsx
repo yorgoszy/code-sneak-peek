@@ -74,6 +74,8 @@ const CoachSubscriptionsContent = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("subscriptions");
   const [newSubscriptionOpen, setNewSubscriptionOpen] = useState(false);
+  // Οι admin χρησιμοποιούν τον κεντρικό πίνακα user_subscriptions, οι coaches τον coach_subscriptions
+  const [subsTable, setSubsTable] = useState<"coach_subscriptions" | "user_subscriptions" | null>(null);
 
   useEffect(() => {
     if (!coachId || searchParams.get("action") !== "create") return;
@@ -93,17 +95,20 @@ const CoachSubscriptionsContent = () => {
 
   const triggerFinancialRefresh = () => setFinancialRefreshKey(prev => prev + 1);
 
-  const fetchSubscriptions = async () => {
-    if (loadingSubscriptions || !coachId) return;
+  const fetchSubscriptions = async (table: "coach_subscriptions" | "user_subscriptions" | null = subsTable) => {
+    if (loadingSubscriptions || !coachId || !table) return;
 
     setLoadingSubscriptions(true);
     try {
+      const userJoin = table === "user_subscriptions"
+        ? "app_users!user_subscriptions_user_id_fkey (name, email, avatar_url, photo_url)"
+        : "app_users!coach_subscriptions_user_id_fkey (name, email, avatar_url, photo_url)";
       const { data, error } = await supabase
-        .from("coach_subscriptions")
+        .from(table)
         .select(`
           *,
           subscription_types (id, name, price, duration_months),
-          app_users!coach_subscriptions_user_id_fkey (name, email, avatar_url, photo_url)
+          ${userJoin}
         `)
         .eq("coach_id", coachId)
         .order("created_at", { ascending: false });
@@ -319,11 +324,21 @@ const CoachSubscriptionsContent = () => {
     }
   };
 
+  // Εντοπισμός ρόλου: αν ο χρήστης είναι admin, οι συνδρομές είναι στον user_subscriptions
   useEffect(() => {
-    if (coachId) {
-      fetchSubscriptions();
+    const detectTable = async () => {
+      if (!coachId) return;
+      const { data } = await supabase
+        .from("app_users")
+        .select("role")
+        .eq("id", coachId)
+        .single();
+      const table = data?.role === "admin" ? "user_subscriptions" : "coach_subscriptions";
+      setSubsTable(table);
+      fetchSubscriptions(table);
       fetchSubscriptionTypes();
-    }
+    };
+    detectTable();
   }, [coachId]);
 
   const getStatusColor = (status: string, isPaused: boolean) => {
