@@ -1799,10 +1799,10 @@ const AnnualPlanning: React.FC<{ coachId?: string }> = ({ coachId }) => {
     <div className="p-2 lg:p-0">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className={cn("w-full rounded-none h-8", isAdminUser || scopedCoachId ? "grid-cols-3" : "grid-cols-2")} style={{ display: 'grid', gridTemplateColumns: isAdminUser || scopedCoachId ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)' }}>
-          <TabsTrigger value="new" className="rounded-none text-xs text-[#004aad]">Νέο</TabsTrigger>
-          <TabsTrigger value="assigned" className="rounded-none text-xs text-[#004aad]">Ανατεθημένα</TabsTrigger>
+          <TabsTrigger value="new" className="rounded-none text-xs text-[#004aad] data-[state=active]:text-[#004aad]">Νέο</TabsTrigger>
+          <TabsTrigger value="assigned" className="rounded-none text-xs text-[#004aad] data-[state=active]:text-[#004aad]">Ανατεθημένα</TabsTrigger>
           {(isAdminUser || scopedCoachId) && (
-            <TabsTrigger value="saved" className="rounded-none text-xs text-[#004aad]">Αποθηκευμένα</TabsTrigger>
+            <TabsTrigger value="saved" className="rounded-none text-xs text-[#004aad] data-[state=active]:text-[#004aad]">Αποθηκευμένα</TabsTrigger>
           )}
         </TabsList>
 
