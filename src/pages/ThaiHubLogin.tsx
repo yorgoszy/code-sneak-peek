@@ -90,9 +90,9 @@ export default function ThaiHubLogin() {
           </Button>
         </div>
         {menuOpen && (
-          <div className="md:hidden border-t border-border bg-background px-4 py-4 space-y-3">
+          <div className="md:hidden border-t border-border bg-white px-4 py-4 space-y-3">
             {navLinks.map((l) => (
-              <a key={l.href} href={l.href} onClick={() => setMenuOpen(false)} className="block text-sm">
+              <a key={l.href} href={l.href} onClick={() => setMenuOpen(false)} className="block text-sm text-black/70">
                 {l.label}
               </a>
             ))}
