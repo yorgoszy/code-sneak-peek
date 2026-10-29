@@ -59,7 +59,7 @@ export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
               <span className="flex w-full items-center justify-between gap-2">
                 <Icon className="h-5 w-5 shrink-0 text-[#004aad]" aria-hidden="true" />
                 {countKey && (
-                  <span className="text-2xl font-semibold leading-none tabular-nums" aria-live="polite">
+                  <span className="text-2xl font-semibold leading-none tabular-nums text-[#004aad]" aria-live="polite">
                     {counts ? counts[countKey] : isError ? "—" : "…"}
                   </span>
                 )}
