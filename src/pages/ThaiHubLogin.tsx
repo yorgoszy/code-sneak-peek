@@ -77,7 +77,7 @@ export default function ThaiHubLogin() {
           </a>
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((l) => (
-              <a key={l.href} href={l.href} className="text-sm text-[var(--th-blue)] hover:text-[var(--th-red)]/70 transition-colors">
+              <a key={l.href} href={l.href} className="text-sm text-[var(--th-blue)] hover:text-[rgba(255,49,49,0.7)] transition-colors">
                 {l.label}
               </a>
             ))}
@@ -121,7 +121,7 @@ export default function ThaiHubLogin() {
               <Button size="lg" onClick={() => setLoginOpen(true)} className="rounded-none bg-[var(--th-red)] hover:bg-[var(--th-red)]/90 text-white">
                 Σύνδεση
               </Button>
-              <Button size="lg" asChild className="rounded-none bg-white text-[var(--th-red)] hover:bg-[var(--th-red)]/10">
+              <Button size="lg" asChild className="rounded-none bg-white text-[var(--th-red)] hover:bg-[rgba(255,49,49,0.1)]">
                 <a href="#features">Μάθε περισσότερα</a>
               </Button>
             </div>
