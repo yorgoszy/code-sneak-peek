@@ -119,7 +119,7 @@ const CoachSubscriptionsContent = () => {
         return;
       }
 
-      setSubscriptions(data || []);
+      setSubscriptions((data as any) || []);
     } catch (error) {
       console.error("💥 Error:", error);
     } finally {
