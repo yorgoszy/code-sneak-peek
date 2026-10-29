@@ -138,7 +138,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
 
       // Create subscription
       const { data: subscriptionData, error: subscriptionError } = await supabase
-        .from('coach_subscriptions')
+        .from(tableName)
         .insert({
           user_id: selectedAthlete.id,
           subscription_type_id: selectedTypeId,

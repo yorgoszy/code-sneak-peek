@@ -67,7 +67,7 @@ export const CoachSubscriptionEditDialog: React.FC<CoachSubscriptionEditDialogPr
     setLoading(true);
     try {
       const { error } = await supabase
-        .from('coach_subscriptions')
+        .from(tableName)
         .update({
           start_date: startDate,
           end_date: endDate,
