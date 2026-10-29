@@ -242,7 +242,7 @@ export const NewCoachUserDialog = ({
                 type="date"
                 value={formData.birth_date}
                 onChange={(e) => setFormData({ ...formData, birth_date: e.target.value })}
-                className="rounded-none h-8 text-sm blue-calendar-indicator"
+                className="rounded-none h-8 text-sm text-[#004aad] blue-calendar-indicator"
               />
             </div>
             <div>
