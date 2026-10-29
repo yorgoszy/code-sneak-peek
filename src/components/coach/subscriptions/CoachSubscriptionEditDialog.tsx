@@ -39,6 +39,7 @@ interface CoachSubscriptionEditDialogProps {
   subscription: CoachSubscription | null;
   subscriptionTypes: SubscriptionType[];
   onSuccess: () => void;
+  tableName?: "coach_subscriptions" | "user_subscriptions";
 }
 
 export const CoachSubscriptionEditDialog: React.FC<CoachSubscriptionEditDialogProps> = ({
@@ -46,7 +47,8 @@ export const CoachSubscriptionEditDialog: React.FC<CoachSubscriptionEditDialogPr
   onClose,
   subscription,
   subscriptionTypes,
-  onSuccess
+  onSuccess,
+  tableName = "coach_subscriptions"
 }) => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');

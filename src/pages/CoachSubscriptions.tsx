@@ -635,6 +635,7 @@ const CoachSubscriptionsContent = () => {
         open={newSubscriptionOpen}
         onOpenChange={setNewSubscriptionOpen}
         coachId={coachId}
+        tableName={subsTable ?? "coach_subscriptions"}
         onSuccess={() => {
           fetchSubscriptions();
           setNewSubscriptionOpen(false);
@@ -653,6 +654,7 @@ const CoachSubscriptionsContent = () => {
           onClose={() => setEditDialogOpen(false)}
           subscription={subscriptionToEdit}
           subscriptionTypes={subscriptionTypes}
+          tableName={subsTable ?? "coach_subscriptions"}
           onSuccess={() => {
             fetchSubscriptions();
             setEditDialogOpen(false);
