@@ -272,7 +272,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="rounded-none blue-calendar-indicator"
+              className="rounded-none text-[#004aad] blue-calendar-indicator"
             />
           </div>
 
