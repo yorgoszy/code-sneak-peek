@@ -83,7 +83,7 @@ const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
                     variant="outline"
                     size="sm"
                     onClick={handleBackToOverview}
-                    className="rounded-none"
+                    className="rounded-none text-[#004aad]"
                     aria-label="Επιστροφή στην Επισκόπηση"
                   >
                     <ArrowLeft className="h-4 w-4" />
@@ -99,7 +99,7 @@ const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
                     />
                   )}
                   <div className="min-w-0">
-                    <h1 className="truncate text-lg font-semibold">{coachName}</h1>
+                    <h1 className="truncate text-lg font-semibold text-[#004aad]">{coachName}</h1>
                     {title && (
                       <p className="truncate text-xs text-gray-500">{title}</p>
                     )}
