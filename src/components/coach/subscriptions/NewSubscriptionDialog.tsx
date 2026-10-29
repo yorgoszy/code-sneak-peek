@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { BlueDatePicker } from "@/components/ui/blue-date-picker";
 
 interface Athlete {
   id: string;
@@ -268,11 +269,9 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
           {/* Start Date */}
           <div className="space-y-2">
             <Label>Ημερομηνία Έναρξης</Label>
-            <Input
-              type="date"
+            <BlueDatePicker
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="rounded-none text-[#004aad] blue-calendar-indicator"
+              onChange={setStartDate}
             />
           </div>
 
