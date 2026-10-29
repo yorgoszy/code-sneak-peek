@@ -490,3 +490,8 @@ html, body {
 [id^="ring-video-"]:fullscreen .overlay-scores .overlay-timer span:last-child {
   font-size: 42px;
 }
+
+/* Blue calendar picker icon for date inputs */
+.blue-calendar-indicator::-webkit-calendar-picker-indicator {
+  filter: invert(16%) sepia(97%) saturate(2500%) hue-rotate(198deg) brightness(95%) contrast(101%);
+}

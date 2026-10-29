@@ -232,7 +232,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Αναζήτηση αθλητή..."
-                    className="pl-10 rounded-none"
+                    className="pl-10 rounded-none placeholder:text-[#004aad]/70"
                   />
                 </div>
                 <div className="max-h-48 overflow-y-auto border border-border">
@@ -274,7 +274,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="rounded-none"
+              className="rounded-none blue-calendar-indicator"
             />
           </div>
 
