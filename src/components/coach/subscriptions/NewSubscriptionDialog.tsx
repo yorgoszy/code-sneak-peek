@@ -188,7 +188,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
     }
   };
 
-  const filteredAthletes = athletes.filter(a => 
+  const filteredAthletes = searchTerm.trim().length === 0 ? [] : athletes.filter(a => 
     matchesSearchTerm(a.name, searchTerm) || 
     matchesSearchTerm(a.email, searchTerm)
   );
@@ -235,12 +235,9 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
                     className="pl-10 rounded-none placeholder:text-[#004aad]/70"
                   />
                 </div>
+                {searchTerm.trim().length > 0 && (
                 <div className="max-h-48 overflow-y-auto border border-border">
-                  {searchTerm.trim().length === 0 ? (
-                    <div className="p-3 text-center text-[#004aad]/70 text-sm">
-                      Πληκτρολογήστε για αναζήτηση...
-                    </div>
-                  ) : filteredAthletes.length === 0 ? (
+                  {filteredAthletes.length === 0 ? (
                     <div className="p-3 text-center text-[#004aad]/70 text-sm">
                       Δεν βρέθηκαν αθλητές
                     </div>
@@ -263,6 +260,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
                     ))
                   )}
                 </div>
+                )}
               </div>
             )}
           </div>
