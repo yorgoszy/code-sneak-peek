@@ -10,6 +10,8 @@ const PublicReportAbuse = lazy(() => import('@/pages/PublicReportAbuse'));
 const ABUSE_REPORT_DOMAINS = ['pestomou.com', 'www.pestomou.com'];
 const WEKEEP_DOMAINS = ['wekeep.gr', 'www.wekeep.gr'];
 const WeKeepLogin = lazy(() => import('@/pages/WeKeepLogin'));
+const THAIHUB_DOMAINS = ['thaihub.gr', 'www.thaihub.gr'];
+const ThaiHubLogin = lazy(() => import('@/pages/ThaiHubLogin'));
 
 export const RootRedirect = () => {
   const { loading } = useAuth();
@@ -20,6 +22,9 @@ export const RootRedirect = () => {
   const isWeKeepDomain =
     typeof window !== 'undefined' &&
     WEKEEP_DOMAINS.includes(window.location.hostname);
+  const isThaiHubDomain =
+    typeof window !== 'undefined' &&
+    THAIHUB_DOMAINS.includes(window.location.hostname);
 
   // Check for password recovery tokens and redirect to reset password page
   useEffect(() => {
@@ -67,6 +72,14 @@ export const RootRedirect = () => {
     return (
       <Suspense fallback={<CustomLoadingScreen />}>
         <WeKeepLogin />
+      </Suspense>
+    );
+  }
+
+  if (isThaiHubDomain) {
+    return (
+      <Suspense fallback={<CustomLoadingScreen />}>
+        <ThaiHubLogin />
       </Suspense>
     );
   }
