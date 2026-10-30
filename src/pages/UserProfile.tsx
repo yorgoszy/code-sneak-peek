@@ -158,6 +158,11 @@ const UserProfile = () => {
     );
   }
 
+  // Club profiles use the same dashboard shell as coach pages, including admin previews.
+  if (userProfile.role === 'club') {
+    return <Navigate to={`/dashboard/coach-overview?coachId=${userProfile.id}`} replace />;
+  }
+
   const handleSignOut = async () => {
     await signOut();
   };

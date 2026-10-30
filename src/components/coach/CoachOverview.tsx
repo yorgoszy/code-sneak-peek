@@ -10,6 +10,7 @@ import { HealthCardFormDialog } from "@/components/health-cards/HealthCardFormDi
 import { supabase } from "@/integrations/supabase/client";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { loadCoachOverviewCounts, type CoachOverviewCounts } from "./coachOverviewCounts";
+import { isClubDashboardPath, usesClubDashboard } from "./clubDashboard";
 
 interface CoachOverviewProps {
   coachId: string;
@@ -34,24 +35,24 @@ const overviewItems: { label: string; icon: any; path: string; create?: boolean;
   { label: "Ρυθμίσεις", icon: Settings, path: "/dashboard/coach-profile" },
 ];
 
-// Tiles που βλέπει ο ρόλος "club" (πακέτο Club: αθλητές, ομάδες, συνδρομές, ρυθμίσεις/myDATA)
-const CLUB_TILE_LABELS = new Set([
-  "Οι αθλητές μου",
-  "Προσθήκη νέου αθλητή",
-  "Συνδρομές",
-  "Νέα συνδρομή",
-  "Ρυθμίσεις",
-]);
-
 const tileClass = "h-auto min-h-28 min-w-0 rounded-none bg-background p-3 text-foreground sm:p-4";
 
 export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
   const [openDialog, setOpenDialog] = useState<DialogKey | null>(null);
-  const { isClub, isAdmin } = useRoleCheck();
-  const isClubUser = isClub() && !isAdmin();
+  const { isClub } = useRoleCheck();
+  const { data: viewedProfile, isLoading: profileLoading } = useQuery({
+    queryKey: ['dashboard-owner-role', coachId],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('app_users').select('role').eq('id', coachId).single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: Boolean(coachId),
+  });
+  const isClubUser = usesClubDashboard(viewedProfile?.role, isClub());
   const visibleItems = isClubUser
     ? [
-        ...overviewItems.filter((item) => CLUB_TILE_LABELS.has(item.label)),
+        ...overviewItems.filter((item) => isClubDashboardPath(item.path)),
         // Επιπλέον tile Ομάδων μόνο για club (δεν υπάρχει στο βασικό overview)
         { label: "Ομάδες", icon: Users, path: "/dashboard/coach-groups" },
       ]
@@ -67,6 +68,10 @@ export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
     setOpenDialog(null);
     void refetch();
   };
+
+  if (profileLoading) {
+    return <p role="status" className="text-sm text-muted-foreground">Φόρτωση…</p>;
+  }
 
   return (
     <section className="space-y-4">
