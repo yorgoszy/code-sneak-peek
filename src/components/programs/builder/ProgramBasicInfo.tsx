@@ -261,7 +261,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
               onClick={onAssignments}
               disabled={!canAssign}
               size="sm"
-              className="h-5 px-1.5 text-[9px] rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black"
+              className="h-5 px-1.5 text-[9px] rounded-none bg-[#004aad] hover:bg-[#004aad]/90 text-white"
             >
               <Users className="w-2.5 h-2.5" />
             </Button>
