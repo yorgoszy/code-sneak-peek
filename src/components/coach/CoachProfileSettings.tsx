@@ -432,10 +432,6 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
               </div>
             </div>
           </div>
-          <Label htmlFor="logo-upload" className="cursor-pointer inline-flex items-center gap-1 px-2 py-1 border text-[10px] hover:bg-[#004aad]/10">
-            <Upload className="h-3 w-3" />
-            Ανέβασμα Logo
-          </Label>
           <Input id="logo-upload" type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
         </CardContent>
       </Card>
