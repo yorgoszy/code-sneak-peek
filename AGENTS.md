@@ -1,6 +1,6 @@
 # Architecture rules
 
-- Club upgrade presentation reuses the ThaiHub Coach additions catalog; checkout stays disabled until server-side billing and verified, idempotent entitlement conversion are configured.
+- Club upgrades reuse the ThaiHub additions catalog and a dedicated authenticated Stripe endpoint; only verified paid sessions or signed webhooks call the service-only atomic activation, preserving account identity and source expiry. Pending orders and Stripe idempotency keys prevent duplicate checkout/conversion; existing subscription checkout remains separate.
 
 - Bar Velocity live tracking samples a user-selected target and follows a nearby connected color patch; losing the target stops the attempt rather than switching to a global color centroid.
 
