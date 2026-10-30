@@ -457,7 +457,9 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
                 placeholder="Τηλέφωνο"
               />
             </div>
+            </div>
           </div>
+          <Input id="logo-upload" type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
         </CardContent>
       </Card>
 
