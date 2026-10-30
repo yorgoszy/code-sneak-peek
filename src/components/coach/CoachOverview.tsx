@@ -51,11 +51,7 @@ export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
   });
   const isClubUser = usesClubDashboard(viewedProfile?.role, isClub());
   const visibleItems = isClubUser
-    ? [
-        ...overviewItems.filter((item) => isClubDashboardPath(item.path)),
-        // Επιπλέον tile Ομάδων μόνο για club (δεν υπάρχει στο βασικό overview)
-        { label: "Ομάδες", icon: Users, path: "/dashboard/coach-groups" },
-      ]
+    ? overviewItems.filter((item) => isClubDashboardPath(item.path))
     : overviewItems;
   const today = format(new Date(), "yyyy-MM-dd");
   const { data: counts, isError, refetch } = useQuery({
