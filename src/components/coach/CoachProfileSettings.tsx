@@ -433,16 +433,6 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
             </div>
           </div>
           <Input id="logo-upload" type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
-        </CardContent>
-      </Card>
-
-      {/* Address - Compact */}
-      <Card className="rounded-none">
-        <CardContent className="p-2">
-          <div className="flex items-center gap-2 mb-1.5">
-            <MapPin className="h-3.5 w-3.5 text-[#004aad]" />
-            <span className="text-xs font-medium text-[#004aad]">Διεύθυνση</span>
-          </div>
           <div className="grid grid-cols-3 gap-2">
             <div className="col-span-3">
               <Input
