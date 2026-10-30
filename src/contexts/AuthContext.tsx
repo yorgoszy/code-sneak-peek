@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
-type UserRole = 'admin' | 'coach' | 'trainer' | 'athlete' | 'general' | 'parent' | 'federation';
+type UserRole = 'admin' | 'coach' | 'trainer' | 'athlete' | 'general' | 'parent' | 'federation' | 'club';
 
 interface AuthContextType {
   user: User | null;
@@ -22,6 +22,7 @@ interface AuthContextType {
   isGeneral: () => boolean;
   isParent: () => boolean;
   isFederation: () => boolean;
+  isClub: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -211,6 +212,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isGeneral = useCallback((): boolean => userRoles.includes('general'), [userRoles]);
   const isParent = useCallback((): boolean => userRoles.includes('parent'), [userRoles]);
   const isFederation = useCallback((): boolean => userRoles.includes('federation'), [userRoles]);
+  const isClub = useCallback((): boolean => userRoles.includes('club'), [userRoles]);
 
   const value = useMemo<AuthContextType>(() => ({
     user,
@@ -230,6 +232,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isGeneral,
     isParent,
     isFederation,
+    isClub,
   }), [
     user,
     session,
@@ -249,6 +252,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isGeneral,
     isParent,
     isFederation,
+    isClub,
   ]);
 
   return (
