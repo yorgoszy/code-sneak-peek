@@ -50,7 +50,8 @@ Deno.serve(async (req) => {
     }
     if (owner.role !== 'club') return reply({ error: 'Η αναβάθμιση γίνεται από τον ίδιο τον λογαριασμό Club.' }, 403);
     const origin = req.headers.get('origin') ?? 'https://hyperkids.lovable.app';
-    if (!allowedOrigins.has(origin)) return reply({ error: 'Μη επιτρεπόμενη σελίδα πληρωμής.' }, 403);
+    const projectPreview = /^https:\/\/([a-z0-9-]+--)?caecd137-de8c-4f15-9ad7-4eeb588073c6\.(lovable\.app|lovableproject\.com)$/.test(origin);
+    if (!allowedOrigins.has(origin) && !projectPreview) return reply({ error: 'Μη επιτρεπόμενη σελίδα πληρωμής.' }, 403);
     // This is the existing HYPERsync type explicitly confirmed as the Club entitlement.
     const { data: subs, error: subError } = await db.from('user_subscriptions').select('id,start_date,end_date,is_paused').eq('user_id', owner.id).eq('subscription_type_id', '9c46ca26-9837-4eb8-8ced-11e25ecf8388').eq('status', 'active').gte('end_date', new Date().toISOString().slice(0, 10));
     if (subError || subs?.length !== 1 || subs[0].is_paused) return reply({ error: 'Δεν βρέθηκε μία ενεργή συνδρομή Club για αναβάθμιση.' }, 409);
