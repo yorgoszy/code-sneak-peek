@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Loader2, Menu, X, LogIn, Users, Dumbbell, CreditCard, ChartNoAxesCombined, CalendarDays, BookOpen, ArrowUpRight, Phone, Check } from "lucide-react";
+import { Loader2, Menu, X, LogIn, Users, Dumbbell, CreditCard, ChartNoAxesCombined, CalendarDays, BookOpen, ArrowUpRight, Phone, Check, Mail, MapPin, Instagram, Youtube } from "lucide-react";
 import { thaihubLandingCopy, type ThaiHubLanguage } from "@/components/coach/thaihubLandingCopy";
 import heroImage from "@/assets/thaihub-hero-ring.png.asset.json";
 import thaihubLogo from "@/assets/thaihub-logo.png.asset.json";
@@ -128,7 +128,51 @@ export default function ThaiHubLogin() {
           <div className="lg:self-center"><p className="text-sm mb-3">{t.phone}</p><a href="tel:+302310529104" className="text-3xl sm:text-4xl font-semibold hover:text-[var(--th-blue-hover)]">+30 2310 529 104</a><div><Button asChild size="lg" className={`mt-6 ${primaryButton}`}><a href="tel:+302310529104"><Phone className="h-4 w-4 mr-2" />{t.call}</a></Button></div></div>
         </div>
       </section>
-      <footer className="border-t border-[var(--th-blue-border)]"><div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 flex flex-wrap items-center justify-between gap-5"><a href="#home"><img src={thaihubLogo.url} alt="ThaiHub" className="h-7 w-auto" /></a><p className="text-sm flex items-center gap-2">supported by <img src={hyperteamLogo.url} alt="HYPERTEAM" className="h-5 w-auto" /></p></div></footer>
+      <footer className="bg-[var(--th-white)] py-16 text-[var(--th-blue)] border-t border-[var(--th-blue-border)]">
+        <style>{`
+          .th-footer-link-text { position: relative; display: inline; }
+          .th-footer-link-text::after { content: ''; position: absolute; left: 0; bottom: -2px; height: 2px; width: 100%; background-color: currentColor; transform: scaleX(0); transform-origin: right; transition: transform 0.3s ease; }
+          .th-footer-link:hover .th-footer-link-text::after { transform: scaleX(1); transform-origin: left; }
+          .th-footer-icon-link { position: relative; display: inline-flex; }
+          .th-footer-icon-link::after { content: ''; position: absolute; left: 0; right: 0; bottom: -4px; height: 2px; background-color: currentColor; transform: scaleX(0); transform-origin: right; transition: transform 0.3s ease; }
+          .th-footer-icon-link:hover::after { transform: scaleX(1); transform-origin: left; }
+        `}</style>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            <div>
+              <h3 className="text-xl font-bold mb-6">{t.footerContact}</h3>
+              <div className="space-y-4">
+                <a href="https://maps.app.goo.gl/itvAmRgdT8qAG2ZL9" target="_blank" rel="noopener noreferrer" className="th-footer-link flex items-center gap-3 transition-colors">
+                  <MapPin className="w-5 h-5" /><span className="th-footer-link-text">{t.footerAddress}</span>
+                </a>
+                <a href="tel:+302310529104" className="th-footer-link flex items-center gap-3 transition-colors">
+                  <Phone className="w-5 h-5" /><span className="th-footer-link-text">+30 2310 529 104</span>
+                </a>
+                <a href={`mailto:${t.footerEmail}`} className="th-footer-link flex items-center gap-3 transition-colors">
+                  <Mail className="w-5 h-5" /><span className="th-footer-link-text">{t.footerEmail}</span>
+                </a>
+              </div>
+            </div>
+            <div className="flex flex-col justify-center items-center">
+              <a href="#home"><img src={thaihubLogo.url} alt="ThaiHub" className="h-10 w-auto mb-6" /></a>
+              <div className="flex justify-center gap-6">
+                <a href="https://www.instagram.com/hyperkids.gr/" target="_blank" rel="noopener noreferrer" className="th-footer-icon-link transition-colors"><Instagram className="w-6 h-6" /></a>
+                <a href="https://www.tiktok.com/@hyperkids.gr?is_from_webapp=1&sender_device=pc" target="_blank" rel="noopener noreferrer" className="th-footer-icon-link transition-colors">
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
+                </a>
+                <a href="https://www.youtube.com/@hyperkids6769" target="_blank" rel="noopener noreferrer" className="th-footer-icon-link transition-colors"><Youtube className="w-6 h-6" /></a>
+              </div>
+            </div>
+            <div className="md:ml-auto">
+              <h3 className="text-xl font-bold mb-6">{t.footerHours}</h3>
+              <div className="space-y-2">{t.footerHoursLines.map(line => <p key={line}>{line}</p>)}</div>
+            </div>
+          </div>
+          <div className="text-center border-t border-[var(--th-blue-border)] pt-8 mt-12">
+            <p className="flex items-center justify-center gap-2 flex-wrap">{t.footerCopyright} <img src={hyperteamLogo.url} alt="HYPERTEAM" className="h-4 w-auto inline-block" /></p>
+          </div>
+        </div>
+      </footer>
 
       <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
         <DialogContent lang={language} className="thaihub-page max-w-sm rounded-none bg-[var(--th-white)] text-[var(--th-blue)]">
