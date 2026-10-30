@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Loader2, Menu, X, LogIn, Users, Dumbbell, CreditCard, ChartNoAxesCombined, CalendarDays, BookOpen, ArrowUpRight, Phone, Check, Mail, MapPin, Instagram, Youtube } from "lucide-react";
+import { Loader2, Menu, X, LogIn, Users, Dumbbell, CreditCard, ChartNoAxesCombined, CalendarDays, BookOpen, ArrowUpRight, Phone, Check, Mail, MapPin } from "lucide-react";
 import { thaihubLandingCopy, type ThaiHubLanguage } from "@/components/coach/thaihubLandingCopy";
 import heroImage from "@/assets/thaihub-hero-ring.png.asset.json";
 import thaihubLogo from "@/assets/thaihub-logo.png.asset.json";
@@ -154,14 +154,7 @@ export default function ThaiHubLogin() {
               </div>
             </div>
             <div className="flex flex-col justify-center items-center">
-              <a href="#home"><img src={thaihubLogo.url} alt="ThaiHub" className="h-10 w-auto mb-6" /></a>
-              <div className="flex justify-center gap-6">
-                <a href="https://www.instagram.com/hyperkids.gr/" target="_blank" rel="noopener noreferrer" className="th-footer-icon-link transition-colors"><Instagram className="w-6 h-6" /></a>
-                <a href="https://www.tiktok.com/@hyperkids.gr?is_from_webapp=1&sender_device=pc" target="_blank" rel="noopener noreferrer" className="th-footer-icon-link transition-colors">
-                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
-                </a>
-                <a href="https://www.youtube.com/@hyperkids6769" target="_blank" rel="noopener noreferrer" className="th-footer-icon-link transition-colors"><Youtube className="w-6 h-6" /></a>
-              </div>
+              <a href="#home"><img src={thaihubLogo.url} alt="ThaiHub" className="h-10 w-auto" /></a>
             </div>
             <div className="md:ml-auto">
               <h3 className="text-xl font-bold mb-6">{t.footerHours}</h3>
