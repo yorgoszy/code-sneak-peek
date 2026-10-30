@@ -15,8 +15,8 @@ test('Coach costs 59 EUR monthly including VAT', () => {
   strictEqual(thaihubPlans[1].vatIncluded, true);
 });
 
-test('Pro costs 99 EUR monthly including VAT', () => {
-  strictEqual(thaihubPlans[2].name, 'Pro');
+test('Federation costs 99 EUR monthly including VAT', () => {
+  strictEqual(thaihubPlans[2].name, 'Federation');
   strictEqual(thaihubPlans[2].monthlyPrice, 99);
   strictEqual(thaihubPlans[2].vatIncluded, true);
 });
@@ -29,6 +29,6 @@ test('Coach inherits Club and adds program design, tracking, tests, profile, pro
   deepStrictEqual(thaihubPlans[1].features, [...thaihubPlans[0].features, 'programDesign', 'volumeIntensity', 'tests', 'athleteProfile', 'athleteProgress', 'nutrition', 'videoAnalysis']);
 });
 
-test('Pro inherits Coach and adds the measurement apps', () => {
-  deepStrictEqual(thaihubPlans[2].features, [...thaihubPlans[1].features, 'apps']);
+test('Federation inherits Coach and adds clubs, athlete cards, competitions, weigh-in, draw, ranking and AI analysis', () => {
+  deepStrictEqual(thaihubPlans[2].features, [...thaihubPlans[1].features, 'federationClubs', 'athleteCards', 'athleteProfiles', 'competitions', 'liveWeighIn', 'liveVideo', 'draw', 'fightCard', 'ranking', 'aiVideoAnalysis']);
 });
