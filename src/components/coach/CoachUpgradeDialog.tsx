@@ -10,7 +10,7 @@ export function CoachUpgradeDialog({ open, onOpenChange }: { open: boolean; onOp
       <DialogContent className="rounded-none max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-[var(--th-blue)]">Upgrade to Coach</DialogTitle>
-          <DialogDescription>Όλα του Club και επιπλέον:</DialogDescription>
+          <DialogDescription className="text-[var(--th-blue)]">Όλα του Club και επιπλέον:</DialogDescription>
         </DialogHeader>
         <ul className="space-y-3 text-[var(--th-blue)]">
           {coachFeatures.map(feature => (
