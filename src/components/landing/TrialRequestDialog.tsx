@@ -85,7 +85,8 @@ export const TrialRequestDialog: React.FC<Props> = ({ open, onOpenChange }) => {
       .subscribe();
 
     const iv = setInterval(async () => {
-      const { data } = await supabase.from('trial_requests').select('status,admin_response').eq('id', requestId).maybeSingle();
+      const { data: rows } = await (supabase.rpc as any)('get_trial_request_status', { p_id: requestId });
+      const data = rows?.[0];
       if (data) { setStatus(data.status as any); setAdminResponse(data.admin_response); }
     }, 10000);
 
@@ -110,9 +111,11 @@ export const TrialRequestDialog: React.FC<Props> = ({ open, onOpenChange }) => {
       return;
     }
     setLoading(true);
-    const { data, error } = await supabase
+    const newId = crypto.randomUUID();
+    const { error } = await supabase
       .from('trial_requests')
       .insert({
+        id: newId,
         name: parsed.data.name,
         email: parsed.data.email,
         phone: parsed.data.phone || null,
@@ -120,9 +123,8 @@ export const TrialRequestDialog: React.FC<Props> = ({ open, onOpenChange }) => {
         preferred_date: parsed.data.preferred_date,
         preferred_time: parsed.data.preferred_time,
         message: parsed.data.message || null,
-      })
-      .select('id')
-      .single();
+      });
+    const data = { id: newId };
     setLoading(false);
     if (error) {
       toast.error('Σφάλμα: ' + error.message);
