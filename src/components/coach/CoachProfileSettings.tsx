@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Save, Camera, Lock, Building2, MapPin, CreditCard } from "lucide-react";
+import { Save, Camera, Lock, Building2, MapPin, CreditCard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -390,13 +390,13 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
             <span className="text-xs font-medium text-[#004aad]">Επαγγελματικά Στοιχεία</span>
           </div>
           <div className="flex gap-3 mb-2">
-            <div className="w-16 h-16 border border-dashed border-[#004aad]/40 flex items-center justify-center overflow-hidden flex-shrink-0">
+            <label htmlFor="logo-upload" className="w-16 h-16 border border-dashed border-[#004aad]/40 flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer hover:bg-[#004aad]/10">
               {logoPreview ? (
                 <img src={logoPreview} alt="Logo" className="w-full h-full object-contain" />
               ) : (
                 <span className="text-[#004aad] text-[10px] text-center">Logo</span>
               )}
-            </div>
+            </label>
             <div className="flex-1 grid grid-cols-2 gap-2">
               <div>
                 <Label className="text-[10px] text-[#004aad]">Επωνυμία</Label>
@@ -432,10 +432,6 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
               </div>
             </div>
           </div>
-          <Label htmlFor="logo-upload" className="cursor-pointer inline-flex items-center gap-1 px-2 py-1 border text-[10px] hover:bg-[#004aad]/10">
-            <Upload className="h-3 w-3" />
-            Ανέβασμα Logo
-          </Label>
           <Input id="logo-upload" type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
         </CardContent>
       </Card>
