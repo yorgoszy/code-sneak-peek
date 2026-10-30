@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
-import { BarChart3, CalendarDays, ClipboardList, CreditCard, Dumbbell, FilePlus2, GraduationCap, HeartPulse, Layers, Plus, Settings, UserPlus, Users } from "lucide-react";
+import { ArrowUpRight, BarChart3, CalendarDays, ClipboardList, CreditCard, Dumbbell, FilePlus2, GraduationCap, HeartPulse, Layers, Plus, Settings, UserPlus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NewCoachUserDialog } from "@/components/coach-users/NewCoachUserDialog";
 import { NewSubscriptionDialog } from "@/components/coach/subscriptions/NewSubscriptionDialog";
@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { loadCoachOverviewCounts, type CoachOverviewCounts } from "./coachOverviewCounts";
 import { isClubDashboardPath, usesClubDashboard } from "./clubDashboard";
+import { CoachUpgradeDialog } from "./CoachUpgradeDialog";
 
 interface CoachOverviewProps {
   coachId: string;
@@ -39,6 +40,7 @@ const tileClass = "h-auto min-h-28 min-w-0 rounded-none bg-background p-3 text-f
 
 export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
   const [openDialog, setOpenDialog] = useState<DialogKey | null>(null);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const { isClub } = useRoleCheck();
   const { data: viewedProfile, isLoading: profileLoading } = useQuery({
     queryKey: ['dashboard-owner-role', coachId],
@@ -111,7 +113,19 @@ export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
             </Button>
           );
         })}
+        {isClubUser && (
+          <Button
+            variant="outline"
+            onClick={() => setUpgradeOpen(true)}
+            className={`${tileClass} relative flex flex-col items-start justify-between gap-4 text-[var(--th-blue)]`}
+          >
+            <ArrowUpRight className="h-5 w-5 shrink-0" aria-hidden="true" />
+            <span className="w-full whitespace-normal break-words text-left text-sm font-medium leading-snug">Upgrade to Coach</span>
+          </Button>
+        )}
       </div>
+
+      {isClubUser && <CoachUpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} />}
 
       <NewCoachUserDialog
         open={openDialog === "athlete"}

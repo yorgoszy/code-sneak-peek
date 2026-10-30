@@ -1,5 +1,7 @@
 # Architecture rules
 
+- Club upgrade presentation reuses the ThaiHub Coach additions catalog; checkout stays disabled until server-side billing and verified, idempotent entitlement conversion are configured.
+
 - Bar Velocity live tracking samples a user-selected target and follows a nearby connected color patch; losing the target stops the attempt rather than switching to a global color centroid.
 
 - Brand landing pages have separate public routes and hostname selection at the root; admin preview links retain the landing page for signed-in users so each brand can be designed independently.
