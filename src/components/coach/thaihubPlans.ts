@@ -3,10 +3,10 @@ export const clubFeatures = [
 ] as const;
 
 export const coachFeatures = [
-  'programDesign', 'volumeIntensity', 'tests', 'athleteProfile', 'athleteProgress',
+  'programDesign', 'volumeIntensity', 'tests', 'athleteProfile', 'athleteProgress', 'nutrition', 'videoAnalysis',
 ] as const;
 
-export const proFeatures = ['nutrition', 'videoAnalysis', 'apps'] as const;
+export const proFeatures = ['apps'] as const;
 
 export type ThaiHubPlanFeature = typeof clubFeatures[number] | typeof coachFeatures[number] | typeof proFeatures[number];
 

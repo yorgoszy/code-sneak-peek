@@ -25,10 +25,10 @@ test('Club includes athlete management, subscriptions, income/expenses and myDAT
   deepStrictEqual(thaihubPlans[0].features, ['athletes', 'subscriptions', 'incomeExpenses', 'mydata']);
 });
 
-test('Coach inherits Club and adds program design, volume/intensity tracking, tests, athlete profile and progress', () => {
-  deepStrictEqual(thaihubPlans[1].features, [...thaihubPlans[0].features, 'programDesign', 'volumeIntensity', 'tests', 'athleteProfile', 'athleteProgress']);
+test('Coach inherits Club and adds program design, tracking, tests, profile, progress, nutrition and video analysis', () => {
+  deepStrictEqual(thaihubPlans[1].features, [...thaihubPlans[0].features, 'programDesign', 'volumeIntensity', 'tests', 'athleteProfile', 'athleteProgress', 'nutrition', 'videoAnalysis']);
 });
 
-test('Pro inherits Coach and adds nutrition, video analysis and measurement apps', () => {
-  deepStrictEqual(thaihubPlans[2].features, [...thaihubPlans[1].features, 'nutrition', 'videoAnalysis', 'apps']);
+test('Pro inherits Coach and adds the measurement apps', () => {
+  deepStrictEqual(thaihubPlans[2].features, [...thaihubPlans[1].features, 'apps']);
 });
