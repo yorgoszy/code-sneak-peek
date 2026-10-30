@@ -330,10 +330,10 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {/* Basic Info - Compact */}
       <Card className="rounded-none">
-        <CardContent className="p-3">
+        <CardContent className="p-2">
           <div className="flex items-center gap-3">
             <div className="relative">
               <Avatar 
@@ -384,12 +384,12 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
 
       {/* Business Info - Compact */}
       <Card className="rounded-none">
-        <CardContent className="p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <Building2 className="h-4 w-4 text-[#004aad]" />
+        <CardContent className="p-2">
+          <div className="flex items-center gap-2 mb-1.5">
+            <Building2 className="h-3.5 w-3.5 text-[#004aad]" />
             <span className="text-xs font-medium text-[#004aad]">Επαγγελματικά Στοιχεία</span>
           </div>
-          <div className="flex gap-3 mb-2">
+          <div className="flex gap-2 mb-1.5">
             <label htmlFor="logo-upload" className="w-16 h-16 border border-dashed border-[#004aad]/40 flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer hover:bg-[#004aad]/10">
               {logoPreview ? (
                 <img src={logoPreview} alt="Logo" className="w-full h-full object-contain" />
@@ -438,9 +438,9 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
 
       {/* Address - Compact */}
       <Card className="rounded-none">
-        <CardContent className="p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <MapPin className="h-4 w-4 text-[#004aad]" />
+        <CardContent className="p-2">
+          <div className="flex items-center gap-2 mb-1.5">
+            <MapPin className="h-3.5 w-3.5 text-[#004aad]" />
             <span className="text-xs font-medium text-[#004aad]">Διεύθυνση</span>
           </div>
           <div className="grid grid-cols-3 gap-2">
