@@ -458,6 +458,8 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
               />
             </div>
             </div>
+            </div>
+            </div>
           </div>
           <Input id="logo-upload" type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
         </CardContent>
