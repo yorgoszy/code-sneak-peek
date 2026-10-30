@@ -1,6 +1,7 @@
 # Architecture rules
 
 - Brand landing pages have separate public routes and hostname selection at the root; admin preview links retain the landing page for signed-in users so each brand can be designed independently.
+- ThaiHub landing copy uses its own bilingual dictionary and persisted language choice, isolated from dashboard translations; platform subscription enquiries use contact links until real plan pricing and checkout are configured.
 
 - Coach fiscal settings live separately from editable coach profiles and are admin-managed through RLS; AADE credentials stay in per-coach server-only project secrets, and issuance remains disabled until a server verifies the connection.
 
