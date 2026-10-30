@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Loader2, Menu, X, LogIn, Users, Dumbbell, CreditCard, ChartNoAxesCombined, CalendarDays, BookOpen, ArrowUpRight, Phone, Check, Mail, MapPin } from "lucide-react";
 import { thaihubLandingCopy, type ThaiHubLanguage } from "@/components/coach/thaihubLandingCopy";
+import { thaihubPlans } from "@/components/coach/thaihubPlans";
 import heroImage from "@/assets/thaihub-hero-ring.png.asset.json";
 import thaihubLogo from "@/assets/thaihub-logo.png.asset.json";
 import hyperteamLogo from "@/assets/hyperteam-logo.png.asset.json";
@@ -116,9 +117,25 @@ export default function ThaiHubLogin() {
       </section>
 
       <section id="purchase" className="scroll-mt-16 py-16 sm:py-24 bg-[var(--th-blue-soft)] border-y border-[var(--th-blue-border)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 lg:gap-20">
-          <div><p className="text-xs font-semibold uppercase text-[var(--th-red)] mb-4">02 / {t.purchaseLabel}</p><h2 className="text-3xl sm:text-4xl font-bold">{t.purchaseTitle}</h2><p className="mt-6 leading-relaxed max-w-lg">{t.purchaseText}</p><Button asChild size="lg" className={`mt-8 h-auto min-h-11 whitespace-normal text-left ${primaryButton}`}><a href="#contact">{t.purchaseCta}<ArrowUpRight className="ml-3 h-4 w-4 shrink-0" /></a></Button></div>
-          <ul className="self-center divide-y divide-[var(--th-blue-border)]">{t.included.map(item => <li key={item} className="py-5 flex items-center gap-4 text-lg"><Check className="h-5 w-5 shrink-0" />{item}</li>)}</ul>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-xs font-semibold uppercase text-[var(--th-red)] mb-4">02 / {t.purchaseLabel}</p>
+          <h2 className="text-3xl sm:text-4xl font-bold">{t.purchaseTitle}</h2>
+          <p className="mt-6 leading-relaxed max-w-2xl">{t.purchaseText}</p>
+          <div className="grid md:grid-cols-3 gap-6 mt-12">
+            {thaihubPlans.map(plan => (
+              <article key={plan.id} aria-label={plan.name} className="flex flex-col min-w-0 bg-[var(--th-white)] border border-[var(--th-blue-border)] p-6 lg:p-8">
+                <h3 className="text-2xl font-bold">{plan.name}</h3>
+                <p className="text-sm mt-3 min-h-10">{t.planDescriptions[plan.id]}</p>
+                <div className="flex items-baseline flex-wrap gap-2 mt-6"><span className="text-4xl font-bold">{plan.monthlyPrice}€</span><span className="text-sm">{t.perMonth}</span></div>
+                <p className="text-xs mt-2">{t.vatIncluded}</p>
+                <div className="border-t border-[var(--th-blue-border)] mt-6 pt-6 flex-1">
+                  {plan.inheritedPlan && <p className="font-semibold text-sm mb-5">{t.allFrom} {plan.inheritedPlan} {t.plus}</p>}
+                  <ul className="space-y-4">{plan.additions.map(feature => <li key={feature} className="flex items-start gap-3 text-sm leading-relaxed"><Check className="h-4 w-4 shrink-0 mt-1" aria-hidden="true" /><span>{t.planFeatures[feature]}</span></li>)}</ul>
+                </div>
+                <Button asChild className={`mt-8 w-full ${primaryButton}`}><a href={`mailto:hello@thaihub.gr?subject=${encodeURIComponent(`ThaiHub ${plan.name}`)}`} aria-label={`${t.planCta} — ${plan.name}`}>{t.planCta}<ArrowUpRight className="ml-3 h-4 w-4 shrink-0" /></a></Button>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 
