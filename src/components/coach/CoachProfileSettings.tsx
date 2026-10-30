@@ -526,12 +526,12 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
 
       {/* Notes - Compact */}
       <Card className="rounded-none">
-        <CardContent className="p-3">
+        <CardContent className="p-2">
           <Label className="text-[10px] text-[#004aad]">Σημειώσεις</Label>
           <Textarea
             value={profile.notes}
             onChange={(e) => setProfile({ ...profile, notes: e.target.value })}
-            className="rounded-none text-xs min-h-[40px] text-[#004aad]"
+            className="rounded-none text-xs min-h-[32px] text-[#004aad]"
           />
         </CardContent>
       </Card>
@@ -540,7 +540,7 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
       <Button
         onClick={handleSubmit}
         disabled={saving}
-        className="w-full rounded-none bg-[#004aad] hover:bg-[#004aad]/90 text-white h-8 text-sm"
+        className="w-full rounded-none bg-[#004aad] hover:bg-[#004aad]/90 text-white h-7 text-xs"
       >
         <Save className="h-4 w-4 mr-2" />
         {saving ? 'Αποθήκευση...' : 'Αποθήκευση'}
