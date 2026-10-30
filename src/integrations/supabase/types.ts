@@ -12409,6 +12409,13 @@ export type Database = {
         Args: { athlete_id: string; exercise_id: string; percentage: number }
         Returns: number
       }
+      get_trial_request_status: {
+        Args: { p_id: string }
+        Returns: {
+          admin_response: string
+          status: string
+        }[]
+      }
       get_user_available_bookings: {
         Args: { user_uuid: string }
         Returns: Json
