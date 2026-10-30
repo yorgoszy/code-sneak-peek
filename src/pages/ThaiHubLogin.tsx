@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Loader2, Menu, X, LogIn, Users, Dumbbell, CreditCard, ChartNoAxesCombined, CalendarDays, BookOpen, ArrowUpRight, Phone, Check, Mail, MapPin } from "lucide-react";
 import { thaihubLandingCopy, type ThaiHubLanguage } from "@/components/coach/thaihubLandingCopy";
 import { thaihubPlans } from "@/components/coach/thaihubPlans";
+import { ThaiHubPlanCheckoutDialog, startThaiHubCheckout, type ThaiHubCheckoutPlan } from "@/components/coach/ThaiHubPlanCheckoutDialog";
 import heroImage from "@/assets/thaihub-hero-ring.png.asset.json";
 import thaihubLogo from "@/assets/thaihub-logo.png.asset.json";
 import hyperteamLogo from "@/assets/hyperteam-logo.png.asset.json";
@@ -29,6 +30,30 @@ export default function ThaiHubLogin() {
   const [busy, setBusy] = useState(false);
   const [resetBusy, setResetBusy] = useState(false);
   const [message, setMessage] = useState<'invalid' | 'enterEmail' | 'resetSent' | 'resetFailed' | null>(null);
+  const [checkoutPlan, setCheckoutPlan] = useState<{ id: ThaiHubCheckoutPlan; name: string; price: number } | null>(null);
+  const [planBusy, setPlanBusy] = useState<string | null>(null);
+  const [planNotice, setPlanNotice] = useState<string | null>(null);
+
+  const choosePlan = async (plan: typeof thaihubPlans[number]) => {
+    const target = { id: (plan.id === 'pro' ? 'federation' : plan.id) as ThaiHubCheckoutPlan, name: plan.name, price: plan.yearlyPrice };
+    setPlanNotice(null);
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) { setCheckoutPlan(target); return; }
+    setPlanBusy(plan.id);
+    const failure = await startThaiHubCheckout(target.id);
+    setPlanBusy(null);
+    if (failure) setPlanNotice(failure);
+  };
+
+  useEffect(() => {
+    const sessionId = new URLSearchParams(window.location.search).get('plan_session');
+    if (!sessionId) return;
+    (async () => {
+      const { data } = await supabase.functions.invoke('thaihub-plan-checkout', { body: { action: 'verify', session_id: sessionId } });
+      if (data?.activated) navigate('/dashboard/coach-overview', { replace: true });
+      else setPlanNotice('Η πληρωμή δεν έχει επιβεβαιωθεί ακόμη. Αν χρεώθηκες, μη πληρώσεις ξανά — επικοινώνησε μαζί μας.');
+    })();
+  }, [navigate]);
 
   useEffect(() => {
     localStorage.setItem('thaihub-language', language);
@@ -132,7 +157,7 @@ export default function ThaiHubLogin() {
                   {plan.inheritedPlan && <p className="font-semibold text-sm mb-5">{t.allFrom} {plan.inheritedPlan} {t.plus}</p>}
                   <ul className="space-y-4">{plan.additions.map(feature => <li key={feature} className="flex items-start gap-3 text-sm leading-relaxed"><Check className="h-4 w-4 shrink-0 mt-1" aria-hidden="true" /><span>{t.planFeatures[feature]}</span></li>)}</ul>
                 </div>
-                <Button asChild className={`mt-8 w-full ${primaryButton}`}><a href={`mailto:hello@thaihub.gr?subject=${encodeURIComponent(`ThaiHub ${plan.name}`)}`} aria-label={`${t.planCta} — ${plan.name}`}>{t.planCta}<ArrowUpRight className="ml-3 h-4 w-4 shrink-0" /></a></Button>
+                <Button disabled={planBusy === plan.id} onClick={() => choosePlan(plan)} aria-label={`${t.planCta} — ${plan.name}`} className={`mt-8 w-full ${primaryButton}`}>{planBusy === plan.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <>{t.planCta}<ArrowUpRight className="ml-3 h-4 w-4 shrink-0" /></>}</Button>
               </article>
             ))}
           </div>
