@@ -23,10 +23,11 @@ export function CoachUpgradeDialog({ open, onOpenChange, coachId }: { open: bool
         throw new Error(details?.error || 'Δεν ήταν δυνατός ο υπολογισμός του ποσού.');
       }
       if (!Number.isInteger(data?.amount_cents) || data.amount_cents <= 0 || data.currency !== 'eur') throw new Error('Δεν ήταν δυνατός ο υπολογισμός του ποσού.');
-      return data.amount_cents as number;
+      return data as { amount_cents: number; remaining_days: number; months: number; end_date: string; coach_yearly_cents: number };
     },
   });
-  const amount = quote.data === undefined ? null : new Intl.NumberFormat('el-GR', { style: 'currency', currency: 'EUR' }).format(quote.data / 100);
+  const money = (cents: number) => new Intl.NumberFormat('el-GR', { style: 'currency', currency: 'EUR' }).format(cents / 100);
+  const amount = quote.data ? money(quote.data.amount_cents) : null;
   const checkout = async () => {
     setPaying(true);
     try {
@@ -64,6 +65,13 @@ export function CoachUpgradeDialog({ open, onOpenChange, coachId }: { open: bool
           ))}
         </ul>
         {quote.isError && <p role="alert" className="text-sm text-destructive">{quote.error.message}</p>}
+        {quote.data && (
+          <div className="space-y-1 border border-[var(--th-blue)] p-3 text-sm text-[var(--th-blue)]">
+            <p>Απομένουν <strong>{quote.data.remaining_days} ημέρες</strong> ({quote.data.months} {quote.data.months === 1 ? 'μήνας' : 'μήνες'}) έως {new Date(`${quote.data.end_date}T00:00:00`).toLocaleDateString('el-GR')}.</p>
+            <p>Πληρώνεις τώρα: <strong>{amount}</strong></p>
+            <p>Μετά τη λήξη: <strong>{money(quote.data.coach_yearly_cents)} / έτος</strong> για Coach.</p>
+          </div>
+        )}
         <Button disabled={paying || quote.isFetching || amount === null || quote.isError} onClick={checkout} className="rounded-none bg-[var(--th-blue)] hover:bg-[var(--th-blue)] text-primary-foreground disabled:opacity-100">
           {paying || quote.isFetching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CreditCard className="mr-2 h-4 w-4" />}
           {quote.isFetching ? 'Υπολογισμός ποσού…' : amount ? `Online πληρωμή — ${amount}` : 'Online πληρωμή'}

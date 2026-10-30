@@ -2,7 +2,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import Stripe from 'https://esm.sh/stripe@14.21.0';
 import { z } from 'npm:zod@3';
-import { canAccessUpgrade, proratedUpgradeCents, verifiedUpgradePayment } from '../_shared/coachUpgrade.ts';
+import { canAccessUpgrade, proratedUpgradeCents, upgradeQuote, verifiedUpgradePayment } from '../_shared/coachUpgrade.ts';
 
 const schema = z.object({ action: z.enum(['quote', 'checkout', 'verify']), user_id: z.string().uuid().optional(), session_id: z.string().regex(/^cs_[a-zA-Z0-9_]+$/).max(255).optional() });
 const allowedOrigins = new Set(['https://hyperkids.lovable.app', 'https://thaihub.gr', 'https://www.thaihub.gr', 'https://hyperkids.gr', 'https://www.hyperkids.gr', 'http://localhost:8080', 'https://id-preview--caecd137-de8c-4f15-9ad7-4eeb588073c6.lovable.app']);
@@ -57,13 +57,14 @@ Deno.serve(async (req) => {
     const sub = subs[0];
     let { data: order } = await db.from('thaihub_upgrade_orders').select('*').eq('subscription_id', sub.id).in('status', ['pending','paid']).maybeSingle();
     if (parsed.data.action === 'quote') {
-      let amount = proratedUpgradeCents(sub.start_date, sub.end_date);
+      const details = upgradeQuote(sub.start_date, sub.end_date);
+      let amount = details.amountCents;
       if (order?.stripe_session_id) {
         const existing = await stripe.checkout.sessions.retrieve(order.stripe_session_id);
         if (existing.status === 'open') amount = order.amount_cents;
         else if (existing.status === 'complete') return reply({ error: 'Υπάρχει πληρωμή υπό επιβεβαίωση. Μην πληρώσεις ξανά.' }, 409);
       } else if (order) amount = order.amount_cents;
-      return reply({ amount_cents: amount, currency: 'eur' });
+      return reply({ amount_cents: amount, currency: 'eur', remaining_days: details.remainingDays, months: details.months, end_date: sub.end_date, coach_yearly_cents: details.coachYearlyCents });
     }
     if (order?.stripe_session_id) {
       const old = await stripe.checkout.sessions.retrieve(order.stripe_session_id);
