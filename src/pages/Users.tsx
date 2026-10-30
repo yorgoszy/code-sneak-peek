@@ -138,7 +138,7 @@ const Users = () => {
       
       // For admins: run all list queries in parallel (one round trip instead of many)
       const ADMIN_COACH_ID = 'c6d44641-3b95-46bd-8270-e5ed72de25ad';
-      const [adminRes, coachUsersRes, coachesRes, coachRoleRes, federationRes, ackRes] = await Promise.all([
+      const [adminRes, coachUsersRes, coachesRes, coachRoleRes, federationRes, clubRes, ackRes] = await Promise.all([
         supabase
           .from('app_users')
           .select('*')
@@ -164,6 +164,11 @@ const Users = () => {
           .from('app_users')
           .select('*')
           .eq('role', 'federation')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('app_users')
+          .select('*')
+          .eq('role', 'club')
           .order('created_at', { ascending: false }),
         userProfile?.id
           ? supabase.from('acknowledged_users').select('user_id').eq('admin_user_id', userProfile.id)
