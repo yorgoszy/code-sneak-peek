@@ -67,11 +67,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
+  const lastUserIdRef = React.useRef<string | null>(null);
+
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
       try {
         const { data: { session: initialSession } } = await supabase.auth.getSession();
+        lastUserIdRef.current = initialSession?.user?.id ?? null;
         setSession(initialSession);
         setUser(initialSession?.user ?? null);
         setLoading(false);
