@@ -117,7 +117,7 @@ export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
           <Button
             variant="outline"
             onClick={() => setUpgradeOpen(true)}
-            className={`${tileClass} relative flex flex-col items-start justify-between gap-4 text-[var(--th-blue)]`}
+            className={`${tileClass} relative flex flex-col items-start justify-between gap-4 text-[var(--th-blue)] hover:text-[var(--th-blue)]`}
           >
             <ArrowUpRight className="h-5 w-5 shrink-0" aria-hidden="true" />
             <span className="w-full whitespace-normal break-words text-left text-sm font-medium leading-snug">Upgrade to Coach</span>
