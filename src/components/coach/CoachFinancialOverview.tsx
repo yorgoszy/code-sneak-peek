@@ -183,7 +183,7 @@ export const CoachFinancialOverview: React.FC<CoachFinancialOverviewProps> = ({ 
         <Card className="rounded-none">
           <CardContent className="p-2 sm:p-3">
             <div className="flex items-center gap-1 mb-1">
-              <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-[#00ffba]" />
+              <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-[var(--th-blue)]" />
               <span className="text-[10px] sm:text-xs text-gray-500">Κέρδος (τρέχων μήνας)</span>
             </div>
             <span className={`text-sm sm:text-lg font-bold block truncate ${(currentMonthData?.profit || 0) >= 0 ? 'text-[var(--th-blue)]' : 'text-red-600'}`}>
