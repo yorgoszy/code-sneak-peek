@@ -49,9 +49,11 @@ Deno.serve(async (req) => {
       return reply({ upgraded: await settle(order, session) });
     }
     if (owner.role !== 'club') return reply({ error: 'Η αναβάθμιση γίνεται από τον ίδιο τον λογαριασμό Club.' }, 403);
-    const origin = req.headers.get('origin') ?? 'https://hyperkids.lovable.app';
-    const projectPreview = /^https:\/\/([a-z0-9-]+--)?caecd137-de8c-4f15-9ad7-4eeb588073c6\.(lovable\.app|lovableproject\.com)$/.test(origin);
-    if (!allowedOrigins.has(origin) && !projectPreview) return reply({ error: 'Μη επιτρεπόμενη σελίδα πληρωμής.' }, 403);
+    // The origin only selects the Stripe return URL; unknown origins fall back to production instead of failing.
+    const requestOrigin = req.headers.get('origin') ?? '';
+    const projectPreview = /^https:\/\/[a-z0-9.-]*caecd137-de8c-4f15-9ad7-4eeb588073c6[a-z0-9.-]*\.(lovable\.app|lovableproject\.com|lovable\.dev)$/.test(requestOrigin);
+    const origin = allowedOrigins.has(requestOrigin) || projectPreview ? requestOrigin : 'https://hyperkids.lovable.app';
+    if (origin !== requestOrigin) console.log('coach-upgrade: unrecognised origin, using production return URL', requestOrigin);
     // This is the existing HYPERsync type explicitly confirmed as the Club entitlement.
     const { data: subs, error: subError } = await db.from('user_subscriptions').select('id,start_date,end_date,is_paused').eq('user_id', owner.id).eq('subscription_type_id', '9c46ca26-9837-4eb8-8ced-11e25ecf8388').eq('status', 'active').gte('end_date', new Date().toISOString().slice(0, 10));
     if (subError || subs?.length !== 1 || subs[0].is_paused) return reply({ error: 'Δεν βρέθηκε μία ενεργή συνδρομή Club για αναβάθμιση.' }, 409);
