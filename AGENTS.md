@@ -18,3 +18,4 @@
 - Coach profile and dashboard overviews reuse `CoachOverview`; creation shortcuts pass a one-shot `action=create` parameter to existing coach pages while preserving `coachId`, so forms retain their existing save and access rules.
 - Coach overview counts use coach-scoped queries, exact counts for active records and paginated identifier unions for tested users, so totals never truncate at PostgREST's row limit and each tested user counts once.
 - Club profiles redirect to the shared coach dashboard with their user ID; overview filtering resolves the viewed owner's role (including admin previews), and Club navigation uses a shared exact-path allowlist so the same limited options stay consistent. `is_coach_safe` and CoachContext reuse coach ownership infrastructure for Club users.
+- Auth: same-user SIGNED_IN/TOKEN_REFRESHED on tab return must not reset session or show loading; no refetch on window focus (it made pages appear to reload).
