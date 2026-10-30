@@ -12,7 +12,7 @@ import { CameraZoomControl } from "@/components/CameraZoomControl";
 import { toast } from "sonner";
 import { BarVelocityFileAnalyzer } from "@/components/bar-velocity/BarVelocityFileAnalyzer";
 
-import { findSelectedMarker, type SelectedMarker } from "@/components/bar-velocity/selectedMarker";
+import { findSelectedMarker, sampleSelectedMarker, type SelectedMarker } from "@/components/bar-velocity/selectedMarker";
 
 interface VelocityResult {
   id: number;
@@ -124,8 +124,14 @@ const BarVelocityPage = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctx.drawImage(video, 0, 0);
-    const pixel = ctx.getImageData(x, y, 1, 1).data;
-    selectedMarkerRef.current = { position: { x, y }, color: [pixel[0], pixel[1], pixel[2]] };
+    const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const sampled = sampleSelectedMarker(image, { x, y });
+    const lockedPosition = sampled ? findSelectedMarker(image, sampled) : null;
+    if (!sampled || !lockedPosition) {
+      toast.warning('Δεν κλείδωσε στόχος. Πάτησε στο κέντρο ενός έντονου χρωματιστού σημαδιού.');
+      return;
+    }
+    selectedMarkerRef.current = { ...sampled, position: lockedPosition };
     setHasSelectedMarker(true);
     setIsSelectingMarker(false);
     positionsRef.current = [];
@@ -137,7 +143,7 @@ const BarVelocityPage = () => {
       overlay.height = video.videoHeight;
       overlayCtx.strokeStyle = '#ffffff';
       overlayCtx.lineWidth = 3;
-      overlayCtx.strokeRect(x - 16, y - 16, 32, 32);
+      overlayCtx.strokeRect(lockedPosition.x - 16, lockedPosition.y - 16, 32, 32);
     }
     toast.success('Ο στόχος επιλέχθηκε');
   };

@@ -4,17 +4,52 @@ export interface SelectedMarker {
   color: [number, number, number];
 }
 
+type Frame = { data: Uint8ClampedArray; width: number; height: number };
+
+function hsv(r: number, g: number, b: number) {
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), delta = max - min;
+  let hue = 0;
+  if (delta) {
+    if (max === r) hue = ((g - b) / delta + 6) % 6;
+    else if (max === g) hue = (b - r) / delta + 2;
+    else hue = (r - g) / delta + 4;
+  }
+  return { hue: hue * 60, saturation: max ? delta / max : 0, value: max };
+}
+
+export function sampleSelectedMarker(image: Frame, position: MarkerPoint): SelectedMarker | null {
+  const samples: [number, number, number][] = [];
+  for (let dy = -3; dy <= 3; dy++) {
+    for (let dx = -3; dx <= 3; dx++) {
+      const x = Math.round(position.x) + dx, y = Math.round(position.y) + dy;
+      if (x < 0 || y < 0 || x >= image.width || y >= image.height) continue;
+      const i = (y * image.width + x) * 4;
+      samples.push([image.data[i], image.data[i + 1], image.data[i + 2]]);
+    }
+  }
+  if (!samples.length) return null;
+  const median = (channel: number) => samples.map(p => p[channel]).sort((a, b) => a - b)[Math.floor(samples.length / 2)];
+  const color: [number, number, number] = [median(0), median(1), median(2)];
+  // Plain walls, shadows and metal have no distinctive color to lock onto.
+  if (hsv(...color).saturation < 0.25 || hsv(...color).value < 35) return null;
+  return { position, color };
+}
+
 // Follow one connected patch near the last position, never the global color centroid.
 export function findSelectedMarker(
-  image: { data: Uint8ClampedArray; width: number; height: number },
+  image: Frame,
   marker: SelectedMarker,
 ): MarkerPoint | null {
   const { data, width, height } = image;
   const radius = Math.max(20, Math.min(width, height) * 0.1);
+  const reference = hsv(...marker.color);
   const matches = (x: number, y: number) => {
     const i = (y * width + x) * 4;
-    const distance = Math.hypot(data[i] - marker.color[0], data[i + 1] - marker.color[1], data[i + 2] - marker.color[2]);
-    return distance < 65;
+    const pixel = hsv(data[i], data[i + 1], data[i + 2]);
+    const hueDelta = Math.abs(pixel.hue - reference.hue);
+    return Math.min(hueDelta, 360 - hueDelta) < 18 &&
+      pixel.saturation >= Math.max(0.2, reference.saturation * 0.55) &&
+      pixel.value >= Math.max(25, reference.value * 0.3);
   };
   const minX = Math.max(0, Math.floor(marker.position.x - radius));
   const maxX = Math.min(width - 1, Math.ceil(marker.position.x + radius));
