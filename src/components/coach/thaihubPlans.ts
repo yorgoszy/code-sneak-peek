@@ -7,7 +7,7 @@ export const coachFeatures = [
 ] as const;
 
 export const proFeatures = [
-  'federationClubs', 'athleteCards', 'athleteRequests', 'competitions', 'liveWeighIn', 'liveVideo',
+  'federationClubs', 'athleteCards', 'competitions', 'liveWeighIn', 'liveVideo',
   'onlinePayments', 'ranking', 'aiVideoAnalysis',
 ] as const;
 
