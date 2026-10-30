@@ -10679,6 +10679,54 @@ export type Database = {
           },
         ]
       }
+      thaihub_plan_orders: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          id: string
+          plan: string
+          status: string
+          stripe_session_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          id?: string
+          plan: string
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          id?: string
+          plan?: string
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "thaihub_plan_orders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "thaihub_plan_orders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       thaihub_upgrade_orders: {
         Row: {
           amount_cents: number
@@ -12377,6 +12425,15 @@ export type Database = {
       }
       cleanup_expired_ai_chat_files: { Args: never; Returns: undefined }
       cleanup_expired_waiting_list: { Args: never; Returns: undefined }
+      complete_thaihub_plan_purchase: {
+        Args: {
+          p_amount: number
+          p_currency: string
+          p_order_id: string
+          p_session_id: string
+        }
+        Returns: boolean
+      }
       complete_thaihub_upgrade: {
         Args: {
           p_amount: number
