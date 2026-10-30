@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import { FunctionsHttpError } from '@supabase/supabase-js';
+import { toast } from 'sonner';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { ArrowUpRight, BarChart3, CalendarDays, ClipboardList, CreditCard, Dumbbell, FilePlus2, GraduationCap, HeartPulse, Layers, Plus, Settings, UserPlus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NewCoachUserDialog } from "@/components/coach-users/NewCoachUserDialog";
@@ -41,6 +44,34 @@ const tileClass = "h-auto min-h-28 min-w-0 rounded-none bg-background p-3 text-f
 export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
   const [openDialog, setOpenDialog] = useState<DialogKey | null>(null);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { refreshUserProfile } = useAuthContext();
+  const upgradeSession = searchParams.get('upgrade_session');
+  useEffect(() => {
+    if (!upgradeSession) return;
+    let cancelled = false;
+    const verify = async () => {
+      const { data, error } = await supabase.functions.invoke('coach-upgrade', { body: { action: 'verify', session_id: upgradeSession } });
+      if (cancelled) return;
+      if (error) {
+        const details = error instanceof FunctionsHttpError ? await error.context.json().catch(() => null) : null;
+        toast.error(details?.error || 'Δεν ήταν δυνατή η επιβεβαίωση πληρωμής. Μην πληρώσεις ξανά.');
+        return;
+      }
+      if (!data?.upgraded) {
+        toast.info('Η πληρωμή δεν έχει ακόμη επιβεβαιωθεί.');
+        return;
+      }
+      await refreshUserProfile();
+      const params = new URLSearchParams(searchParams);
+      params.delete('upgrade_session');
+      setSearchParams(params, { replace: true });
+      toast.success('Η αναβάθμιση σε Coach ολοκληρώθηκε.');
+      window.location.reload();
+    };
+    void verify();
+    return () => { cancelled = true; };
+  }, [upgradeSession, refreshUserProfile, searchParams, setSearchParams]);
   const { isClub } = useRoleCheck();
   const { data: viewedProfile, isLoading: profileLoading } = useQuery({
     queryKey: ['dashboard-owner-role', coachId],

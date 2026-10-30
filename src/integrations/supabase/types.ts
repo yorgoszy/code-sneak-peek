@@ -10679,6 +10679,67 @@ export type Database = {
           },
         ]
       }
+      thaihub_upgrade_orders: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          id: string
+          source_end: string
+          source_start: string
+          status: string
+          stripe_session_id: string | null
+          subscription_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          id?: string
+          source_end: string
+          source_start: string
+          status?: string
+          stripe_session_id?: string | null
+          subscription_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          id?: string
+          source_end?: string
+          source_start?: string
+          status?: string
+          stripe_session_id?: string | null
+          subscription_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "thaihub_upgrade_orders_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "user_subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "thaihub_upgrade_orders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "thaihub_upgrade_orders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_phase_config: {
         Row: {
           created_at: string | null
@@ -12316,6 +12377,15 @@ export type Database = {
       }
       cleanup_expired_ai_chat_files: { Args: never; Returns: undefined }
       cleanup_expired_waiting_list: { Args: never; Returns: undefined }
+      complete_thaihub_upgrade: {
+        Args: {
+          p_amount: number
+          p_currency: string
+          p_order_id: string
+          p_session_id: string
+        }
+        Returns: boolean
+      }
       compute_acwr: {
         Args: { p_end_date?: string; p_load_metric?: string; p_user_id: string }
         Returns: {
