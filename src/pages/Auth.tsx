@@ -46,7 +46,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAuthenticated, loading } = useAuth();
-  const { userProfile, isCoach, isAdmin, isFederation, loading: roleLoading } = useRoleCheck();
+  const { userProfile, isCoach, isAdmin, isFederation, isClub, loading: roleLoading } = useRoleCheck();
   
   // Get language from URL or use translations hook
   const { language, translations: t, toggleLanguage } = useTranslations();
@@ -119,7 +119,7 @@ const Auth = () => {
         navigate("/dashboard", { replace: true });
       }
     }
-  }, [isAuthenticated, loading, roleLoading, userProfile, isCoach, isAdmin, isFederation, navigate, language]);
+  }, [isAuthenticated, loading, roleLoading, userProfile, isCoach, isAdmin, isFederation, isClub, navigate, language]);
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
