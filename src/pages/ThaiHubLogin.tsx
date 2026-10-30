@@ -146,6 +146,8 @@ export default function ThaiHubLogin() {
           <p className="text-xs font-semibold uppercase text-[var(--th-red)] mb-4">02 / {t.purchaseLabel}</p>
           <h2 className="text-3xl sm:text-4xl font-bold">{t.purchaseTitle}</h2>
           <p className="mt-6 leading-relaxed max-w-2xl">{t.purchaseText}</p>
+          {planNotice && <p role="alert" className="mt-6 text-sm text-[var(--th-red)]">{planNotice}</p>}
+          <ThaiHubPlanCheckoutDialog plan={checkoutPlan} onClose={() => setCheckoutPlan(null)} />
           <div className="grid md:grid-cols-3 gap-6 mt-12">
             {thaihubPlans.map(plan => (
               <article key={plan.id} aria-label={plan.name} className="flex flex-col min-w-0 bg-[var(--th-white)] border border-[var(--th-blue-border)] p-6 lg:p-8">
