@@ -474,17 +474,17 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
 
       {/* Services & Website - Compact */}
       <Card className="rounded-none">
-        <CardContent className="p-3">
+        <CardContent className="p-2">
           <div className="grid grid-cols-2 gap-2">
-            <div className="col-span-2">
+            <div>
               <Label className="text-[10px] text-[#004aad]">Υπηρεσίες</Label>
               <Textarea
                 value={profile.services}
                 onChange={(e) => setProfile({ ...profile, services: e.target.value })}
-                className="rounded-none text-xs min-h-[50px] text-[#004aad]"
+                className="rounded-none text-xs min-h-[40px] text-[#004aad]"
               />
             </div>
-            <div className="col-span-2">
+            <div>
               <Label className="text-[10px] text-[#004aad]">Website</Label>
               <Input
                 value={profile.website}
@@ -498,9 +498,9 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
 
       {/* Bank - Compact */}
       <Card className="rounded-none">
-        <CardContent className="p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <CreditCard className="h-4 w-4 text-[#004aad]" />
+        <CardContent className="p-2">
+          <div className="flex items-center gap-2 mb-1.5">
+            <CreditCard className="h-3.5 w-3.5 text-[#004aad]" />
             <span className="text-xs font-medium text-[#004aad]">Τραπεζικά Στοιχεία</span>
           </div>
           <div className="grid grid-cols-2 gap-2">
