@@ -67,11 +67,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
+  const lastUserIdRef = React.useRef<string | null>(null);
+
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
       try {
         const { data: { session: initialSession } } = await supabase.auth.getSession();
+        lastUserIdRef.current = initialSession?.user?.id ?? null;
         setSession(initialSession);
         setUser(initialSession?.user ?? null);
         setLoading(false);
@@ -97,18 +100,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
+        // Supabase re-emits SIGNED_IN / TOKEN_REFRESHED when a tab regains visibility.
+        // For the same user, keep existing state so pages don't unmount and "reload".
+        const sameUser = !!newSession?.user?.id && newSession.user.id === lastUserIdRef.current;
+        if (sameUser && event !== 'SIGNED_OUT' && event !== 'USER_UPDATED') {
+          return;
+        }
+        lastUserIdRef.current = newSession?.user?.id ?? null;
         setSession(newSession);
         setUser(newSession?.user ?? null);
         setLoading(false);
 
         if (event === 'SIGNED_IN' && newSession?.user?.id) {
-          // Only show loading on fresh sign in
           setRolesLoading(true);
           fetchUserRole(newSession.user.id);
         } else if ((event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') && newSession?.user?.id) {
-          // Silent re-fetch — DO NOT toggle rolesLoading, otherwise pages
-          // that gate rendering on rolesLoading will unmount and appear to "reload"
-          // every time Supabase auto-refreshes the token.
           fetchUserRole(newSession.user.id);
         } else if (event === 'SIGNED_OUT') {
           setUserRoles([]);
@@ -144,15 +150,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       )
       .subscribe();
 
-    const handleWindowFocus = () => {
-      // Silent re-fetch on focus — do not toggle rolesLoading
-      fetchUserRole(user.id);
-    };
-
-    window.addEventListener('focus', handleWindowFocus);
-
+    // No refetch on window focus: it rebuilt the page every time the tab was switched.
     return () => {
-      window.removeEventListener('focus', handleWindowFocus);
       supabase.removeChannel(channel);
     };
   }, [user?.id, fetchUserRole]);

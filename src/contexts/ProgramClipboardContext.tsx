@@ -51,18 +51,11 @@ export const ProgramClipboardProvider: React.FC<{ children: React.ReactNode }> =
         setClipboard(loadFromStorage());
       }
     };
-    
-    // Also refresh on focus (same tab updates)
-    const handleFocus = () => {
-      setClipboard(loadFromStorage());
-    };
-    
+
     window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('focus', handleFocus);
-    
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('focus', handleFocus);
     };
   }, []);
 
