@@ -72,7 +72,7 @@ export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
     <section className="space-y-4">
       {isError && <p role="status" className="text-sm text-muted-foreground">Δεν ήταν δυνατή η φόρτωση των αριθμών.</p>}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {overviewItems.map(({ label, icon: Icon, path, create, dialog, countKey }) => {
+        {visibleItems.map(({ label, icon: Icon, path, create, dialog, countKey }) => {
           const content = (
             <>
               <span className="flex w-full items-center justify-between gap-2">
