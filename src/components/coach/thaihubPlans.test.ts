@@ -21,8 +21,8 @@ test('Pro costs 99 EUR monthly including VAT', () => {
   strictEqual(thaihubPlans[2].vatIncluded, true);
 });
 
-test('Club includes the five team management features without Overview or Profile Settings', () => {
-  deepStrictEqual(thaihubPlans[0].features, ['athletes', 'groups', 'subscriptions', 'healthCard', 'courses']);
+test('Club includes athlete management, subscriptions, income/expenses and myDATA integration', () => {
+  deepStrictEqual(thaihubPlans[0].features, ['athletes', 'subscriptions', 'incomeExpenses', 'mydata']);
 });
 
 test('Coach inherits Club and adds the six training features', () => {

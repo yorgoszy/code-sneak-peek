@@ -1,5 +1,5 @@
 export const clubFeatures = [
-  'athletes', 'groups', 'subscriptions', 'healthCard', 'courses',
+  'athletes', 'subscriptions', 'incomeExpenses', 'mydata',
 ] as const;
 
 export const coachFeatures = [
