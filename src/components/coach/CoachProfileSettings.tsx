@@ -496,46 +496,6 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
         </CardContent>
       </Card>
 
-      {/* Bank - Compact */}
-      <Card className="rounded-none">
-        <CardContent className="p-2">
-          <div className="flex items-center gap-2 mb-1.5">
-            <CreditCard className="h-3.5 w-3.5 text-[#004aad]" />
-            <span className="text-xs font-medium text-[#004aad]">Τραπεζικά Στοιχεία</span>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <Input
-                value={profile.bank_name}
-                onChange={(e) => setProfile({ ...profile, bank_name: e.target.value })}
-                className="rounded-none h-7 text-xs text-[#004aad]"
-                placeholder="Τράπεζα"
-              />
-            </div>
-            <div>
-              <Input
-                value={profile.bank_iban}
-                onChange={(e) => setProfile({ ...profile, bank_iban: e.target.value })}
-                className="rounded-none h-7 text-xs text-[#004aad]"
-                placeholder="IBAN"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Notes - Compact */}
-      <Card className="rounded-none">
-        <CardContent className="p-2">
-          <Label className="text-[10px] text-[#004aad]">Σημειώσεις</Label>
-          <Textarea
-            value={profile.notes}
-            onChange={(e) => setProfile({ ...profile, notes: e.target.value })}
-            className="rounded-none text-xs min-h-[32px] text-[#004aad]"
-          />
-        </CardContent>
-      </Card>
-
       {/* Save Button */}
       <Button
         onClick={handleSubmit}
