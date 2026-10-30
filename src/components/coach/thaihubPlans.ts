@@ -8,7 +8,7 @@ export const coachFeatures = [
 
 export const proFeatures = [
   'federationClubs', 'athleteCards', 'athleteRequests', 'competitions', 'liveWeighIn', 'liveVideo',
-  'onlinePayments', 'ranking', 'aiVideoAnalysis', 'aiAssistant',
+  'onlinePayments', 'ranking', 'aiVideoAnalysis',
 ] as const;
 
 export type ThaiHubPlanFeature = typeof clubFeatures[number] | typeof coachFeatures[number] | typeof proFeatures[number];
