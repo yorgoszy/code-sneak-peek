@@ -84,7 +84,7 @@ export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
   });
   const isClubUser = usesClubDashboard(viewedProfile?.role, isClub());
   const { data: clubSubscription } = useQuery({
-    queryKey: ['club-subscription-expiry', coachId, today],
+    queryKey: ['club-subscription-expiry', coachId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('user_subscriptions')
