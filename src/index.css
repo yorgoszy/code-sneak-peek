@@ -113,6 +113,11 @@ html, body {
     --th-blue: #004aad;
     --th-red: #ff3131;
     --th-white: #ffffff;
+    --th-blue-hover: rgba(0, 74, 173, 0.7);
+    --th-blue-soft: rgba(0, 74, 173, 0.06);
+    --th-blue-tint: rgba(0, 74, 173, 0.1);
+    --th-blue-border: rgba(0, 74, 173, 0.18);
+    --th-hero-overlay: linear-gradient(to bottom, #ffffff, rgba(255,255,255,0.85), rgba(255,255,255,0.5));
 
     --sidebar-background: 0 0% 98%;
 
