@@ -397,7 +397,7 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
                 <span className="text-[#004aad] text-[10px] text-center">Logo</span>
               )}
             </label>
-            <div className="flex-1 grid grid-cols-2 gap-2">
+            <div className="flex-1 grid grid-cols-4 gap-2">
               <div>
                 <Label className="text-[10px] text-[#004aad]">Επωνυμία</Label>
                 <Input
