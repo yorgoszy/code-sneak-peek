@@ -390,13 +390,13 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
             <span className="text-xs font-medium text-[#004aad]">Επαγγελματικά Στοιχεία</span>
           </div>
           <div className="flex gap-3 mb-2">
-            <div className="w-16 h-16 border border-dashed border-[#004aad]/40 flex items-center justify-center overflow-hidden flex-shrink-0">
+            <label htmlFor="logo-upload" className="w-16 h-16 border border-dashed border-[#004aad]/40 flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer hover:bg-[#004aad]/10">
               {logoPreview ? (
                 <img src={logoPreview} alt="Logo" className="w-full h-full object-contain" />
               ) : (
                 <span className="text-[#004aad] text-[10px] text-center">Logo</span>
               )}
-            </div>
+            </label>
             <div className="flex-1 grid grid-cols-2 gap-2">
               <div>
                 <Label className="text-[10px] text-[#004aad]">Επωνυμία</Label>
