@@ -171,6 +171,9 @@ export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
           >
             <ArrowUpRight className="h-5 w-5 shrink-0" aria-hidden="true" />
             <span className="w-full whitespace-normal break-words text-left text-sm font-medium leading-snug">Upgrade to Coach</span>
+            <span className="w-full whitespace-normal break-words text-left text-xs leading-snug">
+              Λήξη συνδρομής: {clubSubscription ? new Date(`${clubSubscription.end_date}T00:00:00`).toLocaleDateString('el-GR') : '—'}
+            </span>
           </Button>
         )}
       </div>
