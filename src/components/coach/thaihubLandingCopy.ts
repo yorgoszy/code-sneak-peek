@@ -22,8 +22,7 @@ export const thaihubLandingCopy = {
     allFrom: 'Όλα του', plus: 'και επιπλέον:', planCta: 'Ενδιαφέρομαι',
     planDescriptions: { club: 'Οργάνωση και διαχείριση της ομάδας.', coach: 'Ολοκληρωμένος σχεδιασμός προπόνησης.', pro: 'Προπόνηση, διατροφή και ανάλυση.' },
     planFeatures: {
-      overview: 'Επισκόπηση', athletes: 'Οι Αθλητές μου', groups: 'Ομάδες', subscriptions: 'Συνδρομές',
-      healthCard: 'Κάρτα Υγείας', courses: 'Online Courses', profile: 'Ρυθμίσεις Προφίλ',
+      athletes: 'Διαχείριση Αθλητών', subscriptions: 'Διαχείριση Συνδρομών', incomeExpenses: 'Έσοδα / Έξοδα', mydata: 'Διασύνδεση myDATA',
       programs: 'Προγράμματα', activePrograms: 'Ενεργά Προγράμματα', programCards: 'Program Cards',
       annualPlanning: 'Ετήσιος Προγραμματισμός', tests: 'Τεστ', progress: 'Πρόοδος Αθλητών',
       nutrition: 'Διατροφή', videoAnalysis: 'Video Analysis', apps: 'Εφαρμογές HyperKids (Sprint, Jump κ.ά.)',
@@ -63,8 +62,7 @@ export const thaihubLandingCopy = {
     allFrom: 'Everything in', plus: 'plus:', planCta: 'Enquire',
     planDescriptions: { club: 'Team organisation and management.', coach: 'Complete training planning.', pro: 'Training, nutrition and analysis.' },
     planFeatures: {
-      overview: 'Overview', athletes: 'My Athletes', groups: 'Groups', subscriptions: 'Subscriptions',
-      healthCard: 'Health Card', courses: 'Online Courses', profile: 'Profile Settings',
+      athletes: 'Athlete management', subscriptions: 'Subscription management', incomeExpenses: 'Income / Expenses', mydata: 'myDATA integration',
       programs: 'Programs', activePrograms: 'Active Programs', programCards: 'Program Cards',
       annualPlanning: 'Annual Planning', tests: 'Tests', progress: 'Athlete Progress',
       nutrition: 'Nutrition', videoAnalysis: 'Video Analysis', apps: 'HyperKids Apps (Sprint, Jump and more)',
