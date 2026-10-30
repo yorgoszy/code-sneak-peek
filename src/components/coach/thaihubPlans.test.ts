@@ -29,6 +29,6 @@ test('Coach inherits Club and adds program design, tracking, tests, profile, pro
   deepStrictEqual(thaihubPlans[1].features, [...thaihubPlans[0].features, 'programDesign', 'volumeIntensity', 'tests', 'athleteProfile', 'athleteProgress', 'nutrition', 'videoAnalysis']);
 });
 
-test('Federation inherits Coach and adds clubs, athlete cards, competitions, weigh-in, ranking and AI analysis', () => {
-  deepStrictEqual(thaihubPlans[2].features, [...thaihubPlans[1].features, 'federationClubs', 'athleteCards', 'athleteProfiles', 'competitions', 'liveWeighIn', 'liveVideo', 'ranking', 'aiVideoAnalysis']);
+test('Federation inherits Coach and adds clubs, cards, requests, competitions, weigh-in, payments, ranking and AI tools', () => {
+  deepStrictEqual(thaihubPlans[2].features, [...thaihubPlans[1].features, 'federationClubs', 'athleteCards', 'athleteRequests', 'athleteProfiles', 'competitions', 'liveWeighIn', 'liveVideo', 'onlinePayments', 'ranking', 'aiVideoAnalysis', 'aiAssistant']);
 });
