@@ -83,6 +83,25 @@ export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
     enabled: Boolean(coachId),
   });
   const isClubUser = usesClubDashboard(viewedProfile?.role, isClub());
+  const { data: clubSubscription } = useQuery({
+    queryKey: ['club-subscription-expiry', coachId, today],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_subscriptions')
+        .select('end_date')
+        .eq('user_id', coachId)
+        .eq('subscription_type_id', '9c46ca26-9837-4eb8-8ced-11e25ecf8388')
+        .eq('status', 'active')
+        .gte('end_date', new Date().toISOString().slice(0, 10))
+        .order('end_date', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data as { end_date: string } | null;
+    },
+    enabled: Boolean(coachId),
+    staleTime: 0,
+  });
   const visibleItems = isClubUser
     ? overviewItems.filter((item) => isClubDashboardPath(item.path))
     : overviewItems;
