@@ -149,7 +149,7 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
                 type="button"
                 variant={active ? 'default' : 'outline'}
                 onClick={() => toggleWeekday(opt.value)}
-                className={cn('rounded-none h-7 w-7 p-0 text-xs', active && 'bg-[#00ffba] text-black hover:bg-[#00ffba]/90')}
+                className={cn('rounded-none h-7 w-7 p-0 text-xs', active && 'bg-[#004aad] text-white hover:bg-[#004aad]/90')}
               >
                 {opt.label}
               </Button>
@@ -160,7 +160,7 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
             onClick={generateDates}
             disabled={!startDate || weekdays.length === 0}
             size="sm"
-            className="rounded-none h-7 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black text-xs md:hidden ml-1"
+            className="rounded-none h-7 bg-[#004aad] hover:bg-[#004aad]/90 text-white text-xs md:hidden ml-1"
           >
             Δημιουργία
           </Button>
@@ -171,7 +171,7 @@ export const CalendarSection: React.FC<CalendarSectionProps> = ({
           onClick={generateDates}
           disabled={!startDate || weekdays.length === 0}
           size="sm"
-          className="rounded-none h-7 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black text-xs hidden md:inline-flex"
+          className="rounded-none h-7 bg-[#004aad] hover:bg-[#004aad]/90 text-white text-xs hidden md:inline-flex"
         >
           Δημιουργία ({computedTotalDays} ημέρες)
         </Button>

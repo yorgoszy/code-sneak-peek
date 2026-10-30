@@ -26,7 +26,7 @@ export const SelectionProgress: React.FC<SelectionProgressProps> = ({
       <Button
         onClick={onAssign}
         disabled={loading}
-        className="w-full h-auto py-3 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none flex items-center justify-center gap-2"
+        className="w-full h-auto py-3 bg-[#004aad] hover:bg-[#004aad]/90 text-white rounded-none flex items-center justify-center gap-2"
       >
         {loading ? (
           <span className="animate-spin">⏳</span>
@@ -44,14 +44,14 @@ export const SelectionProgress: React.FC<SelectionProgressProps> = ({
     <div className="bg-white border border-gray-200 p-3 rounded-none">
       <div className="text-sm text-gray-600 mb-2 flex items-center gap-2">
         Πρόοδος Επιλογής
-        {isComplete && <CheckCircle className="w-4 h-4 text-[#00ffba]" />}
+        {isComplete && <CheckCircle className="w-4 h-4 text-[#004aad]" />}
       </div>
       <div className="text-lg font-semibold text-gray-900">
         Επιλεγμένες ημερομηνίες: {selectedCount} / {totalDays}
       </div>
       <div className="w-full bg-gray-200 rounded-none h-2 mt-2">
         <div 
-          className="bg-[#00ffba] h-2 rounded-none transition-all duration-300"
+          className="bg-[#004aad] h-2 rounded-none transition-all duration-300"
           style={{ width: `${Math.min((selectedCount / totalDays) * 100, 100)}%` }}
         />
       </div>
