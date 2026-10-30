@@ -433,8 +433,8 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
             </div>
           </div>
           <Input id="logo-upload" type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
-          <div className="grid grid-cols-3 gap-2">
-            <div className="col-span-3">
+          <div className="grid grid-cols-[2fr_1fr_1fr] gap-2">
+            <div>
               <Input
                 value={profile.address}
                 onChange={(e) => setProfile({ ...profile, address: e.target.value })}
@@ -442,7 +442,7 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
                 placeholder="Διεύθυνση"
               />
             </div>
-            <div className="col-span-2">
+            <div>
               <Input
                 value={profile.city}
                 onChange={(e) => setProfile({ ...profile, city: e.target.value })}
