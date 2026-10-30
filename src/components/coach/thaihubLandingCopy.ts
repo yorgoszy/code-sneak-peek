@@ -23,8 +23,8 @@ export const thaihubLandingCopy = {
     planDescriptions: { club: 'Οργάνωση και διαχείριση της ομάδας.', coach: 'Ολοκληρωμένος σχεδιασμός προπόνησης.', pro: 'Προπόνηση, διατροφή και ανάλυση.' },
     planFeatures: {
       athletes: 'Διαχείριση Αθλητών', subscriptions: 'Διαχείριση Συνδρομών', incomeExpenses: 'Έσοδα / Έξοδα', mydata: 'Διασύνδεση myDATA',
-      programs: 'Προγράμματα', activePrograms: 'Ενεργά Προγράμματα', programCards: 'Program Cards',
-      annualPlanning: 'Ετήσιος Προγραμματισμός', tests: 'Τεστ', progress: 'Πρόοδος Αθλητών',
+      programDesign: 'Σχεδιασμός Προγράμματος', volumeIntensity: 'Μέτρηση Όγκου / Έντασης Προπόνησης',
+      tests: 'Τεστ Δύναμης / Αντοχής', athleteProfile: 'Προφίλ Αθλητή',
       nutrition: 'Διατροφή', videoAnalysis: 'Video Analysis', apps: 'Εφαρμογές HyperKids (Sprint, Jump κ.ά.)',
     },
     purchaseCta: 'Ενδιαφέρομαι για συνδρομή',
@@ -63,8 +63,8 @@ export const thaihubLandingCopy = {
     planDescriptions: { club: 'Team organisation and management.', coach: 'Complete training planning.', pro: 'Training, nutrition and analysis.' },
     planFeatures: {
       athletes: 'Athlete management', subscriptions: 'Subscription management', incomeExpenses: 'Income / Expenses', mydata: 'myDATA integration',
-      programs: 'Programs', activePrograms: 'Active Programs', programCards: 'Program Cards',
-      annualPlanning: 'Annual Planning', tests: 'Tests', progress: 'Athlete Progress',
+      programDesign: 'Program Design', volumeIntensity: 'Training Volume / Intensity Tracking',
+      tests: 'Strength / Endurance Tests', athleteProfile: 'Athlete Profile',
       nutrition: 'Nutrition', videoAnalysis: 'Video Analysis', apps: 'HyperKids Apps (Sprint, Jump and more)',
     },
     purchaseCta: 'Enquire about subscriptions',
