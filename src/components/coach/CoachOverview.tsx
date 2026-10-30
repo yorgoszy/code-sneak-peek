@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { Link, useSearchParams } from "react-router-dom";
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { ArrowUpRight, BarChart3, CalendarDays, ClipboardList, CreditCard, Dumbbell, FilePlus2, GraduationCap, HeartPulse, Layers, Plus, Settings, UserPlus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NewCoachUserDialog } from "@/components/coach-users/NewCoachUserDialog";
@@ -45,7 +45,7 @@ export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
   const [openDialog, setOpenDialog] = useState<DialogKey | null>(null);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
-  const { refreshUserProfile } = useAuth();
+  const { refreshUserProfile } = useAuthContext();
   const upgradeSession = searchParams.get('upgrade_session');
   useEffect(() => {
     if (!upgradeSession) return;
