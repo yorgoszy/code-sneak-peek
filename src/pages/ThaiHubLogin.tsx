@@ -77,9 +77,8 @@ export default function ThaiHubLogin() {
           <a href="#home"><img src={thaihubLogo.url} alt="ThaiHub" className="h-8 w-auto" /></a>
           <div className="hidden lg:flex items-center gap-7">
             {anchors.map((anchor, i) => <a key={anchor} href={`#${anchor}`} className="text-sm hover:text-[var(--th-blue-hover)] transition-colors">{t.nav[i]}</a>)}
-            <Button onClick={() => setLoginOpen(true)} className={primaryButton}><LogIn className="h-4 w-4 mr-2" />{t.login}</Button>
           </div>
-          <div className="flex items-center gap-3">{languagePicker}<Button variant="outline" size="sm" className="lg:hidden rounded-none border-[var(--th-blue-border)] text-[var(--th-blue)]" aria-label={t.menu} aria-expanded={menuOpen} onClick={() => setMenuOpen(v => !v)}>{menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}</Button></div>
+          <div className="flex items-center gap-3">{languagePicker}<Button onClick={() => setLoginOpen(true)} className={`hidden lg:inline-flex ${primaryButton}`}><LogIn className="h-4 w-4 mr-2" />{t.login}</Button><Button variant="outline" size="sm" className="lg:hidden rounded-none border-[var(--th-blue-border)] text-[var(--th-blue)]" aria-label={t.menu} aria-expanded={menuOpen} onClick={() => setMenuOpen(v => !v)}>{menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}</Button></div>
         </div>
         {menuOpen && <div className="lg:hidden border-t border-[var(--th-blue-border)] bg-[var(--th-white)] px-4 py-4 space-y-3">
           {anchors.map((anchor, i) => <a key={anchor} href={`#${anchor}`} onClick={() => setMenuOpen(false)} className="block py-2 text-sm hover:text-[var(--th-blue-hover)]">{t.nav[i]}</a>)}
