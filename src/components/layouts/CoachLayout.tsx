@@ -84,6 +84,11 @@ const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
     return <Navigate to="/dashboard" replace />;
   }
 
+  // Club χρήστες εκτός επιτρεπόμενων σελίδων -> Επισκόπηση
+  if (isClubRestricted) {
+    return <Navigate to="/dashboard/coach-overview" replace />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex w-full">
       {/* Main Content */}

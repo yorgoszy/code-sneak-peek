@@ -8,6 +8,7 @@ import { NewCoachUserDialog } from "@/components/coach-users/NewCoachUserDialog"
 import { NewSubscriptionDialog } from "@/components/coach/subscriptions/NewSubscriptionDialog";
 import { HealthCardFormDialog } from "@/components/health-cards/HealthCardFormDialog";
 import { supabase } from "@/integrations/supabase/client";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { loadCoachOverviewCounts, type CoachOverviewCounts } from "./coachOverviewCounts";
 
 interface CoachOverviewProps {
@@ -32,6 +33,15 @@ const overviewItems: { label: string; icon: any; path: string; create?: boolean;
   { label: "Online Courses", icon: GraduationCap, path: "/dashboard/coach-courses" },
   { label: "Ρυθμίσεις", icon: Settings, path: "/dashboard/coach-profile" },
 ];
+
+// Tiles που βλέπει ο ρόλος "club" (πακέτο Club: αθλητές, ομάδες, συνδρομές, ρυθμίσεις/myDATA)
+const CLUB_TILE_LABELS = new Set([
+  "Οι αθλητές μου",
+  "Προσθήκη νέου αθλητή",
+  "Συνδρομές",
+  "Νέα συνδρομή",
+  "Ρυθμίσεις",
+]);
 
 const tileClass = "h-auto min-h-28 min-w-0 rounded-none bg-background p-3 text-foreground sm:p-4";
 
