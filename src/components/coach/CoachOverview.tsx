@@ -47,6 +47,15 @@ const tileClass = "h-auto min-h-28 min-w-0 rounded-none bg-background p-3 text-f
 
 export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
   const [openDialog, setOpenDialog] = useState<DialogKey | null>(null);
+  const { isClub, isAdmin } = useRoleCheck();
+  const isClubUser = isClub() && !isAdmin();
+  const visibleItems = isClubUser
+    ? [
+        ...overviewItems.filter((item) => CLUB_TILE_LABELS.has(item.label)),
+        // Επιπλέον tile Ομάδων μόνο για club (δεν υπάρχει στο βασικό overview)
+        { label: "Ομάδες", icon: Users, path: "/dashboard/coach-groups" },
+      ]
+    : overviewItems;
   const today = format(new Date(), "yyyy-MM-dd");
   const { data: counts, isError, refetch } = useQuery({
     queryKey: ["coach-overview-counts", coachId, today],
