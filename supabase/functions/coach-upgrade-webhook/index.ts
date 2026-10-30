@@ -1,6 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import Stripe from 'https://esm.sh/stripe@14.21.0';
 import { verifiedUpgradePayment } from '../_shared/coachUpgrade.ts';
+import { verifiedPlanPayment } from '../_shared/thaihubPlan.ts';
 
 Deno.serve(async (req) => {
   if (req.method !== 'POST') return new Response('Method not allowed', { status: 405 });
@@ -20,8 +21,15 @@ Deno.serve(async (req) => {
   }
   if (!['checkout.session.completed', 'checkout.session.async_payment_succeeded'].includes(event.type)) return new Response('ok');
   const session = event.data.object as Stripe.Checkout.Session;
-  if (!session.metadata?.upgrade_order_id) return new Response('ok');
   const db = createClient(url, service, { auth: { persistSession: false } });
+  if (session.metadata?.plan_order_id) {
+    const { data: planOrder } = await db.from('thaihub_plan_orders').select('*').eq('id', session.metadata.plan_order_id).eq('stripe_session_id', session.id).maybeSingle();
+    if (!planOrder) return new Response('Order not ready', { status: 500 });
+    if (!verifiedPlanPayment(session, planOrder)) return new Response('Payment not settled', { status: 400 });
+    const { error: planError } = await db.rpc('complete_thaihub_plan_purchase', { p_order_id: planOrder.id, p_session_id: session.id, p_amount: session.amount_total, p_currency: session.currency });
+    return new Response(planError ? 'Activation pending' : 'ok', { status: planError ? 500 : 200 });
+  }
+  if (!session.metadata?.upgrade_order_id) return new Response('ok');
   const { data: order, error } = await db.from('thaihub_upgrade_orders').select('*').eq('id', session.metadata.upgrade_order_id).eq('stripe_session_id', session.id).single();
   if (error || !order) return new Response('Order not ready', { status: 500 });
   if (!verifiedUpgradePayment(session, order)) return new Response('Payment not settled', { status: 400 });
