@@ -22,36 +22,13 @@ if (isPreviewHost || isInIframe) {
   // Also clear all caches
   caches?.keys().then(keys => keys.forEach(k => caches.delete(k)));
 } else if ('serviceWorker' in navigator) {
-  const appStart = Date.now();
-  let applyUpdate: ((reload?: boolean) => Promise<void>) | null = null;
-  let updatePending = false;
-
-  const applyIfSafe = () => {
-    if (!updatePending || !applyUpdate) return;
-    // Apply immediately if the app just opened (no work in progress yet),
-    // otherwise wait until the user leaves the tab so nothing gets lost.
-    if (Date.now() - appStart < 15000 || document.visibilityState === 'hidden') {
-      updatePending = false;
-      applyUpdate(true);
-    }
-  };
-
-  applyUpdate = registerSW({
+  // Register the SW for offline support, but NEVER auto-reload the page:
+  // switching tabs must not wipe unsaved work (e.g. program builder state).
+  // New versions are picked up naturally on the next full page load.
+  registerSW({
     immediate: true,
-    onRegisteredSW(_url, registration) {
-      if (!registration) return;
-      // Check for a new version periodically and when the app regains focus
-      const check = () => registration.update().catch(() => {});
-      setInterval(check, 30 * 60 * 1000);
-      window.addEventListener('focus', check);
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') check();
-        else applyIfSafe();
-      });
-    },
     onNeedRefresh() {
-      updatePending = true;
-      applyIfSafe();
+      // Intentionally no-op: no automatic reload on updates.
     },
     onOfflineReady() {
       console.log('App ready to work offline');
