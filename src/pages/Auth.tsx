@@ -111,6 +111,9 @@ const Auth = () => {
       } else if (isCoach() && !isAdmin()) {
         console.log('🔐 Auth: Coach detected, redirecting to coach-overview');
         navigate("/dashboard/coach-overview", { replace: true });
+      } else if (isClub() && !isAdmin()) {
+        console.log('🔐 Auth: Club detected, redirecting to coach-overview');
+        navigate("/dashboard/coach-overview", { replace: true });
       } else {
         console.log('🔐 Auth: Redirecting to dashboard');
         navigate("/dashboard", { replace: true });
