@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Loader2, Menu, X, LogIn, Users, Dumbbell, CreditCard, ChartNoAxesCombined, CalendarDays, BookOpen, ArrowUpRight, Phone, Check, Mail, MapPin, Instagram, Youtube } from "lucide-react";
+import { Loader2, Menu, X, LogIn, Users, Dumbbell, CreditCard, ChartNoAxesCombined, CalendarDays, BookOpen, ArrowUpRight, Phone, Check, Mail, MapPin } from "lucide-react";
 import { thaihubLandingCopy, type ThaiHubLanguage } from "@/components/coach/thaihubLandingCopy";
 import heroImage from "@/assets/thaihub-hero-ring.png.asset.json";
 import thaihubLogo from "@/assets/thaihub-logo.png.asset.json";
