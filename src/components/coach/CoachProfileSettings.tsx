@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Save, Camera, Lock, Building2, MapPin } from "lucide-react";
+import { Save, Camera, Lock, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -433,16 +433,6 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
             </div>
           </div>
           <Input id="logo-upload" type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
-        </CardContent>
-      </Card>
-
-      {/* Address - Compact */}
-      <Card className="rounded-none">
-        <CardContent className="p-2">
-          <div className="flex items-center gap-2 mb-1.5">
-            <MapPin className="h-3.5 w-3.5 text-[#004aad]" />
-            <span className="text-xs font-medium text-[#004aad]">Διεύθυνση</span>
-          </div>
           <div className="grid grid-cols-3 gap-2">
             <div className="col-span-3">
               <Input
