@@ -14,7 +14,7 @@ export const proFeatures = [
 export type ThaiHubPlanFeature = typeof clubFeatures[number] | typeof coachFeatures[number] | typeof proFeatures[number];
 
 export const thaihubPlans = [
-  { id: 'club', name: 'Club', monthlyPrice: 29, currency: 'EUR', vatIncluded: true, inheritedPlan: null, additions: clubFeatures, features: [...clubFeatures] },
-  { id: 'coach', name: 'Coach', monthlyPrice: 59, currency: 'EUR', vatIncluded: true, inheritedPlan: 'Club', additions: coachFeatures, features: [...clubFeatures, ...coachFeatures] },
-  { id: 'pro', name: 'Federation', monthlyPrice: 99, currency: 'EUR', vatIncluded: true, inheritedPlan: 'Coach', additions: proFeatures, features: [...clubFeatures, ...coachFeatures, ...proFeatures] },
+  { id: 'club', name: 'Club', yearlyPrice: 450, currency: 'EUR', vatIncluded: true, inheritedPlan: null, additions: clubFeatures, features: [...clubFeatures] },
+  { id: 'coach', name: 'Coach', yearlyPrice: 750, currency: 'EUR', vatIncluded: true, inheritedPlan: 'Club', additions: coachFeatures, features: [...clubFeatures, ...coachFeatures] },
+  { id: 'pro', name: 'Federation', yearlyPrice: 1000, currency: 'EUR', vatIncluded: true, inheritedPlan: 'Coach', additions: proFeatures, features: [...clubFeatures, ...coachFeatures, ...proFeatures] },
 ] as const;
