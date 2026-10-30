@@ -6,12 +6,13 @@ import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Camera, Play, Square, RotateCcw, Activity, TrendingUp, Zap, Target, Ruler, Check, X, Menu } from "lucide-react";
 import { CameraZoomControl } from "@/components/CameraZoomControl";
 import { toast } from "sonner";
 import { BarVelocityFileAnalyzer } from "@/components/bar-velocity/BarVelocityFileAnalyzer";
+
+import { findSelectedMarker, type SelectedMarker } from "@/components/bar-velocity/selectedMarker";
 
 interface VelocityResult {
   id: number;
@@ -48,7 +49,9 @@ const BarVelocityPage = () => {
   
   const [isActive, setIsActive] = useState(false);
   const [isTracking, setIsTracking] = useState(false);
-  const [markerColor, setMarkerColor] = useState<'red' | 'green' | 'blue' | 'yellow'>('red');
+  const selectedMarkerRef = useRef<SelectedMarker | null>(null);
+  const [hasSelectedMarker, setHasSelectedMarker] = useState(false);
+  const [isSelectingMarker, setIsSelectingMarker] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
   const [results, setResults] = useState<VelocityResult[]>([]);
@@ -59,14 +62,6 @@ const BarVelocityPage = () => {
   const [isCalibrating, setIsCalibrating] = useState(false);
   const [calibrationPoints, setCalibrationPoints] = useState<CalibrationPoint[]>([]);
   const [knownDistanceCm, setKnownDistanceCm] = useState<string>('220');
-
-  // Color ranges for detection (HSV-like thresholds)
-  const colorRanges: Record<string, { hMin: number; hMax: number; sMin: number; sMax: number; vMin: number; vMax: number; hMin2?: number; hMax2?: number }> = {
-    red: { hMin: 0, hMax: 10, sMin: 100, sMax: 255, vMin: 100, vMax: 255, hMin2: 160, hMax2: 180 },
-    green: { hMin: 35, hMax: 85, sMin: 100, sMax: 255, vMin: 100, vMax: 255 },
-    blue: { hMin: 100, hMax: 130, sMin: 100, sMax: 255, vMin: 100, vMax: 255 },
-    yellow: { hMin: 20, hMax: 35, sMin: 100, sMax: 255, vMin: 100, vMax: 255 }
-  };
 
   const startCamera = async () => {
     try {
@@ -102,66 +97,50 @@ const BarVelocityPage = () => {
     }
     setIsActive(false);
     setIsTracking(false);
+    selectedMarkerRef.current = null;
+    setHasSelectedMarker(false);
+    setIsSelectingMarker(false);
   };
 
-  const rgbToHsv = (r: number, g: number, b: number) => {
-    r /= 255; g /= 255; b /= 255;
-    const max = Math.max(r, g, b), min = Math.min(r, g, b);
-    const d = max - min;
-    let h = 0;
-    const s = max === 0 ? 0 : d / max;
-    const v = max;
+  const detectMarker = useCallback((imageData: ImageData) => {
+    const marker = selectedMarkerRef.current;
+    if (!marker) return null;
+    const position = findSelectedMarker(imageData, marker);
+    if (position) selectedMarkerRef.current = { ...marker, position };
+    return position;
+  }, []);
 
-    if (max !== min) {
-      switch (max) {
-        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-        case g: h = (b - r) / d + 2; break;
-        case b: h = (r - g) / d + 4; break;
-      }
-      h /= 6;
+  const selectMarker = (event: React.MouseEvent<HTMLVideoElement>) => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!isSelectingMarker || !video || !canvas || !video.videoWidth) return;
+    const rect = video.getBoundingClientRect();
+    // object-cover may crop the source; invert that mapping before sampling.
+    const scale = Math.max(rect.width / video.videoWidth, rect.height / video.videoHeight);
+    const x = Math.min(video.videoWidth - 1, Math.max(0, Math.round((event.clientX - rect.left + (video.videoWidth * scale - rect.width) / 2) / scale)));
+    const y = Math.min(video.videoHeight - 1, Math.max(0, Math.round((event.clientY - rect.top + (video.videoHeight * scale - rect.height) / 2) / scale)));
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.drawImage(video, 0, 0);
+    const pixel = ctx.getImageData(x, y, 1, 1).data;
+    selectedMarkerRef.current = { position: { x, y }, color: [pixel[0], pixel[1], pixel[2]] };
+    setHasSelectedMarker(true);
+    setIsSelectingMarker(false);
+    positionsRef.current = [];
+    setCurrentVelocity(null);
+    const overlay = overlayCanvasRef.current;
+    const overlayCtx = overlay?.getContext('2d');
+    if (overlay && overlayCtx) {
+      overlay.width = video.videoWidth;
+      overlay.height = video.videoHeight;
+      overlayCtx.strokeStyle = '#ffffff';
+      overlayCtx.lineWidth = 3;
+      overlayCtx.strokeRect(x - 16, y - 16, 32, 32);
     }
-    return { h: h * 180, s: s * 255, v: v * 255 };
+    toast.success('Ο στόχος επιλέχθηκε');
   };
-
-  const detectMarker = useCallback((imageData: ImageData): { x: number; y: number } | null => {
-    const { data, width, height } = imageData;
-    const range = colorRanges[markerColor];
-    
-    let sumX = 0, sumY = 0, count = 0;
-    
-    // Sample every 4th pixel for performance
-    for (let y = 0; y < height; y += 2) {
-      for (let x = 0; x < width; x += 2) {
-        const i = (y * width + x) * 4;
-        const r = data[i], g = data[i + 1], b = data[i + 2];
-        const hsv = rgbToHsv(r, g, b);
-        
-        let isMatch = false;
-        
-        if (markerColor === 'red') {
-          // Red wraps around in HSV
-          isMatch = ((hsv.h >= range.hMin && hsv.h <= range.hMax) || 
-                     (hsv.h >= range.hMin2! && hsv.h <= range.hMax2!)) &&
-                    hsv.s >= range.sMin && hsv.s <= range.sMax &&
-                    hsv.v >= range.vMin && hsv.v <= range.vMax;
-        } else {
-          isMatch = hsv.h >= range.hMin && hsv.h <= range.hMax &&
-                    hsv.s >= range.sMin && hsv.s <= range.sMax &&
-                    hsv.v >= range.vMin && hsv.v <= range.vMax;
-        }
-        
-        if (isMatch) {
-          sumX += x;
-          sumY += y;
-          count++;
-        }
-      }
-    }
-    
-    if (count < 50) return null; // Minimum pixel threshold
-    
-    return { x: sumX / count, y: sumY / count };
-  }, [markerColor]);
 
   const calculateVelocity = (positions: MarkerPosition[]): { peak: number; avg: number; displacement: number } => {
     if (positions.length < 2) return { peak: 0, avg: 0, displacement: 0 };
@@ -256,12 +235,24 @@ const BarVelocityPage = () => {
         overlayCtx.lineWidth = 2;
         overlayCtx.stroke();
       }
+    } else {
+      setCurrentVelocity(null);
+      setIsTracking(false);
+      positionsRef.current = [];
+      selectedMarkerRef.current = null;
+      setHasSelectedMarker(false);
+      toast.warning('Ο στόχος χάθηκε — επίλεξέ τον ξανά');
+      return;
     }
     
     animationFrameRef.current = requestAnimationFrame(trackFrame);
   }, [isTracking, detectMarker, pixelsPerCm]);
 
   const startTracking = () => {
+    if (!selectedMarkerRef.current || isSelectingMarker) {
+      toast.info('Επίλεξε πρώτα στόχο στην εικόνα');
+      return;
+    }
     positionsRef.current = [];
     setCurrentVelocity(null);
     setIsTracking(true);
@@ -552,7 +543,8 @@ const BarVelocityPage = () => {
                 <div className="relative aspect-video w-full bg-black overflow-hidden mx-auto">
                   <video
                     ref={videoRef}
-                    className="w-full h-full object-cover"
+                    className={`w-full h-full object-cover ${isSelectingMarker ? 'cursor-crosshair' : ''}`}
+                    onClick={selectMarker}
                     style={{ transform: `scale(${zoom})` }}
                     playsInline
                     muted
@@ -640,7 +632,8 @@ const BarVelocityPage = () => {
                       <div className="flex gap-2">
                         {!isTracking ? (
                           <Button 
-                            onClick={startTracking} 
+                            onClick={startTracking}
+                            disabled={!hasSelectedMarker || isSelectingMarker || isCalibrating}
                             className="rounded-none bg-primary hover:bg-primary/90"
                           >
                             <Play className="h-4 w-4 mr-2" />
@@ -670,21 +663,22 @@ const BarVelocityPage = () => {
                 </div>
 
                 {/* Settings */}
-                <div className="flex items-center gap-4 mt-3 p-2 bg-muted/50">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Χρώμα Marker:</span>
-                    <Select value={markerColor} onValueChange={(v: any) => setMarkerColor(v)}>
-                      <SelectTrigger className="w-24 rounded-none h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="red">🔴 Κόκκινο</SelectItem>
-                        <SelectItem value="green">🟢 Πράσινο</SelectItem>
-                        <SelectItem value="blue">🔵 Μπλε</SelectItem>
-                        <SelectItem value="yellow">🟡 Κίτρινο</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="flex flex-wrap items-center gap-4 mt-3 p-2 bg-muted/50">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-none h-8"
+                    disabled={!isActive || isTracking || isCalibrating}
+                    onClick={() => {
+                      setIsSelectingMarker(true);
+                      selectedMarkerRef.current = null;
+                      setHasSelectedMarker(false);
+                      toast.info('Πάτησε πάνω στο σημάδι που θέλεις να παρακολουθείς');
+                    }}
+                  >
+                    <Target className="h-4 w-4 mr-1" />
+                    {isSelectingMarker ? 'Επιλογή…' : hasSelectedMarker ? 'Αλλαγή στόχου' : 'Επιλογή στόχου'}
+                  </Button>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">Pixels/cm:</span>
                     <input
@@ -698,7 +692,7 @@ const BarVelocityPage = () => {
                       variant="outline"
                       size="sm"
                       onClick={startCalibration}
-                      disabled={!isActive || isTracking || isCalibrating}
+                      disabled={!isActive || isTracking || isCalibrating || isSelectingMarker}
                       className="rounded-none h-8"
                     >
                       <Ruler className="h-3 w-3 mr-1" />
