@@ -125,7 +125,7 @@ export default function ThaiHubLogin() {
       <section id="contact" className="scroll-mt-16 py-16 sm:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12">
           <div><p className="text-xs font-semibold uppercase text-[var(--th-red)] mb-4">03 / {t.contactLabel}</p><h2 className="text-3xl sm:text-4xl font-bold max-w-lg">{t.contactTitle}</h2><p className="mt-6 max-w-md leading-relaxed">{t.contactText}</p></div>
-          <div className="lg:self-center"><p className="text-sm mb-3">{t.phone}</p><a href="tel:+302310529104" className="text-3xl sm:text-4xl font-semibold hover:text-[var(--th-blue-hover)]">2310 529 104</a><div><Button asChild size="lg" className={`mt-6 ${primaryButton}`}><a href="tel:+302310529104"><Phone className="h-4 w-4 mr-2" />{t.call}</a></Button></div></div>
+          <div className="lg:self-center"><p className="text-sm mb-3">{t.phone}</p><a href="tel:+302310529104" className="text-3xl sm:text-4xl font-semibold hover:text-[var(--th-blue-hover)]">+30 2310 529 104</a><div><Button asChild size="lg" className={`mt-6 ${primaryButton}`}><a href="tel:+302310529104"><Phone className="h-4 w-4 mr-2" />{t.call}</a></Button></div></div>
         </div>
       </section>
       <footer className="border-t border-[var(--th-blue-border)]"><div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 flex flex-wrap items-center justify-between gap-5"><a href="#home"><img src={thaihubLogo.url} alt="ThaiHub" className="h-7 w-auto" /></a><p className="text-sm">ThaiHub — {t.footer}</p></div></footer>
