@@ -83,6 +83,25 @@ export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
     enabled: Boolean(coachId),
   });
   const isClubUser = usesClubDashboard(viewedProfile?.role, isClub());
+  const { data: clubSubscription } = useQuery({
+    queryKey: ['club-subscription-expiry', coachId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_subscriptions')
+        .select('end_date')
+        .eq('user_id', coachId)
+        .eq('subscription_type_id', '9c46ca26-9837-4eb8-8ced-11e25ecf8388')
+        .eq('status', 'active')
+        .gte('end_date', new Date().toISOString().slice(0, 10))
+        .order('end_date', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data as { end_date: string } | null;
+    },
+    enabled: Boolean(coachId),
+    staleTime: 0,
+  });
   const visibleItems = isClubUser
     ? overviewItems.filter((item) => isClubDashboardPath(item.path))
     : overviewItems;
@@ -151,7 +170,12 @@ export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
             className={`${tileClass} relative flex flex-col items-start justify-between gap-4 text-[var(--th-blue)] hover:text-[var(--th-blue)]`}
           >
             <ArrowUpRight className="h-5 w-5 shrink-0" aria-hidden="true" />
-            <span className="w-full whitespace-normal break-words text-left text-sm font-medium leading-snug">Upgrade to Coach</span>
+            <span className="flex w-full flex-col items-start gap-1">
+              <span className="whitespace-normal break-words text-left text-sm font-medium leading-snug">Upgrade to Coach</span>
+              <span className="whitespace-normal break-words text-left text-xs leading-snug">
+                Λήξη συνδρομής: {clubSubscription ? new Date(`${clubSubscription.end_date}T00:00:00`).toLocaleDateString('el-GR') : '—'}
+              </span>
+            </span>
           </Button>
         )}
       </div>
