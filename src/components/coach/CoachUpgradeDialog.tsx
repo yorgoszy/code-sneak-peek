@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Check, CreditCard, Loader2 } from 'lucide-react';
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,12 +9,28 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { coachFeatures } from './thaihubPlans';
 import { thaihubLandingCopy } from './thaihubLandingCopy';
 
-export function CoachUpgradeDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+export function CoachUpgradeDialog({ open, onOpenChange, coachId }: { open: boolean; onOpenChange: (open: boolean) => void; coachId: string }) {
   const [paying, setPaying] = useState(false);
+  const quote = useQuery({
+    queryKey: ['coach-upgrade-quote', coachId],
+    enabled: open && Boolean(coachId),
+    staleTime: 0,
+    retry: false,
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke('coach-upgrade', { body: { action: 'quote', user_id: coachId } });
+      if (error) {
+        const details = error instanceof FunctionsHttpError ? await error.context.json().catch(() => null) : null;
+        throw new Error(details?.error || 'Δεν ήταν δυνατός ο υπολογισμός του ποσού.');
+      }
+      if (!Number.isInteger(data?.amount_cents) || data.amount_cents <= 0 || data.currency !== 'eur') throw new Error('Δεν ήταν δυνατός ο υπολογισμός του ποσού.');
+      return data.amount_cents as number;
+    },
+  });
+  const amount = quote.data === undefined ? null : new Intl.NumberFormat('el-GR', { style: 'currency', currency: 'EUR' }).format(quote.data / 100);
   const checkout = async () => {
     setPaying(true);
     try {
-      const { data, error } = await supabase.functions.invoke('coach-upgrade', { body: { action: 'checkout' } });
+      const { data, error } = await supabase.functions.invoke('coach-upgrade', { body: { action: 'checkout', user_id: coachId } });
       if (error) {
         const details = error instanceof FunctionsHttpError ? await error.context.json().catch(() => null) : null;
         throw new Error(details?.error || 'Δεν ήταν δυνατή η έναρξη πληρωμής.');
@@ -46,9 +63,12 @@ export function CoachUpgradeDialog({ open, onOpenChange }: { open: boolean; onOp
             </li>
           ))}
         </ul>
-        <Button disabled={paying} onClick={checkout} className="rounded-none bg-[var(--th-blue)] hover:bg-[var(--th-blue)] text-primary-foreground disabled:opacity-100">
-          {paying ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CreditCard className="mr-2 h-4 w-4" />}Online πληρωμή
+        {quote.isError && <p role="alert" className="text-sm text-destructive">{quote.error.message}</p>}
+        <Button disabled={paying || quote.isFetching || amount === null || quote.isError} onClick={checkout} className="rounded-none bg-[var(--th-blue)] hover:bg-[var(--th-blue)] text-primary-foreground disabled:opacity-100">
+          {paying || quote.isFetching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CreditCard className="mr-2 h-4 w-4" />}
+          {quote.isFetching ? 'Υπολογισμός ποσού…' : amount ? `Online πληρωμή — ${amount}` : 'Online πληρωμή'}
         </Button>
+        {quote.isError && <Button variant="outline" className="rounded-none text-[var(--th-blue)]" onClick={() => void quote.refetch()}>Δοκιμή ξανά</Button>}
       </DialogContent>
     </Dialog>
   );

@@ -51,7 +51,7 @@ export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
     if (!upgradeSession) return;
     let cancelled = false;
     const verify = async () => {
-      const { data, error } = await supabase.functions.invoke('coach-upgrade', { body: { action: 'verify', session_id: upgradeSession } });
+      const { data, error } = await supabase.functions.invoke('coach-upgrade', { body: { action: 'verify', session_id: upgradeSession, user_id: coachId } });
       if (cancelled) return;
       if (error) {
         const details = error instanceof FunctionsHttpError ? await error.context.json().catch(() => null) : null;
@@ -71,7 +71,7 @@ export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
     };
     void verify();
     return () => { cancelled = true; };
-  }, [upgradeSession, refreshUserProfile, searchParams, setSearchParams]);
+  }, [upgradeSession, coachId, refreshUserProfile, searchParams, setSearchParams]);
   const { isClub } = useRoleCheck();
   const { data: viewedProfile, isLoading: profileLoading } = useQuery({
     queryKey: ['dashboard-owner-role', coachId],
@@ -156,7 +156,7 @@ export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
         )}
       </div>
 
-      {isClubUser && <CoachUpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} />}
+      {isClubUser && <CoachUpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} coachId={coachId} />}
 
       <NewCoachUserDialog
         open={openDialog === "athlete"}

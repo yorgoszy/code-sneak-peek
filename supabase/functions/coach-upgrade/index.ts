@@ -2,9 +2,9 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import Stripe from 'https://esm.sh/stripe@14.21.0';
 import { z } from 'npm:zod@3';
-import { proratedUpgradeCents, verifiedUpgradePayment } from '../_shared/coachUpgrade.ts';
+import { canAccessUpgrade, proratedUpgradeCents, verifiedUpgradePayment } from '../_shared/coachUpgrade.ts';
 
-const schema = z.object({ action: z.enum(['checkout', 'verify']), session_id: z.string().regex(/^cs_[a-zA-Z0-9_]+$/).max(255).optional() });
+const schema = z.object({ action: z.enum(['quote', 'checkout', 'verify']), user_id: z.string().uuid().optional(), session_id: z.string().regex(/^cs_[a-zA-Z0-9_]+$/).max(255).optional() });
 const allowedOrigins = new Set(['https://hyperkids.lovable.app', 'https://thaihub.gr', 'https://www.thaihub.gr', 'https://hyperkids.gr', 'https://www.hyperkids.gr', 'http://localhost:8080', 'https://id-preview--caecd137-de8c-4f15-9ad7-4eeb588073c6.lovable.app']);
 
 Deno.serve(async (req) => {
@@ -25,8 +25,13 @@ Deno.serve(async (req) => {
     const parsed = schema.safeParse(await req.json());
     if (!parsed.success) return reply({ error: 'Μη έγκυρο αίτημα.' }, 400);
     const db = createClient(url, service, { auth: { persistSession: false } });
-    const { data: owner, error: ownerError } = await db.from('app_users').select('id, role').eq('auth_user_id', identity.user.id).single();
-    if (ownerError || !owner) return reply({ error: 'Ο λογαριασμός δεν βρέθηκε.' }, 403);
+    const { data: actor, error: actorError } = await db.from('app_users').select('id, role').eq('auth_user_id', identity.user.id).single();
+    if (actorError || !actor) return reply({ error: 'Ο λογαριασμός δεν βρέθηκε.' }, 403);
+    const targetId = parsed.data.user_id ?? actor.id;
+    const { data: adminRole, error: roleError } = await db.from('user_roles').select('id').eq('user_id', identity.user.id).eq('role', 'admin').maybeSingle();
+    if (!canAccessUpgrade(actor.id, targetId, !roleError && Boolean(adminRole))) return reply({ error: 'Δεν επιτρέπεται η αναβάθμιση άλλου λογαριασμού.' }, 403);
+    const { data: owner, error: ownerError } = await db.from('app_users').select('id, role').eq('id', targetId).single();
+    if (ownerError || !owner) return reply({ error: 'Ο λογαριασμός Club δεν βρέθηκε.' }, 404);
     const stripe = new Stripe(key, { apiVersion: '2023-10-16' });
 
     const settle = async (order: any, session: Stripe.Checkout.Session) => {
@@ -51,6 +56,15 @@ Deno.serve(async (req) => {
     if (subError || subs?.length !== 1 || subs[0].is_paused) return reply({ error: 'Δεν βρέθηκε μία ενεργή συνδρομή Club για αναβάθμιση.' }, 409);
     const sub = subs[0];
     let { data: order } = await db.from('thaihub_upgrade_orders').select('*').eq('subscription_id', sub.id).in('status', ['pending','paid']).maybeSingle();
+    if (parsed.data.action === 'quote') {
+      let amount = proratedUpgradeCents(sub.start_date, sub.end_date);
+      if (order?.stripe_session_id) {
+        const existing = await stripe.checkout.sessions.retrieve(order.stripe_session_id);
+        if (existing.status === 'open') amount = order.amount_cents;
+        else if (existing.status === 'complete') return reply({ error: 'Υπάρχει πληρωμή υπό επιβεβαίωση. Μην πληρώσεις ξανά.' }, 409);
+      } else if (order) amount = order.amount_cents;
+      return reply({ amount_cents: amount, currency: 'eur' });
+    }
     if (order?.stripe_session_id) {
       const old = await stripe.checkout.sessions.retrieve(order.stripe_session_id);
       if (await settle(order, old)) return reply({ upgraded: true });
@@ -65,7 +79,7 @@ Deno.serve(async (req) => {
       if (error) return reply({ error: 'Υπάρχει ήδη αίτημα πληρωμής. Δοκίμασε ξανά.' }, 409);
       order = created;
     }
-    const session = await stripe.checkout.sessions.create({ mode: 'payment', customer_email: identity.user.email, client_reference_id: order.id, line_items: [{ quantity: 1, price_data: { currency: 'eur', unit_amount: order.amount_cents, product_data: { name: 'ThaiHub — Upgrade to Coach' } } }], metadata: { upgrade_order_id: order.id, app_user_id: owner.id }, success_url: `${origin}/dashboard/coach-overview?upgrade_session={CHECKOUT_SESSION_ID}`, cancel_url: `${origin}/dashboard/coach-overview`, expires_at: Math.floor(new Date(order.created_at).getTime()/1000) + 3600 }, { idempotencyKey: `thaihub-upgrade-${order.id}` });
+    const session = await stripe.checkout.sessions.create({ mode: 'payment', customer_email: identity.user.email, client_reference_id: order.id, line_items: [{ quantity: 1, price_data: { currency: 'eur', unit_amount: order.amount_cents, product_data: { name: 'ThaiHub — Upgrade to Coach' } } }], metadata: { upgrade_order_id: order.id, app_user_id: owner.id }, success_url: `${origin}/dashboard/coach-overview?coachId=${owner.id}&upgrade_session={CHECKOUT_SESSION_ID}`, cancel_url: `${origin}/dashboard/coach-overview?coachId=${owner.id}`, expires_at: Math.floor(new Date(order.created_at).getTime()/1000) + 3600 }, { idempotencyKey: `thaihub-upgrade-${order.id}` });
     const { error: saveError } = await db.from('thaihub_upgrade_orders').update({ stripe_session_id: session.id }).eq('id', order.id);
     if (saveError) throw new Error('Δεν ήταν δυνατή η αποθήκευση της πληρωμής.');
     return reply({ url: session.url });

@@ -1,6 +1,7 @@
 # Architecture rules
 
 - Club upgrades reuse the ThaiHub additions catalog and a dedicated authenticated Stripe endpoint; only verified paid sessions or signed webhooks call the service-only atomic activation, preserving account identity and source expiry. Pending orders and Stripe idempotency keys prevent duplicate checkout/conversion; existing subscription checkout remains separate.
+- Upgrade quotes, checkout and return verification share the viewed account ID, accessible only to its owner or a server-verified admin; server quotes supply the displayed amount so admin previews never charge or convert the wrong account.
 
 - Bar Velocity live tracking samples a user-selected target and follows a nearby connected color patch; losing the target stops the attempt rather than switching to a global color centroid.
 
