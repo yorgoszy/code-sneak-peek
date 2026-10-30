@@ -92,7 +92,7 @@ export default function ThaiHubLogin() {
         <div className="absolute inset-0 bg-[image:var(--th-hero-overlay)]" />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="max-w-xl space-y-6">
-            <p className="text-xs uppercase text-[var(--th-red)] font-semibold">{t.forCoaches}</p>
+            <p className="text-xs uppercase text-[var(--th-blue)] font-semibold">{t.forCoaches}</p>
             <h1 className="text-4xl sm:text-6xl font-bold leading-tight">{t.headline}</h1>
             <p className="text-base sm:text-lg">{t.intro}</p>
             <div className="flex flex-wrap gap-4">
