@@ -190,10 +190,11 @@ const Users = () => {
       const coachUsersData = (coachUsersRes.data || []) as AppUser[];
       const coachRoleData = (coachRoleRes.data || []) as AppUser[];
       const federationData = (federationRes.data || []) as AppUser[];
+      const clubData = (clubRes.data || []) as AppUser[];
 
       // One batched subscription lookup for every user shown on the page
       const uniqueUsers = new Map<string, AppUser>();
-      [...adminUsersData, ...coachUsersData, ...coachRoleData, ...federationData].forEach(u => uniqueUsers.set(u.id, u));
+      [...adminUsersData, ...coachUsersData, ...coachRoleData, ...federationData, ...clubData].forEach(u => uniqueUsers.set(u.id, u));
       const withSubs = await fetchSubscriptionStatuses(Array.from(uniqueUsers.values()));
       const statusById = new Map(withSubs.map(u => [u.id, u.subscription_status]));
       const attach = (list: AppUser[]): UserWithSubscription[] =>
@@ -205,6 +206,8 @@ const Users = () => {
       else setCoachRoleUsers(attach(coachRoleData));
       if (federationRes.error) console.error('❌ Error fetching federation users:', federationRes.error);
       else setFederationUsers(attach(federationData));
+      if (clubRes.error) console.error('❌ Error fetching club users:', clubRes.error);
+      else setClubUsers(attach(clubData));
 
       console.log('✅ Admin users fetched:', adminUsersWithSubscription.length);
       setCoachUsers(coachUsersWithSubscription);
