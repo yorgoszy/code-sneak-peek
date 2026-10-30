@@ -223,8 +223,8 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
             onClick={() => handleAssignmentModeChange('individual')}
             className={`px-2 py-1 text-[10px] rounded-none border transition-colors flex items-center gap-1 ${
               assignmentMode === 'individual'
-                ? 'bg-[#00ffba] text-black border-[#00ffba]'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                ? 'bg-[#004aad] text-white border-[#004aad]'
+                : 'bg-white text-[#004aad] border-[#004aad]/40 hover:bg-[#004aad]/10'
             }`}
           >
             <User className="w-3 h-3" />
@@ -234,8 +234,8 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
             onClick={() => handleAssignmentModeChange('group')}
             className={`px-2 py-1 text-[10px] rounded-none border transition-colors flex items-center gap-1 ${
               assignmentMode === 'group'
-                ? 'bg-[#00ffba] text-black border-[#00ffba]'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                ? 'bg-[#004aad] text-white border-[#004aad]'
+                : 'bg-white text-[#004aad] border-[#004aad]/40 hover:bg-[#004aad]/10'
             }`}
           >
             <Users className="w-3 h-3" />
