@@ -37,6 +37,7 @@ export const RoleStatusFields = ({
             <SelectItem value="general">General</SelectItem>
             <SelectItem value="parent">Parent</SelectItem>
             <SelectItem value="federation">Federation</SelectItem>
+            <SelectItem value="club">Club</SelectItem>
           </SelectContent>
         </Select>
       </div>

@@ -1,7 +1,7 @@
 
 import { useAuthContext } from '@/contexts/AuthContext';
 
-type UserRole = 'admin' | 'coach' | 'trainer' | 'athlete' | 'general' | 'parent' | 'federation'; // eslint-disable-line @typescript-eslint/no-unused-vars
+type UserRole = 'admin' | 'coach' | 'trainer' | 'athlete' | 'general' | 'parent' | 'federation' | 'club'; // eslint-disable-line @typescript-eslint/no-unused-vars
 
 /**
  * @deprecated Use useAuthContext directly for full functionality.
@@ -21,6 +21,7 @@ export const useRoleCheck = () => {
     isGeneral: context.isGeneral,
     isParent: context.isParent,
     isFederation: context.isFederation,
+    isClub: context.isClub,
     refreshUserProfile: context.refreshUserProfile,
     loading: context.rolesLoading,
   };

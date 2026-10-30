@@ -8,6 +8,7 @@ import { NewCoachUserDialog } from "@/components/coach-users/NewCoachUserDialog"
 import { NewSubscriptionDialog } from "@/components/coach/subscriptions/NewSubscriptionDialog";
 import { HealthCardFormDialog } from "@/components/health-cards/HealthCardFormDialog";
 import { supabase } from "@/integrations/supabase/client";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { loadCoachOverviewCounts, type CoachOverviewCounts } from "./coachOverviewCounts";
 
 interface CoachOverviewProps {
@@ -33,10 +34,28 @@ const overviewItems: { label: string; icon: any; path: string; create?: boolean;
   { label: "Ρυθμίσεις", icon: Settings, path: "/dashboard/coach-profile" },
 ];
 
+// Tiles που βλέπει ο ρόλος "club" (πακέτο Club: αθλητές, ομάδες, συνδρομές, ρυθμίσεις/myDATA)
+const CLUB_TILE_LABELS = new Set([
+  "Οι αθλητές μου",
+  "Προσθήκη νέου αθλητή",
+  "Συνδρομές",
+  "Νέα συνδρομή",
+  "Ρυθμίσεις",
+]);
+
 const tileClass = "h-auto min-h-28 min-w-0 rounded-none bg-background p-3 text-foreground sm:p-4";
 
 export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
   const [openDialog, setOpenDialog] = useState<DialogKey | null>(null);
+  const { isClub, isAdmin } = useRoleCheck();
+  const isClubUser = isClub() && !isAdmin();
+  const visibleItems = isClubUser
+    ? [
+        ...overviewItems.filter((item) => CLUB_TILE_LABELS.has(item.label)),
+        // Επιπλέον tile Ομάδων μόνο για club (δεν υπάρχει στο βασικό overview)
+        { label: "Ομάδες", icon: Users, path: "/dashboard/coach-groups" },
+      ]
+    : overviewItems;
   const today = format(new Date(), "yyyy-MM-dd");
   const { data: counts, isError, refetch } = useQuery({
     queryKey: ["coach-overview-counts", coachId, today],
@@ -53,7 +72,7 @@ export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
     <section className="space-y-4">
       {isError && <p role="status" className="text-sm text-muted-foreground">Δεν ήταν δυνατή η φόρτωση των αριθμών.</p>}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {overviewItems.map(({ label, icon: Icon, path, create, dialog, countKey }) => {
+        {visibleItems.map(({ label, icon: Icon, path, create, dialog, countKey }) => {
           const content = (
             <>
               <span className="flex w-full items-center justify-between gap-2">

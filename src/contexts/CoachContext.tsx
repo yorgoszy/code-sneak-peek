@@ -16,7 +16,7 @@ interface CoachProviderProps {
 }
 
 export const CoachProvider: React.FC<CoachProviderProps> = ({ children, overrideCoachId }) => {
-  const { userProfile, isAdmin, isCoach, loading } = useRoleCheck();
+  const { userProfile, isAdmin, isCoach, isClub, loading } = useRoleCheck();
   const [searchParams] = useSearchParams();
   const coachIdFromUrl = searchParams.get('coachId');
 
@@ -37,9 +37,13 @@ export const CoachProvider: React.FC<CoachProviderProps> = ({ children, override
     if (isCoach()) {
       return userProfile?.id ?? null;
     }
+    // Club -> χρησιμοποιεί το δικό του id (πρόσβαση μόνο στα δικά του δεδομένα)
+    if (isClub()) {
+      return userProfile?.id ?? null;
+    }
     // Fallback
     return null;
-  }, [overrideCoachId, isAdmin, isCoach, coachIdFromUrl, userProfile?.id]);
+  }, [overrideCoachId, isAdmin, isCoach, isClub, coachIdFromUrl, userProfile?.id]);
 
   const value = useMemo(() => ({
     coachId,

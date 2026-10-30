@@ -18,6 +18,15 @@ interface CoachLayoutContentProps {
   showHeader?: boolean;
 }
 
+// Σελίδες που επιτρέπονται στον ρόλο "club" (πακέτο Club του ThaiHub)
+const CLUB_ALLOWED_PATHS = [
+  '/dashboard/coach-overview',
+  '/dashboard/my-athletes',
+  '/dashboard/coach-groups',
+  '/dashboard/coach-subscriptions',
+  '/dashboard/coach-profile',
+];
+
 const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
   children,
   title,
@@ -25,9 +34,15 @@ const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
 }) => {
   const { signOut } = useAuth();
   const { coachId, isLoading } = useCoachContext();
+  const { isClub, isAdmin, loading: rolesLoading } = useRoleCheck();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Club χρήστες: πρόσβαση μόνο στις σελίδες του πακέτου Club
+  const isClubRestricted =
+    !rolesLoading && isClub() && !isAdmin() &&
+    !CLUB_ALLOWED_PATHS.some((p) => location.pathname.startsWith(p));
 
   // Κρύβουμε το κουμπί Επιστροφή στην ίδια τη σελίδα Επισκόπηση
   const isOverviewPage = location.pathname.startsWith('/dashboard/coach-overview');
@@ -67,6 +82,11 @@ const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
   // Αν δεν υπάρχει coachId, redirect στο dashboard
   if (!coachId) {
     return <Navigate to="/dashboard" replace />;
+  }
+
+  // Club χρήστες εκτός επιτρεπόμενων σελίδων -> Επισκόπηση
+  if (isClubRestricted) {
+    return <Navigate to="/dashboard/coach-overview" replace />;
   }
 
   return (

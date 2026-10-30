@@ -177,6 +177,7 @@ export const NewUserDialog = ({ isOpen, onClose, onUserCreated }: NewUserDialogP
                   {isAdmin() && <SelectItem value="admin">Admin</SelectItem>}
                   {isAdmin() && <SelectItem value="coach">Coach</SelectItem>}
                   {isAdmin() && <SelectItem value="federation">Federation</SelectItem>}
+                  {isAdmin() && <SelectItem value="club">Club</SelectItem>}
                   <SelectItem value="trainer">Trainer</SelectItem>
                   <SelectItem value="athlete">Athlete</SelectItem>
                   <SelectItem value="parent">Parent</SelectItem>
