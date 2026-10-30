@@ -10,6 +10,7 @@ import { CustomLoadingScreen } from '@/components/ui/custom-loading';
 import { MaintenanceGuard } from '@/components/maintenance/MaintenanceGuard';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { isClubDashboardPath } from '@/components/coach/clubDashboard';
 
 
 interface CoachLayoutContentProps {
@@ -17,15 +18,6 @@ interface CoachLayoutContentProps {
   title?: string;
   showHeader?: boolean;
 }
-
-// Σελίδες που επιτρέπονται στον ρόλο "club" (πακέτο Club του ThaiHub)
-const CLUB_ALLOWED_PATHS = [
-  '/dashboard/coach-overview',
-  '/dashboard/my-athletes',
-  '/dashboard/coach-groups',
-  '/dashboard/coach-subscriptions',
-  '/dashboard/coach-profile',
-];
 
 const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
   children,
@@ -42,7 +34,7 @@ const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
   // Club χρήστες: πρόσβαση μόνο στις σελίδες του πακέτου Club
   const isClubRestricted =
     !rolesLoading && isClub() && !isAdmin() &&
-    !CLUB_ALLOWED_PATHS.some((p) => location.pathname.startsWith(p));
+    !isClubDashboardPath(location.pathname);
 
   // Κρύβουμε το κουμπί Επιστροφή στην ίδια τη σελίδα Επισκόπηση
   const isOverviewPage = location.pathname.startsWith('/dashboard/coach-overview');
