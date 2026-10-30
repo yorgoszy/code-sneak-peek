@@ -1,9 +1,4 @@
 export function proratedUpgradeCents(start: string, end: string, now = new Date()): number {
-  const day = 86400000;
-  const from = Date.parse(`${start}T00:00:00Z`);
-  const until = Date.parse(`${end}T00:00:00Z`) + day;
-  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-  if (!Number.isFinite(from) || !Number.isFinite(until) || until <= from || today < from || today >= until) throw new Error('Inactive subscription');
   return upgradeQuote(start, end, now).amountCents;
 }
 
