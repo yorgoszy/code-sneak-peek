@@ -389,7 +389,7 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
             <Building2 className="h-3.5 w-3.5 text-[#004aad]" />
             <span className="text-xs font-medium text-[#004aad]">Επαγγελματικά Στοιχεία</span>
           </div>
-          <div className="flex gap-2 mb-1.5">
+          <div className="flex gap-2">
             <label htmlFor="logo-upload" className="w-16 h-16 border border-dashed border-[#004aad]/40 flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer hover:bg-[#004aad]/10">
               {logoPreview ? (
                 <img src={logoPreview} alt="Logo" className="w-full h-full object-contain" />
@@ -397,7 +397,8 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
                 <span className="text-[#004aad] text-[10px] text-center">Logo</span>
               )}
             </label>
-            <div className="flex-1 grid grid-cols-3 gap-2">
+            <div className="flex-1 space-y-1.5">
+            <div className="grid grid-cols-3 gap-2">
               <div>
                 <Label className="text-[10px] text-[#004aad]">Επωνυμία</Label>
                 <Input
@@ -423,9 +424,7 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
                 />
               </div>
             </div>
-          </div>
-          <Input id="logo-upload" type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
-          <div className="grid grid-cols-[2fr_1fr_1fr_1.5fr] gap-2">
+            <div className="grid grid-cols-[2fr_1fr_1fr_1.5fr] gap-2">
             <div>
               <Input
                 value={profile.address}
@@ -458,7 +457,10 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
                 placeholder="Τηλέφωνο"
               />
             </div>
+            </div>
+            </div>
           </div>
+          <Input id="logo-upload" type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
         </CardContent>
       </Card>
 
