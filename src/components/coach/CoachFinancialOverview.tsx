@@ -186,7 +186,7 @@ export const CoachFinancialOverview: React.FC<CoachFinancialOverviewProps> = ({ 
               <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-[#00ffba]" />
               <span className="text-[10px] sm:text-xs text-gray-500">Κέρδος (τρέχων μήνας)</span>
             </div>
-            <span className={`text-sm sm:text-lg font-bold block truncate ${(currentMonthData?.profit || 0) >= 0 ? 'text-[#00ffba]' : 'text-red-600'}`}>
+            <span className={`text-sm sm:text-lg font-bold block truncate ${(currentMonthData?.profit || 0) >= 0 ? 'text-[var(--th-blue)]' : 'text-red-600'}`}>
               €{currentMonthData?.profit.toFixed(0) || '0'}
             </span>
           </CardContent>
@@ -215,7 +215,7 @@ export const CoachFinancialOverview: React.FC<CoachFinancialOverviewProps> = ({ 
                     <td className="py-1.5 px-2 sm:py-2 sm:px-3 font-medium capitalize text-xs sm:text-sm">{month.month.slice(0, 3)}</td>
                     <td className="py-1.5 px-2 sm:py-2 sm:px-3 text-right text-green-600">€{month.revenue.toFixed(0)}</td>
                     <td className="py-1.5 px-2 sm:py-2 sm:px-3 text-right text-red-600">€{month.expenses.toFixed(0)}</td>
-                    <td className={`py-1.5 px-2 sm:py-2 sm:px-3 text-right font-medium ${month.profit >= 0 ? 'text-[#00ffba]' : 'text-red-600'}`}>
+                    <td className={`py-1.5 px-2 sm:py-2 sm:px-3 text-right font-medium ${month.profit >= 0 ? 'text-[var(--th-blue)]' : 'text-red-600'}`}>
                       €{month.profit.toFixed(0)}
                     </td>
                   </tr>
@@ -226,7 +226,7 @@ export const CoachFinancialOverview: React.FC<CoachFinancialOverviewProps> = ({ 
                   <td className="py-1.5 px-2 sm:py-2 sm:px-3 text-xs sm:text-sm">Σύνολο</td>
                   <td className="py-1.5 px-2 sm:py-2 sm:px-3 text-right text-green-600">€{currentYearData?.revenue.toFixed(0) || '0'}</td>
                   <td className="py-1.5 px-2 sm:py-2 sm:px-3 text-right text-red-600">€{currentYearData?.expenses.toFixed(0) || '0'}</td>
-                  <td className={`py-1.5 px-2 sm:py-2 sm:px-3 text-right ${(currentYearData?.profit || 0) >= 0 ? 'text-[#00ffba]' : 'text-red-600'}`}>
+                  <td className={`py-1.5 px-2 sm:py-2 sm:px-3 text-right ${(currentYearData?.profit || 0) >= 0 ? 'text-[var(--th-blue)]' : 'text-red-600'}`}>
                     €{currentYearData?.profit.toFixed(0) || '0'}
                   </td>
                 </tr>
