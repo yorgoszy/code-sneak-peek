@@ -92,6 +92,9 @@ const Users = () => {
   // Federation users state (χρήστες με role='federation')
   const [federationUsers, setFederationUsers] = useState<UserWithSubscription[]>([]);
 
+  // Club users state (χρήστες με role='club')
+  const [clubUsers, setClubUsers] = useState<UserWithSubscription[]>([]);
+
   // Check for tablet size
   useEffect(() => {
     const checkTabletSize = () => {
