@@ -243,7 +243,7 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
         <Button 
           onClick={() => setShowAddForm(!showAddForm)} 
           size="sm"
-          className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black text-xs h-8 px-2 sm:px-3"
+          className="rounded-none bg-[var(--th-blue)] hover:bg-[var(--th-blue-hover)] text-[var(--th-white)] text-xs h-8 px-2 sm:px-3"
         >
           <Plus className="h-3 w-3 sm:mr-1" />
           <span className="hidden sm:inline">Νέο</span>
