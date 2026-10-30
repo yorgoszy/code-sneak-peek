@@ -390,6 +390,8 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
             <span className="text-xs font-medium text-[#004aad]">Επαγγελματικά Στοιχεία</span>
           </div>
           <div className="flex gap-2">
+            <div className="flex-1 space-y-1.5">
+            <div className="flex items-center gap-2">
             <label htmlFor="logo-upload" className="w-16 h-16 border border-dashed border-[#004aad]/40 flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer hover:bg-[#004aad]/10">
               {logoPreview ? (
                 <img src={logoPreview} alt="Logo" className="w-full h-full object-contain" />
@@ -397,7 +399,6 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
                 <span className="text-[#004aad] text-[10px] text-center">Logo</span>
               )}
             </label>
-            <div className="flex-1 space-y-1.5">
             <div className="grid grid-cols-3 gap-2">
               <div>
                 <Label className="text-[10px] text-[#004aad]">Επωνυμία</Label>
@@ -423,6 +424,7 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
                   className="rounded-none h-7 text-xs text-[#004aad]"
                 />
               </div>
+            </div>
             </div>
             <div className="grid grid-cols-[2fr_1fr_1fr_1.5fr] gap-2">
             <div>
