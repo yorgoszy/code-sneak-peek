@@ -438,7 +438,7 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
               <Input
                 value={profile.address}
                 onChange={(e) => setProfile({ ...profile, address: e.target.value })}
-                className="rounded-none h-7 text-xs text-[#004aad]"
+                className="rounded-none h-7 text-xs text-[#004aad] placeholder:text-[#004aad]"
                 placeholder="Διεύθυνση"
               />
             </div>
@@ -446,7 +446,7 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
               <Input
                 value={profile.city}
                 onChange={(e) => setProfile({ ...profile, city: e.target.value })}
-                className="rounded-none h-7 text-xs text-[#004aad]"
+                className="rounded-none h-7 text-xs text-[#004aad] placeholder:text-[#004aad]"
                 placeholder="Πόλη"
               />
             </div>
@@ -454,7 +454,7 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
               <Input
                 value={profile.postal_code}
                 onChange={(e) => setProfile({ ...profile, postal_code: e.target.value })}
-                className="rounded-none h-7 text-xs text-[#004aad]"
+                className="rounded-none h-7 text-xs text-[#004aad] placeholder:text-[#004aad]"
                 placeholder="Τ.Κ."
               />
             </div>
