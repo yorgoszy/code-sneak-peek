@@ -94,7 +94,7 @@ export default function ThaiHubLogin() {
           <div className="max-w-xl space-y-6">
             <p className="text-xs uppercase text-[var(--th-blue)] font-semibold">{t.forCoaches}</p>
             <h1 className="text-4xl sm:text-6xl font-bold leading-tight">{t.headline}</h1>
-            <p className="text-base sm:text-lg text-[var(--th-red)]">{t.intro}</p>
+            <p className="text-base sm:text-lg text-[var(--th-blue)]">{t.intro}</p>
             <div className="flex flex-wrap gap-4">
               <Button size="lg" onClick={() => setLoginOpen(true)} className={primaryButton}>{t.login}</Button>
               <Button size="lg" asChild className="rounded-none bg-[var(--th-white)] text-[var(--th-blue)] hover:bg-[var(--th-blue-tint)]"><a href="#features">{t.more}</a></Button>
