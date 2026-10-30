@@ -397,7 +397,7 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
                 <span className="text-[#004aad] text-[10px] text-center">Logo</span>
               )}
             </label>
-            <div className="flex-1 grid grid-cols-4 gap-2">
+            <div className="flex-1 grid grid-cols-3 gap-2">
               <div>
                 <Label className="text-[10px] text-[#004aad]">Επωνυμία</Label>
                 <Input
@@ -422,18 +422,10 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
                   className="rounded-none h-7 text-xs text-[#004aad]"
                 />
               </div>
-              <div>
-                <Label className="text-[10px] text-[#004aad]">Τηλέφωνο</Label>
-                <Input
-                  value={profile.phone}
-                  onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                  className="rounded-none h-7 text-xs text-[#004aad]"
-                />
-              </div>
             </div>
           </div>
           <Input id="logo-upload" type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
-          <div className="grid grid-cols-[2fr_1fr_1fr] gap-2">
+          <div className="grid grid-cols-[2fr_1fr_1fr_1.5fr] gap-2">
             <div>
               <Input
                 value={profile.address}
@@ -456,6 +448,14 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
                 onChange={(e) => setProfile({ ...profile, postal_code: e.target.value })}
                 className="rounded-none h-7 text-xs text-[#004aad] placeholder:text-[#004aad]"
                 placeholder="Τ.Κ."
+              />
+            </div>
+            <div>
+              <Input
+                value={profile.phone}
+                onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                className="rounded-none h-7 text-xs text-[#004aad] placeholder:text-[#004aad]"
+                placeholder="Τηλέφωνο"
               />
             </div>
           </div>
