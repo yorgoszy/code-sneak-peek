@@ -29,6 +29,7 @@ import { useTranslation } from 'react-i18next';
 import { useCoachSubscriptionStatus } from "@/hooks/useCoachSubscriptionStatus";
 import { toast } from "sonner";
 import { useExpiringHealthCards } from "@/hooks/useExpiringHealthCards";
+import { isClubDashboardPath } from '@/components/coach/clubDashboard';
 
 interface CoachSidebarProps {
   isCollapsed: boolean;
@@ -50,7 +51,7 @@ export const CoachSidebar = ({
 }: CoachSidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { userProfile, isAdmin } = useRoleCheck();
+  const { userProfile, isAdmin, isClub } = useRoleCheck();
   const { signOut } = useAuth();
   const { t } = useTranslation();
   const isMobile = useIsMobile();
@@ -303,7 +304,7 @@ export const CoachSidebar = ({
 
   const navigationContent = (
     <div className={`space-y-1 ${isMobile ? "md:space-y-2" : "space-y-2"}`}>
-      {menuItems.map((item, index) => {
+      {menuItems.filter((item) => !isClub() || isAdmin() || (typeof item.path === 'string' && (isClubDashboardPath(item.path) || item.path === '/' || item.path === 'logout'))).map((item, index) => {
         if (item.type === "separator") {
           return <div key={`separator-${index}`} className="my-2 h-px bg-border" />;
         }
