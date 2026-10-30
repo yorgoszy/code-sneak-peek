@@ -99,6 +99,7 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
                 <SelectContent>
                   <SelectItem value="admin">Admin</SelectItem>
                   <SelectItem value="coach">Coach</SelectItem>
+                  <SelectItem value="club">Club</SelectItem>
                   <SelectItem value="federation">Federation</SelectItem>
                   <SelectItem value="trainer">Trainer</SelectItem>
                   <SelectItem value="athlete">Athlete</SelectItem>
