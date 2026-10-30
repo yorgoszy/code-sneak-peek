@@ -15,9 +15,9 @@ test('Coach costs 750 EUR yearly including VAT', () => {
   strictEqual(thaihubPlans[1].vatIncluded, true);
 });
 
-test('Federation costs 1000 EUR yearly including VAT', () => {
+test('Federation costs 1500 EUR yearly including VAT', () => {
   strictEqual(thaihubPlans[2].name, 'Federation');
-  strictEqual(thaihubPlans[2].yearlyPrice, 1000);
+  strictEqual(thaihubPlans[2].yearlyPrice, 1500);
   strictEqual(thaihubPlans[2].vatIncluded, true);
 });
 
