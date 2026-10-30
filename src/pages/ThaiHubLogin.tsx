@@ -10,6 +10,7 @@ import { Loader2, Menu, X, LogIn, Users, Dumbbell, CreditCard, ChartNoAxesCombin
 import { thaihubLandingCopy, type ThaiHubLanguage } from "@/components/coach/thaihubLandingCopy";
 import heroImage from "@/assets/thaihub-hero-ring.png.asset.json";
 import thaihubLogo from "@/assets/thaihub-logo.png.asset.json";
+import hyperteamLogo from "@/assets/hyperteam-logo.png.asset.json";
 
 const anchors = ['home', 'features', 'purchase', 'contact'];
 const featureIcons = [Users, Dumbbell, CreditCard, ChartNoAxesCombined, CalendarDays, BookOpen];
@@ -127,7 +128,7 @@ export default function ThaiHubLogin() {
           <div className="lg:self-center"><p className="text-sm mb-3">{t.phone}</p><a href="tel:+302310529104" className="text-3xl sm:text-4xl font-semibold hover:text-[var(--th-blue-hover)]">+30 2310 529 104</a><div><Button asChild size="lg" className={`mt-6 ${primaryButton}`}><a href="tel:+302310529104"><Phone className="h-4 w-4 mr-2" />{t.call}</a></Button></div></div>
         </div>
       </section>
-      <footer className="border-t border-[var(--th-blue-border)]"><div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 flex flex-wrap items-center justify-between gap-5"><a href="#home"><img src={thaihubLogo.url} alt="ThaiHub" className="h-7 w-auto" /></a><p className="text-sm">ThaiHub — {t.footer}</p></div></footer>
+      <footer className="border-t border-[var(--th-blue-border)]"><div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 flex flex-wrap items-center justify-between gap-5"><a href="#home"><img src={thaihubLogo.url} alt="ThaiHub" className="h-7 w-auto" /></a><p className="text-sm flex items-center gap-2">supported by <img src={hyperteamLogo.url} alt="HYPERTEAM" className="h-5 w-auto" /></p></div></footer>
 
       <Dialog open={loginOpen} onOpenChange={setLoginOpen}>
         <DialogContent lang={language} className="thaihub-page max-w-sm rounded-none bg-[var(--th-white)] text-[var(--th-blue)]">
