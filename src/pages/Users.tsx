@@ -657,6 +657,10 @@ const Users = () => {
                   <Building2 className="h-4 w-4" />
                   Federation ({federationUsers.length})
                 </TabsTrigger>
+                <TabsTrigger value="club" className="rounded-none flex items-center gap-2">
+                  <Building2 className="h-4 w-4" />
+                  Club ({clubUsers.length})
+                </TabsTrigger>
               </TabsList>
 
               {/* Admin Users Tab */}
