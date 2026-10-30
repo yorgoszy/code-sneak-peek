@@ -167,7 +167,7 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
       <div className="flex justify-end">
         <Button 
           onClick={() => handleOpenDialog()}
-          className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+          className="rounded-none bg-[var(--th-blue)] hover:bg-[var(--th-blue-hover)] text-[var(--th-white)]"
         >
           <Plus className="h-4 w-4 mr-2" />
           Νέος Τύπος
