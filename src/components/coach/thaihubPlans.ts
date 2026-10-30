@@ -3,7 +3,7 @@ export const clubFeatures = [
 ] as const;
 
 export const coachFeatures = [
-  'programDesign', 'volumeIntensity', 'tests', 'athleteProfile',
+  'programDesign', 'volumeIntensity', 'tests', 'athleteProfile', 'athleteProgress',
 ] as const;
 
 export const proFeatures = ['nutrition', 'videoAnalysis', 'apps'] as const;

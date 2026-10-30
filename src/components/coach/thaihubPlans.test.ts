@@ -25,8 +25,8 @@ test('Club includes athlete management, subscriptions, income/expenses and myDAT
   deepStrictEqual(thaihubPlans[0].features, ['athletes', 'subscriptions', 'incomeExpenses', 'mydata']);
 });
 
-test('Coach inherits Club and adds program design, volume/intensity tracking, tests and athlete profile', () => {
-  deepStrictEqual(thaihubPlans[1].features, [...thaihubPlans[0].features, 'programDesign', 'volumeIntensity', 'tests', 'athleteProfile']);
+test('Coach inherits Club and adds program design, volume/intensity tracking, tests, athlete profile and progress', () => {
+  deepStrictEqual(thaihubPlans[1].features, [...thaihubPlans[0].features, 'programDesign', 'volumeIntensity', 'tests', 'athleteProfile', 'athleteProgress']);
 });
 
 test('Pro inherits Coach and adds nutrition, video analysis and measurement apps', () => {
