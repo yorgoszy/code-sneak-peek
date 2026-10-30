@@ -330,10 +330,10 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {/* Basic Info - Compact */}
       <Card className="rounded-none">
-        <CardContent className="p-3">
+        <CardContent className="p-2">
           <div className="flex items-center gap-3">
             <div className="relative">
               <Avatar 
@@ -384,12 +384,12 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
 
       {/* Business Info - Compact */}
       <Card className="rounded-none">
-        <CardContent className="p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <Building2 className="h-4 w-4 text-[#004aad]" />
+        <CardContent className="p-2">
+          <div className="flex items-center gap-2 mb-1.5">
+            <Building2 className="h-3.5 w-3.5 text-[#004aad]" />
             <span className="text-xs font-medium text-[#004aad]">Επαγγελματικά Στοιχεία</span>
           </div>
-          <div className="flex gap-3 mb-2">
+          <div className="flex gap-2 mb-1.5">
             <label htmlFor="logo-upload" className="w-16 h-16 border border-dashed border-[#004aad]/40 flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer hover:bg-[#004aad]/10">
               {logoPreview ? (
                 <img src={logoPreview} alt="Logo" className="w-full h-full object-contain" />
@@ -438,9 +438,9 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
 
       {/* Address - Compact */}
       <Card className="rounded-none">
-        <CardContent className="p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <MapPin className="h-4 w-4 text-[#004aad]" />
+        <CardContent className="p-2">
+          <div className="flex items-center gap-2 mb-1.5">
+            <MapPin className="h-3.5 w-3.5 text-[#004aad]" />
             <span className="text-xs font-medium text-[#004aad]">Διεύθυνση</span>
           </div>
           <div className="grid grid-cols-3 gap-2">
@@ -474,17 +474,17 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
 
       {/* Services & Website - Compact */}
       <Card className="rounded-none">
-        <CardContent className="p-3">
+        <CardContent className="p-2">
           <div className="grid grid-cols-2 gap-2">
-            <div className="col-span-2">
+            <div>
               <Label className="text-[10px] text-[#004aad]">Υπηρεσίες</Label>
               <Textarea
                 value={profile.services}
                 onChange={(e) => setProfile({ ...profile, services: e.target.value })}
-                className="rounded-none text-xs min-h-[50px] text-[#004aad]"
+                className="rounded-none text-xs min-h-[40px] text-[#004aad]"
               />
             </div>
-            <div className="col-span-2">
+            <div>
               <Label className="text-[10px] text-[#004aad]">Website</Label>
               <Input
                 value={profile.website}
@@ -498,9 +498,9 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
 
       {/* Bank - Compact */}
       <Card className="rounded-none">
-        <CardContent className="p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <CreditCard className="h-4 w-4 text-[#004aad]" />
+        <CardContent className="p-2">
+          <div className="flex items-center gap-2 mb-1.5">
+            <CreditCard className="h-3.5 w-3.5 text-[#004aad]" />
             <span className="text-xs font-medium text-[#004aad]">Τραπεζικά Στοιχεία</span>
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -526,12 +526,12 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
 
       {/* Notes - Compact */}
       <Card className="rounded-none">
-        <CardContent className="p-3">
+        <CardContent className="p-2">
           <Label className="text-[10px] text-[#004aad]">Σημειώσεις</Label>
           <Textarea
             value={profile.notes}
             onChange={(e) => setProfile({ ...profile, notes: e.target.value })}
-            className="rounded-none text-xs min-h-[40px] text-[#004aad]"
+            className="rounded-none text-xs min-h-[32px] text-[#004aad]"
           />
         </CardContent>
       </Card>
@@ -540,7 +540,7 @@ export const CoachProfileSettings: React.FC<CoachProfileSettingsProps> = ({ coac
       <Button
         onClick={handleSubmit}
         disabled={saving}
-        className="w-full rounded-none bg-[#004aad] hover:bg-[#004aad]/90 text-white h-8 text-sm"
+        className="w-full rounded-none bg-[#004aad] hover:bg-[#004aad]/90 text-white h-7 text-xs"
       >
         <Save className="h-4 w-4 mr-2" />
         {saving ? 'Αποθήκευση...' : 'Αποθήκευση'}
