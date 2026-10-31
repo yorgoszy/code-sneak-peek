@@ -40,9 +40,17 @@ Deno.serve(async (req) => {
       return reply({ activated: await settle(order, await stripe.checkout.sessions.retrieve(order.stripe_session_id)), plan: order.plan });
     }
 
-    const plan = parsed.data.plan;
+    let plan = parsed.data.plan;
+    const renewal = ['club', 'coach', 'federation'].includes(owner.role);
+    if (renewal) {
+      const { data: active } = await db.from('user_subscriptions').select('id, status, is_paid, is_paused, start_date, end_date, subscription_types!inner(assigned_role)')
+        .eq('user_id', owner.id).not('subscription_types.assigned_role', 'is', null).eq('status', 'active').eq('is_paid', true)
+        .lte('start_date', new Date().toISOString().slice(0, 10)).gte('end_date', new Date().toISOString().slice(0, 10));
+      if ((active || []).some((s: any) => !s.is_paused)) return reply({ error: 'Η συνδρομή σου είναι ακόμη ενεργή.' }, 409);
+      const { data: profile } = await db.from('coach_profiles').select('next_plan').eq('coach_id', owner.id).maybeSingle();
+      plan = (profile?.next_plan || owner.role) as typeof plan;
+    } else if (owner.role !== 'general') return reply({ error: 'Ο λογαριασμός σου έχει ήδη πακέτο. Συνδέσου στον πίνακα ελέγχου.' }, 409);
     if (!plan) return reply({ error: 'Επίλεξε πακέτο.' }, 400);
-    if (owner.role !== 'general') return reply({ error: 'Ο λογαριασμός σου έχει ήδη πακέτο. Συνδέσου στον πίνακα ελέγχου.' }, 409);
     const origin = req.headers.get('origin') ?? '';
     const preview = /^https:\/\/[a-z0-9.-]*caecd137-de8c-4f15-9ad7-4eeb588073c6[a-z0-9.-]*\.(lovable\.app|lovableproject\.com|lovable\.dev)$/.test(origin);
     const base = allowedOrigins.has(origin) || preview ? origin : 'https://www.thaihub.gr';
@@ -66,12 +74,12 @@ Deno.serve(async (req) => {
       mode: 'payment', customer_email: identity.user.email, client_reference_id: order.id,
       line_items: [{ quantity: 1, price_data: { currency: 'eur', unit_amount: order.amount_cents, product_data: { name: `ThaiHub ${planNames[plan]} — 1 έτος` } } }],
       metadata: { plan_order_id: order.id, app_user_id: owner.id, plan },
-      success_url: `${base}/thaihub?plan_session={CHECKOUT_SESSION_ID}`, cancel_url: `${base}/thaihub#purchase`,
+      success_url: renewal ? `${base}/dashboard/coach-overview?plan_session={CHECKOUT_SESSION_ID}` : `${base}/thaihub?plan_session={CHECKOUT_SESSION_ID}`, cancel_url: renewal ? `${base}/dashboard/coach-overview` : `${base}/thaihub#purchase`,
       expires_at: Math.floor(Date.now() / 1000) + 3600,
     }, { idempotencyKey: `thaihub-plan-${order.id}` });
     const { error: saveError } = await db.from('thaihub_plan_orders').update({ stripe_session_id: session.id }).eq('id', order.id);
     if (saveError) throw new Error('Δεν ήταν δυνατή η αποθήκευση της πληρωμής.');
-    return reply({ url: session.url });
+    return reply({ url: session.url, plan, amount_cents: order.amount_cents });
   } catch (error) {
     const message = error instanceof Error && !('type' in error) ? error.message : 'Το Stripe δεν ολοκλήρωσε το αίτημα πληρωμής.';
     return reply({ error: message }, 400);

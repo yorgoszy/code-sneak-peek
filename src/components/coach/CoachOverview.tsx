@@ -5,7 +5,8 @@ import { Link, useSearchParams } from "react-router-dom";
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { toast } from 'sonner';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { ArrowUpRight, BarChart3, CalendarDays, ClipboardList, CreditCard, Dumbbell, FilePlus2, GraduationCap, HeartPulse, Layers, Plus, Settings, UserPlus, Users } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { ArrowDownRight, XCircle, ArrowUpRight, BarChart3, CalendarDays, ClipboardList, CreditCard, Dumbbell, FilePlus2, GraduationCap, HeartPulse, Layers, Plus, Settings, UserPlus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NewCoachUserDialog } from "@/components/coach-users/NewCoachUserDialog";
 import { NewSubscriptionDialog } from "@/components/coach/subscriptions/NewSubscriptionDialog";
@@ -13,7 +14,7 @@ import { HealthCardFormDialog } from "@/components/health-cards/HealthCardFormDi
 import { supabase } from "@/integrations/supabase/client";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { loadCoachOverviewCounts, type CoachOverviewCounts } from "./coachOverviewCounts";
-import { isClubDashboardPath, usesClubDashboard } from "./clubDashboard";
+import { isClubDashboardPath, isThaiHubPlanExpired, renewalPlan, usesClubDashboard } from "./clubDashboard";
 import { CoachUpgradeDialog } from "./CoachUpgradeDialog";
 
 interface CoachOverviewProps {
@@ -83,26 +84,61 @@ export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
     enabled: Boolean(coachId),
   });
   const isClubUser = usesClubDashboard(viewedProfile?.role, isClub());
-  const { data: clubSubscription } = useQuery({
-    queryKey: ['club-subscription-expiry', coachId],
+  const { data: planStatus, refetch: refetchPlan } = useQuery({
+    queryKey: ['thaihub-plan-status', coachId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('user_subscriptions')
-        .select('end_date')
-        .eq('user_id', coachId)
-        .eq('subscription_type_id', '9c46ca26-9837-4eb8-8ced-11e25ecf8388')
-        .eq('status', 'active')
-        .gte('end_date', new Date().toISOString().slice(0, 10))
-        .order('end_date', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      const { data, error } = await (supabase as any).rpc('get_thaihub_plan_status', { p_user_id: coachId });
       if (error) throw error;
-      return data as { end_date: string } | null;
+      return (data?.[0] ?? null) as { role: string; end_date: string | null; active: boolean; next_plan: string | null } | null;
     },
     enabled: Boolean(coachId),
     staleTime: 0,
   });
-  const visibleItems = isClubUser
+  const planExpired = isThaiHubPlanExpired(planStatus);
+  const expiryText = planStatus?.end_date ? new Date(`${planStatus.end_date}T00:00:00`).toLocaleDateString('el-GR') : '—';
+  const renewalTarget = planStatus ? renewalPlan(planStatus) : null;
+  const { data: renewalPrice } = useQuery({
+    queryKey: ['thaihub-renewal-price', renewalTarget],
+    queryFn: async () => {
+      const { data } = await supabase.from('subscription_types').select('price').eq('assigned_role', renewalTarget as string).eq('is_active', true).is('coach_id', null).order('created_at', { ascending: false }).limit(1).maybeSingle();
+      return data ? Number(data.price) : null;
+    },
+    enabled: planExpired && Boolean(renewalTarget),
+  });
+  const [downgradeOpen, setDowngradeOpen] = useState(false);
+  const [renewBusy, setRenewBusy] = useState(false);
+  const toggleDowngrade = async () => {
+    const { error } = await (supabase as any).rpc('set_thaihub_next_plan', { p_user_id: coachId, p_plan: planStatus?.next_plan === 'club' ? null : 'club' });
+    setDowngradeOpen(false);
+    if (error) { toast.error('Δεν ήταν δυνατή η αλλαγή πακέτου.'); return; }
+    toast.success(planStatus?.next_plan === 'club' ? 'Ακυρώθηκε το downgrade.' : `Από ${expiryText} η συνδρομή σου θα συνεχίσει ως Club.`);
+    void refetchPlan();
+  };
+  const startRenewal = async () => {
+    setRenewBusy(true);
+    const { data, error } = await supabase.functions.invoke('thaihub-plan-checkout', { body: { action: 'checkout' } });
+    setRenewBusy(false);
+    if (error || !data?.url) {
+      const details = error instanceof FunctionsHttpError ? await error.context.json().catch(() => null) : null;
+      toast.error(details?.error || data?.error || 'Δεν ήταν δυνατή η έναρξη πληρωμής.');
+      return;
+    }
+    window.location.href = data.url;
+  };
+  const planSession = searchParams.get('plan_session');
+  useEffect(() => {
+    if (!planSession) return;
+    (async () => {
+      const { data } = await supabase.functions.invoke('thaihub-plan-checkout', { body: { action: 'verify', session_id: planSession } });
+      const params = new URLSearchParams(searchParams);
+      params.delete('plan_session');
+      setSearchParams(params, { replace: true });
+      if (data?.activated) { toast.success('Η συνδρομή ανανεώθηκε.'); window.location.reload(); }
+      else toast.info('Η πληρωμή δεν έχει ακόμη επιβεβαιωθεί. Μην πληρώσεις ξανά.');
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [planSession]);
+  const visibleItems = planExpired ? [] : isClubUser
     ? overviewItems.filter((item) => isClubDashboardPath(item.path))
     : overviewItems;
   const today = format(new Date(), "yyyy-MM-dd");
@@ -163,7 +199,40 @@ export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
             </Button>
           );
         })}
-        {isClubUser && (
+        {planExpired && (
+          <Button
+            variant="outline"
+            disabled={renewBusy}
+            onClick={startRenewal}
+            className={`${tileClass} relative flex flex-col items-start justify-between gap-4 border-destructive text-destructive hover:text-destructive`}
+          >
+            <XCircle className="h-6 w-6 shrink-0" aria-hidden="true" />
+            <span className="flex w-full flex-col items-start gap-1">
+              <span className="whitespace-normal break-words text-left text-sm font-medium leading-snug">Η συνδρομή έληξε</span>
+              <span className="whitespace-normal break-words text-left text-xs leading-snug">
+                {renewBusy ? 'Μετάβαση στην πληρωμή…' : `Πλήρωσε ${renewalPrice != null ? `${renewalPrice}€` : ''} για ${renewalTarget === 'federation' ? 'Federation' : renewalTarget === 'coach' ? 'Coach' : 'Club'}`}
+              </span>
+            </span>
+          </Button>
+        )}
+        {!planExpired && planStatus?.role === 'coach' && (
+          <Button
+            variant="outline"
+            onClick={() => setDowngradeOpen(true)}
+            className={`${tileClass} relative flex flex-col items-start justify-between gap-4 text-[var(--th-blue)] hover:text-[var(--th-blue)]`}
+          >
+            <ArrowDownRight className="h-5 w-5 shrink-0" aria-hidden="true" />
+            <span className="flex w-full flex-col items-start gap-1">
+              <span className="whitespace-normal break-words text-left text-sm font-medium leading-snug">
+                {planStatus.next_plan === 'club' ? 'Downgrade σε Club προγραμματισμένο' : 'Downgrade to Club'}
+              </span>
+              <span className="whitespace-normal break-words text-left text-xs leading-snug">
+                {planStatus.next_plan === 'club' ? `Ως Club από ${expiryText}` : `Λήξη συνδρομής: ${expiryText}`}
+              </span>
+            </span>
+          </Button>
+        )}
+        {!planExpired && isClubUser && (
           <Button
             variant="outline"
             onClick={() => setUpgradeOpen(true)}
@@ -173,12 +242,29 @@ export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
             <span className="flex w-full flex-col items-start gap-1">
               <span className="whitespace-normal break-words text-left text-sm font-medium leading-snug">Upgrade to Coach</span>
               <span className="whitespace-normal break-words text-left text-xs leading-snug">
-                Λήξη συνδρομής: {clubSubscription ? new Date(`${clubSubscription.end_date}T00:00:00`).toLocaleDateString('el-GR') : '—'}
+                Λήξη συνδρομής: {expiryText}
               </span>
             </span>
           </Button>
         )}
       </div>
+
+      <AlertDialog open={downgradeOpen} onOpenChange={setDowngradeOpen}>
+        <AlertDialogContent className="rounded-none">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{planStatus?.next_plan === 'club' ? 'Ακύρωση downgrade;' : 'Downgrade to Club;'}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {planStatus?.next_plan === 'club'
+                ? 'Η συνδρομή σου θα συνεχίσει ως Coach.'
+                : `Κρατάς το Coach μέχρι ${expiryText}. Μετά τη λήξη η επόμενη συνδρομή σου θα είναι Club.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-none">Άκυρο</AlertDialogCancel>
+            <AlertDialogAction onClick={toggleDowngrade} className="rounded-none">Επιβεβαίωση</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {isClubUser && <CoachUpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} coachId={coachId} />}
 

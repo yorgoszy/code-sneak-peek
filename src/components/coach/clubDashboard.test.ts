@@ -30,3 +30,11 @@ describe('Club dashboard scope', () => {
     }
   });
 });
+import { isThaiHubPlanExpired, renewalPlan } from './clubDashboard';
+describe('ThaiHub plan expiry and renewal', () => {
+  test('a coach without an active paid subscription is locked out', () => { strictEqual(isThaiHubPlanExpired({ role: 'coach', active: false }), true); });
+  test('an active coach keeps access', () => { strictEqual(isThaiHubPlanExpired({ role: 'coach', active: true }), false); });
+  test('ordinary users are never locked by plan expiry', () => { strictEqual(isThaiHubPlanExpired({ role: 'general', active: false }), false); });
+  test('a scheduled downgrade renews as Club', () => { strictEqual(renewalPlan({ role: 'coach', next_plan: 'club' }), 'club'); });
+  test('without a downgrade the coach renews as Coach', () => { strictEqual(renewalPlan({ role: 'coach', next_plan: null }), 'coach'); });
+});

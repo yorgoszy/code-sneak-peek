@@ -10,7 +10,7 @@ import { CustomLoadingScreen } from '@/components/ui/custom-loading';
 import { MaintenanceGuard } from '@/components/maintenance/MaintenanceGuard';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { isClubDashboardPath } from '@/components/coach/clubDashboard';
+import { isClubDashboardPath, isThaiHubPlanExpired } from '@/components/coach/clubDashboard';
 
 
 interface CoachLayoutContentProps {
@@ -55,6 +55,15 @@ const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
     staleTime: 60_000,
   });
 
+  const { data: planStatus } = useQuery({
+    queryKey: ['thaihub-plan-status', coachId],
+    queryFn: async () => {
+      const { data } = await (supabase as any).rpc('get_thaihub_plan_status', { p_user_id: coachId });
+      return (data?.[0] ?? null) as { role: string; active: boolean } | null;
+    },
+    enabled: Boolean(coachId),
+  });
+  const planExpired = !isAdmin() && isThaiHubPlanExpired(planStatus);
   const coachName = coachProfile?.name || title || 'Προπονητής';
   const coachAvatar = coachProfile?.avatar_url || coachProfile?.photo_url || null;
 
@@ -77,6 +86,10 @@ const CoachLayoutContent: React.FC<CoachLayoutContentProps> = ({
   }
 
   // Club χρήστες εκτός επιτρεπόμενων σελίδων -> Επισκόπηση
+  if (planExpired && !isOverviewPage) {
+    return <Navigate to={`/dashboard/coach-overview?coachId=${coachId}`} replace />;
+  }
+
   if (isClubRestricted) {
     return <Navigate to="/dashboard/coach-overview" replace />;
   }
