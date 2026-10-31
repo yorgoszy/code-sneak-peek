@@ -22,6 +22,7 @@ interface SubscriptionType {
   visit_expiry_months?: number;
   is_active: boolean;
   available_in_shop?: boolean;
+  allowed_sections?: string[] | null;
 }
 
 const ShopWithSidebar = () => {
@@ -44,7 +45,7 @@ const ShopWithSidebar = () => {
     try {
       const { data, error } = await supabase
         .from('subscription_types')
-        .select('id, name, description, price, duration_months, subscription_mode, visit_count, visit_expiry_months, is_active, available_in_shop')
+        .select('id, name, description, price, duration_months, subscription_mode, visit_count, visit_expiry_months, is_active, available_in_shop, allowed_sections')
         .eq('is_active', true)
         .eq('available_in_shop', true)
         .order('price') as { data: SubscriptionType[] | null, error: any };
@@ -122,6 +123,7 @@ const ShopWithSidebar = () => {
               ? new Date(Date.now() + (product.visit_expiry_months * 30 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0]
               : null,
             price: product.price,
+            allowed_sections: product.allowed_sections || null,
             status: 'active'
           });
 
