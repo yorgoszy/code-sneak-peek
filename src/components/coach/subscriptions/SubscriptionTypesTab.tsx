@@ -186,7 +186,7 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-semibold text-lg">{type.name}</h3>
-                    <p className="text-2xl font-bold text-[#00ffba]">{type.price}€</p>
+                    <p className="text-2xl font-bold text-[var(--th-blue)]">{type.price}€</p>
                     <p className="text-sm text-muted-foreground">
                       {type.duration_months} {type.duration_months === 1 ? 'μήνας' : 'μήνες'}
                     </p>
