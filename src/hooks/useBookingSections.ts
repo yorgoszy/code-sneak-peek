@@ -11,6 +11,8 @@ interface BookingSection {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  coach_id?: string | null;
+  booking_type?: string | null;
 }
 
 export const useBookingSections = (bookingType?: string, allowedSections?: string[], userId?: string) => {
@@ -52,7 +54,7 @@ export const useBookingSections = (bookingType?: string, allowedSections?: strin
         .select('*')
         .eq('is_active', true)
         .order('name');
-      if (bookingType === 'videocall') {
+      if (bookingType === 'videocall' || bookingType === 'gym_visit') {
         let profileQuery = supabase.from('app_users').select('coach_id');
         if (userId) profileQuery = profileQuery.eq('id', userId);
         else {
@@ -65,7 +67,7 @@ export const useBookingSections = (bookingType?: string, allowedSections?: strin
         if (profile.coach_id) {
           const { data: coach, error: coachError } = await supabase.from('app_users').select('role').eq('id', profile.coach_id).single();
           if (coachError) throw coachError;
-          query = coach.role === 'admin' ? query.is('coach_id', null) : query.eq('coach_id', profile.coach_id).eq('booking_type', 'videocall');
+          query = coach.role === 'admin' ? query.is('coach_id', null) : query.eq('coach_id', profile.coach_id).eq('booking_type', bookingType);
         } else query = query.is('coach_id', null);
       } else query = query.is('coach_id', null);
       const { data, error } = await query;
@@ -91,6 +93,13 @@ export const useBookingSections = (bookingType?: string, allowedSections?: strin
 
       const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
       const availableHours = section.available_hours[dayOfWeek] || [];
+
+      if (section.coach_id && section.booking_type === 'gym_visit') {
+        const { data, error } = await supabase.rpc('get_coach_booking_slot_counts', { p_section: sectionId, p_date: date });
+        if (error) throw error;
+        const counts = Object.fromEntries((data || []).map(slot => [slot.booking_time.slice(0, 5), Number(slot.booking_count)]));
+        return availableHours.filter((time: string) => (counts[time] || 0) < section.max_capacity);
+      }
 
       // Get existing bookings for this date and section
       const { data: existingBookings } = await supabase
@@ -239,6 +248,7 @@ export const useBookingSections = (bookingType?: string, allowedSections?: strin
     sections: sections.filter(section => {
       if (bookingType !== 'videocall' && !canBookSection(section.id, allowedSections)) return false;
       if (!bookingType) return true;
+      if (section.coach_id) return section.booking_type === bookingType;
       const text = `${section.name} ${section.description || ''}`.toLowerCase();
       const isVideocall = ['videocall', 'online', 'βιντεοκλήσεις', 'βιντεοκληση'].some(term => text.includes(term));
       return bookingType === 'videocall' ? isVideocall : !isVideocall;

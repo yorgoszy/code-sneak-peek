@@ -18,6 +18,7 @@ interface BookingAvailability {
   videocall_packages_available?: number;
   has_gym_access?: boolean;
   allowed_sections?: string[];
+  coach_id?: string;
 }
 
 interface BookingSession {
@@ -105,8 +106,8 @@ export const useUserBookings = () => {
 
     try {
       console.log('🔄 Fetching booking availability for user:', userProfile.id);
-      const { data, error } = await supabase.rpc('get_user_available_bookings', {
-        user_uuid: userProfile.id
+      const { data, error } = await supabase.rpc('get_coach_booking_availability', {
+        p_user: userProfile.id
       });
 
       if (error) {
@@ -198,7 +199,7 @@ export const useUserBookings = () => {
     if (error) throw error;
 
     // If it's a gym visit, deduct from visit package using the existing function
-    if (bookingType === 'gym_visit') {
+    if (bookingType === 'gym_visit' && !availability.coach_id) {
       try {
         await supabase.rpc('record_visit', {
           p_user_id: userProfile.id,
@@ -267,7 +268,7 @@ export const useUserBookings = () => {
     // First get the booking details with all required fields
     const { data: booking } = await supabase
       .from('booking_sessions')
-      .select('booking_type, user_id, status, booking_date, booking_time')
+      .select('booking_type, user_id, status, booking_date, booking_time, coach_id')
       .eq('id', bookingId)
       .single();
 
@@ -312,7 +313,7 @@ export const useUserBookings = () => {
     }
 
     // If it's a gym visit, return the visit to the package
-    if (booking?.booking_type === 'gym_visit' && booking?.user_id) {
+    if (booking?.booking_type === 'gym_visit' && booking?.user_id && !booking.coach_id) {
       try {
         // Get the current visit package
         const { data: visitPackage } = await supabase
