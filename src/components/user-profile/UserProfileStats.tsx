@@ -713,69 +713,6 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
         <div className={`grid ${isMobile ? 'gap-2' : 'gap-4'} ${
           isMobile ? 'grid-cols-2' : 'grid-cols-3 md:grid-cols-6 lg:grid-cols-12'
         }`}>
-          {/* Αγορές - Πρώτο - Κρύβεται για coach-managed users */}
-          {!isCoachManagedUser && (
-            <button 
-              onClick={() => {
-                if (setActiveTab) {
-                  setActiveTab('shop');
-                } else {
-                  navigate(`/dashboard/user-profile/${user.id}?tab=shop`);
-                }
-              }}
-              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0`}
-            >
-              <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-                <ShoppingBag className={`text-black ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
-              </div>
-              <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'} animate-click-me`}>
-                <MousePointer className={`text-black ${isMobile ? 'w-4 h-4' : 'w-6 h-6'}`} />
-              </div>
-              <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-                {t('overview.shop')}
-              </div>
-            </button>
-          )}
-
-          {/* Ενεργές Προσφορές - Δεύτερο - Κρύβεται για coach-managed users */}
-          {!isCoachManagedUser && (
-            <button 
-              onClick={() => {
-                if (setActiveTab) {
-                  setActiveTab('offers');
-                } else {
-                  navigate(`/dashboard/user-profile/${user.id}?tab=offers`);
-                }
-              }}
-              disabled={isWidgetDisabled('offers')}
-              className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${isWidgetDisabled('offers') ? disabledClass : ''}`}
-            >
-              <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-                <Tag className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} ${
-                  offersData?.hasMagicBox 
-                    ? 'animate-offer-blink' 
-                    : offersData?.available > 0 
-                    ? 'text-black' 
-                    : 'text-gray-400'
-                } transition-all duration-300`} />
-              </div>
-              <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
-                {offersData?.available > 0 ? (
-                  <span className={`${offersData?.hasMagicBox ? 'animate-offer-blink' : 'text-black'}`}>
-                    {offersData.available}
-                  </span>
-                ) : offersData?.hasMagicBox ? (
-                  <Gift className={`animate-offer-blink ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
-                ) : (
-                  <span className="text-gray-400">-</span>
-                )}
-              </div>
-              <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-                {t('overview.activeOffers')}
-              </div>
-            </button>
-          )}
-
           {/* Πληρωμές - Τρίτο */}
           <button 
             onClick={() => {
