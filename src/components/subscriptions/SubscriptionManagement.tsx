@@ -236,7 +236,7 @@ export const SubscriptionManagement: React.FC = () => {
       // Φόρτωση όλων των χρηστών
       const { data: allUsers, error: usersError } = await supabase
         .from('app_users')
-        .select('id, name, email, subscription_status, role, user_status, section_id, booking_sections(id, name)')
+        .select('id, name, email, subscription_status, role, user_status, section_id, booking_sections!app_users_section_id_fkey(id, name)')
         .order('name');
 
       if (usersError) {

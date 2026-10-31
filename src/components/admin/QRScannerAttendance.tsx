@@ -91,7 +91,7 @@ export const QRScannerAttendance: React.FC<QRScannerAttendanceProps> = ({
       // Get user info with section
       const { data: user, error: userError } = await supabase
         .from('app_users')
-        .select('*, booking_sections(id, name)')
+        .select('*, booking_sections!app_users_section_id_fkey(id, name)')
         .eq('id', userId)
         .single();
 
