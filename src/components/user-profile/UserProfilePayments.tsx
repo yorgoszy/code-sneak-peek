@@ -602,39 +602,14 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
           </CardContent>
         </Card>
       ) : (
-        // Για κανονικούς χρήστες, tabs με Αγορές και Αποδείξεις
-        <Tabs defaultValue="purchases" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 rounded-none">
-            <TabsTrigger value="purchases" className="rounded-none">
-              <Package className="w-4 h-4 mr-2" />
-              {t('payments.purchases')} ({purchases.length})
-            </TabsTrigger>
+        // Για κανονικούς χρήστες, εμφάνιση αποδείξεων
+        <Tabs defaultValue="receipts" className="w-full">
+          <TabsList className="grid w-full grid-cols-1 rounded-none">
             <TabsTrigger value="receipts" className="rounded-none">
               <Receipt className="w-4 h-4 mr-2" />
               {t('payments.receipts')} ({receipts.length})
             </TabsTrigger>
           </TabsList>
-
-          <TabsContent value="purchases" className="mt-4">
-            <Card className="rounded-none">
-              <CardContent className="p-6">
-                {loading ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">{t('payments.loadingPurchases')}</p>
-                  </div>
-                ) : purchases.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Package className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-                    <p className="text-gray-500">{t('payments.noPurchases')}</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {purchases.map(renderPurchaseCard)}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
 
         <TabsContent value="receipts" className="mt-4">
           <Card className="rounded-none">
