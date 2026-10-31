@@ -6,7 +6,6 @@ import {
   Calendar,
   FileText,
   CreditCard,
-  Brain,
   ShoppingCart,
   Video,
   CalendarDays,
@@ -21,7 +20,6 @@ import {
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
-import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { useAllPrograms } from "@/hooks/useAllPrograms";
@@ -55,7 +53,6 @@ export const UserProfileSidebar = forwardRef<
   const navigate = useNavigate();
   const { isAdmin } = useRoleCheck();
   const { hasActiveSubscription, loading: subscriptionLoading } = useUserSubscriptionStatus(userProfile?.id);
-  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [availableOffers, setAvailableOffers] = useState(0);
   const [activePrograms, setActivePrograms] = useState(0);
   const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
@@ -241,14 +238,6 @@ export const UserProfileSidebar = forwardRef<
       disabled: !hasSubscription
     },
     { 
-      icon: TrendingUp, 
-      label: t('sidebar.progress'), 
-      key: "progress",
-      badge: null,
-      visible: true,
-      disabled: !hasSubscription
-    },
-    { 
       icon: CreditCard, 
       label: t('sidebar.payments'), 
       key: "payments",
@@ -322,6 +311,14 @@ export const UserProfileSidebar = forwardRef<
       visible: userProfile?.gender === 'female',
       disabled: false,
     },
+    { 
+      icon: TrendingUp, 
+      label: t('sidebar.progress'), 
+      key: "progress",
+      badge: null,
+      visible: true,
+      disabled: !hasSubscription
+    },
     {
       icon: HeartPulse,
       label: "Heart Rate (HR+)",
@@ -332,9 +329,6 @@ export const UserProfileSidebar = forwardRef<
     },
   ].filter(item => item.visible);
 
-  const handleAIChatClick = () => {
-    setIsAIChatOpen(true);
-  };
 
   const headerContent = (
     <div className="px-1">
@@ -395,19 +389,6 @@ export const UserProfileSidebar = forwardRef<
         )}
       </button>
       
-      {/* AI Προπονητής Button */}
-      <button
-        onClick={handleAIChatClick}
-        className="w-full flex items-center space-x-3 px-3 py-2 md:py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 rounded-none border-t border-gray-200 mt-2 pt-4"
-      >
-        <Brain className="h-5 w-5 flex-shrink-0 text-black" />
-        {(!isCollapsed || isMobile) && (
-          <div className="flex flex-col items-start min-w-0">
-            <span className="text-sm font-medium truncate">{t('sidebar.aiCoach')}</span>
-            <span className="text-xs text-gray-500 truncate">{t('sidebar.poweredBy')}</span>
-          </div>
-        )}
-      </button>
     </div>
   );
 
@@ -433,14 +414,6 @@ export const UserProfileSidebar = forwardRef<
         headerContent={headerContent}
         navigationContent={navigationContent}
         bottomContent={bottomContent}
-      />
-      
-      <EnhancedAIChatDialog
-        isOpen={isAIChatOpen}
-        onClose={() => setIsAIChatOpen(false)}
-        athleteId={userProfile.id}
-        athleteName={userProfile.name}
-        athletePhotoUrl={userProfile.photo_url}
       />
     </>
   );
