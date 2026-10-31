@@ -6,7 +6,6 @@ import {
   Calendar,
   FileText,
   CreditCard,
-  Brain,
   ShoppingCart,
   Video,
   CalendarDays,
@@ -21,7 +20,6 @@ import {
 } from "lucide-react";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
-import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { useAllPrograms } from "@/hooks/useAllPrograms";
@@ -55,7 +53,6 @@ export const UserProfileSidebar = forwardRef<
   const navigate = useNavigate();
   const { isAdmin } = useRoleCheck();
   const { hasActiveSubscription, loading: subscriptionLoading } = useUserSubscriptionStatus(userProfile?.id);
-  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [availableOffers, setAvailableOffers] = useState(0);
   const [activePrograms, setActivePrograms] = useState(0);
   const [workoutCompletions, setWorkoutCompletions] = useState<any[]>([]);
@@ -241,14 +238,6 @@ export const UserProfileSidebar = forwardRef<
       disabled: !hasSubscription
     },
     { 
-      icon: TrendingUp, 
-      label: t('sidebar.progress'), 
-      key: "progress",
-      badge: null,
-      visible: true,
-      disabled: !hasSubscription
-    },
-    { 
       icon: CreditCard, 
       label: t('sidebar.payments'), 
       key: "payments",
@@ -321,6 +310,14 @@ export const UserProfileSidebar = forwardRef<
       badge: null,
       visible: userProfile?.gender === 'female',
       disabled: false,
+    },
+    { 
+      icon: TrendingUp, 
+      label: t('sidebar.progress'), 
+      key: "progress",
+      badge: null,
+      visible: true,
+      disabled: !hasSubscription
     },
     {
       icon: HeartPulse,
