@@ -1,5 +1,7 @@
 # Architecture rules
 
+- Gym booking section restrictions are validated on booking and waiting-list writes; linked visit packages resolve sections from their source subscription type, and UI filtering reacts to late availability so saved restrictions cannot be bypassed.
+
 - Notification profile links resolve the recipient user ID independently of optional bookings and payment/offer row IDs; gym confirmations and package emails do not require a videocall booking.
 - Visit decrement uses a package-ID-scoped, RLS-respecting atomic RPC; legacy history is matched by purchase window and excludes booking rows, so counter restoration cannot partially commit or affect another package.
 

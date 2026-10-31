@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
+import { canBookSection } from './bookingSectionAccess';
 
 interface BookingSection {
   id: string;
@@ -21,7 +22,7 @@ export const useBookingSections = (bookingType?: string, allowedSections?: strin
     
     // Set up realtime subscription for booking_sessions changes
     const channel = supabase
-      .channel('booking-sessions-changes')
+      .channel(`booking-sessions-changes-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {
@@ -54,39 +55,6 @@ export const useBookingSections = (bookingType?: string, allowedSections?: strin
       
       // Filter sections based on booking type and allowed sections
       let filteredData = data || [];
-      
-      // First filter by allowed sections if specified
-      if (allowedSections && allowedSections.length > 0) {
-        filteredData = filteredData.filter(section => 
-          allowedSections.includes(section.id)
-        );
-      }
-      
-      // Then filter by booking type
-      if (bookingType) {
-        filteredData = filteredData.filter(section => {
-          if (bookingType === 'videocall') {
-            return section.name.toLowerCase().includes('videocall') || 
-                   section.name.toLowerCase().includes('online') ||
-                   section.name.toLowerCase().includes('βιντεοκλήσεις') ||
-                   section.name.toLowerCase().includes('βιντεοκληση') ||
-                   section.description?.toLowerCase().includes('videocall') ||
-                   section.description?.toLowerCase().includes('online') ||
-                   section.description?.toLowerCase().includes('βιντεοκλήσεις') ||
-                   section.description?.toLowerCase().includes('βιντεοκληση');
-          } else {
-            // For gym visits, exclude videocall sections
-            return !section.name.toLowerCase().includes('videocall') && 
-                   !section.name.toLowerCase().includes('online') &&
-                   !section.name.toLowerCase().includes('βιντεοκλήσεις') &&
-                   !section.name.toLowerCase().includes('βιντεοκληση') &&
-                   !section.description?.toLowerCase().includes('videocall') &&
-                   !section.description?.toLowerCase().includes('online') &&
-                   !section.description?.toLowerCase().includes('βιντεοκλήσεις') &&
-                   !section.description?.toLowerCase().includes('βιντεοκληση');
-          }
-        });
-      }
       
       setSections(filteredData);
     } catch (error) {
@@ -236,7 +204,14 @@ export const useBookingSections = (bookingType?: string, allowedSections?: strin
   };
 
   return {
-    sections,
+    // Filter during render so late-arriving or changed availability is respected.
+    sections: sections.filter(section => {
+      if (!canBookSection(section.id, allowedSections)) return false;
+      if (!bookingType) return true;
+      const text = `${section.name} ${section.description || ''}`.toLowerCase();
+      const isVideocall = ['videocall', 'online', 'βιντεοκλήσεις', 'βιντεοκληση'].some(term => text.includes(term));
+      return bookingType === 'videocall' ? isVideocall : !isVideocall;
+    }),
     loading,
     getAvailableSlots,
     getTimeSlotStatus,

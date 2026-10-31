@@ -32,6 +32,7 @@ interface SubscriptionType {
   videocall_count?: number;
   videocall_expiry_months?: number;
   single_purchase?: boolean;
+  allowed_sections?: string[] | null;
 }
 
 interface UserSubscription {
@@ -840,6 +841,8 @@ export const SubscriptionManagement: React.FC = () => {
           .from('visit_packages')
           .insert({
             user_id: selectedUser,
+            subscription_id: newSub.id,
+            allowed_sections: subscriptionType.allowed_sections || null,
             total_visits: totalVisits,
             remaining_visits: totalVisits,
             purchase_date: subscriptionStartDate.toISOString().split('T')[0],
