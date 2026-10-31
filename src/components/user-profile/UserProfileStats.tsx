@@ -746,16 +746,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           </button>
 
           {/* Μέρες Συνδρομής - Τέταρτο */}
-          <button 
-            onClick={() => {
-              if (setActiveTab) {
-                setActiveTab('payments');
-              } else {
-                navigate(`/dashboard/user-profile/${user.id}?tab=payments`);
-              }
-            }}
-            disabled={isWidgetDisabled('payments')}
-            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${isWidgetDisabled('payments') ? disabledClass : ''}`}
+          <div
+            className={`text-center ${isMobile ? 'p-1' : 'p-2'} rounded-none flex flex-col min-w-0 ${isWidgetDisabled('payments') ? 'opacity-40' : ''}`}
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
               {isPaused ? (
@@ -786,7 +778,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               {t('overview.subscriptionDays')}
             </div>
-          </button>
+          </div>
 
 
           {/* Ημέρες Προπόνησης / Προγράμματα - Πέμπτο (δεξιά από Μέρες Συνδρομής) */}
