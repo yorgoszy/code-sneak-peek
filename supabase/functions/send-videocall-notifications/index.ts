@@ -1157,7 +1157,7 @@ serve(async (req) => {
     } else if (type === 'booking_cancelled_admin') {
       recipient = adminEmail || 'yorgoszy@gmail.com'
       subject = `❌ Βιντεοκλήση Ακυρώθηκε - ${booking.app_users.name}`
-    } else if (['booking_approved', 'booking_rejected', 'booking_cancelled', 'reminder_24h', 'reminder_1h', 'reminder_15min'].includes(type)) {
+    } else if (booking && ['booking_approved', 'booking_rejected', 'booking_cancelled', 'reminder_24h', 'reminder_1h', 'reminder_15min'].includes(type)) {
       recipient = booking.app_users.email
       switch (type) {
         case 'booking_approved':
