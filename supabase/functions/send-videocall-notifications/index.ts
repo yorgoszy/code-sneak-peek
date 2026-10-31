@@ -30,6 +30,7 @@ interface NotificationRequest {
 interface VideocallBooking {
   id: string
   user_id: string
+  coach_id?: string | null
   app_users: {
     id: string
     name: string
@@ -1042,6 +1043,7 @@ serve(async (req) => {
     let booking = null
     let userData = null
     let emailHTML = ''
+    let coachEmail: string | null = null
 
     // Handle videocall notifications
     if (['booking_pending', 'booking_approved', 'booking_rejected', 'booking_cancelled', 'booking_cancelled_admin', 'reminder_24h', 'reminder_1h', 'reminder_15min'].includes(type)) {
@@ -1067,6 +1069,11 @@ serve(async (req) => {
         }
       } else {
         booking = bookingData
+        if (bookingData.coach_id) {
+          const { data: coach } = await supabase.from('app_users').select('email').eq('id', bookingData.coach_id).single()
+          if (!coach?.email) throw new Error('Coach notification recipient unavailable')
+          coachEmail = coach.email
+        }
         emailHTML = generateEmailHTML(type, booking, adminEmail)
       }
     }
@@ -1157,10 +1164,10 @@ serve(async (req) => {
     let subject: string
     
     if (type === 'booking_pending') {
-      recipient = adminEmail || 'yorgoszy@gmail.com'
+      recipient = coachEmail || adminEmail || 'yorgoszy@gmail.com'
       subject = `🔔 Νέα Κράτηση Βιντεοκλήσης - ${booking.app_users.name}`
     } else if (type === 'booking_cancelled_admin') {
-      recipient = adminEmail || 'yorgoszy@gmail.com'
+      recipient = coachEmail || adminEmail || 'yorgoszy@gmail.com'
       subject = `❌ Βιντεοκλήση Ακυρώθηκε - ${booking?.app_users?.name || userData?.name || 'Χρήστης'}`
     } else if (booking && ['booking_approved', 'booking_rejected', 'booking_cancelled', 'reminder_24h', 'reminder_1h', 'reminder_15min'].includes(type)) {
       recipient = booking.app_users.email
