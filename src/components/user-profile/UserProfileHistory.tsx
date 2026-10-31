@@ -15,7 +15,7 @@ interface UserProfileHistoryProps {
 
 export const UserProfileHistory: React.FC<UserProfileHistoryProps> = ({ userId, useCoachTables = false }) => {
   const { t } = useTranslation();
-  const [activeHistoryTab, setActiveHistoryTab] = useState("overview");
+  const [activeHistoryTab, setActiveHistoryTab] = useState("force-velocity");
 
   return (
     <div className="space-y-4">
