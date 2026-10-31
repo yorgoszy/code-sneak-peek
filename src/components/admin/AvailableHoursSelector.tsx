@@ -72,41 +72,56 @@ export const AvailableHoursSelector: React.FC<AvailableHoursSelectorProps> = ({
     return availableHours[day]?.length > 0 && availableHours[day]?.length < HOURS.length;
   };
 
-  if (compact) return <div className="space-y-3">
-    <Label>Ημέρες και ώρες</Label>
-    <table className="w-full table-fixed border-collapse text-xs">
+  if (compact) return <div className="space-y-1">
+    <Label className="text-xs">Ημέρες και ώρες</Label>
+    <table className="w-full table-fixed border-collapse text-[10px]">
       <thead>
         <tr>
-          <th scope="col" className="w-12 pb-2 text-left font-normal text-muted-foreground">Ώρα</th>
-          {Object.entries(DAYS).map(([key, label]) => (
-            <th key={key} scope="col" title={label} className="pb-2 text-center font-medium">
-              <span aria-label={label}>{label.charAt(0)}</span>
+          <th scope="col" className="w-14 pb-1 text-left font-normal text-muted-foreground"></th>
+          {HOURS.map(h => (
+            <th key={h} scope="col" className="pb-1 text-center font-normal text-muted-foreground">
+              {h.slice(0, 2)}
             </th>
           ))}
         </tr>
       </thead>
       <tbody>
-        {HOURS.map(hour => (
-          <tr key={hour}>
-            <th scope="row" className="pr-2 text-left font-normal text-muted-foreground">{hour}</th>
-            {Object.entries(DAYS).map(([key, label]) => {
-              const selected = availableHours[key]?.includes(hour) || false;
-              return (
-                <td key={key} className="p-0.5">
-                  <Button
-                    type="button"
-                    variant={selected ? 'default' : 'outline'}
-                    aria-label={`${label} ${hour}`}
-                    aria-pressed={selected}
-                    title={`${label} ${hour}`}
-                    className="h-auto min-h-8 w-full aspect-square rounded-none p-0"
-                    onClick={() => handleDayToggle(key, hour, !selected)}
-                  />
-                </td>
-              );
-            })}
-          </tr>
-        ))}
+        {Object.entries(DAYS).map(([key, label]) => {
+          const selectedCount = availableHours[key]?.length || 0;
+          return (
+            <tr key={key}>
+              <th scope="row" className="pr-2 text-left font-normal text-muted-foreground">
+                <button
+                  type="button"
+                  title={`${label} — επιλογή όλων / καμία`}
+                  aria-label={`${label} — επιλογή όλων / καμία`}
+                  className="flex items-center gap-1 rounded-none text-left hover:text-foreground"
+                  onClick={() => handleSelectAllDay(key, selectedCount !== HOURS.length)}
+                >
+                  <span className="font-medium text-foreground">{label.charAt(0)}</span>
+                  {selectedCount > 0 && (
+                    <span className="text-muted-foreground">{selectedCount}</span>
+                  )}
+                </button>
+              </th>
+              {HOURS.map(hour => {
+                const selected = availableHours[key]?.includes(hour) || false;
+                return (
+                  <td key={hour} className="p-px">
+                    <button
+                      type="button"
+                      aria-label={`${label} ${hour}`}
+                      aria-pressed={selected}
+                      title={`${label} ${hour}`}
+                      className={`h-4 w-full rounded-none border ${selected ? 'border-transparent bg-primary' : 'border-border bg-transparent hover:bg-muted'}`}
+                      onClick={() => handleDayToggle(key, hour, !selected)}
+                    />
+                  </td>
+                );
+              })}
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   </div>;
