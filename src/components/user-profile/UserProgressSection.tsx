@@ -14,6 +14,7 @@ import { VO2MaxProgressCard } from "./VO2MaxProgressCard";
 import { JumpProfileLatestCard } from "./JumpProfileLatestCard";
 import { AnthropometricProgressCard } from "./AnthropometricProgressCard";
 import { BodyMapCard } from "./BodyMapCard";
+import { FunctionalHistory } from "./FunctionalHistory";
 import { FightStatsCard } from "./FightStatsCard";
 import { useTranslation } from 'react-i18next';
 
@@ -427,7 +428,8 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
 
       {/* Body Map - only show if user has functional test */}
       {hasFunctionalTest && (
-        <div className="mb-2 sm:mb-0">
+        <div className="mb-2 sm:mb-0 space-y-2">
+          <FunctionalHistory userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
           <BodyMapCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
         </div>
       )}

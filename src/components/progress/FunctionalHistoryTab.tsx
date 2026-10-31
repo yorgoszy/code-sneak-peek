@@ -18,6 +18,7 @@ interface FunctionalHistoryTabProps {
   readOnly?: boolean;
   coachUserIds?: string[];
   useCoachTables?: boolean;
+  coachId?: string;
 }
 
 interface FunctionalResult {
@@ -27,7 +28,7 @@ interface FunctionalResult {
   user_id: string;
 }
 
-export const FunctionalHistoryTab: React.FC<FunctionalHistoryTabProps> = ({ selectedUserId, readOnly = false, coachUserIds, useCoachTables = false }) => {
+export const FunctionalHistoryTab: React.FC<FunctionalHistoryTabProps> = ({ selectedUserId, readOnly = false, coachUserIds, useCoachTables = false, coachId }) => {
   const usersMap = useUserNamesMap();
   const [results, setResults] = useState<FunctionalResult[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,7 +56,9 @@ export const FunctionalHistoryTab: React.FC<FunctionalHistoryTabProps> = ({ sele
     try {
       let sessionsData: any[] = [];
       if (useCoachTables && selectedUserId) {
-        const { data, error } = await supabase.from('coach_functional_test_sessions').select('id, user_id, test_date, notes').eq('user_id', selectedUserId).order('test_date', { ascending: false });
+        let query = supabase.from('coach_functional_test_sessions').select('id, user_id, test_date, notes').eq('user_id', selectedUserId).order('test_date', { ascending: false }).order('created_at', { ascending: false });
+        if (coachId) query = query.eq('coach_id', coachId);
+        const { data, error } = await query;
         if (error) throw error;
         sessionsData = data || [];
       } else {
@@ -72,7 +75,7 @@ export const FunctionalHistoryTab: React.FC<FunctionalHistoryTabProps> = ({ sele
     } finally {
       setLoading(false);
     }
-  }, [usersMap, selectedUserId, useCoachTables, coachUserIds]);
+  }, [usersMap, selectedUserId, useCoachTables, coachUserIds, coachId]);
 
   useEffect(() => {
     if (selectedUserId && readOnly) fetchResults();
@@ -188,12 +191,14 @@ export const FunctionalHistoryTab: React.FC<FunctionalHistoryTabProps> = ({ sele
 
             return (
               <React.Fragment key={result.id}>
-                <button onClick={() => setSelectedSession(result)} className="relative group" title={`${userName} - ${format(new Date(result.test_date), 'dd/MM/yy')} - ${summary}`}>
+                <Button variant="ghost" onClick={() => setSelectedSession(result)} className="relative group h-auto w-auto p-1 rounded-none flex flex-col gap-1" title={`${userName} - ${format(new Date(result.test_date), 'dd/MM/yy')} - ${summary}`}>
                   <Avatar className="h-8 w-8 border-2 border-transparent group-hover:border-foreground transition-colors">
                     <AvatarImage src={userAvatar} alt={userName} />
                     <AvatarFallback className="text-[9px]">{userName?.charAt(0)}</AvatarFallback>
                   </Avatar>
-                </button>
+                  {readOnly && <span className="text-[10px] text-foreground">{format(new Date(result.test_date), 'dd/MM/yy')}</span>}
+                  {readOnly && summary && <span className="text-xs font-semibold text-foreground">{summary}</span>}
+                </Button>
                 {isLastInYear ? (
                   <div className="flex items-center shrink-0 gap-1">
                     <div className="flex flex-col items-center shrink-0">
