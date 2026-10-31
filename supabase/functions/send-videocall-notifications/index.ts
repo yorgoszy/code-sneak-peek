@@ -1051,14 +1051,20 @@ serve(async (req) => {
         .single()
 
       if (error || !bookingData) {
-        console.error('❌ Booking not found:', error)
-        return new Response(
-          JSON.stringify({ error: 'Booking not found' }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+        if (type === 'booking_cancelled') {
+          // Booking already deleted on cancellation; fall through to user-data path below
+          console.log('ℹ️ Cancelled booking already removed, using passed data')
+        } else {
+          console.error('❌ Booking not found:', error)
+          return new Response(
+            JSON.stringify({ error: 'Booking not found' }),
+            { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+      } else {
+        booking = bookingData
+        emailHTML = generateEmailHTML(type, booking, adminEmail)
       }
-      booking = bookingData
-      emailHTML = generateEmailHTML(type, booking, adminEmail)
     }
 
     // Handle other notification types
