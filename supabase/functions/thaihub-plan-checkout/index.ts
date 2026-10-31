@@ -57,7 +57,10 @@ Deno.serve(async (req) => {
     }
     if (open) await db.from('thaihub_plan_orders').update({ status: 'expired' }).eq('id', open.id).eq('status', 'pending');
 
-    const { data: order, error } = await db.from('thaihub_plan_orders').insert({ user_id: owner.id, plan, amount_cents: planPriceCents[plan] }).select('*').single();
+    const { data: priceType } = await db.from('subscription_types').select('price').eq('assigned_role', plan).eq('is_active', true).is('coach_id', null).order('created_at', { ascending: false }).limit(1).maybeSingle();
+    const dbCents = Math.round(Number(priceType?.price) * 100);
+    const amountCents = Number.isFinite(dbCents) && dbCents > 0 ? dbCents : planPriceCents[plan];
+    const { data: order, error } = await db.from('thaihub_plan_orders').insert({ user_id: owner.id, plan, amount_cents: amountCents }).select('*').single();
     if (error || !order) return reply({ error: 'Υπάρχει ήδη αίτημα πληρωμής. Δοκίμασε ξανά.' }, 409);
     const session = await stripe.checkout.sessions.create({
       mode: 'payment', customer_email: identity.user.email, client_reference_id: order.id,

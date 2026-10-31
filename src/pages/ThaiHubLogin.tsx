@@ -34,8 +34,19 @@ export default function ThaiHubLogin() {
   const [planBusy, setPlanBusy] = useState<string | null>(null);
   const [planNotice, setPlanNotice] = useState<string | null>(null);
 
+  const [rolePrices, setRolePrices] = useState<Record<string, number>>({});
+  useEffect(() => {
+    supabase.from('subscription_types').select('price, assigned_role, created_at').eq('is_active', true).is('coach_id', null).in('assigned_role', ['club', 'coach', 'federation']).order('created_at', { ascending: true })
+      .then(({ data }) => {
+        const prices: Record<string, number> = {};
+        (data || []).forEach((row: any) => { if (Number(row.price) > 0) prices[row.assigned_role] = Number(row.price); });
+        setRolePrices(prices);
+      });
+  }, []);
+  const planPrice = (plan: typeof thaihubPlans[number]) => rolePrices[plan.id === 'pro' ? 'federation' : plan.id] ?? plan.yearlyPrice;
+
   const choosePlan = async (plan: typeof thaihubPlans[number]) => {
-    const target = { id: (plan.id === 'pro' ? 'federation' : plan.id) as ThaiHubCheckoutPlan, name: plan.name, price: plan.yearlyPrice };
+    const target = { id: (plan.id === 'pro' ? 'federation' : plan.id) as ThaiHubCheckoutPlan, name: plan.name, price: planPrice(plan) };
     setPlanNotice(null);
     const { data } = await supabase.auth.getSession();
     if (!data.session) { setCheckoutPlan(target); return; }
