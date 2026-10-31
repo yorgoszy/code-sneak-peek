@@ -13,7 +13,7 @@ interface BookingSection {
   updated_at: string;
 }
 
-export const useBookingSections = (bookingType?: string, allowedSections?: string[]) => {
+export const useBookingSections = (bookingType?: string, allowedSections?: string[], userId?: string) => {
   const [sections, setSections] = useState<BookingSection[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -41,15 +41,34 @@ export const useBookingSections = (bookingType?: string, allowedSections?: strin
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [bookingType, userId]);
 
   const fetchSections = async () => {
     try {
-      const { data, error } = await supabase
+      setLoading(true);
+      setSections([]);
+      let query = supabase
         .from('booking_sections')
         .select('*')
         .eq('is_active', true)
         .order('name');
+      if (bookingType === 'videocall') {
+        let profileQuery = supabase.from('app_users').select('coach_id');
+        if (userId) profileQuery = profileQuery.eq('id', userId);
+        else {
+          const { data: auth } = await supabase.auth.getUser();
+          if (!auth.user) return;
+          profileQuery = profileQuery.eq('auth_user_id', auth.user.id);
+        }
+        const { data: profile, error: profileError } = await profileQuery.single();
+        if (profileError) throw profileError;
+        if (profile.coach_id) {
+          const { data: coach, error: coachError } = await supabase.from('app_users').select('role').eq('id', profile.coach_id).single();
+          if (coachError) throw coachError;
+          query = coach.role === 'admin' ? query.is('coach_id', null) : query.eq('coach_id', profile.coach_id).eq('booking_type', 'videocall');
+        } else query = query.is('coach_id', null);
+      } else query = query.is('coach_id', null);
+      const { data, error } = await query;
 
       if (error) throw error;
       
@@ -109,6 +128,13 @@ export const useBookingSections = (bookingType?: string, allowedSections?: strin
 
       const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
       const availableHours = section.available_hours[dayOfWeek] || [];
+
+      if (bookingType === 'videocall') {
+        const { data, error } = await supabase.rpc('get_coaching_slot_counts', { p_section: sectionId, p_date: date });
+        if (error) throw error;
+        const occupied = new Set((data || []).map(slot => slot.booking_time.slice(0, 5)));
+        return { available: availableHours.filter((time: string) => !occupied.has(time)), full: availableHours.filter((time: string) => occupied.has(time)) };
+      }
 
       // Get existing confirmed bookings for this date and section (matching admin panel logic)
       let query = supabase
@@ -170,6 +196,11 @@ export const useBookingSections = (bookingType?: string, allowedSections?: strin
 
   const getTimeSlotBookings = async (sectionId: string, date: string, bookingType?: string) => {
     try {
+      if (bookingType === 'videocall') {
+        const { data, error } = await supabase.rpc('get_coaching_slot_counts', { p_section: sectionId, p_date: date });
+        if (error) throw error;
+        return Object.fromEntries((data || []).map(slot => [slot.booking_time.slice(0, 5), Number(slot.booking_count)]));
+      }
       const section = sections.find(s => s.id === sectionId);
       if (!section) return {};
 
@@ -206,7 +237,7 @@ export const useBookingSections = (bookingType?: string, allowedSections?: strin
   return {
     // Filter during render so late-arriving or changed availability is respected.
     sections: sections.filter(section => {
-      if (!canBookSection(section.id, allowedSections)) return false;
+      if (bookingType !== 'videocall' && !canBookSection(section.id, allowedSections)) return false;
       if (!bookingType) return true;
       const text = `${section.name} ${section.description || ''}`.toLowerCase();
       const isVideocall = ['videocall', 'online', 'βιντεοκλήσεις', 'βιντεοκληση'].some(term => text.includes(term));

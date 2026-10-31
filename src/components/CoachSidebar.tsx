@@ -18,6 +18,7 @@ import {
   Download,
   HeartPulse,
   GraduationCap,
+  Video,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BaseSidebar } from "@/components/sidebar/BaseSidebar";
@@ -67,6 +68,7 @@ export const CoachSidebar = ({
 
   const restrictedPaths = [
     '/dashboard/coach-subscriptions',
+    '/dashboard/coach-online-coaching',
     '/dashboard/coach-programs',
     '/dashboard/coach-active-programs',
     '/dashboard/coach-program-cards',
@@ -123,6 +125,13 @@ export const CoachSidebar = ({
     },
 
     // Προσωρινά κρυμμένο
+    {
+      icon: Video,
+      label: "Online Coaching",
+      path: effectiveCoachId ? `/dashboard/coach-online-coaching?coachId=${effectiveCoachId}` : "/dashboard/coach-online-coaching",
+      badge: null,
+      requiresSubscription: true,
+    },
     ...(FEATURE_FLAGS.coachExercisesPage
       ? [
           {

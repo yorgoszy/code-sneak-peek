@@ -15,13 +15,15 @@ interface BookingCalendarProps {
   onClose: () => void;
   bookingType: string;
   availability: any;
+  userId?: string;
 }
 
 export const BookingCalendar: React.FC<BookingCalendarProps> = ({
   onBookingCreate,
   onClose,
   bookingType,
-  availability
+  availability,
+  userId
 }) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedSection, setSelectedSection] = useState<string>('');
@@ -31,12 +33,13 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
   const [bookingCounts, setBookingCounts] = useState<{ [time: string]: number }>({});
   const [loading, setLoading] = useState(false);
   const [disabledDates, setDisabledDates] = useState<Set<string>>(new Set());
-  const { sections, getTimeSlotStatus, getTimeSlotBookings } = useBookingSections(bookingType, availability?.allowed_sections);
+  const { sections, getTimeSlotStatus, getTimeSlotBookings } = useBookingSections(bookingType, availability?.allowed_sections, userId);
 
   // Set default section when sections load
   useEffect(() => {
-    if (sections.length > 0 && !selectedSection) {
-      setSelectedSection(sections[0].id);
+    if (!sections.some(section => section.id === selectedSection)) {
+      setSelectedSection(sections[0]?.id || '');
+      setSelectedTime('');
     }
   }, [sections, selectedSection]);
 
@@ -57,7 +60,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
   // Set up realtime updates for booking changes
   useEffect(() => {
     const channel = supabase
-      .channel('user-booking-updates')
+      .channel(`user-booking-updates-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {
@@ -122,11 +125,8 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
             if (dayHasHours) {
               console.log('✅ Section available on', currentDayName, 'for date:', dateStr, 'Hours:', dayHours);
               // Third check: Are there any time slots available?
-              const { available, full } = await getTimeSlotStatus(selectedSection, dateStr, bookingType);
-              console.log('🔍 Time slot status for', dateStr, ':', { available, full });
-              if (available.length > 0 || full.length > 0) {
+              if (dayHours.length > 0) {
                 shouldDisable = false; // This date should be enabled
-                console.log('✅ Date ENABLED:', dateStr, 'Day:', currentDayName, 'Available slots:', available.length, 'Full slots:', full.length);
               } else {
                 console.log('🚫 Date disabled - no time slots:', dateStr);
               }
@@ -165,7 +165,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
   };
 
   const handleBookingSubmit = async () => {
-    if (!selectedDate || !selectedSection || !selectedTime) return;
+    if (!selectedDate || !selectedSection || !selectedTime || !sections.some(section => section.id === selectedSection)) return;
 
     setLoading(true);
     try {
@@ -189,7 +189,7 @@ export const BookingCalendar: React.FC<BookingCalendarProps> = ({
 
     if (bookingType === 'videocall') {
       return availability.has_videocall && 
-        ((availability.single_videocall_sessions || 0) > 0 || (availability.videocall_packages_available || 0) > 0);
+        (availability.videocall_subscription || (availability.single_videocall_sessions || 0) > 0 || (availability.videocall_packages_available || 0) > 0);
     }
 
     if (availability.type === 'hypergym') {
