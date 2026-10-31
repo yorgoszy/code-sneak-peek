@@ -108,6 +108,7 @@ import CoachProgressTrackingWithSidebar from "@/pages/Dashboard/CoachProgressTra
 import CoachAthletesProgressWithSidebar from "@/pages/Dashboard/CoachAthletesProgressWithSidebar";
 import CoachProfile from "@/pages/CoachProfile";
 import CoachOverviewPage from "@/pages/CoachOverviewPage";
+import CoachOnlineCoachingPage from "@/pages/Dashboard/CoachOnlineCoachingPage";
 import CoachProgramsPage from "@/pages/Dashboard/CoachProgramsPage";
 import CoachActiveProgramsPage from "@/pages/Dashboard/CoachActiveProgramsPage";
 import CoachProgramCardsPage from "@/pages/Dashboard/CoachProgramCardsPage";
@@ -229,6 +230,7 @@ function App() {
                       <Route path="/dashboard/coach-athletes-progress" element={<ProtectedRoute><CoachAthletesProgressWithSidebar /></ProtectedRoute>} />
                       <Route path="/dashboard/coach-profile" element={<ProtectedRoute><CoachProfile /></ProtectedRoute>} />
                       <Route path="/dashboard/coach-overview" element={<ProtectedRoute><CoachOverviewPage /></ProtectedRoute>} />
+                      <Route path="/dashboard/coach-online-coaching" element={<ProtectedRoute><CoachOnlineCoachingPage /></ProtectedRoute>} />
                       <Route path="/dashboard/coach-programs" element={<ProtectedRoute><CoachProgramsPage /></ProtectedRoute>} />
                       <Route path="/dashboard/coach-active-programs" element={<ProtectedRoute><CoachActiveProgramsPage /></ProtectedRoute>} />
                       <Route path="/dashboard/coach-program-cards" element={<ProtectedRoute><CoachProgramCardsPage /></ProtectedRoute>} />
