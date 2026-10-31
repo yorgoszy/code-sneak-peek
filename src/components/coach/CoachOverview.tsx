@@ -37,7 +37,7 @@ const overviewItems: { label: string; icon: any; path: string; create?: boolean;
   { label: "Πρόοδος αθλητών", icon: BarChart3, path: "/dashboard/coach-athletes-progress", countKey: "testedAthletes" },
   { label: "Τεστ", icon: ClipboardList, path: "/dashboard/coach-progress" },
   { label: "Online Courses", icon: GraduationCap, path: "/dashboard/coach-courses" },
-  { label: "Online Coaching", icon: Video, path: "/dashboard/coach-online-coaching" },
+  { label: "Online Booking", icon: CalendarDays, path: "/dashboard/coach-online-booking" },
   { label: "Ρυθμίσεις", icon: Settings, path: "/dashboard/coach-profile" },
 ];
 

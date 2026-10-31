@@ -31,7 +31,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
   const [selectedSectionId, setSelectedSectionId] = useState<string>('');
   const [showNoVisitsDialog, setShowNoVisitsDialog] = useState(false);
   const { availability, bookings, loading, createBooking, cancelBooking } = useUserBookings();
-  const { sections } = useBookingSections(undefined, availability?.allowed_sections);
+  const { sections } = useBookingSections('gym_visit', availability?.allowed_sections, userProfile?.id);
   const navigate = useNavigate();
   const { syncBookingToCalendar } = useGoogleCalendar();
 
@@ -114,6 +114,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
         onClose={() => setShowCalendar(false)}
         bookingType={selectedBookingType}
         availability={availability}
+        userId={userProfile?.id}
       />
     );
   }
@@ -250,7 +251,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
       </div>
 
       {/* Available Hours Info */}
-      <div className="px-4 md:px-0">
+      {!availability?.coach_id && <div className="px-4 md:px-0">
         <Card className="rounded-none">
           <CardHeader className="p-4 md:p-6">
             <CardTitle className="flex items-center text-base md:text-lg">
@@ -267,7 +268,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
             </div>
           </CardContent>
         </Card>
-      </div>
+      </div>}
 
     </div>
   );
