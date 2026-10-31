@@ -6,6 +6,8 @@ import { ChevronLeft, ChevronRight, Check, X, Clock } from "lucide-react";
 import { format, startOfWeek, addDays, addWeeks, subWeeks, isToday, isPast } from "date-fns";
 import { el } from "date-fns/locale";
 import { useSectionVisitCalendar } from './useSectionVisitCalendar';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface BookingSession {
   id: string;
@@ -54,6 +56,16 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const savedCalendar = useSectionVisitCalendar(userId, sectionId, format(weekStart, 'yyyy-MM-dd'), format(addDays(weekStart, 6), 'yyyy-MM-dd'));
   const calendarBookings = userId ? (savedCalendar.data || []) : bookings;
+  const coachOccupancy = useQuery({
+    queryKey: ['coach-booking-occupancy', sectionId, format(weekStart, 'yyyy-MM-dd'), calendarBookings],
+    enabled: Boolean(availability?.coach_id),
+    queryFn: async () => Object.fromEntries(await Promise.all(weekDays.map(async day => {
+      const date = format(day, 'yyyy-MM-dd');
+      const { data, error } = await supabase.rpc('get_coach_booking_slot_counts', { p_section: sectionId, p_date: date });
+      if (error) throw error;
+      return [date, Object.fromEntries((data || []).map(slot => [slot.booking_time.slice(0, 5), Number(slot.booking_count)]))];
+    }))),
+  });
 
   // Get available time slots for each day
   const getAvailableHoursForDay = (dayIndex: number) => {
@@ -193,7 +205,7 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
       </CardHeader>
       
       <CardContent className="p-2 md:p-3 pt-0">
-        {savedCalendar.isError && <p className="text-sm text-destructive">Δεν φορτώθηκαν οι καταγεγραμμένες επισκέψεις.</p>}
+        {(savedCalendar.isError || coachOccupancy.isError) && <p className="text-sm text-destructive">Δεν φορτώθηκαν οι καταγεγραμμένες επισκέψεις.</p>}
         <div className="flex gap-1 overflow-x-auto">
           {/* Available Hours List */}
           <div className="flex-shrink-0 w-8">
@@ -232,7 +244,7 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
                      const isTimeAvailable = dayHours.includes(timeSlot);
                      const booking = getBookingForSlot(day, timeSlot);
                      const allBookingsInSlot = getAllBookingsForSlot(day, timeSlot);
-                     const currentBookings = allBookingsInSlot.length;
+                     const currentBookings = availability?.coach_id ? (coachOccupancy.data?.[format(day, 'yyyy-MM-dd')]?.[timeSlot] || 0) : allBookingsInSlot.length;
                      const isFull = currentBookings >= maxCapacity;
                      
                      if (!isTimeAvailable && !booking) {
@@ -293,7 +305,7 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
                                    : 'bg-gray-50 hover:bg-[#cb8954]/20 text-gray-600 hover:text-black cursor-pointer'
                              }`}
                              title={isPast(day) ? 'Παρελθόν' : isFull ? 'Γεμάτο' : 'Κλείσε ραντεβού'}
-                             disabled={isPast(day) || isFull}
+                             disabled={isPast(new Date(`${format(day, 'yyyy-MM-dd')}T${timeSlot}`)) || isFull || (Boolean(availability?.coach_id) && (coachOccupancy.isLoading || coachOccupancy.isError))}
                            >
                              {isPast(day) ? (
                                <>
