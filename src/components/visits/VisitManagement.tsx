@@ -11,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { QRScanner } from "@/components/qr/QRScanner";
 import { UserQRCode } from "@/components/qr/UserQRCode";
 import { matchesSearchTerm } from "@/lib/utils";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface Visit {
   id: string;
@@ -48,6 +50,8 @@ export const VisitManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<string>('');
   const [notes, setNotes] = useState('');
+  const [visitSectionId, setVisitSectionId] = useState('');
+  const [pendingPackageVisit, setPendingPackageVisit] = useState<{ packageId: string; userId: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'packages' | 'manual' | 'scanner' | 'history'>('packages');
   const [showAddPackageForm, setShowAddPackageForm] = useState(false);
@@ -149,19 +153,19 @@ export const VisitManagement: React.FC = () => {
   };
 
   const recordManualVisit = async () => {
-    if (!selectedUser) {
+    if (!selectedUser || !visitSectionId) {
       toast({
         variant: "destructive",
         title: "Σφάλμα",
-        description: "Παρακαλώ επιλέξτε χρήστη"
+        description: "Παρακαλώ επιλέξτε χρήστη και τμήμα"
       });
       return;
     }
 
     try {
-      const { error } = await supabase.rpc('record_visit', {
+      const { error } = await supabase.rpc('record_section_visit', {
         p_user_id: selectedUser,
-        p_visit_type: 'manual',
+        p_section_id: visitSectionId,
         p_notes: notes || null
       });
 
@@ -173,6 +177,7 @@ export const VisitManagement: React.FC = () => {
       });
       setSelectedUser('');
       setNotes('');
+      setVisitSectionId('');
       fetchData();
       
     } catch (error) {
@@ -468,14 +473,24 @@ export const VisitManagement: React.FC = () => {
   };
 
   const addVisitToPackage = async (packageId: string, userId: string) => {
+    if (!pendingPackageVisit) {
+      setVisitSectionId('');
+      setPendingPackageVisit({ packageId, userId });
+      return;
+    }
+    if (!visitSectionId) return;
     try {
-      const { error } = await supabase.rpc('record_visit', {
+      const { error } = await supabase.rpc('record_section_visit', {
         p_user_id: userId,
-        p_visit_type: 'package',
+        p_package_id: packageId,
+        p_section_id: visitSectionId,
         p_notes: 'Προσθήκη από πακέτο επισκέψεων'
       });
 
       if (error) throw error;
+
+      setPendingPackageVisit(null);
+      setVisitSectionId('');
 
       toast({
         title: "Επιτυχία",
@@ -642,6 +657,10 @@ export const VisitManagement: React.FC = () => {
             <CardTitle>Χειροκίνητη Καταγραφή Παρουσίας</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <Select value={visitSectionId} onValueChange={setVisitSectionId}>
+              <SelectTrigger className="rounded-none"><SelectValue placeholder="Τμήμα επίσκεψης" /></SelectTrigger>
+              <SelectContent>{bookingSections.map(section => <SelectItem key={section.id} value={section.id}>{section.name}</SelectItem>)}</SelectContent>
+            </Select>
             <div>
               <label className="block text-sm font-medium mb-2">Επιλογή Χρήστη</label>
               <Input
@@ -678,7 +697,7 @@ export const VisitManagement: React.FC = () => {
             
             <Button
               onClick={recordManualVisit}
-              disabled={!selectedUser}
+              disabled={!selectedUser || !visitSectionId}
               className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -689,6 +708,18 @@ export const VisitManagement: React.FC = () => {
       )}
 
       {/* Visit Packages Tab */}
+      <Dialog open={Boolean(pendingPackageVisit)} onOpenChange={open => { if (!open) setPendingPackageVisit(null); }}>
+        <DialogContent className="rounded-none">
+          <DialogHeader><DialogTitle>Καταγραφή παρουσίας</DialogTitle></DialogHeader>
+          <Select value={visitSectionId} onValueChange={setVisitSectionId}>
+            <SelectTrigger className="rounded-none"><SelectValue placeholder="Τμήμα επίσκεψης" /></SelectTrigger>
+            <SelectContent>{bookingSections.map(section => <SelectItem key={section.id} value={section.id}>{section.name}</SelectItem>)}</SelectContent>
+          </Select>
+          <Button className="rounded-none" disabled={!visitSectionId} onClick={() => {
+            if (pendingPackageVisit) void addVisitToPackage(pendingPackageVisit.packageId, pendingPackageVisit.userId);
+          }}><Plus className="h-4 w-4 mr-2" />Καταγραφή Παρουσίας</Button>
+        </DialogContent>
+      </Dialog>
       {activeTab === 'packages' && (
         <Card className="rounded-none">
           <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

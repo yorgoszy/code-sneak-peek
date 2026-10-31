@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Check, X, Clock } from "lucide-react";
 import { format, startOfWeek, addDays, addWeeks, subWeeks, isToday, isPast } from "date-fns";
 import { el } from "date-fns/locale";
 import { useBookingSections } from "@/hooks/useBookingSections";
+import { useSectionVisitCalendar } from './useSectionVisitCalendar';
 
 interface BookingSession {
   id: string;
@@ -23,6 +24,7 @@ interface BookingSession {
 }
 
 interface SectionBookingCalendarProps {
+  userId?: string;
   sectionId: string;
   sectionName: string;
   availableHours: any;
@@ -35,6 +37,7 @@ interface SectionBookingCalendarProps {
 }
 
 export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({ 
+  userId,
   sectionId,
   sectionName,
   availableHours,
@@ -50,6 +53,8 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
 
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const savedCalendar = useSectionVisitCalendar(userId, sectionId, format(weekStart, 'yyyy-MM-dd'), format(addDays(weekStart, 6), 'yyyy-MM-dd'));
+  const calendarBookings = userId ? (savedCalendar.data || []) : bookings;
 
   // Get available time slots for each day
   const getAvailableHoursForDay = (dayIndex: number) => {
@@ -77,7 +82,7 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
   // Get booking for specific date and time
   const getBookingForSlot = (date: Date, time: string) => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    return bookings.find(booking => 
+    return calendarBookings.find(booking => 
       booking.booking_date === dateStr && 
       booking.booking_time.slice(0, 5) === time && 
       booking.section_id === sectionId
@@ -121,6 +126,7 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
     
     try {
       await onCancelBooking(bookingId);
+      await savedCalendar.refetch();
     } catch (error: any) {
       console.error('Cancel booking error:', error);
     }
@@ -133,6 +139,11 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
   weekDays.forEach((_, dayIndex) => {
     const hours = getAvailableHoursForDay(dayIndex);
     hours.forEach((hour: string) => allTimeSlots.add(hour));
+  });
+  calendarBookings.forEach(booking => {
+    if (booking.section_id === sectionId && booking.booking_date >= format(weekStart, 'yyyy-MM-dd') && booking.booking_date <= format(addDays(weekStart, 6), 'yyyy-MM-dd')) {
+      allTimeSlots.add(booking.booking_time.slice(0, 5));
+    }
   });
   const timeSlotsList = Array.from(allTimeSlots).sort();
 
@@ -185,6 +196,7 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
       </CardHeader>
       
       <CardContent className="p-2 md:p-3 pt-0">
+        {savedCalendar.isError && <p className="text-sm text-destructive">Δεν φορτώθηκαν οι καταγεγραμμένες επισκέψεις.</p>}
         <div className="flex gap-1 overflow-x-auto">
           {/* Available Hours List */}
           <div className="flex-shrink-0 w-8">
@@ -226,7 +238,7 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
                      const currentBookings = allBookingsInSlot.length;
                      const isFull = currentBookings >= maxCapacity;
                      
-                     if (!isTimeAvailable) {
+                     if (!isTimeAvailable && !booking) {
                        return (
                          <div key={`${timeSlot}-${dayIndex}`} className="h-8 bg-white border border-gray-100 rounded-none"></div>
                        );
@@ -242,7 +254,7 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
                                </div>
                                
                                {/* Cancel button - only show on hover for cancellable bookings */}
-                               {canCancelBooking(booking.booking_date, booking.booking_time) && onCancelBooking && (
+                               {booking.attended === undefined && canCancelBooking(booking.booking_date, booking.booking_time) && onCancelBooking && (
                                  <button
                                    onClick={() => handleCancelBooking(booking.id)}
                                    className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
@@ -255,6 +267,7 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
                                {/* Tooltip with booking details */}
                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-900 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-20">
                                  {booking.booking_time.slice(0, 5)} - {sectionName}
+                                 {booking.attended === true && <div>Παρουσία</div>}
                                  {!canCancelBooking(booking.booking_date, booking.booking_time) && isPast(new Date(`${booking.booking_date} ${booking.booking_time}`)) && (
                                    <div className="text-gray-300">Δεν μπορεί να ακυρωθεί</div>
                                  )}
@@ -269,7 +282,12 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
                          ) : (
                            // Available slot - show booking button with capacity
                            <button
-                             onClick={() => !isFull && onCreateBooking?.(sectionId, format(day, 'yyyy-MM-dd'), timeSlot, 'gym_visit')}
+                             onClick={async () => {
+                               if (!isFull && onCreateBooking) {
+                                 await onCreateBooking(sectionId, format(day, 'yyyy-MM-dd'), timeSlot, 'gym_visit');
+                                 await savedCalendar.refetch();
+                               }
+                             }}
                              className={`w-full h-full transition-colors text-[10px] flex flex-col items-center justify-center ${
                                isPast(day) 
                                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
