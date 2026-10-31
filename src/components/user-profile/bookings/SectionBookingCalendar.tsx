@@ -137,12 +137,12 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
   const timeSlotsList = Array.from(allTimeSlots).sort();
 
   return (
-    <Card className="rounded-none mb-6">
-      <CardHeader className="p-3 md:p-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex flex-col gap-2">
-            <CardTitle className="flex items-center text-sm md:text-lg">
-              <Clock className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+    <Card className="rounded-none mb-4">
+      <CardHeader className="p-2 md:p-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div className="flex flex-col gap-1">
+            <CardTitle className="flex items-center text-sm md:text-base">
+              <Clock className="w-4 h-4 mr-2" />
               {sectionName}
             </CardTitle>
             {availability && (
@@ -184,16 +184,16 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
         </p>
       </CardHeader>
       
-      <CardContent className="p-3 md:p-6 pt-0">
-        <div className="flex gap-2 overflow-x-auto">
+      <CardContent className="p-2 md:p-3 pt-0">
+        <div className="flex gap-1 overflow-x-auto">
           {/* Available Hours List */}
-          <div className="flex-shrink-0 w-8 md:w-10">
-            <div className="space-y-1">
-              <div className="h-12 flex items-center justify-center text-xs font-medium text-gray-700 border-b">
+          <div className="flex-shrink-0 w-8">
+            <div className="space-y-0.5">
+              <div className="h-8 flex items-center justify-center text-[10px] font-medium text-gray-700 border-b">
                 Ώρες
               </div>
               {timeSlotsList.map((timeSlot) => (
-                <div key={timeSlot} className="h-12 flex items-center justify-center text-xs text-gray-600 px-1">
+                <div key={timeSlot} className="h-8 flex items-center justify-center text-[10px] text-gray-600 px-1">
                   {timeSlot.slice(0, 5)}
                 </div>
               ))}
@@ -202,14 +202,14 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
 
           {/* Calendar Grid */}
           <div className="flex-1 min-w-0">
-            <div className="grid grid-cols-7 gap-1">
+            <div className="grid grid-cols-7 gap-0.5">
               {/* Day headers */}
               {weekDays.map((day, index) => (
-                <div key={index} className="text-center flex flex-col items-center justify-center">
-                  <div className={`font-medium text-xs py-2 w-full text-center ${isToday(day) ? 'bg-[#cb8954] text-white rounded-none' : 'text-gray-700'}`}>
+                <div key={index} className="text-center flex items-center justify-center gap-0.5">
+                  <div className={`font-medium text-[10px] py-1 px-1 text-center ${isToday(day) ? 'bg-[#cb8954] text-white rounded-none' : 'text-gray-700'}`}>
                     {dayNames[index]}
                   </div>
-                  <div className={`text-xs w-full text-center ${isToday(day) ? 'font-bold' : 'text-gray-500'}`}>
+                  <div className={`text-[10px] text-center ${isToday(day) ? 'font-bold' : 'text-gray-500'}`}>
                     {format(day, 'dd')}
                   </div>
                 </div>
@@ -228,12 +228,12 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
                      
                      if (!isTimeAvailable) {
                        return (
-                         <div key={`${timeSlot}-${dayIndex}`} className="h-12 bg-white border border-gray-100 rounded-none"></div>
+                         <div key={`${timeSlot}-${dayIndex}`} className="h-8 bg-white border border-gray-100 rounded-none"></div>
                        );
                      }
                      
                      return (
-                       <div key={`${timeSlot}-${dayIndex}`} className="h-12 border border-gray-200 bg-white rounded-none flex flex-col items-center justify-center relative group p-1">
+                       <div key={`${timeSlot}-${dayIndex}`} className="h-8 border border-gray-200 bg-white rounded-none flex flex-col items-center justify-center relative group p-0.5">
                          {booking ? (
                            <div className="flex flex-col items-center justify-center w-full h-full">
                              <div className="relative flex items-center justify-center">
@@ -308,8 +308,8 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
         </div>
         
         {/* Legend */}
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="flex flex-wrap gap-3 text-xs">
+        <div className="mt-2 pt-2 border-t border-gray-200">
+          <div className="flex flex-wrap gap-2 text-[10px]">
             <div className="flex items-center space-x-1">
               <Check className="w-3 h-3 text-blue-500" />
               <span>Επερχόμενο</span>
