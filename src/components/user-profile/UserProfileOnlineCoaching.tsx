@@ -88,7 +88,7 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
       console.log('✅ Booking created successfully:', data);
 
       // For videocall bookings, charge the package immediately (even for pending)
-      if (type === 'videocall') {
+      if (type === 'videocall' && !(availability as any)?.coach_id) {
         try {
           await supabase.rpc('record_videocall', {
             p_user_id: userProfile.id,
@@ -151,10 +151,10 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
     if (!userProfile?.id) return;
 
     try {
-      const { data } = await supabase.rpc('get_user_available_bookings', {
-        user_uuid: userProfile.id
+      const { data, error } = await supabase.rpc('get_coaching_availability', {
+        p_user: userProfile.id
       });
-
+      if (error) throw error;
       setAvailability(data as unknown as UserAvailability);
     } catch (error) {
       console.error('Error fetching availability:', error);
@@ -228,6 +228,8 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
 
       if (error) throw error;
 
+      // Coach calls are counted from bookings, not Hyperkids packages.
+      if (!(availability as any)?.coach_id) {
       // Always return videocall to package since it was charged immediately
       try {
         // Find active videocall package and increase remaining_videocalls
@@ -278,6 +280,7 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
 
       } catch (packageError) {
         console.error('Error returning videocall to package:', packageError);
+      }
       }
 
       // Send cancellation notification
