@@ -16,8 +16,6 @@ import { UserProfileOffers } from "./UserProfileOffers";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfileOnlineCoaching } from "./UserProfileOnlineCoaching";
 import { TrainingAnalytics } from "./TrainingAnalytics";
-import { InlineAIChat } from "@/components/ai-chat/InlineAIChat";
-import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
 import { UserProfileEdit } from "./UserProfileEdit";
 import { UserProgressSection } from "./UserProgressSection";
 import { SchoolNotes } from "@/pages/SchoolNotes";
@@ -99,7 +97,6 @@ export const UserProfileContent = ({
   setActiveTab
 }: UserProfileContentProps) => {
   const { t } = useTranslation();
-  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const { isAdmin } = useRoleCheck();
   const isCoachManagedUser = useIsCoachManagedUser(userProfile);
   const { hasActiveSubscription, loading: subLoading } = useUserSubscriptionStatus(userProfile?.id);
@@ -109,12 +106,6 @@ export const UserProfileContent = ({
   // Allowed tabs without subscription
   const allowedWithoutSubscription = ['shop', 'edit-profile', 'download-app', 'safety'];
 
-  // Άνοιγμα του AI chat dialog όταν το tab είναι "ai-trainer" - χρησιμοποιείται μόνο για άλλα components
-  useEffect(() => {
-    if (activeTab !== "ai-trainer") {
-      setIsAIChatOpen(false);
-    }
-  }, [activeTab]);
 
   // Redirect to shop if no subscription and restricted tab — μόνο μετά την αρχική φόρτωση
   useEffect(() => {
@@ -233,18 +224,6 @@ export const UserProfileContent = ({
             <UserProfileOnlineBooking userProfile={userProfile} visits={visits} />
           </div>
         );
-      case "ai-trainer":
-        return (
-          <div className="space-y-4">
-            <BackButton />
-            <h2 className="text-xl font-semibold">{t('overview.aiCoach')}</h2>
-            <InlineAIChat
-              athleteId={userProfile?.id}
-              athleteName={userProfile?.name}
-              athletePhotoUrl={userProfile?.photo_url}
-            />
-          </div>
-        );
       case "edit-profile":
         return (
           <div className="space-y-4">
@@ -347,14 +326,6 @@ export const UserProfileContent = ({
   return (
     <>
       {renderContent()}
-      
-      <EnhancedAIChatDialog
-        isOpen={isAIChatOpen}
-        onClose={() => setIsAIChatOpen(false)}
-        athleteId={userProfile?.id}
-        athleteName={userProfile?.name}
-        athletePhotoUrl={userProfile?.photo_url}
-      />
     </>
   );
 };
