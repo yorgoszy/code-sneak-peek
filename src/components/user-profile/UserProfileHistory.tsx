@@ -7,6 +7,7 @@ import { EnduranceHistory } from "./EnduranceHistory";
 import { JumpHistory } from "./JumpHistory";
 import { AnthropometricHistory } from "./AnthropometricHistory";
 import { FunctionalHistory } from "./FunctionalHistory";
+import HistoryOverview from "./HistoryOverview";
 
 interface UserProfileHistoryProps {
   userId: string;
@@ -15,7 +16,7 @@ interface UserProfileHistoryProps {
 
 export const UserProfileHistory: React.FC<UserProfileHistoryProps> = ({ userId, useCoachTables = false }) => {
   const { t } = useTranslation();
-  const [activeHistoryTab, setActiveHistoryTab] = useState("force-velocity");
+  const [activeHistoryTab, setActiveHistoryTab] = useState("overview");
 
   return (
     <div className="space-y-4">
