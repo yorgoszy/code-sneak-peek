@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from '@/hooks/useAuth';
+import { canBookSection } from './bookingSectionAccess';
 
 interface BookingAvailability {
   type: 'hypergym' | 'visit_packages' | 'videocall' | 'single_videocall' | 'none';
@@ -159,6 +160,9 @@ export const useUserBookings = () => {
 
     // Validate booking availability
     if (bookingType === 'gym_visit') {
+      if (!canBookSection(sectionId, availability.allowed_sections)) {
+        throw new Error('Η συνδρομή σου δεν επιτρέπει κρατήσεις σε αυτό το τμήμα');
+      }
       if (availability.type === 'hypergym') {
         if ((availability.available_monthly || 0) <= 0) {
           throw new Error('Δεν έχεις διαθέσιμες επισκέψεις αυτό το μήνα');
