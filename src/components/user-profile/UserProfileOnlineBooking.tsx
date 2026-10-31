@@ -29,6 +29,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
   const { t } = useTranslation();
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedBookingType, setSelectedBookingType] = useState<string>('');
+  const [selectedSectionId, setSelectedSectionId] = useState<string>('');
   const [showNoVisitsDialog, setShowNoVisitsDialog] = useState(false);
   const { availability, bookings, loading, createBooking, cancelBooking } = useUserBookings();
   const { sections } = useBookingSections();
