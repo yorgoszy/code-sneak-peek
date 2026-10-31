@@ -10281,6 +10281,7 @@ export type Database = {
       subscription_types: {
         Row: {
           allowed_sections: string[] | null
+          assigned_role: string | null
           available_in_shop: boolean
           coach_id: string | null
           coach_shop_only: boolean | null
@@ -10301,6 +10302,7 @@ export type Database = {
         }
         Insert: {
           allowed_sections?: string[] | null
+          assigned_role?: string | null
           available_in_shop?: boolean
           coach_id?: string | null
           coach_shop_only?: boolean | null
@@ -10321,6 +10323,7 @@ export type Database = {
         }
         Update: {
           allowed_sections?: string[] | null
+          assigned_role?: string | null
           available_in_shop?: boolean
           coach_id?: string | null
           coach_shop_only?: boolean | null
@@ -12737,10 +12740,28 @@ export type Database = {
         }
         Returns: undefined
       }
+      subscription_role_is_eligible: {
+        Args: {
+          p_end: string
+          p_paid: boolean
+          p_paused: boolean
+          p_start: string
+          p_status: string
+          p_today: string
+        }
+        Returns: boolean
+      }
       undo_visit_package: { Args: { p_package_id: string }; Returns: number }
     }
     Enums: {
-      user_role: "admin" | "athlete" | "coach" | "parent" | "general"
+      user_role:
+        | "admin"
+        | "athlete"
+        | "coach"
+        | "parent"
+        | "general"
+        | "club"
+        | "federation"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -12868,7 +12889,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      user_role: ["admin", "athlete", "coach", "parent", "general"],
+      user_role: [
+        "admin",
+        "athlete",
+        "coach",
+        "parent",
+        "general",
+        "club",
+        "federation",
+      ],
     },
   },
 } as const
