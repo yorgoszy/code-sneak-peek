@@ -548,7 +548,7 @@ const generateEmailHTML = (type: string, booking?: VideocallBooking, adminEmail?
               
               <p>Η βιντεοκλήση έχει επιστραφεί στο πακέτο σας. Μπορείτε να κάνετε νέα κράτηση επιλέγοντας άλλη ημερομηνία και ώρα.</p>
               
-              <a href="https://www.hyperkids.gr/dashboard/user-profile/${booking.app_users.id}?tab=online-coaching" class="button">Κάντε Νέα Κράτηση</a>
+              <a href="https://www.hyperkids.gr/dashboard/user-profile/${booking?.app_users?.id || userData?.id || ''}?tab=online-coaching" class="button">Κάντε Νέα Κράτηση</a>
             </div>
             
             <div class="footer">
