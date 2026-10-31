@@ -1,0 +1,2 @@
+REVOKE ALL ON FUNCTION public.enforce_coaching_calendar() FROM PUBLIC,anon,authenticated;
+CREATE OR REPLACE FUNCTION public.owns_coaching_user(p_user uuid,p_coach uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$ SELECT EXISTS(SELECT 1 FROM public.app_users u WHERE u.id=p_user AND u.coach_id=p_coach AND (u.auth_user_id=auth.uid() OR p_coach=public.current_app_user_id() OR public.has_role(auth.uid(),'admin') OR auth.role()='service_role')); $$;
