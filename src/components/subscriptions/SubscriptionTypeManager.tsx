@@ -18,6 +18,7 @@ interface SubscriptionType {
   id: string;
   name: string;
   description: string;
+  assigned_role?: 'club' | 'coach' | 'federation' | null;
   price: number;
   duration_months: number;
   features: any;
@@ -64,7 +65,7 @@ export const SubscriptionTypeManager: React.FC = () => {
   
   // Form states
   const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
+  const [assignedRole, setAssignedRole] = useState('none');
   const [price, setPrice] = useState('');
   const [durationMonths, setDurationMonths] = useState('');
   const [features, setFeatures] = useState('');
@@ -95,7 +96,7 @@ export const SubscriptionTypeManager: React.FC = () => {
     } else {
       const filtered = subscriptionTypes.filter(type =>
         matchesSearchTerm(type.name, searchTerm) ||
-        (type.description && type.description.toLowerCase().includes(searchTerm.toLowerCase()))
+        (type.assigned_role && matchesSearchTerm(type.assigned_role, searchTerm))
       );
       setFilteredSubscriptionTypes(filtered);
     }
@@ -144,7 +145,7 @@ export const SubscriptionTypeManager: React.FC = () => {
       // Only load subscription types without coach_id (admin/global types)
       const { data, error } = await supabase
         .from('subscription_types')
-        .select('id, name, description, price, duration_months, features, is_active, subscription_mode, visit_count, visit_expiry_months, available_in_shop, single_purchase, allowed_sections, coach_shop_only, is_gift_card')
+        .select('id, name, description, assigned_role, price, duration_months, features, is_active, subscription_mode, visit_count, visit_expiry_months, available_in_shop, single_purchase, allowed_sections, coach_shop_only, is_gift_card')
         .is('coach_id', null)
         .order('price');
 
@@ -307,7 +308,7 @@ export const SubscriptionTypeManager: React.FC = () => {
 
   const resetForm = () => {
     setName('');
-    setDescription('');
+    setAssignedRole('none');
     setPrice('');
     setDurationMonths('');
     setFeatures('');
@@ -330,7 +331,7 @@ export const SubscriptionTypeManager: React.FC = () => {
     console.log('✏️ Opening edit dialog for:', type);
     setEditingType(type);
     setName(type.name);
-    setDescription(type.description || '');
+    setAssignedRole(type.assigned_role || 'none');
     setPrice(type.price.toString());
     setDurationMonths(type.duration_months.toString());
     setFeatures(type.features ? JSON.stringify(type.features, null, 2) : '{}');
@@ -442,7 +443,7 @@ export const SubscriptionTypeManager: React.FC = () => {
 
       const typeData = {
         name: name.trim(),
-        description: description.trim() || null,
+        assigned_role: assignedRole === 'none' ? null : assignedRole,
         price: numericPrice,
         duration_months: numericDuration,
         features: parsedFeatures,
@@ -749,8 +750,8 @@ export const SubscriptionTypeManager: React.FC = () => {
                         <td className="border border-gray-200 px-4 py-3">
                           <div>
                             <div className="font-semibold">{type.name}</div>
-                            {type.description && (
-                              <div className="text-sm text-gray-600">{type.description}</div>
+                            {type.assigned_role && (
+                              <div className="text-sm text-muted-foreground">{type.assigned_role === 'club' ? 'Club' : type.assigned_role === 'coach' ? 'Coach' : 'Federation'}</div>
                             )}
                           </div>
                         </td>
@@ -878,8 +879,8 @@ export const SubscriptionTypeManager: React.FC = () => {
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                           <h3 className="font-semibold text-lg">{type.name}</h3>
-                          {type.description && (
-                            <p className="text-sm text-gray-600 mt-1">{type.description}</p>
+                          {type.assigned_role && (
+                            <p className="text-sm text-muted-foreground mt-1">{type.assigned_role === 'club' ? 'Club' : type.assigned_role === 'coach' ? 'Coach' : 'Federation'}</p>
                           )}
                         </div>
                         <Badge className={`rounded-none ml-2 ${type.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
@@ -1024,15 +1025,18 @@ export const SubscriptionTypeManager: React.FC = () => {
               />
             </div>
             <div>
-              <Label htmlFor="description">Περιγραφή</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="rounded-none"
-                placeholder="Περιγραφή του πακέτου..."
-                disabled={saving}
-              />
+              <Label htmlFor="assignedRole">Ρόλος</Label>
+              <Select value={assignedRole} onValueChange={setAssignedRole} disabled={saving}>
+                <SelectTrigger id="assignedRole" className="rounded-none">
+                  <SelectValue placeholder="Επιλέξτε ρόλο" />
+                </SelectTrigger>
+                <SelectContent className="rounded-none">
+                  <SelectItem value="none">Χωρίς αλλαγή ρόλου</SelectItem>
+                  <SelectItem value="club">Club</SelectItem>
+                  <SelectItem value="coach">Coach</SelectItem>
+                  <SelectItem value="federation">Federation</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label htmlFor="subscriptionMode">Τύπος Συνδρομής*</Label>
