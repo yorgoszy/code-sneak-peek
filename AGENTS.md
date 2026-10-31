@@ -1,5 +1,7 @@
 # Architecture rules
 
+- User progress reuses the read-only functional results timeline independently of the body map; muscle correction lists must not determine whether saved scores appear, and coach timelines retain the viewed coach scope.
+
 - Notification profile links resolve the recipient user ID independently of optional bookings and payment/offer row IDs; gym confirmations and package emails do not require a videocall booking.
 - Visit decrement uses a package-ID-scoped, RLS-respecting atomic RPC; legacy history is matched by purchase window and excludes booking rows, so counter restoration cannot partially commit or affect another package.
 
