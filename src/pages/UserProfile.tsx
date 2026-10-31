@@ -186,8 +186,6 @@ const UserProfile = () => {
             payments={payments}
             visits={visits}
             onOfferRejected={() => {}}
-            isCoachManagedUser={isCoachManagedUser}
-            coachContextId={coachContextId}
           />
         </div>
       </div>
