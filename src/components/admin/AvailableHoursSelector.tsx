@@ -2,10 +2,12 @@ import React from 'react';
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
 
 interface AvailableHoursSelectorProps {
   availableHours: Record<string, string[]>;
   onChange: (hours: Record<string, string[]>) => void;
+  compact?: boolean;
 }
 
 const DAYS = {
@@ -26,7 +28,8 @@ const HOURS = [
 
 export const AvailableHoursSelector: React.FC<AvailableHoursSelectorProps> = ({
   availableHours,
-  onChange
+  onChange,
+  compact = false
 }) => {
   const handleDayToggle = (day: string, hour: string, checked: boolean) => {
     const newHours = { ...availableHours };
@@ -68,6 +71,14 @@ export const AvailableHoursSelector: React.FC<AvailableHoursSelectorProps> = ({
   const isDayPartiallySelected = (day: string) => {
     return availableHours[day]?.length > 0 && availableHours[day]?.length < HOURS.length;
   };
+
+  if (compact) return <div className="space-y-3">
+    <Label>Ημέρες και ώρες</Label>
+    {Object.entries(DAYS).map(([key, label]) => <div key={key} className="border-b border-border pb-3">
+      <div className="mb-2 flex items-center justify-between"><Label>{label}</Label><Button type="button" variant="ghost" size="sm" className="rounded-none text-xs" onClick={() => handleSelectAllDay(key, !isDayFullySelected(key))}>{isDayFullySelected(key) ? 'Καθαρισμός' : 'Όλες οι ώρες'}</Button></div>
+      <div className="grid grid-cols-4 gap-1 sm:grid-cols-8">{HOURS.map(hour => <Button key={hour} type="button" size="sm" variant={availableHours[key]?.includes(hour) ? 'default' : 'outline'} aria-pressed={availableHours[key]?.includes(hour) || false} className="rounded-none px-1 text-xs" onClick={() => handleDayToggle(key, hour, !availableHours[key]?.includes(hour))}>{hour}</Button>)}</div>
+    </div>)}
+  </div>;
 
   return (
     <div className="space-y-4">

@@ -8,6 +8,12 @@ INSERT INTO public.app_users(id,name,email,role,coach_id) VALUES
 INSERT INTO public.booking_sections(id,name,coach_id,booking_type,available_hours) VALUES
  ('00000000-0000-4000-8000-000000000201','Test A','00000000-0000-4000-8000-000000000101','gym_visit','{}'),
  ('00000000-0000-4000-8000-000000000202','Test B','00000000-0000-4000-8000-000000000102','gym_visit','{}');
+INSERT INTO public.booking_sections(id,name,coach_id,booking_type,available_hours) VALUES
+ ('00000000-0000-4000-8000-000000000203','Second own section','00000000-0000-4000-8000-000000000101','gym_visit','{"monday":["09:00","10:00"],"wednesday":["17:00"]}');
+DO $$ BEGIN
+ IF (SELECT count(*) FROM public.booking_sections WHERE coach_id='00000000-0000-4000-8000-000000000101')<>2 THEN RAISE EXCEPTION 'Coach cannot have two sections'; END IF;
+ IF (SELECT available_hours FROM public.booking_sections WHERE id='00000000-0000-4000-8000-000000000203') IS DISTINCT FROM '{"monday":["09:00","10:00"],"wednesday":["17:00"]}'::jsonb THEN RAISE EXCEPTION 'Weekly section hours not persisted'; END IF;
+END $$;
 DO $$ BEGIN
  BEGIN
   INSERT INTO public.booking_sessions(user_id,section_id,booking_date,booking_time,booking_type) VALUES('00000000-0000-4000-8000-000000000103','00000000-0000-4000-8000-000000000202',CURRENT_DATE+1,'12:00','gym_visit');

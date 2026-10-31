@@ -24,7 +24,7 @@ interface BookingSection {
   updated_at: string;
 }
 
-export const BookingSectionsManagement = () => {
+export const BookingSectionsManagement = ({ coachId }: { coachId?: string } = {}) => {
   const isMobile = useIsMobile();
   const [sections, setSections] = useState<BookingSection[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,14 +52,17 @@ export const BookingSectionsManagement = () => {
 
   useEffect(() => {
     fetchSections();
-  }, []);
+  }, [coachId]);
 
   const fetchSections = async () => {
     try {
-      const { data, error } = await supabase
+      setLoading(true);
+      let query = supabase
         .from('booking_sections')
         .select('*')
         .order('name');
+      query = coachId ? query.eq('coach_id', coachId).eq('booking_type', 'gym_visit') : query.is('coach_id', null);
+      const { data, error } = await query;
 
       if (error) throw error;
       setSections((data as BookingSection[]) || []);
@@ -83,7 +86,8 @@ export const BookingSectionsManagement = () => {
             name: formData.name,
             description: formData.description || null,
             max_capacity: formData.max_capacity,
-            available_hours: formData.available_hours
+            available_hours: formData.available_hours,
+            ...(coachId ? { coach_id: coachId, booking_type: 'gym_visit' } : {})
           })
           .eq('id', editingSection.id);
 
@@ -97,7 +101,8 @@ export const BookingSectionsManagement = () => {
             name: formData.name,
             description: formData.description || null,
             max_capacity: formData.max_capacity,
-            available_hours: formData.available_hours
+            available_hours: formData.available_hours,
+            ...(coachId ? { coach_id: coachId, booking_type: 'gym_visit' } : {})
           });
 
         if (error) throw error;
@@ -201,7 +206,7 @@ export const BookingSectionsManagement = () => {
           <DialogTrigger asChild>
             <Button 
               onClick={resetForm} 
-              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-none"
               size={isMobile ? "sm" : "default"}
             >
               <Plus className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} ${isMobile ? '' : 'mr-2'}`} />
@@ -242,7 +247,7 @@ export const BookingSectionsManagement = () => {
               </div>
               <div>
                 <Label htmlFor="description">
-                  Περιγραφή τμήματος (διαβάζεται από τον Hyper AI 🤖)
+                  {coachId ? 'Περιγραφή τμήματος' : 'Περιγραφή τμήματος (διαβάζεται από τον Hyper AI 🤖)'}
                 </Label>
                 <Textarea
                   id="description"
@@ -252,12 +257,13 @@ export const BookingSectionsManagement = () => {
                   rows={5}
                   placeholder="π.χ. Ηλικιακή ομάδα 4-7 ετών. Παιγνιώδης προπόνηση με έμφαση στον συντονισμό, την ισορροπία και την κοινωνικοποίηση. Χτίζουμε αθλητικές βάσεις μέσα από παιχνίδια κίνησης..."
                 />
-                <p className="text-xs text-muted-foreground mt-1">
+                {!coachId && <p className="text-xs text-muted-foreground mt-1">
                   💡 Γράψε εδώ τι ηλικίες αφορά, τι ακριβώς κάνετε στο τμήμα και τυχόν ιδιαιτερότητες. Ο Hyper AI στο landing page θα χρησιμοποιεί αυτή την περιγραφή για να απαντά στους επισκέπτες.
-                </p>
+                </p>}
               </div>
               <div className="space-y-4">
                 <AvailableHoursSelector
+                  compact={Boolean(coachId)}
                   availableHours={formData.available_hours}
                   onChange={(hours) => setFormData(prev => ({ ...prev, available_hours: hours }))}
                 />
@@ -275,7 +281,7 @@ export const BookingSectionsManagement = () => {
                 <Button 
                   type="submit" 
                   disabled={loading} 
-                  className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-none"
                   size={isMobile ? "sm" : "default"}
                 >
                   {loading ? 'Αποθήκευση...' : 'Αποθήκευση'}
