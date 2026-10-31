@@ -12095,6 +12095,7 @@ export type Database = {
           purchase_date: string
           remaining_visits: number
           status: string
+          subscription_id: string | null
           total_visits: number
           updated_at: string
           user_id: string
@@ -12109,6 +12110,7 @@ export type Database = {
           purchase_date?: string
           remaining_visits: number
           status?: string
+          subscription_id?: string | null
           total_visits: number
           updated_at?: string
           user_id: string
@@ -12123,6 +12125,7 @@ export type Database = {
           purchase_date?: string
           remaining_visits?: number
           status?: string
+          subscription_id?: string | null
           total_visits?: number
           updated_at?: string
           user_id?: string
@@ -12147,6 +12150,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visit_packages_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "user_subscriptions"
             referencedColumns: ["id"]
           },
         ]
@@ -12553,6 +12563,10 @@ export type Database = {
         Returns: Database["public"]["Enums"]["user_role"]
       }
       get_user_role_safe: { Args: { user_auth_id: string }; Returns: string }
+      get_visit_booking_sections: {
+        Args: { p_user_id: string }
+        Returns: string[]
+      }
       has_active_subscription: { Args: { user_uuid: string }; Returns: boolean }
       has_role: {
         Args: {
