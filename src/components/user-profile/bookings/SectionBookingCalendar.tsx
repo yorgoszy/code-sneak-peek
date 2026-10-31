@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, Check, X, Clock } from "lucide-react";
 import { format, startOfWeek, addDays, addWeeks, subWeeks, isToday, isPast } from "date-fns";
 import { el } from "date-fns/locale";
-import { useBookingSections } from "@/hooks/useBookingSections";
 import { useSectionVisitCalendar } from './useSectionVisitCalendar';
 
 interface BookingSession {
@@ -15,7 +14,7 @@ interface BookingSession {
   status: string;
   section_id: string;
   booking_type: string;
-  notes?: string;
+  notes?: string | null;
   section?: {
     name: string;
     description?: string;
@@ -82,11 +81,11 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
   // Get booking for specific date and time
   const getBookingForSlot = (date: Date, time: string) => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    return calendarBookings.find(booking => 
+    return calendarBookings.filter(booking => 
       booking.booking_date === dateStr && 
       booking.booking_time.slice(0, 5) === time && 
       booking.section_id === sectionId
-    );
+    ).sort((a, b) => Number(b.attended === true) - Number(a.attended === true))[0];
   };
 
   // Get all bookings for specific date and time slot (for capacity counting)
@@ -106,12 +105,10 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
     const isPastBooking = isPast(bookingDateTime);
     const canCancel = canCancelBooking(booking.booking_date, booking.booking_time);
 
-    if (isPastBooking) {
-      if (booking.attended === true) {
-        return { icon: <Check className="w-3 h-3" />, color: 'text-[#cb8954]' };
-      } else if (booking.attended === false) {
-        return { icon: <X className="w-3 h-3" />, color: 'text-red-500' };
-      }
+    if (booking.attended === true) {
+      return { icon: <Check className="w-3 h-3" />, color: 'text-foreground' };
+    } else if (booking.attended === false) {
+      return { icon: <X className="w-3 h-3" />, color: 'text-destructive' };
     }
     
     if (!canCancel) {
@@ -333,7 +330,7 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
               <span>Επερχόμενο</span>
             </div>
             <div className="flex items-center space-x-1">
-              <Check className="w-3 h-3 text-[#cb8954]" />
+              <Check className="w-3 h-3 text-foreground" />
               <span>Παρουσία</span>
             </div>
             <div className="flex items-center space-x-1">
