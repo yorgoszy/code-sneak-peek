@@ -1,17 +1,14 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { Button } from "@/components/ui/button";
-import { LogOut, ArrowLeft, Menu } from "lucide-react";
+import { LogOut, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { UserProfileSidebar } from "@/components/user-profile/UserProfileSidebar";
-import { CoachSidebar } from "@/components/CoachSidebar";
 import { UserProfileContent } from "@/components/user-profile/UserProfileContent";
 import { useUserProfileData } from "@/components/user-profile/hooks/useUserProfileData";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from 'react-i18next';
 import { useWorkoutStatsSync } from "@/hooks/useWorkoutStatsSync";
@@ -23,62 +20,11 @@ const UserProfile = () => {
   const { user: currentUser, loading, signOut, isAuthenticated } = useAuth();
   const { t } = useTranslation();
   const [userProfile, setUserProfile] = useState<any>(null);
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const [profileLoading, setProfileLoading] = useState(true);
-  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
-  const [isTablet, setIsTablet] = useState(false);
-  const isMobile = useIsMobile();
-  const sidebarRef = useRef<{ refreshOffers: () => void }>(null);
 
-  const { isAdmin, isFederation, userProfile: loggedInProfile, loading: roleLoading } = useRoleCheck();
-  const [isCoachManagedUser, setIsCoachManagedUser] = useState(false);
-  
-  // Εμφάνιση sidebar βάσει του ρόλου του ΠΡΟΒΑΛΛΟΜΕΝΟΥ χρήστη, όχι του logged-in user
-  // Αν ο χρήστης είναι coach, δείχνουμε CoachSidebar
-  // Αν ο χρήστης διαχειρίζεται από coach (coach_id δείχνει σε role=coach), δείχνουμε CoachSidebar
-  const showCoachSidebar = userProfile?.role === 'coach' || isCoachManagedUser;
-  const coachContextId = userProfile?.role === 'coach'
-    ? userProfile.id
-    : userProfile?.coach_id ?? userId;
+  const { isFederation, userProfile: loggedInProfile, loading: roleLoading } = useRoleCheck();
 
-  // Έλεγχος αν ο χρήστης διαχειρίζεται από coach
-  useEffect(() => {
-    const checkCoachManaged = async () => {
-      if (!userProfile?.coach_id) {
-        setIsCoachManagedUser(false);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('app_users')
-        .select('role')
-        .eq('id', userProfile.coach_id)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error checking coach role:', error);
-        setIsCoachManagedUser(false);
-        return;
-      }
-
-      setIsCoachManagedUser(data?.role === 'coach');
-    };
-
-    checkCoachManaged();
-  }, [userProfile?.coach_id]);
-
-  // Check for tablet size
-  useEffect(() => {
-    const checkTabletSize = () => {
-      setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
-    };
-    
-    checkTabletSize();
-    window.addEventListener('resize', checkTabletSize);
-    
-    return () => window.removeEventListener('resize', checkTabletSize);
-  }, []);
 
   // Handle tab query parameter
   useEffect(() => {
@@ -99,13 +45,6 @@ const UserProfile = () => {
       fetchUserProfile();
     }
   }, [userId]);
-
-  // Close mobile/tablet sidebar when tab changes
-  useEffect(() => {
-    if (isMobile || isTablet) {
-      setShowMobileSidebar(false);
-    }
-  }, [activeTab, isMobile, isTablet]);
 
   const fetchUserProfile = async () => {
     try {
@@ -167,95 +106,15 @@ const UserProfile = () => {
     await signOut();
   };
 
-  const handleOfferRejected = () => {
-    // Ανανεώνουμε το sidebar για να ενημερωθεί ο αριθμός προσφορών
-    sidebarRef.current?.refreshOffers();
-  };
-
-  const handleCoachNavigation = (path: string) => {
-    const pathname = path.split('?')[0];
-    if (pathname === '/dashboard/coach-annual-planning') {
-      setActiveTab('coach-annual-planning');
-      return true;
-    }
-    if (activeTab === 'coach-annual-planning' && pathname === '/dashboard/coach-overview') {
-      setActiveTab('overview');
-      return true;
-    }
-    return false;
-  };
-
   return (
     <MaintenanceGuard userRole={userProfile?.role}>
     <div className="min-h-screen bg-gray-50 flex">
-      <div className="hidden lg:block">
-        {showCoachSidebar ? (
-          <CoachSidebar
-            isCollapsed={isCollapsed}
-            setIsCollapsed={setIsCollapsed}
-            contextCoachId={coachContextId}
-            onNavigateOverride={handleCoachNavigation}
-          />
-        ) : (
-          <UserProfileSidebar
-            ref={sidebarRef}
-            isCollapsed={isCollapsed}
-            setIsCollapsed={setIsCollapsed}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            userProfile={userProfile}
-            stats={stats}
-          />
-        )}
-      </div>
-
-      {/* Mobile/Tablet Sidebar Overlay */}
-      {showMobileSidebar && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div
-            className="absolute inset-0 bg-black bg-opacity-50"
-            onClick={() => setShowMobileSidebar(false)}
-          />
-          <div className="relative w-64 h-full">
-            {showCoachSidebar ? (
-              <CoachSidebar
-                isCollapsed={false}
-                setIsCollapsed={setIsCollapsed}
-                contextCoachId={coachContextId}
-                onNavigateOverride={handleCoachNavigation}
-              />
-            ) : (
-              <UserProfileSidebar
-                isCollapsed={false}
-                setIsCollapsed={setIsCollapsed}
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                userProfile={userProfile}
-                stats={stats}
-              />
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navigation */}
         <nav className="sticky top-0 z-40 bg-white border-b border-gray-200 px-2 md:px-6 py-2 md:py-4 shadow-sm">
           <div className="flex justify-between items-center gap-1 md:gap-2">
             <div className="flex items-center space-x-1 md:space-x-4 min-w-0 flex-1">
-              {/* Mobile/Tablet menu button */}
-              {(isMobile || isTablet) && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="rounded-none lg:hidden h-8 w-8 p-0"
-                  onClick={() => setShowMobileSidebar(true)}
-                >
-                  <Menu className="h-4 w-4" />
-                </Button>
-              )}
-              
               <div className="min-w-0 flex-1">
                 <h1 className="text-sm md:text-2xl font-bold text-gray-900 truncate">
                   {userProfile.name}
@@ -295,7 +154,7 @@ const UserProfile = () => {
             tests={tests}
             payments={payments}
             visits={visits}
-            onOfferRejected={handleOfferRejected}
+            onOfferRejected={() => {}}
           />
         </div>
       </div>
