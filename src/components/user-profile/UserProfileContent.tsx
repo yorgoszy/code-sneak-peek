@@ -20,7 +20,6 @@ import { InlineAIChat } from "@/components/ai-chat/InlineAIChat";
 import { EnhancedAIChatDialog } from "@/components/ai-chat/EnhancedAIChatDialog";
 import { UserProfileEdit } from "./UserProfileEdit";
 import { UserProgressSection } from "./UserProgressSection";
-import { UserProfileHistory } from "./UserProfileHistory";
 import { SchoolNotes } from "@/pages/SchoolNotes";
 import { UserProfileNutrition } from "./UserProfileNutrition";
 import { UserProfileSafety } from "./UserProfileSafety";
@@ -192,14 +191,6 @@ export const UserProfileContent = ({
               useCoachTables={isCoachManagedUser}
               coachId={isCoachManagedUser ? userProfile?.coach_id : undefined}
             />
-          </div>
-        );
-      case "history":
-        return (
-          <div className="space-y-4">
-            <BackButton />
-            <h2 className="text-xl font-semibold">{t('overview.history')}</h2>
-            <UserProfileHistory userId={userProfile?.id} useCoachTables={isCoachManagedUser} />
           </div>
         );
       case "payments":

@@ -12,7 +12,6 @@ import {
   CalendarDays,
   Tag,
   TrendingUp,
-  History,
   BookOpen,
   Download,
   ShieldAlert,
@@ -245,14 +244,6 @@ export const UserProfileSidebar = forwardRef<
       icon: TrendingUp, 
       label: t('sidebar.progress'), 
       key: "progress",
-      badge: null,
-      visible: true,
-      disabled: !hasSubscription
-    },
-    { 
-      icon: History, 
-      label: t('sidebar.history'), 
-      key: "history",
       badge: null,
       visible: true,
       disabled: !hasSubscription
