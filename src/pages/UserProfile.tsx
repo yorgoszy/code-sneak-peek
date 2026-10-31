@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserProfileContent } from "@/components/user-profile/UserProfileContent";
 import { useUserProfileData } from "@/components/user-profile/hooks/useUserProfileData";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -115,7 +116,14 @@ const UserProfile = () => {
         <nav className="sticky top-0 z-40 bg-white border-b border-gray-200 px-2 md:px-6 py-2 md:py-4 shadow-sm">
           <div className="flex justify-between items-center gap-1 md:gap-2">
             <div className="flex items-center space-x-1 md:space-x-4 min-w-0 flex-1">
-              <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+                <Avatar className="h-8 w-8 md:h-10 md:w-10 flex-shrink-0">
+                  <AvatarImage src={userProfile.photo_url || userProfile.avatar_url || ''} alt={userProfile.name} />
+                  <AvatarFallback className="rounded-none text-xs md:text-sm">
+                    {userProfile.name?.charAt(0) || '?'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
                 <h1 className="text-sm md:text-2xl font-bold text-gray-900 truncate">
                   {userProfile.name}
                 </h1>
