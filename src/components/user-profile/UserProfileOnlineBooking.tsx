@@ -202,7 +202,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
 
 
       {/* Section dropdown - pick a section to open its booking calendar */}
-      <div className="px-4 md:px-0 space-y-6">
+      <div className="px-4 md:px-0 space-y-3">
         {(() => {
           const bookableSections = sections.filter(section =>
             !section.name.toLowerCase().includes('βιντεοκλήσεις') &&
