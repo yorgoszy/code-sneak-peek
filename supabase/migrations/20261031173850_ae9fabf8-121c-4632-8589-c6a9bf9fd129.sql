@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.get_visit_booking_sections(uuid) TO supabase_read_only_user;
