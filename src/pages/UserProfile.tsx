@@ -23,11 +23,8 @@ const UserProfile = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [profileLoading, setProfileLoading] = useState(true);
 
-  const { isAdmin, isFederation, userProfile: loggedInProfile, loading: roleLoading } = useRoleCheck();
-  const [isCoachManagedUser, setIsCoachManagedUser] = useState(false);
-  
-  // Εμφάνιση sidebar βάσει του ρόλου του ΠΡΟΒΑΛΛΟΜΕΝΟΥ χρήστη, όχι του logged-in user
-  const coachContextId = userProfile?.role === 'coach'
+  const { isFederation, userProfile: loggedInProfile, loading: roleLoading } = useRoleCheck();
+
     ? userProfile.id
     : userProfile?.coach_id ?? userId;
 
