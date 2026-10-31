@@ -1,0 +1,4 @@
+CREATE SCHEMA IF NOT EXISTS private; GRANT USAGE ON SCHEMA private TO authenticated,service_role;
+ALTER FUNCTION public.get_coach_booking_slot_counts(uuid,date) SET SCHEMA private;
+CREATE FUNCTION public.get_coach_booking_slot_counts(p_section uuid,p_date date) RETURNS TABLE(booking_time time,booking_count bigint) LANGUAGE sql STABLE SECURITY INVOKER SET search_path=public AS $$ SELECT * FROM private.get_coach_booking_slot_counts(p_section,p_date) $$;
+REVOKE ALL ON FUNCTION public.get_coach_booking_slot_counts(uuid,date) FROM PUBLIC,anon; GRANT EXECUTE ON FUNCTION public.get_coach_booking_slot_counts(uuid,date) TO authenticated,service_role;
