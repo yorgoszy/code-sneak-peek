@@ -1088,20 +1088,6 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </div>
           </Button>
 
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/install')}
-            className={`h-auto text-center ${isMobile ? 'p-1' : 'p-2'} rounded-none flex flex-col min-w-0 whitespace-normal`}
-          >
-            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-              <Download className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} text-foreground`} />
-            </div>
-            <div className={`${isMobile ? 'h-6' : 'h-8'}`} />
-            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-muted-foreground font-normal ${isMobile ? 'text-xs' : 'text-sm'} leading-tight`}>
-              {t('sidebar.downloadApp')}
-            </div>
-          </Button>
-
           {/* Πρόοδος - Προτελευταίο */}
           <button 
             onClick={() => {
@@ -1195,6 +1181,20 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               </div>
             </button>
           )}
+
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/install')}
+            className={`h-auto text-center ${isMobile ? 'p-1' : 'p-2'} rounded-none flex flex-col min-w-0 whitespace-normal`}
+          >
+            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+              <Download className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} text-foreground`} />
+            </div>
+            <div className={`${isMobile ? 'h-6' : 'h-8'}`} />
+            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-muted-foreground font-normal ${isMobile ? 'text-xs' : 'text-sm'} leading-tight`}>
+              {t('sidebar.downloadApp')}
+            </div>
+          </Button>
 
         </div>
       </CardContent>
