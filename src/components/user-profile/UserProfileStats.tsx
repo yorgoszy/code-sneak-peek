@@ -980,28 +980,6 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </div>
           )}
 
-          {/* Πρόοδος - Έβδομο */}
-          <button 
-            onClick={() => {
-              if (setActiveTab) {
-                setActiveTab('progress');
-              } else {
-                navigate(`/dashboard/user-profile/${user.id}?tab=progress`);
-              }
-            }}
-            disabled={isWidgetDisabled('progress')}
-            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${isWidgetDisabled('progress') ? disabledClass : ''}`}
-          >
-            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
-              <TrendingUp className={`${(!hasTests || isWidgetDisabled('progress')) ? 'text-gray-400' : 'text-black'} ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
-            </div>
-            <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
-              <span className="text-black"> </span>
-            </div>
-            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-              {t('overview.progress')}
-            </div>
-          </button>
 
 
           {/* Επισκέψεις - Κρύβεται για coach-managed users */}
@@ -1158,6 +1136,29 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           {(user.is_athlete || user.role === 'athlete') && (
             <CardNumberWidget userId={user.id} />
           )}
+
+          {/* Πρόοδος - Προτελευταίο */}
+          <button 
+            onClick={() => {
+              if (setActiveTab) {
+                setActiveTab('progress');
+              } else {
+                navigate(`/dashboard/user-profile/${user.id}?tab=progress`);
+              }
+            }}
+            disabled={isWidgetDisabled('progress')}
+            className={`text-center hover:bg-gray-50 ${isMobile ? 'p-1' : 'p-2'} rounded-none transition-colors cursor-pointer flex flex-col min-w-0 ${isWidgetDisabled('progress') ? disabledClass : ''}`}
+          >
+            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+              <TrendingUp className={`${(!hasTests || isWidgetDisabled('progress')) ? 'text-gray-400' : 'text-black'} ${isMobile ? 'w-5 h-5' : 'w-8 h-8'}`} />
+            </div>
+            <div className={`${isMobile ? 'h-6' : 'h-8'} flex items-center justify-center font-bold ${isMobile ? 'text-base' : 'text-2xl'}`}>
+              <span className="text-black"> </span>
+            </div>
+            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
+              {t('overview.progress')}
+            </div>
+          </button>
 
           {/* Προφίλ */}
           <button 
