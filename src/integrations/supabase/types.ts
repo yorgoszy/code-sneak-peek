@@ -1632,6 +1632,8 @@ export type Database = {
       booking_sections: {
         Row: {
           available_hours: Json | null
+          booking_type: string | null
+          coach_id: string | null
           created_at: string
           description: string | null
           id: string
@@ -1642,6 +1644,8 @@ export type Database = {
         }
         Insert: {
           available_hours?: Json | null
+          booking_type?: string | null
+          coach_id?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -1652,6 +1656,8 @@ export type Database = {
         }
         Update: {
           available_hours?: Json | null
+          booking_type?: string | null
+          coach_id?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -1660,7 +1666,22 @@ export type Database = {
           name?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "booking_sections_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_sections_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       booking_sessions: {
         Row: {
@@ -1669,6 +1690,7 @@ export type Database = {
           booking_time: string
           booking_type: string
           cancelled_at: string | null
+          coach_id: string | null
           completed_at: string | null
           created_at: string
           id: string
@@ -1686,6 +1708,7 @@ export type Database = {
           booking_time: string
           booking_type?: string
           cancelled_at?: string | null
+          coach_id?: string | null
           completed_at?: string | null
           created_at?: string
           id?: string
@@ -1703,6 +1726,7 @@ export type Database = {
           booking_time?: string
           booking_type?: string
           cancelled_at?: string | null
+          coach_id?: string | null
           completed_at?: string | null
           created_at?: string
           id?: string
@@ -1715,6 +1739,20 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "booking_sessions_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_sessions_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "booking_sessions_section_id_fkey"
             columns: ["section_id"]
@@ -1743,6 +1781,7 @@ export type Database = {
           booking_date: string
           booking_time: string
           booking_type: string | null
+          coach_id: string | null
           created_at: string
           id: string
           notified_at: string | null
@@ -1756,6 +1795,7 @@ export type Database = {
           booking_date: string
           booking_time: string
           booking_type?: string | null
+          coach_id?: string | null
           created_at?: string
           id?: string
           notified_at?: string | null
@@ -1769,6 +1809,7 @@ export type Database = {
           booking_date?: string
           booking_time?: string
           booking_type?: string | null
+          coach_id?: string | null
           created_at?: string
           id?: string
           notified_at?: string | null
@@ -1779,6 +1820,20 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "booking_waiting_list_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_waiting_list_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fk_waiting_list_section"
             columns: ["section_id"]
@@ -12447,6 +12502,7 @@ export type Database = {
       }
       auto_update_competition_status: { Args: never; Returns: undefined }
       can_cancel_booking: { Args: { booking_id: string }; Returns: boolean }
+      can_manage_coaching_user: { Args: { p_user: string }; Returns: boolean }
       can_read_program: {
         Args: { _auth_uid: string; _program_id: string }
         Returns: boolean
@@ -12530,6 +12586,13 @@ export type Database = {
       get_athlete_federation_ids: {
         Args: { _athlete_id: string }
         Returns: string[]
+      }
+      get_coaching_slot_counts: {
+        Args: { p_date: string; p_section: string }
+        Returns: {
+          booking_count: number
+          booking_time: string
+        }[]
       }
       get_current_user_role: { Args: never; Returns: string }
       get_federation_athlete_ids: {
@@ -12705,6 +12768,10 @@ export type Database = {
             }
             Returns: string
           }
+      owns_coaching_user: {
+        Args: { p_coach: string; p_user: string }
+        Returns: boolean
+      }
       pause_subscription: {
         Args: { subscription_id: string }
         Returns: undefined
