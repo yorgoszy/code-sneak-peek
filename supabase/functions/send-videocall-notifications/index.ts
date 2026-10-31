@@ -1051,14 +1051,20 @@ serve(async (req) => {
         .single()
 
       if (error || !bookingData) {
-        console.error('❌ Booking not found:', error)
-        return new Response(
-          JSON.stringify({ error: 'Booking not found' }),
-          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
+        if (type === 'booking_cancelled') {
+          // Booking already deleted on cancellation; fall through to user-data path below
+          console.log('ℹ️ Cancelled booking already removed, using passed data')
+        } else {
+          console.error('❌ Booking not found:', error)
+          return new Response(
+            JSON.stringify({ error: 'Booking not found' }),
+            { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+      } else {
+        booking = bookingData
+        emailHTML = generateEmailHTML(type, booking, adminEmail)
       }
-      booking = bookingData
-      emailHTML = generateEmailHTML(type, booking, adminEmail)
     }
 
     // Handle other notification types
@@ -1151,7 +1157,7 @@ serve(async (req) => {
     } else if (type === 'booking_cancelled_admin') {
       recipient = adminEmail || 'yorgoszy@gmail.com'
       subject = `❌ Βιντεοκλήση Ακυρώθηκε - ${booking.app_users.name}`
-    } else if (['booking_approved', 'booking_rejected', 'booking_cancelled', 'reminder_24h', 'reminder_1h', 'reminder_15min'].includes(type)) {
+    } else if (booking && ['booking_approved', 'booking_rejected', 'booking_cancelled', 'reminder_24h', 'reminder_1h', 'reminder_15min'].includes(type)) {
       recipient = booking.app_users.email
       switch (type) {
         case 'booking_approved':
