@@ -34,8 +34,19 @@ export default function ThaiHubLogin() {
   const [planBusy, setPlanBusy] = useState<string | null>(null);
   const [planNotice, setPlanNotice] = useState<string | null>(null);
 
+  const [rolePrices, setRolePrices] = useState<Record<string, number>>({});
+  useEffect(() => {
+    supabase.from('subscription_types').select('price, assigned_role, created_at').eq('is_active', true).is('coach_id', null).in('assigned_role', ['club', 'coach', 'federation']).order('created_at', { ascending: true })
+      .then(({ data }) => {
+        const prices: Record<string, number> = {};
+        (data || []).forEach((row: any) => { if (Number(row.price) > 0) prices[row.assigned_role] = Number(row.price); });
+        setRolePrices(prices);
+      });
+  }, []);
+  const planPrice = (plan: typeof thaihubPlans[number]) => rolePrices[plan.id === 'pro' ? 'federation' : plan.id] ?? plan.yearlyPrice;
+
   const choosePlan = async (plan: typeof thaihubPlans[number]) => {
-    const target = { id: (plan.id === 'pro' ? 'federation' : plan.id) as ThaiHubCheckoutPlan, name: plan.name, price: plan.yearlyPrice };
+    const target = { id: (plan.id === 'pro' ? 'federation' : plan.id) as ThaiHubCheckoutPlan, name: plan.name, price: planPrice(plan) };
     setPlanNotice(null);
     const { data } = await supabase.auth.getSession();
     if (!data.session) { setCheckoutPlan(target); return; }
@@ -153,7 +164,7 @@ export default function ThaiHubLogin() {
               <article key={plan.id} aria-label={plan.name} className="flex flex-col min-w-0 bg-[var(--th-white)] border border-[var(--th-blue-border)] p-6 lg:p-8">
                 <h3 className="text-2xl font-bold">{plan.name}</h3>
                 <p className="text-sm mt-3 min-h-10">{t.planDescriptions[plan.id]}</p>
-                <div className="flex items-baseline flex-wrap gap-2 mt-6"><span className="text-4xl font-bold">{plan.yearlyPrice}€</span><span className="text-sm">{t.perYear}</span></div>
+                <div className="flex items-baseline flex-wrap gap-2 mt-6"><span className="text-4xl font-bold">{planPrice(plan)}€</span><span className="text-sm">{t.perYear}</span></div>
                 <p className="text-xs mt-2">{t.vatIncluded}</p>
                 <div className="border-t border-[var(--th-blue-border)] mt-6 pt-6 flex-1">
                   {plan.inheritedPlan && <p className="font-semibold text-sm mb-5">{t.allFrom} {plan.inheritedPlan} {t.plus}</p>}
