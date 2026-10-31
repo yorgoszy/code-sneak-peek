@@ -164,7 +164,7 @@ export default function ThaiHubLogin() {
               <article key={plan.id} aria-label={plan.name} className="flex flex-col min-w-0 bg-[var(--th-white)] border border-[var(--th-blue-border)] p-6 lg:p-8">
                 <h3 className="text-2xl font-bold">{plan.name}</h3>
                 <p className="text-sm mt-3 min-h-10">{t.planDescriptions[plan.id]}</p>
-                <div className="flex items-baseline flex-wrap gap-2 mt-6"><span className="text-4xl font-bold">{plan.yearlyPrice}€</span><span className="text-sm">{t.perYear}</span></div>
+                <div className="flex items-baseline flex-wrap gap-2 mt-6"><span className="text-4xl font-bold">{planPrice(plan)}€</span><span className="text-sm">{t.perYear}</span></div>
                 <p className="text-xs mt-2">{t.vatIncluded}</p>
                 <div className="border-t border-[var(--th-blue-border)] mt-6 pt-6 flex-1">
                   {plan.inheritedPlan && <p className="font-semibold text-sm mb-5">{t.allFrom} {plan.inheritedPlan} {t.plus}</p>}
