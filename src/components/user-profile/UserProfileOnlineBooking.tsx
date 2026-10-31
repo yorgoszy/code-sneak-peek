@@ -227,6 +227,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
               {selectedSection && (
                 <SectionBookingCalendar
                   key={selectedSection.id}
+                  userId={userProfile?.id}
                   sectionId={selectedSection.id}
                   sectionName={selectedSection.name}
                   availableHours={selectedSection.available_hours}

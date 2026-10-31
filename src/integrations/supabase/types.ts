@@ -11909,6 +11909,8 @@ export type Database = {
           id: string
           location: string | null
           notes: string | null
+          package_id: string | null
+          section_id: string | null
           user_id: string
           visit_date: string
           visit_time: string
@@ -11920,6 +11922,8 @@ export type Database = {
           id?: string
           location?: string | null
           notes?: string | null
+          package_id?: string | null
+          section_id?: string | null
           user_id: string
           visit_date?: string
           visit_time?: string
@@ -11931,6 +11935,8 @@ export type Database = {
           id?: string
           location?: string | null
           notes?: string | null
+          package_id?: string | null
+          section_id?: string | null
           user_id?: string
           visit_date?: string
           visit_time?: string
@@ -11963,6 +11969,20 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_visits_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "visit_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_visits_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "booking_sections"
             referencedColumns: ["id"]
           },
         ]
@@ -12673,6 +12693,15 @@ export type Database = {
       pause_subscription: {
         Args: { subscription_id: string }
         Returns: undefined
+      }
+      record_section_visit: {
+        Args: {
+          p_notes?: string
+          p_package_id?: string
+          p_section_id: string
+          p_user_id: string
+        }
+        Returns: string
       }
       record_videocall: {
         Args: {
