@@ -74,10 +74,41 @@ export const AvailableHoursSelector: React.FC<AvailableHoursSelectorProps> = ({
 
   if (compact) return <div className="space-y-3">
     <Label>Ημέρες και ώρες</Label>
-    {Object.entries(DAYS).map(([key, label]) => <div key={key} className="border-b border-border pb-3">
-      <div className="mb-2 flex items-center justify-between"><Label>{label}</Label><Button type="button" variant="ghost" size="sm" className="rounded-none text-xs" onClick={() => handleSelectAllDay(key, !isDayFullySelected(key))}>{isDayFullySelected(key) ? 'Καθαρισμός' : 'Όλες οι ώρες'}</Button></div>
-      <div className="grid grid-cols-4 gap-1 sm:grid-cols-8">{HOURS.map(hour => <Button key={hour} type="button" size="sm" variant={availableHours[key]?.includes(hour) ? 'default' : 'outline'} aria-pressed={availableHours[key]?.includes(hour) || false} className="rounded-none px-1 text-xs" onClick={() => handleDayToggle(key, hour, !availableHours[key]?.includes(hour))}>{hour}</Button>)}</div>
-    </div>)}
+    <table className="w-full table-fixed border-collapse text-xs">
+      <thead>
+        <tr>
+          <th scope="col" className="w-12 pb-2 text-left font-normal text-muted-foreground">Ώρα</th>
+          {Object.entries(DAYS).map(([key, label]) => (
+            <th key={key} scope="col" title={label} className="pb-2 text-center font-medium">
+              <span aria-label={label}>{label.charAt(0)}</span>
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {HOURS.map(hour => (
+          <tr key={hour}>
+            <th scope="row" className="pr-2 text-left font-normal text-muted-foreground">{hour}</th>
+            {Object.entries(DAYS).map(([key, label]) => {
+              const selected = availableHours[key]?.includes(hour) || false;
+              return (
+                <td key={key} className="p-0.5">
+                  <Button
+                    type="button"
+                    variant={selected ? 'default' : 'outline'}
+                    aria-label={`${label} ${hour}`}
+                    aria-pressed={selected}
+                    title={`${label} ${hour}`}
+                    className="h-auto min-h-8 w-full aspect-square rounded-none p-0"
+                    onClick={() => handleDayToggle(key, hour, !selected)}
+                  />
+                </td>
+              );
+            })}
+          </tr>
+        ))}
+      </tbody>
+    </table>
   </div>;
 
   return (
