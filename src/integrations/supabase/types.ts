@@ -12558,6 +12558,10 @@ export type Database = {
           work_rest_ratio: number
         }[]
       }
+      ensure_coach_booking_calendar: {
+        Args: { p_coach: string }
+        Returns: string
+      }
       ensure_coaching_calendar: { Args: { p_coach: string }; Returns: string }
       exec_sql: { Args: { query: string }; Returns: Json }
       federation_assign_athlete: {
@@ -12587,6 +12591,17 @@ export type Database = {
       get_athlete_federation_ids: {
         Args: { _athlete_id: string }
         Returns: string[]
+      }
+      get_coach_booking_availability: {
+        Args: { p_user: string }
+        Returns: Json
+      }
+      get_coach_booking_slot_counts: {
+        Args: { p_date: string; p_section: string }
+        Returns: {
+          booking_count: number
+          booking_time: string
+        }[]
       }
       get_coaching_availability: { Args: { p_user: string }; Returns: Json }
       get_coaching_slot_counts: {

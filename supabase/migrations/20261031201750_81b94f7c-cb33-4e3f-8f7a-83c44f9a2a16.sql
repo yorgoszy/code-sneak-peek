@@ -1,0 +1,45 @@
+CREATE UNIQUE INDEX IF NOT EXISTS coach_gym_calendar ON public.booking_sections(coach_id) WHERE booking_type='gym_visit' AND coach_id IS NOT NULL;
+DROP POLICY "Coaches manage own videocall calendar" ON public.booking_sections;
+CREATE POLICY "Coaches manage own booking calendar" ON public.booking_sections FOR ALL TO authenticated USING(coach_id=public.current_app_user_id() AND public.has_role(auth.uid(),'coach') AND booking_type='gym_visit') WITH CHECK(coach_id=public.current_app_user_id() AND public.has_role(auth.uid(),'coach') AND booking_type='gym_visit');
+DROP POLICY "Coaches manage own videocall appointments" ON public.booking_sessions;
+CREATE POLICY "Coaches manage own appointments" ON public.booking_sessions FOR ALL TO authenticated USING(coach_id=public.current_app_user_id() AND public.can_manage_coaching_user(user_id)) WITH CHECK(coach_id=public.current_app_user_id() AND public.can_manage_coaching_user(user_id));
+DROP POLICY "Isolate videocall appointments" ON public.booking_sessions;
+CREATE POLICY "Isolate coach appointments" ON public.booking_sessions AS RESTRICTIVE FOR ALL TO authenticated USING((coach_id IS NULL AND booking_type<>'videocall') OR public.has_role(auth.uid(),'admin') OR user_id=public.current_app_user_id() OR(coach_id=public.current_app_user_id() AND public.can_manage_coaching_user(user_id))) WITH CHECK((coach_id IS NULL AND booking_type<>'videocall') OR public.has_role(auth.uid(),'admin') OR user_id=public.current_app_user_id() OR(coach_id=public.current_app_user_id() AND public.can_manage_coaching_user(user_id)));
+DROP POLICY "Coaches manage own videocall waiting list" ON public.booking_waiting_list;
+CREATE POLICY "Coaches manage own booking waiting list" ON public.booking_waiting_list FOR ALL TO authenticated USING(coach_id=public.current_app_user_id() AND public.can_manage_coaching_user(user_id)) WITH CHECK(coach_id=public.current_app_user_id() AND public.can_manage_coaching_user(user_id));
+CREATE POLICY "Isolate coach waiting list" ON public.booking_waiting_list AS RESTRICTIVE FOR ALL TO authenticated USING(coach_id IS NULL OR public.has_role(auth.uid(),'admin') OR user_id=public.current_app_user_id() OR(coach_id=public.current_app_user_id() AND public.can_manage_coaching_user(user_id))) WITH CHECK(coach_id IS NULL OR public.has_role(auth.uid(),'admin') OR user_id=public.current_app_user_id() OR(coach_id=public.current_app_user_id() AND public.can_manage_coaching_user(user_id)));
+CREATE OR REPLACE FUNCTION public.ensure_coach_booking_calendar(p_coach uuid) RETURNS uuid LANGUAGE plpgsql SECURITY INVOKER SET search_path=public AS $$ DECLARE result uuid; coach_auth uuid; BEGIN
+SELECT auth_user_id INTO coach_auth FROM public.app_users WHERE id=p_coach;
+IF NOT public.has_role(coach_auth,'coach') THEN RAISE EXCEPTION 'Coach unavailable'; END IF;
+IF NOT(public.has_role(auth.uid(),'admin') OR(p_coach=public.current_app_user_id() AND public.has_role(auth.uid(),'coach'))) THEN RAISE EXCEPTION 'Not authorized'; END IF;
+INSERT INTO public.booking_sections(name,coach_id,booking_type,max_capacity,available_hours) VALUES('Online Booking',p_coach,'gym_visit',1,'{}') ON CONFLICT(coach_id) WHERE booking_type='gym_visit' AND coach_id IS NOT NULL DO NOTHING;
+SELECT id INTO result FROM public.booking_sections WHERE coach_id=p_coach AND booking_type='gym_visit'; RETURN result; END $$;
+REVOKE ALL ON FUNCTION public.ensure_coach_booking_calendar(uuid) FROM PUBLIC,anon; GRANT EXECUTE ON FUNCTION public.ensure_coach_booking_calendar(uuid) TO authenticated,service_role;
+CREATE OR REPLACE FUNCTION public.enforce_coaching_calendar() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ DECLARE s public.booking_sections%ROWTYPE; assigned uuid; assigned_auth uuid; BEGIN
+SELECT * INTO s FROM public.booking_sections WHERE id=NEW.section_id;
+IF TG_OP='UPDATE' THEN IF NEW.user_id IS NOT DISTINCT FROM OLD.user_id AND NEW.section_id IS NOT DISTINCT FROM OLD.section_id AND NEW.booking_date IS NOT DISTINCT FROM OLD.booking_date AND NEW.booking_time IS NOT DISTINCT FROM OLD.booking_time AND NEW.booking_type IS NOT DISTINCT FROM OLD.booking_type THEN NEW.coach_id:=OLD.coach_id; RETURN NEW; END IF; END IF;
+SELECT u.coach_id,c.auth_user_id INTO assigned,assigned_auth FROM public.app_users u LEFT JOIN public.app_users c ON c.id=u.coach_id WHERE u.id=NEW.user_id;
+IF s.coach_id IS NOT NULL THEN
+ IF assigned IS DISTINCT FROM s.coach_id OR s.booking_type IS DISTINCT FROM NEW.booking_type THEN RAISE EXCEPTION USING ERRCODE='23514',MESSAGE='Μπορείς να κλείσεις μόνο στο ημερολόγιο του δικού σου coach'; END IF;
+ IF COALESCE(auth.role(),'')<>'service_role' AND NOT public.has_role(auth.uid(),'admin') AND NEW.user_id IS DISTINCT FROM public.current_app_user_id() AND NOT(s.coach_id=public.current_app_user_id() AND public.can_manage_coaching_user(NEW.user_id)) THEN RAISE EXCEPTION 'Not authorized'; END IF;
+ELSIF NEW.booking_type='gym_visit' AND assigned IS NOT NULL AND NOT public.has_role(assigned_auth,'admin') THEN RAISE EXCEPTION USING ERRCODE='23514',MESSAGE='Μπορείς να κλείσεις μόνο στο ημερολόγιο του δικού σου coach'; END IF;
+IF NOT COALESCE(s.is_active,false) THEN RAISE EXCEPTION 'Calendar inactive'; END IF;
+NEW.coach_id:=s.coach_id;
+IF s.coach_id IS NOT NULL AND TG_TABLE_NAME='booking_sessions' AND NEW.status IN('pending','confirmed') THEN
+ PERFORM pg_advisory_xact_lock(hashtextextended(NEW.section_id::text||NEW.booking_date::text||NEW.booking_time::text,0));
+ IF(SELECT count(*) FROM public.booking_sessions b WHERE b.section_id=NEW.section_id AND b.booking_date=NEW.booking_date AND b.booking_time=NEW.booking_time AND b.status IN('pending','confirmed') AND b.id<>NEW.id)>=s.max_capacity THEN RAISE EXCEPTION USING ERRCODE='23514',MESSAGE='Η ώρα έχει ήδη κρατηθεί'; END IF;
+END IF; RETURN NEW; END $$;
+CREATE OR REPLACE FUNCTION public.get_coach_booking_availability(p_user uuid) RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY INVOKER SET search_path=public AS $$ DECLARE c uuid; r text; sub record; used integer; remaining integer; BEGIN
+SELECT u.coach_id,owner.role INTO c,r FROM public.app_users u LEFT JOIN public.app_users owner ON owner.id=u.coach_id WHERE u.id=p_user;
+IF c IS NULL OR r='admin' THEN RETURN public.get_user_available_bookings(p_user); END IF;
+SELECT s.*,t.name,t.visit_count,t.subscription_mode,t.allowed_sections INTO sub FROM public.coach_subscriptions s JOIN public.subscription_types t ON t.id=s.subscription_type_id WHERE s.user_id=p_user AND s.coach_id=c AND s.status='active' AND NOT COALESCE(s.is_paused,false) AND s.start_date<=CURRENT_DATE AND s.end_date>=CURRENT_DATE AND t.subscription_mode<>'videocall' AND t.coach_id=c ORDER BY s.end_date DESC LIMIT 1;
+IF sub.id IS NULL THEN RETURN jsonb_build_object('type','none','coach_id',c,'allowed_sections','[]'::jsonb); END IF;
+SELECT count(*) INTO used FROM public.booking_sessions WHERE user_id=p_user AND coach_id=c AND booking_type='gym_visit' AND status IN('pending','confirmed','completed') AND booking_date BETWEEN sub.start_date AND sub.end_date;
+remaining:=CASE WHEN sub.subscription_mode='visit_based' THEN GREATEST(0,COALESCE(sub.visit_count,0)-used) ELSE 999999 END;
+RETURN jsonb_build_object('type','visit_packages','coach_id',c,'has_gym_access',remaining>0,'available_visits',remaining,'total_visits',CASE WHEN sub.subscription_mode='visit_based' THEN COALESCE(sub.visit_count,0) ELSE 999999 END,'subscription_name',sub.name,'allowed_sections',COALESCE(to_jsonb(sub.allowed_sections),'[]'::jsonb)); END $$;
+REVOKE ALL ON FUNCTION public.get_coach_booking_availability(uuid) FROM PUBLIC,anon; GRANT EXECUTE ON FUNCTION public.get_coach_booking_availability(uuid) TO authenticated;
+CREATE OR REPLACE FUNCTION public.get_coach_booking_slot_counts(p_section uuid,p_date date) RETURNS TABLE(booking_time time,booking_count bigint) LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$ SELECT b.booking_time,count(*) FROM public.booking_sessions b JOIN public.booking_sections s ON s.id=b.section_id WHERE s.id=p_section AND s.coach_id IS NOT NULL AND s.booking_type='gym_visit' AND b.booking_date=p_date AND b.status IN('pending','confirmed') AND(public.has_role(auth.uid(),'admin') OR s.coach_id=public.current_app_user_id() OR public.owns_coaching_user(public.current_app_user_id(),s.coach_id)) GROUP BY b.booking_time $$;
+REVOKE ALL ON FUNCTION public.get_coach_booking_slot_counts(uuid,date) FROM PUBLIC,anon; GRANT EXECUTE ON FUNCTION public.get_coach_booking_slot_counts(uuid,date) TO authenticated,service_role;
+UPDATE public.booking_sections SET booking_type='gym_visit',name='Online Booking' WHERE coach_id IS NOT NULL AND booking_type='videocall';
+INSERT INTO public.booking_sections(name,coach_id,booking_type,max_capacity,available_hours) SELECT 'Online Booking',id,'gym_visit',1,'{}' FROM public.app_users WHERE role='coach' ON CONFLICT(coach_id) WHERE booking_type='gym_visit' AND coach_id IS NOT NULL DO NOTHING;
+REVOKE EXECUTE ON FUNCTION public.ensure_coaching_calendar(uuid) FROM authenticated;
