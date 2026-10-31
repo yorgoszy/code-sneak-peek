@@ -130,8 +130,10 @@ const UserProfile = () => {
                 <p className="text-[10px] md:text-sm text-gray-600 truncate hidden sm:block">
                   {userProfile.email} - {t(`roles.${userProfile.role}`)}
                 </p>
+                </div>
               </div>
             </div>
+
             
             <div className="flex items-center space-x-1 md:space-x-4 flex-shrink-0">
               <span className="text-xs md:text-sm text-gray-600 hidden lg:block truncate">
