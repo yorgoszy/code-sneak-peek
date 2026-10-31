@@ -19,7 +19,7 @@ export const thaihubLandingCopy = {
     purchaseLabel: 'Αγορά', purchaseTitle: 'Η συνδρομή σου στο ThaiHub.',
     purchaseText: 'Τρία πακέτα για την ομάδα σου. Διάλεξε αυτό που ταιριάζει στην προπονητική σου.',
     perYear: '/ έτος', vatIncluded: 'Συμπεριλαμβάνεται ΦΠΑ',
-    allFrom: 'Όλα του', plus: 'και επιπλέον:', planCta: 'Ενδιαφέρομαι',
+    allFrom: 'Όλα του', plus: 'και επιπλέον:', planCta: 'Αγορά',
     planDescriptions: { club: 'Οργάνωση και διαχείριση της ομάδας.', coach: 'Ολοκληρωμένος σχεδιασμός προπόνησης.', pro: 'Διαχείριση ομοσπονδίας και αγώνων.' },
     planFeatures: {
       athletes: 'Διαχείριση Αθλητών', subscriptions: 'Διαχείριση Συνδρομών', incomeExpenses: 'Έσοδα / Έξοδα', mydata: 'Διασύνδεση myDATA',
