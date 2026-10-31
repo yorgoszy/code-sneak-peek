@@ -378,7 +378,7 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
                   window.location.href = `/dashboard/user-profile/${userIdFromUrl}?tab=shop`;
                 }
               }}
-              className="bg-[#cb8954] hover:bg-[#cb8954]/90 text-white rounded-none"
+              className="bg-[hsl(var(--auth-black))] hover:bg-[hsl(var(--auth-black)/0.9)] text-primary-foreground rounded-none"
             >
               <Video className="w-4 h-4 mr-2" />
               Αγόρασε Βιντεοκλήσεις
