@@ -202,14 +202,14 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
 
           {/* Calendar Grid */}
           <div className="flex-1 min-w-0">
-            <div className="grid grid-cols-7 gap-1">
+            <div className="grid grid-cols-7 gap-0.5">
               {/* Day headers */}
               {weekDays.map((day, index) => (
-                <div key={index} className="text-center flex flex-col items-center justify-center">
-                  <div className={`font-medium text-xs py-2 w-full text-center ${isToday(day) ? 'bg-[#cb8954] text-white rounded-none' : 'text-gray-700'}`}>
+                <div key={index} className="text-center flex items-center justify-center gap-0.5">
+                  <div className={`font-medium text-[10px] py-1 px-1 text-center ${isToday(day) ? 'bg-[#cb8954] text-white rounded-none' : 'text-gray-700'}`}>
                     {dayNames[index]}
                   </div>
-                  <div className={`text-xs w-full text-center ${isToday(day) ? 'font-bold' : 'text-gray-500'}`}>
+                  <div className={`text-[10px] text-center ${isToday(day) ? 'font-bold' : 'text-gray-500'}`}>
                     {format(day, 'dd')}
                   </div>
                 </div>
