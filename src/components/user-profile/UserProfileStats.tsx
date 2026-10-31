@@ -1,6 +1,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin, Video, ShoppingBag, Tag, Pause, FileText, User, Gift, Hand, MousePointer, MousePointer2, Pointer, Fingerprint, TrendingUp, BookOpen, Trophy, Droplet } from "lucide-react";
+import { Calendar, Users, Dumbbell, CreditCard, Clock, Check, X, MapPin, Video, ShoppingBag, Tag, Pause, FileText, User, Gift, Hand, MousePointer, MousePointer2, Pointer, Fingerprint, TrendingUp, BookOpen, Trophy, Droplet, HeartPulse, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -1073,6 +1074,41 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           {(user.is_athlete || user.role === 'athlete') && (
             <CardNumberWidget userId={user.id} />
           )}
+
+          <Button
+            variant="ghost"
+            onClick={() => {
+              if (setActiveTab) {
+                setActiveTab('heart-rate');
+              } else {
+                navigate(`/dashboard/user-profile/${user.id}?tab=heart-rate`);
+              }
+            }}
+            disabled={isWidgetDisabled('heart-rate')}
+            className={`h-auto text-center ${isMobile ? 'p-1' : 'p-2'} rounded-none flex flex-col min-w-0 whitespace-normal ${isWidgetDisabled('heart-rate') ? disabledClass : ''}`}
+          >
+            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+              <HeartPulse className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} text-foreground`} />
+            </div>
+            <div className={`${isMobile ? 'h-6' : 'h-8'}`} />
+            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-muted-foreground font-normal ${isMobile ? 'text-xs' : 'text-sm'} leading-tight`}>
+              Heart Rate (HR+)
+            </div>
+          </Button>
+
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/install')}
+            className={`h-auto text-center ${isMobile ? 'p-1' : 'p-2'} rounded-none flex flex-col min-w-0 whitespace-normal`}
+          >
+            <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
+              <Download className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} text-foreground`} />
+            </div>
+            <div className={`${isMobile ? 'h-6' : 'h-8'}`} />
+            <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-muted-foreground font-normal ${isMobile ? 'text-xs' : 'text-sm'} leading-tight`}>
+              {t('sidebar.downloadApp')}
+            </div>
+          </Button>
 
           {/* Πρόοδος - Προτελευταίο */}
           <button 
