@@ -7,6 +7,7 @@ import { EnduranceHistory } from "./EnduranceHistory";
 import { JumpHistory } from "./JumpHistory";
 import { AnthropometricHistory } from "./AnthropometricHistory";
 import { FunctionalHistory } from "./FunctionalHistory";
+import HistoryOverview from "./HistoryOverview";
 
 interface UserProfileHistoryProps {
   userId: string;
@@ -15,12 +16,15 @@ interface UserProfileHistoryProps {
 
 export const UserProfileHistory: React.FC<UserProfileHistoryProps> = ({ userId, useCoachTables = false }) => {
   const { t } = useTranslation();
-  const [activeHistoryTab, setActiveHistoryTab] = useState("force-velocity");
+  const [activeHistoryTab, setActiveHistoryTab] = useState("overview");
 
   return (
     <div className="space-y-4">
       <Tabs value={activeHistoryTab} onValueChange={setActiveHistoryTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 rounded-none h-auto gap-0">
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 rounded-none h-auto gap-0">
+          <TabsTrigger value="overview" className="rounded-none text-[10px] sm:text-sm px-1 py-2">
+            Επισκόπηση
+          </TabsTrigger>
           <TabsTrigger value="force-velocity" className="rounded-none text-[10px] sm:text-sm px-1 py-2">
             {t('history.forceVelocity')}
           </TabsTrigger>
@@ -37,6 +41,10 @@ export const UserProfileHistory: React.FC<UserProfileHistoryProps> = ({ userId, 
             {t('history.functional', 'Λειτουργικά')}
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="overview" className="mt-4">
+          <HistoryOverview userId={userId} />
+        </TabsContent>
 
         <TabsContent value="force-velocity" className="mt-4">
           <ForceVelocityHistory userId={userId} useCoachTables={useCoachTables} />
