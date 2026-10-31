@@ -228,12 +228,12 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
                      
                      if (!isTimeAvailable) {
                        return (
-                         <div key={`${timeSlot}-${dayIndex}`} className="h-12 bg-white border border-gray-100 rounded-none"></div>
+                         <div key={`${timeSlot}-${dayIndex}`} className="h-8 bg-white border border-gray-100 rounded-none"></div>
                        );
                      }
                      
                      return (
-                       <div key={`${timeSlot}-${dayIndex}`} className="h-12 border border-gray-200 bg-white rounded-none flex flex-col items-center justify-center relative group p-1">
+                       <div key={`${timeSlot}-${dayIndex}`} className="h-8 border border-gray-200 bg-white rounded-none flex flex-col items-center justify-center relative group p-0.5">
                          {booking ? (
                            <div className="flex flex-col items-center justify-center w-full h-full">
                              <div className="relative flex items-center justify-center">
@@ -308,8 +308,8 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
         </div>
         
         {/* Legend */}
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="flex flex-wrap gap-3 text-xs">
+        <div className="mt-2 pt-2 border-t border-gray-200">
+          <div className="flex flex-wrap gap-2 text-[10px]">
             <div className="flex items-center space-x-1">
               <Check className="w-3 h-3 text-blue-500" />
               <span>Επερχόμενο</span>
