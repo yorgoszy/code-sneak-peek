@@ -27,6 +27,7 @@ interface VideocallBooking {
   notes?: string;
   meeting_link?: string;
   user_id: string;
+  coach_id?: string | null;
   section?: {
     name: string;
     description?: string;
@@ -188,7 +189,7 @@ export const VideocallBookingCard: React.FC<VideocallBookingCardProps> = ({
         console.error('Error sending rejection notification:', notificationError);
       }
 
-      try {
+      if (!booking.coach_id) try {
         const { data: activePackage } = await supabase
           .from('videocall_packages')
           .select('*')

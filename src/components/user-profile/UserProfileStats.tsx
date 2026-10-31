@@ -266,6 +266,12 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
 
     const fetchVideocallData = async () => {
       try {
+        const { data: coachingAccess } = await supabase.rpc('get_coaching_availability', { p_user: user.id });
+        const access = coachingAccess as { coach_id?: string; videocall_packages_available?: number } | null;
+        if (access?.coach_id) {
+          setVideocallData({ used: 0, total: access.videocall_packages_available || 0 });
+          return;
+        }
         // Φόρτωση όλων των ενεργών videocall packages
         const { data: videocallPackages, error: packagesError } = await supabase
           .from('videocall_packages')
