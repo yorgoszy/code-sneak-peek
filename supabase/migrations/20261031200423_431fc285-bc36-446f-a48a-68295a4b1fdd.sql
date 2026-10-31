@@ -1,0 +1,1 @@
+ALTER FUNCTION public.ensure_coaching_calendar(uuid) SECURITY INVOKER;

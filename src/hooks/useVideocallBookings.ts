@@ -21,7 +21,7 @@ interface VideocallBooking {
   };
 }
 
-export const useVideocallBookings = (isAdmin = false) => {
+export const useVideocallBookings = (isAdmin = false, coachId?: string | null) => {
   const { user } = useAuth();
   const [bookings, setBookings] = useState<VideocallBooking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +37,7 @@ export const useVideocallBookings = (isAdmin = false) => {
     if (userProfile || isAdmin) {
       fetchBookings();
     }
-  }, [userProfile, isAdmin]);
+  }, [userProfile, isAdmin, coachId]);
 
   const fetchUserProfile = async () => {
     if (!user) return;
@@ -72,6 +72,8 @@ export const useVideocallBookings = (isAdmin = false) => {
 
   const fetchBookings = async () => {
     try {
+      setLoading(true);
+      setBookings([]);
       let query = supabase
         .from('booking_sessions')
         .select(`
@@ -84,7 +86,10 @@ export const useVideocallBookings = (isAdmin = false) => {
         .order('booking_time', { ascending: true });
 
       // If not admin, filter by user and show confirmed and pending bookings
-      if (!isAdmin && userProfile) {
+      if (coachId !== undefined) {
+        if (!coachId) return;
+        query = query.eq('coach_id', coachId);
+      } else if (!isAdmin && userProfile) {
         query = query.eq('user_id', userProfile.id).in('status', ['confirmed', 'pending']);
       }
       // If admin, show all statuses (pending, confirmed, rejected)
@@ -98,12 +103,6 @@ export const useVideocallBookings = (isAdmin = false) => {
         (data || []).map(async (booking: any) => {
           if (!booking.meeting_link) {
             const meetingLink = generateMeetingLink(booking.id);
-            
-            // Update the booking with the meeting link
-            await supabase
-              .from('booking_sessions')
-              .update({ meeting_link: meetingLink })
-              .eq('id', booking.id);
             
             return { ...booking, meeting_link: meetingLink };
           }

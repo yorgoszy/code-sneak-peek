@@ -1,5 +1,7 @@
 # Architecture rules
 
+- Online Coaching uses coach-owned booking_sections and persisted appointment coach_id; database validation enforces app_users.coach_id on bookings and waiting lists, and aggregate slot counts expose occupancy without other users' details. Coaches configure their own hours through CoachLayout.
+
 - Global subscription types store an optional assigned_role; protected database triggers validate admin configuration and grant paid active subscriptions through user_roles, with app_users.role mirrored for existing dashboard compatibility. Role activation never deletes owned data or downgrades a higher plan.
 
 - Section calendars query persisted bookings and explicitly section-attributed manual visits for the viewed user and week; historical slots remain visible outside current opening hours. Manual attendance uses an RLS-respecting atomic section/package RPC, and legacy unattributed visits are never assigned using current user settings.

@@ -110,7 +110,6 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
             body: {
               type: 'booking_pending',
               bookingId: data.id,
-              adminEmail: 'yorgoszy@gmail.com'
             }
           });
         } else {
@@ -427,7 +426,7 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
           <Button 
             onClick={() => {
               const hasVideocalls = ((availability?.videocall_packages_available || 0) + (availability?.single_videocall_sessions || 0)) > 0;
-              if (hasVideocalls) {
+              if (hasVideocalls || availability?.videocall_subscription) {
                 setBookingCalendarOpen(true);
               } else {
                 setShowNoVideocallDialog(true);
@@ -479,6 +478,7 @@ export const UserProfileOnlineCoaching: React.FC<UserProfileOnlineCoachingProps>
               onClose={handleBookingClose}
               bookingType="videocall"
               availability={availability}
+              userId={userProfile.id}
             />
           </div>
         </div>

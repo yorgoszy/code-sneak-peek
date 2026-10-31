@@ -103,7 +103,7 @@ export const AdminBookingManagement: React.FC = () => {
       .from('booking_sessions')
       .select(`
         *,
-        app_users(name, email),
+        app_users!user_id(name, email),
         booking_sections(name, description)
       `)
       .eq('booking_date', dateStr)

@@ -6,7 +6,7 @@ import { FunctionsHttpError } from '@supabase/supabase-js';
 import { toast } from 'sonner';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { ArrowDownRight, XCircle, ArrowUpRight, BarChart3, CalendarDays, ClipboardList, CreditCard, Dumbbell, FilePlus2, GraduationCap, HeartPulse, Layers, Plus, Settings, UserPlus, Users } from "lucide-react";
+import { Video, ArrowDownRight, XCircle, ArrowUpRight, BarChart3, CalendarDays, ClipboardList, CreditCard, Dumbbell, FilePlus2, GraduationCap, HeartPulse, Layers, Plus, Settings, UserPlus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NewCoachUserDialog } from "@/components/coach-users/NewCoachUserDialog";
 import { NewSubscriptionDialog } from "@/components/coach/subscriptions/NewSubscriptionDialog";
@@ -37,6 +37,7 @@ const overviewItems: { label: string; icon: any; path: string; create?: boolean;
   { label: "Πρόοδος αθλητών", icon: BarChart3, path: "/dashboard/coach-athletes-progress", countKey: "testedAthletes" },
   { label: "Τεστ", icon: ClipboardList, path: "/dashboard/coach-progress" },
   { label: "Online Courses", icon: GraduationCap, path: "/dashboard/coach-courses" },
+  { label: "Online Coaching", icon: Video, path: "/dashboard/coach-online-coaching" },
   { label: "Ρυθμίσεις", icon: Settings, path: "/dashboard/coach-profile" },
 ];
 

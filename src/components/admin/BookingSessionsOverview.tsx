@@ -48,7 +48,7 @@ export const BookingSessionsOverview = () => {
         .select(`
           *,
           section:booking_sections(name, max_capacity),
-          app_users(name, email)
+          app_users!user_id(name, email)
         `)
         .gte('booking_date', startDate)
         .lte('booking_date', endDate)
@@ -75,7 +75,7 @@ export const BookingSessionsOverview = () => {
         .select(`
           *,
           section:booking_sections(name, max_capacity),
-          app_users(name, email)
+          app_users!user_id(name, email)
         `)
         .gte('booking_date', startDate)
         .lte('booking_date', endDate)
