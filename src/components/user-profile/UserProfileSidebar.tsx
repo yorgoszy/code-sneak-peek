@@ -246,22 +246,6 @@ export const UserProfileSidebar = forwardRef<
       disabled: !hasSubscription
     },
     {
-      icon: ShoppingCart,
-      label: t('sidebar.shop'),
-      key: "shop",
-      badge: null,
-      visible: showAdminMenus,
-      disabled: false
-    },
-    {
-      icon: Tag,
-      label: t('sidebar.offers'),
-      key: "offers",
-      badge: availableOffers > 0 ? availableOffers : null,
-      visible: showAdminMenus,
-      disabled: !hasSubscription
-    },
-    {
       icon: Video,
       label: t('sidebar.onlineCoaching'),
       key: "online-coaching",
@@ -283,16 +267,6 @@ export const UserProfileSidebar = forwardRef<
       key: "edit-profile",
       badge: null,
       visible: true,
-      disabled: false
-    },
-    {
-      icon: ShieldAlert,
-      label: t('sidebar.safety'),
-      key: "safety",
-      badge: null,
-      // Εμφανίζεται μόνο όταν ο ίδιος ο χρήστης βλέπει το προφίλ του (όχι σε admin/coach που το ανοίγει)
-      // Επίσης ορατό σε admin για read-only πρόσβαση στο ιστορικό
-      visible: (isAdmin || (userProfile?.role === 'athlete' || userProfile?.role === 'general' || userProfile?.role === 'parent')),
       disabled: false
     },
     {
