@@ -76,51 +76,49 @@ export const AvailableHoursSelector: React.FC<AvailableHoursSelectorProps> = ({
     <table className="w-full table-fixed border-collapse text-[10px]">
       <thead>
         <tr>
-          <th scope="col" className="w-14 pb-1 text-left font-normal text-muted-foreground"></th>
-          {HOURS.map(h => (
-            <th key={h} scope="col" className="pb-1 text-center font-normal text-muted-foreground">
-              {h.slice(0, 2)}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {Object.entries(DAYS).map(([key, label]) => {
-          const selectedCount = availableHours[key]?.length || 0;
-          return (
-            <tr key={key}>
-              <th scope="row" className="pr-2 text-left font-normal text-muted-foreground">
+          <th scope="col" className="w-12 pb-1 text-left font-normal text-muted-foreground"></th>
+          {Object.entries(DAYS).map(([key, label]) => {
+            const selectedCount = availableHours[key]?.length || 0;
+            return (
+              <th key={key} scope="col" className="pb-1 text-center">
                 <button
                   type="button"
                   title={`${label} — επιλογή όλων / καμία`}
                   aria-label={`${label} — επιλογή όλων / καμία`}
-                  className="flex items-center gap-1 rounded-none text-left hover:text-foreground"
+                  className="mx-auto flex items-center gap-0.5 rounded-none hover:text-foreground"
                   onClick={() => handleSelectAllDay(key, selectedCount !== HOURS.length)}
                 >
-                  <span className="font-medium text-foreground">{label.charAt(0)}</span>
+                  <span className="font-medium">{label.charAt(0)}</span>
                   {selectedCount > 0 && (
                     <span className="text-muted-foreground">{selectedCount}</span>
                   )}
                 </button>
               </th>
-              {HOURS.map(hour => {
-                const selected = availableHours[key]?.includes(hour) || false;
-                return (
-                  <td key={hour} className="p-px">
-                    <button
-                      type="button"
-                      aria-label={`${label} ${hour}`}
-                      aria-pressed={selected}
-                      title={`${label} ${hour}`}
-                      className={`h-4 w-full rounded-none border ${selected ? 'border-transparent bg-primary' : 'border-border bg-transparent hover:bg-muted'}`}
-                      onClick={() => handleDayToggle(key, hour, !selected)}
-                    />
-                  </td>
-                );
-              })}
-            </tr>
-          );
-        })}
+            );
+          })}
+        </tr>
+      </thead>
+      <tbody>
+        {HOURS.map(hour => (
+          <tr key={hour}>
+            <th scope="row" className="pr-1.5 text-left font-normal text-muted-foreground">{hour}</th>
+            {Object.entries(DAYS).map(([key, label]) => {
+              const selected = availableHours[key]?.includes(hour) || false;
+              return (
+                <td key={key} className="p-px">
+                  <button
+                    type="button"
+                    aria-label={`${label} ${hour}`}
+                    aria-pressed={selected}
+                    title={`${label} ${hour}`}
+                    className={`h-3.5 w-full rounded-none border ${selected ? 'border-transparent bg-primary' : 'border-border bg-transparent hover:bg-muted'}`}
+                    onClick={() => handleDayToggle(key, hour, !selected)}
+                  />
+                </td>
+              );
+            })}
+          </tr>
+        ))}
       </tbody>
     </table>
   </div>;
