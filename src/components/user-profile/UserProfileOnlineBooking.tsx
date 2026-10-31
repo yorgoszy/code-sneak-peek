@@ -201,31 +201,47 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
       </div>
 
 
-      {/* All Section Booking Calendars - Show all sections except videocalls, only allow booking if user has access */}
+      {/* Section dropdown - pick a section to open its booking calendar */}
       <div className="px-4 md:px-0 space-y-6">
-        {sections
-          .filter(section => !section.name.toLowerCase().includes('βιντεοκλήσεις') && !section.name.toLowerCase().includes('videocall'))
-          .map(section => {
-            const sectionBookings = bookings.filter(booking => 
-              booking.section_id === section.id
-            );
-            
-            return (
-              <SectionBookingCalendar
-                key={section.id}
-                sectionId={section.id}
-                sectionName={section.name}
-                availableHours={section.available_hours}
-                bookings={sectionBookings}
-                onCancelBooking={handleCancelBooking}
-                onCreateBooking={handleCreateBooking}
-                availability={availability}
-                maxCapacity={section.max_capacity}
-                allSectionBookings={bookings}
-              />
-            );
-          })
-        }
+        {(() => {
+          const bookableSections = sections.filter(section =>
+            !section.name.toLowerCase().includes('βιντεοκλήσεις') &&
+            !section.name.toLowerCase().includes('videocall')
+          );
+          const selectedSection = bookableSections.find(s => s.id === selectedSectionId);
+
+          return (
+            <>
+              <Select value={selectedSectionId} onValueChange={setSelectedSectionId}>
+                <SelectTrigger className="w-full rounded-none">
+                  <SelectValue placeholder={t('onlineBooking.selectSection', 'Επιλέξτε τμήμα...')} />
+                </SelectTrigger>
+                <SelectContent className="rounded-none">
+                  {bookableSections.map(section => (
+                    <SelectItem key={section.id} value={section.id} className="rounded-none">
+                      {section.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {selectedSection && (
+                <SectionBookingCalendar
+                  key={selectedSection.id}
+                  sectionId={selectedSection.id}
+                  sectionName={selectedSection.name}
+                  availableHours={selectedSection.available_hours}
+                  bookings={bookings.filter(booking => booking.section_id === selectedSection.id)}
+                  onCancelBooking={handleCancelBooking}
+                  onCreateBooking={handleCreateBooking}
+                  availability={availability}
+                  maxCapacity={selectedSection.max_capacity}
+                  allSectionBookings={bookings}
+                />
+              )}
+            </>
+          );
+        })()}
       </div>
 
       {/* Waiting Lists Section */}
