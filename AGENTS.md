@@ -1,6 +1,7 @@
 # Architecture rules
 
 - Notification profile links resolve the recipient user ID independently of optional bookings and payment/offer row IDs; gym confirmations and package emails do not require a videocall booking.
+- Visit decrement uses a package-ID-scoped, RLS-respecting atomic RPC; legacy history is matched by purchase window and excludes booking rows, so counter restoration cannot partially commit or affect another package.
 
 - Club upgrades reuse the ThaiHub additions catalog and a dedicated authenticated Stripe endpoint; only verified paid sessions or signed webhooks call the service-only atomic activation, preserving account identity and source expiry. Pending orders and Stripe idempotency keys prevent duplicate checkout/conversion; existing subscription checkout remains separate.
 - Upgrade quotes, checkout and return verification share the viewed account ID, accessible only to its owner or a server-verified admin; server quotes supply the displayed amount so admin previews never charge or convert the wrong account.

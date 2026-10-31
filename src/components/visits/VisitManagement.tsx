@@ -517,6 +517,8 @@ export const VisitManagement: React.FC = () => {
         title: "Σφάλμα",
         description: "Σφάλμα αφαίρεσης επίσκεψης"
       });
+    } finally {
+      setRemovingPackageId(null);
     }
   };
 
