@@ -2709,6 +2709,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           logo_url: string | null
+          next_plan: string | null
           notes: string | null
           phone: string | null
           postal_code: string | null
@@ -2730,6 +2731,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           logo_url?: string | null
+          next_plan?: string | null
           notes?: string | null
           phone?: string | null
           postal_code?: string | null
@@ -2751,6 +2753,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           logo_url?: string | null
+          next_plan?: string | null
           notes?: string | null
           phone?: string | null
           postal_code?: string | null
@@ -12569,6 +12572,15 @@ export type Database = {
         Args: { athlete_id: string; exercise_id: string; percentage: number }
         Returns: number
       }
+      get_thaihub_plan_status: {
+        Args: { p_user_id: string }
+        Returns: {
+          active: boolean
+          end_date: string
+          next_plan: string
+          role: string
+        }[]
+      }
       get_trial_request_status: {
         Args: { p_id: string }
         Returns: {
@@ -12738,6 +12750,10 @@ export type Database = {
           time_window_end: string
           time_window_start: string
         }
+        Returns: undefined
+      }
+      set_thaihub_next_plan: {
+        Args: { p_plan: string; p_user_id: string }
         Returns: undefined
       }
       subscription_role_is_eligible: {
