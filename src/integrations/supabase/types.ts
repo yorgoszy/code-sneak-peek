@@ -12558,6 +12558,7 @@ export type Database = {
           work_rest_ratio: number
         }[]
       }
+      ensure_coaching_calendar: { Args: { p_coach: string }; Returns: string }
       exec_sql: { Args: { query: string }; Returns: Json }
       federation_assign_athlete: {
         Args: { _club_id: string; _user_id: string }
