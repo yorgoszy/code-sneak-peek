@@ -240,7 +240,7 @@ export const BookingSectionsManagement = ({ coachId }: { coachId?: string } = {}
                     max="100"
                     value={formData.max_capacity}
                     onChange={(e) => setFormData(prev => ({ ...prev, max_capacity: parseInt(e.target.value) }))}
-                    className="rounded-none"
+                    className="rounded-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                     required
                   />
                 </div>
