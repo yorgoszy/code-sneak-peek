@@ -25,34 +25,6 @@ const UserProfile = () => {
 
   const { isFederation, userProfile: loggedInProfile, loading: roleLoading } = useRoleCheck();
 
-    ? userProfile.id
-    : userProfile?.coach_id ?? userId;
-
-  // Έλεγχος αν ο χρήστης διαχειρίζεται από coach
-  useEffect(() => {
-    const checkCoachManaged = async () => {
-      if (!userProfile?.coach_id) {
-        setIsCoachManagedUser(false);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('app_users')
-        .select('role')
-        .eq('id', userProfile.coach_id)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error checking coach role:', error);
-        setIsCoachManagedUser(false);
-        return;
-      }
-
-      setIsCoachManagedUser(data?.role === 'coach');
-    };
-
-    checkCoachManaged();
-  }, [userProfile?.coach_id]);
 
   // Handle tab query parameter
   useEffect(() => {
