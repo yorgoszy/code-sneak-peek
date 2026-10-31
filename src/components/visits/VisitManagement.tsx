@@ -60,6 +60,7 @@ export const VisitManagement: React.FC = () => {
   const [editingPackage, setEditingPackage] = useState<VisitPackage | null>(null);
   const [showViewVisitsModal, setShowViewVisitsModal] = useState(false);
   const [selectedPackageVisits, setSelectedPackageVisits] = useState<Visit[]>([]);
+  const [removingPackageId, setRemovingPackageId] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -493,82 +494,21 @@ export const VisitManagement: React.FC = () => {
     }
   };
 
-  const removeVisitFromPackage = async (userId: string) => {
+  const removeVisitFromPackage = async (packageId: string) => {
+    if (removingPackageId) return;
+    setRemovingPackageId(packageId);
     try {
-      // Find the latest visit for this user
-      const { data: latestVisit, error: fetchError } = await supabase
-        .from('user_visits')
-        .select('id, user_id, visit_type')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (fetchError) {
-        console.error('Error fetching latest visit:', fetchError);
-        throw fetchError;
-      }
-
-      if (!latestVisit) {
-        toast({
-          variant: "destructive",
-          title: "Σφάλμα",
-          description: "Δεν βρέθηκε επίσκεψη για διαγραφή"
-        });
-        return;
-      }
-
-      // Delete the latest visit from the history
-      const { error } = await supabase
-        .from('user_visits')
-        .delete()
-        .eq('id', latestVisit.id);
-
-      if (error) {
-        console.error('Error deleting visit:', error);
-        throw error;
-      }
-
-      // Update package visits - manually increment remaining visits
-      const { data: currentPackage, error: fetchPackageError } = await supabase
-        .from('visit_packages')
-        .select('remaining_visits')
-        .eq('user_id', userId)
-        .eq('status', 'active')
-        .maybeSingle();
-
-      if (fetchPackageError) {
-        console.error('Error fetching package:', fetchPackageError);
-        throw fetchPackageError;
-      }
-
-      if (!currentPackage) {
-        console.log('No active package found for user');
-        toast({
-          variant: "destructive",
-          title: "Σφάλμα",
-          description: "Δεν βρέθηκε ενεργό πακέτο για τον χρήστη"
-        });
-        return;
-      }
-
-      const { error: updateError } = await supabase
-        .from('visit_packages')
-        .update({ remaining_visits: currentPackage.remaining_visits + 1 })
-        .eq('user_id', userId)
-        .eq('status', 'active');
-
-      if (updateError) {
-        console.error('Error updating package:', updateError);
-        throw updateError;
-      }
+      const { error } = await supabase.rpc('undo_visit_package', {
+        p_package_id: packageId,
+      });
+      if (error) throw error;
 
       toast({
         title: "Επιτυχία",
-        description: "Η επίσκεψη αφαιρέθηκε επιτυχώς από το ιστορικό!"
+        description: "Οι χρησιμοποιημένες επισκέψεις μειώθηκαν κατά μία!"
       });
       
-      fetchData();
+      await fetchData();
       
     } catch (error) {
       console.error('Error removing visit from package:', error);
@@ -577,6 +517,8 @@ export const VisitManagement: React.FC = () => {
         title: "Σφάλμα",
         description: "Σφάλμα αφαίρεσης επίσκεψης"
       });
+    } finally {
+      setRemovingPackageId(null);
     }
   };
 
@@ -808,8 +750,8 @@ export const VisitManagement: React.FC = () => {
                           variant="outline"
                           size="sm"
                           className="rounded-none w-7 h-7 p-0"
-                          onClick={() => removeVisitFromPackage(pkg.user_id)}
-                          disabled={usedVisits === 0}
+                          onClick={() => removeVisitFromPackage(pkg.id)}
+                          disabled={usedVisits === 0 || removingPackageId !== null}
                         >
                           <Minus className="h-3 w-3" />
                         </Button>
@@ -898,8 +840,8 @@ export const VisitManagement: React.FC = () => {
                              variant="outline"
                              size="sm"
                              className="rounded-none w-8 h-8 p-0"
-                             onClick={() => removeVisitFromPackage(pkg.user_id)}
-                             disabled={usedVisits === 0}
+                             onClick={() => removeVisitFromPackage(pkg.id)}
+                             disabled={usedVisits === 0 || removingPackageId !== null}
                            >
                              <Minus className="h-3 w-3" />
                            </Button>
