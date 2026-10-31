@@ -137,12 +137,12 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
   const timeSlotsList = Array.from(allTimeSlots).sort();
 
   return (
-    <Card className="rounded-none mb-6">
-      <CardHeader className="p-3 md:p-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex flex-col gap-2">
-            <CardTitle className="flex items-center text-sm md:text-lg">
-              <Clock className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+    <Card className="rounded-none mb-4">
+      <CardHeader className="p-2 md:p-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div className="flex flex-col gap-1">
+            <CardTitle className="flex items-center text-sm md:text-base">
+              <Clock className="w-4 h-4 mr-2" />
               {sectionName}
             </CardTitle>
             {availability && (
@@ -184,16 +184,16 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
         </p>
       </CardHeader>
       
-      <CardContent className="p-3 md:p-6 pt-0">
-        <div className="flex gap-2 overflow-x-auto">
+      <CardContent className="p-2 md:p-3 pt-0">
+        <div className="flex gap-1 overflow-x-auto">
           {/* Available Hours List */}
-          <div className="flex-shrink-0 w-8 md:w-10">
-            <div className="space-y-1">
-              <div className="h-12 flex items-center justify-center text-xs font-medium text-gray-700 border-b">
+          <div className="flex-shrink-0 w-8">
+            <div className="space-y-0.5">
+              <div className="h-8 flex items-center justify-center text-[10px] font-medium text-gray-700 border-b">
                 Ώρες
               </div>
               {timeSlotsList.map((timeSlot) => (
-                <div key={timeSlot} className="h-12 flex items-center justify-center text-xs text-gray-600 px-1">
+                <div key={timeSlot} className="h-8 flex items-center justify-center text-[10px] text-gray-600 px-1">
                   {timeSlot.slice(0, 5)}
                 </div>
               ))}
