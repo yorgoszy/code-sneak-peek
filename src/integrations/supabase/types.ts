@@ -12588,6 +12588,7 @@ export type Database = {
         Args: { _athlete_id: string }
         Returns: string[]
       }
+      get_coaching_availability: { Args: { p_user: string }; Returns: Json }
       get_coaching_slot_counts: {
         Args: { p_date: string; p_section: string }
         Returns: {
