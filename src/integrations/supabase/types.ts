@@ -12694,6 +12694,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      undo_visit_package: { Args: { p_package_id: string }; Returns: number }
     }
     Enums: {
       user_role: "admin" | "athlete" | "coach" | "parent" | "general"
