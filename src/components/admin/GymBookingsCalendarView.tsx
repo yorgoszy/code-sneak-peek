@@ -236,7 +236,7 @@ export const GymBookingsCalendarView = () => {
         .select(`
           *,
           section:booking_sections(name, description, max_capacity),
-          app_users(name, email, avatar_url)
+          app_users!user_id(name, email, avatar_url)
         `)
         .in('section_id', allSectionIds)
         .gte('booking_date', format(weekStart, 'yyyy-MM-dd'))

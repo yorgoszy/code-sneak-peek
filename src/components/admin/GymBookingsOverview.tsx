@@ -147,7 +147,7 @@ export const GymBookingsOverview = () => {
           .select(`
             *,
             section:booking_sections(name, description),
-            app_users(name, email)
+            app_users!user_id(name, email)
           `)
           .eq('booking_type', 'gym_visit')
           .order('booking_date', { ascending: true })
