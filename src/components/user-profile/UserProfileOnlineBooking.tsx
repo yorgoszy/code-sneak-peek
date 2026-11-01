@@ -10,7 +10,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { UserWaitingLists } from "./bookings/UserWaitingLists";
 import { WeeklyBookingCalendar } from "./bookings/WeeklyBookingCalendar";
-import { SectionBookingCalendar } from "./bookings/SectionBookingCalendar";
+import { UnifiedBookingCalendar } from "./bookings/UnifiedBookingCalendar";
 import { useBookingSections } from "@/hooks/useBookingSections";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -30,7 +30,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
   const [selectedBookingType, setSelectedBookingType] = useState<string>('');
   const [showNoVisitsDialog, setShowNoVisitsDialog] = useState(false);
   const { availability, bookings, loading, createBooking, cancelBooking } = useUserBookings();
-  const { sections } = useBookingSections('gym_visit', undefined, userProfile?.id);
+  const { sections, getTimeSlotBookings } = useBookingSections('gym_visit', undefined, userProfile?.id);
   const navigate = useNavigate();
   const { syncBookingToCalendar } = useGoogleCalendar();
 
@@ -203,25 +203,14 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
 
       {/* All sections remain visible; subscription access controls their slots. */}
       <div className="px-4 md:px-0 space-y-3">
-        {sections.filter(section =>
-            !section.name.toLowerCase().includes('βιντεοκλήσεις') &&
-            !section.name.toLowerCase().includes('videocall')
-          ).map(section => (
-                <SectionBookingCalendar
-                  key={section.id}
-                  userId={userProfile?.id}
-                  sectionId={section.id}
-                  sectionName={section.name}
-                  availableHours={section.available_hours}
-                  bookings={bookings.filter(booking => booking.section_id === section.id)}
-                  onCancelBooking={handleCancelBooking}
-                  onCreateBooking={handleCreateBooking}
-                  bookingEnabled={canBookGymSection(section.id, availability)}
-                  availability={availability}
-                  maxCapacity={section.max_capacity}
-                  allSectionBookings={bookings}
-                />
-          ))}
+        <UnifiedBookingCalendar
+          userId={userProfile?.id}
+          sections={sections}
+          availability={availability}
+          onCancelBooking={handleCancelBooking}
+          onCreateBooking={handleCreateBooking}
+          getTimeSlotBookings={getTimeSlotBookings}
+        />
       </div>
 
       {/* Waiting Lists Section */}
