@@ -110,7 +110,7 @@ export function UnifiedBookingCalendar({ userId, sections, availability, onCreat
       <Button key={section.id} variant="ghost" disabled={disabled}
         aria-label={`${section.name} ${date} ${time}${booking ? cancel ? ' — Ακύρωση κράτησης' : ' — Καταγεγραμμένη επίσκεψη' : !access ? ' — Χωρίς πρόσβαση' : ' — Κράτηση'}`}
         title={`${section.name} · ${time}${!access && !booking ? ' · Χωρίς πρόσβαση' : ''}`}
-        className={cn('w-full h-auto min-h-7 rounded-none border border-border p-0.5 flex flex-col items-stretch gap-0.5 whitespace-normal text-left disabled:opacity-100', !access && !booking ? 'bg-muted/40 text-muted-foreground' : 'bg-muted text-foreground hover:bg-accent')}
+        className={cn('w-full h-auto min-h-5 rounded-none border border-border p-px flex flex-col items-stretch gap-0 whitespace-normal text-left disabled:opacity-100', !access && !booking ? 'bg-muted/40 text-muted-foreground' : 'bg-muted text-foreground hover:bg-accent')}
         onClick={async () => {
           if (disabled) return;
           setPending(key);
@@ -126,7 +126,7 @@ export function UnifiedBookingCalendar({ userId, sections, availability, onCreat
           <span className="truncate">{section.name}</span>
         </span>
         <span className="flex items-center gap-0.5">
-          <Progress className="h-1 flex-1" value={section.max_capacity > 0 ? Math.min(100, count / section.max_capacity * 100) : 0} />
+          <Progress className="h-0.5 flex-1" value={section.max_capacity > 0 ? Math.min(100, count / section.max_capacity * 100) : 0} />
           <span className="text-[8px] shrink-0 text-muted-foreground">{count}/{section.max_capacity}</span>
         </span>
       </Button>
