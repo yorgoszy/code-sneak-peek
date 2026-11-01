@@ -316,7 +316,18 @@ export const BookingSectionsManagement = ({ coachId }: { coachId?: string } = {}
                     {
                       Object.entries(section.available_hours)
                         .filter(([day, hours]) => hours && hours.length > 0)
-                        .map(([day, hours]) => `${day}: ${[...hours].sort().join(', ')}`)
+                        .map(([day, hours]) => {
+                          const dayNames: Record<string, string> = {
+                            monday: 'Δευτέρα',
+                            tuesday: 'Τρίτη',
+                            wednesday: 'Τετάρτη',
+                            thursday: 'Πέμπτη',
+                            friday: 'Παρασκευή',
+                            saturday: 'Σάββατο',
+                            sunday: 'Κυριακή'
+                          };
+                          return `${dayNames[day] || day}: ${[...hours].sort().join(', ')}`;
+                        })
                         .join(', ') || 'Καμία ημέρα'
                     }
                   </span>
