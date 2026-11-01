@@ -74,6 +74,9 @@ export const BlueDatePicker = ({ value, onChange, className }: BlueDatePickerPro
           <Calendar
             mode="single"
             locale={el}
+            fromYear={1900}
+            toYear={new Date().getFullYear()}
+            toDate={new Date()}
             selected={selected && isValid(selected) ? selected : undefined}
             onSelect={(date) => {
               if (date) {
