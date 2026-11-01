@@ -20,12 +20,21 @@ function Calendar({
       showOutsideDays={showOutsideDays}
       locale={el}
       weekStartsOn={1}
+      captionLayout="dropdown"
+      fromYear={2020}
+      toYear={2035}
       className={cn("p-3 pointer-events-auto", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
         caption: "flex justify-center pt-1 relative items-center",
         caption_label: "text-sm font-medium",
+        caption_dropdowns: "flex justify-center gap-1 items-center",
+        dropdown:
+          "appearance-none bg-transparent border border-input rounded-none px-1 py-0.5 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer",
+        dropdown_month: "",
+        dropdown_year: "",
+        dropdown_icon: "hidden",
         nav: "space-x-1 flex items-center",
         nav_button: cn(
           buttonVariants({ variant: "outline" }),
