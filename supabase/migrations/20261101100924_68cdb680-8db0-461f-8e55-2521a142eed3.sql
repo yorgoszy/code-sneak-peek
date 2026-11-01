@@ -1,0 +1,1 @@
+ALTER FUNCTION public.can_manage_club_booking_user(uuid) SECURITY INVOKER;
