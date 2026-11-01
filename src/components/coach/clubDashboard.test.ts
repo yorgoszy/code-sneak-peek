@@ -20,6 +20,17 @@ describe('Club dashboard scope', () => {
     strictEqual(isClubDashboardPath('/dashboard/coach-subscriptions'), true);
   });
 
+  test('allows Club section Online Booking including admin preview links', () => {
+    strictEqual(isClubDashboardPath('/dashboard/coach-online-booking'), true);
+    strictEqual(isClubDashboardPath('/dashboard/coach-online-booking?coachId=club-user'), true);
+  });
+
+  test('does not grant Club access to videocalls or global admin booking', () => {
+    strictEqual(isClubDashboardPath('/dashboard/online-coaching'), false);
+    strictEqual(isClubDashboardPath('/online-coaching'), false);
+    strictEqual(isClubDashboardPath('/dashboard/online-booking'), false);
+  });
+
   test('keeps profile and fiscal settings', () => {
     strictEqual(isClubDashboardPath('/dashboard/coach-profile'), true);
   });

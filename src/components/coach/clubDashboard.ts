@@ -4,6 +4,7 @@ export const CLUB_DASHBOARD_PATHS = [
   '/dashboard/my-athletes',
   '/dashboard/coach-groups',
   '/dashboard/coach-subscriptions',
+  '/dashboard/coach-online-booking',
   '/dashboard/coach-profile',
 ] as const;
 
