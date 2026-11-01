@@ -42,14 +42,12 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
     updateChild,
   } = useEditUserDialog(user, isOpen);
 
-  const onSubmit = () => handleSubmit(onUserUpdated, onClose);
-
   const [newPassword, setNewPassword] = useState("");
   const [savingPassword, setSavingPassword] = useState(false);
   useEffect(() => { if (!isOpen) setNewPassword(""); }, [isOpen]);
 
   const handleSetPassword = async () => {
-    if (!user?.id) return;
+    if (!user?.id) return false;
     setSavingPassword(true);
     try {
       const { data, error } = await supabase.functions.invoke("admin-set-password", {
@@ -59,13 +57,23 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
         let msg = data?.error || error?.message;
         try { const ctx = await (error as any)?.context?.json?.(); if (ctx?.error) msg = ctx.error; } catch {}
         toast.error(msg || "Αποτυχία αλλαγής κωδικού");
-        return;
+        return false;
       }
       toast.success("Ο κωδικός ορίστηκε");
       setNewPassword("");
+      return true;
     } finally {
       setSavingPassword(false);
     }
+  };
+
+  const onSubmit = async () => {
+    if (newPassword) {
+      if (newPassword.length < 6) { toast.error("Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες"); return; }
+      const ok = await handleSetPassword();
+      if (!ok) return;
+    }
+    handleSubmit(onUserUpdated, onClose);
   };
 
   const fallback = (name || email || "?").trim().charAt(0).toUpperCase();
