@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, Check, X, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, X, Clock, LockKeyhole } from "lucide-react";
 import { format, startOfWeek, addDays, addWeeks, subWeeks, isToday, isPast } from "date-fns";
 import { el } from "date-fns/locale";
 import { useSectionVisitCalendar } from './useSectionVisitCalendar';
@@ -35,6 +35,7 @@ interface SectionBookingCalendarProps {
   availability?: any;
   maxCapacity?: number;
   allSectionBookings?: BookingSession[]; // All bookings for this section, not just user's
+  bookingEnabled?: boolean;
 }
 
 export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({ 
@@ -47,7 +48,8 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
   onCreateBooking,
   availability,
   maxCapacity = 1,
-  allSectionBookings = []
+  allSectionBookings = [],
+  bookingEnabled = true
 }) => {
   const [currentWeek, setCurrentWeek] = useState(new Date());
 
@@ -164,6 +166,7 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
             <CardTitle className="flex items-center text-sm md:text-base">
               <Clock className="w-4 h-4 mr-2" />
               {sectionName}
+              {!bookingEnabled && <LockKeyhole className="w-3 h-3 ml-2 text-muted-foreground" aria-label="Χωρίς πρόσβαση" />}
             </CardTitle>
             {availability && (
               <div className="flex flex-wrap gap-2">
@@ -290,24 +293,25 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
                            </div>
                          ) : (
                            // Available slot - show booking button with capacity
-                           <button
+                           <Button
+                             variant="ghost"
                              onClick={async () => {
-                               if (!isFull && onCreateBooking) {
+                               if (bookingEnabled && !isFull && onCreateBooking) {
                                  await onCreateBooking(sectionId, format(day, 'yyyy-MM-dd'), timeSlot, 'gym_visit');
                                  await savedCalendar.refetch();
                                }
                              }}
-                             className={`w-full h-full transition-colors text-[10px] flex flex-col items-center justify-center ${
-                               isPast(day) 
-                                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                             className={`w-full h-full p-0 rounded-none transition-colors text-[10px] flex flex-col items-center justify-center disabled:opacity-100 ${
+                               !bookingEnabled || isPast(day)
+                                 ? 'bg-muted text-muted-foreground cursor-not-allowed'
                                  : isFull 
-                                   ? 'bg-red-50 text-red-600 cursor-not-allowed' 
-                                   : 'bg-gray-50 hover:bg-[#cb8954]/20 text-gray-600 hover:text-black cursor-pointer'
+                                   ? 'bg-muted text-destructive cursor-not-allowed'
+                                   : 'bg-muted hover:bg-accent text-foreground cursor-pointer'
                              }`}
-                             title={isPast(day) ? 'Παρελθόν' : isFull ? 'Γεμάτο' : 'Κλείσε ραντεβού'}
-                             disabled={isPast(new Date(`${format(day, 'yyyy-MM-dd')}T${timeSlot}`)) || isFull || (Boolean(availability?.coach_id) && (coachOccupancy.isLoading || coachOccupancy.isError))}
+                             title={!bookingEnabled ? 'Χωρίς πρόσβαση σε αυτό το τμήμα' : isPast(day) ? 'Παρελθόν' : isFull ? 'Γεμάτο' : 'Κλείσε ραντεβού'}
+                             disabled={!bookingEnabled || !onCreateBooking || isPast(new Date(`${format(day, 'yyyy-MM-dd')}T${timeSlot}`)) || isFull || (Boolean(availability?.coach_id) && (coachOccupancy.isLoading || coachOccupancy.isError))}
                            >
-                             {isPast(day) ? (
+                             {!bookingEnabled ? <LockKeyhole className="w-3 h-3" /> : isPast(day) ? (
                                <>
                                  <span className="text-xs">-</span>
                                  <span>{currentBookings}/{maxCapacity}</span>
@@ -323,7 +327,7 @@ export const SectionBookingCalendar: React.FC<SectionBookingCalendarProps> = ({
                                  <span>{currentBookings}/{maxCapacity}</span>
                                </>
                              )}
-                           </button>
+                           </Button>
                          )}
                        </div>
                      );

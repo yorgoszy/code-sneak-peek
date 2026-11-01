@@ -6,7 +6,7 @@
 
 - Section calendars query persisted bookings and explicitly section-attributed manual visits for the viewed user and week; historical slots remain visible outside current opening hours. Manual attendance uses an RLS-respecting atomic section/package RPC, and legacy unattributed visits are never assigned using current user settings.
 
-- Gym booking section restrictions are validated on booking and waiting-list writes; linked visit packages resolve sections from their source subscription type, and UI filtering reacts to late availability so saved restrictions cannot be bypassed.
+- Gym booking section restrictions are validated on booking and waiting-list writes; linked visit packages resolve sections from their source subscription type. Profile calendars fetch all sections within the viewed user's coach scope and independently disable slots using current availability, so visibility never grants booking access.
 
 - Notification profile links resolve the recipient user ID independently of optional bookings and payment/offer row IDs; gym confirmations and package emails do not require a videocall booking.
 - Visit decrement uses a package-ID-scoped, RLS-respecting atomic RPC; legacy history is matched by purchase window and excludes booking rows, so counter restoration cannot partially commit or affect another package.
