@@ -19,6 +19,10 @@ import { useEditUserDialog } from "./edit-user/useEditUserDialog";
 import { ChildrenFields } from "./edit-user/ChildrenFields";
 import { DialogActions } from "./edit-user/DialogActions";
 import type { EditUserDialogProps } from "./edit-user/types";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUserDialogProps) => {
   const {
@@ -39,6 +43,30 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
   } = useEditUserDialog(user, isOpen);
 
   const onSubmit = () => handleSubmit(onUserUpdated, onClose);
+
+  const [newPassword, setNewPassword] = useState("");
+  const [savingPassword, setSavingPassword] = useState(false);
+  useEffect(() => { if (!isOpen) setNewPassword(""); }, [isOpen]);
+
+  const handleSetPassword = async () => {
+    if (!user?.id) return;
+    setSavingPassword(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-set-password", {
+        body: { appUserId: user.id, password: newPassword },
+      });
+      if (error || data?.error) {
+        let msg = data?.error || error?.message;
+        try { const ctx = await (error as any)?.context?.json?.(); if (ctx?.error) msg = ctx.error; } catch {}
+        toast.error(msg || "Αποτυχία αλλαγής κωδικού");
+        return;
+      }
+      toast.success("Ο κωδικός ορίστηκε");
+      setNewPassword("");
+    } finally {
+      setSavingPassword(false);
+    }
+  };
 
   const fallback = (name || email || "?").trim().charAt(0).toUpperCase();
 
@@ -127,6 +155,16 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
               loading={loading}
             />
           )}
+
+          <div className="space-y-1">
+            <Label htmlFor="newPassword" className="text-xs">Κωδικός Πρόσβασης</Label>
+            <div className="flex gap-2">
+              <Input id="newPassword" type="text" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Νέος κωδικός (τουλάχιστον 6 χαρακτήρες)" className="rounded-none h-9" disabled={loading || savingPassword} autoComplete="new-password" />
+              <Button type="button" variant="outline" className="rounded-none h-9" onClick={handleSetPassword} disabled={savingPassword || newPassword.length < 6}>
+                {savingPassword ? "..." : "Ορισμός"}
+              </Button>
+            </div>
+          </div>
 
           <DialogActions loading={loading} onClose={onClose} onSubmit={onSubmit} />
         </div>
