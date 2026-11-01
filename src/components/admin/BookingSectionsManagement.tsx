@@ -7,10 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
-import { Plus, Edit, Trash2, Users, Clock } from "lucide-react";
+import { Plus, Edit, Trash2, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AvailableHoursSelector } from "./AvailableHoursSelector";
+import { BookingSectionSchedulePreview } from "./BookingSectionSchedulePreview";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface BookingSection {
@@ -310,28 +311,7 @@ export const BookingSectionsManagement = ({ coachId }: { coachId?: string } = {}
                   <Users className="w-3 h-3" />
                   <span>Χωρητικότητα: {section.max_capacity}</span>
                 </div>
-                <div className="flex items-start gap-1">
-                  <Clock className="w-3 h-3 shrink-0 mt-0.5" />
-                  <span className="min-w-0 break-words">
-                    {
-                      Object.entries(section.available_hours)
-                        .filter(([day, hours]) => hours && hours.length > 0)
-                        .map(([day, hours]) => {
-                          const dayNames: Record<string, string> = {
-                            monday: 'Δευτέρα',
-                            tuesday: 'Τρίτη',
-                            wednesday: 'Τετάρτη',
-                            thursday: 'Πέμπτη',
-                            friday: 'Παρασκευή',
-                            saturday: 'Σάββατο',
-                            sunday: 'Κυριακή'
-                          };
-                          return `${dayNames[day] || day}: ${[...hours].sort().join(', ')}`;
-                        })
-                        .join(', ') || 'Καμία ημέρα'
-                    }
-                  </span>
-                </div>
+                <BookingSectionSchedulePreview availableHours={section.available_hours} />
               </div>
               <div className="flex items-center gap-1">
                 <Button

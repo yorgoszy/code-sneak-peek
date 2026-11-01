@@ -1,5 +1,7 @@
 # Architecture rules
 
+- Section cards render a read-only schedule preview from persisted available_hours, displaying only configured time rows; editing stays in the existing selector to avoid accidental schedule changes.
+
 - Coach Online Booking uses multiple gym_visit coach-owned booking_sections and persisted appointment coach_id; scoped BookingSectionsManagement is shared with global sections, which filter coach_id null. Database validation enforces app_users.coach_id, private aggregate functions expose occupancy without user details, and coach subscriptions count persisted appointments rather than global packages. Global videocalls remain separate.
 
 - Global subscription types store an optional assigned_role; protected database triggers validate admin configuration and grant paid active subscriptions through user_roles, with app_users.role mirrored for existing dashboard compatibility. Role activation never deletes owned data or downgrades a higher plan.
