@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Clock, MapPin, X, ShoppingCart } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BookingCalendar } from "@/components/booking/BookingCalendar";
 import { useUserBookings } from "@/hooks/useUserBookings";
 import { format } from "date-fns";
@@ -16,6 +15,7 @@ import { useBookingSections } from "@/hooks/useBookingSections";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useGoogleCalendar } from "@/hooks/useGoogleCalendar";
+import { canBookGymSection } from '@/hooks/bookingSectionAccess';
 
 interface UserProfileOnlineBookingProps {
   userProfile: any;
@@ -28,10 +28,9 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
   const { t } = useTranslation();
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedBookingType, setSelectedBookingType] = useState<string>('');
-  const [selectedSectionId, setSelectedSectionId] = useState<string>('');
   const [showNoVisitsDialog, setShowNoVisitsDialog] = useState(false);
   const { availability, bookings, loading, createBooking, cancelBooking } = useUserBookings();
-  const { sections } = useBookingSections('gym_visit', availability?.allowed_sections, userProfile?.id);
+  const { sections } = useBookingSections('gym_visit', undefined, userProfile?.id);
   const navigate = useNavigate();
   const { syncBookingToCalendar } = useGoogleCalendar();
 
@@ -53,6 +52,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
   };
 
   const handleCreateBooking = async (sectionId: string, date: string, time: string, type: string) => {
+    if (!canBookGymSection(sectionId, availability)) return;
     try {
       const bookingData = await createBooking(sectionId, date, time, type);
       const sectionInfo = sections.find(s => s.id === sectionId);
@@ -201,48 +201,27 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
       </div>
 
 
-      {/* Section dropdown - pick a section to open its booking calendar */}
+      {/* All sections remain visible; subscription access controls their slots. */}
       <div className="px-4 md:px-0 space-y-3">
-        {(() => {
-          const bookableSections = sections.filter(section =>
+        {sections.filter(section =>
             !section.name.toLowerCase().includes('βιντεοκλήσεις') &&
             !section.name.toLowerCase().includes('videocall')
-          );
-          const selectedSection = bookableSections.find(s => s.id === selectedSectionId);
-
-          return (
-            <>
-              <Select value={selectedSectionId} onValueChange={setSelectedSectionId}>
-                <SelectTrigger className="w-full rounded-none">
-                  <SelectValue placeholder={t('onlineBooking.selectSection', 'Επιλέξτε τμήμα...')} />
-                </SelectTrigger>
-                <SelectContent className="rounded-none">
-                  {bookableSections.map(section => (
-                    <SelectItem key={section.id} value={section.id} className="rounded-none">
-                      {section.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {selectedSection && (
+          ).map(section => (
                 <SectionBookingCalendar
-                  key={selectedSection.id}
+                  key={section.id}
                   userId={userProfile?.id}
-                  sectionId={selectedSection.id}
-                  sectionName={selectedSection.name}
-                  availableHours={selectedSection.available_hours}
-                  bookings={bookings.filter(booking => booking.section_id === selectedSection.id)}
+                  sectionId={section.id}
+                  sectionName={section.name}
+                  availableHours={section.available_hours}
+                  bookings={bookings.filter(booking => booking.section_id === section.id)}
                   onCancelBooking={handleCancelBooking}
                   onCreateBooking={handleCreateBooking}
+                  bookingEnabled={canBookGymSection(section.id, availability)}
                   availability={availability}
-                  maxCapacity={selectedSection.max_capacity}
+                  maxCapacity={section.max_capacity}
                   allSectionBookings={bookings}
                 />
-              )}
-            </>
-          );
-        })()}
+          ))}
       </div>
 
       {/* Waiting Lists Section */}
