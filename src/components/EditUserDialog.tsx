@@ -69,7 +69,7 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
 
   const onSubmit = async () => {
     if (newPassword) {
-      if (newPassword.length < 6) { toast.error("Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες"); return; }
+      if (newPassword.length < 8) { toast.error("Ο κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες"); return; }
       const ok = await handleSetPassword();
       if (!ok) return;
     }
@@ -167,8 +167,8 @@ export const EditUserDialog = ({ isOpen, onClose, onUserUpdated, user }: EditUse
           <div className="space-y-1">
             <Label htmlFor="newPassword" className="text-xs">Κωδικός Πρόσβασης</Label>
             <div className="flex gap-2">
-              <Input id="newPassword" type="text" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Νέος κωδικός (τουλάχιστον 6 χαρακτήρες)" className="rounded-none h-9" disabled={loading || savingPassword} autoComplete="new-password" />
-              <Button type="button" variant="outline" className="rounded-none h-9" onClick={handleSetPassword} disabled={savingPassword || newPassword.length < 6}>
+              <Input id="newPassword" type="text" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Νέος κωδικός (τουλάχιστον 8 χαρακτήρες)" className="rounded-none h-9" disabled={loading || savingPassword} autoComplete="new-password" />
+              <Button type="button" variant="outline" className="rounded-none h-9" onClick={handleSetPassword} disabled={savingPassword || newPassword.length < 8}>
                 {savingPassword ? "..." : "Ορισμός"}
               </Button>
             </div>

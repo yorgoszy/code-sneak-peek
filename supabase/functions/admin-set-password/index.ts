@@ -5,6 +5,13 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const translate = (msg?: string) => {
+  if (!msg) return "Αποτυχία ορισμού κωδικού";
+  if (/weak|easy to guess|pwned|leaked/i.test(msg)) return "Ο κωδικός είναι πολύ εύκολος/γνωστός. Διάλεξε πιο δύσκολο (γράμματα, αριθμούς, σύμβολα).";
+  if (/at least/i.test(msg)) return "Ο κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες";
+  return msg;
+};
+
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
@@ -26,8 +33,8 @@ Deno.serve(async (req) => {
     if (caller?.role !== "admin" && !roleRow) return json({ error: "Forbidden - Admin access required" }, 403);
 
     const { appUserId, password } = await req.json();
-    if (!appUserId || typeof password !== "string" || password.length < 6) {
-      return json({ error: "Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες" }, 400);
+    if (!appUserId || typeof password !== "string" || password.length < 8) {
+      return json({ error: "Ο κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες" });
     }
 
     const { data: target } = await admin.from("app_users").select("id, email, name, auth_user_id").eq("id", appUserId).maybeSingle();
@@ -43,14 +50,14 @@ Deno.serve(async (req) => {
         email_confirm: true,
         user_metadata: { name: target.name },
       });
-      if (createErr || !created.user) return json({ error: createErr?.message || "Αποτυχία δημιουργίας λογαριασμού" }, 400);
+      if (createErr || !created.user) return json({ error: translate(createErr?.message) });
       authUserId = created.user.id;
       await admin.from("app_users").update({ auth_user_id: authUserId }).eq("id", appUserId);
       return json({ success: true, created: true });
     }
 
     const { error: updErr } = await admin.auth.admin.updateUserById(authUserId, { password, email_confirm: true });
-    if (updErr) return json({ error: updErr.message }, 400);
+    if (updErr) return json({ error: translate(updErr.message) });
 
     console.log(`🔑 Admin ${user.id} set password for app_user ${appUserId}`);
     return json({ success: true });
