@@ -310,13 +310,13 @@ export const BookingSectionsManagement = ({ coachId }: { coachId?: string } = {}
                   <Users className="w-3 h-3" />
                   <span>Χωρητικότητα: {section.max_capacity}</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  <span className="truncate">
+                <div className="flex items-start gap-1">
+                  <Clock className="w-3 h-3 shrink-0 mt-0.5" />
+                  <span className="min-w-0 break-words">
                     {
                       Object.entries(section.available_hours)
                         .filter(([day, hours]) => hours && hours.length > 0)
-                        .map(([day, hours]) => `${day}: ${hours.length}h`)
+                        .map(([day, hours]) => `${day}: ${[...hours].sort().join(', ')}`)
                         .join(', ') || 'Καμία ημέρα'
                     }
                   </span>
