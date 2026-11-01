@@ -115,9 +115,9 @@ export const UserProfileContent = ({
     }
   }, [hasSubscription, activeTab, subLoading]);
 
-  // Το βελάκι εμφανίζεται μόνο σε admin mode
+  // Το βελάκι εμφανίζεται σε όλους τους χρήστες
   const BackButton = () => (
-    setActiveTab && activeTab !== 'overview' && isAdmin() && (
+    setActiveTab && activeTab !== 'overview' && (
       <button
         onClick={() => setActiveTab('overview')}
         className="flex items-center space-x-2 text-gray-700 hover:text-black transition-colors mb-4 font-medium"
