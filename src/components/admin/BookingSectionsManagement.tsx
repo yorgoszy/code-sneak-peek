@@ -245,7 +245,7 @@ export const BookingSectionsManagement = ({ coachId }: { coachId?: string } = {}
                   />
                 </div>
               </div>
-              <div>
+              {!coachId && <div>
                 <Label htmlFor="description">
                   {coachId ? 'Περιγραφή τμήματος' : 'Περιγραφή τμήματος (διαβάζεται από τον Hyper AI 🤖)'}
                 </Label>
@@ -260,7 +260,7 @@ export const BookingSectionsManagement = ({ coachId }: { coachId?: string } = {}
                 {!coachId && <p className="text-xs text-muted-foreground mt-1">
                   💡 Γράψε εδώ τι ηλικίες αφορά, τι ακριβώς κάνετε στο τμήμα και τυχόν ιδιαιτερότητες. Ο Hyper AI στο landing page θα χρησιμοποιεί αυτή την περιγραφή για να απαντά στους επισκέπτες.
                 </p>}
-              </div>
+              </div>}
               <div className="space-y-4">
                 <AvailableHoursSelector
                   compact={Boolean(coachId)}
