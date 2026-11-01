@@ -15,7 +15,7 @@ interface BlueDatePickerProps {
   className?: string;
 }
 
-export const BlueDatePicker = ({ value, onChange, placeholder = "Επιλέξτε ημερομηνία", className }: BlueDatePickerProps) => {
+export const BlueDatePicker = ({ value, onChange, className }: BlueDatePickerProps) => {
   const [open, setOpen] = React.useState(false);
   const selected = value ? parse(value, "yyyy-MM-dd", new Date()) : undefined;
   const displayValue = selected && isValid(selected) ? format(selected, "dd/MM/yyyy") : "";
