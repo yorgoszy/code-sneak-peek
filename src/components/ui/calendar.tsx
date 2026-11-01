@@ -21,7 +21,7 @@ function Calendar({
       locale={el}
       weekStartsOn={1}
       captionLayout="dropdown"
-      fromYear={2020}
+      fromYear={1950}
       toYear={2035}
       labels={{
         labelMonthDropdown: () => "",
