@@ -12502,6 +12502,10 @@ export type Database = {
       }
       auto_update_competition_status: { Args: never; Returns: undefined }
       can_cancel_booking: { Args: { booking_id: string }; Returns: boolean }
+      can_manage_club_booking_user: {
+        Args: { p_user: string }
+        Returns: boolean
+      }
       can_manage_coaching_user: { Args: { p_user: string }; Returns: boolean }
       can_read_program: {
         Args: { _auth_uid: string; _program_id: string }
