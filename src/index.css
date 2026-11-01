@@ -219,6 +219,30 @@ html, body {
     animation: click-me 1.5s ease-in-out infinite;
   }
 
+  /* Global thin blue scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #004aad transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: #004aad;
+    border-radius: 0px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: #003580;
+  }
+
   .scrollbar-green::-webkit-scrollbar {
     height: 8px;
   }
