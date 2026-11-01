@@ -32,7 +32,7 @@ function Calendar({
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
         caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "text-sm font-medium",
+        caption_label: "hidden",
         caption_dropdowns: "flex justify-center gap-2 items-center",
         dropdown:
           "bg-background border border-input rounded-none pl-2 pr-6 py-1 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer",
