@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BlueDatePicker } from "@/components/ui/blue-date-picker";
@@ -260,19 +259,6 @@ export const NewCoachUserDialog = ({
             </div>
           </div>
 
-          {/* Notes */}
-          <div>
-            <Label htmlFor="notes" className="text-xs">Σημειώσεις</Label>
-            <Textarea
-              id="notes"
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Σημειώσεις για τον αθλητή..."
-              className="rounded-none text-sm resize-none placeholder:text-[#004aad]/70"
-              rows={2}
-            />
-          </div>
-          
           {/* Actions */}
           <div className="flex justify-end gap-2 pt-2">
             <Button
