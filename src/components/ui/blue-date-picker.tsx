@@ -15,25 +15,32 @@ interface BlueDatePickerProps {
   className?: string;
 }
 
-export const BlueDatePicker = ({ value, onChange, placeholder = "Επιλέξτε ημερομηνία", className }: BlueDatePickerProps) => {
+export const BlueDatePicker = ({ value, onChange, className }: BlueDatePickerProps) => {
   const [open, setOpen] = React.useState(false);
   const selected = value ? parse(value, "yyyy-MM-dd", new Date()) : undefined;
   const displayValue = selected && isValid(selected) ? format(selected, "dd/MM/yyyy") : "";
   const [text, setText] = React.useState(displayValue);
   React.useEffect(() => { setText(displayValue); }, [displayValue]);
 
+  // Αυτόματη μορφοποίηση ΗΗ/ΜΜ/ΕΕΕΕ ενώ πληκτρολογεί ο χρήστης
+  const maskDateInput = (raw: string) => {
+    const digits = raw.replace(/\D/g, "").slice(0, 8);
+    const parts = [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4, 8)].filter(Boolean);
+    return parts.join("/");
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <div className={cn("relative w-full", className)}>
         <Input
           value={text}
-          placeholder={placeholder}
+          placeholder="ΗΗ/ΜΜ/ΕΕΕΕ"
           aria-label="Ημερομηνία"
           inputMode="numeric"
           maxLength={10}
           className="h-8 rounded-none pr-9 text-sm text-[var(--th-blue)] placeholder:text-[var(--th-blue-hover)]"
           onChange={(event) => {
-            const next = event.target.value;
+            const next = maskDateInput(event.target.value);
             setText(next);
             const date = parse(next, "dd/MM/yyyy", new Date());
             const valid = /^\d{2}\/\d{2}\/\d{4}$/.test(next) && isValid(date) && format(date, "dd/MM/yyyy") === next;
