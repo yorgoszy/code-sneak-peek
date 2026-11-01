@@ -110,7 +110,7 @@ export function UnifiedBookingCalendar({ userId, sections, availability, onCreat
       <Button key={section.id} variant="ghost" disabled={disabled}
         aria-label={`${section.name} ${date} ${time}${booking ? cancel ? ' — Ακύρωση κράτησης' : ' — Καταγεγραμμένη επίσκεψη' : !access ? ' — Χωρίς πρόσβαση' : ' — Κράτηση'}`}
         title={`${section.name} · ${time}${!access && !booking ? ' · Χωρίς πρόσβαση' : ''}`}
-        className={cn('w-full h-auto min-h-5 rounded-none border border-border p-px flex flex-col items-stretch gap-0 whitespace-normal text-left disabled:opacity-100', !access && !booking ? 'bg-muted/40 text-muted-foreground' : 'bg-muted text-foreground hover:bg-accent')}
+        className={cn('w-full h-auto min-h-0 rounded-none border border-border px-px py-0 flex flex-col items-stretch gap-0 whitespace-normal text-left disabled:opacity-100', !access && !booking ? 'bg-muted/40 text-muted-foreground' : 'bg-muted text-foreground hover:bg-accent')}
         onClick={async () => {
           if (disabled) return;
           setPending(key);
@@ -121,13 +121,13 @@ export function UnifiedBookingCalendar({ userId, sections, availability, onCreat
             await occupancy.refetch();
           } finally { setPending(null); }
         }}>
-        <span className="flex items-center gap-0.5 text-[8px] font-medium min-w-0">
-          {pending === key ? <Loader2 className="h-2.5 w-2.5 shrink-0 animate-spin" /> : booking ? booking.attended === false ? <X className="h-2.5 w-2.5 shrink-0" /> : <Check className="h-2.5 w-2.5 shrink-0" /> : !access ? <LockKeyhole className="h-2.5 w-2.5 shrink-0" /> : null}
+        <span className="flex items-center gap-0.5 text-[7px] leading-[8px] font-medium min-w-0">
+          {pending === key ? <Loader2 className="h-2 w-2 shrink-0 animate-spin" /> : booking ? booking.attended === false ? <X className="h-2 w-2 shrink-0" /> : <Check className="h-2 w-2 shrink-0" /> : !access ? <LockKeyhole className="h-2 w-2 shrink-0" /> : null}
           <span className="truncate">{section.name}</span>
         </span>
         <span className="flex items-center gap-0.5">
-          <Progress className="h-0.5 flex-1" value={section.max_capacity > 0 ? Math.min(100, count / section.max_capacity * 100) : 0} />
-          <span className="text-[8px] shrink-0 text-muted-foreground">{count}/{section.max_capacity}</span>
+          <Progress className="h-px flex-1" value={section.max_capacity > 0 ? Math.min(100, count / section.max_capacity * 100) : 0} />
+          <span className="text-[7px] leading-[8px] shrink-0 text-muted-foreground">{count}/{section.max_capacity}</span>
         </span>
       </Button>
     );
@@ -143,8 +143,8 @@ export function UnifiedBookingCalendar({ userId, sections, availability, onCreat
       <div className={cn('grid gap-0.5', isMobile ? 'grid-cols-7' : 'grid-cols-8')}>
         {!isMobile && <div />}
         {days.map((day, index) => (
-          <Button key={index} variant="outline" onClick={() => setSelectedDay(index)} className={cn('rounded-none h-auto p-1 flex flex-col gap-0 text-muted-foreground', isMobile && selectedDay === index && 'bg-accent text-foreground')}>
-            <span className="text-[10px]">{names[index]}</span><span className="text-xs font-bold">{format(day, 'dd/MM')}</span>
+          <Button key={index} variant="outline" onClick={() => setSelectedDay(index)} className={cn('rounded-none h-auto px-0.5 py-0 flex flex-col gap-0 text-muted-foreground', isMobile && selectedDay === index && 'bg-accent text-foreground')}>
+            <span className="text-[9px] leading-[11px]">{names[index]}</span><span className="text-[10px] leading-[12px] font-bold">{format(day, 'dd/MM')}</span>
           </Button>
         ))}
       </div>
@@ -155,9 +155,9 @@ export function UnifiedBookingCalendar({ userId, sections, availability, onCreat
           </div>
         ) : (
           <div key={time} className="grid grid-cols-8 gap-0.5">
-            <div className="border border-border flex items-center justify-center p-1 text-[10px] text-muted-foreground">{time}</div>
-            {days.map((day, index) => <div key={index} className="border border-border bg-muted/30 p-0.5 space-y-0.5 min-w-0">
-              {closed(format(day, 'yyyy-MM-dd')) && <Ban className="h-3 w-3 mx-auto text-muted-foreground" aria-label="Κλειστά" />}
+            <div className="border border-border flex items-center justify-center px-0.5 py-0 text-[9px] leading-[12px] text-muted-foreground">{time}</div>
+            {days.map((day, index) => <div key={index} className="border border-border bg-muted/30 p-px space-y-px min-w-0">
+              {closed(format(day, 'yyyy-MM-dd')) && <Ban className="h-2.5 w-2.5 mx-auto text-muted-foreground" aria-label="Κλειστά" />}
               {slotSections(index, time).map(section => renderSlot(section, index, time))}
             </div>)}
           </div>
