@@ -5,11 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/Sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
-import { Menu, ShieldAlert, Loader2, Save, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { Menu, ShieldAlert, Loader2, Save, Check, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { ReportAbuseQRDialog } from "@/components/abuse/ReportAbuseQRDialog";
 
@@ -37,6 +38,8 @@ export default function AbuseReports() {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("pending");
+  const [deleteReportId, setDeleteReportId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const isMobile = useIsMobile();
   const { userProfile } = useRoleCheck();
   const adminId = userProfile?.id;
@@ -88,6 +91,38 @@ export default function AbuseReports() {
     }
     setAcknowledged((prev) => new Set(prev).add(reportId));
     toast.success("Σημειώθηκε ως ενημερωμένο");
+  };
+
+  const deleteReport = async () => {
+    if (!deleteReportId || deleting) return;
+    setDeleting(true);
+    try {
+      const { data, error } = await supabase
+        .from("abuse_reports")
+        .delete()
+        .eq("id", deleteReportId)
+        .select("id")
+        .single();
+      if (error) throw error;
+      if (!data) throw new Error("Η αναφορά δεν διαγράφηκε.");
+      setReports((prev) => prev.filter((report) => report.id !== data.id));
+      setAcknowledged((prev) => {
+        const next = new Set(prev);
+        next.delete(data.id);
+        return next;
+      });
+      setExpanded((prev) => {
+        const next = new Set(prev);
+        next.delete(data.id);
+        return next;
+      });
+      setDeleteReportId(null);
+      toast.success("Η αναφορά διαγράφηκε οριστικά.");
+    } catch {
+      toast.error("Δεν ήταν δυνατή η διαγραφή της αναφοράς. Δοκιμάστε ξανά.");
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const toggleExpand = (id: string) => {
@@ -192,6 +227,7 @@ export default function AbuseReports() {
                         onToggle={() => toggleExpand(r.id)}
                         onAcknowledge={() => acknowledge(r.id)}
                         onUpdate={updateReport}
+                        onDelete={() => setDeleteReportId(r.id)}
                       />
                     ))
                   )}
@@ -201,6 +237,23 @@ export default function AbuseReports() {
           </div>
         </main>
       </div>
+      <AlertDialog open={deleteReportId !== null} onOpenChange={(open) => { if (!open && !deleting) setDeleteReportId(null); }}>
+        <AlertDialogContent className="rounded-none">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Διαγραφή αναφοράς;</AlertDialogTitle>
+            <AlertDialogDescription>
+              Η αναφορά θα διαγραφεί οριστικά από τη βάση δεδομένων. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting} className="rounded-none">Ακύρωση</AlertDialogCancel>
+            <AlertDialogAction disabled={deleting} className="rounded-none bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={(event) => { event.preventDefault(); void deleteReport(); }}>
+              {deleting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
+              Διαγραφή
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -221,6 +274,7 @@ const CompactReportCard = ({
   onToggle,
   onAcknowledge,
   onUpdate,
+  onDelete,
 }: {
   report: any;
   isNew: boolean;
@@ -228,6 +282,7 @@ const CompactReportCard = ({
   onToggle: () => void;
   onAcknowledge: () => void;
   onUpdate: (id: string, updates: any) => void;
+  onDelete: () => void;
 }) => {
   const [notes, setNotes] = useState(report.admin_notes || "");
   const [status, setStatus] = useState(report.status);
@@ -274,6 +329,9 @@ const CompactReportCard = ({
             </div>
           </div>
           <div className="flex items-center gap-1 flex-shrink-0">
+            <Button variant="ghost" size="sm" className="rounded-none h-7 w-7 p-0 text-destructive hover:text-destructive" onClick={onDelete} aria-label="Διαγραφή αναφοράς" title="Διαγραφή αναφοράς">
+              <Trash2 className="h-4 w-4" />
+            </Button>
             <Button variant="ghost" size="sm" className="rounded-none h-7 w-7 p-0" onClick={onToggle}>
               {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>
