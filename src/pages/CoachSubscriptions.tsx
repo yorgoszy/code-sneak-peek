@@ -584,11 +584,6 @@ const CoachSubscriptionsContent = () => {
                                 {getDaysExpiryText(sub.end_date, sub.is_paused)}
                               </span>
                             </div>
-                            <div>
-                              <Badge className={`${sub.is_paid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} rounded-none`}>
-                                {sub.is_paid ? 'Πληρώθηκε' : 'Απλήρωτη'}
-                              </Badge>
-                            </div>
                           </div>
                           <div className="flex justify-end">
                             <CoachSubscriptionActions
