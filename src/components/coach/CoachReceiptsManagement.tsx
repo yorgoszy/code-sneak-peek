@@ -421,9 +421,6 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
                         <span className="text-[10px] text-gray-500">
                           {receipt.subscription_types?.name || '-'}
                         </span>
-                        <span className="text-[10px] px-1 bg-blue-100 text-blue-700">
-                          {getReceiptTypeLabel(receipt.receipt_type)}
-                        </span>
                       </div>
                       {receipt.mark && (
                         <span className="text-[10px] text-gray-400">ΜΑΡΚ: {receipt.mark}</span>
