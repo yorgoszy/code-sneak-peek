@@ -1,6 +1,7 @@
 # Architecture rules
 
 - Personal profile subscription, receipt, and coach feature routing share the protected user subscription scope RPC; its private definer resolves Coach/Club ownership without exposing owner profiles, recipient policies permit own reads only, and a trigger enforces matching user/coach/type ownership on coach subscription writes.
+- User-list subscription badges use the owner's role to route Coach/Club users to coach subscriptions, match both user and owner IDs, and evaluate all current rows rather than just the latest so unrelated or expired purchases cannot hide active access.
 
 - All personal profiles keep the overview visible without a subscription and fall back to overview, never shop, for restricted tabs; owner scope resolves before redirects, and coach-owned shop tabs resolve to overview. Explicit admin-managed shop selection remains available.
 

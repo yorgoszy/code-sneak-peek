@@ -34,6 +34,8 @@ import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { testPasswordReset } from "@/utils/testPasswordReset";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { format } from 'date-fns';
+import { isCoachSubscriptionOwner, subscriptionStatusForUser, type StatusSubscription } from './userSubscriptionStatus';
 
 interface AppUser {
   id: string;
@@ -239,14 +241,15 @@ const Users = () => {
   // Helper function to fetch subscription statuses
   const fetchSubscriptionStatuses = async (usersData: AppUser[]): Promise<UserWithSubscription[]> => {
     // First, get all coach_ids and check which ones are actually coaches
-    const coachIds = [...new Set(usersData.filter(u => u.coach_id).map(u => u.coach_id!))];
+    const coachIds = [...new Set(usersData.flatMap(u => u.coach_id ? [u.coach_id] : []))];
     
     let coachRoles: Record<string, string> = {};
     if (coachIds.length > 0) {
-      const { data: coachData } = await supabase
+      const { data: coachData, error } = await supabase
         .from('app_users')
         .select('id, role')
         .in('id', coachIds);
+      if (error) throw error;
       
       if (coachData) {
         coachRoles = Object.fromEntries(coachData.map(c => [c.id, c.role]));
@@ -256,26 +259,37 @@ const Users = () => {
     const coachManagedIds: string[] = [];
     const regularIds: string[] = [];
     usersData.forEach(u => {
-      if (u.coach_id && coachRoles[u.coach_id] === 'coach') coachManagedIds.push(u.id);
+      if (u.coach_id && isCoachSubscriptionOwner(coachRoles[u.coach_id])) coachManagedIds.push(u.id);
       else regularIds.push(u.id);
     });
 
     // Batched fetch (chunks to keep URLs short) — avoids one request per user
     const fetchLatest = async (table: 'coach_subscriptions' | 'user_subscriptions', ids: string[]) => {
-      const map = new Map<string, { end_date: string; status: string; is_paused: boolean | null; created_at: string }>();
+      const map = new Map<string, StatusSubscription[]>();
       const chunks: string[][] = [];
       for (let i = 0; i < ids.length; i += 150) chunks.push(ids.slice(i, i + 150));
-      const results = await Promise.all(chunks.map(chunk =>
-        supabase
-          .from(table)
-          .select('user_id, end_date, status, is_paused, created_at')
-          .in('user_id', chunk)
-          .eq('status', 'active')
-          .order('created_at', { ascending: false })
-      ));
-      results.forEach(({ data }) => {
-        (data || []).forEach((row: any) => {
-          if (!map.has(row.user_id)) map.set(row.user_id, row);
+      const results = await Promise.all(chunks.map(async chunk => {
+        const rows: StatusSubscription[] = [];
+        for (let offset = 0; ; offset += 1000) {
+          const { data, error } = await supabase
+            .from(table)
+            .select('user_id, coach_id, start_date, end_date, status, is_paused')
+            .in('user_id', chunk)
+            .eq('status', 'active')
+            .order('id')
+            .range(offset, offset + 999);
+          if (error) throw error;
+          rows.push(...(data || []));
+          if (!data || data.length < 1000) break;
+        }
+        return rows;
+      }));
+      results.forEach(data => {
+        data.forEach(row => {
+          if (!row.user_id) return;
+          const subscriptions = map.get(row.user_id) || [];
+          subscriptions.push(row);
+          map.set(row.user_id, subscriptions);
         });
       });
       return map;
@@ -286,15 +300,12 @@ const Users = () => {
       fetchLatest('user_subscriptions', regularIds),
     ]);
     const coachManagedSet = new Set(coachManagedIds);
-    const now = new Date();
+    const today = format(new Date(), 'yyyy-MM-dd');
 
     return usersData.map(user => {
-      const subscription = coachManagedSet.has(user.id) ? coachSubs.get(user.id) : userSubs.get(user.id);
-      let subscriptionStatus: 'Ενεργή' | 'Ανενεργή' | 'Παύση' = 'Ανενεργή';
-      if (subscription) {
-        if (subscription.is_paused) subscriptionStatus = 'Παύση';
-        else if (new Date(subscription.end_date) >= now) subscriptionStatus = 'Ενεργή';
-      }
+      const coachManaged = coachManagedSet.has(user.id);
+      const subscriptions = (coachManaged ? coachSubs : userSubs).get(user.id) || [];
+      const subscriptionStatus = subscriptionStatusForUser(user, subscriptions, coachManaged, today);
       return { ...user, subscription_status: subscriptionStatus };
     });
   };
