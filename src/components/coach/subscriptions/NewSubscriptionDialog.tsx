@@ -214,7 +214,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
               <div className="flex items-center gap-3 p-3 border border-border bg-muted/50">
                 <Avatar className="h-10 w-10">
                   <AvatarImage src={selectedAthlete.avatar_url || undefined} />
-                  <AvatarFallback>{selectedAthlete.name.charAt(0)}</AvatarFallback>
+                  <AvatarFallback className="text-[#004aad]">{selectedAthlete.name.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
                   <p className="font-medium">{selectedAthlete.name}</p>
@@ -254,7 +254,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
                       >
                         <Avatar className="h-8 w-8">
                           <AvatarImage src={athlete.avatar_url || undefined} />
-                          <AvatarFallback>{athlete.name.charAt(0)}</AvatarFallback>
+                          <AvatarFallback className="text-[#004aad]">{athlete.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div>
                           <p className="font-medium text-sm">{athlete.name}</p>
