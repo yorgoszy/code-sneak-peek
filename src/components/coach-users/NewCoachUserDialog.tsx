@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Camera, X } from "lucide-react";
 import { processAvatarImage } from "@/utils/imageProcessing";
 
+const DEFAULT_PASSWORD = "Stalios.2026";
 interface NewCoachUserDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -25,6 +26,7 @@ export const NewCoachUserDialog = ({
   coachId,
 }: NewCoachUserDialogProps) => {
   const [loading, setLoading] = useState(false);
+  const [password, setPassword] = useState(DEFAULT_PASSWORD);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -140,7 +142,15 @@ export const NewCoachUserDialog = ({
         }
       }
 
-      toast.success("Ο αθλητής προστέθηκε επιτυχώς");
+      const { data: pwData, error: pwError } = await supabase.functions.invoke("admin-set-password", {
+        body: { appUserId: newUser.id, password },
+      });
+      if (pwError || pwData?.error) {
+        toast.error(`Ο αθλητής αποθηκεύτηκε, αλλά ο κωδικός δεν ορίστηκε: ${pwData?.error || pwError?.message}`);
+      } else {
+        toast.success("Ο αθλητής προστέθηκε επιτυχώς με κωδικό πρόσβασης");
+      }
+      setPassword(DEFAULT_PASSWORD);
       setFormData({ name: "", email: "", phone: "", birth_date: "", gender: "", notes: "" });
       clearAvatar();
       onSuccess();
@@ -206,6 +216,19 @@ export const NewCoachUserDialog = ({
             </div>
           </div>
 
+
+          <div>
+            <Label htmlFor="newPassword" className="text-xs">Κωδικός πρόσβασης *</Label>
+            <Input
+              id="newPassword"
+              type="text"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              minLength={8}
+              required
+              className="rounded-none h-8 text-sm"
+            />
+          </div>
 
           {/* Email + Phone Row */}
           <div className="grid grid-cols-2 gap-3">

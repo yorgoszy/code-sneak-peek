@@ -47,23 +47,47 @@ Deno.serve(async (req) => {
 
     if (!authUserId) {
       if (!target.email) return json({ error: "Ο χρήστης δεν έχει email" }, 400);
-      console.log("initial-login-link-v2: creating Auth with protected profile link");
+      const email = target.email.trim().toLowerCase();
+      console.log("initial-login-link-v3: creating Auth with protected profile link");
       const { data: created, error: createErr } = await admin.auth.admin.createUser({
-        email: target.email.trim().toLowerCase(),
+        email,
         password,
         email_confirm: true,
         user_metadata: { name: target.name },
         app_metadata: { app_user_id: target.id },
       });
-      if (createErr || !created.user) return json({ error: translate(createErr?.message) });
-      authUserId = created.user.id;
-      // The signup trigger links the existing profile atomically with Auth creation.
-      const { data: linked, error: linkError } = await admin.from("app_users")
-        .select("auth_user_id").eq("id", appUserId).single();
-      if (linkError || linked?.auth_user_id !== authUserId) {
-        return json({ error: "Ο λογαριασμός δημιουργήθηκε αλλά η σύνδεσή του δεν επιβεβαιώθηκε" }, 500);
+
+      if (createErr || !created.user) {
+        console.error("createUser failed:", createErr?.message);
+        // An Auth account with this email may already exist (e.g. earlier attempt)
+        if (/already|registered|exists/i.test(createErr?.message || "")) {
+          let existing: any = null;
+          for (let page = 1; page <= 20 && !existing; page++) {
+            const { data: list } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
+            existing = list?.users?.find((u: any) => u.email?.toLowerCase() === email);
+            if (!list || list.users.length < 1000) break;
+          }
+          if (!existing) return json({ error: translate(createErr?.message) });
+          const { data: owner } = await admin.from("app_users").select("id").eq("auth_user_id", existing.id).maybeSingle();
+          if (owner && owner.id !== target.id) {
+            return json({ error: "Υπάρχει ήδη άλλος λογαριασμός με αυτό το email" });
+          }
+          authUserId = existing.id;
+          await admin.from("app_users").update({ auth_user_id: authUserId }).eq("id", target.id);
+        } else {
+          return json({ error: translate(createErr?.message) });
+        }
+      } else {
+        authUserId = created.user.id;
+        const { data: linked } = await admin.from("app_users")
+          .select("auth_user_id").eq("id", appUserId).single();
+        if (linked?.auth_user_id === authUserId) return json({ success: true, created: true });
+        // Fallback: link directly and drop any duplicate profile created for this login
+        await admin.from("app_users").delete().eq("auth_user_id", authUserId).neq("id", target.id);
+        const { error: linkErr } = await admin.from("app_users").update({ auth_user_id: authUserId }).eq("id", target.id);
+        if (linkErr) return json({ error: linkErr.message }, 500);
+        return json({ success: true, created: true });
       }
-      return json({ success: true, created: true });
     }
 
     const { error: updErr } = await admin.auth.admin.updateUserById(authUserId, { password, email_confirm: true });
