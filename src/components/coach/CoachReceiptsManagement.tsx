@@ -490,7 +490,7 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
                         <td className="py-2 px-2">
                           {format(new Date(receipt.created_at), 'dd/MM/yy')}
                         </td>
-                        <td className="py-2 px-2 text-right font-medium text-[#00ffba]">
+                        <td className="py-2 px-2 text-right font-medium text-[#004aad]">
                           €{Number(receipt.amount).toFixed(2)}
                         </td>
                         <td className="py-2 px-2">
