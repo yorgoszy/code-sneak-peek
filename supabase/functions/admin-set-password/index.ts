@@ -48,14 +48,25 @@ Deno.serve(async (req) => {
     if (!authUserId) {
       if (!target.email) return json({ error: "Ο χρήστης δεν έχει email" }, 400);
       const email = target.email.trim().toLowerCase();
-      console.log("initial-login-link-v3: creating Auth with protected profile link");
+      console.log("initial-login-link-v4: creating Auth with one-time server link token");
+      const { data: linkRow, error: linkInsErr } = await admin
+        .from("pending_auth_links")
+        .insert({ app_user_id: target.id, email })
+        .select("token")
+        .single();
+      if (linkInsErr || !linkRow) return json({ error: linkInsErr?.message || "Αποτυχία σύνδεσης λογαριασμού" }, 500);
       const { data: created, error: createErr } = await admin.auth.admin.createUser({
         email,
         password,
         email_confirm: true,
-        user_metadata: { name: target.name },
+        user_metadata: { name: target.name, link_token: linkRow.token },
         app_metadata: { app_user_id: target.id },
       });
+      // Token is single-use; remove it whether or not the trigger consumed it
+      await admin.from("pending_auth_links").delete().eq("token", linkRow.token);
+      if (created?.user) {
+        await admin.auth.admin.updateUserById(created.user.id, { user_metadata: { name: target.name, link_token: null } });
+      }
 
       if (createErr || !created.user) {
         console.error("createUser failed:", createErr?.message);
