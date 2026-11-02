@@ -50,6 +50,7 @@ export const BookingSessionsOverview = () => {
           section:booking_sections(name, max_capacity),
           app_users!user_id(name, email)
         `)
+        .is('coach_id', null)
         .gte('booking_date', startDate)
         .lte('booking_date', endDate)
         .eq('status', 'confirmed')
@@ -77,6 +78,7 @@ export const BookingSessionsOverview = () => {
           section:booking_sections(name, max_capacity),
           app_users!user_id(name, email)
         `)
+        .is('coach_id', null)
         .gte('booking_date', startDate)
         .lte('booking_date', endDate)
         .eq('status', 'confirmed');
