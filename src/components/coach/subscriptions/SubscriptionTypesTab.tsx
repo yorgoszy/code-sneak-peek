@@ -228,6 +228,11 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
                     <p className="text-sm text-muted-foreground">
                       {type.duration_months} {type.duration_months === 1 ? 'μήνας' : 'μήνες'}
                     </p>
+                    {type.allowed_sections && type.allowed_sections.length > 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        {type.allowed_sections.length} {type.allowed_sections.length === 1 ? 'τμήμα' : 'τμήματα'} booking
+                      </p>
+                    )}
                   </div>
                   <div className="flex gap-2">
                     <Button 
