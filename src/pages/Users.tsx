@@ -154,8 +154,8 @@ const Users = () => {
           .order('created_at', { ascending: false }),
         supabase
           .from('app_users')
-          .select('id, name, email, avatar_url, photo_url')
-          .eq('role', 'coach')
+          .select('id, name, email, avatar_url, photo_url, role')
+          .in('role', ['coach', 'club'])
           .order('name', { ascending: true }),
         supabase
           .from('app_users')
