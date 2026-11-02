@@ -54,7 +54,7 @@ export function CoachOnlineBooking() {
     b.booking_date === format(popup.date, 'yyyy-MM-dd') &&
     b.booking_time.slice(0, 2) === popup.hour.slice(0, 2)
   ) : [];
-  return <section className="space-y-4 text-foreground">
+  return <section className="mx-auto w-full max-w-6xl space-y-4 px-2 text-foreground lg:px-6">
     <h2 className="flex items-center gap-2 text-xl font-semibold"><CalendarDays className="h-5 w-5" />Online Booking</h2>
     {(calendar.isError || appointments.isError) && <p role="alert" className="text-destructive">Δεν φορτώθηκε το ημερολόγιο.</p>}
     <Tabs defaultValue="appointments" onValueChange={() => void calendar.refetch()}>
