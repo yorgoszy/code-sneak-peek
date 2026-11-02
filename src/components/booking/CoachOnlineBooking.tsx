@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { CalendarDays, X } from 'lucide-react';
 import { useCoachContext } from '@/contexts/CoachContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Calendar } from '@/components/ui/calendar';
+import { CoachBookingWeek } from './CoachBookingWeek';
 import { Button } from '@/components/ui/button';
 import { BookingSectionsManagement } from '@/components/admin/BookingSectionsManagement';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -58,8 +58,8 @@ export function CoachOnlineBooking() {
       </TabsContent>
       <TabsContent value="appointments">
         <Select value={sectionId} onValueChange={setSectionId}><SelectTrigger className="mb-4 max-w-sm rounded-none"><SelectValue placeholder="Τμήμα" /></SelectTrigger><SelectContent><SelectItem value="all">Όλα τα τμήματα</SelectItem>{(calendar.data || []).map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select>
-        <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
-          <Calendar mode="single" selected={date} onSelect={setDate} className="w-fit rounded-none border border-border" modifiers={{ booked: scopedAppointments.filter(b => ['pending', 'confirmed'].includes(b.status)).map(b => new Date(`${b.booking_date}T00:00:00`)) }} modifiersClassNames={{ booked: 'font-bold underline' }} />
+        <div className="space-y-4">
+          <CoachBookingWeek date={date ?? new Date()} sections={(calendar.data ?? []).filter(s => sectionId === 'all' || s.id === sectionId)} appointments={scopedAppointments} onSelect={(day, section) => { setDate(day); if (section) setSectionId(section); }} />
           <div className="min-w-0 space-y-2"><h3 className="text-sm font-semibold">{date && format(date, 'dd/MM/yyyy')}</h3>
             {appointments.isLoading ? <p role="status">Φόρτωση…</p> : selected.length ? selected.map(b => <div key={b.id} className="flex items-center gap-3 border-b border-border py-3">
               <span className="text-sm font-semibold">{b.booking_time.slice(0, 5)}</span>
