@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import { strictEqual } from 'node:assert';
 import { resolveProfileTab } from './profileNavigation';
 
-describe('Coach user menu after login', () => {
+describe('Personal user menu after login', () => {
   it('keeps the personal menu without a subscription', () => {
     strictEqual(resolveProfileTab('overview', false, true), 'overview');
   });
@@ -14,8 +14,11 @@ describe('Coach user menu after login', () => {
     strictEqual(resolveProfileTab('programs', false, true), 'overview');
     strictEqual(resolveProfileTab('programs', true, true), 'programs');
   });
-  it('preserves the shop fallback for admin-managed users', () => {
-    strictEqual(resolveProfileTab('overview', false, false), 'shop');
+  it('keeps admin-managed users on their menu without a subscription', () => {
+    strictEqual(resolveProfileTab('overview', false, false), 'overview');
+    strictEqual(resolveProfileTab('programs', false, false), 'overview');
+  });
+  it('keeps purchases available only when explicitly selected by admin-managed users', () => {
     strictEqual(resolveProfileTab('shop', true, false), 'shop');
   });
 });
