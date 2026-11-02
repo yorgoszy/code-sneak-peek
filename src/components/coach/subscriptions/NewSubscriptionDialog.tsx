@@ -104,9 +104,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
     const { data, error } = await supabase
       .from('coach_receipts')
       .select('receipt_number')
-      .eq('coach_id', coachId)
-      .order('created_at', { ascending: false })
-      .limit(1);
+      .eq('coach_id', coachId);
 
     if (error) {
       console.error('Error generating receipt number:', error);
@@ -117,9 +115,11 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
       return 'ΑΠ-0001';
     }
 
-    const lastNumber = data[0].receipt_number;
-    const numberPart = parseInt(lastNumber.split('-')[1]) || 0;
-    return `ΑΠ-${String(numberPart + 1).padStart(4, '0')}`;
+    const maxNumber = data.reduce((max, r: any) => {
+      const n = parseInt(String(r.receipt_number).replace(/\D/g, ''), 10) || 0;
+      return n > max ? n : max;
+    }, 0);
+    return `ΑΠ-${String(maxNumber + 1).padStart(4, '0')}`;
   };
 
   const handleSave = async () => {
@@ -171,6 +171,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
 
       if (receiptError) {
         console.error('Error creating receipt:', receiptError);
+        toast.error('Η συνδρομή δημιουργήθηκε, αλλά η απόδειξη απέτυχε');
         // Don't throw - subscription was created successfully
       }
 

@@ -1,0 +1,1 @@
+CREATE POLICY "Admins can manage coach receipts" ON public.coach_receipts FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
