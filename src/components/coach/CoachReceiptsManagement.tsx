@@ -430,7 +430,7 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
                       )}
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                      <span className="font-medium text-[#00ffba] text-sm whitespace-nowrap">
+                      <span className="font-medium text-[#004aad] text-sm whitespace-nowrap">
                         €{Number(receipt.amount).toFixed(2)}
                       </span>
                       <div className="flex gap-1">
