@@ -32,6 +32,12 @@ interface SubscriptionType {
   duration_months: number;
   coach_id: string;
   is_active: boolean;
+  allowed_sections?: string[] | null;
+}
+
+interface BookingSection {
+  id: string;
+  name: string;
 }
 
 interface SubscriptionTypesTabProps {
@@ -40,6 +46,8 @@ interface SubscriptionTypesTabProps {
 
 export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coachId }) => {
   const [types, setTypes] = useState<SubscriptionType[]>([]);
+  const [bookingSections, setBookingSections] = useState<BookingSection[]>([]);
+  const [selectedSections, setSelectedSections] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -70,9 +78,35 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
     }
   };
 
+  const fetchBookingSections = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('booking_sections')
+        .select('id, name')
+        .eq('coach_id', coachId)
+        .eq('booking_type', 'gym_visit')
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) throw error;
+      setBookingSections(data || []);
+    } catch (error) {
+      console.error('Error fetching booking sections:', error);
+    }
+  };
+
+  const toggleSection = (sectionId: string) => {
+    setSelectedSections((prev) =>
+      prev.includes(sectionId)
+        ? prev.filter((id) => id !== sectionId)
+        : [...prev, sectionId]
+    );
+  };
+
   useEffect(() => {
     if (coachId) {
       fetchTypes();
+      fetchBookingSections();
     }
   }, [coachId]);
 
@@ -84,9 +118,11 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
         price: type.price.toString(),
         duration_months: type.duration_months.toString()
       });
+      setSelectedSections(type.allowed_sections || []);
     } else {
       setEditingType(null);
       setFormData({ name: '', price: '', duration_months: '' });
+      setSelectedSections([]);
     }
     setDialogOpen(true);
   };
@@ -104,7 +140,8 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
           .update({
             name: formData.name,
             price: parseFloat(formData.price),
-            duration_months: parseInt(formData.duration_months)
+            duration_months: parseInt(formData.duration_months),
+            allowed_sections: selectedSections.length > 0 ? selectedSections : null
           })
           .eq('id', editingType.id);
 
@@ -118,7 +155,8 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
             price: parseFloat(formData.price),
             duration_months: parseInt(formData.duration_months),
             coach_id: coachId,
-            is_active: true
+            is_active: true,
+            allowed_sections: selectedSections.length > 0 ? selectedSections : null
           });
 
         if (error) throw error;
