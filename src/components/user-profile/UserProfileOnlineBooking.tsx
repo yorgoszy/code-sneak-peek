@@ -54,21 +54,8 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
   const handleCreateBooking = async (sectionId: string, date: string, time: string, type: string) => {
     if (!canBookGymSection(sectionId, availability)) throw new Error('Δεν υπάρχουν διαθέσιμες επισκέψεις για αυτό το τμήμα');
     try {
-      const bookingData = await createBooking(sectionId, date, time, type);
-      const sectionInfo = sections.find(s => s.id === sectionId);
-      
-      toast.success(t('onlineBooking.bookingCreated'), {
-        action: {
-          label: '📅 Google Calendar',
-          onClick: () => syncBookingToCalendar({
-            booking_date: date,
-            booking_time: time,
-            booking_type: type,
-            section_name: sectionInfo?.name,
-          }),
-        },
-      });
-      return bookingData;
+      await createBooking(sectionId, date, time, type);
+      return null;
     } catch (error: any) {
       toast.error(error.message || t('onlineBooking.bookingError'));
       throw error;
