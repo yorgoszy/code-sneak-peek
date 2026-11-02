@@ -150,6 +150,7 @@ export const GymBookingsOverview = () => {
             app_users!user_id(name, email)
           `)
           .eq('booking_type', 'gym_visit')
+          .is('coach_id', null)
           .order('booking_date', { ascending: true })
           .order('booking_time', { ascending: true })
           .range(from, from + pageSize - 1);
