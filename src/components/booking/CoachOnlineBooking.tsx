@@ -79,6 +79,26 @@ export function CoachOnlineBooking() {
         </div>
       </TabsContent>
     </Tabs>
+    <Dialog open={Boolean(popup)} onOpenChange={open => { if (!open) setPopup(null); }}>
+      <DialogContent className="max-w-md rounded-none">
+        <DialogHeader>
+          <DialogTitle className="text-base">
+            {popupSection?.name ?? 'Τμήμα'} · {popup && format(popup.date, 'dd/MM/yyyy')} · {popup?.hour}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-1">
+          <p className="text-xs text-muted-foreground">{popupBookings.filter(b => b.status !== 'cancelled').length} άτομα</p>
+          {popupBookings.length ? popupBookings.map(b => <div key={b.id} className="flex items-center gap-3 border-b border-border py-2">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{b.user?.name}</p>
+              <p className="truncate text-xs text-muted-foreground">{b.user?.email}</p>
+            </div>
+            <span className="text-xs text-muted-foreground">{b.status === 'cancelled' ? 'Ακυρωμένο' : b.status === 'completed' ? 'Ολοκληρωμένο' : 'Κράτηση'}</span>
+            {['confirmed', 'pending'].includes(b.status) && <Button variant="ghost" size="icon" title="Ακύρωση ραντεβού" className="rounded-none" onClick={() => setCancelId(b.id)}><X className="h-4 w-4" /></Button>}
+          </div>) : <p className="py-4 text-center text-sm text-muted-foreground">Δεν υπάρχουν άτομα σε αυτό το τμήμα.</p>}
+        </div>
+      </DialogContent>
+    </Dialog>
     <AlertDialog open={Boolean(cancelId)} onOpenChange={open => { if (!open) setCancelId(null); }}><AlertDialogContent className="rounded-none"><AlertDialogHeader><AlertDialogTitle>Ακύρωση ραντεβού;</AlertDialogTitle><AlertDialogDescription>Το ραντεβού θα ακυρωθεί.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="rounded-none">Επιστροφή</AlertDialogCancel><AlertDialogAction className="rounded-none" onClick={cancel}>Ακύρωση ραντεβού</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
   </section>;
 }
