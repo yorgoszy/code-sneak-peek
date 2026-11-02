@@ -164,7 +164,7 @@ export const EditCoachUserDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-none max-w-lg">
+      <DialogContent className="rounded-none max-w-lg text-[#004aad]">
         <DialogHeader className="pb-2">
           <DialogTitle className="text-base">Επεξεργασία Αθλητή</DialogTitle>
         </DialogHeader>
@@ -174,7 +174,7 @@ export const EditCoachUserDialog = ({
             <div className="relative shrink-0">
               <Avatar className="h-12 w-12 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                 <AvatarImage src={avatarPreview || ''} />
-                <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba] text-lg">
+                <AvatarFallback className="bg-[#004aad]/20 text-[#004aad] text-lg">
                   {formData.name ? formData.name.charAt(0).toUpperCase() : <Camera className="h-5 w-5" />}
                 </AvatarFallback>
               </Avatar>
@@ -291,7 +291,7 @@ export const EditCoachUserDialog = ({
               type="submit"
               size="sm"
               disabled={loading}
-              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none h-8"
+              className="bg-[#004aad] hover:bg-[#004aad]/90 text-white rounded-none h-8"
             >
               {loading ? "Αποθήκευση..." : "Αποθήκευση"}
             </Button>
