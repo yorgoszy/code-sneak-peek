@@ -233,6 +233,7 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
           .from('booking_sessions')
           .select('id')
           .eq('booking_type', 'gym_visit')
+          .eq('coach_id', userProfile.id)
           .order('created_at', { ascending: true })
           .range(bookingsFrom, bookingsFrom + pageSize - 1);
 
