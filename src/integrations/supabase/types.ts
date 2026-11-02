@@ -12735,6 +12735,7 @@ export type Database = {
         Returns: {
           coach_id: string
           is_coach_managed: boolean
+          owner_role: string
         }[]
       }
       get_visit_booking_sections: {
