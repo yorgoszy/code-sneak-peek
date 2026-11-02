@@ -24,4 +24,10 @@ BEGIN
   SELECT count(*) INTO visible_count FROM public.get_user_subscription_scope(target_coach);
   IF visible_count <> 0 THEN RAISE EXCEPTION 'User must not resolve another profile scope'; END IF;
   RESET ROLE;
+  BEGIN
+    UPDATE public.coach_subscriptions SET coach_id=target_user WHERE id='a69d1162-678f-4bd6-9389-9d81b09fd849';
+    RAISE EXCEPTION 'Test failed: mismatched coach accepted';
+  EXCEPTION WHEN raise_exception THEN
+    IF SQLERRM <> 'User must belong to the subscription coach' THEN RAISE; END IF;
+  END;
 END $$;
