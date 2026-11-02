@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { CoachBookingWeek } from './CoachBookingWeek';
 import { Button } from '@/components/ui/button';
 import { BookingSectionsManagement } from '@/components/admin/BookingSectionsManagement';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
@@ -82,6 +83,7 @@ export function CoachOnlineBooking() {
                 {g.bookings.map(b => {
                   const passed = date && format(date, 'yyyy-MM-dd') === today && b.booking_time.slice(0, 5) <= nowTime;
                   return <div key={b.id} className={`flex items-center gap-3 border-b border-border py-2 ${passed ? 'opacity-50' : ''}`}>
+                  <Avatar className="h-8 w-8 shrink-0"><AvatarImage src={b.user?.avatar_url || undefined} /><AvatarFallback className="rounded-full">{(b.user?.name || '?').charAt(0)}</AvatarFallback></Avatar>
                   <span className="w-12 shrink-0 text-sm font-semibold">{b.booking_time.slice(0, 5)}</span>
                   <div className="min-w-0 flex-1"><p className="truncate font-medium">{b.user?.name}</p><p className="truncate text-xs text-muted-foreground">{b.user?.email}</p></div>
                   <span className="text-xs text-muted-foreground">{b.status === 'completed' ? 'Ολοκληρωμένο' : 'Κράτηση'}</span>
@@ -104,6 +106,7 @@ export function CoachOnlineBooking() {
         <div className="space-y-1">
           <p className="text-xs text-muted-foreground">{popupBookings.filter(b => b.status !== 'cancelled').length} άτομα</p>
           {popupBookings.length ? popupBookings.map(b => <div key={b.id} className="flex items-center gap-3 border-b border-border py-2">
+            <Avatar className="h-8 w-8 shrink-0"><AvatarImage src={b.user?.avatar_url || undefined} /><AvatarFallback className="rounded-full">{(b.user?.name || '?').charAt(0)}</AvatarFallback></Avatar>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium">{b.user?.name}</p>
               <p className="truncate text-xs text-muted-foreground">{b.user?.email}</p>
