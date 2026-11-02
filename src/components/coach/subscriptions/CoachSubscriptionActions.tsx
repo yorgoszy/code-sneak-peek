@@ -35,7 +35,7 @@ export const CoachSubscriptionActions: React.FC<CoachSubscriptionActionsProps> =
         variant="outline"
         onClick={() => onTogglePayment(subscriptionId, isPaid)}
         className={`rounded-none h-7 w-7 md:h-8 md:w-8 p-0 ${isPaid 
-          ? 'border-[#00ffba] text-[#00ffba] hover:bg-[#00ffba]/10' 
+          ? 'border-[#004aad] text-[#004aad] hover:bg-[#004aad]/10'
           : 'border-red-300 text-red-600 hover:bg-red-50'}`}
         title={isPaid ? "Σημείωση ως μη πληρωμένη" : "Σημείωση ως πληρωμένη"}
       >
@@ -69,7 +69,7 @@ export const CoachSubscriptionActions: React.FC<CoachSubscriptionActionsProps> =
         size="sm"
         variant="outline"
         onClick={() => onRenew(subscriptionId)}
-        className="rounded-none h-7 w-7 md:h-8 md:w-8 p-0 border-blue-300 text-blue-600 hover:bg-blue-50"
+        className="rounded-none h-7 w-7 md:h-8 md:w-8 p-0 border-[#004aad]/40 text-[#004aad] hover:bg-[#004aad]/10"
         title="Ανανέωση συνδρομής"
       >
         <RotateCcw className="w-3 h-3 md:w-4 md:h-4" />
@@ -80,7 +80,7 @@ export const CoachSubscriptionActions: React.FC<CoachSubscriptionActionsProps> =
         size="sm"
         variant="outline"
         onClick={() => onEdit(subscriptionId)}
-        className="rounded-none h-7 w-7 md:h-8 md:w-8 p-0 border-gray-300 text-gray-600 hover:bg-gray-50"
+        className="rounded-none h-7 w-7 md:h-8 md:w-8 p-0 border-[#004aad]/40 text-[#004aad] hover:bg-[#004aad]/10"
         title="Επεξεργασία συνδρομής"
       >
         <Edit2 className="w-3 h-3 md:w-4 md:h-4" />
