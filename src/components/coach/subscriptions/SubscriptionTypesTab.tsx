@@ -319,7 +319,7 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                   placeholder="0"
-                  className="rounded-none"
+                  className="rounded-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                 />
               </div>
               {formData.mode === 'monthly' ? (
@@ -331,7 +331,7 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
                     value={formData.duration_months}
                     onChange={(e) => setFormData({ ...formData, duration_months: e.target.value })}
                     placeholder="1"
-                    className="rounded-none"
+                    className="rounded-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                   />
                 </div>
               ) : (
@@ -344,7 +344,7 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
                       value={formData.visit_count}
                       onChange={(e) => setFormData({ ...formData, visit_count: e.target.value })}
                       placeholder="10"
-                      className="rounded-none"
+                      className="rounded-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                     />
                   </div>
                   <div className="space-y-2">
@@ -355,7 +355,7 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
                       value={formData.visit_expiry_months}
                       onChange={(e) => setFormData({ ...formData, visit_expiry_months: e.target.value })}
                       placeholder="2"
-                      className="rounded-none"
+                      className="rounded-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                     />
                   </div>
                 </>
