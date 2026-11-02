@@ -22,13 +22,25 @@ if (isPreviewHost || isInIframe) {
   // Also clear all caches
   caches?.keys().then(keys => keys.forEach(k => caches.delete(k)));
 } else if ('serviceWorker' in navigator) {
-  // Register the SW for offline support, but NEVER auto-reload the page:
-  // switching tabs must not wipe unsaved work (e.g. program builder state).
-  // New versions are picked up naturally on the next full page load.
+  // Pull updates on every app entry: check for a new version immediately,
+  // and if one takes control shortly after load, reload once to apply it.
+  // Mid-session updates are NOT applied (no reload while the user works).
+  const pageLoadTime = Date.now();
+  let reloaded = false;
+
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloaded) return;
+    // Only auto-reload right after entering the app, never mid-session.
+    if (Date.now() - pageLoadTime < 30000) {
+      reloaded = true;
+      window.location.reload();
+    }
+  });
+
   registerSW({
     immediate: true,
-    onNeedRefresh() {
-      // Intentionally no-op: no automatic reload on updates.
+    onRegisteredSW(_swUrl, registration) {
+      registration?.update();
     },
     onOfflineReady() {
       console.log('App ready to work offline');
