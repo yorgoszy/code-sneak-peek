@@ -430,7 +430,7 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
                       )}
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                      <span className="font-medium text-[#00ffba] text-sm whitespace-nowrap">
+                      <span className="font-medium text-[#004aad] text-sm whitespace-nowrap">
                         €{Number(receipt.amount).toFixed(2)}
                       </span>
                       <div className="flex gap-1">
@@ -490,7 +490,7 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
                         <td className="py-2 px-2">
                           {format(new Date(receipt.created_at), 'dd/MM/yy')}
                         </td>
-                        <td className="py-2 px-2 text-right font-medium text-[#00ffba]">
+                        <td className="py-2 px-2 text-right font-medium text-[#004aad]">
                           €{Number(receipt.amount).toFixed(2)}
                         </td>
                         <td className="py-2 px-2">
