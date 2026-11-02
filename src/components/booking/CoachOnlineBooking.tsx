@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { CoachBookingWeek } from './CoachBookingWeek';
 import { Button } from '@/components/ui/button';
 import { BookingSectionsManagement } from '@/components/admin/BookingSectionsManagement';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
@@ -18,6 +19,7 @@ export function CoachOnlineBooking() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [sectionId, setSectionId] = useState('all');
   const [cancelId, setCancelId] = useState<string | null>(null);
+  const [popup, setPopup] = useState<{ date: Date; sectionId: string; hour: string } | null>(null);
   const calendar = useQuery({
     queryKey: ['coach-booking-calendar', coachId], enabled: Boolean(coachId),
     queryFn: async () => {
@@ -48,6 +50,12 @@ export function CoachOnlineBooking() {
   }
   const scopedAppointments = (appointments.data || []).filter(b => sectionId === 'all' || b.section_id === sectionId);
   const selected = scopedAppointments.filter(b => date && b.booking_date === format(date, 'yyyy-MM-dd'));
+  const popupSection = popup ? calendar.data?.find(s => s.id === popup.sectionId) : undefined;
+  const popupBookings = popup ? (appointments.data || []).filter(b =>
+    b.section_id === popup.sectionId &&
+    b.booking_date === format(popup.date, 'yyyy-MM-dd') &&
+    b.booking_time.slice(0, 2) === popup.hour.slice(0, 2)
+  ) : [];
   return <section className="space-y-4 text-foreground">
     <h2 className="flex items-center gap-2 text-xl font-semibold"><CalendarDays className="h-5 w-5" />Online Booking</h2>
     {(calendar.isError || appointments.isError) && <p role="alert" className="text-destructive">Δεν φορτώθηκε το ημερολόγιο.</p>}
@@ -59,7 +67,7 @@ export function CoachOnlineBooking() {
       <TabsContent value="appointments">
         <Select value={sectionId} onValueChange={setSectionId}><SelectTrigger className="mb-4 max-w-sm rounded-none"><SelectValue placeholder="Τμήμα" /></SelectTrigger><SelectContent><SelectItem value="all">Όλα τα τμήματα</SelectItem>{(calendar.data || []).map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select>
         <div className="space-y-4">
-          <CoachBookingWeek date={date ?? new Date()} sections={(calendar.data ?? []).filter(s => sectionId === 'all' || s.id === sectionId)} appointments={scopedAppointments} onSelect={(day, section) => { setDate(day); if (section) setSectionId(section); }} />
+          <CoachBookingWeek date={date ?? new Date()} sections={(calendar.data ?? []).filter(s => sectionId === 'all' || s.id === sectionId)} appointments={scopedAppointments} onSelect={(day, section, hour) => { setDate(day); if (section && hour) setPopup({ date: day, sectionId: section, hour }); else if (section) setSectionId(section); }} />
           <div className="min-w-0 space-y-2"><h3 className="text-sm font-semibold">{date && format(date, 'dd/MM/yyyy')}</h3>
             {appointments.isLoading ? <p role="status">Φόρτωση…</p> : selected.length ? selected.map(b => <div key={b.id} className="flex items-center gap-3 border-b border-border py-3">
               <span className="text-sm font-semibold">{b.booking_time.slice(0, 5)}</span>
@@ -71,6 +79,26 @@ export function CoachOnlineBooking() {
         </div>
       </TabsContent>
     </Tabs>
+    <Dialog open={Boolean(popup)} onOpenChange={open => { if (!open) setPopup(null); }}>
+      <DialogContent className="max-w-md rounded-none">
+        <DialogHeader>
+          <DialogTitle className="text-base">
+            {popupSection?.name ?? 'Τμήμα'} · {popup && format(popup.date, 'dd/MM/yyyy')} · {popup?.hour}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-1">
+          <p className="text-xs text-muted-foreground">{popupBookings.filter(b => b.status !== 'cancelled').length} άτομα</p>
+          {popupBookings.length ? popupBookings.map(b => <div key={b.id} className="flex items-center gap-3 border-b border-border py-2">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{b.user?.name}</p>
+              <p className="truncate text-xs text-muted-foreground">{b.user?.email}</p>
+            </div>
+            <span className="text-xs text-muted-foreground">{b.status === 'cancelled' ? 'Ακυρωμένο' : b.status === 'completed' ? 'Ολοκληρωμένο' : 'Κράτηση'}</span>
+            {['confirmed', 'pending'].includes(b.status) && <Button variant="ghost" size="icon" title="Ακύρωση ραντεβού" className="rounded-none" onClick={() => setCancelId(b.id)}><X className="h-4 w-4" /></Button>}
+          </div>) : <p className="py-4 text-center text-sm text-muted-foreground">Δεν υπάρχουν άτομα σε αυτό το τμήμα.</p>}
+        </div>
+      </DialogContent>
+    </Dialog>
     <AlertDialog open={Boolean(cancelId)} onOpenChange={open => { if (!open) setCancelId(null); }}><AlertDialogContent className="rounded-none"><AlertDialogHeader><AlertDialogTitle>Ακύρωση ραντεβού;</AlertDialogTitle><AlertDialogDescription>Το ραντεβού θα ακυρωθεί.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="rounded-none">Επιστροφή</AlertDialogCancel><AlertDialogAction className="rounded-none" onClick={cancel}>Ακύρωση ραντεβού</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
   </section>;
 }
