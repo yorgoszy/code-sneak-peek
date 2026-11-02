@@ -258,8 +258,9 @@ const CoachSubscriptionsContent = () => {
         status: "active",
         is_paused: false
       };
-      if (subsTable === "coach_subscriptions") {
-        insertPayload.coach_user_id = subscription.user_id;
+      // coach_user_id points to the legacy coach_users table; keep the original value only
+      if (subsTable === "coach_subscriptions" && (subscription as any).coach_user_id) {
+        insertPayload.coach_user_id = (subscription as any).coach_user_id;
       }
 
       const { data: subscriptionData, error: subscriptionError } = await supabase
@@ -276,7 +277,7 @@ const CoachSubscriptionsContent = () => {
         .insert({
           coach_id: coachId,
           user_id: subscription.user_id,
-          coach_user_id: subscription.user_id,
+          coach_user_id: (subscription as any).coach_user_id ?? null,
           subscription_id: subscriptionData.id,
           receipt_number: receiptNumber,
           amount: subscription.subscription_types.price,
