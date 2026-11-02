@@ -166,7 +166,7 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
                 {(selectedUser.photo_url || selectedUser.avatar_url) ? (
                   <AvatarImage src={selectedUser.photo_url || selectedUser.avatar_url || ''} alt={selectedUser.name} />
                 ) : null}
-                <AvatarFallback className="text-xs bg-muted">
+                <AvatarFallback className="text-xs bg-[#004aad]/20 text-[#004aad]">
                   {selectedUser.name.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -211,7 +211,7 @@ export const UserSearchCombobox: React.FC<UserSearchComboboxProps> = ({
                     {(user.photo_url || user.avatar_url) ? (
                       <AvatarImage src={user.photo_url || user.avatar_url || ''} alt={user.name} />
                     ) : null}
-                    <AvatarFallback className="text-xs bg-muted">
+                    <AvatarFallback className="text-xs bg-[#004aad]/20 text-[#004aad]">
                       {user.name.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
