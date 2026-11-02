@@ -621,7 +621,7 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
               
               <div className="pt-2 border-t">
                 <span className="text-gray-500 text-xs">Ποσό:</span>
-                <p className="text-xl font-bold text-[#00ffba]">€{Number(selectedReceipt.amount).toFixed(2)}</p>
+                <p className="text-xl font-bold text-[#004aad]">€{Number(selectedReceipt.amount).toFixed(2)}</p>
               </div>
 
               {/* Coach Business Info */}
