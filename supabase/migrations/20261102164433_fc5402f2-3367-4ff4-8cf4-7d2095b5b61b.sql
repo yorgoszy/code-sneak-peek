@@ -1,0 +1,4 @@
+DROP POLICY "Isolate coach appointments" ON public.booking_sessions;
+CREATE POLICY "Isolate coach appointments" ON public.booking_sessions AS RESTRICTIVE FOR ALL
+USING (((coach_id IS NULL) AND (booking_type <> 'videocall'::text)) OR has_role(auth.uid(), 'admin'::user_role) OR (user_id = current_app_user_id()) OR ((coach_id = current_app_user_id()) AND can_manage_coaching_user(user_id)) OR ((coach_id = current_app_user_id()) AND booking_type = 'gym_visit' AND can_manage_club_booking_user(user_id)))
+WITH CHECK (((coach_id IS NULL) AND (booking_type <> 'videocall'::text)) OR has_role(auth.uid(), 'admin'::user_role) OR (user_id = current_app_user_id()) OR ((coach_id = current_app_user_id()) AND can_manage_coaching_user(user_id)) OR ((coach_id = current_app_user_id()) AND booking_type = 'gym_visit' AND can_manage_club_booking_user(user_id)));
