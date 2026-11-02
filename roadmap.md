@@ -73,4 +73,4 @@
 - [ ] Έλεγχος των επιλογών με συνδεδεμένο coach — δεν υπάρχει διαθέσιμη συνεδρία στο εξωτερικό Supabase
 - [x] Αφαίρεση πεδίου κωδικού από «Νέος Αθλητής» — οι χρήστες των coach μπαίνουν χωρίς κωδικό προς το παρόν
 
-- [ ] Coach-created athlete login: permanent password, auth account created once and linked to existing athlete (no duplicate email)
+- [x] Coach-created athlete login: permanent password, auth account created once and linked to existing athlete (no duplicate email)
