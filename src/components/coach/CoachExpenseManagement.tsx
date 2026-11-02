@@ -305,7 +305,7 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
             <Button variant="outline" onClick={resetForm} size="sm" className="rounded-none h-8 w-8 p-0">
               ✕
             </Button>
-            <Button onClick={handleSubmit} size="sm" className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-8 text-xs px-3">
+            <Button onClick={handleSubmit} size="sm" className="rounded-none bg-[#004aad] hover:bg-[#004aad]/90 text-white h-8 text-xs px-3">
               {editingExpense ? 'OK' : 'OK'}
             </Button>
           </div>
@@ -364,7 +364,7 @@ export const CoachExpenseManagement: React.FC<CoachExpenseManagementProps> = ({ 
               <Button variant="outline" onClick={resetForm} size="sm" className="rounded-none h-8 w-8 p-0">
                 ✕
               </Button>
-              <Button onClick={handleSubmit} size="sm" className="rounded-none bg-[#00ffba] hover:bg-[#00ffba]/90 text-black h-8 text-xs px-3">
+              <Button onClick={handleSubmit} size="sm" className="rounded-none bg-[#004aad] hover:bg-[#004aad]/90 text-white h-8 text-xs px-3">
                 OK
               </Button>
             </div>
