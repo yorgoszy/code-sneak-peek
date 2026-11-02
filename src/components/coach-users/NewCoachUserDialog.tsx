@@ -28,7 +28,7 @@ export const NewCoachUserDialog = ({
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState("Stalios.2026");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -155,7 +155,7 @@ export const NewCoachUserDialog = ({
         toast.success("Ο αθλητής προστέθηκε επιτυχώς με κωδικό πρόσβασης");
       }
       setFormData({ name: "", email: "", phone: "", birth_date: "", gender: "", notes: "" });
-      setPassword("");
+      setPassword("Stalios.2026");
       clearAvatar();
       onSuccess();
     } catch (error: any) {
