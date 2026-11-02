@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
+import { loadCoachBookingAppointments } from './coachBookingAppointments';
 
 export function CoachOnlineBooking() {
   const { coachId } = useCoachContext();
@@ -30,15 +31,7 @@ export function CoachOnlineBooking() {
     queryKey: ['coach-booking-appointments', coachId], enabled: Boolean(coachId),
     queryFn: async () => {
       if (!coachId) return [];
-      const rows = [];
-      for (let offset = 0; ; offset += 1000) {
-        const { data, error } = await supabase.from('booking_sessions').select('*, user:app_users!user_id(id,name,email,avatar_url)')
-          .eq('coach_id', coachId).eq('booking_type', 'gym_visit').order('booking_date').order('booking_time').order('id').range(offset, offset + 999);
-        if (error) throw error;
-        rows.push(...(data || []));
-        if ((data?.length || 0) < 1000) break;
-      }
-      return rows;
+      return loadCoachBookingAppointments(coachId, supabase);
     },
   });
   useEffect(() => {

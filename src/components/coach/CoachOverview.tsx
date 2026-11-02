@@ -16,6 +16,7 @@ import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { loadCoachOverviewCounts, type CoachOverviewCounts } from "./coachOverviewCounts";
 import { isClubDashboardPath, isThaiHubPlanExpired, renewalPlan, usesClubDashboard } from "./clubDashboard";
 import { CoachUpgradeDialog } from "./CoachUpgradeDialog";
+import { TodaysClassesWidget } from "./TodaysClassesWidget";
 
 interface CoachOverviewProps {
   coachId: string;
@@ -38,6 +39,7 @@ const overviewItems: { label: string; icon: any; path: string; create?: boolean;
   { label: "Τεστ", icon: ClipboardList, path: "/dashboard/coach-progress" },
   { label: "Online Courses", icon: GraduationCap, path: "/dashboard/coach-courses" },
   { label: "Online Booking", icon: CalendarDays, path: "/dashboard/coach-online-booking" },
+  { label: "Σημερινά μαθήματα", icon: CalendarDays, path: "/dashboard/coach-online-booking" },
   { label: "Ρυθμίσεις", icon: Settings, path: "/dashboard/coach-profile" },
 ];
 
@@ -163,6 +165,7 @@ export const CoachOverview = ({ coachId }: CoachOverviewProps) => {
       {isError && <p role="status" className="text-sm text-muted-foreground">Δεν ήταν δυνατή η φόρτωση των αριθμών.</p>}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {visibleItems.map(({ label, icon: Icon, path, create, dialog, countKey }) => {
+          if (label === 'Σημερινά μαθήματα') return <TodaysClassesWidget key={label} coachId={coachId} today={today} className={tileClass} />;
           const content = (
             <>
               <span className="flex w-full items-center justify-between gap-2">
