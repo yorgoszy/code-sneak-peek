@@ -1,9 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
 const translate = (msg?: string) => {
   if (!msg) return "Αποτυχία ορισμού κωδικού";
@@ -16,7 +12,7 @@ const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response("initial-login-link-v2", { headers: corsHeaders });
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) return json({ error: "Unauthorized" }, 401);
@@ -51,6 +47,7 @@ Deno.serve(async (req) => {
 
     if (!authUserId) {
       if (!target.email) return json({ error: "Ο χρήστης δεν έχει email" }, 400);
+      console.log("initial-login-link-v2: creating Auth with protected profile link");
       const { data: created, error: createErr } = await admin.auth.admin.createUser({
         email: target.email.trim().toLowerCase(),
         password,
