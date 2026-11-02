@@ -2,6 +2,8 @@ import { Fragment } from 'react';
 import { addDays, addWeeks, format, startOfWeek } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { useIsMobile } from '@/hooks/use-mobile';
 import type { Database } from '@/integrations/supabase/types';
 import type { CoachBookingAppointment } from './coachBookingAppointments';
 
