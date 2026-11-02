@@ -1042,13 +1042,6 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </button>
           )}
 
-          {/* Κάρτα Υγείας - Μόνο για αθλητές - Πριν το Προφίλ */}
-          {(user.is_athlete || user.role === 'athlete') && (
-            <div className={isWidgetDisabled('health') ? disabledClass : ''}>
-              <HealthCardWidget userId={user.id} />
-            </div>
-          )}
-
           {/* Αριθμός Δελτίου - Μόνο για αθλητές */}
           {!isCoachManagedUser && (user.is_athlete || user.role === 'athlete') && (
             <CardNumberWidget userId={user.id} />
