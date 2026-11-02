@@ -11,7 +11,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
 import {
@@ -275,25 +274,27 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
                 className="rounded-none"
               />
             </div>
-            <div className="space-y-2">
-              <Label>Τιμή (€)</Label>
-              <Input
-                type="number"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                placeholder="0"
-                className="rounded-none"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Διάρκεια (μήνες)</Label>
-              <Input
-                type="number"
-                value={formData.duration_months}
-                onChange={(e) => setFormData({ ...formData, duration_months: e.target.value })}
-                placeholder="1"
-                className="rounded-none"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Τιμή (€)</Label>
+                <Input
+                  type="number"
+                  value={formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  placeholder="0"
+                  className="rounded-none"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Διάρκεια (μήνες)</Label>
+                <Input
+                  type="number"
+                  value={formData.duration_months}
+                  onChange={(e) => setFormData({ ...formData, duration_months: e.target.value })}
+                  placeholder="1"
+                  className="rounded-none"
+                />
+              </div>
             </div>
             <div className="space-y-1">
               <div className="flex items-center justify-between">
@@ -327,14 +328,14 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
               )}
             </div>
           </div>
-          <DialogFooter>
+          <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setDialogOpen(false)} className="rounded-none">
               Ακύρωση
             </Button>
             <Button onClick={handleSave} className="bg-[#004aad] hover:bg-[#004aad]/90 text-white rounded-none">
               {editingType ? 'Αποθήκευση' : 'Δημιουργία'}
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 
