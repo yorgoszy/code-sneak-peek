@@ -272,7 +272,7 @@ export const UserProfileEdit = ({ userProfile, onProfileUpdated }: UserProfileEd
                 {firstName.charAt(0)}{lastName.charAt(0)}
               </AvatarFallback>
             </Avatar>
-            <label className="absolute bottom-0 right-0 bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-full p-2 cursor-pointer transition-colors">
+            <label className="absolute bottom-0 right-0 bg-[#004aad] hover:bg-[#004aad]/90 text-white rounded-full p-2 cursor-pointer transition-colors">
               <Camera className="w-4 h-4" />
               <input
                 type="file"
@@ -410,7 +410,7 @@ export const UserProfileEdit = ({ userProfile, onProfileUpdated }: UserProfileEd
             <Button
               onClick={handleChangePassword}
               disabled={passwordLoading || !currentPassword || !newPassword || !confirmPassword}
-              className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+              className="bg-[#004aad] hover:bg-[#004aad]/90 text-white rounded-none"
             >
               <Lock className="w-4 h-4 mr-2" />
               {passwordLoading ? t('profile.changing') : t('profile.changePassword')}
@@ -435,7 +435,7 @@ export const UserProfileEdit = ({ userProfile, onProfileUpdated }: UserProfileEd
           <Button
             onClick={handleSave}
             disabled={loading}
-            className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none"
+            className="bg-[#004aad] hover:bg-[#004aad]/90 text-white rounded-none"
           >
             <Save className="w-4 h-4 mr-2" />
             {loading ? t('profile.saving') : t('profile.save')}
