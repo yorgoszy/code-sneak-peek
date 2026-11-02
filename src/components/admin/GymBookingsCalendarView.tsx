@@ -201,6 +201,7 @@ export const GymBookingsCalendarView = () => {
         .from('booking_sections')
         .select('*')
         .eq('is_active', true)
+        .is('coach_id', null)
         .order('name');
 
       if (error) throw error;
@@ -239,6 +240,7 @@ export const GymBookingsCalendarView = () => {
           app_users!user_id(name, email, avatar_url)
         `)
         .in('section_id', allSectionIds)
+        .is('coach_id', null)
         .gte('booking_date', format(weekStart, 'yyyy-MM-dd'))
         .lte('booking_date', format(weekEnd, 'yyyy-MM-dd'))
         .in('booking_type', ['gym_visit', 'gym'])
