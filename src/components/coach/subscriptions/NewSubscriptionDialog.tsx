@@ -191,7 +191,8 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
     }
   };
 
-  const filteredAthletes = searchTerm.trim().length === 0 ? [] : athletes.filter(a => 
+  const filteredAthletes = athletes.filter(a => 
+    searchTerm.trim().length === 0 ||
     matchesSearchTerm(a.name, searchTerm) || 
     matchesSearchTerm(a.email, searchTerm)
   );
