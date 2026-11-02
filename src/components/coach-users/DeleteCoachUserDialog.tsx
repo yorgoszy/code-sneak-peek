@@ -29,13 +29,16 @@ export const DeleteCoachUserDialog = ({
   const handleDelete = async () => {
     setLoading(true);
     try {
-      // Διαγραφή από app_users αντί coach_users
-      const { error } = await supabase
-        .from('app_users')
-        .delete()
-        .eq('id', user.id);
-
-      if (error) throw error;
+      const { data, error } = await supabase.functions.invoke('coach-delete-athlete', {
+        body: { appUserId: user.id },
+      });
+      if (error || data?.error) {
+        let message = data?.error;
+        if (!message && (error as any)?.context?.json) {
+          try { message = (await (error as any).context.json())?.error; } catch { /* ignore */ }
+        }
+        throw new Error(message || error?.message || "Η διαγραφή απέτυχε");
+      }
 
       toast.success("Ο αθλητής διαγράφηκε επιτυχώς");
       onSuccess();
