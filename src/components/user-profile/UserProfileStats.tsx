@@ -51,7 +51,9 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
   }, [allActivePrograms, user.id]);
   const { hasActiveSubscription } = useUserSubscriptionStatus(user?.id);
 
-  const { isCoachManaged: isCoachManagedUser, loading: scopeLoading, coachId } = useUserSubscriptionScope(user?.id);
+  const { isCoachManaged: isCoachManagedUser, loading: scopeLoading, coachId, ownerRole } = useUserSubscriptionScope(user?.id);
+  // Club-owned users: κρύβονται τα widgets που σχετίζονται με προγράμματα/πρόοδο
+  const isClubOwnedUser = ownerRole === 'club';
 
   // Widgets that are always enabled (even without subscription)
   const enabledWithoutSub = new Set(['shop', 'edit-profile']);
@@ -774,7 +776,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </div>
           )}
 
-          {/* Ημέρες Προπόνησης / Προγράμματα - Πέμπτο (δεξιά από Μέρες Συνδρομής) */}
+          {/* Ημέρες Προπόνησης / Προγράμματα - Κρύβεται για club-owned users */}
+          {!isClubOwnedUser && (
           <button 
             onClick={() => {
               if (setActiveTab) {
@@ -822,6 +825,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               {(user.role === 'trainer' || user.role === 'admin') ? t('overview.programs') : t('overview.trainingDays')}
             </div>
           </button>
+          )}
 
           {/* Κύκλος Περιόδου - μόνο για γυναίκες */}
           {isCoachManagedUser ? null : user?.gender === 'female' ? (
@@ -1074,7 +1078,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </div>
           </Button>}
 
-          {/* Πρόοδος - Προτελευταίο */}
+          {/* Πρόοδος - Κρύβεται για club-owned users */}
+          {!isClubOwnedUser && (
           <button 
             onClick={() => {
               if (setActiveTab) {
@@ -1096,6 +1101,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               {t('overview.progress')}
             </div>
           </button>
+          )}
 
           {/* Προφίλ */}
           <button 
