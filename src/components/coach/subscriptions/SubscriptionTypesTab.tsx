@@ -59,7 +59,8 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
     price: '',
     duration_months: '',
     visit_count: '',
-    visit_expiry_months: ''
+    visit_expiry_months: '',
+    mode: 'monthly' as 'monthly' | 'visits'
   });
 
   const fetchTypes = async () => {
@@ -121,28 +122,31 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
         price: type.price.toString(),
         duration_months: type.duration_months.toString(),
         visit_count: type.visit_count ? type.visit_count.toString() : '',
-        visit_expiry_months: type.visit_expiry_months ? type.visit_expiry_months.toString() : ''
+        visit_expiry_months: type.visit_expiry_months ? type.visit_expiry_months.toString() : '',
+        mode: type.visit_count ? 'visits' : 'monthly'
       });
       setSelectedSections(type.allowed_sections || []);
     } else {
       setEditingType(null);
-      setFormData({ name: '', price: '', duration_months: '', visit_count: '', visit_expiry_months: '' });
+      setFormData({ name: '', price: '', duration_months: '', visit_count: '', visit_expiry_months: '', mode: 'monthly' });
       setSelectedSections([]);
     }
     setDialogOpen(true);
   };
 
   const handleSave = async () => {
-    if (!formData.name || !formData.price || !formData.duration_months) {
-      toast.error('Συμπληρώστε όλα τα πεδία');
-      return;
-    }
-
+    const isVisits = formData.mode === 'visits';
     const visits = parseInt(formData.visit_count);
     const visitExpiry = parseInt(formData.visit_expiry_months);
-    const visitFields = visits > 0
-      ? { visit_count: visits, visit_expiry_months: visitExpiry > 0 ? visitExpiry : null, subscription_mode: 'visit_based' }
+    const months = parseInt(formData.duration_months);
+    if (!formData.name || !formData.price || (isVisits ? !(visits > 0) || !(visitExpiry > 0) : !(months > 0))) {
+      toast.error(isVisits ? 'Συμπληρώστε επισκέψεις και λήξη' : 'Συμπληρώστε όλα τα πεδία');
+      return;
+    }
+    const visitFields = isVisits
+      ? { visit_count: visits, visit_expiry_months: visitExpiry, subscription_mode: 'visit_based' }
       : { visit_count: null, visit_expiry_months: null, subscription_mode: 'time_based' };
+    const durationValue = isVisits ? visitExpiry : months;
 
     try {
       if (editingType) {
@@ -151,7 +155,7 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
           .update({
             name: formData.name,
             price: parseFloat(formData.price),
-            duration_months: parseInt(formData.duration_months),
+            duration_months: durationValue,
             allowed_sections: selectedSections.length > 0 ? selectedSections : null,
             ...visitFields
           })
@@ -165,7 +169,7 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
           .insert({
             name: formData.name,
             price: parseFloat(formData.price),
-            duration_months: parseInt(formData.duration_months),
+            duration_months: durationValue,
             coach_id: coachId,
             is_active: true,
             allowed_sections: selectedSections.length > 0 ? selectedSections : null,
@@ -238,9 +242,11 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
                   <div>
                     <h3 className="font-semibold text-lg">{type.name}</h3>
                     <p className="text-2xl font-bold text-[var(--th-blue)]">{type.price}€</p>
-                    <p className="text-sm text-muted-foreground">
-                      {type.duration_months} {type.duration_months === 1 ? 'μήνας' : 'μήνες'}
-                    </p>
+                    {!type.visit_count && (
+                      <p className="text-sm text-muted-foreground">
+                        {type.duration_months} {type.duration_months === 1 ? 'μήνας' : 'μήνες'}
+                      </p>
+                    )}
                     {type.visit_count ? (
                       <p className="text-xs text-muted-foreground">
                         {type.visit_count} επισκέψεις{type.visit_expiry_months ? ` · λήγουν σε ${type.visit_expiry_months} ${type.visit_expiry_months === 1 ? 'μήνα' : 'μήνες'}` : ''}
@@ -293,7 +299,19 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
                 className="rounded-none"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-0 border border-border">
+              {([['monthly', 'Μηνιαία συνδρομή'], ['visits', 'Επισκέψεις']] as const).map(([m, label]) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, mode: m })}
+                  className={`py-2 text-sm rounded-none transition-colors ${formData.mode === m ? 'bg-[var(--th-blue)] text-[var(--th-white)]' : 'bg-background text-foreground hover:bg-muted'}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className={`grid gap-3 ${formData.mode === 'visits' ? 'grid-cols-3' : 'grid-cols-2'}`}>
               <div className="space-y-2">
                 <Label>Τιμή (€)</Label>
                 <Input
@@ -304,41 +322,44 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
                   className="rounded-none"
                 />
               </div>
-              <div className="space-y-2">
-                <Label>Διάρκεια (μήνες)</Label>
-                <Input
-                  type="number"
-                  value={formData.duration_months}
-                  onChange={(e) => setFormData({ ...formData, duration_months: e.target.value })}
-                  placeholder="1"
-                  className="rounded-none"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Επισκέψεις</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  value={formData.visit_count}
-                  onChange={(e) => setFormData({ ...formData, visit_count: e.target.value })}
-                  placeholder="Απεριόριστες"
-                  className="rounded-none"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Λήξη επισκέψεων (μήνες)</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  value={formData.visit_expiry_months}
-                  onChange={(e) => setFormData({ ...formData, visit_expiry_months: e.target.value })}
-                  placeholder="Διάρκεια"
-                  disabled={!formData.visit_count}
-                  className="rounded-none"
-                />
-              </div>
+              {formData.mode === 'monthly' ? (
+                <div className="space-y-2">
+                  <Label>Διάρκεια (μήνες)</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={formData.duration_months}
+                    onChange={(e) => setFormData({ ...formData, duration_months: e.target.value })}
+                    placeholder="1"
+                    className="rounded-none"
+                  />
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <Label>Επισκέψεις</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={formData.visit_count}
+                      onChange={(e) => setFormData({ ...formData, visit_count: e.target.value })}
+                      placeholder="10"
+                      className="rounded-none"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Λήξη (μήνες)</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={formData.visit_expiry_months}
+                      onChange={(e) => setFormData({ ...formData, visit_expiry_months: e.target.value })}
+                      placeholder="2"
+                      className="rounded-none"
+                    />
+                  </div>
+                </>
+              )}
             </div>
             <div className="space-y-1">
               <div className="flex items-center justify-between">
