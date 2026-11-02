@@ -114,6 +114,8 @@ const Auth = () => {
       } else if (isClub() && !isAdmin()) {
         console.log('🔐 Auth: Club detected, redirecting to coach-overview');
         navigate("/dashboard/coach-overview", { replace: true });
+      } else if (userProfile.coach_id && !isAdmin()) {
+        navigate(`/dashboard/user-profile/${userProfile.id}?tab=overview`, { replace: true });
       } else {
         console.log('🔐 Auth: Redirecting to dashboard');
         navigate("/dashboard", { replace: true });
@@ -683,7 +685,9 @@ const Auth = () => {
         ? "/dashboard/federation-overview" 
         : isCoachUser 
           ? "/dashboard/coach-overview" 
-          : "/dashboard";
+          : userProfileData.coach_id && userProfileData.role !== 'admin' && userProfileData.role !== 'club'
+            ? `/dashboard/user-profile/${userProfileData.id}?tab=overview`
+            : "/dashboard";
       
       console.log('🔐 Login successful, redirecting to:', redirectPath);
       

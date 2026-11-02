@@ -1,5 +1,7 @@
 # Architecture rules
 
+- Coach-owned personal profiles resolve owner scope before tab redirects; subscription-free overview remains visible while restricted tabs retain subscription checks, and global shop tabs resolve to overview rather than rendering admin-user purchases.
+
 - Initial coach-user login creation issues a service-only, single-use pending_auth_links token passed in Auth user_metadata; the signup trigger consumes it (email must match) to link the existing unlinked app_users row, because GoTrue writes app_metadata after the INSERT trigger fires. The password itself is permanent.
 
 - Coach booking appointments use a dedicated weekly section view derived from persisted section hours and appointments; day/section selection feeds the existing attendee list and cancellation controls without changing booking writes.

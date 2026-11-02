@@ -34,6 +34,7 @@ import RankingPage from "@/pages/Dashboard/RankingPage";
 import WeighInPage from "@/pages/Dashboard/WeighInPage";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useUserSubscriptionStatus } from "@/hooks/useUserSubscriptionStatus";
+import { resolveProfileTab } from './profileNavigation';
 
 interface UserProfileContentProps {
   activeTab: string;
@@ -50,13 +51,17 @@ interface UserProfileContentProps {
 // Έλεγχος αν ο χρήστης ανήκει σε coach (coach_id που δείχνει σε trainer)
 const useIsCoachManagedUser = (userProfile: any) => {
   const [isCoachManaged, setIsCoachManaged] = useState(false);
+  const [resolvedCoachId, setResolvedCoachId] = useState<string | null | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
 
     const run = async () => {
       if (!userProfile?.coach_id) {
-        if (!cancelled) setIsCoachManaged(false);
+        if (!cancelled) {
+          setIsCoachManaged(false);
+          setResolvedCoachId(null);
+        }
         return;
       }
 
@@ -70,10 +75,12 @@ const useIsCoachManagedUser = (userProfile: any) => {
       if (error) {
         console.error('Error resolving coach role:', error);
         setIsCoachManaged(false);
+        setResolvedCoachId(userProfile.coach_id);
         return;
       }
 
-      setIsCoachManaged(data?.role === 'coach');
+      setIsCoachManaged(data?.role === 'coach' || data?.role === 'club');
+      setResolvedCoachId(userProfile.coach_id);
     };
 
     run();
@@ -82,7 +89,7 @@ const useIsCoachManagedUser = (userProfile: any) => {
     };
   }, [userProfile?.coach_id]);
 
-  return isCoachManaged;
+  return { isCoachManaged, loading: resolvedCoachId !== (userProfile?.coach_id ?? null) };
 };
 
 export const UserProfileContent = ({
@@ -98,22 +105,20 @@ export const UserProfileContent = ({
 }: UserProfileContentProps) => {
   const { t } = useTranslation();
   const { isAdmin } = useRoleCheck();
-  const isCoachManagedUser = useIsCoachManagedUser(userProfile);
+  const { isCoachManaged: isCoachManagedUser, loading: coachLoading } = useIsCoachManagedUser(userProfile);
   const { hasActiveSubscription, loading: subLoading } = useUserSubscriptionStatus(userProfile?.id);
   
   const hasSubscription = isAdmin() || hasActiveSubscription;
   
-  // Allowed tabs without subscription
-  const allowedWithoutSubscription = ['shop', 'edit-profile', 'download-app', 'safety'];
+  const resolvedTab = resolveProfileTab(activeTab, hasSubscription, isCoachManagedUser);
 
-
-  // Redirect to shop if no subscription and restricted tab — μόνο μετά την αρχική φόρτωση
+  // Wait for ownership and subscription checks before choosing the user's menu.
   useEffect(() => {
-    if (subLoading) return;
-    if (!hasSubscription && !allowedWithoutSubscription.includes(activeTab) && setActiveTab) {
-      setActiveTab('shop');
+    if (subLoading || coachLoading) return;
+    if (resolvedTab !== activeTab) {
+      setActiveTab?.(resolvedTab);
     }
-  }, [hasSubscription, activeTab, subLoading]);
+  }, [resolvedTab, activeTab, subLoading, coachLoading, setActiveTab]);
 
   // Το βελάκι εμφανίζεται σε όλους τους χρήστες
   const BackButton = () => (
@@ -129,7 +134,7 @@ export const UserProfileContent = ({
   );
 
   const renderContent = () => {
-    switch (activeTab) {
+    switch (resolvedTab) {
       case "overview":
         if (userProfile?.role === 'coach') {
           return <CoachOverview coachId={userProfile.id} />;
@@ -325,7 +330,7 @@ export const UserProfileContent = ({
 
   return (
     <>
-      {renderContent()}
+      {subLoading || coachLoading ? <p className="text-muted-foreground">{t('common.loading')}</p> : renderContent()}
     </>
   );
 };
