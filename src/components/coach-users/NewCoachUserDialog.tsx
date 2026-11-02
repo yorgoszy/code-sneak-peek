@@ -28,6 +28,7 @@ export const NewCoachUserDialog = ({
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [password, setPassword] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -101,6 +102,10 @@ export const NewCoachUserDialog = ({
       toast.error("Το όνομα και το email είναι υποχρεωτικά");
       return;
     }
+    if (password.length < 8) {
+      toast.error("Ο κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες");
+      return;
+    }
 
     if (!coachId) {
       toast.error("Δεν βρέθηκε το ID του προπονητή");
@@ -140,8 +145,17 @@ export const NewCoachUserDialog = ({
         }
       }
 
-      toast.success("Ο αθλητής προστέθηκε επιτυχώς");
+      // Δημιουργία λογαριασμού σύνδεσης με τον κωδικό του coach
+      const { data: pwData, error: pwError } = await supabase.functions.invoke('admin-set-password', {
+        body: { appUserId: newUser.id, password },
+      });
+      if (pwError || pwData?.error) {
+        toast.error(`Ο αθλητής δημιουργήθηκε, αλλά ο κωδικός δεν ορίστηκε: ${pwData?.error || pwError?.message}`);
+      } else {
+        toast.success("Ο αθλητής προστέθηκε επιτυχώς με κωδικό πρόσβασης");
+      }
       setFormData({ name: "", email: "", phone: "", birth_date: "", gender: "", notes: "" });
+      setPassword("");
       clearAvatar();
       onSuccess();
     } catch (error: any) {
@@ -257,6 +271,23 @@ export const NewCoachUserDialog = ({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* Password */}
+          <div>
+            <Label htmlFor="password" className="text-xs">Κωδικός πρόσβασης *</Label>
+            <Input
+              id="password"
+              type="text"
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Τουλάχιστον 8 χαρακτήρες"
+              minLength={8}
+              className="rounded-none h-8 text-sm placeholder:text-[#004aad]/70"
+              required
+            />
+            <p className="text-[10px] text-[#004aad]/70 mt-1">Ο αθλητής μπορεί να τον αλλάξει αργότερα από «Ξέχασα τον κωδικό».</p>
           </div>
 
           {/* Actions */}
