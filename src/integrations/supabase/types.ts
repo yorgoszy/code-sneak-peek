@@ -8498,6 +8498,45 @@ export type Database = {
           },
         ]
       }
+      pending_auth_links: {
+        Row: {
+          app_user_id: string
+          created_at: string
+          email: string
+          expires_at: string
+          token: string
+        }
+        Insert: {
+          app_user_id: string
+          created_at?: string
+          email: string
+          expires_at?: string
+          token?: string
+        }
+        Update: {
+          app_user_id?: string
+          created_at?: string
+          email?: string
+          expires_at?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_auth_links_app_user_id_fkey"
+            columns: ["app_user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_auth_links_app_user_id_fkey"
+            columns: ["app_user_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       performance_bands: {
         Row: {
           age_group: string | null
