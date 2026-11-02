@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Camera, X } from "lucide-react";
 import { processAvatarImage } from "@/utils/imageProcessing";
 
+const DEFAULT_PASSWORD = "Stalios.2026";
 interface NewCoachUserDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -25,6 +26,7 @@ export const NewCoachUserDialog = ({
   coachId,
 }: NewCoachUserDialogProps) => {
   const [loading, setLoading] = useState(false);
+  const [password, setPassword] = useState(DEFAULT_PASSWORD);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
