@@ -334,10 +334,11 @@ export const Sidebar = ({ isCollapsed, setIsCollapsed }: SidebarProps) => {
     if (!userProfile?.id || userProfile.role !== 'admin') return;
     
     try {
-      // Παίρνουμε όλους τους χρήστες
+      // Παίρνουμε μόνο τους χρήστες του admin (coach_id = admin)
       const { data: allUsers, error } = await supabase
         .from('app_users')
         .select('id, created_at')
+        .eq('coach_id', userProfile.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
