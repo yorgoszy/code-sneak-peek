@@ -37,13 +37,13 @@ export const DeleteUserDialogContent: React.FC<DeleteUserDialogContentProps> = (
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
-        <AlertDialogCancel className="rounded-none" onClick={onClose}>
+        <AlertDialogCancel className="rounded-none" onClick={onClose} disabled={loading}>
           Ακύρωση
         </AlertDialogCancel>
         <AlertDialogAction 
-          onClick={onDelete} 
+          onClick={(event) => { event.preventDefault(); onDelete(); }}
           disabled={loading}
-          className="rounded-none bg-red-600 hover:bg-red-700"
+          className="rounded-none bg-destructive hover:bg-destructive/90"
         >
           {loading ? "Διαγραφή..." : "Διαγραφή"}
         </AlertDialogAction>

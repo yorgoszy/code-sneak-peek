@@ -5,7 +5,8 @@ export class UserDeletionService {
   static async deleteUserData(user: AppUser): Promise<void> {
     // One transaction: a failed dependency cleanup must not partly delete a user.
     const { error } = await supabase.rpc('admin_delete_athlete', { athlete_id: user.id });
-    if (error) {
+    // A retry may follow completed data deletion but failed Auth deletion.
+    if (error && !(error.code === 'P0002' && user.auth_user_id)) {
       throw new Error(`Δεν ήταν δυνατή η διαγραφή του χρήστη: ${error.message}`);
     }
 
