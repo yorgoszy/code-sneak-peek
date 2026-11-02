@@ -8,7 +8,6 @@ import { CoachBookingWeek } from './CoachBookingWeek';
 import { Button } from '@/components/ui/button';
 import { BookingSectionsManagement } from '@/components/admin/BookingSectionsManagement';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
@@ -17,7 +16,6 @@ import { loadCoachBookingAppointments } from './coachBookingAppointments';
 export function CoachOnlineBooking() {
   const { coachId } = useCoachContext();
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [sectionId, setSectionId] = useState('all');
   const [cancelId, setCancelId] = useState<string | null>(null);
   const [popup, setPopup] = useState<{ date: Date; sectionId: string; hour: string } | null>(null);
   const calendar = useQuery({
@@ -48,8 +46,8 @@ export function CoachOnlineBooking() {
     else { toast.success('Το ραντεβού ακυρώθηκε.'); void appointments.refetch(); }
     setCancelId(null);
   }
-  const scopedAppointments = (appointments.data || []).filter(b => sectionId === 'all' || b.section_id === sectionId);
-  const selected = scopedAppointments.filter(b => date && b.booking_date === format(date, 'yyyy-MM-dd'));
+  const allAppointments = appointments.data || [];
+  const selected = allAppointments.filter(b => date && b.booking_date === format(date, 'yyyy-MM-dd'));
   const popupSection = popup ? calendar.data?.find(s => s.id === popup.sectionId) : undefined;
   const popupBookings = popup ? (appointments.data || []).filter(b =>
     b.section_id === popup.sectionId &&
@@ -65,9 +63,8 @@ export function CoachOnlineBooking() {
         {coachId && <BookingSectionsManagement key={coachId} coachId={coachId} />}
       </TabsContent>
       <TabsContent value="appointments">
-        <Select value={sectionId} onValueChange={setSectionId}><SelectTrigger className="mb-4 max-w-sm rounded-none"><SelectValue placeholder="Τμήμα" /></SelectTrigger><SelectContent><SelectItem value="all">Όλα τα τμήματα</SelectItem>{(calendar.data || []).map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select>
         <div className="space-y-4">
-          <CoachBookingWeek date={date ?? new Date()} sections={(calendar.data ?? []).filter(s => sectionId === 'all' || s.id === sectionId)} appointments={scopedAppointments} onSelect={(day, section, hour) => { setDate(day); if (section && hour) setPopup({ date: day, sectionId: section, hour }); else if (section) setSectionId(section); }} />
+          <CoachBookingWeek date={date ?? new Date()} sections={calendar.data ?? []} appointments={allAppointments} onSelect={(day, section, hour) => { setDate(day); if (section && hour) setPopup({ date: day, sectionId: section, hour }); }} />
           <div className="min-w-0 space-y-2"><h3 className="text-sm font-semibold">{date && format(date, 'dd/MM/yyyy')}</h3>
             {appointments.isLoading ? <p role="status">Φόρτωση…</p> : selected.length ? selected.map(b => <div key={b.id} className="flex items-center gap-3 border-b border-border py-3">
               <span className="text-sm font-semibold">{b.booking_time.slice(0, 5)}</span>
