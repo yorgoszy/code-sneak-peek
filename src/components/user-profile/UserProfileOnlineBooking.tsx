@@ -14,7 +14,6 @@ import { UnifiedBookingCalendar } from "./bookings/UnifiedBookingCalendar";
 import { useBookingSections } from "@/hooks/useBookingSections";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useGoogleCalendar } from "@/hooks/useGoogleCalendar";
 import { canBookGymSection } from '@/hooks/bookingSectionAccess';
 
 interface UserProfileOnlineBookingProps {
@@ -32,7 +31,6 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
   const { availability, bookings, loading, createBooking, cancelBooking } = useUserBookings();
   const { sections, getTimeSlotBookings } = useBookingSections('gym_visit', undefined, userProfile?.id);
   const navigate = useNavigate();
-  const { syncBookingToCalendar } = useGoogleCalendar();
 
   useEffect(() => {
     if (userProfile?.id) {
@@ -55,19 +53,6 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
     if (!canBookGymSection(sectionId, availability)) throw new Error('Δεν υπάρχουν διαθέσιμες επισκέψεις για αυτό το τμήμα');
     try {
       const bookingData = await createBooking(sectionId, date, time, type);
-      const sectionInfo = sections.find(s => s.id === sectionId);
-      
-      toast.success(t('onlineBooking.bookingCreated'), {
-        action: {
-          label: '📅 Google Calendar',
-          onClick: () => syncBookingToCalendar({
-            booking_date: date,
-            booking_time: time,
-            booking_type: type,
-            section_name: sectionInfo?.name,
-          }),
-        },
-      });
       return bookingData;
     } catch (error: any) {
       toast.error(error.message || t('onlineBooking.bookingError'));
