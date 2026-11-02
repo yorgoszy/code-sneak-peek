@@ -52,8 +52,8 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
   const handleCreateBooking = async (sectionId: string, date: string, time: string, type: string) => {
     if (!canBookGymSection(sectionId, availability)) throw new Error('Δεν υπάρχουν διαθέσιμες επισκέψεις για αυτό το τμήμα');
     try {
-      await createBooking(sectionId, date, time, type);
-      return null;
+      const bookingData = await createBooking(sectionId, date, time, type);
+      return bookingData;
     } catch (error: any) {
       toast.error(error.message || t('onlineBooking.bookingError'));
       throw error;
