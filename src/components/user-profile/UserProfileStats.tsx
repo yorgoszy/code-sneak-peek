@@ -186,7 +186,18 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
 
     const fetchVisitsData = async () => {
       try {
-        console.log('🔍 Fetching visits data for user:', user.id);
+        // Coach-owned users: visits come from the coach subscription (visit-based)
+        const { data: coachAvail } = await supabase.rpc('get_coach_booking_availability', { p_user: user.id });
+        const ca = coachAvail as { coach_id?: string; type?: string; available_visits?: number; total_visits?: number } | null;
+        if (ca?.coach_id) {
+          if (ca.type === 'visit_packages' && (ca.total_visits || 0) > 0 && (ca.total_visits || 0) < 999999) {
+            setVisitsData({ used: (ca.total_visits || 0) - (ca.available_visits || 0), total: ca.total_visits || 0 });
+          } else {
+            setVisitsData({ used: 0, total: 0 });
+          }
+          return;
+        }
+
         
         // Φόρτωση όλων των ενεργών visit packages
         const { data: visitPackages, error: packagesError } = await supabase
