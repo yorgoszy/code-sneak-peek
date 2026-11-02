@@ -28,17 +28,21 @@ Deno.serve(async (req) => {
     const { data: { user }, error: authError } = await admin.auth.getUser(authHeader.replace("Bearer ", ""));
     if (authError || !user) return json({ error: "Invalid authentication" }, 401);
 
-    const { data: caller } = await admin.from("app_users").select("role").eq("auth_user_id", user.id).maybeSingle();
+    const { data: caller } = await admin.from("app_users").select("id, role").eq("auth_user_id", user.id).maybeSingle();
     const { data: roleRow } = await admin.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle();
-    if (caller?.role !== "admin" && !roleRow) return json({ error: "Forbidden - Admin access required" }, 403);
+    const isAdmin = caller?.role === "admin" || !!roleRow;
 
     const { appUserId, password } = await req.json();
     if (!appUserId || typeof password !== "string" || password.length < 8) {
       return json({ error: "Ο κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες" });
     }
 
-    const { data: target } = await admin.from("app_users").select("id, email, name, auth_user_id").eq("id", appUserId).maybeSingle();
+    const { data: target } = await admin.from("app_users").select("id, email, name, auth_user_id, coach_id").eq("id", appUserId).maybeSingle();
     if (!target) return json({ error: "Ο χρήστης δεν βρέθηκε" }, 404);
+
+    // Coaches may set the initial password only for their own athletes that have no login yet
+    const isOwningCoach = !!caller?.id && target.coach_id === caller.id && !target.auth_user_id;
+    if (!isAdmin && !isOwningCoach) return json({ error: "Forbidden" }, 403);
 
     let authUserId = target.auth_user_id as string | null;
 
