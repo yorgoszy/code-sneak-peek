@@ -818,7 +818,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           </button>
 
           {/* Κύκλος Περιόδου - μόνο για γυναίκες */}
-          {user?.gender === 'female' ? (
+          {isCoachManagedUser ? null : user?.gender === 'female' ? (
             <button
               onClick={() => {
                 if (setActiveTab) {
@@ -842,7 +842,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           ) : null}
 
           {/* Επερχόμενα Τεστ - ΚΙΤΡΙΝΟ - Μη clickable */}
-          <div 
+          {!isCoachManagedUser && <div 
             className={`text-center ${isMobile ? 'p-1' : 'p-2'} rounded-none flex flex-col min-w-0 ${isWidgetDisabled('tests') ? disabledClass : ''}`}
           >
             <div className={`${isMobile ? 'h-6' : 'h-10'} flex items-center justify-center`}>
@@ -866,10 +866,10 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
               {t('overview.upcomingTests')}
             </div>
-          </div>
+          </div>}
 
           {/* Επερχόμενοι Αγώνες - Μόνο για αθλητές - ΜΟΒ - Μη clickable */}
-          {(user.is_athlete || user.role === 'athlete') && (
+          {!isCoachManagedUser && (user.is_athlete || user.role === 'athlete') && (
             <div 
               className={`text-center ${isMobile ? 'p-1' : 'p-2'} rounded-none flex flex-col min-w-0 ${isWidgetDisabled('tests') ? disabledClass : ''}`}
             >
@@ -899,8 +899,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
 
 
 
-          {/* Επισκέψεις - Κρύβεται για coach-managed users */}
-          {!isCoachManagedUser && (
+          {/* Επισκέψεις */}
+          {(
             <button
               onClick={() => {
                 if (setActiveTab) {
@@ -932,8 +932,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </button>
           )}
 
-          {/* Επερχόμενη Επίσκεψη - Κρύβεται για coach-managed users */}
-          {!isCoachManagedUser && (
+          {/* Επερχόμενη Επίσκεψη */}
+          {(
             <button 
               onClick={() => {
                 if (setActiveTab) {
@@ -1050,11 +1050,11 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           )}
 
           {/* Αριθμός Δελτίου - Μόνο για αθλητές */}
-          {(user.is_athlete || user.role === 'athlete') && (
+          {!isCoachManagedUser && (user.is_athlete || user.role === 'athlete') && (
             <CardNumberWidget userId={user.id} />
           )}
 
-          <Button
+          {!isCoachManagedUser && <Button
             variant="ghost"
             onClick={() => {
               if (setActiveTab) {
@@ -1073,7 +1073,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-muted-foreground font-normal ${isMobile ? 'text-xs' : 'text-sm'} leading-tight`}>
               Heart Rate (HR+)
             </div>
-          </Button>
+          </Button>}
 
           {/* Πρόοδος - Προτελευταίο */}
           <button 
