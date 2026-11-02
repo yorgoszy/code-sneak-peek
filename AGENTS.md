@@ -1,5 +1,7 @@
 # Architecture rules
 
+- Coach booking appointments use a dedicated weekly section view derived from persisted section hours and appointments; day/section selection feeds the existing attendee list and cancellation controls without changing booking writes.
+
 - Coach Online Booking and today's overview classes share a paginated coach-scoped appointment loader; the summary counts unique attendees for today's gym bookings, excludes cancelled/missed bookings, and retains completed attendance so the daily roster remains accurate.
 
 - User deletion uses one admin-checked transactional cleanup RPC followed by verified Auth deletion; failed Auth removal remains retryable in the confirmation dialog and never reports success.
