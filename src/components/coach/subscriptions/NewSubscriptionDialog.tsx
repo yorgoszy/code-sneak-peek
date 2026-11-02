@@ -171,6 +171,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
 
       if (receiptError) {
         console.error('Error creating receipt:', receiptError);
+        toast.error('Η συνδρομή δημιουργήθηκε, αλλά η απόδειξη απέτυχε');
         // Don't throw - subscription was created successfully
       }
 
