@@ -72,8 +72,8 @@ export function CoachBookingWeek({ date, sections, appointments, onSelect }: {
             <span className="text-[10px] text-muted-foreground">{format(day, 'dd/MM')}</span>
           </Button>;
         })}
-        {hours.map(hour => <>
-          <div key={`h-${hour}`} className="flex items-start justify-center border-b border-border bg-muted/40 px-0.5 py-1 text-[9px] font-medium text-muted-foreground">{hour}</div>
+        {hours.map(hour => <Fragment key={hour}>
+          <div className="flex items-start justify-center border-b border-border bg-muted/40 px-0.5 py-1 text-[9px] font-medium text-muted-foreground">{hour}</div>
           {dayDates.map((day, index) => {
             const key = `${index}-${hour}`;
             const ids = cellSections.get(key);
