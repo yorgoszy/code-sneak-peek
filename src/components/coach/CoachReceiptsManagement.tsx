@@ -614,10 +614,6 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
                   <p>{selectedReceipt.subscription_types?.name || '-'}</p>
                 </div>
                 <div>
-                  <span className="text-gray-500">Είδος:</span>
-                  <p>{getReceiptTypeLabel(selectedReceipt.receipt_type)}</p>
-                </div>
-                <div>
                   <span className="text-gray-500">ΜΑΡΚ ΑΑΔΕ:</span>
                   <p>{selectedReceipt.mark || '-'}</p>
                 </div>
