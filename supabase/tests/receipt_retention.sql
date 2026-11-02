@@ -17,8 +17,8 @@ BEGIN
   PERFORM public.admin_delete_athlete(target);
   IF EXISTS(SELECT 1 FROM public.app_users WHERE id=target) THEN RAISE EXCEPTION 'User survived deletion'; END IF;
   IF EXISTS(SELECT 1 FROM public.coach_subscriptions WHERE id=subscription_id) THEN RAISE EXCEPTION 'Subscription survived deletion'; END IF;
-  IF NOT EXISTS(SELECT 1 FROM public.coach_receipts WHERE id=receipt_id
-   AND user_id IS NULL AND subscription_id IS NULL AND coach_id=owner_id
+  IF NOT EXISTS(SELECT 1 FROM public.coach_receipts r WHERE r.id=receipt_id
+   AND r.user_id IS NULL AND r.subscription_id IS NULL AND r.coach_id=owner_id
    AND receipt_number='REG-'||receipt_id::text AND amount=50
    AND customer_name='Retention regression' AND customer_email=target::text||'@example.invalid'
    AND subscription_type_name IS NOT NULL) THEN RAISE EXCEPTION 'Receipt or original recipient was lost'; END IF;
