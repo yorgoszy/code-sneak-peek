@@ -874,31 +874,6 @@ const Auth = () => {
                     >
                       {isLoading ? t.authLoggingIn : t.authLogin}
                     </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={isLoading}
-                      onClick={async (ev) => {
-                        const form = (ev.currentTarget as HTMLButtonElement).form;
-                        const email = (form?.elements.namedItem('email') as HTMLInputElement | null)?.value.trim();
-                        if (!email) {
-                          toast({ title: language === 'el' ? 'Γράψε το email σου' : 'Enter your email', variant: 'destructive' });
-                          return;
-                        }
-                        setIsLoading(true);
-                        const { error } = await supabase.auth.signInWithOtp({
-                          email,
-                          options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}/dashboard` },
-                        });
-                        setIsLoading(false);
-                        toast(error
-                          ? { title: language === 'el' ? 'Δεν στάλθηκε σύνδεσμος' : 'Link not sent', description: error.message, variant: 'destructive' }
-                          : { title: language === 'el' ? 'Έλεγξε το email σου' : 'Check your email', description: language === 'el' ? 'Πάτησε τον σύνδεσμο για να συνδεθείς χωρίς κωδικό.' : 'Click the link to sign in without a password.' });
-                      }}
-                      className="w-full rounded-none bg-transparent text-white border-white hover:bg-white/10 hover:text-white"
-                    >
-                      {language === 'el' ? 'Σύνδεση χωρίς κωδικό (link στο email)' : 'Sign in without password (email link)'}
-                    </Button>
                     <div className="text-center">
                       <button
                         type="button"
