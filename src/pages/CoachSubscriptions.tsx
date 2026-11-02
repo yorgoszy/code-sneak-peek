@@ -381,17 +381,22 @@ const CoachSubscriptionsContent = () => {
     })
     .sort((a, b) => {
       const today = new Date();
-      const aEnd = new Date(a.end_date);
-      const bEnd = new Date(b.end_date);
+      const aEnd = a.end_date ? new Date(a.end_date) : null;
+      const bEnd = b.end_date ? new Date(b.end_date) : null;
+      // Χωρίς ημερομηνία λήξης → πάντα στο τέλος της λίστας
+      if (!aEnd && !bEnd) return 0;
+      if (!aEnd) return 1;
+      if (!bEnd) return -1;
+
       const aDays = Math.ceil((aEnd.getTime() - today.getTime()) / (1000 * 3600 * 24));
       const bDays = Math.ceil((bEnd.getTime() - today.getTime()) / (1000 * 3600 * 24));
-      
+
       const aExpired = aDays < 0;
       const bExpired = bDays < 0;
-      
+
       if (aExpired && !bExpired) return -1;
       if (!aExpired && bExpired) return 1;
-      
+
       return aEnd.getTime() - bEnd.getTime();
     });
 
