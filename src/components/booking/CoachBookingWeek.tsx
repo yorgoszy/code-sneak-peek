@@ -14,7 +14,7 @@ const activeStatuses = ['pending', 'confirmed', 'completed'];
 
 export function CoachBookingWeek({ date, sections, appointments, onSelect }: {
   date: Date; sections: Section[]; appointments: CoachBookingAppointment[];
-  onSelect: (date: Date, sectionId?: string) => void;
+  onSelect: (date: Date, sectionId?: string, hour?: string) => void;
 }) {
   const start = startOfWeek(date, { weekStartsOn: 1 });
   const dayDates = Array.from({ length: 7 }, (_, i) => addDays(start, i));
@@ -82,7 +82,7 @@ export function CoachBookingWeek({ date, sections, appointments, onSelect }: {
                 const section = sections.find(s => s.id === id);
                 if (!section) return null;
                 const count = counts.get(`${index}-${hour}-${id}`) ?? 0;
-                return <Button key={id} variant="outline" title={`${section.name}${count ? ` · ${count} άτομα` : ''}`} onClick={() => onSelect(day, id)} className="mb-px block h-auto w-full min-w-0 overflow-hidden rounded-none px-px py-0 text-left">
+                return <Button key={id} variant="outline" title={`${section.name}${count ? ` · ${count} άτομα` : ''}`} onClick={() => onSelect(day, id, hour)} className="mb-px block h-auto w-full min-w-0 overflow-hidden rounded-none px-px py-0 text-left">
                   <span className="block truncate text-[8px] font-semibold leading-3">{section.name}</span>
                   {count > 0 && <span className="block text-[7px] leading-3 text-muted-foreground">{count} άτομα</span>}
                 </Button>;
