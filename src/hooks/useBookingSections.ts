@@ -55,7 +55,7 @@ export const useBookingSections = (bookingType?: string, allowedSections?: strin
         .eq('is_active', true)
         .order('name');
       if (bookingType === 'videocall' || bookingType === 'gym_visit') {
-        let profileQuery = supabase.from('app_users').select('coach_id');
+        let profileQuery = supabase.from('app_users').select('id, coach_id');
         if (userId) profileQuery = profileQuery.eq('id', userId);
         else {
           const { data: auth } = await supabase.auth.getUser();
@@ -65,9 +65,11 @@ export const useBookingSections = (bookingType?: string, allowedSections?: strin
         const { data: profile, error: profileError } = await profileQuery.single();
         if (profileError) throw profileError;
         if (profile.coach_id) {
-          const { data: coach, error: coachError } = await supabase.from('app_users').select('role').eq('id', profile.coach_id).single();
-          if (coachError) throw coachError;
-          query = coach.role === 'admin' ? query.is('coach_id', null) : query.eq('coach_id', profile.coach_id).eq('booking_type', bookingType);
+          // Users cannot read their coach's row under RLS; resolve ownership via the protected scope RPC
+          const { data: scope } = await supabase.rpc('get_user_subscription_scope', { p_user_id: (profile as any).id } as any);
+          const row = Array.isArray(scope) ? scope[0] : scope;
+          const coachManaged = row?.is_coach_managed ?? true;
+          query = coachManaged ? query.eq('coach_id', profile.coach_id).eq('booking_type', bookingType) : query.is('coach_id', null);
         } else query = query.is('coach_id', null);
       } else query = query.is('coach_id', null);
       const { data, error } = await query;
