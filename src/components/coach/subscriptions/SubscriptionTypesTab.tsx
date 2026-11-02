@@ -329,7 +329,7 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
             <Button variant="outline" onClick={() => setDialogOpen(false)} className="rounded-none">
               Ακύρωση
             </Button>
-            <Button onClick={handleSave} className="bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none">
+            <Button onClick={handleSave} className="bg-[#004aad] hover:bg-[#004aad]/90 text-white rounded-none">
               {editingType ? 'Αποθήκευση' : 'Δημιουργία'}
             </Button>
           </DialogFooter>
