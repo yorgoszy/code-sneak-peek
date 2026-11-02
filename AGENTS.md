@@ -1,5 +1,7 @@
 # Architecture rules
 
+- Initial coach-user login creation passes a server-only Auth app_metadata profile ID; the signup trigger atomically links only the matching unlinked app_users row and email, preserving existing identity and rejecting metadata supplied by public signup.
+
 - Coach booking appointments use a dedicated weekly section view derived from persisted section hours and appointments; day/section selection feeds the existing attendee list and cancellation controls without changing booking writes.
 
 - Coach Online Booking and today's overview classes share a paginated coach-scoped appointment loader; the summary counts unique attendees for today's gym bookings, excludes cancelled/missed bookings, and retains completed attendance so the daily roster remains accurate.

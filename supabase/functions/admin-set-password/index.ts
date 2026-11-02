@@ -21,7 +21,10 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) return json({ error: "Unauthorized" }, 401);
 
-    const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
+    const url = Deno.env.get("SUPABASE_URL");
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!url || !serviceKey) return json({ error: "Authentication service unavailable" }, 500);
+    const admin = createClient(url, serviceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
@@ -30,7 +33,7 @@ Deno.serve(async (req) => {
 
     const { data: caller } = await admin.from("app_users").select("id, role").eq("auth_user_id", user.id).maybeSingle();
     const { data: roleRow } = await admin.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle();
-    const isAdmin = caller?.role === "admin" || !!roleRow;
+    const isAdmin = !!roleRow;
 
     const { appUserId, password } = await req.json();
     if (!appUserId || typeof password !== "string" || password.length < 8) {
@@ -53,10 +56,16 @@ Deno.serve(async (req) => {
         password,
         email_confirm: true,
         user_metadata: { name: target.name },
+        app_metadata: { app_user_id: target.id },
       });
       if (createErr || !created.user) return json({ error: translate(createErr?.message) });
       authUserId = created.user.id;
-      await admin.from("app_users").update({ auth_user_id: authUserId }).eq("id", appUserId);
+      // The signup trigger links the existing profile atomically with Auth creation.
+      const { data: linked, error: linkError } = await admin.from("app_users")
+        .select("auth_user_id").eq("id", appUserId).single();
+      if (linkError || linked?.auth_user_id !== authUserId) {
+        return json({ error: "Ο λογαριασμός δημιουργήθηκε αλλά η σύνδεσή του δεν επιβεβαιώθηκε" }, 500);
+      }
       return json({ success: true, created: true });
     }
 
