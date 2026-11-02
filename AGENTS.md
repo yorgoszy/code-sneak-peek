@@ -5,6 +5,7 @@
 - Coach Online Booking and today's overview classes share a paginated coach-scoped appointment loader; the summary counts unique attendees for today's gym bookings, excludes cancelled/missed bookings, and retains completed attendance so the daily roster remains accurate.
 
 - User deletion uses one admin-checked transactional cleanup RPC followed by verified Auth deletion; failed Auth removal remains retryable in the confirmation dialog and never reports success.
+- Issued receipts keep recipient/type snapshots and nullable SET NULL references; deletion cleanup never removes receipts, and coach receipt views resolve stored snapshots before live profile data so deleted subscriptions/users do not erase financial history.
 
 - BlueDatePicker accepts typed dd/MM/yyyy dates and calendar selection while preserving yyyy-MM-dd values for existing forms; invalid text blocks form submission through native validity.
 
