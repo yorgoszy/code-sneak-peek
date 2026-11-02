@@ -1,5 +1,8 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, it as test } from 'node:test';
+import { strictEqual } from 'node:assert';
 import { withReceiptRecipient } from './receiptRecipient';
+
+const expect = (actual: unknown) => ({ toBe: (expected: unknown) => strictEqual(actual, expected) });
 
 describe('retained receipt recipient', () => {
   test('retains recipient and issued details after user and subscription deletion', () => {
