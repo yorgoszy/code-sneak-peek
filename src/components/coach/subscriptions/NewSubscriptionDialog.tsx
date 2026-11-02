@@ -36,6 +36,9 @@ interface SubscriptionType {
   name: string;
   price: number;
   duration_months: number;
+  subscription_mode?: string | null;
+  visit_count?: number | null;
+  visit_expiry_months?: number | null;
 }
 
 interface NewSubscriptionDialogProps {
@@ -87,7 +90,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
       // Fetch coach's subscription types
       const { data: typesData, error: typesError } = await supabase
         .from('subscription_types')
-        .select('id, name, price, duration_months')
+        .select('id, name, price, duration_months, subscription_mode, visit_count, visit_expiry_months')
         .eq('coach_id', coachId)
         .eq('is_active', true)
         .order('name');
@@ -134,7 +137,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
       if (!selectedType) throw new Error('Invalid subscription type');
 
       const endDate = format(
-        addMonths(new Date(startDate), selectedType.duration_months),
+        addMonths(new Date(startDate), (selectedType.subscription_mode === 'visit_based' ? (selectedType.visit_expiry_months || selectedType.duration_months) : selectedType.duration_months) || 1),
         'yyyy-MM-dd'
       );
 
@@ -308,7 +311,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
               <p className="text-sm">Τύπος: {selectedType.name}</p>
               <p className="text-sm">Ποσό: {selectedType.price}€</p>
               <p className="text-sm">
-                Διάρκεια: {startDate} έως {format(addMonths(new Date(startDate), selectedType.duration_months), 'yyyy-MM-dd')}
+                Διάρκεια: {startDate} έως {format(addMonths(new Date(startDate), (selectedType.subscription_mode === 'visit_based' ? (selectedType.visit_expiry_months || selectedType.duration_months) : selectedType.duration_months) || 1), 'yyyy-MM-dd')}
               </p>
             </div>
           )}
