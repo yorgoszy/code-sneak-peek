@@ -12730,6 +12730,13 @@ export type Database = {
         Returns: Database["public"]["Enums"]["user_role"]
       }
       get_user_role_safe: { Args: { user_auth_id: string }; Returns: string }
+      get_user_subscription_scope: {
+        Args: { p_user_id: string }
+        Returns: {
+          coach_id: string
+          is_coach_managed: boolean
+        }[]
+      }
       get_visit_booking_sections: {
         Args: { p_user_id: string }
         Returns: string[]
