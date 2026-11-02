@@ -62,8 +62,8 @@ export function CoachBookingWeek({ date, sections, appointments, onSelect }: {
       <span className="text-sm">{format(start, 'dd/MM')} – {format(addDays(start, 6), 'dd/MM/yyyy')}</span>
       <Button variant="outline" size="icon" className="h-8 w-8 rounded-none" aria-label="Επόμενη εβδομάδα" onClick={() => onSelect(addWeeks(date, 1))}><ChevronRight className="h-4 w-4" /></Button>
     </div>
-    <div className="overflow-x-auto">
-      <div className="min-w-[560px] rounded-none border border-border" style={{ display: 'grid', gridTemplateColumns: '40px repeat(7, minmax(0, 1fr))' }}>
+    <div className="w-full min-w-0">
+      <div className="w-full min-w-0 rounded-none border border-border" style={{ display: 'grid', gridTemplateColumns: '26px repeat(7, minmax(0, 1fr))' }}>
         <div className="border-b border-border bg-muted/40" />
         {dayDates.map((day, index) => {
           const dayStr = format(day, 'yyyy-MM-dd');
