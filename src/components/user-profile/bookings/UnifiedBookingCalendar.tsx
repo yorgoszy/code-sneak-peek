@@ -33,7 +33,6 @@ interface Props {
 export function UnifiedBookingCalendar({ userId, sections, availability, onCreateBooking, onCancelBooking, getTimeSlotBookings }: Props) {
   const [week, setWeek] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState((new Date().getDay() + 6) % 7);
-  const [dayOpen, setDayOpen] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
   const isMobile = useIsMobile();
   const start = startOfWeek(week, { weekStartsOn: 1 });
@@ -99,8 +98,6 @@ export function UnifiedBookingCalendar({ userId, sections, availability, onCreat
     (s.available_hours?.[dayKeys[index]] || []).some(t => t.slice(0, 5) === time) ||
     calendar.data?.some(b => b.section_id === s.id && b.booking_date === format(days[index], 'yyyy-MM-dd') && b.booking_time.slice(0, 5) === time));
 
-  const selectedDate = format(days[selectedDay], 'yyyy-MM-dd');
-  const selectedSchedule = daySectionSchedule(sections, selectedDay, selectedDate, calendar.data);
 
   const renderSlot = (section: Section, index: number, time: string, detailed = false) => {
     const date = format(days[index], 'yyyy-MM-dd');
