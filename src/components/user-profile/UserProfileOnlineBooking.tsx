@@ -113,7 +113,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
   if (showCalendar) {
     return (
       <BookingCalendar
-        onBookingCreate={handleCreateBooking}
+        onBookingCreate={async (sectionId, date, time, type) => { await handleCreateBooking(sectionId, date, time, type); }}
         onClose={() => setShowCalendar(false)}
         bookingType={selectedBookingType}
         availability={availability}
