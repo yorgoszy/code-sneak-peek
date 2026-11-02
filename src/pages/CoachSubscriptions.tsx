@@ -249,23 +249,15 @@ const CoachSubscriptionsContent = () => {
       newEndDate.setMonth(newEndDate.getMonth() + durationMonths);
       newEndDate.setDate(newEndDate.getDate() - 1);
 
-      const insertPayload: any = {
-        coach_id: coachId,
-        user_id: subscription.user_id,
-        subscription_type_id: subscription.subscription_types.id,
-        start_date: newStartDate.toISOString().split("T")[0],
-        end_date: newEndDate.toISOString().split("T")[0],
-        status: "active",
-        is_paused: false
-      };
-      // coach_user_id points to the legacy coach_users table; keep the original value only
-      if (subsTable === "coach_subscriptions" && (subscription as any).coach_user_id) {
-        insertPayload.coach_user_id = (subscription as any).coach_user_id;
-      }
-
+      // Renewal extends the same subscription row instead of creating a duplicate
       const { data: subscriptionData, error: subscriptionError } = await supabase
         .from(subsTable!)
-        .insert(insertPayload)
+        .update({
+          end_date: newEndDate.toISOString().split("T")[0],
+          status: "active",
+          is_paused: false
+        } as any)
+        .eq('id', id)
         .select()
         .single();
 
