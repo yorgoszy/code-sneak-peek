@@ -767,6 +767,12 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </div>
           </div>
 
+          {/* Κάρτα Υγείας - Μόνο για αθλητές - Τρίτο στη σειρά */}
+          {(user.is_athlete || user.role === 'athlete') && (
+            <div className={isWidgetDisabled('health') ? disabledClass : ''}>
+              <HealthCardWidget userId={user.id} />
+            </div>
+          )}
 
           {/* Ημέρες Προπόνησης / Προγράμματα - Πέμπτο (δεξιά από Μέρες Συνδρομής) */}
           <button 
@@ -1040,13 +1046,6 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 {t('overview.upcomingVideocall')}
               </div>
             </button>
-          )}
-
-          {/* Κάρτα Υγείας - Μόνο για αθλητές - Πριν το Προφίλ */}
-          {(user.is_athlete || user.role === 'athlete') && (
-            <div className={isWidgetDisabled('health') ? disabledClass : ''}>
-              <HealthCardWidget userId={user.id} />
-            </div>
           )}
 
           {/* Αριθμός Δελτίου - Μόνο για αθλητές */}
