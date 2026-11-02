@@ -89,7 +89,7 @@ export function CoachBookingWeek({ date, sections, appointments, onSelect }: {
               })}
             </div>;
           })}
-        </>)}
+        </Fragment>)}
       </div>
     </div>
   </div>;
