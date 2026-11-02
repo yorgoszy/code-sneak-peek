@@ -57,6 +57,10 @@ export function CoachBookingWeek({ date, sections, appointments, onSelect }: {
   for (let h = parseInt(first.slice(0, 2)); h <= parseInt(last.slice(0, 2)); h++) hours.push(`${String(h).padStart(2, '0')}:00`);
 
   const selectedDateStr = format(date, 'yyyy-MM-dd');
+  const names = ['Δευ', 'Τρι', 'Τετ', 'Πεμ', 'Παρ', 'Σαβ', 'Κυρ'];
+
+  const isMobile = useIsMobile();
+  const selectedDayIndex = dayIndexByDate.get(selectedDateStr) ?? 0;
 
   return <div className="min-w-0 space-y-3" aria-label="Εβδομαδιαίο ημερολόγιο τμημάτων">
     <div className="flex items-center justify-between gap-2">
@@ -64,6 +68,50 @@ export function CoachBookingWeek({ date, sections, appointments, onSelect }: {
       <span className="text-sm">{format(start, 'dd/MM')} – {format(addDays(start, 6), 'dd/MM/yyyy')}</span>
       <Button variant="outline" size="icon" className="h-8 w-8 rounded-none" aria-label="Επόμενη εβδομάδα" onClick={() => onSelect(addWeeks(date, 1))}><ChevronRight className="h-4 w-4" /></Button>
     </div>
+    {isMobile ? (
+      <div className="space-y-3">
+        <div className="grid grid-cols-7 gap-0.5">
+          {dayDates.map((day, index) => {
+            const dayStr = format(day, 'yyyy-MM-dd');
+            return <Button key={index} variant="outline" aria-label={`${names[index]} ${format(day, 'dd/MM')}`} onClick={() => onSelect(day)}
+              className={`rounded-none h-auto px-0.5 py-0 flex flex-col gap-0 text-muted-foreground ${dayStr === selectedDateStr ? 'bg-accent text-foreground' : ''}`}>
+              <span className="text-[9px] leading-[11px]">{names[index]}</span>
+              <span className="text-[10px] leading-[12px] font-bold">{format(day, 'dd/MM')}</span>
+            </Button>;
+          })}
+        </div>
+        <div className="space-y-0.5">
+          {hours.map(hour => {
+            const ids = cellSections.get(`${selectedDayIndex}-${hour}`);
+            if (!ids) return null;
+            return (
+              <div key={hour} className="space-y-0.5">
+                {Array.from(ids).map(id => {
+                  const section = sections.find(s => s.id === id);
+                  if (!section) return null;
+                  const count = counts.get(`${selectedDayIndex}-${hour}-${id}`) ?? 0;
+                  return (
+                    <div key={id} className="flex items-center gap-2 border border-border bg-muted/30 px-2 py-1">
+                      <span className="text-[10px] w-10 shrink-0">{hour}</span>
+                      <div className="flex-1 min-w-0">
+                        <Button variant="ghost" title={`${section.name} · ${hour}`} onClick={() => onSelect(dayDates[selectedDayIndex], id, hour)}
+                          className="w-full h-auto min-h-0 rounded-none border border-border px-px py-0 flex flex-col items-stretch gap-0 whitespace-normal text-left bg-muted text-foreground hover:bg-accent">
+                          <span className="flex min-w-0 items-center gap-0.5 text-sm font-medium leading-5"><span className="truncate">{section.name}</span></span>
+                          <span className="flex items-center gap-0.5">
+                            <Progress className="h-px flex-1" value={section.max_capacity > 0 ? Math.min(100, count / section.max_capacity * 100) : 0} />
+                            <span className="shrink-0 text-xs leading-4 text-muted-foreground">{count}/{section.max_capacity}</span>
+                          </span>
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    ) : (
     <div className="w-full min-w-0">
       <div className="w-full min-w-0 rounded-none border border-border" style={{ display: 'grid', gridTemplateColumns: '26px repeat(7, minmax(0, 1fr))' }}>
         <div className="border-b border-border bg-muted/40" />
@@ -94,5 +142,6 @@ export function CoachBookingWeek({ date, sections, appointments, onSelect }: {
         </Fragment>)}
       </div>
     </div>
+    )}
   </div>;
 }
