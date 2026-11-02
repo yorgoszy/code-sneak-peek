@@ -3,13 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import { addDays, addWeeks, format, startOfWeek } from 'date-fns';
 import { Ban, Check, ChevronLeft, ChevronRight, Loader2, LockKeyhole, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { canBookGymSection } from '@/hooks/bookingSectionAccess';
 import { supabase } from '@/integrations/supabase/client';
 import { sectionVisitEvents } from './sectionVisitEvents';
-import { daySectionSchedule } from './daySectionSchedule';
 import { cn } from '@/lib/utils';
 
 interface Section {
