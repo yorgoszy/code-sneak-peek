@@ -66,12 +66,25 @@ export function CoachOnlineBooking() {
         <div className="space-y-4">
           <CoachBookingWeek date={date ?? new Date()} sections={calendar.data ?? []} appointments={allAppointments} onSelect={(day, section, hour) => { setDate(day); if (section && hour) setPopup({ date: day, sectionId: section, hour }); }} />
           <div className="min-w-0 space-y-2"><h3 className="text-sm font-semibold">{date && format(date, 'dd/MM/yyyy')}</h3>
-            {appointments.isLoading ? <p role="status">Φόρτωση…</p> : selected.length ? selected.map(b => <div key={b.id} className="flex items-center gap-3 border-b border-border py-3">
-              <span className="text-sm font-semibold">{b.booking_time.slice(0, 5)}</span>
-              <div className="min-w-0 flex-1"><p className="truncate font-medium">{b.user?.name}</p><p className="truncate text-xs text-muted-foreground">{b.user?.email}</p><p className="text-xs text-muted-foreground">{calendar.data?.find(s => s.id === b.section_id)?.name}</p></div>
-              <span className="text-xs text-muted-foreground">{b.status === 'cancelled' ? 'Ακυρωμένο' : b.status === 'completed' ? 'Ολοκληρωμένο' : 'Κράτηση'}</span>
-              {['confirmed', 'pending'].includes(b.status) && <Button variant="ghost" size="icon" title="Ακύρωση ραντεβού" className="rounded-none" onClick={() => setCancelId(b.id)}><X className="h-4 w-4" /></Button>}
-            </div>) : <p className="text-sm text-muted-foreground">Δεν υπάρχουν ραντεβού.</p>}
+            {appointments.isLoading ? <p role="status">Φόρτωση…</p> : (() => {
+              // Group the day's bookings by section; each group sorted soonest first.
+              const groups = (calendar.data ?? []).map(s => ({
+                section: s,
+                bookings: selected.filter(b => b.section_id === s.id && b.status !== 'cancelled')
+                  .sort((a, b) => a.booking_time.localeCompare(b.booking_time)),
+              })).filter(g => g.bookings.length)
+                .sort((a, b) => a.bookings[0].booking_time.localeCompare(b.bookings[0].booking_time));
+              if (!groups.length) return <p className="text-sm text-muted-foreground">Δεν υπάρχουν ραντεβού.</p>;
+              return groups.map(g => <div key={g.section.id} className="space-y-1">
+                <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{g.section.name}</h4>
+                {g.bookings.map(b => <div key={b.id} className="flex items-center gap-3 border-b border-border py-2">
+                  <span className="w-12 shrink-0 text-sm font-semibold">{b.booking_time.slice(0, 5)}</span>
+                  <div className="min-w-0 flex-1"><p className="truncate font-medium">{b.user?.name}</p><p className="truncate text-xs text-muted-foreground">{b.user?.email}</p></div>
+                  <span className="text-xs text-muted-foreground">{b.status === 'completed' ? 'Ολοκληρωμένο' : 'Κράτηση'}</span>
+                  {['confirmed', 'pending'].includes(b.status) && <Button variant="ghost" size="icon" title="Ακύρωση ραντεβού" className="rounded-none" onClick={() => setCancelId(b.id)}><X className="h-4 w-4" /></Button>}
+                </div>)}
+              </div>);
+            })()}
           </div>
         </div>
       </TabsContent>
