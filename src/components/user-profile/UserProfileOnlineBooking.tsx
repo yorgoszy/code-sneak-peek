@@ -14,7 +14,6 @@ import { UnifiedBookingCalendar } from "./bookings/UnifiedBookingCalendar";
 import { useBookingSections } from "@/hooks/useBookingSections";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useGoogleCalendar } from "@/hooks/useGoogleCalendar";
 import { canBookGymSection } from '@/hooks/bookingSectionAccess';
 
 interface UserProfileOnlineBookingProps {
@@ -32,7 +31,6 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
   const { availability, bookings, loading, createBooking, cancelBooking } = useUserBookings();
   const { sections, getTimeSlotBookings } = useBookingSections('gym_visit', undefined, userProfile?.id);
   const navigate = useNavigate();
-  const { syncBookingToCalendar } = useGoogleCalendar();
 
   useEffect(() => {
     if (userProfile?.id) {
