@@ -52,7 +52,7 @@ export const ViewCoachUserDialog = ({
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16">
               <AvatarImage src={user.avatar_url || ''} />
-              <AvatarFallback className="bg-[#00ffba]/20 text-[#00ffba] text-2xl">
+              <AvatarFallback className="bg-[#004aad]/20 text-[#004aad] text-2xl">
                 {user.name.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
