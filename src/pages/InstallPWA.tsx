@@ -98,16 +98,6 @@ export default function InstallPWA() {
           </div>
         )}
 
-        <div className="mt-6 pt-6 border-t">
-          <h3 className="font-semibold mb-2">✨ {t('install.benefits')}</h3>
-          <ul className="text-sm space-y-2 text-gray-700">
-            <li>✓ {t('install.benefit1')}</li>
-            <li>✓ {t('install.benefit2')}</li>
-            <li>✓ {t('install.benefit3')}</li>
-            <li>✓ {t('install.benefit4')}</li>
-          </ul>
-        </div>
-
         <Button
           onClick={() => navigate('/')}
           variant="outline"
