@@ -29,19 +29,6 @@ export const CoachSubscriptionActions: React.FC<CoachSubscriptionActionsProps> =
 }) => {
   return (
     <div className="flex gap-1">
-      {/* Payment Status Button */}
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={() => onTogglePayment(subscriptionId, isPaid)}
-        className={`rounded-none h-7 w-7 md:h-8 md:w-8 p-0 ${isPaid 
-          ? 'border-[#004aad] text-[#004aad] hover:bg-[#004aad]/10'
-          : 'border-red-300 text-red-600 hover:bg-red-50'}`}
-        title={isPaid ? "Σημείωση ως μη πληρωμένη" : "Σημείωση ως πληρωμένη"}
-      >
-        {isPaid ? <Check className="w-3 h-3 md:w-4 md:h-4" /> : <X className="w-3 h-3 md:w-4 md:h-4" />}
-      </Button>
-
       {/* Pause/Resume Button */}
       {isPaused ? (
         <Button
@@ -63,6 +50,19 @@ export const CoachSubscriptionActions: React.FC<CoachSubscriptionActionsProps> =
           <Pause className="w-3 h-3 md:w-4 md:h-4" />
         </Button>
       )}
+
+      {/* Payment Status Button */}
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => onTogglePayment(subscriptionId, isPaid)}
+        className={`rounded-none h-7 w-7 md:h-8 md:w-8 p-0 ${isPaid 
+          ? 'border-[#004aad] text-[#004aad] hover:bg-[#004aad]/10' 
+          : 'border-red-300 text-red-600 hover:bg-red-50'}`}
+        title={isPaid ? "Σημείωση ως μη πληρωμένη" : "Σημείωση ως πληρωμένη"}
+      >
+        {isPaid ? <Check className="w-3 h-3 md:w-4 md:h-4" /> : <X className="w-3 h-3 md:w-4 md:h-4" />}
+      </Button>
 
       {/* Renewal Button */}
       <Button
