@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from '@/hooks/useAuth';
 import { canBookSection } from './bookingSectionAccess';
+import { createBookingMutationQueue } from './bookingMutationQueue';
 
 interface BookingAvailability {
   type: 'hypergym' | 'visit_packages' | 'videocall' | 'single_videocall' | 'none';
@@ -38,6 +39,8 @@ interface BookingSession {
 export const useUserBookings = () => {
   const { user } = useAuth();
   const [availability, setAvailability] = useState<BookingAvailability | null>(null);
+  const availabilityRef = useRef<BookingAvailability | null>(null);
+  const mutationQueue = useRef(createBookingMutationQueue());
   const [bookings, setBookings] = useState<BookingSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<any>(null);
@@ -118,7 +121,8 @@ export const useUserBookings = () => {
       console.log('✅ Availability data received:', data);
       
       // Refresh component after successful fetch
-      setAvailability(data as unknown as BookingAvailability);
+      availabilityRef.current = data as unknown as BookingAvailability;
+      setAvailability(availabilityRef.current);
       setLoading(false);
     } catch (error) {
       console.error('❌ Error fetching booking availability:', error);
@@ -151,6 +155,7 @@ export const useUserBookings = () => {
 
   const createBooking = async (sectionId: string, bookingDate: string, bookingTime: string, bookingType: string) => {
     if (!userProfile) throw new Error('User profile not found');
+    const availability = availabilityRef.current;
 
     // Check availability before creating booking
     console.log('🔍 Checking availability before creating booking:', { bookingType, availability });
@@ -233,7 +238,7 @@ export const useUserBookings = () => {
     }
 
     // Send booking notification based on type
-    try {
+    void (async () => { try {
       if (bookingType === 'videocall') {
         // For videocalls, send pending notification to admin
         await supabase.functions.invoke('send-videocall-notifications', {
@@ -256,7 +261,7 @@ export const useUserBookings = () => {
     } catch (notificationError) {
       console.error('Error sending booking notification:', notificationError);
       // Don't throw error here - booking is already created
-    }
+    } })();
 
     // Refresh data after creating booking
     await Promise.all([fetchAvailability(), fetchBookings()]);
@@ -297,7 +302,7 @@ export const useUserBookings = () => {
     if (error) throw error;
 
     // Send cancellation notification with stored booking data
-    try {
+    void (async () => { try {
       await supabase.functions.invoke('send-videocall-notifications', {
         body: {
           type: 'booking_cancelled',
@@ -310,7 +315,7 @@ export const useUserBookings = () => {
     } catch (notificationError) {
       console.error('Error sending cancellation notification:', notificationError);
       // Don't throw error here - booking is already cancelled
-    }
+    } })();
 
     // If it's a gym visit, return the visit to the package
     if (booking?.booking_type === 'gym_visit' && booking?.user_id && !booking.coach_id) {
@@ -407,8 +412,9 @@ export const useUserBookings = () => {
     bookings,
     loading,
     userProfile,
-    createBooking,
-    cancelBooking,
+    createBooking: (sectionId: string, date: string, time: string, type: string) =>
+      mutationQueue.current.run(() => createBooking(sectionId, date, time, type)),
+    cancelBooking: (bookingId: string) => mutationQueue.current.run(() => cancelBooking(bookingId)),
     refetch: () => Promise.all([fetchAvailability(), fetchBookings()])
   };
 };

@@ -52,7 +52,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
   };
 
   const handleCreateBooking = async (sectionId: string, date: string, time: string, type: string) => {
-    if (!canBookGymSection(sectionId, availability)) return;
+    if (!canBookGymSection(sectionId, availability)) throw new Error('Δεν υπάρχουν διαθέσιμες επισκέψεις για αυτό το τμήμα');
     try {
       const bookingData = await createBooking(sectionId, date, time, type);
       const sectionInfo = sections.find(s => s.id === sectionId);
@@ -68,8 +68,10 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
           }),
         },
       });
+      return bookingData;
     } catch (error: any) {
       toast.error(error.message || t('onlineBooking.bookingError'));
+      throw error;
     }
   };
 
@@ -79,6 +81,7 @@ export const UserProfileOnlineBooking: React.FC<UserProfileOnlineBookingProps> =
       toast.success(t('onlineBooking.bookingCancelled'));
     } catch (error: any) {
       toast.error(error.message || t('onlineBooking.cannotCancel'));
+      throw error;
     }
   };
 

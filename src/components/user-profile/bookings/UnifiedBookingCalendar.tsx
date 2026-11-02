@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { addDays, addWeeks, format, startOfWeek } from 'date-fns';
 import { Ban, Check, ChevronLeft, ChevronRight, Loader2, LockKeyhole, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { canBookGymSection } from '@/hooks/bookingSectionAccess';
 import { supabase } from '@/integrations/supabase/client';
 import { sectionVisitEvents } from './sectionVisitEvents';
+import type { SectionCalendarEvent } from './sectionVisitEvents';
 import { cn } from '@/lib/utils';
 
 interface Section {
@@ -22,7 +23,7 @@ interface Props {
   userId: string;
   sections: Section[];
   availability: Parameters<typeof canBookGymSection>[1];
-  onCreateBooking: (sectionId: string, date: string, time: string, type: string) => Promise<void>;
+  onCreateBooking: (sectionId: string, date: string, time: string, type: string) => Promise<SectionCalendarEvent>;
   onCancelBooking: (bookingId: string) => Promise<void>;
   getTimeSlotBookings: (sectionId: string, date: string, type?: string) => Promise<Record<string, number>>;
 }
@@ -31,7 +32,9 @@ interface Props {
 export function UnifiedBookingCalendar({ userId, sections, availability, onCreateBooking, onCancelBooking, getTimeSlotBookings }: Props) {
   const [week, setWeek] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState((new Date().getDay() + 6) % 7);
-  const [pending, setPending] = useState<string | null>(null);
+  const [pending, setPending] = useState<Set<string>>(new Set());
+  const pendingRef = useRef(new Set<string>());
+  const queryClient = useQueryClient();
   const isMobile = useIsMobile();
   const start = startOfWeek(week, { weekStartsOn: 1 });
   const days = Array.from({ length: 7 }, (_, i) => addDays(start, i));
@@ -65,7 +68,7 @@ export function UnifiedBookingCalendar({ userId, sections, availability, onCreat
     },
   });
   const occupancy = useQuery({
-    queryKey: ['unified-section-occupancy', ids, from, calendar.data],
+    queryKey: ['unified-section-occupancy', ids, from],
     enabled: Boolean(ids.length),
     refetchOnWindowFocus: false,
     queryFn: async () => Object.fromEntries(await Promise.all(sections.flatMap(section => days.map(async day => {
@@ -106,24 +109,53 @@ export function UnifiedBookingCalendar({ userId, sections, availability, onCreat
     const access = canBookGymSection(section.id, availability);
     const past = new Date(`${date}T${time}`) <= new Date();
     const cancel = booking?.source === 'booking' && booking.attended === undefined && new Date(`${date}T${time}`).getTime() - Date.now() > 12 * 60 * 60 * 1000;
-    const disabled = Boolean(pending) || (booking ? !cancel : !access || past || Boolean(closed(date)) || count >= section.max_capacity || calendar.isLoading || calendar.isError || occupancy.isLoading || occupancy.isError || closures.isLoading || closures.isError);
+    const disabled = pending.has(key) || (booking ? !cancel : !access || past || Boolean(closed(date)) || count >= section.max_capacity || calendar.isLoading || calendar.isError || occupancy.isLoading || occupancy.isError || closures.isLoading || closures.isError);
     return (
       <Button key={section.id} variant="ghost" disabled={disabled}
         aria-label={`${section.name} ${date} ${time}${booking ? cancel ? ' — Ακύρωση κράτησης' : ' — Καταγεγραμμένη επίσκεψη' : !access ? ' — Χωρίς πρόσβαση' : ' — Κράτηση'}`}
         title={`${section.name} · ${time}${!access && !booking ? ' · Χωρίς πρόσβαση' : ''}`}
         className={cn('w-full h-auto min-h-0 rounded-none border border-border px-px py-0 flex flex-col items-stretch gap-0 whitespace-normal text-left disabled:opacity-100', !access && !booking ? 'bg-muted/40 text-muted-foreground' : 'bg-muted text-foreground hover:bg-accent')}
         onClick={async () => {
-          if (disabled) return;
-          setPending(key);
+          if (disabled || pendingRef.current.has(key)) return;
+          pendingRef.current.add(key);
+          setPending(new Set(pendingRef.current));
+          const calendarKey = ['unified-section-calendar', userId, ids, from, to];
+          const occupancyKey = ['unified-section-occupancy', ids, from];
           try {
-            if (booking && cancel) await onCancelBooking(booking.id);
-            else if (access) await onCreateBooking(section.id, date, time, 'gym_visit');
-            await calendar.refetch();
-            await occupancy.refetch();
-          } finally { setPending(null); }
+            if (booking && cancel) {
+              await onCancelBooking(booking.id);
+              await queryClient.cancelQueries({ queryKey: calendarKey });
+              queryClient.setQueryData<SectionCalendarEvent[]>(calendarKey, previous => (previous || []).filter(event => event.id !== booking.id));
+            } else if (access) {
+              const saved = await onCreateBooking(section.id, date, time, 'gym_visit');
+              await queryClient.cancelQueries({ queryKey: calendarKey });
+              queryClient.setQueryData<SectionCalendarEvent[]>(calendarKey, previous => [
+                ...(previous || []).filter(event => event.id !== saved.id),
+                { ...saved, source: 'booking' },
+              ]);
+            }
+            await queryClient.cancelQueries({ queryKey: occupancyKey });
+            queryClient.setQueryData<Record<string, Record<string, number>>>(occupancyKey, previous => ({
+              ...previous,
+              [`${section.id}:${date}`]: {
+                ...previous?.[`${section.id}:${date}`],
+                [time]: Math.max(0, (previous?.[`${section.id}:${date}`]?.[time] || 0) + (booking && cancel ? -1 : 1)),
+              },
+            }));
+          } catch {
+            // The caller displays the save error. Keep the last confirmed slot.
+          } finally {
+            pendingRef.current.delete(key);
+            setPending(new Set(pendingRef.current));
+            if (pendingRef.current.size === 0) {
+              // Reconcile once after a burst, in the background without hiding the calendar.
+              void queryClient.invalidateQueries({ queryKey: ['unified-section-calendar', userId] });
+              void queryClient.invalidateQueries({ queryKey: ['unified-section-occupancy'] });
+            }
+          }
         }}>
         <span className={cn('flex items-center gap-0.5 font-medium min-w-0', detailed ? 'text-sm leading-5' : 'text-[7px] leading-[8px]')}>
-          {pending === key ? <Loader2 className="h-2 w-2 shrink-0 animate-spin" /> : booking ? booking.attended === false ? <X className="h-2 w-2 shrink-0" /> : <Check className="h-2 w-2 shrink-0" /> : !access ? <LockKeyhole className="h-2 w-2 shrink-0" /> : null}
+          {pending.has(key) ? <Loader2 className="h-2 w-2 shrink-0 animate-spin" /> : booking ? booking.attended === false ? <X className="h-2 w-2 shrink-0" /> : <Check className="h-2 w-2 shrink-0" /> : !access ? <LockKeyhole className="h-2 w-2 shrink-0" /> : null}
           <span className={detailed ? 'break-words' : 'truncate'}>{section.name}</span>
         </span>
         <span className="flex items-center gap-0.5">
