@@ -263,18 +263,6 @@ export const EditCoachUserDialog = ({
             </div>
           </div>
 
-          {/* Notes */}
-          <div>
-            <Label htmlFor="notes" className="text-xs">Σημειώσεις</Label>
-            <Textarea
-              id="notes"
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Σημειώσεις για τον αθλητή..."
-              className="rounded-none text-sm resize-none"
-              rows={2}
-            />
-          </div>
           
           {/* Actions */}
           <div className="flex justify-end gap-2 pt-2">
