@@ -1073,7 +1073,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-muted-foreground font-normal ${isMobile ? 'text-xs' : 'text-sm'} leading-tight`}>
               Heart Rate (HR+)
             </div>
-          </Button>
+          </Button>}
 
           {/* Πρόοδος - Προτελευταίο */}
           <button 
