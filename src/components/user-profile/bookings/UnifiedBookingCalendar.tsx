@@ -146,7 +146,7 @@ export function UnifiedBookingCalendar({ userId, sections, availability, onCreat
       <div className={cn('grid gap-0.5', isMobile ? 'grid-cols-7' : 'grid-cols-8')}>
         {!isMobile && <div />}
         {days.map((day, index) => (
-          <Button key={index} variant="outline" aria-label={`Πρόγραμμα ${names[index]} ${format(day, 'dd/MM')}`} aria-haspopup="dialog" onClick={() => { setSelectedDay(index); setDayOpen(true); }} className={cn('rounded-none h-auto px-0.5 py-0 flex flex-col gap-0 text-muted-foreground', selectedDay === index && 'bg-accent text-foreground')}>
+          <Button key={index} variant="outline" aria-label={`Πρόγραμμα ${names[index]} ${format(day, 'dd/MM')}`} onClick={() => setSelectedDay(index)} className={cn('rounded-none h-auto px-0.5 py-0 flex flex-col gap-0 text-muted-foreground', selectedDay === index && 'bg-accent text-foreground')}>
             <span className="text-[9px] leading-[11px]">{names[index]}</span><span className="text-[10px] leading-[12px] font-bold">{format(day, 'dd/MM')}</span>
           </Button>
         ))}
@@ -166,22 +166,6 @@ export function UnifiedBookingCalendar({ userId, sections, availability, onCreat
           </div>
         ))}
       </div>
-      <Dialog open={dayOpen} onOpenChange={setDayOpen}>
-        <DialogContent className="rounded-none max-w-lg max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Πρόγραμμα ημέρας · {names[selectedDay]} {format(days[selectedDay], 'dd/MM/yyyy')}</DialogTitle>
-          </DialogHeader>
-          {closed(selectedDate) && <p className="flex items-center gap-2 text-sm text-muted-foreground"><Ban className="h-4 w-4" />Κλειστά</p>}
-          {selectedSchedule.length === 0 ? <p className="text-sm text-muted-foreground">Δεν υπάρχουν τμήματα αυτή την ημέρα.</p> : (
-            <div className="space-y-2">
-              {selectedSchedule.map(slot => <div key={slot.time} className="flex items-start gap-3 border-b border-border pb-2">
-                <span className="w-12 shrink-0 text-sm font-medium">{slot.time}</span>
-                <div className="flex-1 min-w-0 space-y-1">{slot.sections.map(section => renderSlot(section, selectedDay, slot.time, true))}</div>
-              </div>)}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
