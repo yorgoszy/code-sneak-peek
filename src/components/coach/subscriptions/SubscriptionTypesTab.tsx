@@ -32,6 +32,8 @@ interface SubscriptionType {
   coach_id: string;
   is_active: boolean;
   allowed_sections?: string[] | null;
+  visit_count?: number | null;
+  visit_expiry_months?: number | null;
 }
 
 interface BookingSection {
@@ -55,7 +57,9 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
   const [formData, setFormData] = useState({
     name: '',
     price: '',
-    duration_months: ''
+    duration_months: '',
+    visit_count: '',
+    visit_expiry_months: ''
   });
 
   const fetchTypes = async () => {
@@ -115,12 +119,14 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
       setFormData({
         name: type.name,
         price: type.price.toString(),
-        duration_months: type.duration_months.toString()
+        duration_months: type.duration_months.toString(),
+        visit_count: type.visit_count ? type.visit_count.toString() : '',
+        visit_expiry_months: type.visit_expiry_months ? type.visit_expiry_months.toString() : ''
       });
       setSelectedSections(type.allowed_sections || []);
     } else {
       setEditingType(null);
-      setFormData({ name: '', price: '', duration_months: '' });
+      setFormData({ name: '', price: '', duration_months: '', visit_count: '', visit_expiry_months: '' });
       setSelectedSections([]);
     }
     setDialogOpen(true);
@@ -132,6 +138,12 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
       return;
     }
 
+    const visits = parseInt(formData.visit_count);
+    const visitExpiry = parseInt(formData.visit_expiry_months);
+    const visitFields = visits > 0
+      ? { visit_count: visits, visit_expiry_months: visitExpiry > 0 ? visitExpiry : null, subscription_mode: 'visit_based' }
+      : { visit_count: null, visit_expiry_months: null, subscription_mode: 'time_based' };
+
     try {
       if (editingType) {
         const { error } = await supabase
@@ -140,7 +152,8 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
             name: formData.name,
             price: parseFloat(formData.price),
             duration_months: parseInt(formData.duration_months),
-            allowed_sections: selectedSections.length > 0 ? selectedSections : null
+            allowed_sections: selectedSections.length > 0 ? selectedSections : null,
+            ...visitFields
           })
           .eq('id', editingType.id);
 
@@ -155,7 +168,8 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
             duration_months: parseInt(formData.duration_months),
             coach_id: coachId,
             is_active: true,
-            allowed_sections: selectedSections.length > 0 ? selectedSections : null
+            allowed_sections: selectedSections.length > 0 ? selectedSections : null,
+            ...visitFields
           });
 
         if (error) throw error;
@@ -227,6 +241,11 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
                     <p className="text-sm text-muted-foreground">
                       {type.duration_months} {type.duration_months === 1 ? 'μήνας' : 'μήνες'}
                     </p>
+                    {type.visit_count ? (
+                      <p className="text-xs text-muted-foreground">
+                        {type.visit_count} επισκέψεις{type.visit_expiry_months ? ` · λήγουν σε ${type.visit_expiry_months} ${type.visit_expiry_months === 1 ? 'μήνα' : 'μήνες'}` : ''}
+                      </p>
+                    ) : null}
                     {type.allowed_sections && type.allowed_sections.length > 0 && (
                       <p className="text-xs text-muted-foreground">
                         {type.allowed_sections.length} {type.allowed_sections.length === 1 ? 'τμήμα' : 'τμήματα'} booking
@@ -292,6 +311,31 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
                   value={formData.duration_months}
                   onChange={(e) => setFormData({ ...formData, duration_months: e.target.value })}
                   placeholder="1"
+                  className="rounded-none"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Επισκέψεις</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={formData.visit_count}
+                  onChange={(e) => setFormData({ ...formData, visit_count: e.target.value })}
+                  placeholder="Απεριόριστες"
+                  className="rounded-none"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Λήξη επισκέψεων (μήνες)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={formData.visit_expiry_months}
+                  onChange={(e) => setFormData({ ...formData, visit_expiry_months: e.target.value })}
+                  placeholder="Διάρκεια"
+                  disabled={!formData.visit_count}
                   className="rounded-none"
                 />
               </div>
