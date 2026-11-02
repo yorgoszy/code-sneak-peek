@@ -467,7 +467,6 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
                       <th className="text-left py-2 px-2">Αριθμός</th>
                       <th className="text-left py-2 px-2">Αθλητής</th>
                       <th className="text-left py-2 px-2">Ημερομηνία</th>
-                      <th className="text-left py-2 px-2">Τύπος</th>
                       <th className="text-right py-2 px-2">Ποσό</th>
                       <th className="text-left py-2 px-2">ΜΑΡΚ</th>
                       <th className="text-center py-2 px-2">Ενέργειες</th>
@@ -490,14 +489,6 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
                         </td>
                         <td className="py-2 px-2">
                           {format(new Date(receipt.created_at), 'dd/MM/yy')}
-                        </td>
-                        <td className="py-2 px-2">
-                          <div className="flex flex-col">
-                            <span>{receipt.subscription_types?.name || '-'}</span>
-                            <span className="text-[10px] px-1 bg-blue-100 text-blue-700 inline-block w-fit">
-                              {getReceiptTypeLabel(receipt.receipt_type)}
-                            </span>
-                          </div>
                         </td>
                         <td className="py-2 px-2 text-right font-medium text-[#00ffba]">
                           €{Number(receipt.amount).toFixed(2)}
