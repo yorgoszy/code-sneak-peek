@@ -769,13 +769,6 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </div>
           </div>
 
-          {/* Κάρτα Υγείας - Μόνο για αθλητές - Τρίτο στη σειρά */}
-          {(user.is_athlete || user.role === 'athlete') && (
-            <div className={isWidgetDisabled('health') ? disabledClass : ''}>
-              <HealthCardWidget userId={user.id} />
-            </div>
-          )}
-
           {/* Ημέρες Προπόνησης / Προγράμματα - Κρύβεται για club-owned users */}
           {!isClubOwnedUser && (
           <button 
@@ -1101,6 +1094,13 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
               {t('overview.progress')}
             </div>
           </button>
+          )}
+
+          {/* Κάρτα Υγείας - Μόνο για αθλητές - Πριν το Προφίλ */}
+          {(user.is_athlete || user.role === 'athlete') && (
+            <div className={isWidgetDisabled('health') ? disabledClass : ''}>
+              <HealthCardWidget userId={user.id} />
+            </div>
           )}
 
           {/* Προφίλ */}
