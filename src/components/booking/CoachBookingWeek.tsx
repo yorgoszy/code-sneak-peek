@@ -77,12 +77,12 @@ export function CoachBookingWeek({ date, sections, appointments, onSelect }: {
           {dayDates.map((day, index) => {
             const key = `${index}-${hour}`;
             const ids = cellSections.get(key);
-            return <div key={`c-${index}-${hour}`} className="min-h-6 min-w-0 border-b border-l border-border p-px">
+            return <div key={`c-${index}-${hour}`} className="flex flex-col min-h-6 min-w-0 border-b border-l border-border p-px">
               {ids && Array.from(ids).map(id => {
                 const section = sections.find(s => s.id === id);
                 if (!section) return null;
                 const count = counts.get(`${index}-${hour}-${id}`) ?? 0;
-                return <Button key={id} variant="outline" title={`${section.name}${count ? ` · ${count} άτομα` : ''}`} onClick={() => onSelect(day, id, hour)} className="mb-px block h-auto w-full min-w-0 overflow-hidden rounded-none px-px py-0 text-left">
+                return <Button key={id} variant="outline" title={`${section.name}${count ? ` · ${count} άτομα` : ''}`} onClick={() => onSelect(day, id, hour)} className="mb-px flex flex-1 flex-col h-auto justify-center w-full min-w-0 overflow-hidden rounded-none px-px py-0 text-left">
                   <span className="block truncate text-[8px] font-semibold leading-3">{section.name}</span>
                   {count > 0 && <span className="block text-[7px] leading-3 text-muted-foreground">{count} άτομα</span>}
                 </Button>;
