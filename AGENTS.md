@@ -1,5 +1,7 @@
 # Architecture rules
 
+- User deletion uses one admin-checked transactional cleanup RPC followed by verified Auth deletion; failed Auth removal remains retryable in the confirmation dialog and never reports success.
+
 - BlueDatePicker accepts typed dd/MM/yyyy dates and calendar selection while preserving yyyy-MM-dd values for existing forms; invalid text blocks form submission through native validity.
 
 - Section cards render a read-only schedule preview from persisted available_hours, displaying only configured time rows; editing stays in the existing selector to avoid accidental schedule changes.

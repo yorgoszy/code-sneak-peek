@@ -59,13 +59,13 @@ serve(async (req) => {
     }
 
     // Check if caller is admin
-    const { data: callerProfile } = await supabaseAdmin
-      .from('app_users')
+    const { data: callerRoles, error: roleError } = await supabaseAdmin
+      .from('user_roles')
       .select('role')
-      .eq('auth_user_id', user.id)
-      .single();
+      .eq('user_id', user.id)
+      .eq('role', 'admin');
 
-    if (callerProfile?.role !== 'admin') {
+    if (roleError || !callerRoles?.length || authUserId === user.id) {
       return new Response(
         JSON.stringify({ error: "Forbidden - Admin access required" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -74,10 +74,15 @@ serve(async (req) => {
 
     console.log(`🗑️ Admin ${user.id} deleting auth user: ${authUserId}`);
 
+    // Attribution must not block deleting an Auth account assigned roles to others.
+    const { error: attributionError } = await supabaseAdmin.from('user_roles')
+      .update({ assigned_by: null }).eq('assigned_by', authUserId);
+    if (attributionError) throw attributionError;
+
     // Delete the auth user
     const { error } = await supabaseAdmin.auth.admin.deleteUser(authUserId);
 
-    if (error) {
+    if (error && error.status !== 404 && error.code !== 'user_not_found') {
       console.error("❌ Error deleting auth user:", error);
       return new Response(
         JSON.stringify({ error: "Failed to delete user" }),
