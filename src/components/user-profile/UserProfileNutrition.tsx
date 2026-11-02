@@ -1,3 +1,4 @@
+import { useUserSubscriptionScope } from '@/hooks/useUserSubscriptionScope';
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -45,47 +46,9 @@ interface UserProfileNutritionProps {
   userProfile: any;
 }
 
-// Έλεγχος αν ο χρήστης ανήκει σε coach (coach_id που δείχνει σε trainer)
-const useIsCoachManagedUser = (userProfile: any) => {
-  const [isCoachManaged, setIsCoachManaged] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const run = async () => {
-      if (!userProfile?.coach_id) {
-        if (!cancelled) setIsCoachManaged(false);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('app_users')
-        .select('role')
-        .eq('id', userProfile.coach_id)
-        .maybeSingle();
-
-      if (cancelled) return;
-      if (error) {
-        console.error('Error resolving coach role:', error);
-        setIsCoachManaged(false);
-        return;
-      }
-
-      setIsCoachManaged(data?.role === 'coach');
-    };
-
-    run();
-    return () => {
-      cancelled = true;
-    };
-  }, [userProfile?.coach_id]);
-
-  return isCoachManaged;
-};
-
 export const UserProfileNutrition: React.FC<UserProfileNutritionProps> = ({ userId, userProfile }) => {
   const { t } = useTranslation();
-  const isCoachManagedUser = useIsCoachManagedUser(userProfile);
+  const { isCoachManaged: isCoachManagedUser } = useUserSubscriptionScope(userId);
   const [activeTab, setActiveTab] = useState('active');
   const [assignments, setAssignments] = useState<NutritionAssignment[]>([]);
   const [coachPlans, setCoachPlans] = useState<NutritionPlan[]>([]);

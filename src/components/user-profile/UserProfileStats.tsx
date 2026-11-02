@@ -11,6 +11,7 @@ import { useWorkoutCompletionsCache } from "@/hooks/useWorkoutCompletionsCache";
 import { useTranslation } from 'react-i18next';
 import { HealthCardWidget } from "./HealthCardWidget";
 import { CardNumberWidget } from "./CardNumberWidget";
+import { useUserSubscriptionScope } from '@/hooks/useUserSubscriptionScope';
 import { useUserSubscriptionStatus } from "@/hooks/useUserSubscriptionStatus";
 
 interface UserProfileStatsProps {
@@ -50,7 +51,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
   }, [allActivePrograms, user.id]);
   const { hasActiveSubscription } = useUserSubscriptionStatus(user?.id);
 
-  const [isCoachManagedUser, setIsCoachManagedUser] = useState(false);
+  const { isCoachManaged: isCoachManagedUser, loading: scopeLoading, coachId } = useUserSubscriptionScope(user?.id);
 
   // Widgets that are always enabled (even without subscription)
   const enabledWithoutSub = new Set(['shop', 'edit-profile']);
@@ -71,40 +72,8 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
   }, [user?.id]);
 
   useEffect(() => {
-    let cancelled = false;
-
-    const run = async () => {
-      if (!user?.coach_id) {
-        if (!cancelled) setIsCoachManagedUser(false);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('app_users')
-        .select('role')
-        .eq('id', user.coach_id)
-        .maybeSingle();
-
-      if (cancelled) return;
-      if (error) {
-        console.error('Error resolving coach role:', error);
-        setIsCoachManagedUser(false);
-        return;
-      }
-
-      // Coach managed user είναι μόνο αν ο coach_id δείχνει σε χρήστη με role='coach'
-      // (όχι admin που διαχειρίζεται αθλητές μέσω user_subscriptions)
-      setIsCoachManagedUser(data?.role === 'coach');
-    };
-
-    run();
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.coach_id]);
-  
-  useEffect(() => {
     const fetchSubscriptionData = async () => {
+      if (scopeLoading) return;
       try {
         // Αν ο χρήστης ανήκει σε coach, φόρτωση από coach_subscriptions
         if (isCoachManagedUser) {
@@ -112,6 +81,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             .from('coach_subscriptions')
             .select('*, subscription_types(name, price)')
             .eq('user_id', user.id)
+            .eq('coach_id', coachId ?? '')
             .order('created_at', { ascending: false });
 
           if (error) {
@@ -642,7 +612,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
         fetchUpcomingWorkouts();
       }
     }
-  }, [user?.id, activePrograms]);
+  }, [user?.id, activePrograms, isCoachManagedUser, scopeLoading, coachId]);
 
   const fetchUpcomingWorkouts = async () => {
     try {

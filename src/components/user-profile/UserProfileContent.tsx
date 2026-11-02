@@ -35,6 +35,7 @@ import WeighInPage from "@/pages/Dashboard/WeighInPage";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useUserSubscriptionStatus } from "@/hooks/useUserSubscriptionStatus";
 import { resolveProfileTab } from './profileNavigation';
+import { useUserSubscriptionScope } from '@/hooks/useUserSubscriptionScope';
 
 interface UserProfileContentProps {
   activeTab: string;
@@ -47,50 +48,6 @@ interface UserProfileContentProps {
   onOfferRejected?: () => void;
   setActiveTab?: (tab: string) => void;
 }
-
-// Έλεγχος αν ο χρήστης ανήκει σε coach (coach_id που δείχνει σε trainer)
-const useIsCoachManagedUser = (userProfile: any) => {
-  const [isCoachManaged, setIsCoachManaged] = useState(false);
-  const [resolvedCoachId, setResolvedCoachId] = useState<string | null | undefined>(undefined);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const run = async () => {
-      if (!userProfile?.coach_id) {
-        if (!cancelled) {
-          setIsCoachManaged(false);
-          setResolvedCoachId(null);
-        }
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('app_users')
-        .select('role')
-        .eq('id', userProfile.coach_id)
-        .maybeSingle();
-
-      if (cancelled) return;
-      if (error) {
-        console.error('Error resolving coach role:', error);
-        setIsCoachManaged(false);
-        setResolvedCoachId(userProfile.coach_id);
-        return;
-      }
-
-      setIsCoachManaged(data?.role === 'coach' || data?.role === 'club');
-      setResolvedCoachId(userProfile.coach_id);
-    };
-
-    run();
-    return () => {
-      cancelled = true;
-    };
-  }, [userProfile?.coach_id]);
-
-  return { isCoachManaged, loading: resolvedCoachId !== (userProfile?.coach_id ?? null) };
-};
 
 export const UserProfileContent = ({
   activeTab,
@@ -105,7 +62,7 @@ export const UserProfileContent = ({
 }: UserProfileContentProps) => {
   const { t } = useTranslation();
   const { isAdmin } = useRoleCheck();
-  const { isCoachManaged: isCoachManagedUser, loading: coachLoading } = useIsCoachManagedUser(userProfile);
+  const { isCoachManaged: isCoachManagedUser, loading: coachLoading } = useUserSubscriptionScope(userProfile?.id);
   const { hasActiveSubscription, loading: subLoading } = useUserSubscriptionStatus(userProfile?.id);
   
   const hasSubscription = isAdmin() || hasActiveSubscription;

@@ -1,3 +1,4 @@
+import { useUserSubscriptionScope } from '@/hooks/useUserSubscriptionScope';
 
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -71,23 +72,6 @@ interface Purchase {
   };
 }
 
-// Έλεγχος αν ο χρήστης ανήκει σε coach (coach_id που δείχνει σε trainer)
-const resolveIsCoachManagedUser = async (profile: any): Promise<boolean> => {
-  if (!profile?.coach_id) return false;
-  const { data, error } = await supabase
-    .from('app_users')
-    .select('role')
-    .eq('id', profile.coach_id)
-    .maybeSingle();
-
-  if (error) {
-    console.error('Error resolving coach role:', error);
-    return false;
-  }
-
-  return data?.role === 'coach';
-};
-
 export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymentsProps) => {
   const { t } = useTranslation();
   const [receipts, setReceipts] = useState<ReceiptData[]>([]);
@@ -96,24 +80,10 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
   const [selectedReceipt, setSelectedReceipt] = useState<ReceiptData | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [coachProfile, setCoachProfile] = useState<CoachProfileData | null>(null);
-  const [isCoachUser, setIsCoachUser] = useState(false);
+  const { isCoachManaged: isCoachUser, loading: scopeLoading } = useUserSubscriptionScope(userProfile?.id);
 
   useEffect(() => {
-    let cancelled = false;
-
-    const run = async () => {
-      const coachManaged = await resolveIsCoachManagedUser(userProfile);
-      if (!cancelled) setIsCoachUser(coachManaged);
-    };
-
-    run();
-    return () => {
-      cancelled = true;
-    };
-  }, [userProfile?.coach_id, userProfile?.id]);
-
-  useEffect(() => {
-    if (userProfile?.id) {
+    if (!scopeLoading && userProfile?.id) {
       loadUserReceipts();
       if (!isCoachUser) {
         loadUserPurchases();
@@ -122,7 +92,7 @@ export const UserProfilePayments = ({ payments, userProfile }: UserProfilePaymen
         fetchCoachProfile();
       }
     }
-  }, [userProfile?.id, isCoachUser]);
+  }, [userProfile?.id, userProfile?.coach_id, isCoachUser, scopeLoading]);
 
   const fetchCoachProfile = async () => {
     try {
