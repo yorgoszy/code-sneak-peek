@@ -201,7 +201,7 @@ export const EditCoachUserDialog = ({
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Ονοματεπώνυμο"
-                className="rounded-none h-8 text-sm"
+                className="rounded-none h-8 text-sm text-[#004aad]"
                 required
               />
             </div>
@@ -217,7 +217,7 @@ export const EditCoachUserDialog = ({
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="email@example.com"
-                className="rounded-none h-8 text-sm"
+                className="rounded-none h-8 text-sm text-[#004aad]"
                 required
               />
             </div>
@@ -228,7 +228,7 @@ export const EditCoachUserDialog = ({
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 placeholder="69XXXXXXXX"
-                className="rounded-none h-8 text-sm"
+                className="rounded-none h-8 text-sm text-[#004aad]"
               />
             </div>
           </div>
@@ -242,7 +242,7 @@ export const EditCoachUserDialog = ({
                 type="date"
                 value={formData.birth_date}
                 onChange={(e) => setFormData({ ...formData, birth_date: e.target.value })}
-                className="rounded-none h-8 text-sm"
+                className="rounded-none h-8 text-sm text-[#004aad]"
               />
             </div>
             <div>
@@ -251,7 +251,7 @@ export const EditCoachUserDialog = ({
                 value={formData.gender}
                 onValueChange={(value) => setFormData({ ...formData, gender: value })}
               >
-                <SelectTrigger className="rounded-none h-8 text-sm">
+                <SelectTrigger className="rounded-none h-8 text-sm text-[#004aad]">
                   <SelectValue placeholder="Επιλέξτε" />
                 </SelectTrigger>
                 <SelectContent>
