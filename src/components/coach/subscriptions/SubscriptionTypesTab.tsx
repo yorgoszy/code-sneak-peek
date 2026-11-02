@@ -295,15 +295,17 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
                 className="rounded-none"
               />
             </div>
-            <div className="space-y-2">
-              <Label>Τμήματα Booking</Label>
-              <p className="text-xs text-muted-foreground">
-                Κάνε κλικ στα τμήματα που επιτρέπονται. Χωρίς επιλογή μπορεί να κάνει booking σε όλα.
-              </p>
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs">Τμήματα Booking</Label>
+                <span className="text-[10px] text-muted-foreground">
+                  Χωρίς επιλογή = όλα
+                </span>
+              </div>
               {bookingSections.length === 0 ? (
                 <p className="text-xs text-muted-foreground">Δεν υπάρχουν τμήματα</p>
               ) : (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1">
                   {bookingSections.map((section) => {
                     const isSelected = selectedSections.includes(section.id);
                     return (
@@ -311,7 +313,7 @@ export const SubscriptionTypesTab: React.FC<SubscriptionTypesTabProps> = ({ coac
                         key={section.id}
                         type="button"
                         onClick={() => toggleSection(section.id)}
-                        className={`rounded-none border px-3 py-1.5 text-sm transition-colors ${
+                        className={`rounded-none border px-2 py-0.5 text-[11px] transition-colors ${
                           isSelected
                             ? 'bg-[var(--th-blue)] hover:bg-[var(--th-blue-hover)] text-[var(--th-white)] border-transparent'
                             : 'border-border hover:bg-accent'
