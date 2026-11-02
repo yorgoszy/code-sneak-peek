@@ -2839,9 +2839,11 @@ export type Database = {
       coach_receipts: {
         Row: {
           amount: number
-          coach_id: string
+          coach_id: string | null
           coach_user_id: string | null
           created_at: string
+          customer_email: string | null
+          customer_name: string | null
           id: string
           mark: string | null
           notes: string | null
@@ -2849,14 +2851,17 @@ export type Database = {
           receipt_type: string
           subscription_id: string | null
           subscription_type_id: string | null
+          subscription_type_name: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
           amount: number
-          coach_id: string
+          coach_id?: string | null
           coach_user_id?: string | null
           created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
           id?: string
           mark?: string | null
           notes?: string | null
@@ -2864,14 +2869,17 @@ export type Database = {
           receipt_type?: string
           subscription_id?: string | null
           subscription_type_id?: string | null
+          subscription_type_name?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           amount?: number
-          coach_id?: string
+          coach_id?: string | null
           coach_user_id?: string | null
           created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
           id?: string
           mark?: string | null
           notes?: string | null
@@ -2879,6 +2887,7 @@ export type Database = {
           receipt_type?: string
           subscription_id?: string | null
           subscription_type_id?: string | null
+          subscription_type_name?: string | null
           updated_at?: string
           user_id?: string | null
         }

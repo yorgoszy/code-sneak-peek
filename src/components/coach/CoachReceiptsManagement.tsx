@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { matchesSearchTerm } from "@/lib/utils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { withReceiptRecipient } from './receiptRecipient';
 
 interface Receipt {
   id: string;
@@ -87,7 +88,7 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setReceipts(data || []);
+      setReceipts((data || []).map(withReceiptRecipient));
     } catch (error) {
       console.error('Error fetching receipts:', error);
       toast.error("Αποτυχία φόρτωσης αποδείξεων");
