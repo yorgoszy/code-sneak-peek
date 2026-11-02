@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { resolveUserSubscriptionScope } from '@/hooks/userSubscriptionScope';
 
 export const useUserProfileData = (user: any, isOpen: boolean) => {
   const [stats, setStats] = useState({
@@ -25,22 +26,7 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
   }, [user, isOpen]);
 
   const resolveIsCoachManagedUser = async (): Promise<boolean> => {
-    if (!user?.coach_id) return false;
-
-    const { data, error } = await supabase
-      .from('app_users')
-      .select('role')
-      .eq('id', user.coach_id)
-      .maybeSingle();
-
-    if (error) {
-      console.error('Error resolving coach role:', error);
-      return false;
-    }
-
-    // Coach managed user είναι μόνο αν ο coach_id δείχνει σε χρήστη με role='coach'
-    // (όχι admin που διαχειρίζεται αθλητές μέσω user_subscriptions)
-    return data?.role === 'coach';
+    return (await resolveUserSubscriptionScope(user.id)).is_coach_managed;
   };
 
   const fetchUserStats = async () => {
@@ -101,7 +87,8 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
         const { count } = await supabase
           .from('coach_receipts')
           .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id);
+          .eq('user_id', user.id)
+          .eq('coach_id', user.coach_id);
         paymentsCount = count || 0;
       } else {
         const { count } = await supabase
@@ -204,6 +191,7 @@ export const useUserProfileData = (user: any, isOpen: boolean) => {
           .from('coach_receipts')
           .select('*')
           .eq('user_id', user.id)
+          .eq('coach_id', user.coach_id)
           .order('created_at', { ascending: false });
         
         setPayments(data || []);

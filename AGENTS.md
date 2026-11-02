@@ -1,5 +1,7 @@
 # Architecture rules
 
+- Personal profile subscription, receipt, and coach feature routing share the protected user subscription scope RPC; its private definer resolves Coach/Club ownership without exposing owner profiles, recipient policies permit own reads only, and a trigger enforces matching user/coach/type ownership on coach subscription writes.
+
 - All personal profiles keep the overview visible without a subscription and fall back to overview, never shop, for restricted tabs; owner scope resolves before redirects, and coach-owned shop tabs resolve to overview. Explicit admin-managed shop selection remains available.
 
 - Initial coach-user login creation issues a service-only, single-use pending_auth_links token passed in Auth user_metadata; the signup trigger consumes it (email must match) to link the existing unlinked app_users row, because GoTrue writes app_metadata after the INSERT trigger fires. The password itself is permanent.
