@@ -11,5 +11,5 @@ export function useUserSubscriptionScope(userId: string | undefined) {
     enabled: Boolean(userId),
     staleTime: 60_000,
   });
-  return { ...query, isCoachManaged: query.data?.is_coach_managed ?? false, coachId: query.data?.coach_id, loading: query.isPending };
+  return { ...query, isCoachManaged: query.data?.is_coach_managed ?? false, coachId: query.data?.coach_id, ownerRole: query.data?.owner_role ?? null, loading: query.isPending };
 }
