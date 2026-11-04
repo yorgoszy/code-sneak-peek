@@ -107,7 +107,7 @@ const CoachSubscriptionsContent = () => {
         .from(table)
         .select(`
           *,
-          subscription_types (id, name, price, duration_months),
+          subscription_types (id, name, price, duration_months, visit_count),
           ${userJoin}
         `)
         .eq("coach_id", coachId)
@@ -249,13 +249,17 @@ const CoachSubscriptionsContent = () => {
       newEndDate.setMonth(newEndDate.getMonth() + durationMonths);
       newEndDate.setDate(newEndDate.getDate() - 1);
 
-      // Renewal extends the same subscription row instead of creating a duplicate
+      // Renewal extends the same subscription row instead of creating a duplicate,
+      // and adds the package's visits to the accumulated visit total
+      const typeVisits = (subscription.subscription_types as any).visit_count || 0;
+      const currentTotal = (subscription as any).total_visits ?? typeVisits;
       const { data: subscriptionData, error: subscriptionError } = await supabase
         .from(subsTable!)
         .update({
           end_date: newEndDate.toISOString().split("T")[0],
           status: "active",
-          is_paused: false
+          is_paused: false,
+          ...(subsTable === "coach_subscriptions" ? { total_visits: currentTotal + typeVisits } : {})
         } as any)
         .eq('id', id)
         .select()
