@@ -3075,6 +3075,7 @@ export type Database = {
           start_date: string
           status: string
           subscription_type_id: string
+          total_visits: number | null
           updated_at: string
           user_id: string | null
         }
@@ -3092,6 +3093,7 @@ export type Database = {
           start_date: string
           status?: string
           subscription_type_id: string
+          total_visits?: number | null
           updated_at?: string
           user_id?: string | null
         }
@@ -3109,6 +3111,7 @@ export type Database = {
           start_date?: string
           status?: string
           subscription_type_id?: string
+          total_visits?: number | null
           updated_at?: string
           user_id?: string | null
         }
