@@ -35,7 +35,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
   const [visitsData, setVisitsData] = useState<{used: number, total: number} | null>(null);
   const [videocallData, setVideocallData] = useState<{used: number, total: number} | null>(null);
   const [upcomingVideocall, setUpcomingVideocall] = useState<{date: string, time: string, daysLeft: number, hoursLeft: number, minutesLeft: number, room_url?: string} | null>(null);
-  const [upcomingVisit, setUpcomingVisit] = useState<{date: string, time: string, daysLeft: number, hoursLeft: number, minutesLeft: number} | null>(null);
+  const [upcomingVisit, setUpcomingVisit] = useState<{date: string, time: string, sectionName?: string | null, daysLeft: number, hoursLeft: number, minutesLeft: number} | null>(null);
   const [offersData, setOffersData] = useState<{available: number, accepted: boolean, hasMagicBox: boolean} | null>(null);
   const [upcomingTests, setUpcomingTests] = useState<{count: number, daysLeft: number} | null>(null);
   const [upcomingCompetitions, setUpcomingCompetitions] = useState<{count: number, daysLeft: number} | null>(null);
@@ -339,7 +339,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
         // Φόρτωση επερχόμενων επισκέψεων - βρίσκουμε μόνο μελλοντικές κρατήσεις
         const { data: visitBookings, error: visitError } = await supabase
           .from('booking_sessions')
-          .select('booking_date, booking_time')
+          .select('booking_date, booking_time, booking_sections(name)')
           .eq('user_id', user.id)
           .eq('booking_type', 'gym_visit')
           .eq('status', 'confirmed')
@@ -361,6 +361,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             setUpcomingVisit({
               date: nextVisit.booking_date,
               time: nextVisit.booking_time,
+              sectionName: (nextVisit as any).booking_sections?.name ?? null,
               daysLeft: Math.floor(totalHours / 24),
               hoursLeft: totalHours % 24,
               minutesLeft: totalMinutes
@@ -967,7 +968,9 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                  )}
                </div>
               <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-                {t('overview.upcomingVisit')}
+                {upcomingVisit?.sectionName ? (
+                  <span>{t('overview.upcomingVisit')}<br /><span className="font-semibold text-foreground">{upcomingVisit.sectionName}</span></span>
+                ) : t('overview.upcomingVisit')}
               </div>
             </button>
           )}
