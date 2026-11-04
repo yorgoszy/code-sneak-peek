@@ -969,7 +969,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                </div>
               <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
                 {upcomingVisit?.sectionName ? (
-                  <span>{t('overview.upcomingVisit')}<br /><span className="font-semibold text-foreground">{upcomingVisit.sectionName}</span></span>
+                  <span className="font-semibold text-foreground">{upcomingVisit.sectionName}</span>
                 ) : t('overview.upcomingVisit')}
               </div>
             </button>
