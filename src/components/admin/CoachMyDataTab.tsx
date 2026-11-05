@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Pencil, Save, Loader2, LockKeyhole } from 'lucide-react';
 import { matchesSearchTerm } from '@/lib/utils';
@@ -15,7 +16,9 @@ import { coachVatOptions, isValidGreekAfm } from './coachMyDataRules';
 import type { Tables, TablesInsert } from '@/integrations/supabase/types';
 
 type Settings = Tables<'coach_mydata_settings'>;
-type Coach = { id: string; name: string; email: string; avatar_url: string | null; photo_url: string | null };
+type Coach = { id: string; name: string; email: string; avatar_url: string | null; photo_url: string | null; role: string };
+const roleLabels: Record<string, string> = { coach: 'Coach', club: 'Club', federation: 'Federation' };
+const emptyConn = { aade_user_id: '', subscription_key: '', enabled: false, auto_send: false };
 const emptyForm = {
   business_name: '', vat_number: '', tax_office: '', address: '', city: '', postal_code: '', activity: '',
   branch: '0', vat_category: '', vat_exemption_category: '', receipt_series: '', next_number: '1',
@@ -32,6 +35,7 @@ export function CoachMyDataTab() {
   const [selected, setSelected] = useState<Coach | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [conn, setConn] = useState(emptyConn);
 
   async function load() {
     if (!admin) return;
@@ -41,7 +45,7 @@ export function CoachMyDataTab() {
       const loadedCoaches: Coach[] = [];
       const loadedSettings: Settings[] = [];
       for (let offset = 0; ; offset += 1000) {
-        const { data, error } = await supabase.from('app_users').select('id,name,email,avatar_url,photo_url').eq('role', 'coach').order('id').range(offset, offset + 999);
+        const { data, error } = await supabase.from('app_users').select('id,name,email,avatar_url,photo_url,role').in('role', ['coach', 'club', 'federation']).order('id').range(offset, offset + 999);
         if (error) throw error;
         loadedCoaches.push(...(data || []));
         if (!data || data.length < 1000) break;
@@ -61,7 +65,10 @@ export function CoachMyDataTab() {
   }
   useEffect(() => { void load(); }, [admin]);
 
-  function edit(coach: Coach) {
+  async function edit(coach: Coach) {
+    const current = settings.find(item => item.coach_id === coach.id);
+    const { data: cred } = await supabase.from('coach_mydata_credentials').select('aade_user_id,subscription_key').eq('coach_id', coach.id).maybeSingle();
+    setConn({ aade_user_id: cred?.aade_user_id || '', subscription_key: cred?.subscription_key || '', enabled: current?.enabled ?? false, auto_send: (current as any)?.auto_send ?? false });
     const existing = settings.find(item => item.coach_id === coach.id);
     setForm(existing ? {
       business_name: existing.business_name, vat_number: existing.vat_number, tax_office: existing.tax_office,
@@ -92,9 +99,12 @@ export function CoachMyDataTab() {
         tax_office: form.tax_office.trim(), address: form.address.trim(), city: form.city.trim(), postal_code: form.postal_code.trim(), activity: form.activity.trim(),
         branch, vat_category: Number(form.vat_category), vat_exemption_category: exemption,
         receipt_series: form.receipt_series.trim(), next_number: next,
-      };
+        enabled: conn.enabled, auto_send: conn.enabled && conn.auto_send,
+      } as TablesInsert<'coach_mydata_settings'>;
       const { error } = await supabase.from('coach_mydata_settings').upsert(payload, { onConflict: 'coach_id' });
       if (error) throw error;
+      const { error: credError } = await supabase.from('coach_mydata_credentials').upsert({ coach_id: selected.id, aade_user_id: conn.aade_user_id.trim(), subscription_key: conn.subscription_key.trim(), updated_at: new Date().toISOString() } as any, { onConflict: 'coach_id' });
+      if (credError) throw credError;
       toast.success('Τα φορολογικά στοιχεία αποθηκεύτηκαν');
       setSelected(null);
       await load();
@@ -115,14 +125,14 @@ export function CoachMyDataTab() {
       <h2 className="text-xl font-semibold">Coach myDATA</h2>
       <div className="relative w-full sm:max-w-sm"><Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><Input aria-label="Αναζήτηση coach" value={search} onChange={e => setSearch(e.target.value)} placeholder="Όνομα ή email" className="rounded-none pl-9" /></div>
     </div>
-    {loading ? <div role="status" className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" /></div> : loadError ? <div className="py-8 text-center"><p>Δεν ήταν δυνατή η φόρτωση.</p><Button className="mt-3 rounded-none" variant="outline" onClick={() => void load()}>Επανάληψη</Button></div> : filtered.length === 0 ? <p className="py-8 text-center text-muted-foreground">Δεν βρέθηκαν προπονητές</p> : <div className="divide-y divide-border border-y border-border">
+    {loading ? <div role="status" className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" /></div> : loadError ? <div className="py-8 text-center"><p>Δεν ήταν δυνατή η φόρτωση.</p><Button className="mt-3 rounded-none" variant="outline" onClick={() => void load()}>Επανάληψη</Button></div> : filtered.length === 0 ? <p className="py-8 text-center text-muted-foreground">Δεν βρέθηκαν coach, club ή federation</p> : <div className="divide-y divide-border border-y border-border">
       {filtered.map(coach => {
         const tax = settings.find(item => item.coach_id === coach.id);
         return <div key={coach.id} className="grid items-center gap-3 py-4 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_auto_auto]">
-          <div className="flex min-w-0 items-center gap-3"><Avatar className="h-10 w-10 shrink-0"><AvatarImage src={coach.avatar_url || coach.photo_url || undefined} /><AvatarFallback>{coach.name.slice(0, 1)}</AvatarFallback></Avatar><div className="min-w-0"><p className="truncate font-medium">{coach.name}</p><p className="truncate text-sm text-muted-foreground">{coach.email}</p></div></div>
+          <div className="flex min-w-0 items-center gap-3"><Avatar className="h-10 w-10 shrink-0"><AvatarImage src={coach.avatar_url || coach.photo_url || undefined} /><AvatarFallback>{coach.name.slice(0, 1)}</AvatarFallback></Avatar><div className="min-w-0"><p className="truncate font-medium">{coach.name} <Badge variant="outline" className="ml-1 rounded-none text-[10px]">{roleLabels[coach.role] || coach.role}</Badge></p><p className="truncate text-sm text-muted-foreground">{coach.email}</p></div></div>
           <div className="min-w-0 text-sm"><p className="truncate">{tax?.business_name || 'Χωρίς φορολογικά στοιχεία'}</p><p className="text-muted-foreground">{tax?.vat_number ? `ΑΦΜ ${tax.vat_number}` : '—'} · {coachVatOptions.find(item => item.category === tax?.vat_category)?.label || 'ΦΠΑ μη ορισμένο'}</p></div>
           <Badge variant="outline" className="w-fit rounded-none">{tax?.enabled && tax.connection_verified_at ? 'Ενεργή σύνδεση' : 'Μη ενεργοποιημένη'}</Badge>
-          <Button variant="outline" onClick={() => edit(coach)} className="rounded-none"><Pencil className="mr-2 h-4 w-4" />Στοιχεία</Button>
+          <Button variant="outline" onClick={() => void edit(coach)} className="rounded-none"><Pencil className="mr-2 h-4 w-4" />Στοιχεία</Button>
         </div>;
       })}
     </div>}
@@ -132,7 +142,15 @@ export function CoachMyDataTab() {
           <div className="space-y-2"><Label htmlFor="coach-tax-vat">Καθεστώς ΦΠΑ</Label><Select value={form.vat_category} onValueChange={value => setForm(previous => ({ ...previous, vat_category: value, vat_exemption_category: '' }))}><SelectTrigger id="coach-tax-vat" className="rounded-none"><SelectValue placeholder="Επιλέξτε ΦΠΑ" /></SelectTrigger><SelectContent>{coachVatOptions.map(item => <SelectItem key={item.category} value={String(item.category)}>{item.label}</SelectItem>)}</SelectContent></Select></div>
           {form.vat_category === '7' && <div className="space-y-2"><Label htmlFor="coach-tax-exemption">Κωδικός αιτίας απαλλαγής myDATA</Label><Input id="coach-tax-exemption" type="number" min="1" required value={form.vat_exemption_category} onChange={e => setForm(previous => ({ ...previous, vat_exemption_category: e.target.value }))} className="rounded-none" /></div>}
         </div>
-        <div className="border-t border-border pt-4"><p className="flex items-center gap-2 text-sm font-medium"><LockKeyhole className="h-4 w-4" />Σύνδεση ΑΑΔΕ: μη ενεργοποιημένη</p></div>
+        <div className="space-y-4 border-t border-border pt-4">
+          <p className="flex items-center gap-2 text-sm font-medium"><LockKeyhole className="h-4 w-4" />Στοιχεία Σύνδεσης MyData</p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2"><Label htmlFor="coach-aade-user">AADE User ID</Label><Input id="coach-aade-user" autoComplete="off" value={conn.aade_user_id} onChange={e => setConn(p => ({ ...p, aade_user_id: e.target.value }))} className="rounded-none" /></div>
+            <div className="space-y-2"><Label htmlFor="coach-aade-key">Subscription Key</Label><Input id="coach-aade-key" type="password" autoComplete="new-password" value={conn.subscription_key} onChange={e => setConn(p => ({ ...p, subscription_key: e.target.value }))} className="rounded-none" /></div>
+          </div>
+          <div className="flex items-center justify-between border border-border p-4"><div><Label htmlFor="coach-mydata-enabled">Ενεργοποίηση MyData</Label><p className="text-sm text-muted-foreground">Ενεργοποιεί τη σύνδεση με το MyData API</p></div><Switch id="coach-mydata-enabled" checked={conn.enabled} onCheckedChange={v => setConn(p => ({ ...p, enabled: v, auto_send: v ? p.auto_send : false }))} /></div>
+          <div className="flex items-center justify-between border border-border p-4"><div><Label htmlFor="coach-mydata-auto">Αυτόματη Αποστολή</Label><p className="text-sm text-muted-foreground">Αυτόματη αποστολή αποδείξεων στο MyData κατά τη δημιουργία</p></div><Switch id="coach-mydata-auto" checked={conn.auto_send} disabled={!conn.enabled} onCheckedChange={v => setConn(p => ({ ...p, auto_send: v }))} /></div>
+        </div>
         <DialogFooter><Button type="button" variant="outline" disabled={saving} onClick={() => setSelected(null)} className="rounded-none">Ακύρωση</Button><Button type="submit" disabled={saving} className="rounded-none">{saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}Αποθήκευση</Button></DialogFooter>
       </form>
     </DialogContent></Dialog>
