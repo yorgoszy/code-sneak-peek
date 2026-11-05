@@ -2677,10 +2677,43 @@ export type Database = {
           },
         ]
       }
+      coach_mydata_credentials: {
+        Row: {
+          aade_user_id: string
+          coach_id: string
+          created_at: string
+          subscription_key: string
+          updated_at: string
+        }
+        Insert: {
+          aade_user_id?: string
+          coach_id: string
+          created_at?: string
+          subscription_key?: string
+          updated_at?: string
+        }
+        Update: {
+          aade_user_id?: string
+          coach_id?: string
+          created_at?: string
+          subscription_key?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_mydata_credentials_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: true
+            referencedRelation: "coach_mydata_settings"
+            referencedColumns: ["coach_id"]
+          },
+        ]
+      }
       coach_mydata_settings: {
         Row: {
           activity: string
           address: string
+          auto_send: boolean
           branch: number
           business_name: string
           city: string
@@ -2700,6 +2733,7 @@ export type Database = {
         Insert: {
           activity?: string
           address?: string
+          auto_send?: boolean
           branch?: number
           business_name?: string
           city?: string
@@ -2719,6 +2753,7 @@ export type Database = {
         Update: {
           activity?: string
           address?: string
+          auto_send?: boolean
           branch?: number
           business_name?: string
           city?: string
