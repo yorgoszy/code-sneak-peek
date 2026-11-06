@@ -2881,6 +2881,10 @@ export type Database = {
           customer_name: string | null
           id: string
           mark: string | null
+          mydata_error: string | null
+          mydata_sent_at: string | null
+          mydata_status: string
+          mydata_uid: string | null
           notes: string | null
           receipt_number: string
           receipt_type: string
@@ -2899,6 +2903,10 @@ export type Database = {
           customer_name?: string | null
           id?: string
           mark?: string | null
+          mydata_error?: string | null
+          mydata_sent_at?: string | null
+          mydata_status?: string
+          mydata_uid?: string | null
           notes?: string | null
           receipt_number: string
           receipt_type?: string
@@ -2917,6 +2925,10 @@ export type Database = {
           customer_name?: string | null
           id?: string
           mark?: string | null
+          mydata_error?: string | null
+          mydata_sent_at?: string | null
+          mydata_status?: string
+          mydata_uid?: string | null
           notes?: string | null
           receipt_number?: string
           receipt_type?: string
