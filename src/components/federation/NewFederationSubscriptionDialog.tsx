@@ -1,3 +1,4 @@
+import { autoSendCoachReceipt } from "@/components/coach/sendCoachReceiptToMyData";
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -149,7 +150,7 @@ export const NewFederationSubscriptionDialog: React.FC<NewFederationSubscription
       if (subscriptionError) throw subscriptionError;
 
       const receiptNumber = await generateReceiptNumber();
-      await supabase
+      const { data: newReceipt } = await supabase
         .from('coach_receipts')
         .insert({
           coach_id: federationId,
@@ -160,7 +161,10 @@ export const NewFederationSubscriptionDialog: React.FC<NewFederationSubscription
           receipt_type: 'subscription',
           subscription_type_id: selectedTypeId,
           notes: `Νέα συνδρομή: ${selectedType.name}`
-        } as any);
+        } as any)
+        .select('id')
+        .single();
+      autoSendCoachReceipt(newReceipt?.id);
 
       toast.success('Η συνδρομή δημιουργήθηκε');
       onOpenChange(false);

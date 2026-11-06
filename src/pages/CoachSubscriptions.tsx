@@ -1,3 +1,4 @@
+import { autoSendCoachReceipt } from "@/components/coach/sendCoachReceiptToMyData";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -268,7 +269,7 @@ const CoachSubscriptionsContent = () => {
       if (subscriptionError) throw subscriptionError;
 
       const receiptNumber = await generateReceiptNumber();
-      const { error: receiptError } = await supabase
+      const { data: renewalReceipt, error: receiptError } = await supabase
         .from('coach_receipts')
         .insert({
           coach_id: coachId,
@@ -280,7 +281,10 @@ const CoachSubscriptionsContent = () => {
           receipt_type: 'renewal',
           subscription_type_id: subscription.subscription_types.id,
           notes: `Ανανέωση συνδρομής: ${subscription.subscription_types.name}`
-        });
+        })
+        .select('id')
+        .single();
+      autoSendCoachReceipt(renewalReceipt?.id);
 
       if (receiptError) {
         console.error('Error creating receipt:', receiptError);

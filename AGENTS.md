@@ -38,7 +38,7 @@
 - Brand landing pages have separate public routes and hostname selection at the root; admin preview links retain the landing page for signed-in users so each brand can be designed independently.
 - ThaiHub landing copy uses its own bilingual dictionary and persisted language choice, isolated from dashboard translations; a shared plan catalog defines cumulative package features and display prices, while enquiry links remain email-based until checkout is configured to avoid implying active billing or access enforcement.
 
-- Coach fiscal settings live separately from editable coach profiles and are admin-managed through RLS; AADE credentials stay in per-coach server-only project secrets, and issuance remains disabled until a server verifies the connection.
+- Coach fiscal settings live separately from editable coach profiles and are admin-managed through RLS; AADE credentials stay server-only, and coach receipts are sent to production myDATA only by the coach-mydata-send-receipt function, which verifies the caller owns the receipt, uses the owner's own credentials/ΑΦΜ, and records failures on the receipt so the owner can resend.
 
 - Coach annual planning reuses AnnualPlanning with an explicit coach scope, both embedded in profiles and inside CoachLayout; user queries, assigned phases, and group recipients share that scope to avoid mixing coaches.
 - Saved macrocycles store coach ownership and enforce it through RLS; coach-scoped views filter that ownership and saves use the viewed coach so admin-created coach plans remain isolated.

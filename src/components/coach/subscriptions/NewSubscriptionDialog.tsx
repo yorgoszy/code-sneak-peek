@@ -1,3 +1,4 @@
+import { autoSendCoachReceipt } from "@/components/coach/sendCoachReceiptToMyData";
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -159,7 +160,7 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
 
       // Create receipt automatically
       const receiptNumber = await generateReceiptNumber();
-      const { error: receiptError } = await supabase
+      const { data: newReceipt, error: receiptError } = await supabase
         .from('coach_receipts')
         .insert({
           coach_id: coachId,
@@ -170,7 +171,10 @@ export const NewSubscriptionDialog: React.FC<NewSubscriptionDialogProps> = ({
           receipt_type: 'subscription',
           subscription_type_id: selectedTypeId,
           notes: `Νέα συνδρομή: ${selectedType.name}`
-        } as any);
+        } as any)
+        .select('id')
+        .single();
+      autoSendCoachReceipt(newReceipt?.id);
 
       if (receiptError) {
         console.error('Error creating receipt:', receiptError);

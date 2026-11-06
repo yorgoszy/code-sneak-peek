@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Trash2, Eye, Printer, Check, X } from "lucide-react";
+import { Search, Trash2, Eye, Printer, Check, X, Send, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -13,6 +13,7 @@ import { matchesSearchTerm } from "@/lib/utils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { withReceiptRecipient } from './receiptRecipient';
+import { sendCoachReceiptToMyData } from './sendCoachReceiptToMyData';
 
 interface Receipt {
   id: string;
@@ -22,6 +23,8 @@ interface Receipt {
   notes: string | null;
   created_at: string;
   mark?: string | null;
+  mydata_status?: string | null;
+  mydata_error?: string | null;
   app_users?: {
     name: string;
     email: string;
@@ -65,6 +68,29 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
   const [editingMarkId, setEditingMarkId] = useState<string | null>(null);
   const [markValue, setMarkValue] = useState('');
   const [coachProfile, setCoachProfile] = useState<CoachProfileData | null>(null);
+  const [sendingId, setSendingId] = useState<string | null>(null);
+
+  const handleSendToMyData = async (receipt: Receipt) => {
+    setSendingId(receipt.id);
+    const result = await sendCoachReceiptToMyData(receipt.id);
+    setSendingId(null);
+    if (result.success) toast.success(`Η απόδειξη ${receipt.receipt_number} στάλθηκε στην ΑΑΔΕ${result.invoiceMark ? ` (ΜΑΡΚ ${result.invoiceMark})` : ''}`);
+    else toast.error(`Αποτυχία αποστολής: ${result.error || 'Άγνωστο σφάλμα'}`);
+    fetchReceipts();
+  };
+
+  const renderSendButton = (receipt: Receipt) => receipt.mark ? null : (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => handleSendToMyData(receipt)}
+      disabled={sendingId === receipt.id}
+      className="rounded-none h-6 w-6 p-0 text-[#004aad]"
+      title={receipt.mydata_error ? `Επαναποστολή στο myDATA — ${receipt.mydata_error}` : 'Επαναποστολή στο myDATA'}
+    >
+      {sendingId === receipt.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+    </Button>
+  );
 
   useEffect(() => {
     if (coachId) {
@@ -426,12 +452,16 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
                       {receipt.mark && (
                         <span className="text-[10px] text-gray-400">ΜΑΡΚ: {receipt.mark}</span>
                       )}
+                      {!receipt.mark && receipt.mydata_error && (
+                        <span className="block text-[10px] text-destructive truncate">myDATA: {receipt.mydata_error}</span>
+                      )}
                     </div>
                     <div className="flex flex-col items-end gap-1">
                       <span className="font-medium text-[#004aad] text-sm whitespace-nowrap">
                         €{Number(receipt.amount).toFixed(2)}
                       </span>
                       <div className="flex gap-1">
+                        {renderSendButton(receipt)}
                         <Button
                           variant="ghost"
                           size="sm"
@@ -526,9 +556,13 @@ export const CoachReceiptsManagement: React.FC<CoachReceiptsManagementProps> = (
                               {receipt.mark || <span className="text-gray-400 italic">+ Προσθήκη</span>}
                             </button>
                           )}
+                          {!receipt.mark && receipt.mydata_error && (
+                            <span className="block text-[10px] text-destructive max-w-48 truncate" title={receipt.mydata_error}>Αποτυχία: {receipt.mydata_error}</span>
+                          )}
                         </td>
                         <td className="py-2 px-2 text-center">
                           <div className="flex justify-center gap-1">
+                            {renderSendButton(receipt)}
                             <Button
                               variant="ghost"
                               size="sm"
