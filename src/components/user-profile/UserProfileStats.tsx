@@ -13,7 +13,7 @@ import { HealthCardWidget } from "./HealthCardWidget";
 import { CardNumberWidget } from "./CardNumberWidget";
 import { useUserSubscriptionScope } from '@/hooks/useUserSubscriptionScope';
 import { useUserSubscriptionStatus } from "@/hooks/useUserSubscriptionStatus";
-import { usesAdminUserOverview } from './overviewScope';
+import { usesAdminUserOverview, showsAthleteOverviewCards } from './overviewScope';
 
 interface UserProfileStatsProps {
   user: any;
@@ -57,6 +57,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
   const isClubOwnedUser = ownerRole === 'club';
   const isAdminUserOverview = usesAdminUserOverview(user?.role, isCoachManagedUser, ownerRole);
   const showAdditionalWidgets = !isAdminUserOverview && !scopeLoading;
+  const showAthleteCards = showsAthleteOverviewCards(user?.role, user.is_athlete, scopeLoading);
 
   // Widgets that are always enabled (even without subscription)
   const enabledWithoutSub = new Set(['shop', 'edit-profile']);
@@ -876,7 +877,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           </div>}
 
           {/* Επερχόμενοι Αγώνες - Μόνο για αθλητές - ΜΟΒ - Μη clickable */}
-          {showAdditionalWidgets && !isCoachManagedUser && (user.is_athlete || user.role === 'athlete') && (
+          {showAthleteCards && !isCoachManagedUser && (
             <div 
               className={`text-center ${isMobile ? 'p-1' : 'p-2'} rounded-none flex flex-col min-w-0 ${isWidgetDisabled('tests') ? disabledClass : ''}`}
             >
@@ -899,7 +900,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
                 )}
               </div>
               <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-gray-600 ${isMobile ? 'text-xs' : 'text-sm'} text-center leading-tight`}>
-                Επερχόμενοι Αγώνες
+                Ημέρα Αγώνα
               </div>
             </div>
           )}
@@ -1052,7 +1053,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           )}
 
           {/* Αριθμός Δελτίου - Μόνο για αθλητές */}
-          {showAdditionalWidgets && !isCoachManagedUser && (user.is_athlete || user.role === 'athlete') && (
+          {showAthleteCards && !isCoachManagedUser && (
             <CardNumberWidget userId={user.id} />
           )}
 
@@ -1103,7 +1104,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
           )}
 
           {/* Κάρτα Υγείας - Μόνο για αθλητές - Πριν το Προφίλ */}
-          {showAdditionalWidgets && (user.is_athlete || user.role === 'athlete') && (
+          {showAthleteCards && (
             <div className={isWidgetDisabled('health') ? disabledClass : ''}>
               <HealthCardWidget userId={user.id} />
             </div>

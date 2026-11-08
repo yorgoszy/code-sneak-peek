@@ -1,6 +1,21 @@
 import { describe, it } from 'node:test';
 import { strictEqual } from 'node:assert';
-import { usesAdminUserOverview } from './overviewScope';
+import { usesAdminUserOverview, showsAthleteOverviewCards } from './overviewScope';
+
+describe('Athlete overview additions', () => {
+  it('includes athletes in the additional athlete cards', () => {
+    strictEqual(showsAthleteOverviewCards('athlete', false, false), true);
+  });
+  it('keeps general non-athletes without athlete additions', () => {
+    strictEqual(showsAthleteOverviewCards('general', false, false), false);
+  });
+  it('recognizes users explicitly marked as athletes', () => {
+    strictEqual(showsAthleteOverviewCards('general', true, false), true);
+  });
+  it('waits for the owner scope to resolve', () => {
+    strictEqual(showsAthleteOverviewCards('athlete', true, true), false);
+  });
+});
 
 describe('Admin athlete/general overview scope', () => {
   it('applies to admin-owned athletes', () => {
