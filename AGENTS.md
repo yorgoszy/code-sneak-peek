@@ -1,5 +1,7 @@
 # Architecture rules
 
+- Overview presentation scope uses a tested helper based on the viewed user's role and resolved owner scope, never the viewer's role, so admin previews do not alter coach/club user layouts.
+
 - Personal profile subscription, receipt, and coach feature routing share the protected user subscription scope RPC; its private definer resolves Coach/Club ownership without exposing owner profiles, recipient policies permit own reads only, and a trigger enforces matching user/coach/type ownership on coach subscription writes.
 - User-list subscription badges use the owner's role to route Coach/Club users to coach subscriptions, match both user and owner IDs, and evaluate all current rows rather than just the latest so unrelated or expired purchases cannot hide active access.
 
