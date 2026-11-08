@@ -1180,7 +1180,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             </button>
           )}
 
-          <Button
+          {showAdditionalWidgets && <Button
             variant="ghost"
             onClick={() => navigate('/install')}
             className={`h-auto text-center ${isMobile ? 'p-1' : 'p-2'} rounded-none flex flex-col min-w-0 whitespace-normal`}
@@ -1192,7 +1192,7 @@ export const UserProfileStats = ({ user, stats, setActiveTab }: UserProfileStats
             <div className={`${isMobile ? 'h-8' : 'h-12'} flex items-center justify-center text-muted-foreground font-normal ${isMobile ? 'text-xs' : 'text-sm'} leading-tight`}>
               {t('sidebar.downloadApp')}
             </div>
-          </Button>
+          </Button>}
 
         </div>
       </CardContent>
