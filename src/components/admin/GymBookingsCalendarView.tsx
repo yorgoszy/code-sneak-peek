@@ -305,7 +305,7 @@ export const GymBookingsCalendarView = () => {
     const bookedUsers = getBookingsForDateAndTime(date, time)
       .filter(b => b.section_id === sectionId)
       .flatMap(b => b.app_users ? [b.app_users] : []);
-    return mergeSectionUsers(subscriptionMembers(sectionSubscriptions, sectionId, date), bookedUsers);
+    return mergeSectionUsers([], bookedUsers);
   };
 
   const getSlotAttendeesCount = (sectionId: string, date: string, time: string) => {
