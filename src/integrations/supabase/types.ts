@@ -1319,6 +1319,7 @@ export type Database = {
           qr_code: string | null
           role: string
           section_id: string | null
+          section_schedule: Json | null
           sport: string | null
           subscription_status: string | null
           updated_at: string | null
@@ -1344,6 +1345,7 @@ export type Database = {
           qr_code?: string | null
           role: string
           section_id?: string | null
+          section_schedule?: Json | null
           sport?: string | null
           subscription_status?: string | null
           updated_at?: string | null
@@ -1369,6 +1371,7 @@ export type Database = {
           qr_code?: string | null
           role?: string
           section_id?: string | null
+          section_schedule?: Json | null
           sport?: string | null
           subscription_status?: string | null
           updated_at?: string | null
@@ -12937,6 +12940,10 @@ export type Database = {
       resume_subscription: {
         Args: { subscription_id: string }
         Returns: undefined
+      }
+      save_admin_section_assignment: {
+        Args: { p_schedule: Json; p_section_id: string; p_user_id: string }
+        Returns: number
       }
       send_videocall_reminders: {
         Args: {
