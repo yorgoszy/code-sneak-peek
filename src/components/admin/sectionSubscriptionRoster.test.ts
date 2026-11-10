@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import { strictEqual, deepStrictEqual } from 'node:assert';
-import { subscriptionMembers, mergeSectionUsers, type RosterSubscription } from './sectionSubscriptionRoster';
+import { subscriptionMembers, mergeSectionUsers, slotBookingCount, type RosterSubscription } from './sectionSubscriptionRoster';
 
 const row: RosterSubscription = {
   user_id: 'admin-user', coach_id: null, status: 'active', is_paused: false,
@@ -10,6 +10,11 @@ const row: RosterSubscription = {
 };
 
 describe('Subscription section roster', () => {
+  it('counts only unique bookings for the displayed section and hour, like Live Program', () => {
+    const booking = { section_id: 'muay-thai', user_id: 'admin-user', booking_time: '19:00:00' };
+    strictEqual(slotBookingCount([], 'muay-thai', '19:00'), 0);
+    strictEqual(slotBookingCount([booking, booking, { ...booking, user_id: 'other' }, { ...booking, booking_time: '18:00:00' }, { ...booking, section_id: 'open-gym' }], 'muay-thai', '19:00'), 2);
+  });
   it('shows the user in the sections selected on their subscription', () => {
     deepStrictEqual(subscriptionMembers([row], 'muay-thai', '2026-11-10').map(u => u.id), ['admin-user']);
     strictEqual(subscriptionMembers([row], 'open-gym', '2026-11-10').length, 0);

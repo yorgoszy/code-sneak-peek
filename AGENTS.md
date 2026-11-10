@@ -4,6 +4,7 @@
 - Booking section validation permits server-verified admins to generate only the user's saved recurring slots within an active global subscription and current section hours, so assignment changes and renewals are not rolled back by catalog restrictions; ordinary bookings and Coach/Club restrictions remain unchanged.
 
 - Admin section rosters derive membership from date-valid global subscriptions and their type's allowed_sections, unioned by user ID with slot bookings; never use app_users.section_id or cached subscription_status.
+- Calendar occupancy counts unique persisted attendees at the exact section/date/hour, matching public Live Program; subscription eligibility remains in the detail roster only, because eligibility is not attendance. Paginate weekly booking reads to prevent truncation.
 
 - Public Live Program scopes both section and occupancy queries to `coach_id IS NULL` through a tested shared filter, so privileged server reads cannot expose Coach/Club calendars.
 
