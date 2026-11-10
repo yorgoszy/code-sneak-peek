@@ -1,5 +1,7 @@
 # Architecture rules
 
+- Public Live Program scopes both section and occupancy queries to `coach_id IS NULL` through a tested shared filter, so privileged server reads cannot expose Coach/Club calendars.
+
 - Overview presentation scope uses a tested helper based on the viewed user's role and resolved owner scope, never the viewer's role, so admin previews do not alter coach/club user layouts.
 
 - Personal profile subscription, receipt, and coach feature routing share the protected user subscription scope RPC; its private definer resolves Coach/Club ownership without exposing owner profiles, recipient policies permit own reads only, and a trigger enforces matching user/coach/type ownership on coach subscription writes.

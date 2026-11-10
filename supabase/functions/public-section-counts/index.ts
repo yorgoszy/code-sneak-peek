@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { adminCalendarOnly } from './scope.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,9 +19,9 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Get sections with user counts (no PII exposed)
-    const { data: sections, error: sectionsError } = await supabase
+    const { data: sections, error: sectionsError } = await adminCalendarOnly(supabase
       .from('booking_sections')
-      .select('id, name, max_capacity, available_hours')
+      .select('id, name, max_capacity, available_hours'))
       .eq('is_active', true)
       .order('name');
 
@@ -51,9 +52,9 @@ serve(async (req) => {
     // Per-section, per-date, per-time unique attendee counts from real bookings
     // (same logic as the admin Overview: only confirmed/completed gym bookings
     // at the exact booked hour count)
-    const { data: bookings, error: bookingsError } = await supabase
+    const { data: bookings, error: bookingsError } = await adminCalendarOnly(supabase
       .from('booking_sessions')
-      .select('section_id, user_id, booking_date, booking_time')
+      .select('section_id, user_id, booking_date, booking_time'))
       .not('user_id', 'is', null)
       .gte('booking_date', weekStartStr)
       .lte('booking_date', weekEndStr)
