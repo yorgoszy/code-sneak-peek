@@ -12,7 +12,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { AttendanceDetailsDialog } from "./AttendanceDetailsDialog";
 import { QRScannerAttendance } from "./QRScannerAttendance";
 import { toast } from "sonner";
-import { subscriptionMembers, mergeSectionUsers, type RosterSubscription, type RosterUser } from './sectionSubscriptionRoster';
+import { subscriptionMembers, mergeSectionUsers, slotBookingCount, type RosterSubscription, type RosterUser } from './sectionSubscriptionRoster';
 
 interface GymBooking {
   id: string;
@@ -233,7 +233,9 @@ export const GymBookingsCalendarView = () => {
       // Fetch bookings for ALL sections, not just selected ones
       const allSectionIds = sections.map(s => s.id);
       
-      const { data: existingBookings, error } = await supabase
+      const existingBookings: GymBooking[] = [];
+      for (let offset = 0; ; offset += 1000) {
+      const { data, error } = await supabase
         .from('booking_sessions')
         .select(`
           *,
@@ -246,9 +248,14 @@ export const GymBookingsCalendarView = () => {
         .lte('booking_date', format(weekEnd, 'yyyy-MM-dd'))
         .in('booking_type', ['gym_visit', 'gym'])
         .in('status', ['confirmed', 'completed'])
-        .order('booking_time', { ascending: true });
+        .order('booking_time', { ascending: true })
+        .order('id')
+        .range(offset, offset + 999);
 
       if (error) throw error;
+      existingBookings.push(...(data || []));
+      if (!data || data.length < 1000) break;
+      }
 
       // Group bookings by date
       const groupedBookings: { [key: string]: GymBooking[] } = {};
@@ -302,7 +309,7 @@ export const GymBookingsCalendarView = () => {
   };
 
   const getSlotAttendeesCount = (sectionId: string, date: string, time: string) => {
-    return getSlotUsers(sectionId, date, time).length;
+    return slotBookingCount(weekBookings[date] || [], sectionId, time);
   };
 
   const toggleSection = (sectionId: string) => {

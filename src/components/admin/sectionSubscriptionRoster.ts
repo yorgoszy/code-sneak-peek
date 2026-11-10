@@ -33,3 +33,10 @@ export function subscriptionMembers(rows: RosterSubscription[], sectionId: strin
 export function mergeSectionUsers(members: RosterUser[], bookings: RosterUser[]): RosterUser[] {
   return [...new Map([...members, ...bookings].map(user => [user.id, user])).values()];
 }
+
+// Access to a section is not attendance at every opening hour.
+export function slotBookingCount(bookings: { section_id: string; user_id: string; booking_time: string }[], sectionId: string, time: string): number {
+  return new Set(bookings
+    .filter(booking => booking.section_id === sectionId && booking.booking_time.slice(0, 5) === time && booking.user_id)
+    .map(booking => booking.user_id)).size;
+}
