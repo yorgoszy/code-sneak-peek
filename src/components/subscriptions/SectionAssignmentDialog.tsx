@@ -144,9 +144,12 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
 
   const loadSections = async () => {
     try {
-      const { data, error } = await adminAssignmentSections(supabase
+      const { data, error } = await supabase
         .from('booking_sections')
-        .select('id, name, max_capacity, is_active, available_hours'))
+        .select('id, name, max_capacity, is_active, available_hours')
+        .eq(adminAssignmentSections.activeColumn, true)
+        .is(adminAssignmentSections.ownerColumn, null)
+        .or(adminAssignmentSections.bookingTypes)
         .order('name');
 
       if (error) throw error;

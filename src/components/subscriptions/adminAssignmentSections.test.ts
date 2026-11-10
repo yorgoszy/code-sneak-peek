@@ -31,7 +31,9 @@ describe('Admin assignment section scope', () => {
         return this;
       },
     };
-    adminAssignmentSections(query);
+    query.eq(adminAssignmentSections.activeColumn, true)
+      .is(adminAssignmentSections.ownerColumn, null)
+      .or(adminAssignmentSections.bookingTypes);
     deepStrictEqual(selected.map(row => row.name), ['Muay Thai αγωνιστικο', 'New gym']);
   });
 });
