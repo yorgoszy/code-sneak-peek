@@ -83,11 +83,13 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
   useEffect(() => {
     if (!isOpen || selectedSection === 'none') {
       setSelectedSchedule({});
+      setLoadingSchedule(false);
       return;
     }
 
     if (selectedSection !== currentSectionId) {
       setSelectedSchedule({});
+      setLoadingSchedule(false);
       return;
     }
 
