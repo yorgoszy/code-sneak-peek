@@ -1,5 +1,7 @@
 # Architecture rules
 
+- Admin section assignments persist weekly selections independently of generated bookings and use one admin-checked invoker RPC for atomic profile/booking changes; completed visits and other calendars are preserved.
+
 - Admin section rosters derive membership from date-valid global subscriptions and their type's allowed_sections, unioned by user ID with slot bookings; never use app_users.section_id or cached subscription_status.
 
 - Public Live Program scopes both section and occupancy queries to `coach_id IS NULL` through a tested shared filter, so privileged server reads cannot expose Coach/Club calendars.
