@@ -1,6 +1,6 @@
 # Architecture rules
 
-- Admin section assignments persist weekly selections independently of generated bookings and use one admin-checked invoker RPC for atomic profile/booking changes; completed visits and other calendars are preserved. Both selection and RPC validation accept legacy null booking_type alongside gym_visit for active coach_id-null sections, because global gym sections predate that field.
+- Admin section assignments persist weekly selections independently of generated bookings and use one admin-checked invoker RPC for atomic profile/booking changes; completed visits and other calendars are preserved. Both selection and RPC validation accept legacy null booking_type alongside gym_visit for active coach_id-null sections, because global gym sections predate that field. The admin-checked renewal RPC atomically extends those saved slots into the new subscription period through section_attendance_slots, without replacing existing attendance or touching Coach/Club calendars.
 
 - Admin section rosters derive membership from date-valid global subscriptions and their type's allowed_sections, unioned by user ID with slot bookings; never use app_users.section_id or cached subscription_status.
 

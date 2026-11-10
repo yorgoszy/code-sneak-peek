@@ -12945,6 +12945,13 @@ export type Database = {
         Args: { p_schedule: Json; p_section_id: string; p_user_id: string }
         Returns: number
       }
+      section_attendance_slots: {
+        Args: { p_end: string; p_schedule: Json; p_start: string }
+        Returns: {
+          booking_date: string
+          booking_time: string
+        }[]
+      }
       send_videocall_reminders: {
         Args: {
           reminder_type: string
