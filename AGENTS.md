@@ -1,5 +1,7 @@
 # Architecture rules
 
+- Admin section rosters derive membership from date-valid global subscriptions and their type's allowed_sections, unioned by user ID with slot bookings; never use app_users.section_id or cached subscription_status.
+
 - Public Live Program scopes both section and occupancy queries to `coach_id IS NULL` through a tested shared filter, so privileged server reads cannot expose Coach/Club calendars.
 
 - Overview presentation scope uses a tested helper based on the viewed user's role and resolved owner scope, never the viewer's role, so admin previews do not alter coach/club user layouts.

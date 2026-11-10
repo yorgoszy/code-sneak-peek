@@ -12,6 +12,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { AttendanceDetailsDialog } from "./AttendanceDetailsDialog";
 import { QRScannerAttendance } from "./QRScannerAttendance";
 import { toast } from "sonner";
+import { subscriptionMembers, mergeSectionUsers, type RosterSubscription, type RosterUser } from './sectionSubscriptionRoster';
 
 interface GymBooking {
   id: string;
@@ -28,8 +29,10 @@ interface GymBooking {
     max_capacity: number;
   };
   app_users?: {
+    id: string;
     name: string;
     email: string;
+    avatar_url: string | null;
   };
 }
 
@@ -67,7 +70,7 @@ export const GymBookingsCalendarView = () => {
   const [sections, setSections] = useState<BookingSection[]>([]);
   const [weekBookings, setWeekBookings] = useState<{ [key: string]: GymBooking[] }>({});
   const [sectionBookingCounts, setSectionBookingCounts] = useState<{ [sectionId: string]: number }>({});
-  const [sectionUsers, setSectionUsers] = useState<{ [sectionId: string]: SectionUser[] }>({});
+  const [sectionSubscriptions, setSectionSubscriptions] = useState<RosterSubscription[]>([]);
   const [closedDays, setClosedDays] = useState<ClosedDay[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
@@ -79,7 +82,7 @@ export const GymBookingsCalendarView = () => {
     sectionName: string;
     date: string;
     time: string;
-    attendees: GymBooking[];
+    attendees: RosterUser[];
     sectionId?: string;
   } | null>(null);
   const [qrScannerOpen, setQrScannerOpen] = useState(false);
@@ -88,13 +91,13 @@ export const GymBookingsCalendarView = () => {
 
   useEffect(() => {
     fetchSections();
-    fetchSectionUsers();
   }, []);
 
   useEffect(() => {
     if (sections.length > 0) {
       fetchWeekBookings();
       fetchClosedDays();
+      fetchSectionUsers();
     }
   }, [currentWeek, sections]);
 
@@ -158,29 +161,27 @@ export const GymBookingsCalendarView = () => {
     }
   };
 
-  // Fetch users who are assigned to sections with active subscriptions
+  // Resolve memberships from subscriptions, not the legacy profile section.
   const fetchSectionUsers = async () => {
     try {
-      const { data, error } = await supabase
-        .from('app_users')
-        .select('id, name, email, avatar_url, section_id')
-        .not('section_id', 'is', null)
-        .eq('subscription_status', 'active');
-
-      if (error) throw error;
-
-      // Group users by section_id
-      const grouped: { [sectionId: string]: SectionUser[] } = {};
-      (data || []).forEach(user => {
-        if (user.section_id) {
-          if (!grouped[user.section_id]) {
-            grouped[user.section_id] = [];
-          }
-          grouped[user.section_id].push(user as SectionUser);
-        }
-      });
-
-      setSectionUsers(grouped);
+      const rows: RosterSubscription[] = [];
+      const start = format(startOfWeek(currentWeek, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+      const end = format(endOfWeek(currentWeek, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+      for (let offset = 0; ; offset += 1000) {
+        const { data, error } = await supabase
+          .from('user_subscriptions')
+          .select('user_id, coach_id, status, is_paused, start_date, end_date, app_users!user_subscriptions_user_id_fkey(id, name, email, avatar_url, coach_id), subscription_types!user_subscriptions_subscription_type_id_fkey(allowed_sections)')
+          .is('coach_id', null)
+          .eq('status', 'active')
+          .lte('start_date', end)
+          .gte('end_date', start)
+          .order('id')
+          .range(offset, offset + 999);
+        if (error) throw error;
+        rows.push(...(data || []));
+        if (!data || data.length < 1000) break;
+      }
+      setSectionSubscriptions(rows);
     } catch (error) {
       console.error('Error fetching section users:', error);
     }
@@ -237,7 +238,7 @@ export const GymBookingsCalendarView = () => {
         .select(`
           *,
           section:booking_sections(name, description, max_capacity),
-          app_users!user_id(name, email, avatar_url)
+          app_users!user_id(id, name, email, avatar_url)
         `)
         .in('section_id', allSectionIds)
         .is('coach_id', null)
@@ -293,12 +294,15 @@ export const GymBookingsCalendarView = () => {
     return getBookingsForDateAndTime(date, time).length;
   };
 
-  // Άτομα σε ένα slot: μόνο όσοι έχουν κράτηση στη συγκεκριμένη ώρα (μέλη ή έξτρα)
+  const getSlotUsers = (sectionId: string, date: string, time: string) => {
+    const bookedUsers = getBookingsForDateAndTime(date, time)
+      .filter(b => b.section_id === sectionId)
+      .flatMap(b => b.app_users ? [b.app_users] : []);
+    return mergeSectionUsers(subscriptionMembers(sectionSubscriptions, sectionId, date), bookedUsers);
+  };
+
   const getSlotAttendeesCount = (sectionId: string, date: string, time: string) => {
-    const slotBookings = getBookingsForDateAndTime(date, time).filter(b =>
-      b.section_id === sectionId && b.user_id
-    );
-    return new Set(slotBookings.map(b => b.user_id)).size;
+    return getSlotUsers(sectionId, date, time).length;
   };
 
   const toggleSection = (sectionId: string) => {
@@ -328,7 +332,7 @@ export const GymBookingsCalendarView = () => {
       sectionName,
       date,
       time,
-      attendees: bookings,
+      attendees: sectionId ? getSlotUsers(sectionId, date, time) : [],
       sectionId
     });
     setAttendanceDialogOpen(true);
@@ -400,6 +404,7 @@ export const GymBookingsCalendarView = () => {
     const dayOfWeek = selectedDay.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
 
     return (
+      <>
       <div className="space-y-3">
 
         {/* Week Navigation - Compact */}
@@ -568,6 +573,15 @@ export const GymBookingsCalendarView = () => {
           })}
         </div>
       </div>
+      <AttendanceDetailsDialog
+        isOpen={attendanceDialogOpen}
+        onClose={() => setAttendanceDialogOpen(false)}
+        sectionName={selectedSlotInfo?.sectionName || ''}
+        date={selectedSlotInfo?.date || ''}
+        time={selectedSlotInfo?.time || ''}
+        users={selectedSlotInfo?.attendees || []}
+      />
+      </>
     );
   }
 
@@ -775,7 +789,7 @@ export const GymBookingsCalendarView = () => {
       sectionName={selectedSlotInfo?.sectionName || ''}
       date={selectedSlotInfo?.date || ''}
       time={selectedSlotInfo?.time || ''}
-      sectionId={selectedSlotInfo?.sectionId}
+      users={selectedSlotInfo?.attendees || []}
     />
 
     {/* QR Scanner Dialog */}
