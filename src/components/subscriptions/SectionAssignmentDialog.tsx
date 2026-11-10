@@ -9,6 +9,7 @@ import { Users, Calendar, Loader2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
 import { normalizeSectionSchedule } from './sectionAssignmentSchedule';
+import { adminAssignmentSections } from './adminAssignmentSections';
 
 import type { Json } from "@/integrations/supabase/types";
 
@@ -146,9 +147,9 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
       const { data, error } = await supabase
         .from('booking_sections')
         .select('id, name, max_capacity, is_active, available_hours')
-        .eq('is_active', true)
-        .is('coach_id', null)
-        .eq('booking_type', 'gym_visit')
+        .eq(adminAssignmentSections.activeColumn, true)
+        .is(adminAssignmentSections.ownerColumn, null)
+        .or(adminAssignmentSections.bookingTypes)
         .order('name');
 
       if (error) throw error;
