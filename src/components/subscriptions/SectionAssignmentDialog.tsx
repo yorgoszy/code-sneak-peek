@@ -6,7 +6,9 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Users, Calendar, Loader2 } from "lucide-react";
-import { format, addDays, isBefore, isEqual, parseISO } from "date-fns";
+import { format, parseISO } from "date-fns";
+
+import { normalizeSectionSchedule } from './sectionAssignmentSchedule';
 
 import type { Json } from "@/integrations/supabase/types";
 
@@ -71,6 +73,7 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
   useEffect(() => {
     if (isOpen) {
       loadSections();
+      setSubscriptionEndDate(null);
       loadUserSubscription();
       setSelectedSection(currentSectionId || 'none');
       setSelectedSchedule({});
@@ -88,15 +91,26 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
       return;
     }
 
+    let cancelled = false;
     const loadExistingSchedule = async () => {
       setLoadingSchedule(true);
       try {
+        const { data: profile, error: profileError } = await supabase.from('app_users')
+          .select('section_schedule').eq('id', userId).single();
+        if (profileError) throw profileError;
+        if (cancelled) return;
+        if (profile.section_schedule !== null) {
+          const section = sections.find(s => s.id === selectedSection);
+          setSelectedSchedule(normalizeSectionSchedule(profile.section_schedule, section?.available_hours));
+          return;
+        }
         const today = format(new Date(), 'yyyy-MM-dd');
         const { data, error } = await supabase
           .from('booking_sessions')
           .select('booking_date, booking_time')
           .eq('user_id', userId)
           .eq('section_id', selectedSection)
+          .is('coach_id', null)
           .gte('booking_date', today)
           .in('booking_type', ['gym_visit', 'gym'])
           .in('status', ['confirmed', 'completed']);
@@ -112,17 +126,18 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
           if (!schedule[dayName].includes(bookingTime)) schedule[dayName].push(bookingTime);
         });
         Object.values(schedule).forEach(times => times.sort());
-        setSelectedSchedule(schedule);
+        if (!cancelled) setSelectedSchedule(schedule);
       } catch (error) {
         console.error('Error loading existing booking schedule:', error);
-        setSelectedSchedule({});
+        if (!cancelled) setSelectedSchedule({});
       } finally {
-        setLoadingSchedule(false);
+        if (!cancelled) setLoadingSchedule(false);
       }
     };
 
     loadExistingSchedule();
-  }, [isOpen, selectedSection, currentSectionId, userId]);
+    return () => { cancelled = true; };
+  }, [isOpen, selectedSection, currentSectionId, userId, sections]);
 
   const loadSections = async () => {
     try {
@@ -130,6 +145,8 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
         .from('booking_sections')
         .select('id, name, max_capacity, is_active, available_hours')
         .eq('is_active', true)
+        .is('coach_id', null)
+        .eq('booking_type', 'gym_visit')
         .order('name');
 
       if (error) throw error;
@@ -146,30 +163,18 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
 
   const loadUserSubscription = async () => {
     try {
-      // Try coach_subscriptions first
-      const { data: coachSub } = await supabase
-        .from('coach_subscriptions')
-        .select('end_date')
-        .eq('user_id', userId)
-        .eq('status', 'active')
-        .order('end_date', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (coachSub?.end_date) {
-        setSubscriptionEndDate(coachSub.end_date);
-        return;
-      }
-
-      // Try user_subscriptions
-      const { data: userSub } = await supabase
+      const { data: userSub, error } = await supabase
         .from('user_subscriptions')
         .select('end_date')
         .eq('user_id', userId)
+        .is('coach_id', null)
         .eq('status', 'active')
+        .or('is_paused.is.null,is_paused.eq.false')
+        .gte('end_date', format(new Date(), 'yyyy-MM-dd'))
         .order('end_date', { ascending: false })
         .limit(1)
         .maybeSingle();
+      if (error) throw error;
 
       if (userSub?.end_date) {
         setSubscriptionEndDate(userSub.end_date);
@@ -180,84 +185,6 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
       console.error('Error loading subscription:', error);
       setSubscriptionEndDate(null);
     }
-  };
-
-  const createBookingsForSection = async (sectionId: string, endDate: string) => {
-    const section = sections.find(s => s.id === sectionId);
-    if (!section || !section.available_hours) return;
-
-    const availableHours = section.available_hours as Record<string, string[]>;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const endDateObj = parseISO(endDate);
-    
-    const bookingsToCreate: Array<{
-      user_id: string;
-      section_id: string;
-      booking_date: string;
-      booking_time: string;
-      booking_type: string;
-      status: string;
-    }> = [];
-
-    // Iterate through each day from today until end date
-    let currentDate = new Date(today);
-    while (isBefore(currentDate, endDateObj) || isEqual(currentDate, endDateObj)) {
-      const dayOfWeek = currentDate.getDay();
-      const dayName = dayNameMap[dayOfWeek];
-      const hoursForDay = availableHours[dayName] || [];
-
-      // Create bookings only for the selected times of this weekday
-      const selectedTimesForDay = selectedSchedule[dayName] || [];
-      const timesForDay = hoursForDay.filter(time =>
-        selectedTimesForDay.includes(String(time).substring(0, 5))
-      );
-      for (const time of timesForDay) {
-        bookingsToCreate.push({
-          user_id: userId,
-          section_id: sectionId,
-          booking_date: format(currentDate, 'yyyy-MM-dd'),
-          booking_time: time,
-          booking_type: 'gym_visit',
-          status: 'confirmed'
-        });
-      }
-
-      currentDate = addDays(currentDate, 1);
-    }
-
-    if (bookingsToCreate.length > 0) {
-      // First, delete existing future bookings for this user in any section
-      const todayStr = format(today, 'yyyy-MM-dd');
-      await supabase
-        .from('booking_sessions')
-        .delete()
-        .eq('user_id', userId)
-        .gte('booking_date', todayStr);
-
-      // Insert new bookings
-      const { error } = await supabase
-        .from('booking_sessions')
-        .insert(bookingsToCreate);
-
-      if (error) {
-        console.error('Error creating bookings:', error);
-        throw error;
-      }
-
-      console.log(`Created ${bookingsToCreate.length} bookings until ${endDate}`);
-    }
-  };
-
-  const deleteUserBookings = async () => {
-    const today = new Date();
-    const todayStr = format(today, 'yyyy-MM-dd');
-    
-    await supabase
-      .from('booking_sessions')
-      .delete()
-      .eq('user_id', userId)
-      .gte('booking_date', todayStr);
   };
 
   const handleAssign = async () => {
@@ -282,28 +209,18 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
 
     setLoading(true);
     try {
-      // Update user's section
-      const { error } = await supabase
-        .from('app_users')
-        .update({ section_id: selectedSection === 'none' ? null : selectedSection })
-        .eq('id', userId);
-
+      const { data: count, error } = await supabase.rpc('save_admin_section_assignment', {
+        p_user_id: userId,
+        p_section_id: selectedSection === 'none' ? null : selectedSection,
+        p_schedule: selectedSection === 'none' ? {} : selectedSchedule
+      });
       if (error) throw error;
-
-      // Create or delete bookings based on selection
-      if (selectedSection !== 'none' && subscriptionEndDate) {
-        await createBookingsForSection(selectedSection, subscriptionEndDate);
-        toast({
-          title: "Επιτυχία",
-          description: `Το τμήμα ανατέθηκε και δημιουργήθηκαν κρατήσεις μέχρι ${format(parseISO(subscriptionEndDate), 'dd/MM/yyyy')}`
-        });
-      } else {
-        await deleteUserBookings();
-        toast({
-          title: "Επιτυχία",
-          description: "Η ανάθεση τμήματος αφαιρέθηκε και διαγράφηκαν οι μελλοντικές κρατήσεις"
-        });
-      }
+      toast({
+        title: "Επιτυχία",
+        description: selectedSection === 'none'
+          ? "Η ανάθεση αφαιρέθηκε. Οι ολοκληρωμένες επισκέψεις διατηρήθηκαν."
+          : `Αποθηκεύτηκαν όλες οι επιλογές. Δημιουργήθηκαν ${count || 0} κρατήσεις έως ${subscriptionEndDate ? format(parseISO(subscriptionEndDate), 'dd/MM/yyyy') : ''}.`
+      });
 
       onSuccess();
       onClose();
@@ -312,7 +229,7 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
       toast({
         variant: "destructive",
         title: "Σφάλμα",
-        description: "Σφάλμα ανάθεσης τμήματος"
+        description: error && typeof error === 'object' && 'message' in error ? String(error.message) : "Σφάλμα ανάθεσης τμήματος"
       });
     } finally {
       setLoading(false);
@@ -372,7 +289,7 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
 
           <div className="space-y-2">
             <Label>Τμήμα</Label>
-            <Select value={selectedSection} onValueChange={setSelectedSection}>
+            <Select disabled={loading} value={selectedSection} onValueChange={setSelectedSection}>
               <SelectTrigger className="rounded-none">
                 <SelectValue placeholder="Επιλέξτε τμήμα..." />
               </SelectTrigger>
@@ -470,7 +387,7 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
             </Button>
             <Button
               onClick={handleAssign}
-              disabled={loading || (selectedSection !== 'none' && !subscriptionEndDate)}
+              disabled={loading || loadingSchedule || (selectedSection !== 'none' && !subscriptionEndDate)}
               className="rounded-none bg-[#00ffba] text-black hover:bg-[#00ffba]/90"
             >
               {loading ? (
