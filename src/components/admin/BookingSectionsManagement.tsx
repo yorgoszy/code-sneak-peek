@@ -264,7 +264,7 @@ export const BookingSectionsManagement = ({ coachId }: { coachId?: string } = {}
               </div>}
               <div className="space-y-4">
                 <AvailableHoursSelector
-                  compact={Boolean(coachId)}
+                  compact
                   availableHours={formData.available_hours}
                   onChange={(hours) => setFormData(prev => ({ ...prev, available_hours: hours }))}
                 />
