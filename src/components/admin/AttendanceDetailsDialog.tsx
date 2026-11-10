@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { User, Clock } from "lucide-react";
 import { format } from "date-fns";
-import { supabase } from "@/integrations/supabase/client";
 
 interface SectionUser {
   id: string;
@@ -19,7 +18,7 @@ interface AttendanceDetailsDialogProps {
   sectionName: string;
   date: string;
   time: string;
-  sectionId?: string;
+  users: SectionUser[];
 }
 
 export const AttendanceDetailsDialog: React.FC<AttendanceDetailsDialogProps> = ({
@@ -28,53 +27,8 @@ export const AttendanceDetailsDialog: React.FC<AttendanceDetailsDialogProps> = (
   sectionName,
   date,
   time,
-  sectionId
+  users
 }) => {
-  const [users, setUsers] = useState<SectionUser[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (isOpen && sectionId) {
-      fetchSectionUsers();
-    }
-  }, [isOpen, sectionId, date, time]);
-
-  const fetchSectionUsers = async () => {
-    if (!sectionId) return;
-    setLoading(true);
-    try {
-      if (!date || !time) {
-        setUsers([]);
-        return;
-      }
-
-      const timeShort = time.substring(0, 5);
-      const { data, error } = await supabase
-        .from('booking_sessions')
-        .select('booking_time, user_id, app_users!user_id(id, name, email, avatar_url)')
-        .eq('section_id', sectionId)
-        .eq('booking_date', date)
-        .in('booking_type', ['gym_visit', 'gym'])
-        .in('status', ['confirmed', 'completed']);
-
-      if (error) throw error;
-
-      const uniqueUsers = new Map<string, SectionUser>();
-      (data || []).forEach((booking: any) => {
-        const bookingTime = String(booking.booking_time || '').substring(0, 5);
-        const user = booking.app_users;
-        if (bookingTime === timeShort && user?.id) {
-          uniqueUsers.set(user.id, user);
-        }
-      });
-
-      setUsers(Array.from(uniqueUsers.values()));
-    } catch (error) {
-      console.error('Error fetching section users:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const formattedDate = date ? format(new Date(date), 'dd/MM/yyyy') : '';
 
@@ -106,11 +60,9 @@ export const AttendanceDetailsDialog: React.FC<AttendanceDetailsDialogProps> = (
 
           {/* Users List */}
           <div className="space-y-2 max-h-[300px] overflow-y-auto">
-            {loading ? (
-              <div className="text-center py-6 text-gray-500 text-sm">Φόρτωση...</div>
-            ) : users.length === 0 ? (
+            {users.length === 0 ? (
               <div className="text-center py-6 text-gray-500 text-sm">
-                Δεν υπάρχουν κρατήσεις για αυτή την ώρα
+                Δεν υπάρχουν μέλη για αυτή την ώρα
               </div>
             ) : (
               users.map((user) => (
