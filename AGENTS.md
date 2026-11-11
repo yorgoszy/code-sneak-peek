@@ -1,5 +1,8 @@
 # Architecture rules
 
+- Builder assignment uses a synchronous in-flight lock and blocking loading state; persistence callbacks never close the builder mid-assignment or refetch the library for every copy, preventing duplicate clicks and premature unmounts. Successful assignment closes directly without draft autosave and uses client navigation.
+- Personalized multi-recipient program copies carry active status and recipient user_id, stay outside the draft library, and persist structure once before assignment; exercise inserts are batched per block to reduce network round trips without sharing recipient values.
+
 - Admin section assignments persist weekly selections independently of generated bookings and use one admin-checked invoker RPC for atomic profile/booking changes; completed visits and other calendars are preserved. Both selection and RPC validation accept legacy null booking_type alongside gym_visit for active coach_id-null sections, because global gym sections predate that field. The admin-checked renewal RPC atomically extends those saved slots into the new subscription period through section_attendance_slots, without replacing existing attendance or touching Coach/Club calendars.
 - Booking section validation permits server-verified admins to generate only the user's saved recurring slots within an active global subscription and current section hours, so assignment changes and renewals are not rolled back by catalog restrictions; ordinary bookings and Coach/Club restrictions remain unchanged.
 

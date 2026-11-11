@@ -37,6 +37,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
     handleClose,
     handleSave,
     handleAssign,
+    isAssigning,
     availableUsers
   } = useProgramBuilderDialogLogic({
     users,
@@ -202,6 +203,7 @@ export const ProgramBuilderDialog: React.FC<ProgramBuilderDialogProps> = ({
         onPasteDay={actions.pasteDay}
         onSave={handleSave}
         onAssignments={handleAssign}
+        isAssigning={isAssigning}
         onTrainingDatesChange={handleTrainingDatesChange}
         getTotalTrainingDays={getTotalTrainingDays}
         updateProgram={updateProgram}

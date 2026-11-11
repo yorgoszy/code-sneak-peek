@@ -39,6 +39,7 @@ export const CoachProgramBuilderDialog: React.FC<CoachProgramBuilderDialogProps>
     handleClose,
     handleSave,
     handleAssign,
+    isAssigning,
     availableUsers
   } = useCoachProgramBuilderDialogLogic({
     users,
@@ -151,6 +152,7 @@ export const CoachProgramBuilderDialog: React.FC<CoachProgramBuilderDialogProps>
         onLoadBlockTemplate={actions.loadBlockTemplate}
         onSave={handleSave}
         onAssignments={handleAssign}
+        isAssigning={isAssigning}
         onTrainingDatesChange={handleTrainingDatesChange}
         getTotalTrainingDays={getTotalTrainingDays}
         coachId={coachId}

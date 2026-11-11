@@ -1,3 +1,4 @@
+import { isProgramLibraryEntry } from './builder/services/assignmentOperation';
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -242,7 +243,7 @@ export const ProgramsList: React.FC<ProgramsListProps> = ({
     <>
       <div className="w-full">
         <div className={`space-y-${isMobile ? '2' : '3'}`}>
-          {programs.map(program => {
+          {programs.filter(isProgramLibraryEntry).map(program => {
             const { weeksCount, avgDaysPerWeek } = getProgramStats(program);
             const assignmentInfo = getAssignmentInfo(program);
             const isAssigned = assignmentInfo !== null;

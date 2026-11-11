@@ -130,12 +130,7 @@ export const useProgramStructure = () => {
                 exercise_order: index + 1
               }));
 
-            for (const exercise of sortedExercises) {
-              if (!exercise.exercise_id) {
-                console.log('⚠️ [useProgramStructure] Skipping exercise without exercise_id');
-                continue;
-              }
-
+            const exerciseRows = sortedExercises.filter(exercise => exercise.exercise_id).map(exercise => {
               const insertData = {
                 block_id: blockData.id,
                 exercise_id: exercise.exercise_id,
@@ -152,16 +147,13 @@ export const useProgramStructure = () => {
                 exercise_order: exercise.exercise_order || 1
               };
 
+              return insertData;
+            });
+            if (exerciseRows.length > 0) {
               const { error: exerciseError } = await supabase
                 .from('program_exercises')
-                .insert([insertData]);
-
-              if (exerciseError) {
-                console.error('❌ [useProgramStructure] Error creating exercise:', exerciseError);
-                throw exerciseError;
-              }
-
-              console.log('✅ [useProgramStructure] Exercise created:', exercise.exercises?.name || exercise.exercise_id);
+                .insert(exerciseRows);
+              if (exerciseError) throw exerciseError;
             }
           }
         }
