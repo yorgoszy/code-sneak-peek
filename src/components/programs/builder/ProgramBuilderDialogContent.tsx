@@ -1,5 +1,6 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
+import { Loader2 } from 'lucide-react';
 import { DialogContent } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { User, Exercise, EffortType } from '../types';
@@ -56,6 +57,7 @@ interface ProgramBuilderDialogContentProps {
   onPasteDay?: (weekId: string, dayId: string, clipboardDay: any) => void;
   onLoadBlockTemplate?: (weekId: string, dayId: string, blockId: string, template: any) => void;
   onSave: () => Promise<void>;
+  isAssigning?: boolean;
   onAssignments: () => void;
   onClose?: () => void;
   onTrainingDatesChange: (dates: Date[]) => void;
@@ -110,6 +112,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   onLoadBlockTemplate,
   onSave,
   onAssignments,
+  isAssigning = false,
   onClose,
   onTrainingDatesChange,
   getTotalTrainingDays,
@@ -148,7 +151,13 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
   }, [selectedUserId]);
 
   return (
-    <DialogContent className="w-screen h-screen max-w-none max-h-none m-0 p-0 rounded-none [&>button]:hidden">
+    <DialogContent aria-busy={isAssigning} onEscapeKeyDown={event => { if (isAssigning) event.preventDefault(); }} onPointerDownOutside={event => { if (isAssigning) event.preventDefault(); }} className="w-screen h-screen max-w-none max-h-none m-0 p-0 rounded-none [&>button]:hidden">
+      {isAssigning && (
+        <div role="status" aria-live="polite" className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-background/95 text-foreground">
+          <Loader2 className="h-8 w-8 animate-spin motion-reduce:animate-none" />
+          <span>Ανάθεση προγράμματος…</span>
+        </div>
+      )}
       <UserExerciseDataCacheProvider userId={selectedUserId}>
         <BatchAutoFillBridge updateProgram={updateProgram} />
         <FmsExerciseStatusProvider userId={selectedUserId}>
@@ -200,6 +209,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
                 onLoadBlockTemplate={onLoadBlockTemplate}
                 onSave={onSave}
                 onAssignments={onAssignments}
+                isAssigning={isAssigning}
                 onClose={onClose}
                 coachId={coachId}
                 activePreviewUserId={activePreviewUserId}
@@ -213,6 +223,7 @@ export const ProgramBuilderDialogContent: React.FC<ProgramBuilderDialogContentPr
                   onTrainingDatesChange={onTrainingDatesChange}
                   isCoach={!!coachId}
                   onAssign={onAssignments}
+                  assignLoading={isAssigning}
                   canAssign={
                     !!(
                       program.user_ids &&

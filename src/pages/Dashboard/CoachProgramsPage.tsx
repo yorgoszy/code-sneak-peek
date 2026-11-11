@@ -121,9 +121,7 @@ const CoachProgramsContent = () => {
         coach_id: coachId,
       };
       const savedProgram = await saveProgram(dataWithCoach);
-      await loadPrograms();
-      setBuilderOpen(false);
-      setEditingProgram(null);
+      if (!programData.deferBuilderRefresh) await loadPrograms();
       return savedProgram;
     } catch (error) {
       console.error('Error creating program:', error);

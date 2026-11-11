@@ -1,4 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { createAssignmentOperation, assignedProgramCopy } from '../services/assignmentOperation';
 import { toast } from 'sonner';
 import type { User, Exercise } from '../../types';
 import type { ProgramStructure } from './useProgramBuilderState';
@@ -34,6 +36,10 @@ export const useProgramBuilderDialogLogic = ({
   updateProgram,
   coachId
 }: UseProgramBuilderDialogLogicProps) => {
+  const navigate = useNavigate();
+  const operation = useRef(createAssignmentOperation());
+  const savedId = useRef<string | undefined>(program.id);
+  const [isAssigning, setIsAssigning] = useState(false);
   const availableUsers = useMemo(() => {
     console.log('🔍 useProgramBuilderDialogLogic - users:', users.length, 'coachId:', coachId);
     // Ο parent (Programs.tsx ή CoachProgramsPage.tsx) ήδη φιλτράρει τους χρήστες
@@ -69,9 +75,10 @@ export const useProgramBuilderDialogLogic = ({
   };
 
   const handleClose = async () => {
+    if (operation.current.busy) return;
     // Αν είναι νέο πρόγραμμα με περιεχόμενο και ΧΩΡΙΣ αποθηκευμένο id,
     // το αποθηκεύουμε αυτόματα σαν "draft X" στη βάση.
-    if (!editingProgram && !program.id && hasMeaningfulProgram(program)) {
+    if (!editingProgram && !program.id && !savedId.current && hasMeaningfulProgram(program)) {
       try {
         const draftName = program.name?.trim() ? program.name : await getNextDraftName();
         const draftProgram = {
@@ -94,6 +101,7 @@ export const useProgramBuilderDialogLogic = ({
 
 
   const handleSave = async () => {
+    if (!operation.current.acquire()) return;
     try {
       console.log('💾 [handleSave] Starting save...');
       console.log('💾 [handleSave] Program name:', program.name);
@@ -126,7 +134,8 @@ export const useProgramBuilderDialogLogic = ({
         return;
       }
 
-      const savedProgram = await onCreateProgram(program);
+      const savedProgram = await onCreateProgram({ ...program, id: program.id || savedId.current, deferBuilderRefresh: true });
+      if (savedProgram?.id) savedId.current = savedProgram.id;
       console.log('✅ Program saved:', savedProgram);
       
       // Ενημέρωση του program state με το νέο ID
@@ -141,10 +150,14 @@ export const useProgramBuilderDialogLogic = ({
     } catch (error) {
       console.error('❌ Error saving program:', error);
       toast.error('Σφάλμα κατά την αποθήκευση του προγράμματος. Ελέγξτε τη σύνδεση και δοκιμάστε ξανά.');
+    } finally {
+      operation.current.release();
     }
   };
 
   const handleAssign = async () => {
+    if (!operation.current.acquire()) return;
+    setIsAssigning(true);
     try {
       console.log('🎯 Starting assignment process:', { program, user_ids: program.user_ids });
 
@@ -164,13 +177,15 @@ export const useProgramBuilderDialogLogic = ({
       }
 
       // Ensure base program is saved first (as a "template" reference)
-      let baseProgramId = program.id;
+      let baseProgramId = program.id || savedId.current;
       if (!baseProgramId) {
-        const savedProgram = await onCreateProgram(program);
+        const savedProgram = await onCreateProgram({ ...program, deferBuilderRefresh: true });
         if (!savedProgram || !savedProgram.id) {
           throw new Error('Αποτυχία αποθήκευσης προγράμματος');
         }
         baseProgramId = savedProgram.id;
+        savedId.current = savedProgram.id;
+        updateProgram?.({ id: savedProgram.id });
       }
 
       // Convert Date objects to strings
@@ -195,30 +210,19 @@ export const useProgramBuilderDialogLogic = ({
         const personalizedWeeks = applyUserWarmUps(program.weeks || [], userId);
         const userWeeks = await recalculateWeeksForUser(personalizedWeeks, userId);
 
-        let programIdForUser = baseProgramId;
-
-        // For multiple users: each user gets their OWN program copy
-        // so per-user kg/velocity values are stored independently
-        if (!isSingleUser) {
-          console.log(`📋 Creating unique program copy for user ${userId}...`);
-          const userProgramCopy = await onCreateProgram({
-            ...program,
-            id: undefined, // Force new creation
-            name: program.user_ids.length > 1 ? `${program.name}` : program.name,
-            weeks: userWeeks,
-          });
-          if (!userProgramCopy || !userProgramCopy.id) {
-            throw new Error(`Αποτυχία δημιουργίας αντιγράφου προγράμματος για χρήστη ${userId}`);
-          }
-          programIdForUser = userProgramCopy.id;
-        }
+        // Save each recipient's personalized structure exactly once.
+        const savedUserProgram = await onCreateProgram(isSingleUser
+          ? { ...program, id: baseProgramId, weeks: userWeeks, deferBuilderRefresh: true }
+          : assignedProgramCopy(program, userId, userWeeks));
+        if (!savedUserProgram?.id) throw new Error('Αποτυχία αποθήκευσης προγράμματος χρήστη');
+        const programIdForUser = savedUserProgram.id;
 
         const assignmentData = {
           program: { ...program, id: programIdForUser, weeks: userWeeks },
           userId,
           trainingDates,
           coachId,
-          skipStructureRecreation: !isSingleUser, // For multi-user, structure was already created by onCreateProgram
+          skipStructureRecreation: true, // For multi-user, structure was already created by onCreateProgram
         };
 
         await assignmentService.saveAssignment(assignmentData);
@@ -227,16 +231,17 @@ export const useProgramBuilderDialogLogic = ({
 
       toast.success(`Το πρόγραμμα ανατέθηκε επιτυχώς σε ${program.user_ids.length} χρήστες!`);
       clearProgramDraft();
-      handleClose();
+      onOpenChange();
 
       // Redirect to active programs
-      setTimeout(() => {
-        window.location.href = '/dashboard/active-programs';
-      }, 1500);
+      navigate('/dashboard/active-programs');
 
     } catch (error) {
       console.error('❌ Assignment error:', error);
       toast.error(`Σφάλμα ανάθεσης: ${error instanceof Error ? error.message : 'Άγνωστο σφάλμα'}`);
+    } finally {
+      operation.current.release();
+      setIsAssigning(false);
     }
   };
 
@@ -244,6 +249,7 @@ export const useProgramBuilderDialogLogic = ({
     handleClose,
     handleSave,
     handleAssign,
+    isAssigning,
     availableUsers
   };
 };

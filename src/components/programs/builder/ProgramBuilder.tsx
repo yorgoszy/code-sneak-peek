@@ -51,6 +51,7 @@ interface ProgramBuilderProps {
   onPasteDay: (weekId: string, dayId: string, clipboardDay: any) => void;
   onLoadBlockTemplate?: (weekId: string, dayId: string, blockId: string, template: any) => void;
   onSave?: () => Promise<void>;
+  isAssigning?: boolean;
   onAssignments?: () => void;
   onClose?: () => void;
   coachId?: string;
@@ -105,6 +106,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
   onLoadBlockTemplate,
   onSave,
   onAssignments,
+  isAssigning = false,
   onClose,
   coachId,
   activePreviewUserId,
@@ -142,6 +144,7 @@ export const ProgramBuilder: React.FC<ProgramBuilderProps> = ({
         onToggleMode={onToggleAssignmentMode}
         onSave={onSave}
         onAssignments={onAssignments}
+                isAssigning={isAssigning}
         onClose={onClose}
         canAssign={!!canAssign}
         coachId={coachId}

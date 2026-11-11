@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
-import { User, Users, Save, Plus, Check, Search, X, ShoppingCart } from "lucide-react";
+import { Loader2, User, Users, Save, Plus, Check, Search, X, ShoppingCart } from "lucide-react";
 import { matchesSearchTerm } from "@/lib/utils";
 import { SelectedUsersDisplay } from './SelectedUsersDisplay';
 import { GroupSelection } from './GroupSelection';
@@ -32,6 +32,7 @@ interface ProgramBasicInfoProps {
   isMultipleMode?: boolean;
   onToggleMode?: (isMultiple: boolean) => void;
   onSave?: () => Promise<void>;
+  isAssigning?: boolean;
   onAssignments?: () => void;
   onClose?: () => void;
   canAssign?: boolean;
@@ -54,6 +55,7 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
   onPriceChange,
   onSave,
   onAssignments,
+  isAssigning = false,
   onClose,
   canAssign = false,
   coachId,
@@ -259,11 +261,13 @@ export const ProgramBasicInfo: React.FC<ProgramBasicInfoProps> = ({
           {onAssignments && (
             <Button
               onClick={onAssignments}
-              disabled={!canAssign}
+              disabled={!canAssign || isAssigning}
+              aria-label="Ανάθεση προγράμματος"
+              aria-busy={isAssigning}
               size="sm"
               className="h-5 px-1.5 text-[9px] rounded-none bg-[#004aad] hover:bg-[#004aad]/90 text-white"
             >
-              <Users className="w-2.5 h-2.5" />
+              {isAssigning ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Users className="w-2.5 h-2.5" />}
             </Button>
           )}
           {onClose && (

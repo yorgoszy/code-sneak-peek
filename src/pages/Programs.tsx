@@ -127,9 +127,7 @@ const Programs = () => {
       console.log('Creating/updating program:', programData);
       const savedProgram = await saveProgram(programData);
       console.log('✅ Program saved, result:', savedProgram);
-      await loadPrograms(); // Ξαναφόρτωση για να ενημερωθούν τα δεδομένα
-      setBuilderOpen(false);
-      setEditingProgram(null);
+      if (!programData.deferBuilderRefresh) await loadPrograms();
       return savedProgram; // ΕΠΙΣΤΡΕΦΟΥΜΕ το αποθηκευμένο πρόγραμμα
     } catch (error) {
       console.error('Error creating program:', error);
