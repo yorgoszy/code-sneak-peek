@@ -1,5 +1,7 @@
 # Architecture rules
 
+- Suppress section booking creation emails centrally in the notification handler before loading recipients or calling Resend, so browser calls and database triggers obey the same policy.
+
 - Builder assignment uses a synchronous in-flight lock and blocking loading state; persistence callbacks never close the builder mid-assignment or refetch the library for every copy, preventing duplicate clicks and premature unmounts. Successful assignment closes directly without draft autosave and uses client navigation.
 - Personalized multi-recipient program copies carry active status and recipient user_id, stay outside the draft library, and persist structure once before assignment; exercise inserts are batched per block to reduce network round trips without sharing recipient values.
 

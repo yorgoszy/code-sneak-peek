@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { Resend } from "npm:resend@2.0.0"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
+import { suppressBookingEmail } from './emailPolicy.ts'
 
 interface NotificationRequest {
   type: 'booking_pending' | 'booking_approved' | 'booking_rejected' | 'booking_cancelled' | 'booking_cancelled_admin' | 
@@ -1019,6 +1020,16 @@ serve(async (req) => {
   }
 
   try {
+    const { type, bookingId, adminEmail, userId, paymentId, offerId, bookingDate, bookingTime }: NotificationRequest = await req.json()
+
+    // Central guard covers browser calls, database triggers and queued requests.
+    if (suppressBookingEmail(type)) {
+      return new Response(
+        JSON.stringify({ success: true, skipped: true, reason: 'section_booking_emails_disabled' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const resendApiKey = Deno.env.get('RESEND_API_KEY')
     if (!resendApiKey) {
       return new Response(
@@ -1036,7 +1047,6 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey)
 
     const resend = new Resend(resendApiKey)
-    const { type, bookingId, adminEmail, userId, paymentId, offerId, bookingDate, bookingTime }: NotificationRequest = await req.json()
 
     console.log(`📧 Αποστολή ${type} notification`)
 
