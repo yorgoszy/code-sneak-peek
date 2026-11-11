@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { matchesSearchTerm } from "@/lib/utils";
-import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown, Receipt, Pause, Play, RotateCcw, Trash2, UserCheck, CreditCard, Users, FileText, AlertTriangle } from "lucide-react";
+import { Crown, Calendar, DollarSign, User, Plus, Edit2, Check, X, Search, ChevronDown, Receipt, Pause, Play, RotateCcw, Trash2, UserCheck, CreditCard, Users, FileText, AlertTriangle, Loader2 } from "lucide-react";
 import { ReceiptPreviewDialog } from "@/components/analytics/ReceiptPreviewDialog";
 import { ReceiptConfirmDialog, type ReceiptConfirmResult } from './ReceiptConfirmDialog';
 import { SubscriptionDeleteDialog } from './SubscriptionDeleteDialog';
@@ -91,6 +91,8 @@ export const SubscriptionManagement: React.FC = () => {
   const [durationMultiplier, setDurationMultiplier] = useState(1);
   const [customUnitNet, setCustomUnitNet] = useState<string | null>(null);
   const [receiptPreviewOpen, setReceiptPreviewOpen] = useState(false);
+  const [issuing, setIssuing] = useState(false);
+  const issuingRef = useRef(false);
   const [selectedReceiptData, setSelectedReceiptData] = useState<any>(null);
   const [mydataErrorDialogOpen, setMydataErrorDialogOpen] = useState(false);
   const [mydataErrorReceiptNumber, setMydataErrorReceiptNumber] = useState('');
@@ -584,7 +586,9 @@ export const SubscriptionManagement: React.FC = () => {
       // Auto-send στο MyData αν είναι ενεργοποιημένο
       if (insertedReceipt) {
         await sendReceiptToMyData(receiptNumber, insertedReceipt.id, netPrice, vatAmount, totalPrice);
+        return insertedReceipt.id as string;
       }
+      return null;
 
     } catch (error) {
       console.error('❌ Σφάλμα δημιουργίας απόδειξης:', error);
@@ -593,7 +597,42 @@ export const SubscriptionManagement: React.FC = () => {
         title: "Σφάλμα",
         description: "Σφάλμα κατά τη δημιουργία απόδειξης",
       });
+      return null;
     }
+  };
+
+  const openReceiptPreviewById = async (receiptId: string, startDate?: string) => {
+    const { data: r, error } = await supabase.from('receipts').select('*').eq('id', receiptId).maybeSingle();
+    if (error || !r) return;
+    const items = Array.isArray(r.items) && (r.items as any[]).length > 0
+      ? (r.items as any[]).map((item: any, index: number) => ({
+          id: item.id || String(index + 1),
+          description: item.description || '',
+          quantity: item.quantity || 1,
+          unitPrice: item.unitPrice || item.unit_price || r.subtotal,
+          vatRate: item.vatRate || item.vat_rate || 13,
+          total: item.total || r.total,
+        }))
+      : [{ id: '1', description: '', quantity: 1, unitPrice: r.subtotal, vatRate: 13, total: r.total }];
+    setSelectedReceiptData({
+      id: r.id,
+      receiptNumber: r.receipt_number,
+      customerName: r.customer_name,
+      customerVat: r.customer_vat,
+      customerEmail: r.customer_email,
+      items,
+      subtotal: r.subtotal || 0,
+      vat: r.vat || 0,
+      total: r.total || 0,
+      date: r.issue_date || r.created_at,
+      startDate,
+      myDataStatus: r.mydata_status || 'pending',
+      myDataId: r.mydata_id,
+      invoiceMark: r.invoice_mark,
+      invoiceUid: r.invoice_uid,
+      qrUrl: r.qr_url,
+    });
+    setReceiptPreviewOpen(true);
   };
 
   const createSubscription = async () => {
@@ -788,7 +827,9 @@ export const SubscriptionManagement: React.FC = () => {
   };
 
   const handleCreateSubscription = async (result: ReceiptConfirmResult) => {
-    if (!pendingSubscriptionData) return;
+    if (!pendingSubscriptionData || issuingRef.current) return;
+    issuingRef.current = true;
+    setIssuing(true);
     const { isPaid } = result;
 
     const { subscriptionType, selectedUserData, subscriptionStartDate, endDate } = pendingSubscriptionData;
@@ -881,7 +922,7 @@ export const SubscriptionManagement: React.FC = () => {
       }
 
       // Δημιουργία απόδειξης πάντα
-      await createReceiptForSubscription(selectedUserData, subscriptionType, startDate, endDate, durationMultiplier, effectiveTotalPrice);
+      const createdReceiptId = await createReceiptForSubscription(selectedUserData, subscriptionType, startDate, endDate, durationMultiplier, effectiveTotalPrice);
 
       // Αποστολή απόδειξης με email
       try {
@@ -938,7 +979,10 @@ export const SubscriptionManagement: React.FC = () => {
       setShowReceiptDialog(false);
       setPendingSubscriptionData(null);
       setDurationMultiplier(1);
-      await loadData();
+      if (createdReceiptId) {
+        await openReceiptPreviewById(createdReceiptId, subscriptionStartDate.toISOString().split('T')[0]);
+      }
+      loadData();
 
     } catch (error) {
       console.error('Error creating subscription:', error);
@@ -947,6 +991,9 @@ export const SubscriptionManagement: React.FC = () => {
         title: "Σφάλμα",
         description: "Σφάλμα κατά τη δημιουργία της συνδρομής"
       });
+    } finally {
+      issuingRef.current = false;
+      setIssuing(false);
     }
   };
 
@@ -1695,7 +1742,7 @@ export const SubscriptionManagement: React.FC = () => {
               )}
 
 
-              <Button onClick={createSubscription} className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none">
+              <Button onClick={createSubscription} disabled={issuing} className="w-full bg-[#00ffba] hover:bg-[#00ffba]/90 text-black rounded-none">
                 <Receipt className="h-4 w-4 mr-2" />
                 Έκδοση & Αποστολή Συνδρομής
               </Button>
@@ -2504,6 +2551,16 @@ export const SubscriptionManagement: React.FC = () => {
           currentSectionId={selectedUserForSection.sectionId}
           onSuccess={loadData}
         />
+      )}
+
+      {issuing && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-3 border border-border bg-background p-6 rounded-none shadow-lg">
+            <Loader2 className="h-8 w-8 animate-spin text-[#00ffba]" />
+            <p className="text-sm font-medium">Έκδοση συνδρομής και απόδειξης...</p>
+            <p className="text-xs text-muted-foreground">Παρακαλώ περιμένετε, μην κλείσετε τη σελίδα</p>
+          </div>
+        </div>
       )}
 
       {/* Receipt Preview Dialog */}
