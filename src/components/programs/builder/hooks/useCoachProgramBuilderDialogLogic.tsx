@@ -109,7 +109,7 @@ export const useCoachProgramBuilderDialogLogic = ({
 
       // Save base program first
       let baseProgramId = program.id || savedId.current;
-      if (!baseProgramId) {
+      if (!baseProgramId && program.user_ids.length > 1) {
         console.log('📋 [Coach] Creating base program...');
         const savedProgram = await onCreateProgram({ ...program, deferBuilderRefresh: true });
         if (!savedProgram || !savedProgram.id) {
@@ -118,7 +118,7 @@ export const useCoachProgramBuilderDialogLogic = ({
         baseProgramId = savedProgram.id;
         savedId.current = savedProgram.id;
         updateProgram?.({ id: savedProgram.id });
-      } else {
+      } else if (editingAssignment?.id) {
         console.log('🔄 [Coach] Updating existing program:', program.id);
         await onCreateProgram({ ...program, deferBuilderRefresh: true });
       }
@@ -181,6 +181,10 @@ export const useCoachProgramBuilderDialogLogic = ({
           : assignedProgramCopy(program, coachUserId, userWeeks));
         if (!savedUserProgram?.id) throw new Error('Αποτυχία αποθήκευσης προγράμματος χρήστη');
         const programIdForUser = savedUserProgram.id;
+        if (isSingleUser) {
+          savedId.current = programIdForUser;
+          updateProgram?.({ id: programIdForUser });
+        }
 
         const assignmentData = {
           program: { ...program, id: programIdForUser, weeks: userWeeks },

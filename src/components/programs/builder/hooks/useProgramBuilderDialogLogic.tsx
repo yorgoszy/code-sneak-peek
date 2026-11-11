@@ -178,7 +178,7 @@ export const useProgramBuilderDialogLogic = ({
 
       // Ensure base program is saved first (as a "template" reference)
       let baseProgramId = program.id || savedId.current;
-      if (!baseProgramId) {
+      if (!baseProgramId && program.user_ids.length > 1) {
         const savedProgram = await onCreateProgram({ ...program, deferBuilderRefresh: true });
         if (!savedProgram || !savedProgram.id) {
           throw new Error('Αποτυχία αποθήκευσης προγράμματος');
@@ -216,6 +216,10 @@ export const useProgramBuilderDialogLogic = ({
           : assignedProgramCopy(program, userId, userWeeks));
         if (!savedUserProgram?.id) throw new Error('Αποτυχία αποθήκευσης προγράμματος χρήστη');
         const programIdForUser = savedUserProgram.id;
+        if (isSingleUser) {
+          savedId.current = programIdForUser;
+          updateProgram?.({ id: programIdForUser });
+        }
 
         const assignmentData = {
           program: { ...program, id: programIdForUser, weeks: userWeeks },
