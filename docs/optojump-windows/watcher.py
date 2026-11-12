@@ -30,7 +30,11 @@ class FolderWatcher:
             after = file.stat()
             if (after.st_size, after.st_mtime_ns) != signature:
                 continue
-            attempts, skipped = parse_export(raw)
+            try:
+                attempts, skipped = parse_export(raw)
+            except ValueError:
+                output.append(("invalid", file.name))
+                continue
             for kind in skipped:
                 output.append(("unsupported", kind))
             pending = []

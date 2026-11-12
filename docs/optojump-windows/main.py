@@ -94,6 +94,8 @@ class App:
                         self.append("Χρειάζεται αντιστοίχιση: " + self.person_label(detail))
                     elif status == "unsupported":
                         self.append("Δεν εισάγεται ακόμη: " + detail)
+                    elif status == "invalid":
+                        self.append("Μη έγκυρο XML, δεν εισάγεται: " + detail)
                     else:
                         self.append(("Αποθηκεύτηκε: " if status == "imported" else "Ήδη αποθηκευμένο: ") + detail)
             elif kind == "watch_error":
