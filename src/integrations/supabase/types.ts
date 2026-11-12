@@ -8464,6 +8464,58 @@ export type Database = {
         }
         Relationships: []
       }
+      optojump_imports: {
+        Row: {
+          created_at: string
+          id: string
+          measurements: Json
+          session_id: string
+          source_key: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          measurements: Json
+          session_id: string
+          source_key: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          measurements?: Json
+          session_id?: string
+          source_key?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "optojump_imports_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "jump_test_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "optojump_imports_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "optojump_imports_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
@@ -12802,6 +12854,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      import_optojump_attempt: {
+        Args: { p_attempt: Json; p_user_id: string }
+        Returns: Json
       }
       is_admin_safe: { Args: { user_auth_id: string }; Returns: boolean }
       is_admin_user: { Args: never; Returns: boolean }
