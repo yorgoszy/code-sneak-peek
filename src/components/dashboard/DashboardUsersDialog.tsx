@@ -5,8 +5,32 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatDateToLocalString } from "@/utils/dateUtils";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
+import {
+  earliestEndDateByUser,
+  sortUsersByExpiry,
+  daysUntilExpiry,
+} from "./activeUserExpiry";
 
 export type DashboardUsersDialogType = "new" | "active";
+
+const expiryLabel = (days: number | null): string => {
+  if (days === null) return "";
+  if (days === 0) return "λήγει σήμερα";
+  if (days === 1) return "1 μέρα";
+  return `${days} μέρες`;
+};
+
+const ExpiryCell = ({ endDate }: { endDate: string }) => {
+  const days = daysUntilExpiry(endDate);
+  return (
+    <div className="text-xs flex-shrink-0 text-right">
+      <div className={days !== null && days <= 7 ? "text-destructive" : "text-gray-400"}>
+        Λήγει {format(new Date(endDate), "dd/MM/yyyy", { locale: el })}
+      </div>
+      <div className="text-gray-400">{expiryLabel(days)}</div>
+    </div>
+  );
+};
 
 interface DashboardUsersDialogProps {
   type: DashboardUsersDialogType | null;
@@ -19,6 +43,7 @@ interface ListedUser {
   email: string;
   avatar_url: string | null;
   created_at: string;
+  end_date?: string | null;
 }
 
 export const DashboardUsersDialog = ({ type, onClose }: DashboardUsersDialogProps) => {
@@ -50,16 +75,26 @@ export const DashboardUsersDialog = ({ type, onClose }: DashboardUsersDialogProp
       } else {
         const todayString = formatDateToLocalString(new Date());
 
-        const { data: subscriptions, error } = await supabase
-          .from("user_subscriptions")
-          .select("user_id")
-          .eq("status", "active")
-          .eq("is_paused", false)
-          .gte("end_date", todayString);
+        // Φέρνουμε όλες τις ενεργές συνδρομές (σε σελίδες, για να μην κοπούν στις 1000 εγγραφές)
+        const PAGE = 1000;
+        const subscriptionRows: { user_id: string; end_date: string | null }[] = [];
+        for (let from = 0; ; from += PAGE) {
+          const { data, error } = await supabase
+            .from("user_subscriptions")
+            .select("user_id, end_date")
+            .eq("status", "active")
+            .eq("is_paused", false)
+            .gte("end_date", todayString)
+            .range(from, from + PAGE - 1);
 
-        if (error) throw error;
+          if (error) throw error;
+          const page = data || [];
+          subscriptionRows.push(...page);
+          if (page.length < PAGE) break;
+        }
 
-        const uniqueUserIds = [...new Set((subscriptions || []).map(s => s.user_id))];
+        const endDates = earliestEndDateByUser(subscriptionRows);
+        const uniqueUserIds = [...endDates.keys()];
         if (uniqueUserIds.length === 0) {
           setUsers([]);
           return;
@@ -68,11 +103,16 @@ export const DashboardUsersDialog = ({ type, onClose }: DashboardUsersDialogProp
         const { data: appUsers, error: usersError } = await supabase
           .from("app_users")
           .select("id, name, email, avatar_url, created_at")
-          .in("id", uniqueUserIds)
-          .order("name", { ascending: true });
+          .in("id", uniqueUserIds);
 
         if (usersError) throw usersError;
-        setUsers(appUsers || []);
+
+        // Προτεραιότητα: όποιος λήγει νωρίτερα εμφανίζεται πρώτος
+        const sorted = sortUsersByExpiry(appUsers || [], endDates).map(user => ({
+          ...user,
+          end_date: endDates.get(user.id) ?? null,
+        }));
+        setUsers(sorted);
       }
     } catch (error) {
       console.error("Error fetching dashboard users:", error);
@@ -114,6 +154,9 @@ export const DashboardUsersDialog = ({ type, onClose }: DashboardUsersDialogProp
                   <div className="text-xs text-gray-400 flex-shrink-0">
                     {format(new Date(u.created_at), "dd/MM/yyyy", { locale: el })}
                   </div>
+                )}
+                {type === "active" && u.end_date && (
+                  <ExpiryCell endDate={u.end_date} />
                 )}
               </div>
             ))}
