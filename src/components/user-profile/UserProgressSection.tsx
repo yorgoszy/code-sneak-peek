@@ -16,6 +16,7 @@ import { AnthropometricProgressCard } from "./AnthropometricProgressCard";
 import { BodyMapCard } from "./BodyMapCard";
 import { FightStatsCard } from "./FightStatsCard";
 import { useTranslation } from 'react-i18next';
+import { MeasurementHistory } from '@/components/measurements/MeasurementHistory';
 
 interface UserProgressSectionProps {
   userId: string;
@@ -420,6 +421,7 @@ export const UserProgressSection: React.FC<UserProgressSectionProps> = ({
 
   return (
     <div className="space-y-2 sm:space-y-0 px-2 sm:px-0">
+      <MeasurementHistory userId={userId} />
       {/* Anthropometric Card - always visible at the top */}
       <div className="mb-2 sm:mb-0">
         <AnthropometricProgressCard userId={userId} useCoachTables={useCoachTables} coachId={coachId} />
