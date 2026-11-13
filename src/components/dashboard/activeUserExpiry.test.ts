@@ -65,3 +65,22 @@ it('counts the expiry day itself as zero days left', () => {
   strictEqual(daysUntilExpiry('2026-11-20', today), 7);
   strictEqual(daysUntilExpiry(null, today), null);
 });
+
+it('lists newest registrations first and oldest last', () => {
+  const users = [
+    { id: 'old', name: 'ΠΑΛΙΟΣ', created_at: '2026-11-02T10:00:00+00:00' },
+    { id: 'new', name: 'ΝΕΟΣ', created_at: '2026-11-13T08:30:00+00:00' },
+    { id: 'mid', name: 'ΜΕΣΑΙΟΣ', created_at: '2026-11-08T18:00:00+00:00' },
+  ];
+
+  deepStrictEqual(sortUsersByRegistrationDesc(users).map(u => u.id), ['new', 'mid', 'old']);
+});
+
+it('keeps users without a registration date at the end', () => {
+  const users = [
+    { id: 'nodate', name: 'ΧΩΡΙΣ ΗΜΕΡΟΜΗΝΙΑ', created_at: null },
+    { id: 'dated', name: 'ΜΕ ΗΜΕΡΟΜΗΝΙΑ', created_at: '2026-11-01T09:00:00+00:00' },
+  ];
+
+  deepStrictEqual(sortUsersByRegistrationDesc(users).map(u => u.id), ['dated', 'nodate']);
+});
