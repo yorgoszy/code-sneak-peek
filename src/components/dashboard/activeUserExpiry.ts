@@ -48,10 +48,23 @@ export function sortUsersByExpiry<T extends { id: string; name: string | null }>
 }
 
 /** Whole days left until expiry; 0 means it ends today. */
+export function daysUntilExpiry(endDate: string | undefined | null, today: Date = new Date()): number | null {
   if (!endDate) return null;
   const [year, month, day] = endDate.split("-").map(Number);
   if (!year || !month || !day) return null;
   const end = new Date(year, month - 1, day, 12, 0, 0);
   const now = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 12, 0, 0);
   return Math.round((end.getTime() - now.getTime()) / 86_400_000);
+}
+
+/** Newest registration first, oldest last. */
+export function sortUsersByRegistrationDesc<T extends { id: string; created_at: string | null }>(
+  users: T[],
+): T[] {
+  return [...users].sort((a, b) => {
+    const aAt = a.created_at ?? "";
+    const bAt = b.created_at ?? "";
+    if (aAt !== bAt) return aAt > bAt ? -1 : 1;
+    return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+  });
 }
