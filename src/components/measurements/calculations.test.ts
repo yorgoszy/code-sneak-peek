@@ -1,0 +1,11 @@
+import { test } from 'node:test';
+import { strictEqual } from 'node:assert';
+import { bestValue, performanceDrop } from './calculations';
+test('40 to 36 cm is 10 percent drop', () => strictEqual(performanceDrop(40, 36, 'higher'), 10));
+test('200 to 220 ms is 10 percent slowing', () => strictEqual(performanceDrop(200, 220, 'lower'), 10));
+test('improvement remains negative', () => strictEqual(performanceDrop(40, 44, 'higher'), -10));
+test('missing reference has no invented percentage', () => strictEqual(performanceDrop(null, 36, 'higher'), null));
+test('zero reference is rejected', () => strictEqual(performanceDrop(0, 36, 'higher'), null));
+test('contact time is not automatically better when lower', () => strictEqual(bestValue([100, 200], 'observe'), null));
+test('height baseline uses highest valid attempt', () => strictEqual(bestValue([36, 40, NaN], 'higher'), 40));
+test('reaction baseline uses smallest valid time', () => strictEqual(bestValue([220, 200, -1], 'lower'), 200));
