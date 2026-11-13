@@ -13,6 +13,25 @@ import {
 
 export type DashboardUsersDialogType = "new" | "active";
 
+const expiryLabel = (days: number | null): string => {
+  if (days === null) return "";
+  if (days === 0) return "λήγει σήμερα";
+  if (days === 1) return "1 μέρα";
+  return `${days} μέρες`;
+};
+
+const ExpiryCell = ({ endDate }: { endDate: string }) => {
+  const days = daysUntilExpiry(endDate);
+  return (
+    <div className="text-xs flex-shrink-0 text-right">
+      <div className={days !== null && days <= 7 ? "text-destructive" : "text-gray-400"}>
+        Λήγει {format(new Date(endDate), "dd/MM/yyyy", { locale: el })}
+      </div>
+      <div className="text-gray-400">{expiryLabel(days)}</div>
+    </div>
+  );
+};
+
 interface DashboardUsersDialogProps {
   type: DashboardUsersDialogType | null;
   onClose: () => void;
