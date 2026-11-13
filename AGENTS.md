@@ -1,5 +1,7 @@
 # Architecture rules
 
+- Measurement attempts bind explicit workout/exercise/protocol/conditions, freeze test references server-side, and link XML once; private ownership checks prevent mixed comparisons and cross-user access.
+
 - OptoJump Windows uses a standalone folder-watching companion with explicit external-person-to-app-user mapping and Windows Credential Manager sessions; imports call an admin-checked invoker RPC that atomically writes existing jump history and a unique source-attempt ledger, so retries and re-exports cannot duplicate results. Unsupported test variants are never silently mapped to standard CMJ.
 
 - Suppress section booking creation emails centrally in the notification handler before loading recipients or calling Resend, so browser calls and database triggers obey the same policy.

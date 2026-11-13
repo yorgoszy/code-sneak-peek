@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { ViewOnlyExerciseRow } from '@/components/user-profile/daily-program/ViewOnlyExerciseRow';
 import { getTrainingTypeLabel } from '@/utils/trainingTypeLabels';
+import { ExerciseMeasurements } from '@/components/measurements/ExerciseMeasurements';
 
 interface ProgramBlocksProps {
   blocks: any[];
@@ -46,6 +47,7 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
   onVideoClick,
   program,
   persistKey,
+  selectedDate,
 }) => {
   const [openBlocks, setOpenBlocks] = useState<Record<string, boolean>>(() => {
     const cached = persistKey ? collapsedStateCache.get(persistKey) : undefined;
@@ -151,6 +153,7 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
                 <CardContent className="p-0">
                   <div className="divide-y divide-gray-200">
                     {sortedExercises.map((exercise, exerciseIndex) => (
+                      <React.Fragment key={exercise.id}>
                       <ViewOnlyExerciseRow
                         key={exercise.id}
                         exercise={exercise}
@@ -161,6 +164,17 @@ export const ProgramBlocks: React.FC<ProgramBlocksProps> = ({
                         onToggleCheck={handleToggleCheck}
                         program={program}
                       />
+                      {program?.user_id && program?.id && exercise.exercise_id && (
+                        <ExerciseMeasurements
+                          userId={program.user_id}
+                          exerciseId={exercise.exercise_id}
+                          programExerciseId={exercise.id}
+                          assignmentId={program.id}
+                          selectedDate={selectedDate}
+                          workoutInProgress={workoutInProgress}
+                        />
+                      )}
+                      </React.Fragment>
                     ))}
                   </div>
                 </CardContent>
