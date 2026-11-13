@@ -156,14 +156,7 @@ export const DashboardUsersDialog = ({ type, onClose }: DashboardUsersDialogProp
                   </div>
                 )}
                 {type === "active" && u.end_date && (
-                  <div className="text-xs flex-shrink-0 text-right">
-                    <div className={daysUntilExpiry(u.end_date) !== null && daysUntilExpiry(u.end_date)! <= 7 ? "text-destructive" : "text-gray-400"}>
-                      Λήγει {format(new Date(u.end_date), "dd/MM/yyyy", { locale: el })}
-                    </div>
-                    <div className="text-gray-400">
-                      {daysUntilExpiry(u.end_date) === 0 ? "σήμερα" : `${daysUntilExpiry(u.end_date)} μέρες`}
-                    </div>
-                  </div>
+                  <ExpiryCell endDate={u.end_date} />
                 )}
               </div>
             ))}
