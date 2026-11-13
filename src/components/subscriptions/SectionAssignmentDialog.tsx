@@ -129,7 +129,8 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
           if (!schedule[dayName].includes(bookingTime)) schedule[dayName].push(bookingTime);
         });
         Object.values(schedule).forEach(times => times.sort());
-        if (!cancelled) setSelectedSchedule(schedule);
+        const section = sections.find(s => s.id === selectedSection);
+        if (!cancelled) setSelectedSchedule(normalizeSectionSchedule(schedule, section?.available_hours));
       } catch (error) {
         console.error('Error loading existing booking schedule:', error);
         if (!cancelled) setSelectedSchedule({});
@@ -215,7 +216,9 @@ export const SectionAssignmentDialog: React.FC<SectionAssignmentDialogProps> = (
       const { data: count, error } = await supabase.rpc('save_admin_section_assignment', {
         p_user_id: userId,
         p_section_id: selectedSection === 'none' ? null : selectedSection,
-        p_schedule: selectedSection === 'none' ? {} : selectedSchedule
+        p_schedule: selectedSection === 'none'
+          ? {}
+          : normalizeSectionSchedule(selectedSchedule, sections.find(s => s.id === selectedSection)?.available_hours)
       });
       if (error) throw error;
       toast({
