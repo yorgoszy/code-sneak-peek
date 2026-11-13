@@ -5,6 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatDateToLocalString } from "@/utils/dateUtils";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
+import {
+  earliestEndDateByUser,
+  sortUsersByExpiry,
+  daysUntilExpiry,
+} from "./activeUserExpiry";
 
 export type DashboardUsersDialogType = "new" | "active";
 
@@ -19,6 +24,7 @@ interface ListedUser {
   email: string;
   avatar_url: string | null;
   created_at: string;
+  end_date?: string | null;
 }
 
 export const DashboardUsersDialog = ({ type, onClose }: DashboardUsersDialogProps) => {
