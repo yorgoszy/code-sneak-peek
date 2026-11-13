@@ -4577,6 +4577,183 @@ export type Database = {
         }
         Relationships: []
       }
+      exercise_measurement_attempts: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          optojump_import_id: string | null
+          received_at: string
+          recorded_at: string
+          rep_number: number
+          session_id: string
+          set_number: number
+          source: string
+          updated_at: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          optojump_import_id?: string | null
+          received_at?: string
+          recorded_at?: string
+          rep_number: number
+          session_id: string
+          set_number: number
+          source: string
+          updated_at?: string
+          user_id: string
+          value: number
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          optojump_import_id?: string | null
+          received_at?: string
+          recorded_at?: string
+          rep_number?: number
+          session_id?: string
+          set_number?: number
+          source?: string
+          updated_at?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_measurement_attempts_optojump_import_id_fkey"
+            columns: ["optojump_import_id"]
+            isOneToOne: true
+            referencedRelation: "optojump_imports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_measurement_attempts_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "exercise_measurement_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_measurement_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_measurement_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exercise_measurement_sessions: {
+        Row: {
+          assignment_id: string | null
+          baseline_at: string | null
+          baseline_value: number | null
+          conditions: string
+          created_at: string
+          ended_at: string | null
+          exercise_id: string
+          id: string
+          program_exercise_id: string | null
+          protocol_key: string
+          scheduled_date: string | null
+          session_kind: string
+          started_at: string
+          threshold_pct: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assignment_id?: string | null
+          baseline_at?: string | null
+          baseline_value?: number | null
+          conditions: string
+          created_at?: string
+          ended_at?: string | null
+          exercise_id: string
+          id?: string
+          program_exercise_id?: string | null
+          protocol_key: string
+          scheduled_date?: string | null
+          session_kind: string
+          started_at?: string
+          threshold_pct?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assignment_id?: string | null
+          baseline_at?: string | null
+          baseline_value?: number | null
+          conditions?: string
+          created_at?: string
+          ended_at?: string | null
+          exercise_id?: string
+          id?: string
+          program_exercise_id?: string | null
+          protocol_key?: string
+          scheduled_date?: string | null
+          session_kind?: string
+          started_at?: string
+          threshold_pct?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_measurement_sessions_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "program_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_measurement_sessions_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_measurement_sessions_program_exercise_id_fkey"
+            columns: ["program_exercise_id"]
+            isOneToOne: false
+            referencedRelation: "program_exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_measurement_sessions_protocol_key_fkey"
+            columns: ["protocol_key"]
+            isOneToOne: false
+            referencedRelation: "measurement_protocols"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "exercise_measurement_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exercise_measurement_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_competition_athletes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercise_notes: {
         Row: {
           assignment_id: string
@@ -7261,6 +7438,36 @@ export type Database = {
           updated_at?: string
           weight_category?: string | null
           youtube_url?: string
+        }
+        Relationships: []
+      }
+      measurement_protocols: {
+        Row: {
+          created_at: string
+          direction: string
+          key: string
+          name: string
+          optojump_test: string | null
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          direction: string
+          key: string
+          name: string
+          optojump_test?: string | null
+          unit: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          direction?: string
+          key?: string
+          name?: string
+          optojump_test?: string | null
+          unit?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -12654,6 +12861,7 @@ export type Database = {
         Returns: undefined
       }
       auto_update_competition_status: { Args: never; Returns: undefined }
+      can_access_measurements: { Args: { p_user: string }; Returns: boolean }
       can_cancel_booking: { Args: { booking_id: string }; Returns: boolean }
       can_manage_club_booking_user: {
         Args: { p_user: string }
@@ -12936,6 +13144,15 @@ export type Database = {
       }
       mark_booking_missed: { Args: { booking_id: string }; Returns: undefined }
       mark_past_bookings_as_missed: { Args: never; Returns: number }
+      measurement_xml_candidates: {
+        Args: { p_protocol: string; p_user: string }
+        Returns: {
+          height_cm: number
+          id: string
+          recorded_at: string
+          test: string
+        }[]
+      }
       notify_next_in_waiting_list:
         | {
             Args: {
