@@ -4,6 +4,7 @@ import {
   earliestEndDateByUser,
   sortUsersByExpiry,
   daysUntilExpiry,
+  sortUsersByRegistrationDesc,
 } from './activeUserExpiry';
 
 it('keeps the earliest end_date when a user has several active subscriptions', () => {
