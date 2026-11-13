@@ -48,7 +48,6 @@ export function sortUsersByExpiry<T extends { id: string; name: string | null }>
 }
 
 /** Whole days left until expiry; 0 means it ends today. */
-export function daysUntilExpiry(endDate: string | undefined | null, today: Date = new Date()): number | null {
   if (!endDate) return null;
   const [year, month, day] = endDate.split("-").map(Number);
   if (!year || !month || !day) return null;
