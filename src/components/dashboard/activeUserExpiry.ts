@@ -56,3 +56,15 @@ export function daysUntilExpiry(endDate: string | undefined | null, today: Date 
   const now = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 12, 0, 0);
   return Math.round((end.getTime() - now.getTime()) / 86_400_000);
 }
+
+/** Newest registration first, oldest last. */
+export function sortUsersByRegistrationDesc<T extends { id: string; created_at: string | null }>(
+  users: T[],
+): T[] {
+  return [...users].sort((a, b) => {
+    const aAt = a.created_at ?? "";
+    const bAt = b.created_at ?? "";
+    if (aAt !== bAt) return aAt > bAt ? -1 : 1;
+    return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+  });
+}

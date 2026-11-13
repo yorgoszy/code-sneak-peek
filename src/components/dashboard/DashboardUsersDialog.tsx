@@ -9,6 +9,7 @@ import {
   earliestEndDateByUser,
   sortUsersByExpiry,
   daysUntilExpiry,
+  sortUsersByRegistrationDesc,
 } from "./activeUserExpiry";
 
 export type DashboardUsersDialogType = "new" | "active";
@@ -71,7 +72,8 @@ export const DashboardUsersDialog = ({ type, onClose }: DashboardUsersDialogProp
           .order("created_at", { ascending: false });
 
         if (error) throw error;
-        setUsers(data || []);
+        // Νεότεροι πρώτοι, παλαιότεροι τελευταίοι
+        setUsers(sortUsersByRegistrationDesc(data || []));
       } else {
         const todayString = formatDateToLocalString(new Date());
 
